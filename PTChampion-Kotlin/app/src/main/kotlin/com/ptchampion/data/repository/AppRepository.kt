@@ -2,6 +2,8 @@ package com.ptchampion.data.repository
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import com.ptchampion.data.api.ApiService
 import com.ptchampion.data.api.AuthResponse
@@ -12,6 +14,9 @@ import com.ptchampion.data.api.UpdateLocationRequest
 import com.ptchampion.domain.model.Exercise
 import com.ptchampion.domain.model.LeaderboardEntry
 import com.ptchampion.domain.model.Result
+import com.ptchampion.domain.model.SyncRequest
+import com.ptchampion.domain.model.SyncRequestData
+import com.ptchampion.domain.model.SyncResponse
 import com.ptchampion.domain.model.User
 import com.ptchampion.domain.model.UserExercise
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -37,9 +42,12 @@ class AppRepository @Inject constructor(
         private const val KEY_USERNAME = "username"
         private const val KEY_AUTH_TOKEN = "auth_token"
         private const val KEY_TOKEN_EXPIRY = "auth_token_expiry"
+        private const val KEY_DEVICE_ID = "device_id"
+        private const val KEY_LAST_SYNC = "last_sync_timestamp"
     }
     
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
     
     // Cache of current user
     private var currentUser: User? = null
@@ -49,6 +57,39 @@ class AppRepository @Inject constructor(
      */
     private fun getAuthToken(): String? {
         return prefs.getString(KEY_AUTH_TOKEN, null)
+    }
+    
+    /**
+     * Get or generate a unique device ID
+     */
+    private fun getDeviceId(): String {
+        val storedDeviceId = prefs.getString(KEY_DEVICE_ID, null)
+        if (!storedDeviceId.isNullOrEmpty()) {
+            return storedDeviceId
+        }
+        
+        // Generate a device ID based on the Android ID
+        val deviceId = Settings.Secure.getString(appContext.contentResolver, Settings.Secure.ANDROID_ID) ?: 
+            "android_${System.currentTimeMillis()}"
+        
+        // Store for future use
+        prefs.edit().putString(KEY_DEVICE_ID, deviceId).apply()
+        
+        return deviceId
+    }
+    
+    /**
+     * Get the last sync timestamp
+     */
+    private fun getLastSyncTimestamp(): String {
+        return prefs.getString(KEY_LAST_SYNC, "1970-01-01T00:00:00Z") ?: "1970-01-01T00:00:00Z"
+    }
+    
+    /**
+     * Save the last sync timestamp
+     */
+    private fun saveLastSyncTimestamp(timestamp: String) {
+        prefs.edit().putString(KEY_LAST_SYNC, timestamp).apply()
     }
     
     /**
@@ -418,5 +459,67 @@ class AppRepository @Inject constructor(
      */
     fun isLoggedIn(): Boolean {
         return getAuthToken() != null && prefs.contains(KEY_USER_ID)
+    }
+    
+    /**
+     * Sync data between the device and server
+     */
+    fun syncData(localExercises: List<UserExercise>? = null): Flow<Result<SyncResponse>> = flow {
+        try {
+            // Check if we have a token
+            if (getAuthToken() == null) {
+                emit(Result.Error(IOException("Not authenticated")))
+                return@flow
+            }
+            
+            // Get current user ID
+            val userId = prefs.getInt(KEY_USER_ID, -1)
+            if (userId == -1) {
+                emit(Result.Error(IOException("User ID not available")))
+                return@flow
+            }
+            
+            // Create the sync request
+            val syncRequest = SyncRequest(
+                userId = userId,
+                deviceId = getDeviceId(),
+                lastSyncTimestamp = getLastSyncTimestamp(),
+                data = if (localExercises != null) SyncRequestData(userExercises = localExercises) else null
+            )
+            
+            // Call the API
+            val response = apiService.syncData(getAuthHeader(), syncRequest)
+            
+            if (response.isSuccessful) {
+                val syncResponse = response.body()!!
+                
+                // Update the last sync timestamp
+                if (syncResponse.success) {
+                    saveLastSyncTimestamp(syncResponse.timestamp)
+                }
+                
+                // Update the current user if profile data was returned
+                syncResponse.data?.profile?.let { user ->
+                    currentUser = user
+                }
+                
+                emit(Result.Success(syncResponse))
+            } else {
+                if (response.code() == 401) {
+                    clearUserSession()
+                }
+                emit(Result.Error(IOException("Failed to sync data: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Sync data error", e)
+            emit(Result.Error(e))
+        }
+    }
+    
+    /**
+     * Get the last time data was synced
+     */
+    fun getLastSyncTime(): String {
+        return getLastSyncTimestamp()
     }
 }

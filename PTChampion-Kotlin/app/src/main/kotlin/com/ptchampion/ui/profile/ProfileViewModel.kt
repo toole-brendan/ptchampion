@@ -24,6 +24,9 @@ data class ProfileUiState(
     val exerciseCount: Int = 0,
     val latestExercises: Map<String, UserExercise> = emptyMap(),
     val overallScore: Int = 0,
+    val lastSyncTime: String? = null,
+    val isSyncing: Boolean = false,
+    val syncSuccess: Boolean? = null,
     val error: String? = null
 )
 
@@ -40,6 +43,7 @@ class ProfileViewModel @Inject constructor(
     
     init {
         loadUserData()
+        updateLastSyncTime()
     }
     
     /**
@@ -216,9 +220,75 @@ class ProfileViewModel @Inject constructor(
     }
     
     /**
+     * Update last sync time
+     */
+    private fun updateLastSyncTime() {
+        val lastSyncTime = repository.getLastSyncTime()
+        _uiState.value = _uiState.value.copy(lastSyncTime = lastSyncTime)
+    }
+    
+    /**
+     * Sync data with server
+     */
+    fun syncData() {
+        _uiState.value = _uiState.value.copy(isSyncing = true, syncSuccess = null, error = null)
+        
+        viewModelScope.launch {
+            repository.syncData()
+                .catch { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isSyncing = false,
+                        syncSuccess = false,
+                        error = "Sync failed: ${e.message}"
+                    )
+                }
+                .collectLatest { result ->
+                    result.fold(
+                        onSuccess = { syncResponse ->
+                            // Update UI with sync status
+                            _uiState.value = _uiState.value.copy(
+                                isSyncing = false,
+                                syncSuccess = syncResponse.success,
+                                lastSyncTime = syncResponse.timestamp,
+                                error = if (!syncResponse.success) "Sync failed" else null
+                            )
+                            
+                            // If sync was successful, refresh data
+                            if (syncResponse.success) {
+                                // Update user if profile data was returned
+                                syncResponse.data?.profile?.let { user ->
+                                    _uiState.value = _uiState.value.copy(user = user)
+                                }
+                                
+                                // Reload exercise data if exercises were returned
+                                if (syncResponse.data?.userExercises != null) {
+                                    loadExerciseData()
+                                }
+                            }
+                        },
+                        onFailure = { e ->
+                            _uiState.value = _uiState.value.copy(
+                                isSyncing = false,
+                                syncSuccess = false,
+                                error = "Sync failed: ${e.message}"
+                            )
+                        }
+                    )
+                }
+        }
+    }
+    
+    /**
      * Clear error
      */
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+    
+    /**
+     * Clear sync status
+     */
+    fun clearSyncStatus() {
+        _uiState.value = _uiState.value.copy(syncSuccess = null)
     }
 }
