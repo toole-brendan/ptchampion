@@ -44,7 +44,7 @@ export default function ExercisePage() {
     enabled: !!user
   });
   
-  const exercise = exercises?.find(e => e.type === type);
+  const exercise = (exercises as any[] || []).find((e: any) => e.type === type);
   
   // Camera setup and pose detection
   useEffect(() => {

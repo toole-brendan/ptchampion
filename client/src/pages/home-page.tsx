@@ -87,7 +87,8 @@ export default function HomePage() {
   // Helper to get the latest score for an exercise type
   const getLatestScore = (type: string) => {
     if (!latestExercises) return null;
-    return latestExercises[type] || null;
+    // Type assertion to help TypeScript understand the structure
+    return (latestExercises as Record<string, any>)?.[type] || null;
   };
 
   return (
@@ -125,7 +126,7 @@ export default function HomePage() {
                 <Loader2 className="h-8 w-8 animate-spin text-accent" />
               </div>
             ) : (
-              <PerformanceCard latestExercises={latestExercises} />
+              <PerformanceCard latestExercises={latestExercises as Record<string, any>} />
             )}
             
             {/* Exercise Selection */}
@@ -136,7 +137,7 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {exercises?.map((exercise) => (
+                {(exercises || []).map((exercise: any) => (
                   <ExerciseCard 
                     key={exercise.id} 
                     exercise={exercise} 

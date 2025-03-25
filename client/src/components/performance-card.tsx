@@ -46,8 +46,8 @@ export default function PerformanceCard({ latestExercises }: PerformanceCardProp
   }, [latestExercises]);
   
   // Format run time
-  const formatRunTime = (seconds: number | undefined): string => {
-    if (!seconds) return "-";
+  const formatRunTime = (seconds: number | null | undefined): string => {
+    if (seconds === undefined || seconds === null) return "-";
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
