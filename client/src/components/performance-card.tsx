@@ -91,50 +91,50 @@ export default function PerformanceCard({ latestExercises }: PerformanceCardProp
           </div>
           <div className="ml-4">
             <h4 className="text-xl font-bold">{rating}</h4>
-            <p className="text-slate-500 text-sm">Overall Fitness Score</p>
+            <p className="text-slate-600 text-sm">Overall Fitness Score</p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 w-full md:w-auto md:flex md:space-x-8">
           <div className="text-center">
-            <div className="text-2xl font-bold text-accent">
+            <div className="text-2xl font-bold text-primary">
               {latestExercises?.pushup?.repetitions || "-"}
             </div>
-            <div className="text-xs text-slate-500">Push-ups</div>
+            <div className="text-xs text-slate-600">Push-ups</div>
             {latestExercises?.pushup?.grade !== undefined && (
-              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100">
+              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100 text-gray-700">
                 {latestExercises.pushup.grade} pts
               </div>
             )}
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-accent">
+            <div className="text-2xl font-bold text-primary">
               {latestExercises?.pullup?.repetitions || "-"}
             </div>
-            <div className="text-xs text-slate-500">Pull-ups</div>
+            <div className="text-xs text-slate-600">Pull-ups</div>
             {latestExercises?.pullup?.grade !== undefined && (
-              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100">
+              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100 text-gray-700">
                 {latestExercises.pullup.grade} pts
               </div>
             )}
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-accent">
+            <div className="text-2xl font-bold text-primary">
               {latestExercises?.situp?.repetitions || "-"}
             </div>
-            <div className="text-xs text-slate-500">Sit-ups</div>
+            <div className="text-xs text-slate-600">Sit-ups</div>
             {latestExercises?.situp?.grade !== undefined && (
-              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100">
+              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100 text-gray-700">
                 {latestExercises.situp.grade} pts
               </div>
             )}
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-accent">
+            <div className="text-2xl font-bold text-primary">
               {formatRunTime(latestExercises?.run?.timeInSeconds)}
             </div>
-            <div className="text-xs text-slate-500">2-mile Run</div>
+            <div className="text-xs text-slate-600">2-mile Run</div>
             {latestExercises?.run?.grade !== undefined && (
-              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100">
+              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100 text-gray-700">
                 {latestExercises.run.grade} pts
               </div>
             )}

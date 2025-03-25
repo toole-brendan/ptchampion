@@ -107,8 +107,8 @@ export default function HomePage() {
             <h1 className="ml-2 text-xl font-bold text-primary">PT Champion</h1>
           </div>
           <div>
-            <button className="p-2 rounded-full bg-slate-100">
-              <Settings className="h-5 w-5 text-gray-700" />
+            <button className="p-2 rounded-full bg-slate-200">
+              <Settings className="h-5 w-5 text-gray-900" />
             </button>
           </div>
         </div>

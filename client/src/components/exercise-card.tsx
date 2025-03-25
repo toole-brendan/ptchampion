@@ -119,7 +119,7 @@ export default function ExerciseCard({ exercise, latestScore }: ExerciseCardProp
                 : <div className="text-slate-400">Not attempted yet</div>
             }
           </div>
-          <ChevronRight className="h-5 w-5 text-accent" />
+          <ChevronRight className="h-5 w-5 text-gray-700" />
         </div>
       </div>
     </Link>

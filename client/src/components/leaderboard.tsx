@@ -79,7 +79,7 @@ export default function Leaderboard() {
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-accent" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : leaderboardData && leaderboardData.length > 0 ? (
           <>
@@ -104,14 +104,14 @@ export default function Leaderboard() {
                       <div className="font-medium">
                         {isCurrentUser ? 'You' : entry.username}
                       </div>
-                      <div className="text-xs text-slate-500">{entry.overallScore}% Overall Score</div>
+                      <div className="text-xs text-slate-600">{entry.overallScore}% Overall Score</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium">
+                    <div className="text-sm font-medium text-gray-900">
                       {entry.pushups || '-'} / {entry.pullups || '-'} / {entry.situps || '-'} / {formatRunTime(entry.runTimeSeconds)}
                     </div>
-                    <div className="text-xs text-slate-500">Push / Pull / Sit / Run</div>
+                    <div className="text-xs text-slate-600">Push / Pull / Sit / Run</div>
                   </div>
                 </div>
               );
