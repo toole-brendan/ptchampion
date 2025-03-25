@@ -66,8 +66,18 @@ export default function ExerciseCard({ exercise, latestScore }: ExerciseCardProp
   
   // Get the appropriate route for the exercise
   const getExerciseRoute = (type: string): string => {
-    if (type === "run") return "/run";
-    return `/exercise/${type}`;
+    switch (type) {
+      case "pushup":
+        return "/exercises/pushup";
+      case "pullup":
+        return "/exercises/pullup";
+      case "situp":
+        return "/exercises/situp";
+      case "run":
+        return "/run";
+      default:
+        return `/exercise/${type}`;
+    }
   };
 
   return (
