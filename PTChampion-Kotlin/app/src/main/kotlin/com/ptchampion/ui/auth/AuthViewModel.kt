@@ -14,72 +14,179 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Authentication states
+ * UI state for authentication screens
  */
-sealed class AuthState {
-    object Initial : AuthState()
-    object Loading : AuthState()
-    data class Success(val user: User) : AuthState()
-    data class Error(val message: String) : AuthState()
-}
+data class AuthUiState(
+    val isLoading: Boolean = false,
+    val isLoggedIn: Boolean = false,
+    val user: User? = null,
+    val error: String? = null
+)
 
 /**
- * View model for authentication
+ * ViewModel for authentication screens
  */
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val repository: AppRepository
 ) : ViewModel() {
     
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Initial)
-    val authState: StateFlow<AuthState> = _authState.asStateFlow()
+    private val _uiState = MutableStateFlow(AuthUiState())
+    val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
     
-    // Login
+    init {
+        // Check if user is already logged in
+        if (repository.isLoggedIn()) {
+            loadCurrentUser()
+        }
+    }
+    
+    /**
+     * Login with username and password
+     */
     fun login(username: String, password: String) {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        
         viewModelScope.launch {
-            _authState.value = AuthState.Loading
-            
             repository.login(username, password)
                 .catch { e ->
-                    _authState.value = AuthState.Error(e.message ?: "Login failed")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Login failed: ${e.message}"
+                    )
                 }
                 .collectLatest { result ->
                     result.fold(
                         onSuccess = { user ->
-                            _authState.value = AuthState.Success(user)
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isLoggedIn = true,
+                                user = user
+                            )
                         },
                         onFailure = { e ->
-                            _authState.value = AuthState.Error(e.message ?: "Login failed")
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                error = "Login failed: ${e.message}"
+                            )
                         }
                     )
                 }
         }
     }
     
-    // Register
+    /**
+     * Register a new account
+     */
     fun register(username: String, password: String) {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        
         viewModelScope.launch {
-            _authState.value = AuthState.Loading
-            
             repository.register(username, password)
                 .catch { e ->
-                    _authState.value = AuthState.Error(e.message ?: "Registration failed")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Registration failed: ${e.message}"
+                    )
                 }
                 .collectLatest { result ->
                     result.fold(
                         onSuccess = { user ->
-                            _authState.value = AuthState.Success(user)
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isLoggedIn = true,
+                                user = user
+                            )
                         },
                         onFailure = { e ->
-                            _authState.value = AuthState.Error(e.message ?: "Registration failed")
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                error = "Registration failed: ${e.message}"
+                            )
                         }
                     )
                 }
         }
     }
     
-    // Reset state
-    fun resetState() {
-        _authState.value = AuthState.Initial
+    /**
+     * Load the current user if any
+     */
+    fun loadCurrentUser() {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        
+        viewModelScope.launch {
+            repository.getCurrentUser()
+                .catch { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = false,
+                        error = "Failed to load user: ${e.message}"
+                    )
+                }
+                .collectLatest { result ->
+                    result.fold(
+                        onSuccess = { user ->
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isLoggedIn = true,
+                                user = user
+                            )
+                        },
+                        onFailure = { e ->
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isLoggedIn = false,
+                                error = null // Don't show error for this case
+                            )
+                        }
+                    )
+                }
+        }
+    }
+    
+    /**
+     * Logout the current user
+     */
+    fun logout() {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+        
+        viewModelScope.launch {
+            repository.logout()
+                .catch { e ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = false,
+                        user = null,
+                        error = "Logout failed: ${e.message}"
+                    )
+                }
+                .collectLatest { result ->
+                    result.fold(
+                        onSuccess = {
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isLoggedIn = false,
+                                user = null
+                            )
+                        },
+                        onFailure = { e ->
+                            _uiState.value = _uiState.value.copy(
+                                isLoading = false,
+                                isLoggedIn = false,
+                                user = null,
+                                error = "Logout failed: ${e.message}"
+                            )
+                        }
+                    )
+                }
+        }
+    }
+    
+    /**
+     * Clear error
+     */
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
     }
 }
