@@ -1,67 +1,99 @@
-# PT Champion iOS App
+# PT Champion (iOS)
 
-This is the Swift version of the PT Champion fitness evaluation app, designed to work on iOS devices. This app offers the same functionality as the web version but is optimized for iOS using native Swift and SwiftUI.
+A native iOS application for fitness evaluation and tracking with computer vision for military exercises, featuring global and local leaderboards.
+
+## Overview
+
+PT Champion is a comprehensive fitness evaluation application designed specifically for military physical training standards. The app uses computer vision to count and evaluate exercise form, connects to Bluetooth heart rate monitors and fitness trackers, and provides performance tracking with competitive leaderboards.
 
 ## Features
 
-- User authentication (login, registration)
-- Exercise tracking with computer vision for:
-  - Push-ups
-  - Pull-ups
-  - Sit-ups
-  - 2-mile Run
-- Performance scoring and grading
+- **Exercise Detection & Evaluation**: Camera-based detection for push-ups, sit-ups, and pull-ups using Apple's Vision framework
+- **Run Tracking**: Track 2-mile run performance with time, distance, and pace metrics
+- **Bluetooth Integration**: Connect to heart rate monitors and fitness trackers
+- **Leaderboards**: Compare your performance globally or with users in your local area
+- **Performance History**: View your exercise history and track improvements over time
+- **Form Feedback**: Receive real-time feedback on exercise form and technique
+- **Military Standards**: Grading based on military physical training test standards
+
+## Technical Architecture
+
+### Models
+- `User`: User profile data including authentication and location
+- `Exercise`: Exercise definitions, types, and requirements
+- `UserExercise`: Recorded exercise performance and results
+
+### Services
+- `APIClient`: Communication with the backend server
+- `BluetoothManager`: Connection to heart rate monitors and fitness trackers
+- `PoseDetectionService`: Computer vision implementation for exercise counting
+
+### Utils
+- `ExerciseGrading`: Logic for scoring exercises based on military standards
+
+### Views (SwiftUI)
+- Dashboard with performance summary
+- Exercise execution screens with camera view
+- Running tracker with map and metrics
+- Performance history and analytics
 - Global and local leaderboards
-- Bluetooth device integration for heart rate monitoring and run tracking
-- Data persistence via PostgreSQL database
-
-## Technical Components
-
-- **Swift & SwiftUI**: For building the iOS UI
-- **Vision framework**: For pose detection and exercise counting (replacing TensorFlow.js)
-- **Core Bluetooth**: For connecting to heart rate monitors and fitness devices
-- **Core Location**: For location services and local leaderboard functionality
-- **URLSession**: For API communication with the server
-- **Combine**: For reactive programming patterns
-
-## Project Structure
-
-```
-PTChampion-Swift/
-├── Models/             # Swift data models matching server schema
-├── Views/              # SwiftUI views
-│   ├── Authentication/ # Login and registration views
-│   ├── Exercises/      # Exercise-specific views
-│   ├── Dashboard/      # Home and performance views
-│   └── Components/     # Reusable UI components
-├── ViewModels/         # Business logic and state management
-├── Services/           # Network, Bluetooth, and persistence services
-│   ├── API/            # API communication with backend
-│   ├── Bluetooth/      # Heart rate and fitness device connectivity
-│   ├── PoseDetection/  # Computer vision for exercise detection
-│   └── LocationService/# Location services for local leaderboard
-└── Utils/              # Helper functions and extensions
-```
 
 ## Getting Started
 
-1. Clone this repository
-2. Open `PTChampion.xcodeproj` in Xcode
-3. Set up the backend server according to the main project documentation
-4. Build and run the app on your iOS device or simulator
+### Prerequisites
+- Xcode 14.0+
+- iOS 15.0+ device (for camera and Vision framework features)
+- CocoaPods or Swift Package Manager
 
-## Requirements
+### Installation
+1. Clone the repository
+2. Open the project in Xcode
+3. Install dependencies
+4. Build and run on a physical device
 
-- iOS 15.0+
-- Xcode 13.0+
-- Swift 5.5+
-- Camera access for exercise detection
-- Bluetooth access for fitness device integration
-- Location services for local leaderboard functionality
+## Development Guidelines
 
-## Technical Implementation Notes
+### Coding Conventions
+- Follow Swift style guidelines
+- Use SwiftUI for all UI components
+- Implement MVVM architecture pattern
+- Utilize Combine for reactive programming
 
-- The app uses Swift's Vision framework to replace the TensorFlow.js pose detection
-- Core Bluetooth replaces the Web Bluetooth API for device connectivity
-- The API routes match the existing Express backend for compatibility
-- Authentication flow uses the same approach as the web version but adapted for iOS
+### Backend Communication
+- RESTful API communication with JSON encoding
+- Server endpoint: `http://localhost:5000/api` (development)
+- Authentication via JWT tokens
+
+### Data Management
+- CoreData for local persistence
+- UserDefaults for preferences and settings
+- Keychain for secure credential storage
+
+## Testing
+
+- Unit tests for service and utility functions
+- UI tests for critical user flows
+- TestFlight for beta testing
+
+## Deployment
+
+- App Store submission process documented in DEPLOYMENT.md
+- CI/CD pipeline using GitHub Actions
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgements
+
+- Original web application built with React/TypeScript
+- Exercise standards based on military fitness test requirements
+- Vision framework implementation inspired by Apple's sample code
