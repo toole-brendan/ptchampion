@@ -1,16 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogOut, User, MapPin, Shield, Settings } from "lucide-react";
+import { LogOut, User, MapPin, Shield, Settings, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function ProfilePage() {
   const { user, logoutMutation, updateLocationMutation } = useAuth();
   const [locationStatus, setLocationStatus] = useState(
     user?.latitude && user?.longitude ? "enabled" : "disabled"
   );
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // Update location status when user data changes
+  useEffect(() => {
+    if (user?.latitude && user?.longitude) {
+      setLocationStatus("enabled");
+    }
+  }, [user]);
   
   // Handle logout
   const handleLogout = () => {
@@ -20,21 +31,56 @@ export default function ProfilePage() {
   // Handle update location
   const handleUpdateLocation = () => {
     if (navigator.geolocation) {
+      // Request permission with clear explanation
+      toast({
+        title: "Requesting Location",
+        description: "Please allow location access to enable local leaderboards.",
+        duration: 5000,
+      });
+      
       navigator.geolocation.getCurrentPosition(
         (position) => {
           updateLocationMutation.mutate({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
+          }, {
+            onSuccess: () => {
+              setLocationStatus("enabled");
+              toast({
+                title: "Location Updated",
+                description: "Your location has been updated successfully. You can now view the local leaderboard.",
+                duration: 3000,
+              });
+              
+              // Invalidate leaderboard queries to refresh the data
+              queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/local"] });
+            }
           });
-          setLocationStatus("enabled");
         },
         (error) => {
           console.error("Geolocation error:", error);
           setLocationStatus("error");
+          toast({
+            title: "Location Error",
+            description: error.message || "Could not access your location. Please check your browser settings.",
+            variant: "destructive",
+            duration: 5000,
+          });
+        },
+        {
+          // More precise settings for better reliability
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
     } else {
       setLocationStatus("unsupported");
+      toast({
+        title: "Location Not Supported",
+        description: "Your browser does not support geolocation.",
+        variant: "destructive",
+      });
     }
   };
   
@@ -143,8 +189,14 @@ export default function ProfilePage() {
                           size="sm"
                           onClick={handleUpdateLocation}
                           disabled={updateLocationMutation.isPending}
+                          className="min-w-[85px]"
                         >
-                          {locationStatus === "enabled" ? "Update" : "Enable"}
+                          {updateLocationMutation.isPending ? (
+                            <span className="flex items-center">
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Loading...
+                            </span>
+                          ) : locationStatus === "enabled" ? "Update" : "Enable"}
                         </Button>
                       </div>
                     </div>

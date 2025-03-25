@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
 import PerformanceCard from "@/components/performance-card";
@@ -9,6 +9,7 @@ import { Loader2, Settings } from "lucide-react";
 
 export default function HomePage() {
   const { user, updateLocationMutation } = useAuth();
+  const queryClient = useQueryClient();
   
   // Get all exercises
   const { 
@@ -30,20 +31,33 @@ export default function HomePage() {
 
   // Update location for local leaderboard if needed
   useEffect(() => {
+    // Only request location if user is logged in and location isn't already stored
     if (user && navigator.geolocation && (!user.latitude || !user.longitude)) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           updateLocationMutation.mutate({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude
+          }, {
+            onSuccess: () => {
+              // Invalidate leaderboard queries to refresh the data
+              queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/local"] });
+            }
           });
         },
         (error) => {
           console.error("Geolocation error:", error);
+          // No need to show a toast here as it would be disruptive on homepage load
+        },
+        {
+          // More precise settings for better reliability
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
         }
       );
     }
-  }, [user]);
+  }, [user, updateLocationMutation, queryClient]);
 
   // Helper to get the latest score for an exercise type
   const getLatestScore = (type: string) => {
