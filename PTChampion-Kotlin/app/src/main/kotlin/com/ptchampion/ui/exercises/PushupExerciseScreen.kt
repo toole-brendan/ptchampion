@@ -1,22 +1,17 @@
 package com.ptchampion.ui.exercises
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.Matrix
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,15 +25,12 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +47,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.ptchampion.data.posedetection.PoseDetectionService
@@ -128,7 +119,7 @@ fun PushupExerciseScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     
                     Text(
-                        text = "Position your device so that your full body is visible in the camera. " +
+                        text = "Position your device so that your full body is visible from the side. " +
                                 "The app will count your reps and analyze your form.",
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center
@@ -185,7 +176,7 @@ fun PushupExerciseScreen(
                 
                 // Pose skeleton overlay
                 if (isAnalyzing) {
-                    PoseOverlay(uiState.pushupState)
+                    PushupPoseOverlay(uiState.pushupState)
                 }
                 
                 // Exercise feedback
@@ -240,7 +231,7 @@ fun PushupExerciseScreen(
             onPermissionGranted = {
                 showPermissionDialog = false
                 onStartExercise()
-                startCamera(context, lifecycleOwner, onUpdateState)
+                startPushupCamera(context, lifecycleOwner, onUpdateState, cameraPreviewView)
                 isAnalyzing = true
             },
             onCancel = {
@@ -258,12 +249,13 @@ fun PushupExerciseScreen(
 }
 
 /**
- * Start the camera with pose detection
+ * Start the camera with pose detection for pushups
  */
-private fun startCamera(
+private fun startPushupCamera(
     context: Context,
     lifecycleOwner: androidx.lifecycle.LifecycleOwner,
-    onUpdateState: (PushupState) -> Unit
+    onUpdateState: (PushupState) -> Unit,
+    cameraPreviewView: PreviewView?
 ) {
     val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
     val poseDetectionService = PoseDetectionService(context)
@@ -327,32 +319,10 @@ private fun startCamera(
 }
 
 /**
- * Convert ImageProxy to Bitmap
- */
-private fun ImageProxy.toBitmap(): Bitmap {
-    val buffer = planes[0].buffer
-    val bytes = ByteArray(buffer.remaining())
-    buffer.get(bytes)
-    return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-}
-
-/**
- * Rotate bitmap to correct orientation
- */
-private fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Float): Bitmap {
-    val matrix = Matrix().apply {
-        postRotate(rotationDegrees)
-    }
-    return Bitmap.createBitmap(
-        bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true
-    )
-}
-
-/**
- * Pose skeleton overlay
+ * Pushup pose skeleton overlay
  */
 @Composable
-fun PoseOverlay(pushupState: PushupState) {
+fun PushupPoseOverlay(pushupState: PushupState) {
     val upColor = if (pushupState.isUp) Color.Green else Color.Gray
     val downColor = if (pushupState.isDown) Color.Red else Color.Gray
     
@@ -361,14 +331,14 @@ fun PoseOverlay(pushupState: PushupState) {
         drawCircle(
             color = upColor,
             radius = 20f,
-            center = Offset(size.width * 0.8f, size.height * 0.2f),
+            center = Offset(size.width * 0.8f, size.height * 0.3f),
             style = Stroke(width = 4f, cap = StrokeCap.Round)
         )
         
         drawCircle(
             color = downColor,
             radius = 20f,
-            center = Offset(size.width * 0.8f, size.height * 0.8f),
+            center = Offset(size.width * 0.8f, size.height * 0.7f),
             style = Stroke(width = 4f, cap = StrokeCap.Round)
         )
     }
@@ -376,13 +346,13 @@ fun PoseOverlay(pushupState: PushupState) {
 
 /**
  * Calculate pushup score
- * - 100 points = 77 reps
- * - 50 points = 40 reps
+ * - 100 points = 60 reps
+ * - 50 points = 30 reps
  */
 private fun calculatePushupScore(reps: Int): Int {
     return when {
-        reps >= 77 -> 100
+        reps >= 60 -> 100
         reps <= 0 -> 0
-        else -> ((reps - 3) * 100) / 74
+        else -> ((reps - 10) * 100) / 50
     }.coerceIn(0, 100)
 }
