@@ -1,6 +1,7 @@
 import { Link } from "wouter";
 import { ChevronRight } from "lucide-react";
 import { Exercise, UserExercise } from "@shared/schema";
+import { getScoreRating } from "@/lib/exercise-grading";
 
 interface ExerciseCardProps {
   exercise: Exercise;
@@ -37,10 +38,18 @@ export default function ExerciseCard({ exercise, latestScore }: ExerciseCardProp
     return `${latestScore.repetitions} reps`;
   };
   
-  // Determine badge color
+  // Determine badge color based on grade if available
   const getBadgeClass = (type: string, latestScore: UserExercise | null): string => {
     if (!latestScore) return "badge badge-error";
     
+    // Use grade if available
+    if (latestScore.grade !== undefined && latestScore.grade !== null) {
+      if (latestScore.grade >= 80) return "badge badge-success";
+      if (latestScore.grade >= 60) return "badge badge-warning";
+      return "badge badge-error";
+    }
+    
+    // Fallback to old logic if grade isn't available
     if (type === "run") {
       const timeInSeconds = latestScore.timeInSeconds || 0;
       if (timeInSeconds < 780) return "badge badge-success"; // Under 13 minutes
@@ -82,12 +91,24 @@ export default function ExerciseCard({ exercise, latestScore }: ExerciseCardProp
             </div>
           </div>
           <div className="mt-2 flex items-center justify-between">
-            <div className="text-xs text-slate-400">
+            <div className="text-xs">
               {latestScore 
-                ? `Form Score: ${latestScore.formScore || 0}%` 
+                ? (
+                  <div className="space-y-1">
+                    {latestScore.grade !== undefined && latestScore.grade !== null && (
+                      <div className="text-blue-600 font-medium">
+                        Grade: {latestScore.grade} pts ({getScoreRating(latestScore.grade)})
+                      </div>
+                    )}
+                    <div className="text-slate-400">
+                      Form Score: {latestScore.formScore || 0}%
+                    </div>
+                  </div>
+                ) 
                 : exercise.type === "run" 
-                  ? "Needs smartwatch" 
-                  : "Not attempted yet"}
+                  ? <div className="text-slate-400">Needs smartwatch</div>
+                  : <div className="text-slate-400">Not attempted yet</div>
+              }
             </div>
             <ChevronRight className="h-5 w-5 text-accent" />
           </div>

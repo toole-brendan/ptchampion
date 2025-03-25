@@ -7,7 +7,7 @@ interface PerformanceCardProps {
 }
 
 export default function PerformanceCard({ latestExercises }: PerformanceCardProps) {
-  // Calculate overall performance score
+  // Calculate overall performance score using the grade field
   const { overallScore, rating } = useMemo(() => {
     if (!latestExercises) {
       return { overallScore: 0, rating: "Incomplete" };
@@ -19,30 +19,28 @@ export default function PerformanceCard({ latestExercises }: PerformanceCardProp
     // Add scores from each exercise type
     Object.entries(latestExercises).forEach(([type, exercise]) => {
       if (exercise) {
-        // For run, convert time to a score (lower time = higher score)
-        if (type === "run" && exercise.timeInSeconds) {
-          // Calculate a score between 0-100 based on run time
-          // Assuming 12 mins (720s) is excellent (100) and 20 mins (1200s) is poor (0)
+        // Use the grade field from each exercise
+        if (exercise.grade !== undefined && exercise.grade !== null) {
+          totalScore += exercise.grade;
+          exerciseCount++;
+        }
+        // Fallback to old calculation if grade is not available
+        else if (type === "run" && exercise.timeInSeconds) {
           const runScore = Math.max(0, 100 - ((exercise.timeInSeconds - 720) / 4.8));
           totalScore += runScore;
-        } else {
-          // For other exercises, use form score
-          totalScore += exercise.formScore || 0;
+          exerciseCount++;
+        } else if (exercise.formScore) {
+          totalScore += exercise.formScore;
+          exerciseCount++;
         }
-        exerciseCount++;
       }
     });
     
     // Calculate average
     const finalScore = exerciseCount > 0 ? Math.round(totalScore / exerciseCount) : 0;
     
-    // Determine rating
-    let rating = "Incomplete";
-    if (finalScore >= 90) rating = "Excellent";
-    else if (finalScore >= 80) rating = "Good";
-    else if (finalScore >= 70) rating = "Satisfactory";
-    else if (finalScore >= 60) rating = "Needs Improvement";
-    else if (exerciseCount > 0) rating = "Poor";
+    // Get rating from the exercise-grading utility
+    const rating = exerciseCount > 0 ? getScoreRating(finalScore) : "Incomplete";
     
     return { overallScore: finalScore, rating };
   }, [latestExercises]);
@@ -102,24 +100,44 @@ export default function PerformanceCard({ latestExercises }: PerformanceCardProp
               {latestExercises?.pushup?.repetitions || "-"}
             </div>
             <div className="text-xs text-slate-500">Push-ups</div>
+            {latestExercises?.pushup?.grade !== undefined && (
+              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100">
+                {latestExercises.pushup.grade} pts
+              </div>
+            )}
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-accent">
               {latestExercises?.pullup?.repetitions || "-"}
             </div>
             <div className="text-xs text-slate-500">Pull-ups</div>
+            {latestExercises?.pullup?.grade !== undefined && (
+              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100">
+                {latestExercises.pullup.grade} pts
+              </div>
+            )}
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-accent">
               {latestExercises?.situp?.repetitions || "-"}
             </div>
             <div className="text-xs text-slate-500">Sit-ups</div>
+            {latestExercises?.situp?.grade !== undefined && (
+              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100">
+                {latestExercises.situp.grade} pts
+              </div>
+            )}
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-accent">
               {formatRunTime(latestExercises?.run?.timeInSeconds)}
             </div>
             <div className="text-xs text-slate-500">2-mile Run</div>
+            {latestExercises?.run?.grade !== undefined && (
+              <div className="text-xs font-medium mt-1 px-2 py-1 rounded-full bg-slate-100">
+                {latestExercises.run.grade} pts
+              </div>
+            )}
           </div>
         </div>
       </div>
