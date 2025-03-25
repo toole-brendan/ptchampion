@@ -1,9 +1,21 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth } from "./auth";
 import { z } from "zod";
 import { insertUserExerciseSchema } from "@shared/schema";
+import passport from "passport";
+
+// Custom middleware that checks for both session and JWT authentication
+const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+  // First check for session auth
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  
+  // If not authenticated by session, check for JWT
+  return passport.authenticate('jwt', { session: false })(req, res, next);
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
@@ -12,7 +24,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize exercises on startup
   await storage.initializeExercises();
 
-  // Get all exercises
+  // Get all exercises - publicly accessible
   app.get("/api/exercises", async (req, res, next) => {
     try {
       const exercises = await storage.getExercises();
@@ -22,7 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get exercise by ID
+  // Get exercise by ID - publicly accessible
   app.get("/api/exercises/:id", async (req, res, next) => {
     try {
       const id = parseInt(req.params.id);
@@ -41,11 +53,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get user exercises
-  app.get("/api/user-exercises", async (req, res, next) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+  // Get user exercises - protected
+  app.get("/api/user-exercises", authenticate, async (req, res, next) => {
     try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const userExercises = await storage.getUserExercises(req.user.id);
       res.json(userExercises);
     } catch (err) {
@@ -53,11 +68,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get user exercises by type
-  app.get("/api/user-exercises/:type", async (req, res, next) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+  // Get user exercises by type - protected
+  app.get("/api/user-exercises/:type", authenticate, async (req, res, next) => {
     try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const { type } = req.params;
       const validTypes = ["pushup", "pullup", "situp", "run"];
       
@@ -72,11 +90,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get latest exercise results for each type
-  app.get("/api/user-exercises/latest/all", async (req, res, next) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+  // Get latest exercise results for each type - protected
+  app.get("/api/user-exercises/latest/all", authenticate, async (req, res, next) => {
     try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const latestExercises = await storage.getLatestUserExercisesByType(req.user.id);
       res.json(latestExercises);
     } catch (err) {
@@ -84,11 +105,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Create user exercise
-  app.post("/api/user-exercises", async (req, res, next) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    
+  // Create user exercise - protected
+  app.post("/api/user-exercises", authenticate, async (req, res, next) => {
     try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const userExerciseData = insertUserExerciseSchema.parse({
         ...req.body,
         userId: req.user.id
@@ -104,7 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get global leaderboard
+  // Get global leaderboard - publicly accessible
   app.get("/api/leaderboard/global", async (req, res, next) => {
     try {
       const leaderboard = await storage.getGlobalLeaderboard();
@@ -114,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Get local leaderboard
+  // Get local leaderboard - publicly accessible
   app.get("/api/leaderboard/local", async (req, res, next) => {
     try {
       const latitude = parseFloat(req.query.latitude as string);
@@ -130,6 +154,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (err) {
       next(err);
     }
+  });
+
+  // API health check endpoint - useful for mobile clients to verify connectivity
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "ok", 
+      timestamp: new Date().toISOString(),
+      version: "1.0"
+    });
   });
 
   const httpServer = createServer(app);
