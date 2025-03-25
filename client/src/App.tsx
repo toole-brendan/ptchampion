@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
 import ExercisePage from "@/pages/exercise-page";
+import { PushupPage, PullupPage, SitupPage } from "@/pages/exercises";
 import RunPage from "@/pages/run-page";
 import HistoryPage from "@/pages/history-page";
 import ProfilePage from "@/pages/profile-page";
@@ -17,6 +18,9 @@ function Router() {
     <Switch>
       <ProtectedRoute path="/" component={HomePage} />
       <ProtectedRoute path="/exercise/:type" component={ExercisePage} />
+      <ProtectedRoute path="/exercises/pushup" component={PushupPage} />
+      <ProtectedRoute path="/exercises/pullup" component={PullupPage} />
+      <ProtectedRoute path="/exercises/situp" component={SitupPage} />
       <ProtectedRoute path="/run" component={RunPage} />
       <ProtectedRoute path="/history" component={HistoryPage} />
       <ProtectedRoute path="/profile" component={ProfilePage} />
