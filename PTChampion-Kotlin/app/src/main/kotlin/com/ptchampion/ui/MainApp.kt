@@ -2,10 +2,10 @@ package com.ptchampion.ui
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -13,138 +13,180 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ptchampion.ui.auth.AuthScreen
+import com.ptchampion.ui.auth.AuthViewModel
 import com.ptchampion.ui.dashboard.DashboardScreen
 import com.ptchampion.ui.exercises.ExercisesScreen
 import com.ptchampion.ui.history.HistoryScreen
 import com.ptchampion.ui.profile.ProfileScreen
 
 /**
- * Main app composable that sets up the navigation and layout
+ * Navigation item
  */
+data class NavigationItem(
+    val route: String,
+    val title: String,
+    val icon: ImageVector,
+    val contentDescription: String
+)
+
+/**
+ * Main app navigation
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainApp() {
     val navController = rememberNavController()
+    val authViewModel: AuthViewModel = hiltViewModel()
+    val authState by authViewModel.uiState.collectAsState()
     
-    Scaffold(
-        bottomBar = { BottomNavigation(navController) }
-    ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Auth.route,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Screen.Auth.route) {
-                AuthScreen(onNavigateToDashboard = {
-                    navController.navigate(Screen.Dashboard.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                })
-            }
-            
-            composable(Screen.Dashboard.route) {
-                DashboardScreen(
-                    onNavigateToExercise = { exerciseId ->
-                        navController.navigate("${Screen.Exercises.route}/$exerciseId")
-                    }
-                )
-            }
-            
-            composable("${Screen.Exercises.route}/{exerciseId}") { backStackEntry ->
-                val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull() ?: 0
-                ExercisesScreen(
-                    exerciseId = exerciseId,
-                    onNavigateBack = { navController.popBackStack() }
-                )
-            }
-            
-            composable(Screen.History.route) {
-                HistoryScreen()
-            }
-            
-            composable(Screen.Profile.route) {
-                ProfileScreen(
-                    onLogout = {
-                        navController.navigate(Screen.Auth.route) {
-                            popUpTo(0) { inclusive = true }
-                        }
-                    }
-                )
-            }
-        }
+    // Check if user is logged in to determine start destination
+    val startDestination = if (authState.isLoggedIn) {
+        "dashboard"
+    } else {
+        "auth"
     }
-}
-
-/**
- * Bottom navigation bar
- */
-@Composable
-fun BottomNavigation(navController: NavHostController) {
-    val items = listOf(
-        Screen.Dashboard,
-        Screen.Exercises,
-        Screen.History,
-        Screen.Profile
+    
+    // Bottom navigation items
+    val navigationItems = listOf(
+        NavigationItem(
+            route = "dashboard",
+            title = "Home",
+            icon = Icons.Default.Home,
+            contentDescription = "Home"
+        ),
+        NavigationItem(
+            route = "history",
+            title = "History",
+            icon = Icons.Default.History,
+            contentDescription = "History"
+        ),
+        NavigationItem(
+            route = "profile",
+            title = "Profile",
+            icon = Icons.Default.AccountCircle,
+            contentDescription = "Profile"
+        )
     )
     
+    // Current route tracking
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     
-    // Don't show bottom navigation on auth screen
-    if (currentRoute == Screen.Auth.route) {
-        return
-    }
+    // Whether to show bottom nav bar
+    val showBottomBar = currentRoute in navigationItems.map { it.route }
     
-    NavigationBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 8.dp
-    ) {
-        items.forEach { screen ->
-            NavigationBarItem(
-                icon = { Icon(screen.icon, contentDescription = screen.label) },
-                label = { Text(screen.label) },
-                selected = currentRoute == screen.route || 
-                         (currentRoute?.startsWith(screen.route + "/") == true),
-                onClick = {
-                    navController.navigate(screen.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            saveState = true
-                        }
-                        launchSingleTop = true
-                        restoreState = true
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar {
+                    navigationItems.forEach { item ->
+                        NavigationBarItem(
+                            icon = { 
+                                Icon(
+                                    imageVector = item.icon,
+                                    contentDescription = item.contentDescription
+                                ) 
+                            },
+                            label = { Text(item.title) },
+                            selected = currentRoute == item.route,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    // Pop up to the start destination of the graph to
+                                    // avoid building up a large stack of destinations
+                                    popUpTo(navController.graph.startDestinationId) {
+                                        saveState = true
+                                    }
+                                    // Avoid multiple copies of the same destination
+                                    launchSingleTop = true
+                                    // Restore state when reselecting a previously selected item
+                                    restoreState = true
+                                }
+                            }
+                        )
                     }
                 }
-            )
+            }
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = startDestination,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            // Authentication screen
+            composable("auth") {
+                AuthScreen(
+                    onNavigateToHome = {
+                        navController.navigate("dashboard") {
+                            popUpTo("auth") { inclusive = true }
+                        }
+                    }
+                )
+            }
+            
+            // Dashboard screen
+            composable("dashboard") {
+                DashboardScreen(
+                    onNavigateToExercise = { exerciseId ->
+                        navController.navigate("exercise/$exerciseId")
+                    }
+                )
+            }
+            
+            // Exercise screen
+            composable("exercise/{exerciseId}") { backStackEntry ->
+                val exerciseId = backStackEntry.arguments?.getString("exerciseId")?.toIntOrNull() ?: 0
+                ExercisesScreen(
+                    exerciseId = exerciseId,
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            
+            // History screen
+            composable("history") {
+                HistoryScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
+            }
+            
+            // Profile screen
+            composable("profile") {
+                ProfileScreen(
+                    onNavigateToLogin = {
+                        navController.navigate("auth") {
+                            popUpTo(navController.graph.id) { inclusive = true }
+                        }
+                    }
+                )
+            }
         }
     }
 }
 
 /**
- * Screen destinations
+ * Main activity content
  */
-sealed class Screen(
-    val route: String,
-    val label: String,
-    val icon: ImageVector
-) {
-    object Auth : Screen("auth", "Auth", Icons.Filled.Person)
-    object Dashboard : Screen("dashboard", "Home", Icons.Filled.Home)
-    object Exercises : Screen("exercises", "Exercises", Icons.Filled.DirectionsRun)
-    object History : Screen("history", "History", Icons.Filled.Timeline)
-    object Profile : Screen("profile", "Profile", Icons.Filled.Person)
+@Composable
+fun MainActivityContent() {
+    MaterialTheme {
+        MainApp()
+    }
 }
