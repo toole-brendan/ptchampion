@@ -1,89 +1,101 @@
-# PT Champion (iOS)
+# PT Champion - Swift Edition
 
-A native iOS application for fitness evaluation and tracking with computer vision for military exercises, featuring global and local leaderboards.
-
-## Overview
-
-PT Champion is a comprehensive fitness evaluation application designed specifically for military physical training standards. The app uses computer vision to count and evaluate exercise form, connects to Bluetooth heart rate monitors and fitness trackers, and provides performance tracking with competitive leaderboards.
+PT Champion is a comprehensive fitness tracking application designed specifically for military-style physical training exercises. This Swift version of the app brings the same functionality from the web-based version to a native iOS experience, with additional capabilities utilizing iOS-specific features.
 
 ## Features
 
-- **Exercise Detection & Evaluation**: Camera-based detection for push-ups, sit-ups, and pull-ups using Apple's Vision framework
-- **Run Tracking**: Track 2-mile run performance with time, distance, and pace metrics
-- **Bluetooth Integration**: Connect to heart rate monitors and fitness trackers
-- **Leaderboards**: Compare your performance globally or with users in your local area
-- **Performance History**: View your exercise history and track improvements over time
-- **Form Feedback**: Receive real-time feedback on exercise form and technique
-- **Military Standards**: Grading based on military physical training test standards
+### Exercise Tracking
+- **Push-ups**: Track repetitions with real-time form feedback using Vision framework
+- **Sit-ups**: Count and analyze sit-up form with posture feedback
+- **Pull-ups**: Monitor pull-up technique and count repetitions
+- **2-Mile Run**: Track time, pace, and distance with Apple Watch or Bluetooth device integration
+
+### Performance Analysis
+- **Form Scoring**: Get real-time feedback on exercise technique
+- **Grading System**: Exercises are scored on a 0-100 scale
+- **Performance History**: View trends and progress over time
+- **Leaderboards**: Global and local rankings to compare with others
+
+### Smart Features
+- **Computer Vision**: Analyzes body position and movement using Apple's Vision framework
+- **Bluetooth Connectivity**: Connects to heart rate monitors and running pods
+- **Location Services**: Finds nearby users for local competition
+- **Cloud Sync**: Syncs progress across devices
 
 ## Technical Architecture
 
-### Models
-- `User`: User profile data including authentication and location
-- `Exercise`: Exercise definitions, types, and requirements
-- `UserExercise`: Recorded exercise performance and results
+### Core Components
 
-### Services
-- `APIClient`: Communication with the backend server
-- `BluetoothManager`: Connection to heart rate monitors and fitness trackers
-- `PoseDetectionService`: Computer vision implementation for exercise counting
+#### Models
+- `User`: Represents user account and profile data
+- `Exercise`: Defines exercise types and requirements
+- `UserExercise`: Tracks individual exercise performances
 
-### Utils
-- `ExerciseGrading`: Logic for scoring exercises based on military standards
+#### Services
+- `APIClient`: Handles communication with backend servers
+- `BluetoothManager`: Manages connections to fitness devices
+- `PoseDetectionService`: Processes camera input for exercise form analysis
 
-### Views (SwiftUI)
-- Dashboard with performance summary
-- Exercise execution screens with camera view
-- Running tracker with map and metrics
-- Performance history and analytics
-- Global and local leaderboards
+#### Views
+- Authentication: Login and registration screens
+- Dashboard: Overview of performance and available exercises
+- Exercise Screens: Camera-based interfaces for performing exercises
+- History: Record of past performances
+- Profile: User account management
+
+### Key Technologies
+- **SwiftUI**: Modern declarative UI framework
+- **Combine**: Reactive programming for async operations
+- **Vision**: Apple's computer vision framework for pose detection
+- **CoreBluetooth**: Framework for connecting to fitness devices
+- **CoreLocation**: Framework for geolocation features
 
 ## Getting Started
 
 ### Prerequisites
 - Xcode 14.0+
-- iOS 15.0+ device (for camera and Vision framework features)
-- CocoaPods or Swift Package Manager
+- iOS 16.0+
+- Swift 5.7+
+- Active Apple Developer account for testing on physical devices
 
 ### Installation
 1. Clone the repository
 2. Open the project in Xcode
-3. Install dependencies
-4. Build and run on a physical device
+3. Install dependencies using Swift Package Manager
+4. Configure the backend server URL in `APIClient.swift`
+5. Build and run on simulator or physical device
 
-## Development Guidelines
+## Using the App
 
-### Coding Conventions
-- Follow Swift style guidelines
-- Use SwiftUI for all UI components
-- Implement MVVM architecture pattern
-- Utilize Combine for reactive programming
+### Account Setup
+1. Create a new account or login with existing credentials
+2. Grant necessary permissions for camera, Bluetooth, and location
 
-### Backend Communication
-- RESTful API communication with JSON encoding
-- Server endpoint: `http://localhost:5000/api` (development)
-- Authentication via JWT tokens
+### Performing Exercises
+1. Select an exercise from the dashboard
+2. For bodyweight exercises (push-ups, sit-ups, pull-ups):
+   - Position your device so your full body is visible
+   - Follow on-screen instructions for proper form
+   - Begin exercise when countdown completes
+   - Receive real-time feedback on form and count
+3. For running:
+   - Connect Bluetooth devices if available
+   - Start the timer when ready to begin
+   - Track your progress during the run
+   - Complete when finished to save results
 
-### Data Management
-- CoreData for local persistence
-- UserDefaults for preferences and settings
-- Keychain for secure credential storage
-
-## Testing
-
-- Unit tests for service and utility functions
-- UI tests for critical user flows
-- TestFlight for beta testing
-
-## Deployment
-
-- App Store submission process documented in DEPLOYMENT.md
-- CI/CD pipeline using GitHub Actions
+### Viewing Progress
+1. Check your performance history in the History tab
+2. View detailed breakdowns of each exercise
+3. Track improvements over time with progress graphs
+4. Compare your performance with others on the leaderboard
 
 ## Contributing
 
+If you'd like to contribute to the PT Champion Swift app:
+
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
 3. Commit your changes (`git commit -m 'Add some amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
@@ -92,8 +104,12 @@ PT Champion is a comprehensive fitness evaluation application designed specifica
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgements
+## Contact
 
-- Original web application built with React/TypeScript
-- Exercise standards based on military fitness test requirements
-- Vision framework implementation inspired by Apple's sample code
+Project Link: [https://github.com/yourusername/pt-champion-swift](https://github.com/yourusername/pt-champion-swift)
+
+## Acknowledgments
+
+- Original PT Champion web application team
+- Apple Developer Documentation
+- SwiftUI and Vision framework communities

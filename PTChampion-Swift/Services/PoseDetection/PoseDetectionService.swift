@@ -1,572 +1,482 @@
 import Foundation
 import Vision
 import UIKit
-import Combine
+import AVFoundation
 
-// MARK: - Pose Types
+// MARK: - Keypoint
 
 struct Keypoint {
-    let position: CGPoint
-    let part: String
+    let point: CGPoint
     let confidence: Float
     
-    init(point: CGPoint, type: String, confidence: Float) {
-        self.position = point
-        self.part = type
-        self.confidence = confidence
+    var isValid: Bool {
+        return confidence > 0.3
     }
 }
 
-struct PoseLine {
-    let from: Keypoint
-    let to: Keypoint
+// MARK: - Pose
+
+struct Pose {
+    var keypoints: [VNHumanBodyPoseObservation.JointName: Keypoint]
+    
+    func angle(between joint1: VNHumanBodyPoseObservation.JointName, 
+               joint2: VNHumanBodyPoseObservation.JointName, 
+               joint3: VNHumanBodyPoseObservation.JointName) -> CGFloat? {
+        
+        guard let p1 = keypoints[joint1], p1.isValid,
+              let p2 = keypoints[joint2], p2.isValid,
+              let p3 = keypoints[joint3], p3.isValid else {
+            return nil
+        }
+        
+        let vector1 = CGVector(dx: p1.point.x - p2.point.x, dy: p1.point.y - p2.point.y)
+        let vector2 = CGVector(dx: p3.point.x - p2.point.x, dy: p3.point.y - p2.point.y)
+        
+        let dot = vector1.dx * vector2.dx + vector1.dy * vector2.dy
+        let cross = vector1.dx * vector2.dy - vector1.dy * vector2.dx
+        
+        let angle = atan2(cross, dot)
+        let degrees = abs(angle * 180 / .pi)
+        
+        return degrees
+    }
+    
+    func distance(between joint1: VNHumanBodyPoseObservation.JointName, 
+                  and joint2: VNHumanBodyPoseObservation.JointName) -> CGFloat? {
+        
+        guard let p1 = keypoints[joint1], p1.isValid,
+              let p2 = keypoints[joint2], p2.isValid else {
+            return nil
+        }
+        
+        let xDist = p2.point.x - p1.point.x
+        let yDist = p2.point.y - p1.point.y
+        
+        return sqrt(xDist * xDist + yDist * yDist)
+    }
+    
+    func keypoint(_ joint: VNHumanBodyPoseObservation.JointName) -> Keypoint? {
+        return keypoints[joint]
+    }
 }
 
-// Exercise state models that match the web version
-struct PushupState {
-    var isUp: Bool = false
-    var isDown: Bool = false
-    var count: Int = 0
-    var formScore: Int = 80
-    var feedback: String = "Position yourself for push-ups"
-}
+// MARK: - Exercise State
 
-struct PullupState {
+struct ExerciseState {
+    var repetitionCount: Int = 0
     var isUp: Bool = false
     var isDown: Bool = false
-    var count: Int = 0
-    var formScore: Int = 80
-    var feedback: String = "Position yourself for pull-ups"
-}
-
-struct SitupState {
-    var isUp: Bool = false
-    var isDown: Bool = false
-    var count: Int = 0
-    var formScore: Int = 80
-    var feedback: String = "Position yourself for sit-ups"
+    var formScore: Int = 0
+    var feedback: String = ""
+    var lastRepTime: Date?
+    
+    mutating func updateFormScore(newScore: Int) {
+        // Accumulate form score throughout the exercise
+        if formScore == 0 {
+            formScore = newScore
+        } else {
+            formScore = (formScore + newScore) / 2
+        }
+    }
+    
+    mutating func recordRepetition() {
+        repetitionCount += 1
+        lastRepTime = Date()
+    }
 }
 
 // MARK: - Pose Detection Service
 
-class PoseDetectionService: ObservableObject {
-    // Constants
-    static let MIN_CONFIDENCE: Float = 0.3
+class PoseDetectionService {
     
-    // Body part indices
-    enum BodyPart: Int, CaseIterable {
-        case nose = 0
-        case leftEye
-        case rightEye
-        case leftEar
-        case rightEar
-        case leftShoulder
-        case rightShoulder
-        case leftElbow
-        case rightElbow
-        case leftWrist
-        case rightWrist
-        case leftHip
-        case rightHip
-        case leftKnee
-        case rightKnee
-        case leftAnkle
-        case rightAnkle
-        
-        var name: String {
-            switch self {
-            case .nose: return "nose"
-            case .leftEye: return "leftEye"
-            case .rightEye: return "rightEye"
-            case .leftEar: return "leftEar"
-            case .rightEar: return "rightEar"
-            case .leftShoulder: return "leftShoulder"
-            case .rightShoulder: return "rightShoulder"
-            case .leftElbow: return "leftElbow"
-            case .rightElbow: return "rightElbow"
-            case .leftWrist: return "leftWrist"
-            case .rightWrist: return "rightWrist"
-            case .leftHip: return "leftHip"
-            case .rightHip: return "rightHip"
-            case .leftKnee: return "leftKnee"
-            case .rightKnee: return "rightKnee"
-            case .leftAnkle: return "leftAnkle"
-            case .rightAnkle: return "rightAnkle"
-            }
-        }
-    }
+    // MARK: - Properties
     
-    // Published properties
-    @Published var pushupState = PushupState()
-    @Published var pullupState = PullupState()
-    @Published var situpState = SitupState()
-    @Published var keypoints: [Keypoint] = []
-    @Published var poseLines: [PoseLine] = []
+    private let poseDetector: VNDetectHumanBodyPoseRequest
+    private(set) var pushupState = ExerciseState()
+    private(set) var situpState = ExerciseState()
+    private(set) var pullupState = ExerciseState()
     
-    // VNRequest for human body pose detection
-    private var poseRequest: VNDetectHumanBodyPoseRequest?
+    // MARK: - Initialization
     
-    // Initialize the pose detection service
     init() {
-        poseRequest = VNDetectHumanBodyPoseRequest()
+        poseDetector = VNDetectHumanBodyPoseRequest()
+        
+        // Reset all exercise states
+        resetExerciseStates()
     }
     
-    // Process a frame from the camera to detect poses
-    func processFrame(_ pixelBuffer: CVPixelBuffer) {
-        let handler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:])
+    // MARK: - Public Methods
+    
+    func resetExerciseStates() {
+        pushupState = ExerciseState()
+        situpState = ExerciseState()
+        pullupState = ExerciseState()
+    }
+    
+    func detectPose(in image: UIImage, completion: @escaping (Pose?) -> Void) {
+        guard let cgImage = image.cgImage else {
+            completion(nil)
+            return
+        }
+        
+        let requestHandler = VNImageRequestHandler(cgImage: cgImage)
         
         do {
-            try handler.perform([poseRequest!])
+            try requestHandler.perform([poseDetector])
             
-            if let observations = poseRequest?.results, !observations.isEmpty {
-                // Process the first detected person
-                if let observation = observations.first {
-                    processObservation(observation, frameSize: CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer)))
-                }
+            guard let observation = poseDetector.results?.first as? VNHumanBodyPoseObservation else {
+                completion(nil)
+                return
             }
+            
+            let pose = processObservation(observation)
+            completion(pose)
         } catch {
-            print("Failed to perform pose detection: \(error.localizedDescription)")
+            print("Error detecting pose: \(error.localizedDescription)")
+            completion(nil)
         }
     }
     
-    // Process a VNHumanBodyPoseObservation and extract keypoints
-    private func processObservation(_ observation: VNHumanBodyPoseObservation, frameSize: CGSize) {
-        // Extract all available joints
-        var detectedKeypoints: [Keypoint] = []
+    func detectPoseInFrame(sampleBuffer: CMSampleBuffer, orientation: CGImagePropertyOrientation, completion: @escaping (Pose?) -> Void) {
+        let requestHandler = VNImageRequestHandler(cmSampleBuffer: sampleBuffer, orientation: orientation)
         
-        for bodyPart in BodyPart.allCases {
-            guard let jointPoint = try? observation.recognizedPoint(VNHumanBodyPoseObservation.JointName(rawValue: bodyPart.name)) else {
+        do {
+            try requestHandler.perform([poseDetector])
+            
+            guard let observation = poseDetector.results?.first as? VNHumanBodyPoseObservation else {
+                completion(nil)
+                return
+            }
+            
+            let pose = processObservation(observation)
+            completion(pose)
+        } catch {
+            print("Error detecting pose in frame: \(error.localizedDescription)")
+            completion(nil)
+        }
+    }
+    
+    // MARK: - Exercise Detection
+    
+    func detectPushup(pose: Pose) -> ExerciseState {
+        var state = pushupState
+        
+        // Check if we have all required joints for pushup detection
+        guard let leftElbowAngle = pose.angle(between: .leftShoulder, joint2: .leftElbow, joint3: .leftWrist),
+              let rightElbowAngle = pose.angle(between: .rightShoulder, joint2: .rightElbow, joint3: .rightWrist),
+              let leftShoulderAngle = pose.angle(between: .leftElbow, joint2: .leftShoulder, joint3: .leftHip),
+              let rightShoulderAngle = pose.angle(between: .rightElbow, joint2: .rightShoulder, joint3: .rightHip) else {
+            state.feedback = "Position not detected. Make sure your full body is visible."
+            return state
+        }
+        
+        // Average angles from both sides
+        let elbowAngle = (leftElbowAngle + rightElbowAngle) / 2
+        let shoulderAngle = (leftShoulderAngle + rightShoulderAngle) / 2
+        
+        // Detect up position (arms extended)
+        let isUpPosition = elbowAngle > 150
+        
+        // Detect down position (arms bent)
+        let isDownPosition = elbowAngle < 90
+        
+        // Check form
+        var formFeedback = ""
+        var formScoreValue = 100
+        
+        // Check if body is straight
+        if shoulderAngle < 160 {
+            formFeedback += "Keep your body straight. "
+            formScoreValue -= 20
+        }
+        
+        // Check if elbows are too wide
+        if let leftElbowDistance = pose.distance(between: .leftElbow, and: .leftShoulder),
+           let rightElbowDistance = pose.distance(between: .rightElbow, and: .rightShoulder),
+           let shoulderDistance = pose.distance(between: .leftShoulder, and: .rightShoulder) {
+            
+            let avgElbowDistance = (leftElbowDistance + rightElbowDistance) / 2
+            if avgElbowDistance > shoulderDistance * 1.5 {
+                formFeedback += "Keep elbows closer to body. "
+                formScoreValue -= 15
+            }
+        }
+        
+        // Count repetitions
+        if isUpPosition && !state.isUp && state.isDown {
+            // Transition from down to up position - count a rep
+            state.recordRepetition()
+            state.isDown = false
+        } else if isDownPosition && !state.isDown {
+            // Just reached down position
+            state.isDown = true
+        }
+        
+        // Update state
+        state.isUp = isUpPosition
+        state.updateFormScore(newScore: formScoreValue)
+        
+        // Set feedback
+        if formFeedback.isEmpty {
+            if isUpPosition {
+                state.feedback = "Good form! Lower your body."
+            } else if isDownPosition {
+                state.feedback = "Good form! Push up."
+            } else {
+                state.feedback = "Continue the movement."
+            }
+        } else {
+            state.feedback = formFeedback
+        }
+        
+        pushupState = state
+        return state
+    }
+    
+    func detectSitup(pose: Pose) -> ExerciseState {
+        var state = situpState
+        
+        // Check if we have all required joints for situp detection
+        guard let kneeAngle = pose.angle(between: .hip, joint2: .knee, joint3: .ankle),
+              let hipAngle = pose.angle(between: .shoulder, joint2: .hip, joint3: .knee) else {
+            state.feedback = "Position not detected. Make sure your full body is visible."
+            return state
+        }
+        
+        // Detect up position (torso upright)
+        let isUpPosition = hipAngle > 80
+        
+        // Detect down position (torso reclined)
+        let isDownPosition = hipAngle < 40
+        
+        // Check form
+        var formFeedback = ""
+        var formScoreValue = 100
+        
+        // Check if knees are bent properly
+        if kneeAngle > 120 {
+            formFeedback += "Bend your knees more. "
+            formScoreValue -= 15
+        }
+        
+        // Count repetitions
+        if isUpPosition && !state.isUp && state.isDown {
+            // Transition from down to up position - count a rep
+            state.recordRepetition()
+            state.isDown = false
+        } else if isDownPosition && !state.isDown {
+            // Just reached down position
+            state.isDown = true
+        }
+        
+        // Update state
+        state.isUp = isUpPosition
+        state.updateFormScore(newScore: formScoreValue)
+        
+        // Set feedback
+        if formFeedback.isEmpty {
+            if isUpPosition {
+                state.feedback = "Good form! Lower your torso."
+            } else if isDownPosition {
+                state.feedback = "Good form! Lift your torso."
+            } else {
+                state.feedback = "Continue the movement."
+            }
+        } else {
+            state.feedback = formFeedback
+        }
+        
+        situpState = state
+        return state
+    }
+    
+    func detectPullup(pose: Pose) -> ExerciseState {
+        var state = pullupState
+        
+        // Check if we have all required joints for pullup detection
+        guard let leftElbowAngle = pose.angle(between: .leftShoulder, joint2: .leftElbow, joint3: .leftWrist),
+              let rightElbowAngle = pose.angle(between: .rightShoulder, joint2: .rightElbow, joint3: .rightWrist) else {
+            state.feedback = "Position not detected. Make sure your upper body is visible."
+            return state
+        }
+        
+        // Average elbow angle from both sides
+        let elbowAngle = (leftElbowAngle + rightElbowAngle) / 2
+        
+        // Detect up position (chin over bar, arms bent)
+        let isUpPosition = elbowAngle < 90
+        
+        // Detect down position (arms extended)
+        let isDownPosition = elbowAngle > 150
+        
+        // Check form
+        var formFeedback = ""
+        var formScoreValue = 100
+        
+        // Check chin position relative to hands (wrists)
+        if let leftWrist = pose.keypoint(.leftWrist),
+           let rightWrist = pose.keypoint(.rightWrist),
+           let chin = pose.keypoint(.neck) {
+            
+            let avgWristY = (leftWrist.point.y + rightWrist.point.y) / 2
+            
+            // In up position, chin should be near or above hands
+            if isUpPosition && chin.point.y < avgWristY - 0.05 {
+                formFeedback += "Pull up until chin is over the bar. "
+                formScoreValue -= 20
+            }
+        }
+        
+        // Count repetitions
+        if isUpPosition && !state.isUp && state.isDown {
+            // Transition from down to up position - count a rep
+            state.recordRepetition()
+            state.isDown = false
+        } else if isDownPosition && !state.isDown {
+            // Just reached down position
+            state.isDown = true
+        }
+        
+        // Update state
+        state.isUp = isUpPosition
+        state.updateFormScore(newScore: formScoreValue)
+        
+        // Set feedback
+        if formFeedback.isEmpty {
+            if isUpPosition {
+                state.feedback = "Good form! Lower your body."
+            } else if isDownPosition {
+                state.feedback = "Good form! Pull up."
+            } else {
+                state.feedback = "Continue the movement."
+            }
+        } else {
+            state.feedback = formFeedback
+        }
+        
+        pullupState = state
+        return state
+    }
+    
+    // MARK: - Private Methods
+    
+    private func processObservation(_ observation: VNHumanBodyPoseObservation) -> Pose {
+        var keypoints = [VNHumanBodyPoseObservation.JointName: Keypoint]()
+        
+        for jointName in VNHumanBodyPoseObservation.JointName.allCases {
+            do {
+                let jointPoint = try observation.recognizedPoint(jointName)
+                
+                // Convert to screen coordinates (VN coordinates are normalized 0-1)
+                let keypoint = Keypoint(
+                    point: CGPoint(x: jointPoint.x, y: 1 - jointPoint.y), // Invert y because Vision's coordinate system is flipped
+                    confidence: jointPoint.confidence
+                )
+                
+                keypoints[jointName] = keypoint
+            } catch {
                 continue
             }
-            
-            // Filter out low confidence points
-            guard jointPoint.confidence > PoseDetectionService.MIN_CONFIDENCE else {
-                continue
-            }
-            
-            // Convert normalized point to frame coordinates
-            let framePoint = CGPoint(
-                x: jointPoint.x * frameSize.width,
-                y: (1 - jointPoint.y) * frameSize.height // Flip Y to match UIKit coordinate system
-            )
-            
-            detectedKeypoints.append(Keypoint(
-                point: framePoint,
-                type: bodyPart.name,
-                confidence: jointPoint.confidence
-            ))
         }
         
-        // Update keypoints
-        DispatchQueue.main.async { [weak self] in
-            self?.keypoints = detectedKeypoints
-            self?.poseLines = self?.calculatePoseLines(detectedKeypoints) ?? []
-            
-            // Apply exercise detection based on keypoints
-            if let self = self {
-                // Update exercise states
-                self.pushupState = self.detectPushup(keypoints: detectedKeypoints, prevState: self.pushupState)
-                self.pullupState = self.detectPullup(keypoints: detectedKeypoints, prevState: self.pullupState)
-                self.situpState = self.detectSitup(keypoints: detectedKeypoints, prevState: self.situpState)
-            }
-        }
+        return Pose(keypoints: keypoints)
     }
     
-    // MARK: - Pose Analysis Utilities
-    
-    // Calculate angle between three points
-    private func calculateAngle(a: Keypoint, b: Keypoint, c: Keypoint) -> Double {
-        let angleRadians = atan2(
-            c.position.y - b.position.y,
-            c.position.x - b.position.x
-        ) - atan2(
-            a.position.y - b.position.y,
-            a.position.x - b.position.x
-        )
+    func drawPoseOverlay(on image: UIImage, pose: Pose) -> UIImage {
+        UIGraphicsBeginImageContextWithOptions(image.size, false, 0)
+        let context = UIGraphicsGetCurrentContext()!
         
-        var angleDegrees = angleRadians * (180 / Double.pi)
-        if angleDegrees < 0 {
-            angleDegrees += 360
-        }
+        // Draw original image
+        image.draw(at: .zero)
         
-        return angleDegrees
-    }
-    
-    // Get distance between two points
-    private func getDistance(p1: Keypoint, p2: Keypoint) -> Double {
-        return sqrt(
-            pow(p2.position.x - p1.position.x, 2) +
-            pow(p2.position.y - p1.position.y, 2)
-        )
-    }
-    
-    // Calculate lines to draw between keypoints
-    private func calculatePoseLines(_ keypoints: [Keypoint]) -> [PoseLine] {
-        // Create a dictionary for easy lookup
-        var keypointDict: [String: Keypoint] = [:]
-        for keypoint in keypoints {
-            keypointDict[keypoint.part] = keypoint
-        }
-        
-        // Define the connections we want to draw
-        let connections: [(String, String)] = [
-            // Head connections
-            (BodyPart.leftEar.name, BodyPart.leftEye.name),
-            (BodyPart.leftEye.name, BodyPart.nose.name),
-            (BodyPart.nose.name, BodyPart.rightEye.name),
-            (BodyPart.rightEye.name, BodyPart.rightEar.name),
-            
-            // Torso connections
-            (BodyPart.leftShoulder.name, BodyPart.rightShoulder.name),
-            (BodyPart.leftShoulder.name, BodyPart.leftHip.name),
-            (BodyPart.rightShoulder.name, BodyPart.rightHip.name),
-            (BodyPart.leftHip.name, BodyPart.rightHip.name),
-            
-            // Arms connections
-            (BodyPart.leftShoulder.name, BodyPart.leftElbow.name),
-            (BodyPart.leftElbow.name, BodyPart.leftWrist.name),
-            (BodyPart.rightShoulder.name, BodyPart.rightElbow.name),
-            (BodyPart.rightElbow.name, BodyPart.rightWrist.name),
-            
-            // Legs connections
-            (BodyPart.leftHip.name, BodyPart.leftKnee.name),
-            (BodyPart.leftKnee.name, BodyPart.leftAnkle.name),
-            (BodyPart.rightHip.name, BodyPart.rightKnee.name),
-            (BodyPart.rightKnee.name, BodyPart.rightAnkle.name),
+        // Define connections between joints
+        let connections: [(VNHumanBodyPoseObservation.JointName, VNHumanBodyPoseObservation.JointName)] = [
+            (.nose, .neck),
+            (.leftShoulder, .neck),
+            (.rightShoulder, .neck),
+            (.leftShoulder, .leftElbow),
+            (.leftElbow, .leftWrist),
+            (.rightShoulder, .rightElbow),
+            (.rightElbow, .rightWrist),
+            (.leftShoulder, .leftHip),
+            (.rightShoulder, .rightHip),
+            (.leftHip, .rightHip),
+            (.leftHip, .leftKnee),
+            (.leftKnee, .leftAnkle),
+            (.rightHip, .rightKnee),
+            (.rightKnee, .rightAnkle)
         ]
         
-        var lines: [PoseLine] = []
+        // Draw connections
+        context.setLineWidth(5.0)
+        context.setStrokeColor(UIColor.green.cgColor)
         
-        for (fromName, toName) in connections {
-            guard let fromPoint = keypointDict[fromName],
-                  let toPoint = keypointDict[toName],
-                  fromPoint.confidence > PoseDetectionService.MIN_CONFIDENCE,
-                  toPoint.confidence > PoseDetectionService.MIN_CONFIDENCE else {
+        for (joint1, joint2) in connections {
+            guard let point1 = pose.keypoints[joint1], point1.isValid,
+                  let point2 = pose.keypoints[joint2], point2.isValid else {
                 continue
             }
             
-            lines.append(PoseLine(from: fromPoint, to: toPoint))
+            // Convert normalized coordinates to image coordinates
+            let p1 = CGPoint(x: point1.point.x * image.size.width, y: point1.point.y * image.size.height)
+            let p2 = CGPoint(x: point2.point.x * image.size.width, y: point2.point.y * image.size.height)
+            
+            context.move(to: p1)
+            context.addLine(to: p2)
+            context.strokePath()
         }
         
-        return lines
-    }
-    
-    // MARK: - Exercise Detection Algorithms
-    
-    // Push-up detection algorithm
-    private func detectPushup(keypoints: [Keypoint], prevState: PushupState) -> PushupState {
-        // Create a dictionary for easy lookup
-        var keypointDict: [String: Keypoint] = [:]
-        for keypoint in keypoints {
-            keypointDict[keypoint.part] = keypoint
-        }
-        
-        // Check if we have all necessary keypoints
-        guard let leftShoulder = keypointDict[BodyPart.leftShoulder.name],
-              let rightShoulder = keypointDict[BodyPart.rightShoulder.name],
-              let leftElbow = keypointDict[BodyPart.leftElbow.name],
-              let rightElbow = keypointDict[BodyPart.rightElbow.name],
-              let leftWrist = keypointDict[BodyPart.leftWrist.name],
-              let rightWrist = keypointDict[BodyPart.rightWrist.name],
-              let leftHip = keypointDict[BodyPart.leftHip.name],
-              let rightHip = keypointDict[BodyPart.rightHip.name] else {
-            return PushupState(
-                isUp: prevState.isUp,
-                isDown: prevState.isDown,
-                count: prevState.count,
-                formScore: prevState.formScore,
-                feedback: "Position your full body in the frame"
-            )
-        }
-        
-        // Calculate angles for left and right arms
-        let leftArmAngle = calculateAngle(a: leftShoulder, b: leftElbow, c: leftWrist)
-        let rightArmAngle = calculateAngle(a: rightShoulder, b: rightElbow, c: rightWrist)
-        
-        // Calculate body alignment (back straight)
-        let leftBodyAngle = calculateAngle(
-            a: leftShoulder,
-            b: leftHip,
-            c: keypointDict[BodyPart.leftKnee.name] ?? leftHip
-        )
-        
-        let rightBodyAngle = calculateAngle(
-            a: rightShoulder,
-            b: rightHip,
-            c: keypointDict[BodyPart.rightKnee.name] ?? rightHip
-        )
-        
-        // Average arm angle for detection
-        let avgArmAngle = (leftArmAngle + rightArmAngle) / 2
-        
-        // Average body angle for detecting straight back
-        let avgBodyAngle = (leftBodyAngle + rightBodyAngle) / 2
-        
-        // Check if the person is in up position (arms extended)
-        let isUp = avgArmAngle > 160
-        
-        // Check if the person is in down position (arms bent)
-        let isDown = avgArmAngle < 80
-        
-        // Calculate form score
-        var formScore = 80 // Base score
-        var feedback = ""
-        
-        // Arm position check
-        if abs(leftArmAngle - rightArmAngle) > 30 {
-            formScore -= 20
-            feedback = "Keep arms evenly aligned"
-        }
-        
-        // Back alignment check
-        if avgBodyAngle < 160 || avgBodyAngle > 200 {
-            formScore -= 20
-            feedback = "Keep your back straight"
-        }
-        
-        // Check for complete motion
-        if isDown && prevState.isUp && !prevState.isDown {
-            // Count a rep if it went from up to down
-            return PushupState(
-                isUp: false,
-                isDown: true,
-                count: prevState.count + 1,
-                formScore: formScore,
-                feedback: feedback
-            )
-        }
-        
-        // Update state for up position
-        if isUp && !prevState.isUp && prevState.isDown {
-            return PushupState(
-                isUp: true,
-                isDown: false,
-                count: prevState.count,
-                formScore: formScore,
-                feedback: feedback.isEmpty ? "Good form" : feedback
-            )
-        }
-        
-        // Provide feedback for partial movements
-        if !isUp && !isDown {
-            if avgArmAngle > 120 {
-                feedback = "Lower your body closer to the ground"
-            } else if avgArmAngle < 100 {
-                feedback = "Extend your arms fully when pushing up"
+        // Draw keypoints
+        for (_, keypoint) in pose.keypoints {
+            if keypoint.isValid {
+                let center = CGPoint(
+                    x: keypoint.point.x * image.size.width,
+                    y: keypoint.point.y * image.size.height
+                )
+                
+                context.setFillColor(UIColor.red.cgColor)
+                context.fillEllipse(in: CGRect(x: center.x - 5, y: center.y - 5, width: 10, height: 10))
             }
         }
         
-        return PushupState(
-            isUp: isUp || prevState.isUp,
-            isDown: isDown || prevState.isDown,
-            count: prevState.count,
-            formScore: formScore,
-            feedback: feedback.isEmpty ? prevState.feedback : feedback
-        )
+        // Get resulting image
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext()!
+        UIGraphicsEndImageContext()
+        
+        return resultImage
     }
-    
-    // Pull-up detection algorithm
-    private func detectPullup(keypoints: [Keypoint], prevState: PullupState) -> PullupState {
-        // Create a dictionary for easy lookup
-        var keypointDict: [String: Keypoint] = [:]
-        for keypoint in keypoints {
-            keypointDict[keypoint.part] = keypoint
+}
+
+// Extension to use with camera feed
+extension PoseDetectionService {
+    func setupCameraSession() -> AVCaptureSession {
+        let session = AVCaptureSession()
+        session.sessionPreset = .high
+        
+        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front),
+              let input = try? AVCaptureDeviceInput(device: camera) else {
+            return session
         }
         
-        // Check if we have all necessary keypoints
-        guard let leftShoulder = keypointDict[BodyPart.leftShoulder.name],
-              let rightShoulder = keypointDict[BodyPart.rightShoulder.name],
-              let leftElbow = keypointDict[BodyPart.leftElbow.name],
-              let rightElbow = keypointDict[BodyPart.rightElbow.name],
-              let leftWrist = keypointDict[BodyPart.leftWrist.name],
-              let rightWrist = keypointDict[BodyPart.rightWrist.name],
-              let nose = keypointDict[BodyPart.nose.name] else {
-            return PullupState(
-                isUp: prevState.isUp,
-                isDown: prevState.isDown,
-                count: prevState.count,
-                formScore: prevState.formScore,
-                feedback: "Position your upper body in the frame"
-            )
+        if session.canAddInput(input) {
+            session.addInput(input)
         }
         
-        // For pull-ups, check if chin is above or below hands (wrists)
-        let avgWristY = (leftWrist.position.y + rightWrist.position.y) / 2
-        let noseY = nose.position.y
-        
-        // Check if chin (nose) is above hands (wrists)
-        let isUp = noseY < avgWristY - 10 // Nose is above wrists
-        
-        // Check if in down position (arms extended)
-        let leftArmAngle = calculateAngle(a: leftShoulder, b: leftElbow, c: leftWrist)
-        let rightArmAngle = calculateAngle(a: rightShoulder, b: rightElbow, c: rightWrist)
-        let avgArmAngle = (leftArmAngle + rightArmAngle) / 2
-        
-        let isDown = avgArmAngle > 160 // Arms extended in down position
-        
-        // Calculate form score
-        var formScore = 80 // Base score
-        var feedback = ""
-        
-        // Arm alignment check
-        if abs(leftArmAngle - rightArmAngle) > 30 {
-            formScore -= 20
-            feedback = "Keep arms evenly aligned"
-        }
-        
-        // Check for complete motion
-        if isUp && prevState.isDown && !prevState.isUp {
-            // Count a rep if it went from down to up
-            return PullupState(
-                isUp: true,
-                isDown: false,
-                count: prevState.count + 1,
-                formScore: formScore,
-                feedback: feedback.isEmpty ? "Good form" : feedback
-            )
-        }
-        
-        // Update state for down position
-        if isDown && !prevState.isDown && prevState.isUp {
-            return PullupState(
-                isUp: false,
-                isDown: true,
-                count: prevState.count,
-                formScore: formScore,
-                feedback: feedback
-            )
-        }
-        
-        // Provide feedback
-        if !isUp && !isDown {
-            if noseY > avgWristY {
-                feedback = "Pull your chin above the bar"
-            } else if avgArmAngle < 160 {
-                feedback = "Extend your arms fully on the way down"
-            }
-        }
-        
-        return PullupState(
-            isUp: isUp || prevState.isUp,
-            isDown: isDown || prevState.isDown,
-            count: prevState.count,
-            formScore: formScore,
-            feedback: feedback.isEmpty ? prevState.feedback : feedback
-        )
+        return session
     }
-    
-    // Sit-up detection algorithm
-    private func detectSitup(keypoints: [Keypoint], prevState: SitupState) -> SitupState {
-        // Create a dictionary for easy lookup
-        var keypointDict: [String: Keypoint] = [:]
-        for keypoint in keypoints {
-            keypointDict[keypoint.part] = keypoint
-        }
-        
-        // Check if we have all necessary keypoints
-        guard let leftShoulder = keypointDict[BodyPart.leftShoulder.name],
-              let rightShoulder = keypointDict[BodyPart.rightShoulder.name],
-              let leftHip = keypointDict[BodyPart.leftHip.name],
-              let rightHip = keypointDict[BodyPart.rightHip.name],
-              let leftKnee = keypointDict[BodyPart.leftKnee.name],
-              let rightKnee = keypointDict[BodyPart.rightKnee.name] else {
-            return SitupState(
-                isUp: prevState.isUp,
-                isDown: prevState.isDown,
-                count: prevState.count,
-                formScore: prevState.formScore,
-                feedback: "Position your full body in the frame"
-            )
-        }
-        
-        // Calculate the angle between shoulders-hips-knees
-        let leftAngle = calculateAngle(a: leftShoulder, b: leftHip, c: leftKnee)
-        let rightAngle = calculateAngle(a: rightShoulder, b: rightHip, c: rightKnee)
-        let avgAngle = (leftAngle + rightAngle) / 2
-        
-        // For sit-ups, the up position is when the upper body is at an angle to legs
-        let isUp = avgAngle < 130 // Smaller angle means torso is up
-        
-        // Down position is when lying flat
-        let isDown = avgAngle > 160 // Larger angle means torso is down
-        
-        // Calculate form score
-        var formScore = 80 // Base score
-        var feedback = ""
-        
-        // Check symmetry
-        if abs(leftAngle - rightAngle) > 30 {
-            formScore -= 20
-            feedback = "Keep your body centered during the sit-up"
-        }
-        
-        // Check knee position (should be bent)
-        let leftLegAngle = calculateAngle(
-            a: leftHip,
-            b: leftKnee,
-            c: keypointDict[BodyPart.leftAnkle.name] ?? leftKnee
-        )
-        
-        let rightLegAngle = calculateAngle(
-            a: rightHip,
-            b: rightKnee,
-            c: keypointDict[BodyPart.rightAnkle.name] ?? rightKnee
-        )
-        
-        let avgLegAngle = (leftLegAngle + rightLegAngle) / 2
-        
-        if avgLegAngle > 160 { // Legs too straight
-            formScore -= 20
-            feedback = "Bend your knees for proper form"
-        }
-        
-        // Check for complete motion
-        if isUp && prevState.isDown && !prevState.isUp {
-            // Count a rep if it went from down to up
-            return SitupState(
-                isUp: true,
-                isDown: false,
-                count: prevState.count + 1,
-                formScore: formScore,
-                feedback: feedback.isEmpty ? "Good form" : feedback
-            )
-        }
-        
-        // Update state for down position
-        if isDown && !prevState.isDown && prevState.isUp {
-            return SitupState(
-                isUp: false,
-                isDown: true,
-                count: prevState.count,
-                formScore: formScore,
-                feedback: feedback
-            )
-        }
-        
-        // Provide feedback
-        if !isUp && !isDown {
-            if avgAngle > 140 {
-                feedback = "Lift your upper body higher"
-            } else if avgAngle < 150 {
-                feedback = "Lower your back completely to the ground"
-            }
-        }
-        
-        return SitupState(
-            isUp: isUp || prevState.isUp,
-            isDown: isDown || prevState.isDown,
-            count: prevState.count,
-            formScore: formScore,
-            feedback: feedback.isEmpty ? prevState.feedback : feedback
-        )
-    }
-    
-    // MARK: - Utility Methods
-    
-    // Reset exercise states
-    func resetExerciseStates() {
-        pushupState = PushupState()
-        pullupState = PullupState()
-        situpState = SitupState()
+}
+
+// Extension for VNHumanBodyPoseObservation.JointName to make it CaseIterable
+extension VNHumanBodyPoseObservation.JointName: CaseIterable {
+    public static var allCases: [VNHumanBodyPoseObservation.JointName] {
+        return [
+            .nose, .leftEye, .rightEye, .leftEar, .rightEar,
+            .leftShoulder, .rightShoulder, .neck,
+            .leftElbow, .rightElbow,
+            .leftWrist, .rightWrist,
+            .leftHip, .rightHip,
+            .leftKnee, .rightKnee,
+            .leftAnkle, .rightAnkle
+        ]
     }
 }
