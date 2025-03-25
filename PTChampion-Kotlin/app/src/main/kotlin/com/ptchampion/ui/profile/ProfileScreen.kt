@@ -113,6 +113,20 @@ fun ProfileScreen(
         }
     }
     
+    // Handle sync status changes
+    LaunchedEffect(uiState.syncSuccess) {
+        uiState.syncSuccess?.let {
+            if (it) {
+                snackbarHostState.showSnackbar("Sync completed successfully")
+            } else {
+                snackbarHostState.showSnackbar("Sync failed")
+            }
+            // Clear sync status after a delay
+            kotlinx.coroutines.delay(3000)
+            viewModel.clearSyncStatus()
+        }
+    }
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -223,6 +237,16 @@ fun ProfileScreen(
                         FitnessScoreCard(
                             overallScore = uiState.overallScore,
                             exerciseCount = uiState.exerciseCount
+                        )
+                        
+                        Spacer(modifier = Modifier.height(24.dp))
+                        
+                        // Sync status card
+                        SyncStatusCard(
+                            lastSyncTime = uiState.lastSyncTime,
+                            isSyncing = uiState.isSyncing,
+                            syncSuccess = uiState.syncSuccess,
+                            onSyncClick = { viewModel.syncData() }
                         )
                         
                         Spacer(modifier = Modifier.height(24.dp))
@@ -584,5 +608,98 @@ private fun getScoreRating(score: Int): String {
         score >= 65 -> "Satisfactory"
         score >= 50 -> "Marginal"
         else -> "Poor"
+    }
+}
+
+/**
+ * Sync status card
+ */
+@Composable
+fun SyncStatusCard(
+    lastSyncTime: String?,
+    isSyncing: Boolean,
+    syncSuccess: Boolean?,
+    onSyncClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Data Synchronization",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                
+                if (syncSuccess == true) {
+                    Icon(
+                        imageVector = Icons.Default.Sync,
+                        contentDescription = "Sync Success",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Text(
+                text = if (lastSyncTime != null) {
+                    "Last synced: $lastSyncTime"
+                } else {
+                    "Not synced yet"
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Button(
+                onClick = onSyncClick,
+                enabled = !isSyncing,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                if (isSyncing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Syncing...")
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Sync,
+                        contentDescription = "Sync"
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Sync with Server")
+                }
+            }
+            
+            if (syncSuccess != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = if (syncSuccess) "Sync completed successfully" else "Sync failed",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (syncSuccess) 
+                        MaterialTheme.colorScheme.primary 
+                    else 
+                        MaterialTheme.colorScheme.error,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
     }
 }

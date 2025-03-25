@@ -40,15 +40,15 @@ data class UserExercise(
     val exerciseId: Int,
     val type: String,
     val reps: Int? = null,
-    val formScore: Int? = null, // Renamed from score for consistency
+    val formScore: Int? = null, // Form quality score
     val timeInSeconds: Int? = null,
     val distance: Double? = null,
-    val grade: Int, // This will store the calculated score
+    val score: Int, // Overall calculated exercise score/grade (0-100)
     val completed: Boolean = true,
     val metadata: Map<String, String>? = null,
     val deviceId: String? = null,
     val syncStatus: String? = null,
-    val createdAt: String, // Renamed from date for consistency
+    val createdAt: String,
     val updatedAt: String? = null
 )
 
