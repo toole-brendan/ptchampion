@@ -341,26 +341,50 @@ export class DatabaseStorage implements IStorage {
       // For backward compatibility, we need to manually build the query to include only existing columns
       const values = { ...insertUserExercise };
       
-      // Use only values that are likely to exist in current schema
+      // Add the new fields we added during migration
+      const now = new Date();
       const exerciseValues = {
         user_id: values.userId,
         exercise_id: values.exerciseId,
-        repetitions: values.repetitions,
-        form_score: values.formScore,
-        time_in_seconds: values.timeInSeconds,
-        grade: values.grade,
+        repetitions: values.reps || 0,
+        form_score: values.score || 0,
+        time_in_seconds: values.timeInSeconds || 0,
+        grade: values.grade || 0,
         completed: values.completed || true,
-        metadata: values.metadata
+        metadata: values.metadata ? JSON.stringify(values.metadata) : null,
+        device_id: values.deviceId || null,
+        sync_status: 'synced',
+        updated_at: now
       };
       
-      // Try to insert with existing columns only
+      // Try to insert with updated columns including sync-related fields
       const result = await db.execute(
-        sql`INSERT INTO user_exercises (${sql.identifier('user_id')}, ${sql.identifier('exercise_id')}, 
-        ${sql.identifier('repetitions')}, ${sql.identifier('form_score')}, ${sql.identifier('time_in_seconds')}, 
-        ${sql.identifier('grade')}, ${sql.identifier('completed')}, ${sql.identifier('metadata')})
-        VALUES (${exerciseValues.user_id}, ${exerciseValues.exercise_id}, ${exerciseValues.repetitions}, 
-        ${exerciseValues.form_score}, ${exerciseValues.time_in_seconds}, ${exerciseValues.grade}, 
-        ${exerciseValues.completed}, ${exerciseValues.metadata})
+        sql`INSERT INTO user_exercises (
+          user_id, 
+          exercise_id, 
+          repetitions, 
+          form_score, 
+          time_in_seconds, 
+          grade, 
+          completed, 
+          metadata,
+          device_id,
+          sync_status,
+          updated_at
+        )
+        VALUES (
+          ${exerciseValues.user_id}, 
+          ${exerciseValues.exercise_id}, 
+          ${exerciseValues.repetitions}, 
+          ${exerciseValues.form_score}, 
+          ${exerciseValues.time_in_seconds}, 
+          ${exerciseValues.grade}, 
+          ${exerciseValues.completed}, 
+          ${exerciseValues.metadata},
+          ${exerciseValues.device_id},
+          ${exerciseValues.sync_status},
+          ${exerciseValues.updated_at}
+        )
         RETURNING *`
       );
       
@@ -381,12 +405,12 @@ export class DatabaseStorage implements IStorage {
         timeInSeconds: row.time_in_seconds,
         grade: row.grade,
         completed: row.completed,
-        metadata: row.metadata,
+        metadata: row.metadata ? JSON.parse(row.metadata) : null,
         createdAt: row.created_at,
-        // Add defaults for potentially missing columns
-        deviceId: row.device_id || null,
-        syncStatus: row.sync_status || 'synced',
-        updatedAt: row.updated_at || new Date()
+        // Include the new sync-related fields
+        deviceId: row.device_id,
+        syncStatus: row.sync_status,
+        updatedAt: row.updated_at
       };
       
       return userExercise;
