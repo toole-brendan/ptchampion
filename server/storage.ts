@@ -346,14 +346,14 @@ export class DatabaseStorage implements IStorage {
       const exerciseValues = {
         user_id: values.userId,
         exercise_id: values.exerciseId,
-        repetitions: values.reps || 0,
-        form_score: values.score || 0,
+        repetitions: values.repetitions || 0,
+        form_score: values.formScore || 0,
         time_in_seconds: values.timeInSeconds || 0,
         grade: values.grade || 0,
         completed: values.completed || true,
         metadata: values.metadata ? JSON.stringify(values.metadata) : null,
         device_id: values.deviceId || null,
-        sync_status: 'synced',
+        sync_status: values.syncStatus || 'synced',
         updated_at: now
       };
       
