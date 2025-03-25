@@ -199,7 +199,7 @@ aws cloudfront create-distribution \
 
 ### 7. EC2 Configuration Script
 
-Example `ec2-user-data.sh` script:
+Here's a detailed `ec2-user-data.sh` script with complete setup for the backend server:
 
 ```bash
 #!/bin/bash
@@ -221,16 +221,63 @@ cd ptchampion
 npm install
 npm run build
 
-# Create .env.production file with your configuration
+# Create .env.production file
+cat > .env.production << 'ENVEOF'
+NODE_ENV=production
+
+# AWS RDS PostgreSQL Connection
+DATABASE_URL=postgres://[username]:[password]@[rds-endpoint]:5432/[database]
+
+# JWT configuration
+JWT_SECRET=[your-secure-jwt-secret]
+JWT_EXPIRES=7d
+
+# Session configuration
+SESSION_SECRET=[your-secure-session-secret]
+
+# Server port configuration
+PORT=3000
+ENVEOF
+
+# Initialize database with schema and seed data
+NODE_ENV=production npm run db:push
+
 # Start the server with PM2
 NODE_ENV=production pm2 start dist/index.js --name ptchampion-api
 pm2 startup
 pm2 save
 
 # Configure Nginx as a reverse proxy
+cat > /etc/nginx/conf.d/ptchampion.conf << 'NGINXEOF'
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+NGINXEOF
+
 # Enable and start Nginx
 systemctl enable nginx
 systemctl start nginx
+```
+
+For security, generate strong random secrets for JWT and sessions:
+
+```bash
+# Generate a secure random JWT secret
+NEW_JWT_SECRET=$(openssl rand -hex 32)
+# Generate a secure random session secret
+NEW_SESSION_SECRET=$(openssl rand -hex 32)
+
+# Update the .env.production file with these values
 ```
 
 ## Database Security Configuration
@@ -266,8 +313,162 @@ aws ec2 authorize-security-group-ingress \
 2. **Configure proper cache behaviors:**
    - Use `CachePolicyId: "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"` (CachingDisabled policy)
    - Use `OriginRequestPolicyId: "216adef6-5c7f-47e4-b989-5492eafa07d3"` (AllViewer policy)
-3. **Include all HTTP methods for API routes**
-4. **Create invalidations after updates**
+3. **Include all HTTP methods for API routes:**
+   - Include all methods: GET, HEAD, OPTIONS, PUT, POST, PATCH, DELETE
+4. **Create invalidations after updates:**
+   - Always create a CloudFront invalidation after updating distribution
+
+Here's a sample CloudFront configuration that correctly handles both static assets and API routes:
+
+```json
+{
+  "CallerReference": "setup-1742822491",
+  "Aliases": {
+    "Quantity": 1,
+    "Items": [
+      "ptchampion.ai"
+    ]
+  },
+  "DefaultRootObject": "index.html",
+  "Origins": {
+    "Quantity": 2,
+    "Items": [
+      {
+        "Id": "S3-ptchampion.ai",
+        "DomainName": "ptchampion.ai.s3-website-us-east-1.amazonaws.com",
+        "OriginPath": "",
+        "CustomHeaders": {
+          "Quantity": 0
+        },
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "http-only",
+          "OriginSslProtocols": {
+            "Quantity": 1,
+            "Items": [
+              "TLSv1.2"
+            ]
+          },
+          "OriginReadTimeout": 30,
+          "OriginKeepaliveTimeout": 5
+        },
+        "ConnectionAttempts": 3,
+        "ConnectionTimeout": 10,
+        "OriginShield": {
+          "Enabled": false
+        }
+      },
+      {
+        "Id": "ApiBackend",
+        "DomainName": "[YOUR-EC2-PUBLIC-DNS]",
+        "OriginPath": "",
+        "CustomHeaders": {
+          "Quantity": 0
+        },
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "http-only",
+          "OriginSslProtocols": {
+            "Quantity": 1,
+            "Items": [
+              "TLSv1.2"
+            ]
+          },
+          "OriginReadTimeout": 30,
+          "OriginKeepaliveTimeout": 5
+        },
+        "ConnectionAttempts": 3,
+        "ConnectionTimeout": 10,
+        "OriginShield": {
+          "Enabled": false
+        }
+      }
+    ]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "S3-ptchampion.ai",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "AllowedMethods": {
+      "Quantity": 2,
+      "Items": [
+        "GET",
+        "HEAD"
+      ],
+      "CachedMethods": {
+        "Quantity": 2,
+        "Items": [
+          "GET",
+          "HEAD"
+        ]
+      }
+    },
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "Compress": true
+  },
+  "CacheBehaviors": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "PathPattern": "/api/*",
+        "TargetOriginId": "ApiBackend",
+        "ViewerProtocolPolicy": "redirect-to-https",
+        "AllowedMethods": {
+          "Quantity": 7,
+          "Items": [
+            "GET",
+            "HEAD",
+            "OPTIONS",
+            "PUT",
+            "POST",
+            "PATCH",
+            "DELETE"
+          ],
+          "CachedMethods": {
+            "Quantity": 2,
+            "Items": [
+              "GET",
+              "HEAD"
+            ]
+          }
+        },
+        "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+        "OriginRequestPolicyId": "216adef6-5c7f-47e4-b989-5492eafa07d3"
+      }
+    ]
+  },
+  "CustomErrorResponses": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "ErrorCode": 404,
+        "ResponsePagePath": "/index.html",
+        "ResponseCode": "200",
+        "ErrorCachingMinTTL": 300
+      }
+    ]
+  },
+  "Comment": "CloudFront distribution for ptchampion.ai",
+  "PriceClass": "PriceClass_100",
+  "Enabled": true,
+  "ViewerCertificate": {
+    "CloudFrontDefaultCertificate": true,
+    "MinimumProtocolVersion": "TLSv1.2_2021"
+  },
+  "HttpVersion": "http2",
+  "IsIPV6Enabled": true
+}
+```
+
+After updating your CloudFront distribution, always create an invalidation to ensure changes are propagated:
+
+```bash
+# Create invalidation for API routes
+aws cloudfront create-invalidation \
+    --distribution-id [DISTRIBUTION_ID] \
+    --paths "/api/*"
+```
 
 ## Security Best Practices
 
