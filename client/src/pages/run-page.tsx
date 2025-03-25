@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import Navigation from "@/components/navigation";
-import { useBluetooth, BluetoothDevice } from "@/hooks/use-bluetooth";
+import { useBluetooth, CustomBluetoothDevice } from "@/hooks/use-bluetooth";
 import RunTracker from "@/components/run-tracker";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
@@ -36,7 +36,7 @@ export default function RunPage() {
   
   // State for tracking run in progress
   const [runInProgress, setRunInProgress] = useState(false);
-  const [selectedDevice, setSelectedDevice] = useState<BluetoothDevice | null>(null);
+  const [selectedDevice, setSelectedDevice] = useState<CustomBluetoothDevice | null>(null);
   
   // Show error if Bluetooth isn't supported
   useEffect(() => {
@@ -196,7 +196,7 @@ export default function RunPage() {
               <RunTracker 
                 isRunning={isRunning}
                 serviceData={serviceData}
-                deviceName={selectedDevice.name}
+                deviceName={selectedDevice.name || "Device"}
                 onComplete={handleCompleteRun}
                 onCancel={handleCancelRun}
               />

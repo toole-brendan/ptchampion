@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, boolean, json } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -27,6 +27,7 @@ export const userExercises = pgTable("user_exercises", {
   formScore: integer("form_score"), // 0-100
   timeInSeconds: integer("time_in_seconds"),
   completed: boolean("completed").default(false),
+  metadata: text("metadata"), // JSON string for additional exercise data (distance, heart rate, etc.)
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -50,6 +51,7 @@ export const insertUserExerciseSchema = createInsertSchema(userExercises).pick({
   formScore: true,
   timeInSeconds: true,
   completed: true,
+  metadata: true,
 });
 
 // Types
