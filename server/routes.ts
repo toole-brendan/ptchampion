@@ -156,6 +156,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Synchronization endpoint for mobile clients
+  app.post("/api/sync", authenticate, async (req, res, next) => {
+    try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const { deviceId, lastSyncTimestamp, data } = req.body;
+      
+      if (!deviceId || !lastSyncTimestamp) {
+        return res.status(400).json({ 
+          message: "Missing required sync parameters",
+          requiredParams: ['deviceId', 'lastSyncTimestamp']
+        });
+      }
+      
+      const syncRequest = {
+        userId: req.user.id,
+        deviceId,
+        lastSyncTimestamp,
+        data
+      };
+      
+      const syncResponse = await storage.syncUserData(syncRequest);
+      res.json(syncResponse);
+    } catch (err) {
+      next(err);
+    }
+  });
+  
+  // Profile update endpoint
+  app.post("/api/profile", authenticate, async (req, res, next) => {
+    try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const profileData = req.body;
+      const updatedUser = await storage.updateUserProfile(req.user.id, profileData);
+      res.json(updatedUser);
+    } catch (err) {
+      next(err);
+    }
+  });
+  
   // API health check endpoint - useful for mobile clients to verify connectivity
   app.get("/api/health", (req, res) => {
     res.json({ 

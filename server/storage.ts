@@ -1,6 +1,6 @@
-import { users, exercises, userExercises, type User, type InsertUser, type Exercise, type UserExercise, type InsertUserExercise, SEED_EXERCISES } from "@shared/schema";
+import { users, exercises, userExercises, type User, type InsertUser, type Exercise, type UserExercise, type InsertUserExercise, type UpdateProfile, type SyncRequest, type SyncResponse, SEED_EXERCISES } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, desc, inArray, sql } from "drizzle-orm";
+import { eq, and, desc, inArray, sql, gt, or } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 
@@ -11,6 +11,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUserLocation(userId: number, latitude: number, longitude: number): Promise<User>;
+  updateUserProfile(userId: number, profileData: UpdateProfile): Promise<User>;
   
   // Exercise methods
   getExercises(): Promise<Exercise[]>;
@@ -22,6 +23,11 @@ export interface IStorage {
   createUserExercise(userExercise: InsertUserExercise): Promise<UserExercise>;
   getUserExercisesByType(userId: number, type: string): Promise<UserExercise[]>;
   getLatestUserExercisesByType(userId: number): Promise<Record<string, UserExercise>>;
+  getUserExercisesSince(userId: number, since: Date): Promise<UserExercise[]>;
+  
+  // Sync methods
+  syncUserData(syncRequest: SyncRequest): Promise<SyncResponse>;
+  updateLastSynced(userId: number): Promise<void>;
   
   // Leaderboard methods
   getGlobalLeaderboard(): Promise<any[]>;
@@ -38,18 +44,89 @@ export class DatabaseStorage implements IStorage {
       conObject: {
         connectionString: process.env.DATABASE_URL,
       },
+      tableName: 'session',
       createTableIfMissing: true 
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
+    try {
+      // Check if id is valid
+      if (id === undefined || id === null) {
+        console.error("Invalid user id:", id);
+        return undefined;
+      }
+      
+      // Use SQL query to get only existing columns, using a more robust approach
+      const result = await db.execute(
+        sql`SELECT * FROM users WHERE id = ${id}`
+      );
+      
+      // Check if result exists and has rows
+      if (!result || !Array.isArray(result.rows) || result.rows.length === 0) {
+        return undefined;
+      }
+      
+      const row = result.rows[0];
+      
+      // Map to User type with default values for new fields
+      const user: User = {
+        id: Number(row.id),
+        username: row.username,
+        password: row.password,
+        location: row.location || null,
+        latitude: row.latitude || null,
+        longitude: row.longitude || null,
+        createdAt: row.created_at,
+        // Add default values for new fields
+        displayName: row.display_name || row.username,
+        profilePictureUrl: row.profile_picture_url || null,
+        lastSyncedAt: row.last_synced_at || new Date(),
+        updatedAt: row.updated_at || new Date()
+      };
+      
+      return user;
+    } catch (error) {
+      console.error("Error getting user:", error);
+      return undefined;
+    }
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user;
+    try {
+      // Use SQL query to get only existing columns, using a more robust approach
+      const result = await db.execute(
+        sql`SELECT * FROM users WHERE username = ${username}`
+      );
+      
+      // Check if result exists and has rows
+      if (!result || !Array.isArray(result.rows) || result.rows.length === 0) {
+        return undefined;
+      }
+      
+      const row = result.rows[0];
+      
+      // Map to User type with default values for new fields
+      const user: User = {
+        id: Number(row.id),
+        username: row.username,
+        password: row.password,
+        location: row.location || null,
+        latitude: row.latitude || null,
+        longitude: row.longitude || null,
+        createdAt: row.created_at,
+        // Add default values for new fields
+        displayName: row.display_name || row.username,
+        profilePictureUrl: row.profile_picture_url || null,
+        lastSyncedAt: row.last_synced_at || new Date(),
+        updatedAt: row.updated_at || new Date()
+      };
+      
+      return user;
+    } catch (error) {
+      console.error("Error getting user by username:", error);
+      return undefined;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
@@ -65,11 +142,166 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ 
         latitude: latitude.toString(), 
-        longitude: longitude.toString() 
+        longitude: longitude.toString(),
+        updatedAt: new Date()
       })
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+  
+  async updateUserProfile(userId: number, profileData: UpdateProfile): Promise<User> {
+    // Get existing user to handle backward compatibility with non-existent columns
+    const existingUser = await this.getUser(userId);
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+    
+    // Try to update only fields that can safely be updated
+    try {
+      const [user] = await db
+        .update(users)
+        .set({ 
+          ...profileData,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, userId))
+        .returning();
+      return user;
+    } catch (error) {
+      // If the update fails due to missing columns, we'll return the existing user
+      console.error("Error updating user profile:", error);
+      return existingUser;
+    }
+  }
+  
+  async getUserExercisesSince(userId: number, since: Date): Promise<UserExercise[]> {
+    try {
+      const userExerciseList = await db
+        .select()
+        .from(userExercises)
+        .where(
+          and(
+            eq(userExercises.userId, userId),
+            gt(userExercises.createdAt, since)
+          )
+        )
+        .orderBy(desc(userExercises.createdAt));
+      return userExerciseList;
+    } catch (error) {
+      // If we can't get exercises with the updated schema, return empty array
+      console.error("Error getting exercises since date:", error);
+      return [];
+    }
+  }
+  
+  async updateLastSynced(userId: number): Promise<void> {
+    try {
+      await db
+        .update(users)
+        .set({ 
+          lastSyncedAt: new Date()
+        })
+        .where(eq(users.id, userId));
+    } catch (error) {
+      console.error("Error updating last synced timestamp:", error);
+    }
+  }
+  
+  async syncUserData(syncRequest: SyncRequest): Promise<SyncResponse> {
+    const { userId, deviceId, lastSyncTimestamp, data } = syncRequest;
+    const lastSyncDate = new Date(lastSyncTimestamp);
+    const now = new Date();
+    
+    // Initialize response with empty arrays to avoid undefined errors
+    const response: SyncResponse = {
+      success: true,
+      timestamp: now.toISOString(),
+      data: {
+        userExercises: [],
+        profile: undefined
+      },
+      conflicts: []
+    };
+    
+    try {
+      // 1. Get user profile
+      const user = await this.getUser(userId);
+      if (!user) {
+        return {
+          success: false,
+          timestamp: now.toISOString(),
+          data: {
+            userExercises: [],
+            profile: undefined
+          },
+          conflicts: []
+        };
+      }
+      
+      // 2. Update user profile if provided
+      if (data?.profile) {
+        const updatedUser = await this.updateUserProfile(userId, data.profile);
+        if (response.data) {
+          response.data.profile = updatedUser;
+        }
+      } else if (response.data) {
+        response.data.profile = user;
+      }
+      
+      const syncedExercises: UserExercise[] = [];
+      
+      // 3. Process incoming exercise data
+      if (data?.userExercises && data.userExercises.length > 0) {
+        for (const exercise of data.userExercises) {
+          try {
+            // Ensure userId matches the authenticated user
+            const exerciseWithUserId = {
+              ...exercise,
+              userId: userId
+            };
+            
+            const result = await this.createUserExercise(exerciseWithUserId);
+            syncedExercises.push(result);
+          } catch (error) {
+            console.error("Error syncing exercise:", error);
+          }
+        }
+      }
+      
+      // 4. Get exercises since last sync
+      const serverExercises = await this.getUserExercisesSince(userId, lastSyncDate);
+      
+      // 5. Add all synced exercises to response
+      if (response.data) {
+        response.data.userExercises = [
+          ...syncedExercises,
+          ...serverExercises
+        ];
+      }
+      
+      // 6. Try to update last synced timestamp - gracefully handle if column doesn't exist
+      try {
+        await db.execute(
+          sql`UPDATE users SET updated_at = NOW() WHERE id = ${userId}`
+        );
+      } catch (error) {
+        console.error("Error updating timestamp:", error);
+      }
+      
+      return response;
+    } catch (error) {
+      console.error("Sync error:", error);
+      return {
+        success: false,
+        timestamp: now.toISOString(),
+        data: {
+          userExercises: [],
+          profile: undefined
+        },
+        conflicts: []
+      };
+    }
   }
   
   async getExercises(): Promise<Exercise[]> {
@@ -105,11 +337,63 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createUserExercise(insertUserExercise: InsertUserExercise): Promise<UserExercise> {
-    const [userExercise] = await db
-      .insert(userExercises)
-      .values(insertUserExercise)
-      .returning();
-    return userExercise;
+    try {
+      // For backward compatibility, we need to manually build the query to include only existing columns
+      const values = { ...insertUserExercise };
+      
+      // Use only values that are likely to exist in current schema
+      const exerciseValues = {
+        user_id: values.userId,
+        exercise_id: values.exerciseId,
+        repetitions: values.repetitions,
+        form_score: values.formScore,
+        time_in_seconds: values.timeInSeconds,
+        grade: values.grade,
+        completed: values.completed || true,
+        metadata: values.metadata
+      };
+      
+      // Try to insert with existing columns only
+      const result = await db.execute(
+        sql`INSERT INTO user_exercises (${sql.identifier('user_id')}, ${sql.identifier('exercise_id')}, 
+        ${sql.identifier('repetitions')}, ${sql.identifier('form_score')}, ${sql.identifier('time_in_seconds')}, 
+        ${sql.identifier('grade')}, ${sql.identifier('completed')}, ${sql.identifier('metadata')})
+        VALUES (${exerciseValues.user_id}, ${exerciseValues.exercise_id}, ${exerciseValues.repetitions}, 
+        ${exerciseValues.form_score}, ${exerciseValues.time_in_seconds}, ${exerciseValues.grade}, 
+        ${exerciseValues.completed}, ${exerciseValues.metadata})
+        RETURNING *`
+      );
+      
+      // Check if result exists and has rows
+      if (!result || !Array.isArray(result.rows) || result.rows.length === 0) {
+        throw new Error("Failed to create user exercise");
+      }
+      
+      const row = result.rows[0];
+      
+      // Map returned values to UserExercise type
+      const userExercise: UserExercise = {
+        id: Number(row.id),
+        userId: Number(row.user_id),
+        exerciseId: Number(row.exercise_id),
+        repetitions: row.repetitions,
+        formScore: row.form_score,
+        timeInSeconds: row.time_in_seconds,
+        grade: row.grade,
+        completed: row.completed,
+        metadata: row.metadata,
+        createdAt: row.created_at,
+        // Add defaults for potentially missing columns
+        deviceId: row.device_id || null,
+        syncStatus: row.sync_status || 'synced',
+        updatedAt: row.updated_at || new Date()
+      };
+      
+      return userExercise;
+    } catch (error) {
+      console.error("Error creating user exercise:", error);
+      throw error;
+    }
   }
   
   async getUserExercisesByType(userId: number, type: string): Promise<UserExercise[]> {

@@ -151,10 +151,19 @@ export function setupAuth(app: Express) {
         return res.status(400).json({ message: "Username already exists" });
       }
 
-      const user = await storage.createUser({
-        ...req.body,
+      // Handle backward compatibility with the database schema
+      // Only include fields that exist in the current database 
+      const userData = {
+        username: req.body.username,
         password: await hashPassword(req.body.password),
-      });
+        // Only include these fields if they are provided
+        ...(req.body.location ? { location: req.body.location } : {}),
+        ...(req.body.latitude ? { latitude: req.body.latitude } : {}),
+        ...(req.body.longitude ? { longitude: req.body.longitude } : {})
+      };
+
+      // Try to create the user with available fields only
+      const user = await storage.createUser(userData);
       
       // For web clients: create session
       if (req.headers['x-client-platform'] !== 'mobile') {
@@ -173,6 +182,19 @@ export function setupAuth(app: Express) {
         expiresIn: JWT_EXPIRES 
       });
     } catch (err) {
+      console.error("Registration error:", err);
+      
+      // Check for specific database schema errors
+      if (err instanceof Error && 
+          err.message && 
+          err.message.includes("column") && 
+          err.message.includes("does not exist")) {
+        return res.status(500).json({ 
+          message: "Database schema needs migration. Please run migrations first.",
+          error: err.message 
+        });
+      }
+      
       next(err);
     }
   });
