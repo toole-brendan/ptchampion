@@ -10,258 +10,340 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.os.ParcelUuid
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import java.util.Timer
+import java.util.TimerTask
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 /**
- * Manages Bluetooth connections and data
+ * Bluetooth device representation
  */
-@SuppressLint("MissingPermission") // Caller needs to handle permissions
+data class BluetoothDeviceInfo(
+    val id: String,
+    val name: String,
+    val device: BluetoothDevice,
+    val connected: Boolean = false,
+    val heartRate: Int = 0
+)
+
+/**
+ * Service data for running metrics
+ */
+data class BluetoothServiceData(
+    val heartRate: Int = 0,
+    val steps: Int = 0,
+    val distance: Double = 0.0,
+    val timeElapsed: Int = 0,
+    val speed: Double = 0.0
+)
+
+/**
+ * Manager for Bluetooth operations
+ */
 @Singleton
 class BluetoothManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    
     companion object {
         private const val TAG = "BluetoothManager"
         
-        // Services UUID
-        val HEART_RATE_SERVICE_UUID = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb")
-        val RUNNING_SPEED_SERVICE_UUID = UUID.fromString("00001814-0000-1000-8000-00805f9b34fb")
+        // Standard UUIDs for Heart Rate Service
+        private val HEART_RATE_SERVICE_UUID = UUID.fromString("0000180d-0000-1000-8000-00805f9b34fb")
+        private val HEART_RATE_MEASUREMENT_UUID = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb")
         
-        // Characteristics UUID
-        val HEART_RATE_MEASUREMENT_UUID = UUID.fromString("00002a37-0000-1000-8000-00805f9b34fb")
-        val RSC_MEASUREMENT_UUID = UUID.fromString("00002a53-0000-1000-8000-00805f9b34fb")
+        // Standard UUIDs for Running Speed and Cadence Service
+        private val RUNNING_SPEED_CADENCE_SERVICE_UUID = UUID.fromString("00001814-0000-1000-8000-00805f9b34fb")
+        private val RSC_MEASUREMENT_UUID = UUID.fromString("00002a53-0000-1000-8000-00805f9b34fb")
         
-        // Descriptor UUID
-        val CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+        // Descriptor for enabling notifications
+        private val CLIENT_CHARACTERISTIC_CONFIG_UUID = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb")
+        
+        // Scan timeout in milliseconds
+        private const val SCAN_PERIOD = 15000L
     }
     
-    // System BLE manager
-    private val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    private val bluetoothAdapter = bluetoothManager.adapter
+    // System Bluetooth adapter
+    private val bluetoothAdapter: BluetoothAdapter? by lazy {
+        val bluetoothManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        bluetoothManager.adapter
+    }
     
-    // Scanner
-    private val bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
-    private var isScanning = false
+    // BLE scanner
+    private var bluetoothLeScanner: BluetoothLeScanner? = null
     
-    // Connected devices
+    // Tracking connected devices
     private val connectedDevices = mutableMapOf<String, BluetoothGatt>()
     
-    // Service data
+    // Observable list of available devices
+    private val _availableDevices = MutableStateFlow<List<BluetoothDeviceInfo>>(emptyList())
+    val availableDevices: StateFlow<List<BluetoothDeviceInfo>> = _availableDevices.asStateFlow()
+    
+    // Service data for running metrics
     private val _serviceData = MutableStateFlow(BluetoothServiceData())
     val serviceData: StateFlow<BluetoothServiceData> = _serviceData.asStateFlow()
     
-    // Available devices during scan
-    private val _availableDevices = MutableStateFlow<List<BluetoothDeviceInfo>>(emptyList())
-    val availableDevices: StateFlow<List<BluetoothDeviceInfo>> = _availableDevices.asStateFlow()
+    // Scanning state
+    private var isScanning = false
+    
+    // Handler for scan timeout
+    private val handler = Handler(Looper.getMainLooper())
+    
+    // Timer for run tracking
+    private var runTimer: Timer? = null
+    private var runTimeSeconds = 0
     
     /**
      * Start scanning for BLE devices
      */
+    @SuppressLint("MissingPermission")
     fun startScan() {
-        if (isScanning || bluetoothLeScanner == null) return
+        if (isScanning) return
         
-        val serviceUuids = listOf(
-            ParcelUuid(HEART_RATE_SERVICE_UUID),
-            ParcelUuid(RUNNING_SPEED_SERVICE_UUID)
-        )
-        
-        val filters = serviceUuids.map { 
-            ScanFilter.Builder()
-                .setServiceUuid(it)
-                .build() 
+        if (bluetoothAdapter?.isEnabled == true) {
+            bluetoothLeScanner = bluetoothAdapter?.bluetoothLeScanner
+            
+            // Set up filters for heart rate and running speed devices
+            val filters = listOf(
+                ScanFilter.Builder()
+                    .setServiceUuid(ParcelUuid(HEART_RATE_SERVICE_UUID))
+                    .build(),
+                ScanFilter.Builder()
+                    .setServiceUuid(ParcelUuid(RUNNING_SPEED_CADENCE_SERVICE_UUID))
+                    .build()
+            )
+            
+            // Set up scan settings for low power
+            val settings = ScanSettings.Builder()
+                .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                .build()
+            
+            // Start scan with callback
+            bluetoothLeScanner?.startScan(filters, settings, scanCallback)
+            isScanning = true
+            
+            // Stop scanning after SCAN_PERIOD
+            handler.postDelayed({
+                stopScan()
+            }, SCAN_PERIOD)
+            
+            Log.d(TAG, "Started BLE scan")
+        } else {
+            Log.w(TAG, "Bluetooth is not enabled")
         }
-        
-        val settings = ScanSettings.Builder()
-            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-            .build()
-        
-        // Clear previous results
-        _availableDevices.value = emptyList()
-        
-        isScanning = true
-        bluetoothLeScanner.startScan(filters, settings, scanCallback)
-        
-        Log.d(TAG, "Started BLE scan")
     }
     
     /**
      * Stop scanning for BLE devices
      */
+    @SuppressLint("MissingPermission")
     fun stopScan() {
-        if (!isScanning || bluetoothLeScanner == null) return
+        if (!isScanning) return
         
+        bluetoothLeScanner?.stopScan(scanCallback)
         isScanning = false
-        bluetoothLeScanner.stopScan(scanCallback)
+        handler.removeCallbacksAndMessages(null)
         
         Log.d(TAG, "Stopped BLE scan")
     }
     
     /**
-     * Connect to a device by address
+     * Connect to a specific device
      */
-    fun connectToDevice(deviceAddress: String) {
-        val device = bluetoothAdapter?.getRemoteDevice(deviceAddress) ?: return
+    @SuppressLint("MissingPermission")
+    fun connectToDevice(deviceId: String) {
+        // Find device in available devices
+        val deviceInfo = _availableDevices.value.find { it.id == deviceId } ?: return
         
-        Log.d(TAG, "Connecting to ${device.name ?: "Unknown Device"} (${device.address})")
+        // Connect to the device
+        val gatt = deviceInfo.device.connectGatt(context, false, gattCallback)
+        connectedDevices[deviceId] = gatt
         
-        // Connect to GATT server on the device
-        val gatt = device.connectGatt(context, false, gattCallback)
-        connectedDevices[deviceAddress] = gatt
+        Log.d(TAG, "Connecting to device: ${deviceInfo.name}")
     }
     
     /**
-     * Disconnect from a device
+     * Disconnect from a specific device
      */
-    fun disconnectDevice(deviceAddress: String) {
-        val gatt = connectedDevices[deviceAddress] ?: return
-        
-        gatt.disconnect()
-        gatt.close()
-        
-        connectedDevices.remove(deviceAddress)
-        
-        Log.d(TAG, "Disconnected from device: $deviceAddress")
+    @SuppressLint("MissingPermission")
+    fun disconnectDevice(deviceId: String) {
+        connectedDevices[deviceId]?.let { gatt ->
+            gatt.disconnect()
+            gatt.close()
+            connectedDevices.remove(deviceId)
+            
+            // Update device status in list
+            updateDeviceConnectionStatus(deviceId, false)
+            
+            Log.d(TAG, "Disconnected from device: $deviceId")
+        }
     }
     
     /**
      * Disconnect from all devices
      */
+    @SuppressLint("MissingPermission")
     fun disconnectAll() {
-        Log.d(TAG, "Disconnecting from all devices")
-        
-        connectedDevices.forEach { (_, gatt) ->
+        connectedDevices.forEach { (deviceId, gatt) ->
             gatt.disconnect()
             gatt.close()
+            
+            // Update device status in list
+            updateDeviceConnectionStatus(deviceId, false)
         }
-        
         connectedDevices.clear()
-    }
-    
-    /**
-     * Check if Bluetooth is enabled
-     */
-    fun isBluetoothEnabled(): Boolean {
-        return bluetoothAdapter?.isEnabled == true
-    }
-    
-    /**
-     * Get a list of paired devices
-     */
-    fun getPairedDevices(): List<BluetoothDeviceInfo> {
-        val pairedDevices = bluetoothAdapter?.bondedDevices ?: setOf()
         
-        return pairedDevices.map { device ->
-            BluetoothDeviceInfo(
-                id = device.address,
-                name = device.name ?: "Unknown Device",
-                connected = false
-            )
-        }
+        Log.d(TAG, "Disconnected from all devices")
     }
     
     /**
-     * Callback for scan results
+     * Start the running timer
+     */
+    fun startRunningTimer() {
+        runTimeSeconds = 0
+        runTimer = Timer()
+        runTimer?.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                runTimeSeconds++
+                _serviceData.value = _serviceData.value.copy(timeElapsed = runTimeSeconds)
+            }
+        }, 0, 1000)
+        
+        Log.d(TAG, "Started run timer")
+    }
+    
+    /**
+     * Stop the running timer
+     */
+    fun stopRunningTimer() {
+        runTimer?.cancel()
+        runTimer = null
+        
+        Log.d(TAG, "Stopped run timer")
+    }
+    
+    /**
+     * Reset service data
+     */
+    fun resetServiceData() {
+        runTimeSeconds = 0
+        _serviceData.value = BluetoothServiceData()
+        
+        Log.d(TAG, "Reset service data")
+    }
+    
+    /**
+     * Get service data
+     */
+    fun getServiceData(): BluetoothServiceData {
+        return _serviceData.value
+    }
+    
+    /**
+     * BLE scan callback
      */
     private val scanCallback = object : ScanCallback() {
+        @SuppressLint("MissingPermission")
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             val device = result.device
             val deviceName = device.name ?: "Unknown Device"
-            val deviceAddress = device.address
+            val deviceId = device.address
             
-            // Skip unnamed devices
-            if (device.name == null) return
-            
-            Log.d(TAG, "Found BLE device: $deviceName ($deviceAddress)")
-            
-            val deviceInfo = BluetoothDeviceInfo(
-                id = deviceAddress,
-                name = deviceName,
-                connected = connectedDevices.containsKey(deviceAddress)
-            )
-            
-            // Add to list if not already present
-            val currentDevices = _availableDevices.value.toMutableList()
-            if (!currentDevices.any { it.id == deviceAddress }) {
-                currentDevices.add(deviceInfo)
-                _availableDevices.value = currentDevices
+            // Only add devices with names
+            if (device.name != null) {
+                val existingDevice = _availableDevices.value.find { it.id == deviceId }
+                
+                if (existingDevice == null) {
+                    // Add new device to list
+                    val deviceInfo = BluetoothDeviceInfo(
+                        id = deviceId,
+                        name = deviceName,
+                        device = device
+                    )
+                    
+                    val updatedDevices = _availableDevices.value.toMutableList()
+                    updatedDevices.add(deviceInfo)
+                    _availableDevices.value = updatedDevices
+                    
+                    Log.d(TAG, "Found device: $deviceName ($deviceId)")
+                }
             }
         }
         
         override fun onScanFailed(errorCode: Int) {
-            Log.e(TAG, "BLE scan failed with error: $errorCode")
-            isScanning = false
+            Log.e(TAG, "Scan failed with error: $errorCode")
         }
     }
     
     /**
-     * Callback for GATT events
+     * GATT callback for handling connections and data
      */
     private val gattCallback = object : BluetoothGattCallback() {
+        @SuppressLint("MissingPermission")
         override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
-            val deviceAddress = gatt.device.address
+            val deviceId = gatt.device.address
             val deviceName = gatt.device.name ?: "Unknown Device"
             
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
+            when (newState) {
+                BluetoothProfile.STATE_CONNECTED -> {
                     Log.d(TAG, "Connected to $deviceName")
                     
-                    // Update devices list to show connected status
-                    updateDeviceConnectionStatus(deviceAddress, true)
+                    // Update device status in list
+                    updateDeviceConnectionStatus(deviceId, true)
                     
                     // Discover services
                     gatt.discoverServices()
-                } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                }
+                BluetoothProfile.STATE_DISCONNECTED -> {
                     Log.d(TAG, "Disconnected from $deviceName")
                     
-                    // Update devices list to show disconnected status
-                    updateDeviceConnectionStatus(deviceAddress, false)
+                    // Update device status in list
+                    updateDeviceConnectionStatus(deviceId, false)
                     
-                    // Clean up
-                    connectedDevices.remove(deviceAddress)
+                    // Remove from connected devices
+                    connectedDevices.remove(deviceId)
                     gatt.close()
                 }
-            } else {
-                Log.e(TAG, "Error $status encountered for $deviceName! Disconnecting...")
-                
-                // Update devices list to show disconnected status
-                updateDeviceConnectionStatus(deviceAddress, false)
-                
-                // Clean up
-                connectedDevices.remove(deviceAddress)
-                gatt.close()
             }
         }
         
+        @SuppressLint("MissingPermission")
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.d(TAG, "Services discovered for ${gatt.device.name}")
+                // Look for heart rate service
+                val heartRateService = gatt.getService(HEART_RATE_SERVICE_UUID)
+                heartRateService?.let {
+                    val heartRateChar = it.getCharacteristic(HEART_RATE_MEASUREMENT_UUID)
+                    heartRateChar?.let { characteristic ->
+                        // Enable notifications for heart rate
+                        enableNotifications(gatt, characteristic)
+                    }
+                }
                 
-                // Set up notifications for heart rate and running speed
-                setupHeartRateNotification(gatt)
-                setupRunningSpeedNotification(gatt)
-            } else {
-                Log.e(TAG, "Service discovery failed for ${gatt.device.name}, status: $status")
+                // Look for running speed service
+                val rscService = gatt.getService(RUNNING_SPEED_CADENCE_SERVICE_UUID)
+                rscService?.let {
+                    val rscChar = it.getCharacteristic(RSC_MEASUREMENT_UUID)
+                    rscChar?.let { characteristic ->
+                        // Enable notifications for running speed
+                        enableNotifications(gatt, characteristic)
+                    }
+                }
             }
         }
         
@@ -273,169 +355,157 @@ class BluetoothManager @Inject constructor(
             when (characteristic.uuid) {
                 HEART_RATE_MEASUREMENT_UUID -> {
                     val heartRate = parseHeartRate(value)
-                    scope.launch {
-                        _serviceData.value = _serviceData.value.copy(heartRate = heartRate)
-                    }
-                    Log.d(TAG, "Heart rate updated: $heartRate")
+                    updateHeartRate(gatt.device.address, heartRate)
                 }
                 RSC_MEASUREMENT_UUID -> {
-                    val runningData = parseRunningData(value)
-                    scope.launch {
-                        _serviceData.value = _serviceData.value.copy(
-                            speed = runningData.speed,
-                            distance = runningData.distance ?: _serviceData.value.distance
-                        )
-                    }
-                    Log.d(TAG, "Running data updated: ${runningData.speed} m/s, distance: ${runningData.distance}")
+                    val rscData = parseRunningData(value)
+                    updateRunningData(rscData.first, rscData.second)
+                }
+            }
+        }
+        
+        // For compatibility with older Android versions
+        @Deprecated("Deprecated in Java")
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt,
+            characteristic: BluetoothGattCharacteristic
+        ) {
+            val value = characteristic.value
+            when (characteristic.uuid) {
+                HEART_RATE_MEASUREMENT_UUID -> {
+                    val heartRate = parseHeartRate(value)
+                    updateHeartRate(gatt.device.address, heartRate)
+                }
+                RSC_MEASUREMENT_UUID -> {
+                    val rscData = parseRunningData(value)
+                    updateRunningData(rscData.first, rscData.second)
                 }
             }
         }
     }
     
     /**
-     * Update device connection status in the available devices list
+     * Enable notifications for a characteristic
      */
-    private fun updateDeviceConnectionStatus(deviceAddress: String, connected: Boolean) {
-        val currentDevices = _availableDevices.value.toMutableList()
-        val deviceIndex = currentDevices.indexOfFirst { it.id == deviceAddress }
+    @SuppressLint("MissingPermission")
+    private fun enableNotifications(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+        // Enable local notifications
+        gatt.setCharacteristicNotification(characteristic, true)
         
-        if (deviceIndex != -1) {
-            val device = currentDevices[deviceIndex]
-            currentDevices[deviceIndex] = device.copy(connected = connected)
-            _availableDevices.value = currentDevices
+        // Enable remote notifications
+        val descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID)
+        if (descriptor != null) {
+            descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+            gatt.writeDescriptor(descriptor)
+            
+            Log.d(TAG, "Enabled notifications for ${characteristic.uuid}")
         }
     }
     
     /**
-     * Set up notification for heart rate measurement
+     * Update device connection status in the list
      */
-    private fun setupHeartRateNotification(gatt: BluetoothGatt) {
-        val service = gatt.getService(HEART_RATE_SERVICE_UUID) ?: return
-        val characteristic = service.getCharacteristic(HEART_RATE_MEASUREMENT_UUID) ?: return
+    private fun updateDeviceConnectionStatus(deviceId: String, connected: Boolean) {
+        val devices = _availableDevices.value.toMutableList()
+        val deviceIndex = devices.indexOfFirst { it.id == deviceId }
         
-        // Enable local notifications
-        gatt.setCharacteristicNotification(characteristic, true)
-        
-        // Enable remote notifications
-        val descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID)
-        descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-        gatt.writeDescriptor(descriptor)
-        
-        Log.d(TAG, "Heart rate notification set up")
+        if (deviceIndex != -1) {
+            val device = devices[deviceIndex]
+            devices[deviceIndex] = device.copy(connected = connected)
+            _availableDevices.value = devices
+        }
     }
     
     /**
-     * Set up notification for running speed measurement
+     * Update heart rate for a device
      */
-    private fun setupRunningSpeedNotification(gatt: BluetoothGatt) {
-        val service = gatt.getService(RUNNING_SPEED_SERVICE_UUID) ?: return
-        val characteristic = service.getCharacteristic(RSC_MEASUREMENT_UUID) ?: return
+    private fun updateHeartRate(deviceId: String, heartRate: Int) {
+        // Update device heart rate in the list
+        val devices = _availableDevices.value.toMutableList()
+        val deviceIndex = devices.indexOfFirst { it.id == deviceId }
         
-        // Enable local notifications
-        gatt.setCharacteristicNotification(characteristic, true)
+        if (deviceIndex != -1) {
+            val device = devices[deviceIndex]
+            devices[deviceIndex] = device.copy(heartRate = heartRate)
+            _availableDevices.value = devices
+        }
         
-        // Enable remote notifications
-        val descriptor = characteristic.getDescriptor(CLIENT_CHARACTERISTIC_CONFIG_UUID)
-        descriptor.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
-        gatt.writeDescriptor(descriptor)
+        // Update service data
+        _serviceData.value = _serviceData.value.copy(heartRate = heartRate)
         
-        Log.d(TAG, "Running speed notification set up")
+        Log.d(TAG, "Updated heart rate: $heartRate bpm")
+    }
+    
+    /**
+     * Update running data in service data
+     */
+    private fun updateRunningData(speed: Double, distance: Double?) {
+        var updatedServiceData = _serviceData.value.copy(speed = speed)
+        
+        // Update distance if provided
+        if (distance != null) {
+            updatedServiceData = updatedServiceData.copy(distance = distance)
+        } else {
+            // Calculate distance from speed and time if not provided
+            val timeHours = runTimeSeconds / 3600.0
+            val calculatedDistance = updatedServiceData.distance + (speed * timeHours / 60.0)
+            updatedServiceData = updatedServiceData.copy(distance = calculatedDistance)
+        }
+        
+        _serviceData.value = updatedServiceData
+        
+        Log.d(TAG, "Updated running data - Speed: $speed m/s, Distance: ${updatedServiceData.distance} miles")
     }
     
     /**
      * Parse heart rate from characteristic value
      */
-    private fun parseHeartRate(value: ByteArray): Int {
-        val format = if (value[0].toInt() and 0x01 == 0) {
-            // Heart Rate value format is uint8
-            0
+    private fun parseHeartRate(data: ByteArray): Int {
+        val format = data[0] and 0x01
+        return if (format == 0x01) {
+            // Heart rate format with full 16-bit value
+            ((data[1].toInt() and 0xFF) + (data[2].toInt() and 0xFF shl 8))
         } else {
-            // Heart Rate value format is uint16
-            1
-        }
-        
-        return if (format == 1) {
-            ((value[1].toInt() and 0xFF) + (value[2].toInt() and 0xFF shl 8))
-        } else {
-            value[1].toInt() and 0xFF
+            // Heart rate format with 8-bit value
+            data[1].toInt() and 0xFF
         }
     }
     
     /**
-     * Parse running speed and cadence from characteristic value
+     * Parse running speed and cadence data
      */
-    private fun parseRunningData(value: ByteArray): RunningData {
-        val flags = value[0].toInt() and 0xFF
+    private fun parseRunningData(data: ByteArray): Pair<Double, Double?> {
+        val flags = data[0].toInt() and 0xFF
+        val instantSpeedPresent = flags and 0x01 != 0
+        val distancePresent = flags and 0x02 != 0
         
-        // Instantaneous speed is always present (in m/s with resolution of 1/256 s)
-        val speed = (value[1].toInt() and 0xFF + (value[2].toInt() and 0xFF shl 8)) / 256.0
-        
-        // Total distance is optional
+        var speed = 0.0
         var distance: Double? = null
-        if (flags and 0x01 != 0) {
-            // Offset depends on if instantaneous cadence is present (flags bit 1)
-            val offset = if (flags and 0x02 != 0) 5 else 3
-            
-            // Distance is in meters as uint32
-            distance = (value[offset].toInt() and 0xFF +
-                    (value[offset + 1].toInt() and 0xFF shl 8) +
-                    (value[offset + 2].toInt() and 0xFF shl 16) +
-                    (value[offset + 3].toInt() and 0xFF shl 24)).toDouble()
+        var index = 1
+        
+        if (instantSpeedPresent) {
+            // Speed is in units of 1/256 m/s
+            val speedRaw = ((data[index].toInt() and 0xFF) + ((data[index + 1].toInt() and 0xFF) shl 8))
+            speed = speedRaw / 256.0
+            index += 2
         }
         
-        return RunningData(speed, distance)
-    }
-    
-    /**
-     * Start running timer and update elapsed time
-     */
-    fun startRunningTimer() {
-        scope.launch {
-            val startTime = System.currentTimeMillis()
-            
-            while (true) {
-                val currentTime = System.currentTimeMillis()
-                val elapsedSeconds = ((currentTime - startTime) / 1000).toInt()
-                
-                _serviceData.value = _serviceData.value.copy(timeElapsed = elapsedSeconds)
-                
-                kotlinx.coroutines.delay(1000)
-            }
+        if (distancePresent) {
+            // Distance is in meters
+            val distanceRaw = ((data[index].toInt() and 0xFF) +
+                    ((data[index + 1].toInt() and 0xFF) shl 8) +
+                    ((data[index + 2].toInt() and 0xFF) shl 16))
+            // Convert to miles
+            distance = distanceRaw / 1609.34
         }
+        
+        return Pair(speed, distance)
     }
     
     /**
-     * Reset service data
+     * Check if Bluetooth is available and enabled
      */
-    fun resetServiceData() {
-        _serviceData.value = BluetoothServiceData()
+    fun isBluetoothEnabled(): Boolean {
+        return bluetoothAdapter?.isEnabled == true
     }
 }
-
-/**
- * Information about a Bluetooth device
- */
-data class BluetoothDeviceInfo(
-    val id: String,
-    val name: String,
-    val connected: Boolean
-)
-
-/**
- * Data from Bluetooth services
- */
-data class BluetoothServiceData(
-    val heartRate: Int = 0,
-    val steps: Int = 0,
-    val distance: Double = 0.0,
-    val timeElapsed: Int = 0,
-    val speed: Double = 0.0
-)
-
-/**
- * Running speed and cadence data
- */
-private data class RunningData(
-    val speed: Double,
-    val distance: Double?
-)

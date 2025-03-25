@@ -7,22 +7,22 @@ import android.util.Log
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
+import com.google.mlkit.vision.pose.PoseDetector
 import com.google.mlkit.vision.pose.PoseLandmark
-import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions
+import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
 import com.ptchampion.domain.model.PullupState
 import com.ptchampion.domain.model.PushupState
 import com.ptchampion.domain.model.SitupState
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.suspendCancellableCoroutine
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.resume
 import kotlin.math.atan2
-import kotlin.math.pow
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
- * Service for handling pose detection using ML Kit
+ * Service for pose detection and exercise tracking
  */
 @Singleton
 class PoseDetectionService @Inject constructor(
@@ -32,34 +32,45 @@ class PoseDetectionService @Inject constructor(
         private const val TAG = "PoseDetectionService"
         private const val MIN_CONFIDENCE = 0.3
     }
-
-    private val options = AccuratePoseDetectorOptions.Builder()
-        .setDetectorMode(AccuratePoseDetectorOptions.STREAM_MODE)
-        .build()
-
-    private val poseDetector = PoseDetection.getClient(options)
-
-    /**
-     * Detects a pose from a bitmap
-     */
-    suspend fun detectPose(bitmap: Bitmap): Pose? = suspendCancellableCoroutine { continuation ->
-        val image = InputImage.fromBitmap(bitmap, 0)
-        
-        poseDetector.process(image)
-            .addOnSuccessListener { pose ->
-                continuation.resume(pose)
-            }
-            .addOnFailureListener { e ->
-                Log.e(TAG, "Pose detection failed", e)
-                continuation.resume(null)
-            }
+    
+    // ML Kit pose detector
+    private val poseDetector: PoseDetector by lazy {
+        val options = PoseDetectorOptions.Builder()
+            .setDetectorMode(PoseDetectorOptions.STREAM_MODE)
+            .setPerformanceMode(PoseDetectorOptions.PERFORMANCE_MODE_FAST)
+            .build()
+        PoseDetection.getClient(options)
     }
-
+    
     /**
-     * Analyzes a pushup exercise from a pose
+     * Detect pose in an image
+     */
+    fun detectPose(bitmap: Bitmap): Pose? {
+        val image = InputImage.fromBitmap(bitmap, 0)
+        var detectedPose: Pose? = null
+        
+        try {
+            poseDetector.process(image)
+                .addOnSuccessListener { pose ->
+                    detectedPose = pose
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Pose detection failed", e)
+                }
+                .await() // Wait for the result
+                
+        } catch (e: Exception) {
+            Log.e(TAG, "Error processing pose", e)
+        }
+        
+        return detectedPose
+    }
+    
+    /**
+     * Detect pushup motion from pose
      */
     fun detectPushup(pose: Pose, prevState: PushupState): PushupState {
-        // Only process if we have all required landmarks with sufficient confidence
+        // Get key landmarks
         val leftShoulder = pose.getPoseLandmark(PoseLandmark.LEFT_SHOULDER)
         val rightShoulder = pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER)
         val leftElbow = pose.getPoseLandmark(PoseLandmark.LEFT_ELBOW)
@@ -68,170 +79,161 @@ class PoseDetectionService @Inject constructor(
         val rightWrist = pose.getPoseLandmark(PoseLandmark.RIGHT_WRIST)
         val leftHip = pose.getPoseLandmark(PoseLandmark.LEFT_HIP)
         val rightHip = pose.getPoseLandmark(PoseLandmark.RIGHT_HIP)
-        val leftKnee = pose.getPoseLandmark(PoseLandmark.LEFT_KNEE)
-        val rightKnee = pose.getPoseLandmark(PoseLandmark.RIGHT_KNEE)
-        val leftAnkle = pose.getPoseLandmark(PoseLandmark.LEFT_ANKLE)
-        val rightAnkle = pose.getPoseLandmark(PoseLandmark.RIGHT_ANKLE)
         
-        // Check if we have all landmarks with sufficient confidence
-        val requiredLandmarks = listOf(
-            leftShoulder, rightShoulder, leftElbow, rightElbow, leftWrist, rightWrist,
-            leftHip, rightHip, leftKnee, rightKnee, leftAnkle, rightAnkle
-        )
-        
-        if (requiredLandmarks.any { it == null || it.inFrameLikelihood < MIN_CONFIDENCE }) {
-            return PushupState(
-                isUp = false,
-                isDown = false,
-                count = prevState.count,
-                formScore = prevState.formScore,
-                feedback = "Move your entire body into the frame"
+        // If critical landmarks are missing, return previous state with feedback
+        if (leftShoulder == null || rightShoulder == null || 
+            leftElbow == null || rightElbow == null ||
+            leftWrist == null || rightWrist == null ||
+            leftHip == null || rightHip == null) {
+            return prevState.copy(
+                feedback = "Position your full body in view"
             )
         }
         
-        // Calculate angles for elbows
-        val leftElbowAngle = calculateAngle(
-            leftShoulder!!.position,
-            leftElbow!!.position,
-            leftWrist!!.position
-        )
-        val rightElbowAngle = calculateAngle(
-            rightShoulder!!.position,
-            rightElbow!!.position,
-            rightWrist!!.position
-        )
-        
-        // Calculate angles for body alignment (hips-shoulders-ankles)
-        val leftBodyAngle = calculateAngle(
-            leftHip!!.position,
+        // Calculate angles for both arms
+        val leftArmAngle = calculateAngle(
             leftShoulder.position,
-            leftAnkle!!.position
+            leftElbow.position,
+            leftWrist.position
         )
-        val rightBodyAngle = calculateAngle(
-            rightHip!!.position,
+        
+        val rightArmAngle = calculateAngle(
             rightShoulder.position,
-            rightAnkle!!.position
+            rightElbow.position,
+            rightWrist.position
         )
         
-        // Average angles
-        val elbowAngle = (leftElbowAngle + rightElbowAngle) / 2
-        val bodyAngle = (leftBodyAngle + rightBodyAngle) / 2
+        // Calculate body alignment angle (should be straight in a pushup)
+        val bodyAngle = calculateAngle(
+            rightShoulder.position,
+            rightHip.position,
+            PointF(rightHip.position.x, rightHip.position.y + 100f) // Point below hip
+        )
         
-        // Determine pushup state
-        val isDown = elbowAngle < 90 // Arms bent
-        val isUp = elbowAngle > 160 // Arms extended
+        // Average arm angle
+        val armAngle = (leftArmAngle + rightArmAngle) / 2
         
-        // Evaluate form
-        val isBodyStraight = bodyAngle > 160
-        val formScore = if (isBodyStraight) prevState.formScore else prevState.formScore.coerceAtMost(80)
+        // Check if in up position (arms extended)
+        val isUp = armAngle > 150
         
-        // Calculate new count based on state transition
-        var newCount = prevState.count
-        var feedback = "Good form. Keep going."
+        // Check if in down position (arms bent)
+        val isDown = armAngle < 90
         
-        if (prevState.isDown && isUp) {
-            // Transitioning from down to up position - count a rep
-            newCount++
-            feedback = "Good job! $newCount pushups completed."
-        } else if (isDown) {
-            feedback = "Good, now push up."
-        } else if (!isBodyStraight) {
-            feedback = "Keep your body straight for better form."
+        // Calculate form score based on body alignment
+        // A proper pushup should have the body straight (bodyAngle close to 180)
+        val alignmentScore = when {
+            bodyAngle > 160 -> 100 // Great alignment
+            bodyAngle > 140 -> 80  // Good alignment
+            bodyAngle > 120 -> 60  // Fair alignment
+            else -> 40             // Poor alignment
+        }
+        
+        // Generate feedback
+        val feedback = when {
+            !isUp && !isDown -> "Bend your arms to start"
+            isDown -> "Push up to complete the rep"
+            isUp && prevState.isDown -> "Good! Keep going"
+            isUp -> "Lower your body to start the rep"
+            else -> "Keep your body straight"
+        }
+        
+        // Count rep if we were down and now we're up
+        val newCount = if (prevState.isDown && isUp && !prevState.isUp) {
+            prevState.count + 1
+        } else {
+            prevState.count
         }
         
         return PushupState(
             isUp = isUp,
             isDown = isDown,
             count = newCount,
-            formScore = formScore,
+            formScore = alignmentScore,
             feedback = feedback
         )
     }
     
     /**
-     * Analyzes a pullup exercise from a pose
+     * Detect pullup motion from pose
      */
     fun detectPullup(pose: Pose, prevState: PullupState): PullupState {
-        // Only process if we have all required landmarks with sufficient confidence
+        // Get key landmarks
         val leftShoulder = pose.getPoseLandmark(PoseLandmark.LEFT_SHOULDER)
         val rightShoulder = pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER)
         val leftElbow = pose.getPoseLandmark(PoseLandmark.LEFT_ELBOW)
         val rightElbow = pose.getPoseLandmark(PoseLandmark.RIGHT_ELBOW)
         val leftWrist = pose.getPoseLandmark(PoseLandmark.LEFT_WRIST)
         val rightWrist = pose.getPoseLandmark(PoseLandmark.RIGHT_WRIST)
-        val leftHip = pose.getPoseLandmark(PoseLandmark.LEFT_HIP)
-        val rightHip = pose.getPoseLandmark(PoseLandmark.RIGHT_HIP)
         val nose = pose.getPoseLandmark(PoseLandmark.NOSE)
         
-        // Check if we have all landmarks with sufficient confidence
-        val requiredLandmarks = listOf(
-            leftShoulder, rightShoulder, leftElbow, rightElbow, leftWrist, rightWrist,
-            leftHip, rightHip, nose
-        )
-        
-        if (requiredLandmarks.any { it == null || it.inFrameLikelihood < MIN_CONFIDENCE }) {
-            return PullupState(
-                isUp = false,
-                isDown = false,
-                count = prevState.count,
-                formScore = prevState.formScore,
-                feedback = "Position yourself in the frame"
+        // If critical landmarks are missing, return previous state with feedback
+        if (leftShoulder == null || rightShoulder == null || 
+            leftElbow == null || rightElbow == null ||
+            leftWrist == null || rightWrist == null || nose == null) {
+            return prevState.copy(
+                feedback = "Position your full body in view"
             )
         }
         
-        // Calculate angles for elbows
-        val leftElbowAngle = calculateAngle(
-            leftShoulder!!.position,
-            leftElbow!!.position,
-            leftWrist!!.position
+        // For pullups, we need to check if the chin is above the hands
+        val chinY = nose.position.y
+        val handsY = (leftWrist.position.y + rightWrist.position.y) / 2
+        
+        // Also check arm angles
+        val leftArmAngle = calculateAngle(
+            leftShoulder.position,
+            leftElbow.position,
+            leftWrist.position
         )
-        val rightElbowAngle = calculateAngle(
-            rightShoulder!!.position,
-            rightElbow!!.position,
-            rightWrist!!.position
+        
+        val rightArmAngle = calculateAngle(
+            rightShoulder.position,
+            rightElbow.position,
+            rightWrist.position
         )
         
-        // Calculate vertical positions
-        val chinHeight = nose!!.position.y
-        val shoulderHeight = (leftShoulder.position.y + rightShoulder.position.y) / 2
+        // Average arm angle
+        val armAngle = (leftArmAngle + rightArmAngle) / 2
         
-        // Determine pullup state
-        val isUp = chinHeight <= shoulderHeight // Chin above or at bar level
-        val isDown = chinHeight > shoulderHeight + 30 // Chin below bar level (arms extended)
+        // Check if in up position (chin above hands, arms bent)
+        val isUp = chinY < handsY && armAngle < 100
         
-        // Evaluate form - elbows should be close to body
-        val elbowAngle = (leftElbowAngle + rightElbowAngle) / 2
-        val isGoodForm = elbowAngle < 120 // Elbows bent and close to body during pull
-        val formScore = if (isGoodForm) prevState.formScore else prevState.formScore.coerceAtMost(80)
+        // Check if in down position (arms extended)
+        val isDown = armAngle > 150
         
-        // Calculate new count based on state transition
-        var newCount = prevState.count
-        var feedback = "Good form. Keep going."
+        // Calculate form score based on symmetry and body position
+        val symmetryScore = (100 - min(30.0, abs(leftArmAngle - rightArmAngle))).toInt()
         
-        if (prevState.isDown && isUp) {
-            // Transitioning from down to up position - count a rep
-            newCount++
-            feedback = "Great job! $newCount pullups completed."
-        } else if (isDown) {
-            feedback = "Now pull up until your chin is above the bar."
-        } else if (!isGoodForm) {
-            feedback = "Keep your elbows closer to your body."
+        // Generate feedback
+        val feedback = when {
+            !isDown && !isUp -> "Hang with arms extended to start"
+            isDown -> "Pull up until your chin is over the bar"
+            isUp && prevState.isDown -> "Good! Now lower yourself"
+            isUp -> "Lower yourself to start the next rep"
+            else -> "Keep your body straight"
+        }
+        
+        // Count rep if we were down and now we're up
+        val newCount = if (prevState.isDown && isUp && !prevState.isUp) {
+            prevState.count + 1
+        } else {
+            prevState.count
         }
         
         return PullupState(
             isUp = isUp,
             isDown = isDown,
             count = newCount,
-            formScore = formScore,
+            formScore = symmetryScore,
             feedback = feedback
         )
     }
     
     /**
-     * Analyzes a situp exercise from a pose
+     * Detect situp motion from pose
      */
     fun detectSitup(pose: Pose, prevState: SitupState): SitupState {
-        // Only process if we have all required landmarks with sufficient confidence
+        // Get key landmarks
         val leftShoulder = pose.getPoseLandmark(PoseLandmark.LEFT_SHOULDER)
         val rightShoulder = pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER)
         val leftHip = pose.getPoseLandmark(PoseLandmark.LEFT_HIP)
@@ -239,90 +241,119 @@ class PoseDetectionService @Inject constructor(
         val leftKnee = pose.getPoseLandmark(PoseLandmark.LEFT_KNEE)
         val rightKnee = pose.getPoseLandmark(PoseLandmark.RIGHT_KNEE)
         
-        // Check if we have all landmarks with sufficient confidence
-        val requiredLandmarks = listOf(
-            leftShoulder, rightShoulder, leftHip, rightHip, leftKnee, rightKnee
-        )
-        
-        if (requiredLandmarks.any { it == null || it.inFrameLikelihood < MIN_CONFIDENCE }) {
-            return SitupState(
-                isUp = false,
-                isDown = false,
-                count = prevState.count,
-                formScore = prevState.formScore,
-                feedback = "Position yourself in the frame"
+        // If critical landmarks are missing, return previous state with feedback
+        if (leftShoulder == null || rightShoulder == null || 
+            leftHip == null || rightHip == null ||
+            leftKnee == null || rightKnee == null) {
+            return prevState.copy(
+                feedback = "Position your full body in view"
             )
         }
         
-        // Calculate angle between shoulders, hips, and knees
-        val leftAngle = calculateAngle(
-            leftShoulder!!.position,
-            leftHip!!.position,
-            leftKnee!!.position
-        )
-        val rightAngle = calculateAngle(
-            rightShoulder!!.position,
-            rightHip!!.position,
-            rightKnee!!.position
+        // For situps, we need to check the angle between shoulders, hips, and knees
+        val leftSitupAngle = calculateAngle(
+            leftShoulder.position,
+            leftHip.position,
+            leftKnee.position
         )
         
-        // Average the angles
-        val hipAngle = (leftAngle + rightAngle) / 2
+        val rightSitupAngle = calculateAngle(
+            rightShoulder.position,
+            rightHip.position,
+            rightKnee.position
+        )
         
-        // Determine situp state
-        val isUp = hipAngle < 90 // Torso raised
-        val isDown = hipAngle > 160 // Torso flat
+        // Average situp angle
+        val situpAngle = (leftSitupAngle + rightSitupAngle) / 2
         
-        // Evaluate form - focus on full range of motion
-        val formScore = if (prevState.isDown && isUp) 100 else prevState.formScore
+        // Check if in up position (smaller angle, torso is up)
+        val isUp = situpAngle < 80
         
-        // Calculate new count based on state transition
-        var newCount = prevState.count
-        var feedback = "Good form. Keep going."
+        // Check if in down position (larger angle, lying flat)
+        val isDown = situpAngle > 160
         
-        if (prevState.isDown && isUp) {
-            // Transitioning from down to up position - count a rep
-            newCount++
-            feedback = "Great job! $newCount situps completed."
-        } else if (isDown) {
-            feedback = "Now raise your torso to the up position."
-        } else if (isUp) {
-            feedback = "Now lower your torso to the starting position."
+        // Calculate form score based on symmetry
+        val symmetryScore = (100 - min(30.0, abs(leftSitupAngle - rightSitupAngle))).toInt()
+        
+        // Generate feedback
+        val feedback = when {
+            !isDown && !isUp -> "Lie flat to start"
+            isDown -> "Sit up until your torso is upright"
+            isUp && prevState.isDown -> "Good! Now lower yourself"
+            isUp -> "Lower yourself to start the next rep"
+            else -> "Keep your movement controlled"
+        }
+        
+        // Count rep if we were down and now we're up
+        val newCount = if (prevState.isDown && isUp && !prevState.isUp) {
+            prevState.count + 1
+        } else {
+            prevState.count
         }
         
         return SitupState(
             isUp = isUp,
             isDown = isDown,
             count = newCount,
-            formScore = formScore,
+            formScore = symmetryScore,
             feedback = feedback
         )
     }
     
     /**
-     * Calculates the angle between three points
+     * Calculate angle between three points
      */
-    private fun calculateAngle(a: PointF, b: PointF, c: PointF): Float {
-        val angleAB = atan2(a.y - b.y, a.x - b.x)
-        val angleBC = atan2(c.y - b.y, c.x - b.x)
+    private fun calculateAngle(
+        p1: PointF,
+        p2: PointF,
+        p3: PointF
+    ): Double {
+        // Calculate vectors
+        val v1x = p1.x - p2.x
+        val v1y = p1.y - p2.y
+        val v2x = p3.x - p2.x
+        val v2y = p3.y - p2.y
         
-        var angleDiff = Math.toDegrees((angleBC - angleAB).toDouble()).toFloat()
+        // Calculate angle using the dot product
+        val dot = v1x * v2x + v1y * v2y
+        val mag1 = sqrt(v1x * v1x + v1y * v1y)
+        val mag2 = sqrt(v2x * v2x + v2y * v2y)
         
-        // Ensure the angle is between 0 and 180
-        if (angleDiff < 0) {
-            angleDiff += 360
-        }
-        if (angleDiff > 180) {
-            angleDiff = 360 - angleDiff
-        }
+        // Calculate angle in degrees
+        val angle = Math.toDegrees(
+            atan2(
+                p1.y - p2.y,
+                p1.x - p2.x
+            ) - atan2(
+                p3.y - p2.y,
+                p3.x - p2.x
+            )
+        )
         
-        return angleDiff
+        // Ensure angle is positive
+        return abs(angle)
     }
     
     /**
-     * Calculates the distance between two points
+     * Calculate distance between two points
      */
     private fun getDistance(p1: PointF, p2: PointF): Float {
-        return sqrt((p1.x - p2.x).pow(2) + (p1.y - p2.y).pow(2))
+        val dx = p1.x - p2.x
+        val dy = p1.y - p2.y
+        return sqrt(dx * dx + dy * dy)
+    }
+    
+    /**
+     * Absolute value
+     */
+    private fun abs(value: Double): Double {
+        return if (value < 0) -value else value
+    }
+    
+    /**
+     * Clean up resources
+     */
+    fun close() {
+        poseDetector.close()
     }
 }
