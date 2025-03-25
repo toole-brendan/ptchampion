@@ -97,7 +97,7 @@ export default function HomePage() {
       <header className="bg-white border-b border-slate-200">
         <div className="container px-4 py-3 mx-auto flex items-center justify-between">
           <div className="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
               <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
               <line x1="6" y1="1" x2="6" y2="4"></line>
@@ -108,7 +108,7 @@ export default function HomePage() {
           </div>
           <div>
             <button className="p-2 rounded-full bg-slate-100">
-              <Settings className="h-5 w-5 text-primary" />
+              <Settings className="h-5 w-5 text-gray-700" />
             </button>
           </div>
         </div>
@@ -123,7 +123,7 @@ export default function HomePage() {
             {/* Overall Performance Card */}
             {loadingLatest ? (
               <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex justify-center items-center h-32">
-                <Loader2 className="h-8 w-8 animate-spin text-accent" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
               <PerformanceCard latestExercises={latestExercises as Record<string, any>} />
@@ -133,7 +133,7 @@ export default function HomePage() {
             <h3 className="text-lg font-semibold mb-3">Select Exercise</h3>
             {loadingExercises ? (
               <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex justify-center items-center h-48">
-                <Loader2 className="h-8 w-8 animate-spin text-accent" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
