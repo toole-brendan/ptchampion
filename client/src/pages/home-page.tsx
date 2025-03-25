@@ -33,29 +33,54 @@ export default function HomePage() {
   useEffect(() => {
     // Only request location if user is logged in and location isn't already stored
     if (user && navigator.geolocation && (!user.latitude || !user.longitude)) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          updateLocationMutation.mutate({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          }, {
-            onSuccess: () => {
-              // Invalidate leaderboard queries to refresh the data
-              queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/local"] });
-            }
-          });
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          // No need to show a toast here as it would be disruptive on homepage load
-        },
-        {
-          // More precise settings for better reliability
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
+      // Define the position function
+      const getPosition = () => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log("Home - Position obtained:", position.coords);
+            updateLocationMutation.mutate({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude
+            }, {
+              onSuccess: (updatedUser) => {
+                console.log("Home - Location updated:", updatedUser);
+                // Invalidate leaderboard queries to refresh the data
+                queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/local"] });
+              },
+              onError: (error) => {
+                console.error("Home - Update location error:", error);
+                // No toast here to avoid disruption on homepage load
+              }
+            });
+          },
+          (error) => {
+            console.error("Home - Geolocation error:", error);
+            // No need to show a toast here as it would be disruptive on homepage load
+          },
+          {
+            // More precise settings for better reliability
+            enableHighAccuracy: true,
+            timeout: 15000, // Increased timeout for slower devices/connections
+            maximumAge: 0
+          }
+        );
+      };
+
+      // Try to request location with better error handling
+      try {
+        navigator.permissions?.query({ name: 'geolocation' }).then((permissionStatus) => {
+          if (permissionStatus.state === 'granted' || permissionStatus.state === 'prompt') {
+            getPosition();
+          }
+          // If denied, don't show any message on home page to avoid disruption
+        }).catch(() => {
+          // If the permissions API fails, try regular getCurrentPosition
+          getPosition();
+        });
+      } catch (e) {
+        // If permissions API isn't available, just try to get position
+        getPosition();
+      }
     }
   }, [user, updateLocationMutation, queryClient]);
 

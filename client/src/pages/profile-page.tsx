@@ -38,42 +38,31 @@ export default function ProfilePage() {
         duration: 5000,
       });
       
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          updateLocationMutation.mutate({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
-          }, {
-            onSuccess: () => {
-              setLocationStatus("enabled");
-              toast({
-                title: "Location Updated",
-                description: "Your location has been updated successfully. You can now view the local leaderboard.",
-                duration: 3000,
-              });
-              
-              // Invalidate leaderboard queries to refresh the data
-              queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/local"] });
-            }
-          });
-        },
-        (error) => {
-          console.error("Geolocation error:", error);
-          setLocationStatus("error");
-          toast({
-            title: "Location Error",
-            description: error.message || "Could not access your location. Please check your browser settings.",
-            variant: "destructive",
-            duration: 5000,
-          });
-        },
-        {
-          // More precise settings for better reliability
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0
-        }
-      );
+      // Modified approach to improve permission handling in mobile browsers
+      try {
+        navigator.permissions?.query({ name: 'geolocation' }).then((permissionStatus) => {
+          if (permissionStatus.state === 'denied') {
+            // If permissions are denied, show instructions to enable them
+            toast({
+              title: "Location Access Denied",
+              description: "Please enable location access in your browser settings to use this feature.",
+              variant: "destructive",
+              duration: 5000,
+            });
+            setLocationStatus("error");
+            return;
+          }
+          
+          // If permissions aren't denied, attempt to get position
+          getPosition();
+        }).catch(() => {
+          // If the permissions API fails, fall back to the regular getCurrentPosition
+          getPosition();
+        });
+      } catch (e) {
+        // If permissions API isn't available, just try to get position
+        getPosition();
+      }
     } else {
       setLocationStatus("unsupported");
       toast({
@@ -82,6 +71,57 @@ export default function ProfilePage() {
         variant: "destructive",
       });
     }
+  };
+  
+  // Extracted position function for cleaner code
+  const getPosition = () => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        console.log("Position obtained:", position.coords);
+        updateLocationMutation.mutate({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        }, {
+          onSuccess: (updatedUser) => {
+            console.log("Location updated:", updatedUser);
+            setLocationStatus("enabled");
+            toast({
+              title: "Location Updated",
+              description: "Your location has been updated successfully. You can now view the local leaderboard.",
+              duration: 3000,
+            });
+            
+            // Invalidate leaderboard queries to refresh the data
+            queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/local"] });
+          },
+          onError: (error) => {
+            console.error("Update location error:", error);
+            toast({
+              title: "Update Failed",
+              description: "Failed to update your location. Please try again.",
+              variant: "destructive",
+              duration: 3000,
+            });
+          }
+        });
+      },
+      (error) => {
+        console.error("Geolocation error:", error);
+        setLocationStatus("error");
+        toast({
+          title: "Location Error",
+          description: error.message || "Could not access your location. Please check your browser settings.",
+          variant: "destructive",
+          duration: 5000,
+        });
+      },
+      {
+        // More precise settings for better reliability
+        enableHighAccuracy: true,
+        timeout: 15000, // Increased timeout for slower devices/connections
+        maximumAge: 0
+      }
+    );
   };
   
   return (

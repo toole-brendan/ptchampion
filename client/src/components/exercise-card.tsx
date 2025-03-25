@@ -71,49 +71,47 @@ export default function ExerciseCard({ exercise, latestScore }: ExerciseCardProp
   };
 
   return (
-    <Link href={getExerciseRoute(exercise.type)}>
-      <a className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer transition hover:shadow-md block">
-        <div className="aspect-video bg-slate-100 relative">
-          <img 
-            src={getExerciseImage(exercise.type)} 
-            alt={`${exercise.name} exercise`} 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-            <div className="text-white font-semibold">{exercise.name}</div>
+    <Link href={getExerciseRoute(exercise.type)} className="bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer transition hover:shadow-md block">
+      <div className="aspect-video bg-slate-100 relative">
+        <img 
+          src={getExerciseImage(exercise.type)} 
+          alt={`${exercise.name} exercise`} 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+          <div className="text-white font-semibold">{exercise.name}</div>
+        </div>
+      </div>
+      <div className="p-3">
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-slate-500">Last Score</div>
+          <div className={getBadgeClass(exercise.type, latestScore)}>
+            {latestScore ? formatScore(exercise.type, latestScore) : "No data"}
           </div>
         </div>
-        <div className="p-3">
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-slate-500">Last Score</div>
-            <div className={getBadgeClass(exercise.type, latestScore)}>
-              {latestScore ? formatScore(exercise.type, latestScore) : "No data"}
-            </div>
-          </div>
-          <div className="mt-2 flex items-center justify-between">
-            <div className="text-xs">
-              {latestScore 
-                ? (
-                  <div className="space-y-1">
-                    {latestScore.grade !== undefined && latestScore.grade !== null && (
-                      <div className="text-blue-600 font-medium">
-                        Grade: {latestScore.grade} pts ({getScoreRating(latestScore.grade)})
-                      </div>
-                    )}
-                    <div className="text-slate-400">
-                      Form Score: {latestScore.formScore || 0}%
+        <div className="mt-2 flex items-center justify-between">
+          <div className="text-xs">
+            {latestScore 
+              ? (
+                <div className="space-y-1">
+                  {latestScore.grade !== undefined && latestScore.grade !== null && (
+                    <div className="text-blue-600 font-medium">
+                      Grade: {latestScore.grade} pts ({getScoreRating(latestScore.grade)})
                     </div>
+                  )}
+                  <div className="text-slate-400">
+                    Form Score: {latestScore.formScore || 0}%
                   </div>
-                ) 
-                : exercise.type === "run" 
-                  ? <div className="text-slate-400">Needs smartwatch</div>
-                  : <div className="text-slate-400">Not attempted yet</div>
-              }
-            </div>
-            <ChevronRight className="h-5 w-5 text-accent" />
+                </div>
+              ) 
+              : exercise.type === "run" 
+                ? <div className="text-slate-400">Needs smartwatch</div>
+                : <div className="text-slate-400">Not attempted yet</div>
+            }
           </div>
+          <ChevronRight className="h-5 w-5 text-accent" />
         </div>
-      </a>
+      </div>
     </Link>
   );
 }

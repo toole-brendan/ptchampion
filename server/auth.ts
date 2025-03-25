@@ -112,14 +112,23 @@ export function setupAuth(app: Express) {
     
     try {
       const { latitude, longitude } = req.body;
+      console.log("Received location update:", { latitude, longitude, type: typeof latitude });
       
-      if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+      // Handle numbers or numeric strings
+      const lat = typeof latitude === 'string' ? parseFloat(latitude) : latitude;
+      const lng = typeof longitude === 'string' ? parseFloat(longitude) : longitude;
+      
+      if (isNaN(lat) || isNaN(lng)) {
+        console.error("Invalid coordinates:", { latitude, longitude });
         return res.status(400).json({ message: "Invalid coordinates" });
       }
       
-      const updatedUser = await storage.updateUserLocation(req.user.id, latitude, longitude);
+      console.log("Processing location update:", { lat, lng });
+      const updatedUser = await storage.updateUserLocation(req.user.id, lat, lng);
+      console.log("Updated user:", updatedUser);
       res.json(updatedUser);
     } catch (err) {
+      console.error("Location update error:", err);
       next(err);
     }
   });
