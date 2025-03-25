@@ -152,16 +152,28 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getGlobalLeaderboard(): Promise<any[]> {
-    // This is a simplified implementation - in a real app, you would calculate scores and join with users table
-    const usersWithScores = await db.query.users.findMany({
-      with: {
-        userExercises: {
-          where: eq(userExercises.completed, true),
-          with: {
-            exercise: true
-          }
-        }
-      }
+    // This is a simplified implementation - in a real app, you would calculate scores
+    const usersResult = await db.select().from(users);
+    const userExercisesResult = await db
+      .select()
+      .from(userExercises)
+      .where(eq(userExercises.completed, true));
+    const exercisesResult = await db.select().from(exercises);
+    
+    // Manually join the data
+    const usersWithScores = usersResult.map(user => {
+      const userExs = userExercisesResult.filter(ue => ue.userId === user.id);
+      
+      return {
+        ...user,
+        userExercises: userExs.map(ue => {
+          const exercise = exercisesResult.find(e => e.id === ue.exerciseId);
+          return {
+            ...ue,
+            exercise
+          };
+        })
+      };
     });
     
     // Process and return leaderboard
@@ -170,16 +182,27 @@ export class DatabaseStorage implements IStorage {
   
   async getLocalLeaderboard(latitude: number, longitude: number, radiusMiles: number = 5): Promise<any[]> {
     // In a real implementation, you would use PostgreSQL's PostGIS extension
-    // For simplicity, we'll get all users and filter by Haversine distance
-    const allUsers = await db.query.users.findMany({
-      with: {
-        userExercises: {
-          where: eq(userExercises.completed, true),
-          with: {
-            exercise: true
-          }
-        }
-      }
+    const usersResult = await db.select().from(users);
+    const userExercisesResult = await db
+      .select()
+      .from(userExercises)
+      .where(eq(userExercises.completed, true));
+    const exercisesResult = await db.select().from(exercises);
+    
+    // Manually join the data
+    const allUsers = usersResult.map(user => {
+      const userExs = userExercisesResult.filter(ue => ue.userId === user.id);
+      
+      return {
+        ...user,
+        userExercises: userExs.map(ue => {
+          const exercise = exercisesResult.find(e => e.id === ue.exerciseId);
+          return {
+            ...ue,
+            exercise
+          };
+        })
+      };
     });
     
     // Filter users by distance
