@@ -232,6 +232,7 @@ struct ProfileView: View {
                 SettingsRow(
                     icon: "icloud.and.arrow.down",
                     title: "Sync Data",
+                    displayText: viewModel.lastSyncTimeFormatted,
                     action: { viewModel.syncData() }
                 )
                 
@@ -436,9 +437,22 @@ class ProfileViewModel: ObservableObject {
         }
     }
     
+    var lastSyncTimeFormatted: String {
+        if let lastSyncString = UserDefaults.standard.string(forKey: "last_sync_timestamp") {
+            let formatter = ISO8601DateFormatter()
+            if let date = formatter.date(from: lastSyncString) {
+                let displayFormatter = DateFormatter()
+                displayFormatter.dateStyle = .short
+                displayFormatter.timeStyle = .short
+                return displayFormatter.string(from: date)
+            }
+        }
+        return "Never"
+    }
+    
     func loadUserData(user: User) {
         username = user.username
-        displayName = user.username // Default display name to username
+        displayName = user.displayName ?? user.username // Use display name if available, or username as fallback
         
         // Format the date
         if let createdAt = user.createdAt {
@@ -455,6 +469,18 @@ class ProfileViewModel: ObservableObject {
         
         // Load exercise statistics
         loadExerciseStats()
+        
+        // Check for last sync time
+        if let lastSyncedAt = user.lastSyncedAt {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            let formattedDate = formatter.string(from: lastSyncedAt)
+            
+            // Store in UserDefaults as ISO8601 string for consistency
+            let isoFormatter = ISO8601DateFormatter()
+            UserDefaults.standard.set(isoFormatter.string(from: lastSyncedAt), forKey: "last_sync_timestamp")
+        }
     }
     
     func loadExerciseStats() {
@@ -520,12 +546,35 @@ class ProfileViewModel: ObservableObject {
     }
     
     func updateProfile(displayName: String) {
-        // In a real app, you would send this to the server
-        self.displayName = displayName
+        // Create an update profile request
+        let profileData = UpdateProfileRequest(
+            displayName: displayName,
+            profilePictureUrl: nil,
+            location: nil
+        )
         
-        showAlert = true
-        alertTitle = "Profile Updated"
-        alertMessage = "Your profile information has been updated successfully."
+        // Update the profile data
+        APIClient.shared.updateProfile(profileData: profileData)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.showError("Update Failed", message: error.localizedDescription)
+                    }
+                },
+                receiveValue: { [weak self] user in
+                    guard let self = self else { return }
+                    
+                    // Update local display name
+                    self.displayName = user.displayName ?? user.username
+                    
+                    // Show success message
+                    self.showAlert = true
+                    self.alertTitle = "Profile Updated"
+                    self.alertMessage = "Your profile information has been updated successfully."
+                }
+            )
+            .store(in: &cancellables)
     }
     
     func signOut(authManager: AuthManager) {
@@ -533,10 +582,62 @@ class ProfileViewModel: ObservableObject {
     }
     
     func syncData() {
-        // Simulate data sync
+        // Show syncing status
         showAlert = true
-        alertTitle = "Data Synchronized"
-        alertMessage = "Your exercise data has been synchronized with the server."
+        alertTitle = "Syncing Data"
+        alertMessage = "Synchronizing your data with the server..."
+        
+        // Generate a device ID if we don't have one
+        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        
+        APIClient.shared.syncUserData(deviceId: deviceId)
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { [weak self] completion in
+                    if case .failure(let error) = completion {
+                        self?.showError("Sync Failed", message: error.localizedDescription)
+                    }
+                },
+                receiveValue: { [weak self] response in
+                    guard let self = self else { return }
+                    
+                    // Update last sync time in UserDefaults
+                    UserDefaults.standard.set(response.timestamp, forKey: "last_sync_timestamp")
+                    
+                    // Process received data
+                    if let profile = response.data?.profile {
+                        self.updateProfileFromSync(profile)
+                    }
+                    
+                    if let exercises = response.data?.userExercises {
+                        self.updateLocalExercises(exercises)
+                    }
+                    
+                    // Show success message
+                    self.showAlert = true
+                    self.alertTitle = "Data Synchronized"
+                    self.alertMessage = "Your exercise data has been synchronized with the server."
+                    
+                    // Refresh exercise stats
+                    self.loadExerciseStats()
+                }
+            )
+            .store(in: &cancellables)
+    }
+    
+    private func updateProfileFromSync(_ profile: User) {
+        // Update profile data from sync response
+        username = profile.username
+        displayName = profile.displayName ?? profile.username
+        
+        // Update location if available
+        locationEnabled = profile.latitude != nil && profile.longitude != nil
+    }
+    
+    private func updateLocalExercises(_ exercises: [UserExercise]) {
+        // In a real implementation, this would save the exercises to local storage
+        // For now, we just process them for stats
+        processExerciseStats(exercises)
     }
     
     func showError(_ title: String, message: String) {
