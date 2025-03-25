@@ -26,6 +26,7 @@ export const userExercises = pgTable("user_exercises", {
   repetitions: integer("repetitions"),
   formScore: integer("form_score"), // 0-100
   timeInSeconds: integer("time_in_seconds"),
+  grade: integer("grade"), // 0-100 based on performance metrics
   completed: boolean("completed").default(false),
   metadata: text("metadata"), // JSON string for additional exercise data (distance, heart rate, etc.)
   createdAt: timestamp("created_at").defaultNow(),
@@ -50,6 +51,7 @@ export const insertUserExerciseSchema = createInsertSchema(userExercises).pick({
   repetitions: true,
   formScore: true,
   timeInSeconds: true,
+  grade: true,
   completed: true,
   metadata: true,
 });
