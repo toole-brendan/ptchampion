@@ -2,6 +2,8 @@ package com.ptchampion.data.api
 
 import com.ptchampion.domain.model.Exercise
 import com.ptchampion.domain.model.LeaderboardEntry
+import com.ptchampion.domain.model.SyncRequest
+import com.ptchampion.domain.model.SyncResponse
 import com.ptchampion.domain.model.User
 import com.ptchampion.domain.model.UserExercise
 import retrofit2.Response
@@ -128,4 +130,12 @@ interface ApiService {
     // Health check endpoint
     @GET("api/health")
     suspend fun checkHealth(): Response<Map<String, Any>>
+    
+    // Sync endpoint
+    @Headers("X-Client-Platform: mobile")
+    @POST("api/sync")
+    suspend fun syncData(
+        @Header("Authorization") authHeader: String,
+        @Body request: SyncRequest
+    ): Response<SyncResponse>
 }

@@ -7,9 +7,15 @@ data class User(
     val id: Int,
     val username: String,
     val password: String,
+    val displayName: String? = null,
+    val profilePictureUrl: String? = null,
+    val location: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null,
-    val createdAt: String? = null
+    val deviceId: String? = null,
+    val lastSyncedAt: String? = null,
+    val createdAt: String? = null,
+    val updatedAt: String? = null
 )
 
 /**
@@ -34,10 +40,16 @@ data class UserExercise(
     val exerciseId: Int,
     val type: String,
     val reps: Int? = null,
+    val formScore: Int? = null, // Renamed from score for consistency
     val timeInSeconds: Int? = null,
     val distance: Double? = null,
-    val score: Int,
-    val date: String
+    val grade: Int, // This will store the calculated score
+    val completed: Boolean = true,
+    val metadata: Map<String, String>? = null,
+    val deviceId: String? = null,
+    val syncStatus: String? = null,
+    val createdAt: String, // Renamed from date for consistency
+    val updatedAt: String? = null
 )
 
 /**
@@ -81,6 +93,42 @@ data class SitupState(
     val count: Int = 0,
     val formScore: Int = 100,
     val feedback: String = "Get in position to start"
+)
+
+/**
+ * Sync request model for sending data to the server
+ */
+data class SyncRequest(
+    val userId: Int,
+    val deviceId: String,
+    val lastSyncTimestamp: String,
+    val data: SyncRequestData? = null
+)
+
+/**
+ * Data container for sync request
+ */
+data class SyncRequestData(
+    val userExercises: List<UserExercise>? = null,
+    val profile: User? = null
+)
+
+/**
+ * Sync response model received from the server
+ */
+data class SyncResponse(
+    val success: Boolean,
+    val timestamp: String,
+    val data: SyncResponseData? = null,
+    val conflicts: List<UserExercise>? = null
+)
+
+/**
+ * Data container for sync response
+ */
+data class SyncResponseData(
+    val userExercises: List<UserExercise>? = null,
+    val profile: User? = null
 )
 
 /**
