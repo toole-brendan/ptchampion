@@ -37,8 +37,8 @@ export default function Leaderboard() {
   const isLoading = view === "global" ? loadingGlobal : loadingLocal;
   
   // Format run time for display
-  const formatRunTime = (seconds: number | null): string => {
-    if (seconds === null) return "-";
+  const formatRunTime = (seconds: number | null | undefined): string => {
+    if (seconds === null || seconds === undefined) return "-";
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
