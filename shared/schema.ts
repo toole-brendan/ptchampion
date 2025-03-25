@@ -6,10 +6,14 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  displayName: text("display_name"),
+  profilePictureUrl: text("profile_picture_url"),
   location: text("location"),
   latitude: decimal("latitude", { precision: 10, scale: 7 }),
   longitude: decimal("longitude", { precision: 10, scale: 7 }),
+  lastSyncedAt: timestamp("last_synced_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const exercises = pgTable("exercises", {
@@ -29,16 +33,28 @@ export const userExercises = pgTable("user_exercises", {
   grade: integer("grade"), // 0-100 based on performance metrics
   completed: boolean("completed").default(false),
   metadata: text("metadata"), // JSON string for additional exercise data (distance, heart rate, etc.)
+  deviceId: text("device_id"), // ID of the device that created the exercise record
+  syncStatus: text("sync_status").default('synced'), // synced, pending, conflict
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Schema for inserting a new user
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  displayName: true,
+  profilePictureUrl: true,
   location: true,
   latitude: true,
   longitude: true,
+});
+
+// Schema for profile update
+export const updateProfileSchema = createInsertSchema(users).pick({
+  displayName: true,
+  profilePictureUrl: true,
+  location: true,
 });
 
 // Schema for inserting a new exercise
@@ -54,17 +70,41 @@ export const insertUserExerciseSchema = createInsertSchema(userExercises).pick({
   grade: true,
   completed: true,
   metadata: true,
+  deviceId: true,
+  syncStatus: true,
 });
 
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 
 export type Exercise = typeof exercises.$inferSelect;
 export type InsertExercise = z.infer<typeof insertExerciseSchema>;
 
 export type UserExercise = typeof userExercises.$inferSelect;
 export type InsertUserExercise = z.infer<typeof insertUserExerciseSchema>;
+
+// Sync types
+export type SyncRequest = {
+  userId: number;
+  deviceId: string;
+  lastSyncTimestamp: string;
+  data?: {
+    userExercises?: InsertUserExercise[];
+    profile?: UpdateProfile;
+  };
+};
+
+export type SyncResponse = {
+  success: boolean;
+  timestamp: string;
+  data?: {
+    userExercises?: UserExercise[];
+    profile?: User;
+  };
+  conflicts?: UserExercise[];
+};
 
 // Seed data for exercises
 export const SEED_EXERCISES = [
