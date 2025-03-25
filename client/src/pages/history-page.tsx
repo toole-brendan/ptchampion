@@ -90,12 +90,12 @@ export default function HistoryPage() {
           <div className="container mx-auto max-w-5xl">
             {isLoading ? (
               <div className="flex justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-accent" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : userExercises?.length === 0 ? (
               <div className="bg-white rounded-xl shadow-sm p-8 text-center">
                 <h3 className="text-lg font-semibold mb-2">No Exercise History</h3>
-                <p className="text-slate-500">Complete some exercises to see your history</p>
+                <p className="text-slate-600">Complete some exercises to see your history</p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -106,7 +106,7 @@ export default function HistoryPage() {
                       {group.exercises.map(exercise => (
                         <div key={exercise.id} className="p-4 border-b border-slate-100 flex items-center justify-between">
                           <div className="flex items-center">
-                            <div className={`w-10 h-10 rounded-full bg-accent/10 text-accent flex items-center justify-center mr-3`}>
+                            <div className={`w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mr-3 font-medium`}>
                               {getExerciseType(exercise.exerciseId) === "pushup" && "P"}
                               {getExerciseType(exercise.exerciseId) === "pullup" && "PU"}
                               {getExerciseType(exercise.exerciseId) === "situp" && "S"}
@@ -114,12 +114,12 @@ export default function HistoryPage() {
                             </div>
                             <div>
                               <div className="font-medium">{getExerciseName(exercise.exerciseId)}</div>
-                              <div className="text-xs text-slate-500">{formatDate(exercise.createdAt!)}</div>
+                              <div className="text-xs text-slate-600">{formatDate(exercise.createdAt!)}</div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm font-medium">{formatResult(exercise)}</div>
-                            <div className="text-xs text-slate-500">
+                            <div className="text-sm font-medium text-gray-900">{formatResult(exercise)}</div>
+                            <div className="text-xs text-slate-600">
                               {exercise.formScore ? `Form: ${exercise.formScore}%` : ''}
                             </div>
                           </div>

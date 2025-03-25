@@ -179,10 +179,10 @@ export default function ProfilePage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <Settings className="h-5 w-5 mr-3 text-slate-400" />
+                          <Settings className="h-5 w-5 mr-3 text-gray-700" />
                           <div>
                             <div className="font-medium">Measurement Units</div>
-                            <div className="text-sm text-slate-500">Imperial (miles, pounds)</div>
+                            <div className="text-sm text-slate-600">Imperial (miles, pounds)</div>
                           </div>
                         </div>
                         <Button variant="outline" size="sm">Change</Button>
@@ -190,7 +190,7 @@ export default function ProfilePage() {
                       
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <User className="h-5 w-5 mr-3 text-slate-400" />
+                          <User className="h-5 w-5 mr-3 text-gray-700" />
                           <div>
                             <div className="font-medium">Update Profile</div>
                             <div className="text-sm text-slate-500">Change your username</div>
@@ -213,10 +213,10 @@ export default function ProfilePage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <MapPin className="h-5 w-5 mr-3 text-slate-400" />
+                          <MapPin className="h-5 w-5 mr-3 text-gray-700" />
                           <div>
                             <div className="font-medium">Location Access</div>
-                            <div className="text-sm text-slate-500">
+                            <div className="text-sm text-slate-600">
                               {locationStatus === "enabled" ? "Enabled for local leaderboards" : 
                                locationStatus === "error" ? "Permission denied" :
                                locationStatus === "unsupported" ? "Not supported by your device" :
@@ -254,10 +254,10 @@ export default function ProfilePage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center">
-                          <Shield className="h-5 w-5 mr-3 text-slate-400" />
+                          <Shield className="h-5 w-5 mr-3 text-gray-700" />
                           <div>
                             <div className="font-medium">Leaderboard Visibility</div>
-                            <div className="text-sm text-slate-500">Your name appears on leaderboards</div>
+                            <div className="text-sm text-slate-600">Your name appears on leaderboards</div>
                           </div>
                         </div>
                         <Button variant="outline" size="sm">Change</Button>
@@ -268,7 +268,7 @@ export default function ProfilePage() {
                           <LogOut className="h-5 w-5 mr-3 text-red-500 mt-1" />
                           <div>
                             <div className="font-medium">Delete Account</div>
-                            <div className="text-sm text-slate-500">Permanently delete your account and all data</div>
+                            <div className="text-sm text-slate-600">Permanently delete your account and all data</div>
                           </div>
                         </div>
                         <Button variant="destructive" size="sm">Delete</Button>
