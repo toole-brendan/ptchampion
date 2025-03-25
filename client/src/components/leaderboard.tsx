@@ -83,7 +83,7 @@ export default function Leaderboard() {
           </div>
         ) : leaderboardData && leaderboardData.length > 0 ? (
           <>
-            {leaderboardData.slice(0, 100).map((entry, index) => {
+            {leaderboardData.slice(0, 100).map((entry: any, index: number) => {
               const isCurrentUser = user && entry.id === user.id;
               return (
                 <div 
