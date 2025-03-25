@@ -10,7 +10,10 @@ struct UserExercise: Identifiable, Codable {
     let grade: Int?
     let completed: Bool
     let metadata: [String: String]?
+    let deviceId: String?
+    let syncStatus: String?
     let createdAt: Date
+    let updatedAt: Date?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -22,10 +25,18 @@ struct UserExercise: Identifiable, Codable {
         case grade
         case completed
         case metadata
+        case deviceId
+        case syncStatus
         case createdAt
+        case updatedAt
     }
     
-    init(id: Int, userId: Int, exerciseId: Int, repetitions: Int? = nil, formScore: Int? = nil, timeInSeconds: Int? = nil, grade: Int? = nil, completed: Bool, metadata: [String: String]? = nil, createdAt: Date = Date()) {
+    init(id: Int, userId: Int, exerciseId: Int, 
+         repetitions: Int? = nil, formScore: Int? = nil, 
+         timeInSeconds: Int? = nil, grade: Int? = nil, 
+         completed: Bool, metadata: [String: String]? = nil, 
+         deviceId: String? = nil, syncStatus: String? = nil,
+         createdAt: Date = Date(), updatedAt: Date? = nil) {
         self.id = id
         self.userId = userId
         self.exerciseId = exerciseId
@@ -35,7 +46,10 @@ struct UserExercise: Identifiable, Codable {
         self.grade = grade
         self.completed = completed
         self.metadata = metadata
+        self.deviceId = deviceId
+        self.syncStatus = syncStatus
         self.createdAt = createdAt
+        self.updatedAt = updatedAt
     }
 }
 

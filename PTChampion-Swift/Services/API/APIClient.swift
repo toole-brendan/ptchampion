@@ -245,6 +245,61 @@ class APIClient {
         return makeRequest(endpoint: "/leaderboard/local?latitude=\(latitude)&longitude=\(longitude)&radius=\(radiusMiles)", method: "GET", requiresAuth: false)
     }
     
+    // MARK: - Sync Operations
+    
+    func syncUserData(deviceId: String) -> AnyPublisher<SyncResponse, Error> {
+        // Get the last sync timestamp, or use a default if this is the first sync
+        let lastSyncTimestamp = UserDefaults.standard.string(forKey: "last_sync_timestamp") ?? "2000-01-01T00:00:00.000Z"
+        
+        // Get any pending (unsynced) user exercises
+        let unsyncedExercises = getUnsyncedExercises()
+        
+        // Create the sync request
+        let syncRequest = SyncRequest(
+            deviceId: deviceId,
+            lastSyncTimestamp: lastSyncTimestamp,
+            data: SyncData(
+                userExercises: unsyncedExercises,
+                profile: nil
+            )
+        )
+        
+        return makeRequest(endpoint: "/sync", method: "POST", body: syncRequest, requiresAuth: true)
+            .handleEvents(receiveOutput: { [weak self] response in
+                // Save the new sync timestamp
+                UserDefaults.standard.set(response.timestamp, forKey: "last_sync_timestamp")
+                
+                // Update local cache with data from server
+                if let exercises = response.data?.userExercises {
+                    self?.saveExercisesToLocalCache(exercises)
+                }
+                
+                if let profile = response.data?.profile {
+                    self?.currentUser = profile
+                }
+            })
+            .eraseToAnyPublisher()
+    }
+    
+    private func getUnsyncedExercises() -> [CreateUserExerciseRequest] {
+        // This would normally fetch from local storage/Core Data
+        // For now, we'll just return an empty array
+        return []
+    }
+    
+    private func saveExercisesToLocalCache(_ exercises: [UserExercise]) {
+        // This would normally save to local storage/Core Data
+        // For now, we'll do nothing
+    }
+    
+    func updateProfile(profileData: UpdateProfileRequest) -> AnyPublisher<User, Error> {
+        return makeRequest(endpoint: "/profile", method: "POST", body: profileData, requiresAuth: true)
+            .handleEvents(receiveOutput: { [weak self] user in
+                self?.currentUser = user
+            })
+            .eraseToAnyPublisher()
+    }
+    
     // MARK: - Generic Request Methods
     
     private func makeRequest<T: Decodable>(
@@ -398,6 +453,39 @@ struct CreateUserExerciseRequest: Encodable {
     let formScore: Int?
     let timeInSeconds: Int?
     let distance: Double?
-    let score: Int
+    let grade: Int
     let metadata: [String: String]?
+    let deviceId: String?
+    let syncStatus: String?
+}
+
+// MARK: - Sync Models
+
+struct SyncRequest: Encodable {
+    let deviceId: String
+    let lastSyncTimestamp: String
+    let data: SyncData?
+}
+
+struct SyncData: Encodable {
+    let userExercises: [CreateUserExerciseRequest]?
+    let profile: UpdateProfileRequest?
+}
+
+struct SyncResponse: Decodable {
+    let success: Bool
+    let timestamp: String
+    let data: SyncResponseData?
+    let conflicts: [UserExercise]?
+}
+
+struct SyncResponseData: Decodable {
+    let userExercises: [UserExercise]?
+    let profile: User?
+}
+
+struct UpdateProfileRequest: Encodable {
+    let displayName: String?
+    let profilePictureUrl: String?
+    let location: String?
 }
