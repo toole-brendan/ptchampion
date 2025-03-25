@@ -48,24 +48,31 @@ export default function Leaderboard() {
     <div className="mt-10">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-lg font-semibold">Leaderboard</h3>
-        <div className="flex">
-          <Button
-            variant={view === "global" ? "default" : "outline"}
-            size="sm"
-            className="rounded-l-md px-3"
-            onClick={() => setView("global")}
-          >
-            Global
-          </Button>
-          <Button
-            variant={view === "local" ? "default" : "outline"}
-            size="sm"
-            className="rounded-r-md px-3"
-            onClick={() => setView("local")}
-            disabled={!user?.latitude || !user?.longitude}
-          >
-            Local (5mi)
-          </Button>
+        <div className="flex flex-col items-end">
+          <div className="flex mb-1">
+            <Button
+              variant={view === "global" ? "default" : "outline"}
+              size="sm"
+              className="rounded-l-md px-3"
+              onClick={() => setView("global")}
+            >
+              Global
+            </Button>
+            <Button
+              variant={view === "local" ? "default" : "outline"}
+              size="sm"
+              className="rounded-r-md px-3"
+              onClick={() => setView("local")}
+              disabled={!user?.latitude || !user?.longitude}
+            >
+              Local (5mi)
+            </Button>
+          </div>
+          {view === "local" && user?.latitude && user?.longitude && (
+            <span className="text-xs text-slate-500">
+              Showing users within 5 miles of your location
+            </span>
+          )}
         </div>
       </div>
       
@@ -76,7 +83,7 @@ export default function Leaderboard() {
           </div>
         ) : leaderboardData && leaderboardData.length > 0 ? (
           <>
-            {leaderboardData.slice(0, 10).map((entry, index) => {
+            {leaderboardData.slice(0, 100).map((entry, index) => {
               const isCurrentUser = user && entry.id === user.id;
               return (
                 <div 

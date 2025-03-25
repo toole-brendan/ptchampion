@@ -176,8 +176,11 @@ export class DatabaseStorage implements IStorage {
       };
     });
     
-    // Process and return leaderboard
-    return this.processLeaderboardData(usersWithScores);
+    // Process the leaderboard data
+    const processedLeaderboard = this.processLeaderboardData(usersWithScores);
+    
+    // Return up to 100 users for the global leaderboard
+    return processedLeaderboard.slice(0, 100);
   }
   
   async getLocalLeaderboard(latitude: number, longitude: number, radiusMiles: number = 5): Promise<any[]> {
@@ -214,11 +217,15 @@ export class DatabaseStorage implements IStorage {
         Number(user.latitude), Number(user.longitude)
       );
       
+      // Only include users within the specified radius (default 5 miles)
       return distance <= radiusMiles;
     });
     
-    // Process and return leaderboard
-    return this.processLeaderboardData(localUsers);
+    // Process the leaderboard data
+    const processedLeaderboard = this.processLeaderboardData(localUsers);
+    
+    // Return up to 100 users for the local leaderboard
+    return processedLeaderboard.slice(0, 100);
   }
   
   // Helper methods
