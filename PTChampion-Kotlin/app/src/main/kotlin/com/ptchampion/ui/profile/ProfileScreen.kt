@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -123,6 +124,24 @@ fun ProfileScreen(
                             imageVector = Icons.Default.Refresh,
                             contentDescription = "Refresh"
                         )
+                    }
+                    
+                    // Sync button
+                    IconButton(
+                        onClick = { viewModel.syncData() },
+                        enabled = !uiState.isSyncing
+                    ) {
+                        if (uiState.isSyncing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Sync,
+                                contentDescription = "Sync Data"
+                            )
+                        }
                     }
                     
                     // Location button
