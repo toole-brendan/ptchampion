@@ -7,6 +7,8 @@ import com.ptchampion.domain.model.UserExercise
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -25,6 +27,15 @@ data class LoginRequest(
 data class RegisterRequest(
     val username: String,
     val password: String
+)
+
+/**
+ * Auth response model
+ */
+data class AuthResponse(
+    val user: User,
+    val token: String,
+    val expiresIn: String
 )
 
 /**
@@ -53,47 +64,58 @@ data class CreateUserExerciseRequest(
 interface ApiService {
     
     // Auth endpoints
-    @POST("api/auth/login")
-    suspend fun login(@Body request: LoginRequest): Response<User>
+    @Headers("X-Client-Platform: mobile")
+    @POST("api/login")
+    suspend fun login(@Body request: LoginRequest): Response<AuthResponse>
     
-    @POST("api/auth/register")
-    suspend fun register(@Body request: RegisterRequest): Response<User>
+    @Headers("X-Client-Platform: mobile")
+    @POST("api/register")
+    suspend fun register(@Body request: RegisterRequest): Response<AuthResponse>
     
-    @GET("api/auth/current")
-    suspend fun getCurrentUser(): Response<User>
+    @GET("api/validate-token")
+    suspend fun validateToken(@Header("Authorization") authHeader: String): Response<User>
     
-    @POST("api/auth/logout")
+    @GET("api/user")
+    suspend fun getCurrentUser(@Header("Authorization") authHeader: String): Response<User>
+    
+    @POST("api/logout")
     suspend fun logout(): Response<Unit>
     
     // User endpoints
-    @GET("api/user/{id}")
-    suspend fun getUser(@Path("id") id: Int): Response<User>
-    
     @POST("api/user/location")
-    suspend fun updateUserLocation(@Body request: UpdateLocationRequest): Response<User>
+    suspend fun updateUserLocation(
+        @Header("Authorization") authHeader: String,
+        @Body request: UpdateLocationRequest
+    ): Response<User>
     
-    // Exercise endpoints
+    // Exercise endpoints (public, no auth needed)
     @GET("api/exercises")
     suspend fun getExercises(): Response<List<Exercise>>
     
     @GET("api/exercises/{id}")
     suspend fun getExerciseById(@Path("id") id: Int): Response<Exercise>
     
-    // User Exercise endpoints
+    // User Exercise endpoints (protected)
     @GET("api/user-exercises")
-    suspend fun getUserExercises(): Response<List<UserExercise>>
+    suspend fun getUserExercises(@Header("Authorization") authHeader: String): Response<List<UserExercise>>
     
-    @GET("api/user-exercises/type/{type}")
-    suspend fun getUserExercisesByType(@Path("type") type: String): Response<List<UserExercise>>
+    @GET("api/user-exercises/{type}")
+    suspend fun getUserExercisesByType(
+        @Header("Authorization") authHeader: String,
+        @Path("type") type: String
+    ): Response<List<UserExercise>>
     
-    @GET("api/user-exercises/latest")
-    suspend fun getLatestUserExercises(): Response<Map<String, UserExercise>>
+    @GET("api/user-exercises/latest/all")
+    suspend fun getLatestUserExercises(@Header("Authorization") authHeader: String): Response<Map<String, UserExercise>>
     
     @POST("api/user-exercises")
-    suspend fun createUserExercise(@Body request: CreateUserExerciseRequest): Response<UserExercise>
+    suspend fun createUserExercise(
+        @Header("Authorization") authHeader: String,
+        @Body request: CreateUserExerciseRequest
+    ): Response<UserExercise>
     
-    // Leaderboard endpoints
-    @GET("api/leaderboard")
+    // Leaderboard endpoints (public)
+    @GET("api/leaderboard/global")
     suspend fun getGlobalLeaderboard(): Response<List<LeaderboardEntry>>
     
     @GET("api/leaderboard/local")
@@ -102,4 +124,8 @@ interface ApiService {
         @Query("longitude") longitude: Double,
         @Query("radius") radiusMiles: Int = 5
     ): Response<List<LeaderboardEntry>>
+    
+    // Health check endpoint
+    @GET("api/health")
+    suspend fun checkHealth(): Response<Map<String, Any>>
 }

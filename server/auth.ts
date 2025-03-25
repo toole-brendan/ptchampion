@@ -42,8 +42,12 @@ function generateToken(user: SelectUser) {
     username: user.username,
   };
   
-  // Cast the JWT_SECRET to Secret type
-  return jwt.sign(payload, JWT_SECRET as jwt.Secret, { expiresIn: JWT_EXPIRES });
+  // Fix the typing issue with jwt.sign
+  return jwt.sign(
+    payload, 
+    JWT_SECRET, 
+    { expiresIn: JWT_EXPIRES }
+  );
 }
 
 // Function to authenticate with token or session
@@ -59,7 +63,7 @@ function authenticate(req: Request): Promise<SelectUser | null> {
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.substring(7);
       try {
-        const decoded = jwt.verify(token, JWT_SECRET as jwt.Secret) as { id: number };
+        const decoded = jwt.verify(token, JWT_SECRET) as { id: number };
         storage.getUser(decoded.id)
           .then(user => resolve(user || null))
           .catch(() => resolve(null));
@@ -73,11 +77,14 @@ function authenticate(req: Request): Promise<SelectUser | null> {
 }
 
 export function setupAuth(app: Express) {
+  // Create the PG session store
+  const PGStore = connectPg(session);
+  
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "pt-champion-secret",
     resave: false,
     saveUninitialized: false,
-    store: storage.sessionStore as session.Store,
+    store: storage.sessionStore,
     cookie: {
       secure: process.env.NODE_ENV === "production",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days

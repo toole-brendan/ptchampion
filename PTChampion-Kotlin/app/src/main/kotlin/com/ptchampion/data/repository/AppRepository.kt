@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.ptchampion.data.api.ApiService
+import com.ptchampion.data.api.AuthResponse
 import com.ptchampion.data.api.CreateUserExerciseRequest
 import com.ptchampion.data.api.LoginRequest
 import com.ptchampion.data.api.RegisterRequest
@@ -35,6 +36,7 @@ class AppRepository @Inject constructor(
         private const val KEY_USER_ID = "user_id"
         private const val KEY_USERNAME = "username"
         private const val KEY_AUTH_TOKEN = "auth_token"
+        private const val KEY_TOKEN_EXPIRY = "auth_token_expiry"
     }
     
     private val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -43,16 +45,48 @@ class AppRepository @Inject constructor(
     private var currentUser: User? = null
     
     /**
-     * Login user
+     * Get the stored auth token
+     */
+    private fun getAuthToken(): String? {
+        return prefs.getString(KEY_AUTH_TOKEN, null)
+    }
+    
+    /**
+     * Get the authorization header with Bearer token
+     */
+    private fun getAuthHeader(): String {
+        val token = getAuthToken() ?: ""
+        return "Bearer $token"
+    }
+    
+    /**
+     * Check API health
+     */
+    fun checkApiHealth(): Flow<Result<Boolean>> = flow {
+        try {
+            val response = apiService.checkHealth()
+            if (response.isSuccessful) {
+                emit(Result.Success(true))
+            } else {
+                emit(Result.Error(IOException("API health check failed: ${response.code()}")))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "API health check error", e)
+            emit(Result.Error(e))
+        }
+    }
+    
+    /**
+     * Login user with JWT
      */
     fun login(username: String, password: String): Flow<Result<User>> = flow {
         try {
             val response = apiService.login(LoginRequest(username, password))
             if (response.isSuccessful) {
-                val user = response.body()!!
-                saveUserSession(user)
-                currentUser = user
-                emit(Result.Success(user))
+                val authResponse = response.body()!!
+                saveUserSession(authResponse.user, authResponse.token, authResponse.expiresIn)
+                currentUser = authResponse.user
+                emit(Result.Success(authResponse.user))
             } else {
                 emit(Result.Error(IOException("Login failed: ${response.code()}")))
             }
@@ -69,10 +103,10 @@ class AppRepository @Inject constructor(
         try {
             val response = apiService.register(RegisterRequest(username, password))
             if (response.isSuccessful) {
-                val user = response.body()!!
-                saveUserSession(user)
-                currentUser = user
-                emit(Result.Success(user))
+                val authResponse = response.body()!!
+                saveUserSession(authResponse.user, authResponse.token, authResponse.expiresIn)
+                currentUser = authResponse.user
+                emit(Result.Success(authResponse.user))
             } else {
                 emit(Result.Error(IOException("Registration failed: ${response.code()}")))
             }
@@ -83,27 +117,50 @@ class AppRepository @Inject constructor(
     }
     
     /**
+     * Validate JWT token
+     */
+    fun validateToken(): Flow<Result<Boolean>> = flow {
+        val token = getAuthToken()
+        if (token == null) {
+            emit(Result.Success(false))
+            return@flow
+        }
+        
+        try {
+            val response = apiService.validateToken(getAuthHeader())
+            if (response.isSuccessful) {
+                // Update cached user
+                currentUser = response.body()
+                emit(Result.Success(true))
+            } else {
+                // If 401, clear token as it's invalid
+                if (response.code() == 401) {
+                    clearUserSession()
+                }
+                emit(Result.Success(false))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Token validation error", e)
+            emit(Result.Error(e))
+        }
+    }
+    
+    /**
      * Logout user
      */
     fun logout(): Flow<Result<Unit>> = flow {
+        // Token invalidation mostly happens client-side by clearing token
+        clearUserSession()
+        currentUser = null
+        
+        // Notify server (but don't fail if this fails)
         try {
-            val response = apiService.logout()
-            if (response.isSuccessful) {
-                clearUserSession()
-                currentUser = null
-                emit(Result.Success(Unit))
-            } else {
-                emit(Result.Error(IOException("Logout failed: ${response.code()}")))
-            }
+            apiService.logout()
         } catch (e: Exception) {
-            Log.e(TAG, "Logout error", e)
-            
-            // Even if the API call fails, we should clear local session
-            clearUserSession()
-            currentUser = null
-            
-            emit(Result.Error(e))
+            Log.e(TAG, "Logout API call error (non-critical)", e)
         }
+        
+        emit(Result.Success(Unit))
     }
     
     /**
@@ -116,9 +173,15 @@ class AppRepository @Inject constructor(
             return@flow
         }
         
+        // Check if we have a token
+        if (getAuthToken() == null) {
+            emit(Result.Error(IOException("Not authenticated")))
+            return@flow
+        }
+        
         // Otherwise fetch from API
         try {
-            val response = apiService.getCurrentUser()
+            val response = apiService.getCurrentUser(getAuthHeader())
             if (response.isSuccessful) {
                 val user = response.body()!!
                 currentUser = user
@@ -141,12 +204,18 @@ class AppRepository @Inject constructor(
      */
     fun updateUserLocation(latitude: Double, longitude: Double): Flow<Result<User>> = flow {
         try {
-            val response = apiService.updateUserLocation(UpdateLocationRequest(latitude, longitude))
+            val response = apiService.updateUserLocation(
+                getAuthHeader(),
+                UpdateLocationRequest(latitude, longitude)
+            )
             if (response.isSuccessful) {
                 val user = response.body()!!
                 currentUser = user
                 emit(Result.Success(user))
             } else {
+                if (response.code() == 401) {
+                    clearUserSession()
+                }
                 emit(Result.Error(IOException("Failed to update location: ${response.code()}")))
             }
         } catch (e: Exception) {
@@ -156,7 +225,7 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Get all exercises
+     * Get all exercises (public endpoint)
      */
     fun getExercises(): Flow<Result<List<Exercise>>> = flow {
         try {
@@ -173,7 +242,7 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Get exercise by ID
+     * Get exercise by ID (public endpoint)
      */
     fun getExerciseById(id: Int): Flow<Result<Exercise>> = flow {
         try {
@@ -190,14 +259,17 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Get user exercises
+     * Get user exercises (protected endpoint)
      */
     fun getUserExercises(): Flow<Result<List<UserExercise>>> = flow {
         try {
-            val response = apiService.getUserExercises()
+            val response = apiService.getUserExercises(getAuthHeader())
             if (response.isSuccessful) {
                 emit(Result.Success(response.body()!!))
             } else {
+                if (response.code() == 401) {
+                    clearUserSession()
+                }
                 emit(Result.Error(IOException("Failed to get user exercises: ${response.code()}")))
             }
         } catch (e: Exception) {
@@ -207,14 +279,17 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Get user exercises by type
+     * Get user exercises by type (protected endpoint)
      */
     fun getUserExercisesByType(type: String): Flow<Result<List<UserExercise>>> = flow {
         try {
-            val response = apiService.getUserExercisesByType(type)
+            val response = apiService.getUserExercisesByType(getAuthHeader(), type)
             if (response.isSuccessful) {
                 emit(Result.Success(response.body()!!))
             } else {
+                if (response.code() == 401) {
+                    clearUserSession()
+                }
                 emit(Result.Error(IOException("Failed to get user exercises by type: ${response.code()}")))
             }
         } catch (e: Exception) {
@@ -224,14 +299,17 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Get latest user exercises
+     * Get latest user exercises (protected endpoint)
      */
     fun getLatestUserExercises(): Flow<Result<Map<String, UserExercise>>> = flow {
         try {
-            val response = apiService.getLatestUserExercises()
+            val response = apiService.getLatestUserExercises(getAuthHeader())
             if (response.isSuccessful) {
                 emit(Result.Success(response.body()!!))
             } else {
+                if (response.code() == 401) {
+                    clearUserSession()
+                }
                 emit(Result.Error(IOException("Failed to get latest user exercises: ${response.code()}")))
             }
         } catch (e: Exception) {
@@ -241,7 +319,7 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Create user exercise
+     * Create user exercise (protected endpoint)
      */
     fun createUserExercise(
         exerciseId: Int,
@@ -260,10 +338,13 @@ class AppRepository @Inject constructor(
                 distance = distance,
                 score = score
             )
-            val response = apiService.createUserExercise(request)
+            val response = apiService.createUserExercise(getAuthHeader(), request)
             if (response.isSuccessful) {
                 emit(Result.Success(response.body()!!))
             } else {
+                if (response.code() == 401) {
+                    clearUserSession()
+                }
                 emit(Result.Error(IOException("Failed to create user exercise: ${response.code()}")))
             }
         } catch (e: Exception) {
@@ -273,7 +354,7 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Get global leaderboard
+     * Get global leaderboard (public endpoint)
      */
     fun getGlobalLeaderboard(): Flow<Result<List<LeaderboardEntry>>> = flow {
         try {
@@ -290,7 +371,7 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Get local leaderboard
+     * Get local leaderboard (public endpoint)
      */
     fun getLocalLeaderboard(
         latitude: Double,
@@ -311,14 +392,16 @@ class AppRepository @Inject constructor(
     }
     
     /**
-     * Save user session to preferences
+     * Save user session to preferences with JWT token
      */
-    private fun saveUserSession(user: User) {
+    private fun saveUserSession(user: User, token: String, expiresIn: String) {
         prefs.edit().apply {
             putInt(KEY_USER_ID, user.id)
             putString(KEY_USERNAME, user.username)
-            // In a real app, we would store auth token here
-            // putString(KEY_AUTH_TOKEN, token)
+            putString(KEY_AUTH_TOKEN, token)
+            // Could convert expiresIn (e.g. "7d") to milliseconds and store expiry time
+            // For simplicity we'll just store the raw value
+            putString(KEY_TOKEN_EXPIRY, expiresIn)
             apply()
         }
     }
@@ -334,22 +417,6 @@ class AppRepository @Inject constructor(
      * Check if a user is logged in
      */
     fun isLoggedIn(): Boolean {
-        return prefs.contains(KEY_USER_ID) && prefs.contains(KEY_USERNAME)
-    }
-    
-    /**
-     * Helper to process API responses
-     */
-    private fun <T> processResponse(response: Response<T>): Result<T> {
-        return if (response.isSuccessful) {
-            val body = response.body()
-            if (body != null) {
-                Result.Success(body)
-            } else {
-                Result.Error(IOException("Response body is null"))
-            }
-        } else {
-            Result.Error(IOException("API error ${response.code()}: ${response.message()}"))
-        }
+        return getAuthToken() != null && prefs.contains(KEY_USER_ID)
     }
 }
