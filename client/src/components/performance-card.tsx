@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { UserExercise } from "@shared/schema";
+import { getScoreRating } from "@/lib/exercise-grading";
 
 interface PerformanceCardProps {
   latestExercises: Record<string, UserExercise> | undefined;

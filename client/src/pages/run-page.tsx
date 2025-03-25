@@ -7,6 +7,7 @@ import { useBluetooth, CustomBluetoothDevice } from "@/hooks/use-bluetooth";
 import RunTracker from "@/components/run-tracker";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { calculateRunGrade } from "@/lib/exercise-grading";
 import { ArrowLeft, Clock, CheckCircle, Wifi, AlertCircle } from "lucide-react";
 
 export default function RunPage() {
@@ -135,10 +136,14 @@ export default function RunPage() {
       // Get run exercise ID (assuming it's 4 based on seed data)
       const exerciseId = 4;
       
+      // Calculate grade for the run time
+      const grade = calculateRunGrade(timeInSeconds);
+      
       const data = {
         exerciseId,
         timeInSeconds,
         formScore: 100, // Not really applicable for runs
+        grade,
         completed: true
       };
       
@@ -147,6 +152,7 @@ export default function RunPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user-exercises/latest/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/global"] });
       setLocation("/");
     }
   });

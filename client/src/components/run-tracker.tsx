@@ -6,6 +6,7 @@ import { queryClient, apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Pause, Play, CheckCircle, Heart } from 'lucide-react';
 import { BluetoothServiceData } from '@/hooks/use-bluetooth';
+import { calculateRunGrade } from '@/lib/exercise-grading';
 
 interface RunTrackerProps {
   isRunning: boolean;
@@ -48,10 +49,14 @@ export default function RunTracker({
       // Get run exercise ID (assuming it's 4 based on seed data)
       const exerciseId = 4;
       
+      // Calculate grade for the run time (for 2-mile run)
+      const grade = calculateRunGrade(data.timeInSeconds);
+      
       const payload = {
         exerciseId,
         timeInSeconds: data.timeInSeconds,
         formScore: 100, // Not applicable for runs
+        grade, // Include the calculated grade
         completed: true,
         metadata: JSON.stringify({
           distanceInMiles: data.distanceInMiles,
@@ -64,6 +69,7 @@ export default function RunTracker({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user-exercises/latest/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/global"] });
       setLocation("/");
     }
   });

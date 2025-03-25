@@ -7,6 +7,7 @@ import CameraView from "@/components/camera-view";
 import { Button } from "@/components/ui/button";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { detectPose, detectPushup, detectPullup, detectSitup, PushupState, PullupState, SitupState } from "@/lib/tensorflow";
+import { calculatePushupGrade, calculatePullupGrade, calculateSitupGrade, getScoreRating } from "@/lib/exercise-grading";
 import { AlertCircle, ArrowLeft, CheckCircle, AlertTriangle, XCircle, Play, Pause, Square } from "lucide-react";
 
 export default function ExercisePage() {
@@ -132,10 +133,25 @@ export default function ExercisePage() {
     mutationFn: async () => {
       if (!exercise) throw new Error("Exercise not found");
       
+      // Calculate grade based on exercise type and performance
+      let grade = 0;
+      switch (type) {
+        case "pushup":
+          grade = calculatePushupGrade(exerciseState.count);
+          break;
+        case "pullup":
+          grade = calculatePullupGrade(exerciseState.count);
+          break;
+        case "situp":
+          grade = calculateSitupGrade(exerciseState.count);
+          break;
+      }
+      
       const data = {
         exerciseId: exercise.id,
         repetitions: exerciseState.count,
         formScore: exerciseState.formScore,
+        grade, // Add calculated grade
         completed: true
       };
       
@@ -144,6 +160,7 @@ export default function ExercisePage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user-exercises/latest/all"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/leaderboard/global"] });
       setLocation("/");
     }
   });
