@@ -3,29 +3,29 @@ import Combine
 
 enum APIError: Error {
     case invalidURL
+    case requestFailed(Error)
     case invalidResponse
-    case httpError(Int)
-    case decodingError(Error)
-    case networkError(Error)
+    case decodingFailed(Error)
+    case serverError(Int, String)
     case unauthorized
-    case unknown
+    case notFound
     
     var localizedDescription: String {
         switch self {
         case .invalidURL:
             return "Invalid URL"
+        case .requestFailed(let error):
+            return "Request failed: \(error.localizedDescription)"
         case .invalidResponse:
-            return "Invalid server response"
-        case .httpError(let statusCode):
-            return "HTTP Error: \(statusCode)"
-        case .decodingError(let error):
+            return "Invalid response from server"
+        case .decodingFailed(let error):
             return "Failed to decode response: \(error.localizedDescription)"
-        case .networkError(let error):
-            return "Network error: \(error.localizedDescription)"
+        case .serverError(let code, let message):
+            return "Server error (\(code)): \(message)"
         case .unauthorized:
-            return "Unauthorized access"
-        case .unknown:
-            return "An unknown error occurred"
+            return "You are not authorized to access this resource"
+        case .notFound:
+            return "Resource not found"
         }
     }
 }
@@ -34,81 +34,93 @@ class APIClient {
     static let shared = APIClient()
     
     private let baseURL = "http://localhost:5000/api"
-    private let session = URLSession.shared
-    private let jsonDecoder = JSONDecoder()
-    private let jsonEncoder = JSONEncoder()
+    private let session: URLSession
+    private let decoder: JSONDecoder
+    private let encoder: JSONEncoder
     
     private init() {
-        // Configure date formatting for JSON
-        jsonDecoder.dateDecodingStrategy = .iso8601
-        jsonEncoder.dateEncodingStrategy = .iso8601
-        jsonEncoder.keyEncodingStrategy = .convertToSnakeCase
+        let configuration = URLSessionConfiguration.default
+        configuration.httpShouldSetCookies = true
+        configuration.httpCookieAcceptPolicy = .always
+        self.session = URLSession(configuration: configuration)
+        
+        self.decoder = JSONDecoder()
+        self.decoder.keyDecodingStrategy = .convertFromSnakeCase
+        self.decoder.dateDecodingStrategy = .iso8601
+        
+        self.encoder = JSONEncoder()
+        self.encoder.keyEncodingStrategy = .convertToSnakeCase
+        self.encoder.dateEncodingStrategy = .iso8601
     }
     
     // MARK: - Authentication
     
-    func login(credentials: LoginCredentials) -> AnyPublisher<User, APIError> {
-        return request(endpoint: "/auth/login", method: "POST", body: credentials)
+    func login(username: String, password: String) -> AnyPublisher<User, Error> {
+        let loginData = ["username": username, "password": password]
+        return makeRequest(endpoint: "/auth/login", method: "POST", body: loginData)
     }
     
-    func register(credentials: RegisterCredentials) -> AnyPublisher<User, APIError> {
-        return request(endpoint: "/auth/register", method: "POST", body: credentials)
+    func register(username: String, password: String) -> AnyPublisher<User, Error> {
+        let registerData = ["username": username, "password": password]
+        return makeRequest(endpoint: "/auth/register", method: "POST", body: registerData)
     }
     
-    func logout() -> AnyPublisher<Void, APIError> {
-        return requestVoid(endpoint: "/auth/logout", method: "POST")
+    func logout() -> AnyPublisher<Void, Error> {
+        return makeRequest(endpoint: "/auth/logout", method: "POST")
     }
     
-    func getCurrentUser() -> AnyPublisher<User, APIError> {
-        return request(endpoint: "/user", method: "GET")
+    func getCurrentUser() -> AnyPublisher<User, Error> {
+        return makeRequest(endpoint: "/user", method: "GET")
     }
     
-    func updateUserLocation(update: LocationUpdate) -> AnyPublisher<User, APIError> {
-        return request(endpoint: "/user/location", method: "PATCH", body: update)
+    // MARK: - User Location
+    
+    func updateUserLocation(latitude: Double, longitude: Double) -> AnyPublisher<User, Error> {
+        let locationData = ["latitude": latitude, "longitude": longitude]
+        return makeRequest(endpoint: "/user/location", method: "POST", body: locationData)
     }
     
     // MARK: - Exercises
     
-    func getExercises() -> AnyPublisher<[Exercise], APIError> {
-        return request(endpoint: "/exercises", method: "GET")
+    func getExercises() -> AnyPublisher<[Exercise], Error> {
+        return makeRequest(endpoint: "/exercises", method: "GET")
     }
     
-    func getExerciseById(id: Int) -> AnyPublisher<Exercise, APIError> {
-        return request(endpoint: "/exercises/\(id)", method: "GET")
+    func getExerciseById(id: Int) -> AnyPublisher<Exercise, Error> {
+        return makeRequest(endpoint: "/exercises/\(id)", method: "GET")
     }
     
     // MARK: - User Exercises
     
-    func getUserExercises() -> AnyPublisher<[UserExercise], APIError> {
-        return request(endpoint: "/user-exercises", method: "GET")
+    func getUserExercises() -> AnyPublisher<[UserExercise], Error> {
+        return makeRequest(endpoint: "/user-exercises", method: "GET")
     }
     
-    func getUserExercisesByType(type: ExerciseType) -> AnyPublisher<[UserExercise], APIError> {
-        return request(endpoint: "/user-exercises/\(type.rawValue)", method: "GET")
+    func getUserExercisesByType(type: String) -> AnyPublisher<[UserExercise], Error> {
+        return makeRequest(endpoint: "/user-exercises/type/\(type)", method: "GET")
     }
     
-    func getLatestUserExercises() -> AnyPublisher<[String: UserExercise], APIError> {
-        return request(endpoint: "/user-exercises/latest/all", method: "GET")
+    func getLatestUserExercises() -> AnyPublisher<[String: UserExercise], Error> {
+        return makeRequest(endpoint: "/user-exercises/latest/all", method: "GET")
     }
     
-    func createUserExercise(exercise: UserExerciseSubmission) -> AnyPublisher<UserExercise, APIError> {
-        return request(endpoint: "/user-exercises", method: "POST", body: exercise)
+    func createUserExercise(userExercise: CreateUserExerciseRequest) -> AnyPublisher<UserExercise, Error> {
+        return makeRequest(endpoint: "/user-exercises", method: "POST", body: userExercise)
     }
     
     // MARK: - Leaderboard
     
-    func getGlobalLeaderboard() -> AnyPublisher<[LeaderboardEntry], APIError> {
-        return request(endpoint: "/leaderboard/global", method: "GET")
+    func getGlobalLeaderboard() -> AnyPublisher<[LeaderboardEntry], Error> {
+        return makeRequest(endpoint: "/leaderboard/global", method: "GET")
     }
     
-    func getLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int = 5) -> AnyPublisher<[LeaderboardEntry], APIError> {
-        let queryParams = "?latitude=\(latitude)&longitude=\(longitude)&radius=\(radiusMiles)"
-        return request(endpoint: "/leaderboard/local\(queryParams)", method: "GET")
+    func getLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int = 5) -> AnyPublisher<[LeaderboardEntry], Error> {
+        return makeRequest(endpoint: "/leaderboard/local?latitude=\(latitude)&longitude=\(longitude)&radiusMiles=\(radiusMiles)", method: "GET")
     }
     
-    // MARK: - Generic Request Methods
+    // MARK: - Private Methods
     
-    private func request<T: Decodable, U: Encodable>(endpoint: String, method: String, body: U? = nil) -> AnyPublisher<T, APIError> {
+    private func makeRequest<T: Decodable>(endpoint: String, method: String, body: Encodable? = nil) -> AnyPublisher<T, Error> {
         guard let url = URL(string: baseURL + endpoint) else {
             return Fail(error: APIError.invalidURL).eraseToAnyPublisher()
         }
@@ -119,42 +131,42 @@ class APIClient {
         
         if let body = body {
             do {
-                request.httpBody = try jsonEncoder.encode(body)
+                request.httpBody = try encoder.encode(body)
             } catch {
-                return Fail(error: APIError.decodingError(error)).eraseToAnyPublisher()
+                return Fail(error: error).eraseToAnyPublisher()
             }
         }
         
         return session.dataTaskPublisher(for: request)
-            .tryMap { data, response in
+            .mapError { APIError.requestFailed($0) }
+            .flatMap { data, response -> AnyPublisher<T, Error> in
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    throw APIError.invalidResponse
+                    return Fail(error: APIError.invalidResponse).eraseToAnyPublisher()
                 }
                 
-                if httpResponse.statusCode == 401 {
-                    throw APIError.unauthorized
-                }
-                
-                if httpResponse.statusCode < 200 || httpResponse.statusCode > 299 {
-                    throw APIError.httpError(httpResponse.statusCode)
-                }
-                
-                return data
-            }
-            .decode(type: T.self, decoder: jsonDecoder)
-            .mapError { error in
-                if let apiError = error as? APIError {
-                    return apiError
-                } else if error is DecodingError {
-                    return APIError.decodingError(error)
-                } else {
-                    return APIError.networkError(error)
+                switch httpResponse.statusCode {
+                case 200...299:
+                    do {
+                        let decodedData = try self.decoder.decode(T.self, from: data)
+                        return Just(decodedData)
+                            .setFailureType(to: Error.self)
+                            .eraseToAnyPublisher()
+                    } catch {
+                        return Fail(error: APIError.decodingFailed(error)).eraseToAnyPublisher()
+                    }
+                case 401:
+                    return Fail(error: APIError.unauthorized).eraseToAnyPublisher()
+                case 404:
+                    return Fail(error: APIError.notFound).eraseToAnyPublisher()
+                default:
+                    let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+                    return Fail(error: APIError.serverError(httpResponse.statusCode, message)).eraseToAnyPublisher()
                 }
             }
             .eraseToAnyPublisher()
     }
     
-    private func requestVoid<U: Encodable>(endpoint: String, method: String, body: U? = nil) -> AnyPublisher<Void, APIError> {
+    private func makeRequest<T>(endpoint: String, method: String, body: Encodable? = nil) -> AnyPublisher<Void, Error> {
         guard let url = URL(string: baseURL + endpoint) else {
             return Fail(error: APIError.invalidURL).eraseToAnyPublisher()
         }
@@ -165,35 +177,44 @@ class APIClient {
         
         if let body = body {
             do {
-                request.httpBody = try jsonEncoder.encode(body)
+                request.httpBody = try encoder.encode(body)
             } catch {
-                return Fail(error: APIError.decodingError(error)).eraseToAnyPublisher()
+                return Fail(error: error).eraseToAnyPublisher()
             }
         }
         
         return session.dataTaskPublisher(for: request)
-            .tryMap { data, response in
+            .mapError { APIError.requestFailed($0) }
+            .flatMap { data, response -> AnyPublisher<Void, Error> in
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    throw APIError.invalidResponse
+                    return Fail(error: APIError.invalidResponse).eraseToAnyPublisher()
                 }
                 
-                if httpResponse.statusCode == 401 {
-                    throw APIError.unauthorized
-                }
-                
-                if httpResponse.statusCode < 200 || httpResponse.statusCode > 299 {
-                    throw APIError.httpError(httpResponse.statusCode)
-                }
-                
-                return ()
-            }
-            .mapError { error in
-                if let apiError = error as? APIError {
-                    return apiError
-                } else {
-                    return APIError.networkError(error)
+                switch httpResponse.statusCode {
+                case 200...299:
+                    return Just(())
+                        .setFailureType(to: Error.self)
+                        .eraseToAnyPublisher()
+                case 401:
+                    return Fail(error: APIError.unauthorized).eraseToAnyPublisher()
+                case 404:
+                    return Fail(error: APIError.notFound).eraseToAnyPublisher()
+                default:
+                    let message = String(data: data, encoding: .utf8) ?? "Unknown error"
+                    return Fail(error: APIError.serverError(httpResponse.statusCode, message)).eraseToAnyPublisher()
                 }
             }
             .eraseToAnyPublisher()
     }
+}
+
+// MARK: - Request Models
+
+struct CreateUserExerciseRequest: Encodable {
+    let exerciseId: Int
+    let repetitions: Int?
+    let formScore: Int?
+    let timeInSeconds: Int?
+    let completed: Bool
+    let metadata: [String: String]?
 }

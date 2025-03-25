@@ -24,21 +24,17 @@ enum ExerciseType: String, Codable, CaseIterable {
         }
     }
     
-    var description: String {
+    var goal: String {
         switch self {
-        case .pushup:
-            return "Upper body exercise to build chest, shoulder, and arm strength."
-        case .situp:
-            return "Core exercise to strengthen abdominal muscles and improve posture."
-        case .pullup:
-            return "Upper body exercise targeting back, shoulders, and arms."
-        case .run:
-            return "Cardio exercise measuring endurance and aerobic fitness."
+        case .pushup: return "Max reps in 2 minutes"
+        case .situp: return "Max reps in 2 minutes"
+        case .pullup: return "Max reps"
+        case .run: return "Fastest time for 2 miles"
         }
     }
 }
 
-struct Exercise: Codable, Identifiable {
+struct Exercise: Identifiable, Codable {
     let id: Int
     let name: String
     let description: String
@@ -50,54 +46,42 @@ struct Exercise: Codable, Identifiable {
         case name
         case description
         case type
-        case imageUrl = "image_url"
+        case imageUrl = "imageUrl"
     }
-    
-    // Returns goal for each exercise type
-    var goal: String {
-        switch type {
-        case .pushup:
-            return "Goal: 60 reps for max score"
-        case .situp:
-            return "Goal: 78 reps for max score"
-        case .pullup:
-            return "Goal: 20 reps for max score"
-        case .run:
-            return "Goal: 13:00 (min:sec) for max score"
-        }
-    }
-    
-    // Returns instruction for how to perform the exercise
-    var instructions: [String] {
-        switch type {
-        case .pushup:
-            return [
-                "Start in a plank position with arms straight",
-                "Lower your body until elbows reach 90 degrees",
-                "Push back up to the starting position",
-                "Keep your back straight throughout the movement"
-            ]
-        case .situp:
-            return [
-                "Lie on your back with knees bent",
-                "Cross arms over chest or place hands behind ears",
-                "Curl upper body toward knees",
-                "Lower back down in a controlled motion"
-            ]
-        case .pullup:
-            return [
-                "Grip the bar with palms facing away from you",
-                "Hang with arms fully extended",
-                "Pull up until chin is above the bar",
-                "Lower down with control to starting position"
-            ]
-        case .run:
-            return [
-                "Run 2 miles (3.2 km) as quickly as possible",
-                "Pace yourself throughout the distance",
-                "Track time with the app's timer",
-                "Can be done on a track, treadmill or outdoor course"
-            ]
-        }
+}
+
+extension Exercise {
+    // Helper method to get example data
+    static func examples() -> [Exercise] {
+        return [
+            Exercise(
+                id: 1,
+                name: "Push-ups",
+                description: "Upper body exercise to build chest, shoulder, and arm strength.",
+                type: .pushup,
+                imageUrl: nil
+            ),
+            Exercise(
+                id: 2,
+                name: "Sit-ups",
+                description: "Core exercise focusing on abdominal muscles and hip flexors.",
+                type: .situp,
+                imageUrl: nil
+            ),
+            Exercise(
+                id: 3,
+                name: "Pull-ups",
+                description: "Upper body exercise that targets the back, shoulders, and arms.",
+                type: .pullup,
+                imageUrl: nil
+            ),
+            Exercise(
+                id: 4,
+                name: "2-Mile Run",
+                description: "Cardio exercise measuring endurance and aerobic fitness.",
+                type: .run,
+                imageUrl: nil
+            )
+        ]
     }
 }

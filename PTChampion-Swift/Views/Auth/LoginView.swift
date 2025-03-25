@@ -1,25 +1,51 @@
 import SwiftUI
 import Combine
 
+class LoginViewModel: ObservableObject {
+    @Published var username = ""
+    @Published var password = ""
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    func login(authManager: AuthManager) {
+        guard !username.isEmpty, !password.isEmpty else {
+            errorMessage = "Please enter both username and password"
+            return
+        }
+        
+        isLoading = true
+        errorMessage = nil
+        
+        APIClient.shared.login(username: username, password: password)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { [weak self] completion in
+                self?.isLoading = false
+                
+                if case .failure(let error) = completion {
+                    self?.errorMessage = error.localizedDescription
+                }
+            }, receiveValue: { [weak self] user in
+                self?.isLoading = false
+                authManager.isAuthenticated = true
+                authManager.currentUser = user
+            })
+            .store(in: &cancellables)
+    }
+}
+
 struct LoginView: View {
-    // View model would handle the API calls
     @StateObject private var viewModel = LoginViewModel()
-    
-    // Form state
-    @State private var username: String = ""
-    @State private var password: String = ""
-    @State private var isShowingPassword: Bool = false
-    
-    // Validation state
-    @State private var usernameError: String? = nil
-    @State private var passwordError: String? = nil
+    @State private var showingRegistration = false
+    @EnvironmentObject var authManager: AuthManager
     
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 30) {
-                    // Logo and title
-                    VStack(spacing: 10) {
+                    // Logo and welcome message
+                    VStack(spacing: 15) {
                         Image(systemName: "figure.strengthtraining.traditional")
                             .font(.system(size: 70))
                             .foregroundColor(.blue)
@@ -28,149 +54,69 @@ struct LoginView: View {
                             .font(.largeTitle)
                             .fontWeight(.bold)
                         
-                        Text("Sign in to track your fitness performance")
+                        Text("Elevate your fitness training to new heights")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
                     }
-                    .padding(.top, 50)
-                    .padding(.bottom, 50)
+                    .padding(.vertical, 30)
                     
                     // Login form
                     VStack(spacing: 20) {
-                        // Username field
                         PTTextField(
                             title: "Username",
                             placeholder: "Enter your username",
-                            text: $username,
-                            icon: "person.fill",
-                            errorMessage: usernameError
+                            text: $viewModel.username
                         )
                         
-                        // Password field
                         PTTextField(
                             title: "Password",
                             placeholder: "Enter your password",
-                            text: $password,
-                            isSecure: true,
-                            icon: "lock.fill",
-                            errorMessage: passwordError
+                            text: $viewModel.password,
+                            isSecure: true
                         )
                         
-                        // Error message (if login fails)
-                        if let error = viewModel.error {
-                            Text(error)
-                                .font(.subheadline)
+                        // Error message if any
+                        if let errorMessage = viewModel.errorMessage {
+                            Text(errorMessage)
+                                .font(.footnote)
                                 .foregroundColor(.red)
-                                .padding(.top, 5)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.top, -5)
                         }
                         
-                        // Sign in button
-                        Button(action: signIn) {
-                            if viewModel.isLoading {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .scaleEffect(1.0)
-                            } else {
-                                Text("Sign In")
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                            }
+                        // Login button
+                        Button(action: {
+                            viewModel.login(authManager: authManager)
+                        }) {
+                            Text("Sign In")
+                                .font(.headline)
                         }
-                        .buttonStyle(PTButtonStyle(backgroundColor: .blue))
-                        .disabled(viewModel.isLoading)
+                        .ptStyle(.primary, isLoading: viewModel.isLoading)
                         .padding(.top, 10)
                         
-                        // Forgot password
-                        Button("Forgot Password?") {
-                            // Handle forgot password
-                        }
-                        .font(.subheadline)
-                        .foregroundColor(.blue)
-                        .padding(.vertical, 10)
-                    }
-                    .padding(.horizontal, 20)
-                    
-                    // Register option
-                    VStack(spacing: 5) {
-                        Text("Don't have an account?")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        NavigationLink(destination: RegisterView()) {
-                            Text("Create Account")
-                                .font(.headline)
+                        // Registration link
+                        Button(action: {
+                            showingRegistration = true
+                        }) {
+                            Text("Don't have an account? Register")
+                                .font(.subheadline)
                                 .foregroundColor(.blue)
                         }
+                        .ptStyle(.outline)
                     }
-                    .padding(.vertical, 20)
-                    
-                    Spacer()
+                    .padding(.horizontal)
                 }
+                .padding()
             }
-            .background(Color(.systemBackground))
+            .navigationTitle("")
             .navigationBarHidden(true)
+            .background(Color(.systemGroupedBackground).ignoresSafeArea())
+            .sheet(isPresented: $showingRegistration) {
+                RegisterView()
+                    .environmentObject(authManager)
+            }
         }
-    }
-    
-    // Sign in action
-    private func signIn() {
-        // Reset errors
-        usernameError = nil
-        passwordError = nil
-        
-        // Validate inputs
-        var isValid = true
-        
-        if username.isEmpty {
-            usernameError = "Username is required"
-            isValid = false
-        }
-        
-        if password.isEmpty {
-            passwordError = "Password is required"
-            isValid = false
-        }
-        
-        // If validation passes, attempt to sign in
-        if isValid {
-            viewModel.login(username: username, password: password)
-        }
-    }
-}
-
-// View Model for Login
-class LoginViewModel: ObservableObject {
-    @Published var isLoading = false
-    @Published var error: String? = nil
-    @Published var isAuthenticated = false
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    func login(username: String, password: String) {
-        isLoading = true
-        error = nil
-        
-        let credentials = LoginCredentials(username: username, password: password)
-        
-        APIClient.shared.login(credentials: credentials)
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                self?.isLoading = false
-                
-                if case .failure(let error) = completion {
-                    switch error {
-                    case .unauthorized:
-                        self?.error = "Invalid username or password"
-                    default:
-                        self?.error = "Login failed: \(error.localizedDescription)"
-                    }
-                }
-            }, receiveValue: { [weak self] user in
-                self?.isAuthenticated = true
-                // In a real app, we'd store the user info and authentication state
-                print("User \(user.username) logged in successfully")
-            })
-            .store(in: &cancellables)
     }
 }
 
@@ -178,13 +124,6 @@ class LoginViewModel: ObservableObject {
 struct LoginView_Previews: PreviewProvider {
     static var previews: some View {
         LoginView()
-    }
-}
-
-// Placeholder for RegisterView (to be implemented)
-struct RegisterView: View {
-    var body: some View {
-        Text("Register Screen")
-            .navigationTitle("Create Account")
+            .environmentObject(AuthManager())
     }
 }

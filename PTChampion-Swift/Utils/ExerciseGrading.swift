@@ -1,14 +1,6 @@
 import Foundation
 
-enum ScoreRating: String {
-    case excellent = "Excellent"
-    case good = "Good"
-    case satisfactory = "Satisfactory"
-    case marginal = "Marginal"
-    case poor = "Poor"
-}
-
-struct ExerciseGrading {
+class ExerciseGrader {
     
     /**
      * Calculates pushup grade based on reps
@@ -22,10 +14,10 @@ struct ExerciseGrading {
             return 100
         } else if reps <= 0 {
             return 0
+        } else {
+            // Linear scale between 0 and 60 reps
+            return Int(Double(reps) / 60.0 * 100.0)
         }
-        
-        // Linear scale: 100 points at 60 reps, 50 points at 30 reps
-        return Int(min(100, max(0, 50 + (reps - 30) * (50.0 / 30.0))))
     }
     
     /**
@@ -40,10 +32,10 @@ struct ExerciseGrading {
             return 100
         } else if reps <= 15 {
             return 0
+        } else {
+            // Linear scale between 15 and 78 reps
+            return Int(Double(reps - 15) / 63.0 * 100.0)
         }
-        
-        // Linear scale: 100 points at 78 reps, 50 points at 47 reps
-        return Int(min(100, max(0, 50 + (reps - 47) * (50.0 / 31.0))))
     }
     
     /**
@@ -58,10 +50,10 @@ struct ExerciseGrading {
             return 100
         } else if reps <= 0 {
             return 0
+        } else {
+            // Linear scale between 0 and 20 reps
+            return Int(Double(reps) / 20.0 * 100.0)
         }
-        
-        // Linear scale: 100 points at 20 reps, 50 points at 8 reps
-        return Int(min(100, max(0, 50 + (reps - 8) * (50.0 / 12.0))))
     }
     
     /**
@@ -72,14 +64,20 @@ struct ExerciseGrading {
      * @returns Score from 0-100
      */
     static func calculateRunGrade(timeInSeconds: Int) -> Int {
-        if timeInSeconds <= 780 {
-            return 100
-        } else if timeInSeconds >= 1320 { // 22 minutes
-            return 0
-        }
+        let maxScore = 780 // 13:00 in seconds
+        let minScore = 1260 // 21:00 in seconds
         
-        // Linear scale: 100 points at 780 seconds, 50 points at 996 seconds
-        return Int(min(100, max(0, 50 + (996 - timeInSeconds) * (50.0 / 216.0))))
+        if timeInSeconds <= maxScore {
+            return 100
+        } else if timeInSeconds >= minScore {
+            return 0
+        } else {
+            // Linear scale between 13:00 and 21:00
+            // Score decreases as time increases
+            let range = minScore - maxScore
+            let overMaxTime = timeInSeconds - maxScore
+            return max(0, Int(100.0 - (Double(overMaxTime) / Double(range) * 100.0)))
+        }
     }
     
     /**
@@ -87,18 +85,18 @@ struct ExerciseGrading {
      * @param score Numeric score 0-100
      * @returns Text rating
      */
-    static func getScoreRating(score: Int) -> ScoreRating {
+    static func getScoreRating(score: Int) -> String {
         switch score {
         case 90...100:
-            return .excellent
+            return "Excellent"
         case 75..<90:
-            return .good
+            return "Good"
         case 60..<75:
-            return .satisfactory
+            return "Satisfactory"
         case 40..<60:
-            return .marginal
+            return "Marginal"
         default:
-            return .poor
+            return "Poor"
         }
     }
     
@@ -107,33 +105,51 @@ struct ExerciseGrading {
      * @param scores Object containing individual exercise scores
      * @returns Overall score 0-100
      */
-    static func calculateOverallScore(
-        pushupScore: Int?,
-        situpScore: Int?,
-        pullupScore: Int?,
-        runScore: Int?
-    ) -> Int {
+    static func calculateOverallScore(pushups: Int?, situps: Int?, pullups: Int?, runTime: Int?) -> Int {
         var totalScore = 0
         var count = 0
         
-        if let score = pushupScore {
-            totalScore += score
+        // Calculate score for each exercise if available
+        if let pushupReps = pushups {
+            totalScore += calculatePushupGrade(reps: pushupReps)
             count += 1
         }
         
-        if let score = situpScore {
-            totalScore += score
+        if let situpReps = situps {
+            totalScore += calculateSitupGrade(reps: situpReps)
             count += 1
         }
         
-        if let score = pullupScore {
-            totalScore += score
+        if let pullupReps = pullups {
+            totalScore += calculatePullupGrade(reps: pullupReps)
             count += 1
         }
         
-        if let score = runScore {
-            totalScore += score
+        if let runTimeSeconds = runTime {
+            totalScore += calculateRunGrade(timeInSeconds: runTimeSeconds)
             count += 1
+        }
+        
+        // Return average score or 0 if no exercises completed
+        return count > 0 ? totalScore / count : 0
+    }
+    
+    /**
+     * Calculates overall fitness score from a dictionary of UserExercise objects
+     * @param latestExercises Dictionary of latest user exercises by type
+     * @returns Overall score 0-100
+     */
+    static func calculateOverallScore(latestExercises: [String: UserExercise]) -> Int {
+        guard !latestExercises.isEmpty else { return 0 }
+        
+        var totalScore = 0
+        var count = 0
+        
+        for (_, exercise) in latestExercises {
+            if let grade = exercise.grade {
+                totalScore += grade
+                count += 1
+            }
         }
         
         return count > 0 ? totalScore / count : 0
