@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'PT Champion Backend Fix - Update Nginx Configuration'
+
+Resources:
+  FixNginxConfig:
+    Type: AWS::CloudFormation::Init
+    Properties:
+      ConfigSets:
+        default:
+          - UpdateNginx
+      UpdateNginx:
+        files:
+          /etc/nginx/conf.d/ptchampion.conf:
+            content: |
+              server {
+                  listen 80;
+                  server_name _;
+
+                  # Handle frontend requests
+                  location / {
+                      root /home/ec2-user/ptchampion/dist/public;
+                      try_files $uri $uri/ /index.html;
+                  }
+
+                  # Handle API requests
+                  location /api/ {
+                      proxy_pass http://localhost:3000;
+                      proxy_http_version 1.1;
+                      proxy_set_header Upgrade $http_upgrade;
+                      proxy_set_header Connection 'upgrade';
+                      proxy_set_header Host $host;
+                      proxy_cache_bypass $http_upgrade;
+                  }
+              }
+            mode: '000644'
+            owner: root
+            group: root
+        commands:
+          01_restart_nginx:
+            command: systemctl restart nginx
+          02_restart_backend:
+            command: |
+              cd /home/ec2-user/ptchampion
+              pm2 restart ptchampion-api || pm2 start dist/index.js --name ptchampion-api
+
+  UpdateInstanceMetadata:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://aws-cloudformation-templates-us-east-1.s3.amazonaws.com/update-ec2-metadata.yaml
+      Parameters:
+        InstanceId: i-05ae599ab657eeddd
+        ConfigSetName: default

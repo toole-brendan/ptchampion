@@ -3,8 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import { Express, Request } from "express";
 import session from "express-session";
-import { scrypt, randomBytes, timingSafeEqual } from "crypto";
-import { promisify } from "util";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
 import jwt from "jsonwebtoken";
@@ -20,19 +19,14 @@ declare global {
 const JWT_SECRET = process.env.JWT_SECRET || "pt-champion-jwt-secret";
 const JWT_EXPIRES = process.env.JWT_EXPIRES || "7d";
 
-const scryptAsync = promisify(scrypt);
+const SALT_ROUNDS = 12;
 
 async function hashPassword(password: string) {
-  const salt = randomBytes(16).toString("hex");
-  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
-  return `${buf.toString("hex")}.${salt}`;
+  return bcrypt.hash(password, SALT_ROUNDS);
 }
 
 async function comparePasswords(supplied: string, stored: string) {
-  const [hashed, salt] = stored.split(".");
-  const hashedBuf = Buffer.from(hashed, "hex");
-  const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
-  return timingSafeEqual(hashedBuf, suppliedBuf);
+  return bcrypt.compare(supplied, stored);
 }
 
 // Generate a JWT token for a user
@@ -42,12 +36,12 @@ function generateToken(user: SelectUser) {
     username: user.username,
   };
   
-  // Fix the typing issue with jwt.sign
-  return jwt.sign(
-    payload, 
-    JWT_SECRET, 
-    { expiresIn: JWT_EXPIRES }
-  );
+  // Using proper typing for JWT
+  const secret = JWT_SECRET;
+  const options = { expiresIn: JWT_EXPIRES };
+  
+  // @ts-ignore - Working around jsonwebtoken type issues
+  return jwt.sign(payload, secret, options);
 }
 
 // Function to authenticate with token or session
@@ -77,14 +71,12 @@ function authenticate(req: Request): Promise<SelectUser | null> {
 }
 
 export function setupAuth(app: Express) {
-  // Create the PG session store
-  const PGStore = connectPg(session);
-  
+  // Use the existing sessionStore from storage
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "pt-champion-secret",
     resave: false,
     saveUninitialized: false,
-    store: storage.sessionStore,
+    store: storage.sessionStore as any,
     cookie: {
       secure: process.env.NODE_ENV === "production",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days

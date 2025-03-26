@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ptchampion-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL:-postgres://postgres:password@db:5432/ptchampion}
+      - JWT_SECRET=${JWT_SECRET:-secure-jwt-secret-key}
+      - SESSION_SECRET=${SESSION_SECRET:-secure-session-secret-key}
+      - PORT=3000
+    depends_on:
+      - db
+    networks:
+      - ptchampion-network
+
+  # Frontend proxy with Nginx
+  frontend:
+    image: nginx:alpine
+    container_name: ptchampion-frontend
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./dist/public:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - ptchampion-network
+
+  # Database service
+  db:
+    image: postgres:14-alpine
+    container_name: ptchampion-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-password}
+      - POSTGRES_DB=${POSTGRES_DB:-ptchampion}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - ptchampion-network
+    ports:
+      - "5432:5432"
+
+# Persistent volumes
+volumes:
+  postgres_data:
+    name: ptchampion-postgres-data
+
+# Network configuration
+networks:
+  ptchampion-network:
+    name: ptchampion-network
+    driver: bridge

@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'PT Champion Backend Fix - Update Nginx Configuration with EC2 Run Command'
+
+Parameters:
+  InstanceId:
+    Type: String
+    Default: "i-05ae599ab657eeddd"
+    Description: EC2 instance ID to update
+
+Resources:
+  SSMRunCommand:
+    Type: AWS::SSM::Document
+    Properties:
+      DocumentType: Command
+      Content:
+        schemaVersion: '2.2'
+        description: 'Configure Nginx for PT Champion Backend'
+        parameters: {}
+        mainSteps:
+          - action: aws:runShellScript
+            name: updateNginxConfig
+            inputs:
+              runCommand:
+                - |
+                  #!/bin/bash
+                  echo "Creating Nginx configuration..."
+                  cat > /etc/nginx/conf.d/ptchampion.conf << 'EOL'
+                  server {
+                      listen 80;
+                      server_name _;
+
+                      # Handle frontend requests
+                      location / {
+                          root /home/ec2-user/ptchampion/dist/public;
+                          try_files $uri $uri/ /index.html;
+                      }
+
+                      # Handle API requests
+                      location /api/ {
+                          proxy_pass http://localhost:3000;
+                          proxy_http_version 1.1;
+                          proxy_set_header Upgrade $http_upgrade;
+                          proxy_set_header Connection 'upgrade';
+                          proxy_set_header Host $host;
+                          proxy_cache_bypass $http_upgrade;
+                      }
+                  }
+                  EOL
+                  
+                  echo "Restarting Nginx..."
+                  systemctl restart nginx
+                  
+                  echo "Restarting backend application..."
+                  cd /home/ec2-user/ptchampion
+                  pm2 restart ptchampion-api || pm2 start dist/index.js --name ptchampion-api
+                  
+                  echo "Fix completed successfully"
+
+  RunCommandAssociation:
+    Type: AWS::SSM::Association
+    Properties:
+      Name: !Ref SSMRunCommand
+      Targets:
+        - Key: InstanceIds
+          Values:
+            - !Ref InstanceId
+
+Outputs:
+  CommandDocumentName:
+    Description: The SSM document created to update Nginx configuration
+    Value: !Ref SSMRunCommand
