@@ -3,6 +3,7 @@ import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import { Pool } from 'pg';
 
 // Initialize __dirname in ES module
 const __filename = fileURLToPath(import.meta.url);
@@ -12,6 +13,11 @@ const __dirname = path.dirname(__filename);
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Create a PostgreSQL connection pool
+const pool = new Pool({
+  connectionString: 'postgres://postgres:Dunlainge1!@ptchampion-1-instance-1.ck9iecaw2h6w.us-east-1.rds.amazonaws.com:5432/postgres'
+});
 
 // Mock database for users (in production, replace this with real database)
 const users = [];
@@ -28,6 +34,17 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     version: 'simplified'
   });
+});
+
+// Test database connection
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW() as time');
+    res.json({ success: true, time: result.rows[0].time });
+  } catch (error) {
+    console.error('Database connection error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 // Basic auth endpoints for testing
