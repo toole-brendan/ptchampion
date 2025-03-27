@@ -55,3 +55,11 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Configure special query options for authentication-related queries
+export const authQueryOptions = {
+  staleTime: 5 * 60 * 1000, // 5 minutes instead of Infinity
+  refetchOnMount: true,     // Refetch when component mounts
+  refetchOnWindowFocus: true, // Refetch when window regains focus
+  refetchOnReconnect: true,  // Refetch when reconnecting
+};
