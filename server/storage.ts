@@ -12,40 +12,41 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserLocation(userId: number, latitude: number, longitude: number): Promise<User>;
   updateUserProfile(userId: number, profileData: UpdateProfile): Promise<User>;
-  
+
   // Exercise methods
   getExercises(): Promise<Exercise[]>;
   getExerciseById(id: number): Promise<Exercise | undefined>;
   initializeExercises(): Promise<Exercise[]>;
-  
+
   // User Exercise methods
   getUserExercises(userId: number): Promise<UserExercise[]>;
   createUserExercise(userExercise: InsertUserExercise): Promise<UserExercise>;
   getUserExercisesByType(userId: number, type: string): Promise<UserExercise[]>;
   getLatestUserExercisesByType(userId: number): Promise<Record<string, UserExercise>>;
   getUserExercisesSince(userId: number, since: Date): Promise<UserExercise[]>;
-  
+
   // Sync methods
   syncUserData(syncRequest: SyncRequest): Promise<SyncResponse>;
   updateLastSynced(userId: number): Promise<void>;
-  
+
   // Leaderboard methods
   getGlobalLeaderboard(): Promise<any[]>;
   getLocalLeaderboard(latitude: number, longitude: number, radiusMiles: number): Promise<any[]>;
-  
-  sessionStore: ReturnType<typeof connectPg>;
+
+  sessionStore: session.Store; // Use session.Store for consistency
 }
 
 export class DatabaseStorage implements IStorage {
-  sessionStore: ReturnType<typeof connectPg>;
-  
+  sessionStore: session.Store;
+
   constructor() {
-    this.sessionStore = new PostgresSessionStore({ 
+    // Instantiate the store correctly
+    this.sessionStore = new PostgresSessionStore({
       conObject: {
         connectionString: process.env.DATABASE_URL,
       },
       tableName: 'session',
-      createTableIfMissing: true 
+      createTableIfMissing: true
     });
   }
 
@@ -56,36 +57,27 @@ export class DatabaseStorage implements IStorage {
         console.error("Invalid user id:", id);
         return undefined;
       }
-      
-      // Use SQL query to get only existing columns, using a more robust approach
-      const result = await db.execute(
-        sql`SELECT * FROM users WHERE id = ${id}`
-      );
-      
-      // Check if result exists and has rows
-      if (!result || !Array.isArray(result.rows) || result.rows.length === 0) {
+
+      // Use Drizzle's query builder
+      const userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, id))
+        .limit(1);
+
+      if (userResult.length === 0) {
         return undefined;
       }
-      
-      const row = result.rows[0];
-      
-      // Map to User type with default values for new fields
-      const user: User = {
-        id: Number(row.id),
-        username: row.username,
-        password: row.password,
-        location: row.location || null,
-        latitude: row.latitude || null,
-        longitude: row.longitude || null,
-        createdAt: row.created_at,
-        // Add default values for new fields
-        displayName: row.display_name || row.username,
-        profilePictureUrl: row.profile_picture_url || null,
-        lastSyncedAt: row.last_synced_at || new Date(),
-        updatedAt: row.updated_at || new Date()
+
+      // Add default fallbacks for potentially missing columns
+      const user = userResult[0];
+      return {
+        ...user,
+        displayName: user.displayName || user.username,
+        profilePictureUrl: user.profilePictureUrl || null,
+        lastSyncedAt: user.lastSyncedAt || new Date(),
+        updatedAt: user.updatedAt || new Date(),
       };
-      
-      return user;
     } catch (error) {
       console.error("Error getting user:", error);
       return undefined;
@@ -94,35 +86,27 @@ export class DatabaseStorage implements IStorage {
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     try {
-      // Use SQL query to get only existing columns, using a more robust approach
-      const result = await db.execute(
-        sql`SELECT * FROM users WHERE username = ${username}`
-      );
-      
-      // Check if result exists and has rows
-      if (!result || !Array.isArray(result.rows) || result.rows.length === 0) {
+      // Use Drizzle's query builder for type safety
+      const userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+
+      if (userResult.length === 0) {
         return undefined;
       }
-      
-      const row = result.rows[0];
-      
-      // Map to User type with default values for new fields
-      const user: User = {
-        id: Number(row.id),
-        username: row.username,
-        password: row.password,
-        location: row.location || null,
-        latitude: row.latitude || null,
-        longitude: row.longitude || null,
-        createdAt: row.created_at,
-        // Add default values for new fields
-        displayName: row.display_name || row.username,
-        profilePictureUrl: row.profile_picture_url || null,
-        lastSyncedAt: row.last_synced_at || new Date(),
-        updatedAt: row.updated_at || new Date()
+
+      // Drizzle returns the correctly typed object directly
+      // We might still need default fallbacks if columns were added after user creation
+      const user = userResult[0];
+      return {
+        ...user,
+        displayName: user.displayName || user.username, // Fallback for display name
+        profilePictureUrl: user.profilePictureUrl || null,
+        lastSyncedAt: user.lastSyncedAt || new Date(),
+        updatedAt: user.updatedAt || new Date(),
       };
-      
-      return user;
     } catch (error) {
       console.error("Error getting user by username:", error);
       return undefined;
@@ -136,12 +120,12 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return user;
   }
-  
+
   async updateUserLocation(userId: number, latitude: number, longitude: number): Promise<User> {
     const [user] = await db
       .update(users)
-      .set({ 
-        latitude: latitude.toString(), 
+      .set({
+        latitude: latitude.toString(),
         longitude: longitude.toString(),
         updatedAt: new Date()
       })
@@ -149,19 +133,19 @@ export class DatabaseStorage implements IStorage {
       .returning();
     return user;
   }
-  
+
   async updateUserProfile(userId: number, profileData: UpdateProfile): Promise<User> {
     // Get existing user to handle backward compatibility with non-existent columns
     const existingUser = await this.getUser(userId);
     if (!existingUser) {
       throw new Error("User not found");
     }
-    
+
     // Try to update only fields that can safely be updated
     try {
       const [user] = await db
         .update(users)
-        .set({ 
+        .set({
           ...profileData,
           updatedAt: new Date()
         })
@@ -174,7 +158,7 @@ export class DatabaseStorage implements IStorage {
       return existingUser;
     }
   }
-  
+
   async getUserExercisesSince(userId: number, since: Date): Promise<UserExercise[]> {
     try {
       const userExerciseList = await db
@@ -194,12 +178,12 @@ export class DatabaseStorage implements IStorage {
       return [];
     }
   }
-  
+
   async updateLastSynced(userId: number): Promise<void> {
     try {
       await db
         .update(users)
-        .set({ 
+        .set({
           lastSyncedAt: new Date()
         })
         .where(eq(users.id, userId));
@@ -207,12 +191,12 @@ export class DatabaseStorage implements IStorage {
       console.error("Error updating last synced timestamp:", error);
     }
   }
-  
+
   async syncUserData(syncRequest: SyncRequest): Promise<SyncResponse> {
     const { userId, deviceId, lastSyncTimestamp, data } = syncRequest;
     const lastSyncDate = new Date(lastSyncTimestamp);
     const now = new Date();
-    
+
     // Initialize response with empty arrays to avoid undefined errors
     const response: SyncResponse = {
       success: true,
@@ -223,7 +207,7 @@ export class DatabaseStorage implements IStorage {
       },
       conflicts: []
     };
-    
+
     try {
       // 1. Get user profile
       const user = await this.getUser(userId);
@@ -238,7 +222,7 @@ export class DatabaseStorage implements IStorage {
           conflicts: []
         };
       }
-      
+
       // 2. Update user profile if provided
       if (data?.profile) {
         const updatedUser = await this.updateUserProfile(userId, data.profile);
@@ -248,9 +232,9 @@ export class DatabaseStorage implements IStorage {
       } else if (response.data) {
         response.data.profile = user;
       }
-      
+
       const syncedExercises: UserExercise[] = [];
-      
+
       // 3. Process incoming exercise data
       if (data?.userExercises && data.userExercises.length > 0) {
         for (const exercise of data.userExercises) {
@@ -260,7 +244,7 @@ export class DatabaseStorage implements IStorage {
               ...exercise,
               userId: userId
             };
-            
+
             const result = await this.createUserExercise(exerciseWithUserId);
             syncedExercises.push(result);
           } catch (error) {
@@ -268,10 +252,10 @@ export class DatabaseStorage implements IStorage {
           }
         }
       }
-      
+
       // 4. Get exercises since last sync
       const serverExercises = await this.getUserExercisesSince(userId, lastSyncDate);
-      
+
       // 5. Add all synced exercises to response
       if (response.data) {
         response.data.userExercises = [
@@ -279,7 +263,7 @@ export class DatabaseStorage implements IStorage {
           ...serverExercises
         ];
       }
-      
+
       // 6. Try to update last synced timestamp - gracefully handle if column doesn't exist
       try {
         await db.execute(
@@ -288,7 +272,7 @@ export class DatabaseStorage implements IStorage {
       } catch (error) {
         console.error("Error updating timestamp:", error);
       }
-      
+
       return response;
     } catch (error) {
       console.error("Sync error:", error);
@@ -303,30 +287,30 @@ export class DatabaseStorage implements IStorage {
       };
     }
   }
-  
+
   async getExercises(): Promise<Exercise[]> {
     const exerciseList = await db.select().from(exercises);
     return exerciseList;
   }
-  
+
   async getExerciseById(id: number): Promise<Exercise | undefined> {
     const [exercise] = await db.select().from(exercises).where(eq(exercises.id, id));
     return exercise;
   }
-  
+
   async initializeExercises(): Promise<Exercise[]> {
     // Check if exercises already exist
     const existingExercises = await this.getExercises();
-    
+
     if (existingExercises.length === 0) {
       // Seed the exercises
       const seededExercises = await db.insert(exercises).values(SEED_EXERCISES).returning();
       return seededExercises;
     }
-    
+
     return existingExercises;
   }
-  
+
   async getUserExercises(userId: number): Promise<UserExercise[]> {
     const userExerciseList = await db
       .select()
@@ -335,101 +319,57 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(userExercises.createdAt));
     return userExerciseList;
   }
-  
+
   async createUserExercise(insertUserExercise: InsertUserExercise): Promise<UserExercise> {
     try {
-      // For backward compatibility, we need to manually build the query to include only existing columns
-      const values = { ...insertUserExercise };
-      
-      // Add the new fields we added during migration
-      const now = new Date();
-      const exerciseValues = {
-        user_id: values.userId,
-        exercise_id: values.exerciseId,
-        repetitions: values.repetitions || 0,
-        form_score: values.formScore || 0,
-        time_in_seconds: values.timeInSeconds || 0,
-        grade: values.grade || 0,
-        completed: values.completed || true,
-        metadata: values.metadata ? JSON.stringify(values.metadata) : null,
-        device_id: values.deviceId || null,
-        sync_status: values.syncStatus || 'synced',
-        updated_at: now
+      // Prepare values for insertion, ensuring correct types and defaults
+      const valuesToInsert = {
+        ...insertUserExercise, // Spread the input values (should match schema keys)
+        // Ensure metadata is stringified if it's an object
+        metadata: typeof insertUserExercise.metadata === 'object' && insertUserExercise.metadata !== null
+                  ? JSON.stringify(insertUserExercise.metadata)
+                  : insertUserExercise.metadata,
+        // Ensure optional fields have defaults if not provided
+        repetitions: insertUserExercise.repetitions ?? null,
+        formScore: insertUserExercise.formScore ?? null,
+        timeInSeconds: insertUserExercise.timeInSeconds ?? null,
+        grade: insertUserExercise.grade ?? null,
+        completed: insertUserExercise.completed ?? false,
+        deviceId: insertUserExercise.deviceId ?? null,
+        syncStatus: insertUserExercise.syncStatus ?? 'synced',
+        updatedAt: new Date() // Set updatedAt timestamp
       };
-      
-      // Try to insert with updated columns including sync-related fields
-      const result = await db.execute(
-        sql`INSERT INTO user_exercises (
-          user_id, 
-          exercise_id, 
-          repetitions, 
-          form_score, 
-          time_in_seconds, 
-          grade, 
-          completed, 
-          metadata,
-          device_id,
-          sync_status,
-          updated_at
-        )
-        VALUES (
-          ${exerciseValues.user_id}, 
-          ${exerciseValues.exercise_id}, 
-          ${exerciseValues.repetitions}, 
-          ${exerciseValues.form_score}, 
-          ${exerciseValues.time_in_seconds}, 
-          ${exerciseValues.grade}, 
-          ${exerciseValues.completed}, 
-          ${exerciseValues.metadata},
-          ${exerciseValues.device_id},
-          ${exerciseValues.sync_status},
-          ${exerciseValues.updated_at}
-        )
-        RETURNING *`
-      );
-      
-      // Check if result exists and has rows
-      if (!result || !Array.isArray(result.rows) || result.rows.length === 0) {
-        throw new Error("Failed to create user exercise");
-      }
-      
-      const row = result.rows[0];
-      
-      // Map returned values to UserExercise type
-      const userExercise: UserExercise = {
-        id: Number(row.id),
-        userId: Number(row.user_id),
-        exerciseId: Number(row.exercise_id),
-        repetitions: row.repetitions,
-        formScore: row.form_score,
-        timeInSeconds: row.time_in_seconds,
-        grade: row.grade,
-        completed: row.completed,
-        metadata: row.metadata ? JSON.parse(row.metadata) : null,
-        createdAt: row.created_at,
-        // Include the new sync-related fields
-        deviceId: row.device_id,
-        syncStatus: row.sync_status,
-        updatedAt: row.updated_at
+
+      // Use Drizzle's insert and returning for type safety
+      const [newUserExercise] = await db
+        .insert(userExercises)
+        .values(valuesToInsert) // Pass the prepared object
+        .returning();
+
+      // Drizzle returns the correctly typed object
+      // Parse metadata back if needed immediately
+      return {
+        ...newUserExercise,
+        metadata: typeof newUserExercise.metadata === 'string'
+                  ? JSON.parse(newUserExercise.metadata)
+                  : newUserExercise.metadata
       };
-      
-      return userExercise;
     } catch (error) {
       console.error("Error creating user exercise:", error);
       throw error;
     }
   }
-  
+
   async getUserExercisesByType(userId: number, type: string): Promise<UserExercise[]> {
     const exercisesOfType = await db
       .select()
       .from(exercises)
       .where(eq(exercises.type, type));
-    
+
     const exerciseIds = exercisesOfType.map(exercise => exercise.id);
-    
+
     if (exerciseIds.length === 0) return [];
-    
+
     const userExerciseList = await db
       .select()
       .from(userExercises)
@@ -441,24 +381,24 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(desc(userExercises.createdAt));
-    
+
     return userExerciseList;
   }
-  
+
   async getLatestUserExercisesByType(userId: number): Promise<Record<string, UserExercise>> {
     const exerciseTypes = ["pushup", "pullup", "situp", "run"];
     const result: Record<string, UserExercise> = {};
-    
+
     for (const type of exerciseTypes) {
       const exercises = await this.getUserExercisesByType(userId, type);
       if (exercises.length > 0) {
         result[type] = exercises[0];
       }
     }
-    
+
     return result;
   }
-  
+
   async getGlobalLeaderboard(): Promise<any[]> {
     // This is a simplified implementation - in a real app, you would calculate scores
     const usersResult = await db.select().from(users);
@@ -467,11 +407,11 @@ export class DatabaseStorage implements IStorage {
       .from(userExercises)
       .where(eq(userExercises.completed, true));
     const exercisesResult = await db.select().from(exercises);
-    
+
     // Manually join the data
     const usersWithScores = usersResult.map(user => {
       const userExs = userExercisesResult.filter(ue => ue.userId === user.id);
-      
+
       return {
         ...user,
         userExercises: userExs.map(ue => {
@@ -483,14 +423,14 @@ export class DatabaseStorage implements IStorage {
         })
       };
     });
-    
+
     // Process the leaderboard data
     const processedLeaderboard = this.processLeaderboardData(usersWithScores);
-    
+
     // Return up to 100 users for the global leaderboard
     return processedLeaderboard.slice(0, 100);
   }
-  
+
   async getLocalLeaderboard(latitude: number, longitude: number, radiusMiles: number = 5): Promise<any[]> {
     // In a real implementation, you would use PostgreSQL's PostGIS extension
     const usersResult = await db.select().from(users);
@@ -499,11 +439,11 @@ export class DatabaseStorage implements IStorage {
       .from(userExercises)
       .where(eq(userExercises.completed, true));
     const exercisesResult = await db.select().from(exercises);
-    
+
     // Manually join the data
     const allUsers = usersResult.map(user => {
       const userExs = userExercisesResult.filter(ue => ue.userId === user.id);
-      
+
       return {
         ...user,
         userExercises: userExs.map(ue => {
@@ -515,88 +455,88 @@ export class DatabaseStorage implements IStorage {
         })
       };
     });
-    
+
     // Filter users by distance
     const localUsers = allUsers.filter(user => {
       if (!user.latitude || !user.longitude) return false;
-      
+
       const distance = this.haversineDistance(
         latitude, longitude,
         Number(user.latitude), Number(user.longitude)
       );
-      
+
       // Only include users within the specified radius (default 5 miles)
       return distance <= radiusMiles;
     });
-    
+
     // Process the leaderboard data
     const processedLeaderboard = this.processLeaderboardData(localUsers);
-    
+
     // Return up to 100 users for the local leaderboard
     return processedLeaderboard.slice(0, 100);
   }
-  
+
   // Helper methods
   private haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 3958.8; // Radius of the Earth in miles
     const dLat = this.deg2rad(lat2 - lat1);
     const dLon = this.deg2rad(lon2 - lon1);
-    const a = 
+    const a =
       Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * 
+      Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
       Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
     const distance = R * c;
     return distance;
   }
-  
+
   private deg2rad(deg: number): number {
     return deg * (Math.PI/180);
   }
-  
+
   private processLeaderboardData(usersWithExercises: any[]): any[] {
     return usersWithExercises.map(user => {
       // Calculate scores for each exercise type
       const pushupExercise = user.userExercises.filter((ue: any) => ue.exercise.type === 'pushup')
         .sort((a: any, b: any) => b.repetitions - a.repetitions)[0];
-      
+
       const pullupExercise = user.userExercises.filter((ue: any) => ue.exercise.type === 'pullup')
         .sort((a: any, b: any) => b.repetitions - a.repetitions)[0];
-      
+
       const situpExercise = user.userExercises.filter((ue: any) => ue.exercise.type === 'situp')
         .sort((a: any, b: any) => b.repetitions - a.repetitions)[0];
-      
+
       const runExercise = user.userExercises.filter((ue: any) => ue.exercise.type === 'run')
         .sort((a: any, b: any) => a.timeInSeconds - b.timeInSeconds)[0];
-      
+
       // Calculate overall score (simplified example)
       let overallScore = 0;
       let exerciseCount = 0;
-      
+
       if (pushupExercise) {
         overallScore += pushupExercise.formScore || 0;
         exerciseCount++;
       }
-      
+
       if (pullupExercise) {
         overallScore += pullupExercise.formScore || 0;
         exerciseCount++;
       }
-      
+
       if (situpExercise) {
         overallScore += situpExercise.formScore || 0;
         exerciseCount++;
       }
-      
+
       if (runExercise) {
         // Convert run time to a score (simplified)
         const runScore = Math.max(0, 100 - Math.floor(runExercise.timeInSeconds / 30));
         overallScore += runScore;
         exerciseCount++;
       }
-      
+
       overallScore = exerciseCount > 0 ? Math.floor(overallScore / exerciseCount) : 0;
-      
+
       return {
         id: user.id,
         username: user.username,
@@ -609,7 +549,7 @@ export class DatabaseStorage implements IStorage {
       };
     }).sort((a, b) => b.overallScore - a.overallScore);
   }
-  
+
   private formatRunTime(seconds: number): string {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;

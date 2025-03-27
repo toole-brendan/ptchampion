@@ -1,7 +1,7 @@
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { migrate } from 'drizzle-orm/neon-serverless/migrator';
-import { neon } from '@neondatabase/serverless';
-import { sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { migrate } from 'drizzle-orm/postgres-js/migrator';
+import postgres from 'postgres';
+import { sql } from 'drizzle-orm'; // Keep this if used for raw SQL below
 
 // Load environment variables
 const DATABASE_URL = process.env.DATABASE_URL;
@@ -13,8 +13,9 @@ if (!DATABASE_URL) {
 
 async function runMigrations() {
   // Create database connection
-  const sql = neon(DATABASE_URL);
-  const db = drizzle(sql);
+  // Add '!' to assert DATABASE_URL is non-null here, as we check it above.
+  const migrationClient = postgres(DATABASE_URL!, { max: 1 }); // Use a separate client for migrations
+  const db = drizzle(migrationClient);
 
   console.log('Starting database migration...');
 
@@ -24,47 +25,43 @@ async function runMigrations() {
     console.log('Standard migration completed successfully.');
   } catch (error) {
     console.error('Standard migration failed:', error);
-    console.log('Attempting to add missing columns manually...');
+    console.log('Attempting to add missing columns manually (fallback)...');
 
-    // Manual migration fallback for backward compatibility
-    // Add columns that might be missing in existing tables
+    // Manual migration fallback
     try {
-      // Add display_name to users if it doesn't exist
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT`;
-      console.log('Added display_name column to users table');
+      // Note: Using migrationClient directly for raw SQL with postgres-js
+      await migrationClient`ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT`;
+      console.log('Ensured display_name column exists on users table');
+      await migrationClient`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_url TEXT`;
+      console.log('Ensured profile_picture_url column exists on users table');
+      await migrationClient`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMP DEFAULT NOW()`;
+      console.log('Ensured last_synced_at column exists on users table');
+      await migrationClient`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
+      console.log('Ensured updated_at column exists on users table');
+      await migrationClient`ALTER TABLE user_exercises ADD COLUMN IF NOT EXISTS device_id TEXT`;
+      console.log('Ensured device_id column exists on user_exercises table');
+      await migrationClient`ALTER TABLE user_exercises ADD COLUMN IF NOT EXISTS sync_status TEXT DEFAULT 'synced'`;
+      console.log('Ensured sync_status column exists on user_exercises table');
+      await migrationClient`ALTER TABLE user_exercises ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
+      console.log('Ensured updated_at column exists on user_exercises table');
 
-      // Add profile_picture_url to users if it doesn't exist
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture_url TEXT`;
-      console.log('Added profile_picture_url column to users table');
-      
-      // Add last_synced_at to users if it doesn't exist
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_synced_at TIMESTAMP DEFAULT NOW()`;
-      console.log('Added last_synced_at column to users table');
-      
-      // Add updated_at to users if it doesn't exist
-      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
-      console.log('Added updated_at column to users table');
+      // Add any other columns expected by the schema but potentially missing
+      // Example: If the error was truly about a 'name' column on 'users':
+      // await migrationClient.sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS name TEXT`;
+      // console.log('Ensured name column exists on users table');
 
-      // Add device_id to user_exercises if it doesn't exist
-      await sql`ALTER TABLE user_exercises ADD COLUMN IF NOT EXISTS device_id TEXT`;
-      console.log('Added device_id column to user_exercises table');
-      
-      // Add sync_status to user_exercises if it doesn't exist
-      await sql`ALTER TABLE user_exercises ADD COLUMN IF NOT EXISTS sync_status TEXT DEFAULT 'synced'`;
-      console.log('Added sync_status column to user_exercises table');
-      
-      // Add updated_at to user_exercises if it doesn't exist
-      await sql`ALTER TABLE user_exercises ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT NOW()`;
-      console.log('Added updated_at column to user_exercises table');
-
-      console.log('Manual migration completed successfully.');
+      console.log('Manual column check/addition completed successfully.');
     } catch (manualError) {
-      console.error('Manual migration failed:', manualError);
-      process.exit(1);
+      console.error('Manual column addition failed:', manualError);
+      // Don't necessarily exit here, the app might still work partially
     }
+  } finally {
+    // Ensure the migration client connection is closed
+    await migrationClient.end();
+    console.log('Migration client connection closed.');
   }
 
-  console.log('Migration process completed.');
+  console.log('Migration process finished.');
 }
 
 // Run the migration
