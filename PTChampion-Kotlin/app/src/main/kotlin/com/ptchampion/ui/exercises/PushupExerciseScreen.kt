@@ -12,6 +12,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,11 +22,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarOutline
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -49,7 +53,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
-import com.ptchampion.data.posedetection.PoseDetectionService
+import com.ptchampion.data.posedetection.PoseDetectionManager
 import com.ptchampion.domain.model.Exercise
 import com.ptchampion.domain.model.PushupState
 import java.util.concurrent.Executors
@@ -65,7 +69,8 @@ fun PushupExerciseScreen(
     onNavigateBack: () -> Unit,
     onStartExercise: () -> Unit,
     onUpdateState: (PushupState) -> Unit,
-    onCompleteExercise: (Int) -> Unit
+    onCompleteExercise: (Int) -> Unit,
+    onTogglePoseDetection: () -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -93,9 +98,48 @@ fun PushupExerciseScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        ExerciseHeader(
-            exercise = exercise,
-            onNavigateBack = onNavigateBack
+        // Header with back button and detection toggle
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Back button
+            IconButton(onClick = onNavigateBack) {
+                Icon(
+                    imageVector = Icons.Default.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+            
+            // Title
+            Text(
+                text = "Push-ups",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+            
+            // Detection toggle button
+            IconButton(onClick = onTogglePoseDetection) {
+                Icon(
+                    imageVector = if (uiState.useMediaPipeDetection) Icons.Default.Star else Icons.Default.StarOutline,
+                    contentDescription = "Toggle detection system",
+                    tint = if (uiState.useMediaPipeDetection) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+        
+        // Detection system indicator
+        Text(
+            text = "Using: ${if (uiState.useMediaPipeDetection) "MediaPipe" else "ML Kit"}",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            textAlign = TextAlign.End
         )
         
         if (!uiState.isExerciseStarted) {
@@ -231,7 +275,13 @@ fun PushupExerciseScreen(
             onPermissionGranted = {
                 showPermissionDialog = false
                 onStartExercise()
-                startPushupCamera(context, lifecycleOwner, onUpdateState, cameraPreviewView)
+                startPushupCamera(
+                    context, 
+                    lifecycleOwner, 
+                    onUpdateState, 
+                    cameraPreviewView,
+                    uiState.useMediaPipeDetection
+                )
                 isAnalyzing = true
             },
             onCancel = {
@@ -255,10 +305,21 @@ private fun startPushupCamera(
     context: Context,
     lifecycleOwner: androidx.lifecycle.LifecycleOwner,
     onUpdateState: (PushupState) -> Unit,
-    cameraPreviewView: PreviewView?
+    cameraPreviewView: PreviewView?,
+    useMediaPipe: Boolean
 ) {
     val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
-    val poseDetectionService = PoseDetectionService(context)
+    
+    // Use dependency injection in real app
+    val poseDetectionManager = PoseDetectionManager(
+        context,
+        PoseDetectionService(context),
+        MediaPipePoseDetectionService(context)
+    )
+    
+    // Set detection system
+    poseDetectionManager.useMediaPipe = useMediaPipe
+    
     var lastState = PushupState()
     
     cameraProviderFuture.addListener({
@@ -276,21 +337,21 @@ private fun startPushupCamera(
         imageAnalysis.setAnalyzer(executor) { imageProxy ->
             val rotationDegrees = imageProxy.imageInfo.rotationDegrees
             
-            // Convert to bitmap for ML Kit processing
+            // Convert to bitmap for processing
             val bitmap = imageProxy.toBitmap()
             val rotatedBitmap = rotateBitmap(bitmap, rotationDegrees.toFloat())
             
             // Process on a background thread
             executor.execute {
-                // Detect pose using ML Kit
-                poseDetectionService.detectPose(rotatedBitmap)?.let { pose ->
-                    // Analyze pushup motion
-                    val newState = poseDetectionService.detectPushup(pose, lastState)
-                    lastState = newState
-                    
-                    // Update UI
-                    onUpdateState(newState)
-                }
+                // Detect pose using the selected detection system
+                val poseResult = poseDetectionManager.detectPose(rotatedBitmap)
+                
+                // Analyze pushup motion with the appropriate detector
+                val newState = poseDetectionManager.detectPushup(poseResult, lastState)
+                lastState = newState
+                
+                // Update UI
+                onUpdateState(newState)
                 
                 // Close the image proxy
                 imageProxy.close()

@@ -29,6 +29,7 @@ data class ExerciseUiState(
     val pullupState: PullupState = PullupState(),
     val situpState: SitupState = SitupState(),
     val runData: RunData = RunData(),
+    val useMediaPipeDetection: Boolean = false,
     val error: String? = null
 )
 
@@ -37,8 +38,16 @@ data class ExerciseUiState(
  */
 @HiltViewModel
 class ExerciseViewModel @Inject constructor(
-    private val repository: AppRepository
+    private val repository: AppRepository,
+    private val poseDetectionManager: PoseDetectionManager
 ) : ViewModel() {
+    
+    init {
+        // Initialize with current detection system setting
+        _uiState.value = _uiState.value.copy(
+            useMediaPipeDetection = poseDetectionManager.useMediaPipe
+        )
+    }
     
     private val _uiState = MutableStateFlow(ExerciseUiState(isLoading = true))
     val uiState: StateFlow<ExerciseUiState> = _uiState.asStateFlow()
@@ -165,5 +174,15 @@ class ExerciseViewModel @Inject constructor(
      */
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+    
+    /**
+     * Toggle between ML Kit and MediaPipe pose detection
+     */
+    fun togglePoseDetection() {
+        val useMediaPipe = poseDetectionManager.toggleDetectionSystem()
+        _uiState.value = _uiState.value.copy(
+            useMediaPipeDetection = useMediaPipe
+        )
     }
 }

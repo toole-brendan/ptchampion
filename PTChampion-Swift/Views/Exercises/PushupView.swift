@@ -5,6 +5,7 @@ struct PushupView: View {
     @EnvironmentObject var authManager: AuthManager
     @StateObject private var viewModel = PushupViewModel()
     @Environment(\.presentationMode) var presentationMode
+    @State private var showingDetectionOptions = false
     
     var body: some View {
         ZStack {
@@ -53,17 +54,49 @@ struct PushupView: View {
                 Text("Back")
             }
             .opacity(viewModel.isFullscreen ? 0 : 1),
-            trailing: Button(action: {
-                viewModel.toggleFullscreen()
-            }) {
-                Image(systemName: viewModel.isFullscreen ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
-                    .font(.system(size: 16, weight: .bold))
+            trailing: HStack(spacing: 16) {
+                // New detection options button
+                Button(action: {
+                    showingDetectionOptions = true
+                }) {
+                    Image(systemName: "wand.and.stars")
+                        .font(.system(size: 16, weight: .bold))
+                }
+                .opacity(viewModel.isFullscreen ? 0 : 1)
+                
+                // Existing fullscreen button
+                Button(action: {
+                    viewModel.toggleFullscreen()
+                }) {
+                    Image(systemName: viewModel.isFullscreen ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+                        .font(.system(size: 16, weight: .bold))
+                }
+                .opacity(viewModel.isFullscreen ? 0 : 1)
             }
-            .opacity(viewModel.isFullscreen ? 0 : 1)
         )
         .onAppear {
             viewModel.loadExercise()
         }
+        .actionSheet(isPresented: $showingDetectionOptions) {
+            ActionSheet(
+                title: Text("Pose Detection Options"),
+                message: Text("Select the pose detection technology to use"),
+                buttons: [
+                    .default(Text("Toggle MediaPipe Detection")) {
+                        togglePoseDetection()
+                    },
+                    .cancel()
+                ]
+            )
+        }
+    }
+    
+    // Toggle between Vision and MediaPipe pose detection
+    func togglePoseDetection() {
+        // Switch between Vision and MediaPipe
+        let viewModel = ExerciseViewModel()
+        let usingMediaPipe = viewModel.toggleMediaPipe()
+        print("Using MediaPipe for pose detection: \(usingMediaPipe)")
     }
 }
 
