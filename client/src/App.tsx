@@ -1,44 +1,79 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import NotFound from "@/pages/not-found";
-import HomePage from "@/pages/home-page";
-import AuthPage from "@/pages/auth-page";
-import ExercisePage from "@/pages/exercise-page";
-import { PushupPage, PullupPage, SitupPage } from "@/pages/exercises";
-import RunPage from "@/pages/run-page";
-import HistoryPage from "@/pages/history-page";
-import ProfilePage from "@/pages/profile-page";
-import { ProtectedRoute } from "@/lib/protected-route";
-import { AuthProvider } from "@/hooks/use-auth";
+import { useState } from 'react'
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom'
+import Layout from './components/layout/Layout'
+import Dashboard from './pages/Dashboard'
+import Exercises from './pages/Exercises'
+import History from './pages/History'
+import Leaderboard from './pages/Leaderboard'
+import Profile from './pages/Profile'
+import PushupTracker from './pages/exercises/PushupTracker'
+import SitupTracker from './pages/exercises/SitupTracker'
+import PullupTracker from './pages/exercises/PullupTracker'
+import RunningTracker from './pages/exercises/RunningTracker'
+import { AuthProvider, useAuth } from './lib/authContext'
+import LoginPage from './pages/auth/Login'
+import RegisterPage from './pages/auth/Register'
+import RegisterDebug from './pages/auth/RegisterDebug'
 
-function Router() {
+// A protected route component that redirects to login if not authenticated
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const auth = useAuth();
+  const { isAuthenticated, loading } = auth;
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  return <>{children}</>;
+};
+
+function AppRoutes() {
+  const auth = useAuth();
+  const { isAuthenticated } = auth;
+  
   return (
-    <Switch>
-      <ProtectedRoute path="/" component={HomePage} />
-      <ProtectedRoute path="/exercise/:type" component={ExercisePage} />
-      <ProtectedRoute path="/exercises/pushup" component={PushupPage} />
-      <ProtectedRoute path="/exercises/pullup" component={PullupPage} />
-      <ProtectedRoute path="/exercises/situp" component={SitupPage} />
-      <ProtectedRoute path="/run" component={RunPage} />
-      <ProtectedRoute path="/history" component={HistoryPage} />
-      <ProtectedRoute path="/profile" component={ProfilePage} />
-      <Route path="/auth" component={AuthPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <Routes>
+      <Route path="/login" element={
+        isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />
+      } />
+      <Route path="/register" element={
+        isAuthenticated ? <Navigate to="/" replace /> : <RegisterPage />
+      } />
+      <Route path="/register-debug" element={<RegisterDebug />} />
+      
+      <Route path="/" element={
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Dashboard />} />
+        <Route path="exercises" element={<Exercises />} />
+        <Route path="exercises/pushup" element={<PushupTracker />} />
+        <Route path="exercises/situp" element={<SitupTracker />} />
+        <Route path="exercises/pullup" element={<PullupTracker />} />
+        <Route path="exercises/run" element={<RunningTracker />} />
+        <Route path="history" element={<History />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="profile" element={<Profile />} />
+      </Route>
+      
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router />
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
-  );
+    <AuthProvider>
+      <Router>
+        <AppRoutes />
+      </Router>
+    </AuthProvider>
+  )
 }
 
-export default App;
+export default App
