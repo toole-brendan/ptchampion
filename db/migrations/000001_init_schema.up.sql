@@ -21,4 +21,4 @@ CREATE TABLE exercises (
 
 -- Add indexes for performance (example)
 CREATE INDEX idx_exercises_user_id ON exercises(user_id);
-CREATE INDEX idx_exercises_type ON exercises(type);
+CREATE INDEX idx_exercises_type ON exercises(type); 

@@ -184,6 +184,9 @@ For Android Development:
 - JDK 11+
 - Android device or emulator with API level 29+
 
+### Deployment
+
+For Docker deployment instructions, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md).
 
 ## Usage
 
