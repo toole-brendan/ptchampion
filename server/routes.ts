@@ -24,6 +24,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize exercises on startup
   await storage.initializeExercises();
 
+  // Add debug endpoints to help diagnose path issues
+  app.get("/api/debug/paths", (req, res) => {
+    res.json({
+      message: "Debug endpoint reached successfully",
+      originalUrl: req.originalUrl,
+      path: req.path,
+      baseUrl: req.baseUrl
+    });
+  });
+
+  app.get("/api/v1/debug/paths", (req, res) => {
+    res.json({
+      message: "Debug endpoint (with v1) reached successfully",
+      originalUrl: req.originalUrl,
+      path: req.path,
+      baseUrl: req.baseUrl
+    });
+  });
+
+  // Add auth debug endpoint
+  app.get("/api/debug/auth", authenticate, (req, res) => {
+    res.json({
+      message: "Auth debug endpoint reached successfully",
+      authenticated: true,
+      user: req.user
+    });
+  });
+
+  // Also add a duplicate for user-exercises on the v1 path
+  app.get("/api/v1/user-exercises", authenticate, async (req, res, next) => {
+    try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      console.log("V1 user-exercises endpoint hit by:", req.user.id);
+      const userExercises = await storage.getUserExercises(req.user.id);
+      res.json(userExercises);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   // Get all exercises - publicly accessible
   app.get("/api/exercises", async (req, res, next) => {
     try {
@@ -203,13 +247,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // API health check endpoint - useful for mobile clients to verify connectivity
+  // API health check endpoint - useful for port discovery
   app.get("/api/health", (req, res) => {
     res.json({ 
       status: "ok", 
       timestamp: new Date().toISOString(),
       version: "1.0"
     });
+  });
+
+  // Add a new combined endpoint for user exercises
+  app.get("/api/exercises/user", authenticate, async (req, res, next) => {
+    try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      console.log("User exercises (fallback endpoint) hit by:", req.user.id);
+      const userExercises = await storage.getUserExercises(req.user.id);
+      res.json(userExercises);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Add a v1 version of the fallback user exercises endpoint
+  app.get("/api/v1/exercises/user", authenticate, async (req, res, next) => {
+    try {
+      // Ensure user is defined
+      if (!req.user) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      console.log("V1 User exercises (fallback endpoint) hit by:", req.user.id);
+      const userExercises = await storage.getUserExercises(req.user.id);
+      res.json(userExercises);
+    } catch (err) {
+      next(err);
+    }
   });
 
   const httpServer = createServer(app);

@@ -44,6 +44,9 @@ export class DatabaseStorage implements IStorage {
     this.sessionStore = new PostgresSessionStore({
       conObject: {
         connectionString: process.env.DATABASE_URL,
+        ssl: { // Add SSL configuration
+          rejectUnauthorized: false // Common setting for managed DBs like RDS
+        }
       },
       tableName: 'session',
       createTableIfMissing: true

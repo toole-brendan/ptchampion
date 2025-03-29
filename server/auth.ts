@@ -80,6 +80,10 @@ export function setupAuth(app: Express) {
     cookie: {
       secure: process.env.NODE_ENV === "production",
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      sameSite: 'lax', // Changed from 'none' to 'lax' for production as well
+      httpOnly: true,
+      // Make these settings explicit for debugging
+      path: '/'
     }
   };
 
@@ -161,7 +165,11 @@ export function setupAuth(app: Express) {
       if (req.headers['x-client-platform'] !== 'mobile') {
         req.login(user, (err) => {
           if (err) return next(err);
-          res.status(201).json({ user });
+          
+          // Force save session to ensure cookie is set
+          req.session.save(() => {
+            res.status(201).json({ user });
+          });
         });
         return;
       }
@@ -203,8 +211,11 @@ export function setupAuth(app: Express) {
       });
     }
     
-    // For web clients: return user info (session already created)
-    res.status(200).json({ user: req.user });
+    // For web clients: return user info and explicitly save session
+    // Force save session to ensure cookie is set
+    req.session.save(() => {
+      res.status(200).json({ user: req.user });
+    });
   });
 
   // Token-based login endpoint (specifically for mobile)
