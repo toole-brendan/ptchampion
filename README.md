@@ -1,13 +1,12 @@
 # PT Champion
 
-PT Champion is a cross-platform fitness evaluation system that uses computer vision to track and evaluate military exercises. The ecosystem includes a web application and native mobile apps for iOS and Android, all sharing a common backend. The platform features global and local leaderboards, exercise tracking, and form analysis powered by TensorFlow's PoseNet model.
+PT Champion is a cross-platform fitness evaluation system that uses computer vision to track and evaluate military exercises. The ecosystem includes a web application and native mobile apps for iOS and Android, all sharing a common backend. The platform features global and local leaderboards, exercise tracking, and form analysis powered by MediaPipe.
 
 ## Features
 
 - **Exercise Tracking**: Monitor push-ups, pull-ups, sit-ups, and running performance
-- **Computer Vision Analysis**: Real-time form analysis and feedback using TensorFlow and PoseNet
+- **Computer Vision Analysis**: Real-time form analysis and feedback using MediaPipe
 - **Leaderboards**: Compare your performance with others globally or locally
-- **Personalized Feedback**: Get real-time form correction and improvement tips
 - **Progress Tracking**: Monitor your performance over time with detailed history
 - **Cross-Platform Synchronization**: Seamlessly sync your data between web and mobile apps
 - **Offline Support**: Continue using the mobile apps without an internet connection
@@ -16,42 +15,77 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 ## Project Structure
 
 ```
-PT Champion/
-├── / (Root - Web Application)
-│   ├── server/                  # Backend Express.js server
-│   │   ├── auth.ts              # Authentication logic with Passport.js
-│   │   ├── db.ts                # Database connection setup
-│   │   ├── index.ts             # Main server entry point
-│   │   ├── migrate.ts           # Database migration utilities
-│   │   ├── routes.ts            # API route definitions
-│   │   ├── storage.ts           # Data access layer for PostgreSQL
-│   │   └── vite.ts              # Vite server integration
+/ (Root - Web Application)
+├── cmd/
+│   └── server/                  # Main Go application entry point
+│       └── main.go
+├── internal/                  # Private Go application code
+│   ├── api/                   # HTTP handlers & routing
+│   │   ├── handlers/          # Request handlers (exercises, users, leaderboard, etc.)
+│   │   │   ├── auth_handler.go
+│   │   │   ├── exercise_handler.go
+│   │   │   ├── leaderboard_handler.go
+│   │   │   └── user_handler.go
+│   │   ├── middleware/        # HTTP middleware (auth, logging, etc.)
+│   │   │   └── auth_middleware.go
+│   │   └── router.go          # API route definitions
 │   │
-│   ├── shared/                  # Shared code between frontend and backend
-│   │   └── schema.ts            # Database schema with Drizzle ORM
+│   ├── auth/                  # Authentication logic (interfacing with service or libs)
+│   │   └── auth.go
+│   ├── config/                # Configuration loading
+│   │   └── config.go
+│   ├── store/                 # Data access layer
+│   │   ├── postgres/          # PostgreSQL specific implementation
+│   │   │   ├── db.go          # Database connection setup
+│   │   │   ├── querier.go     # Interface for sqlc generated queries
+│   │   │   └── models.go      # sqlc generated Go models from schema
+│   │   └── store.go           # Generic data store interfaces
 │   │
-│   ├── client/                  # Web frontend (React)
-│   │   ├── src/
-│   │   │   ├── components/      # Reusable UI components
-│   │   │   ├── hooks/           # Custom React hooks
-│   │   │   ├── lib/             # Utility functions and services
-│   │   │   │   ├── exercise-grading.ts  # Exercise scoring algorithms
-│   │   │   │   ├── protected-route.tsx  # Auth protection wrapper
-│   │   │   │   ├── queryClient.ts       # API request utilities
-│   │   │   │   ├── tensorflow.ts        # PoseNet integration
-│   │   │   │   └── utils.ts             # General utilities
-│   │   │   │
-│   │   │   ├── pages/          # Application pages
-│   │   │   │   ├── exercises/  # Exercise-specific pages
-│   │   │   │   └── [...]       # Other page components
-│   │   │   │
-│   │   │   ├── App.tsx         # Main app component
-│   │   │   └── main.tsx        # Application entry point
+│   └── models/                # Core application domain models (if different from DB models)
+│       └── exercise.go
+│
+├── sql/                     # SQL files for sqlc
+│   ├── queries/             # SQL queries for sqlc generation
+│   │   ├── exercise.sql
+│   │   ├── session.sql
+│   │   ├── user.sql
+│   │   └── leaderboard.sql
+│   └── schema/              # Database schema definitions
+│       └── schema.sql
+│
+├── client/                  # Web frontend (React) - Structure largely similar
+│   ├── public/
+│   ├── src/
+│   │   ├── components/      # Reusable UI components (shadcn)
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── lib/             # Utility functions and services
+│   │   │   ├── apiClient.ts     # Functions to call the Go backend API
+│   │   │   ├── auth.ts          # Frontend auth helpers
+│   │   │   ├── mediapipe.ts     # MediaPipe integration logic
+│   │   │   ├── queryClient.ts   # React Query or similar setup
+│   │   │   └── utils.ts         # General utilities
 │   │   │
-│   │   └── tailwind.config.ts  # Tailwind CSS configuration
+│   │   ├── pages/          # Application pages
+│   │   │   ├── auth/          # Login/Register pages
+│   │   │   ├── exercises/     # Exercise tracking pages (Pushups, Situps, etc.)
+│   │   │   ├── history/       # User progress/history page
+│   │   │   ├── leaderboard/   # Leaderboard page
+│   │   │   ├── profile/       # User profile page
+│   │   │   └── Dashboard.tsx  # Main dashboard/home page
+│   │   │
+│   │   ├── App.tsx         # Main app component & routing
+│   │   └── main.tsx        # Application entry point
 │   │
-│   ├── drizzle.config.ts       # Drizzle ORM configuration
-│   └── [...]                   # Other configuration files
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── tailwind.config.ts  # Tailwind CSS configuration
+│
+├── scripts/                 # Build, migration scripts
+│   └── migrate.sh           # Database migration script helper
+│
+├── go.mod                   # Go module definition
+├── go.sum                   # Go module checksums
+├── Dockerfile               # Optional: Docker configuration for deployment
 │
 ├── PTChampion-Swift/           # iOS Application (Swift + SwiftUI)
 │   ├── Views/                  # UI layer
@@ -105,11 +139,11 @@ PT Champion/
 
 ### Web Application
 
-- **Frontend**: React with Tailwind CSS and shadcn UI components
-- **Backend**: Node.js/Express API
-- **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Passport.js with JWT and session-based auth
-- **Computer Vision**: TensorFlow.js and PoseNet model
+- **Frontend**: TypeScript with Tailwind CSS and shadcn UI components
+- **Backend**: Go
+- **Database**: PostgreSQL with `sqlc` for data access
+- **Authentication**: Auth-as-a-Service (e.g., Supabase Auth, Clerk) or Go standard libraries (`golang-jwt/jwt/v5`, `alexedwards/scs/v2`)
+- **Computer Vision**: MediaPipe
 
 ### iOS Application
 
@@ -150,85 +184,6 @@ For Android Development:
 - JDK 11+
 - Android device or emulator with API level 29+
 
-### Web Application Setup
-
-1. Clone the repository:
-   ```
-   git clone <repository-url>
-   cd pt-champion
-   ```
-
-2. Install dependencies:
-   ```
-   npm install
-   ```
-
-3. Set up environment variables by creating a `.env` file:
-   ```
-   DATABASE_URL=postgres://user:password@localhost:5432/pt_champion
-   SESSION_SECRET=your-secret-key
-   JWT_SECRET=your-jwt-secret
-   ```
-
-4. Initialize the database:
-   ```
-   npm run db:push
-   ```
-
-5. Start the development server:
-   ```
-   npm run dev
-   ```
-
-6. Open your browser and navigate to `http://localhost:5000`
-
-### iOS Application Setup
-
-1. Navigate to the iOS project directory:
-   ```
-   cd PTChampion-Swift
-   ```
-
-2. Install CocoaPods dependencies (if applicable):
-   ```
-   pod install
-   ```
-
-3. Open the Xcode project:
-   ```
-   open PTChampion.xcworkspace
-   ```
-   (or `PTChampion.xcodeproj` if not using CocoaPods)
-
-4. Configure the `APIClient.swift` file with your backend URL:
-   ```swift
-   private let baseURL = "http://localhost:5000"
-   ```
-
-5. Build and run the application on your device or simulator.
-
-### Android Application Setup
-
-1. Navigate to the Android project directory:
-   ```
-   cd PTChampion-Kotlin
-   ```
-
-2. Open the project in Android Studio:
-   - Launch Android Studio
-   - Select "Open an Existing Project"
-   - Navigate to the project directory
-
-3. Configure the API base URL in the `build.gradle` file:
-   ```gradle
-   buildTypes {
-       debug {
-           buildConfigField "String", "API_BASE_URL", "\"http://localhost:5000\""
-       }
-   }
-   ```
-
-4. Build and run the application on your device or emulator.
 
 ## Usage
 
@@ -239,10 +194,3 @@ For Android Development:
 5. **Complete Session**: Finish your workout to save your score and form rating
 6. **View Progress**: Check your history and leaderboard ranking
 
-## Deployment
-
-See the [DEPLOYMENT.md](./DEPLOYMENT.md) file for detailed instructions on deploying the application to AWS.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.

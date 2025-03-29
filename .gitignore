@@ -4,3 +4,26 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+
+# Database Migrations (optional, if preferred)
+# migrations/
+
+# sqlc Schema Source (if derived from migrations)
+# sql/schema/schema.sql
+
+# Environment variables
+.env*
+!/.env.example
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test artifacts
+*.test
+
+# Binaries for programs and plugins
+bin/
