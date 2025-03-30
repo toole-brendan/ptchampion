@@ -178,7 +178,7 @@ export const logExercise = (data: LogExerciseRequest): Promise<ExerciseResponse>
 export const getUserExercises = (): Promise<ExerciseResponse[]> => {
   // Try both the standard and alternative endpoints
   return apiRequest<ExerciseResponse[]>('/user-exercises', 'GET', null, true, 1)
-    .catch(error => {
+    .catch(() => {
       console.log('Failed with /user-exercises, trying fallback endpoint...');
       // Use the fallback endpoint that exists in routes.ts
       return apiRequest<ExerciseResponse[]>('/exercises/user', 'GET', null, true, 1);

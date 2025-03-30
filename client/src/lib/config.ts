@@ -1,4 +1,4 @@
-import { discoverBackendPort } from './portDiscovery';
+// Import removed as unused
 
 // Default configuration
 const defaultConfig = {

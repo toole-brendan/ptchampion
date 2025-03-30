@@ -3,12 +3,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator"; // For visual separation
 import { Switch } from "@/components/ui/switch"; // Added Switch import
-import { MapPin, Loader2, UserCircle, Settings, LogOut } from 'lucide-react'; // Added more icons
+import { Loader2, UserCircle, Settings, LogOut } from 'lucide-react'; // Removed MapPin, added more icons
 import { updateCurrentUser } from '../lib/apiClient';
 import { useAuth } from '../lib/authContext';
-import { UpdateUserRequest, UserResponse } from '../lib/types';
+import { UpdateUserRequest } from '../lib/types'; // Removed UserResponse
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Import Alert
 import { cn } from "@/lib/utils"; // Import cn
 
@@ -49,7 +48,7 @@ const Profile: React.FC = () => {
     setMessage(null);
     
     try {
-      const updatedUser = await updateCurrentUser(changes);
+      await updateCurrentUser(changes);
       setMessage({ text: 'Profile updated successfully', type: 'success' });
       // Consider updating the user context here if needed, depends on useAuth implementation
     } catch (error) {

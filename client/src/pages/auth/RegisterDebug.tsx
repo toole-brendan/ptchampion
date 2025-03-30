@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { registerUser } from '../../lib/apiClient';
 import { RegisterUserRequest } from '../../lib/types';
 import config from '../../lib/config';
 

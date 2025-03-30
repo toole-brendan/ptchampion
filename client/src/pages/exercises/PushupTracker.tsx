@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { logExercise } from '../../lib/apiClient';
 import { LogExerciseRequest } from '../../lib/types';
 import { useAuth } from '../../lib/authContext';
-import { calculateScore } from '../../lib/utils';
 // --- MediaPipe Imports ---
 import {
   PoseLandmarker,
@@ -234,8 +233,6 @@ const PushupTracker: React.FC = () => {
         return;
     }
 
-
-    const nowInMs = Date.now();
     if (video.currentTime !== lastVideoTimeRef.current) {
       lastVideoTimeRef.current = video.currentTime;
       const startTimeMs = performance.now();

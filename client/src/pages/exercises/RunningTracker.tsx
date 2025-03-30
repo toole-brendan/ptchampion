@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, Timer, MapPin, Route } from 'lucide-react';
+import { Play, Pause, RotateCcw, Timer, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 // Import mapping components
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
@@ -9,8 +9,6 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet'; // Import Leaflet library itself for icon customization
 import { logExercise } from '../../lib/apiClient';
 import { LogExerciseRequest } from '../../lib/types';
-import { useAuth } from '../../lib/authContext';
-import { calculateScore } from '../../lib/utils';
 
 // Fix leaflet's default icon path issue with bundlers like Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -38,7 +36,6 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 const RunningTracker: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [distance, setDistance] = useState(0); // Distance in kilometers
   const [timer, setTimer] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -248,10 +245,10 @@ const RunningTracker: React.FC = () => {
         exercise_id: EXERCISE_ID,
         duration: getTotalSeconds(),
         distance: distanceMeters,
-        notes: notes || undefined
+        notes: notes || undefined,
       };
       
-      const response = await logExercise(exerciseData);
+      await logExercise(exerciseData);
       
       setSuccess(true);
       setMinutes(0);
@@ -455,11 +452,6 @@ const RunningTracker: React.FC = () => {
                 {getTotalSeconds() > 0 && (
                   <div className="text-sm text-gray-500">
                     Logged time: {formatTimeForDisplay()}
-                    {distance > 0 && distance >= 2 && (
-                      <span className="ml-2">
-                        Estimated score: {calculateScore('run', getTotalSeconds())}/100
-                      </span>
-                    )}
                   </div>
                 )}
               </div>

@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { Calendar as CalendarIcon, Filter, Clock, Repeat, TrendingUp, Dumbbell, Award } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -18,89 +17,12 @@ import {
 } from "@/components/ui/table";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getUserExercises } from '../lib/apiClient';
 import { ExerciseResponse } from '../lib/types';
 import { useAuth } from '../lib/authContext';
 import { formatTime, formatDistance } from '../lib/utils';
 import config from '../lib/config';
-
-// Mock data for workout history
-const mockHistory = [
-  {
-    id: '1',
-    exercise: 'Push-ups',
-    date: '2024-07-28 10:30',
-    duration: '00:45',
-    reps: 30,
-    distance: null,
-  },
-  {
-    id: '2',
-    exercise: 'Running',
-    date: '2024-07-27 18:00',
-    duration: '30:15',
-    reps: null,
-    distance: '5.2 km',
-  },
-  {
-    id: '3',
-    exercise: 'Sit-ups',
-    date: '2024-07-26 11:00',
-    duration: '01:10',
-    reps: 55,
-    distance: null,
-  },
-  {
-    id: '4',
-    exercise: 'Push-ups',
-    date: '2024-07-25 10:25',
-    duration: '00:40',
-    reps: 25,
-    distance: null,
-  },
-  {
-    id: '5',
-    exercise: 'Push-ups',
-    date: '2024-07-23 09:00',
-    duration: '00:50',
-    reps: 35,
-    distance: null,
-  },
-  // Add more mock sessions if needed
-];
-
-// Helper function to parse duration string (MM:SS) into seconds
-const parseDuration = (durationStr: string): number => {
-  const parts = durationStr.split(':').map(Number);
-  if (parts.length === 2) {
-    return parts[0] * 60 + parts[1];
-  }
-  return 0; // Return 0 if format is unexpected
-};
-
-// Helper function to format seconds into MM:SS or HH:MM:SS
-const formatTotalTime = (totalSeconds: number): string => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-  
-    const parts: string[] = [];
-    if (hours > 0) {
-        parts.push(hours.toString().padStart(2, '0'));
-    }
-    parts.push(minutes.toString().padStart(2, '0'));
-    parts.push(seconds.toString().padStart(2, '0'));
-  
-    return parts.join(':');
-  };
-
-// Helper to parse distance string (e.g., "5.2 km") into a number
-const parseDistance = (distance: string | null): number | null => {
-  if (!distance) return null;
-  const match = distance.match(/^([\d.]+)/);
-  return match ? parseFloat(match[1]) : null;
-};
 
 // Helper to determine metric and unit for an exercise
 const getExerciseMetric = (exercise: string): { metric: 'reps' | 'distance' | null, unit: string } => {
@@ -320,18 +242,6 @@ const History: React.FC = () => {
     });
     return Object.values(bests).sort((a,b) => a.exercise.localeCompare(b.exercise));
   }, [dateFilteredHistory]);
-
-  // Group exercises by type for better organization
-  const groupedExercises = useMemo(() => {
-    return exercises.reduce((acc, exercise) => {
-      const type = exercise.exercise_type;
-      if (!acc[type]) {
-        acc[type] = [];
-      }
-      acc[type].push(exercise);
-      return acc;
-    }, {} as Record<string, ExerciseResponse[]>);
-  }, [exercises]);
 
   // NOW HANDLE RENDERING STATES
   

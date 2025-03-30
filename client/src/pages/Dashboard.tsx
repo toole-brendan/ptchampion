@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Activity, Zap, TrendingUp, PersonStanding, Clock, Repeat, Trophy, Award, ArrowRight } from 'lucide-react';
+import { Dumbbell, Activity, Zap, TrendingUp, PersonStanding, Clock, Repeat, Trophy, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 

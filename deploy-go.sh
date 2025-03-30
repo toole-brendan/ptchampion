@@ -141,13 +141,9 @@ build_and_push_go_image() {
   IMAGE_TAG_LATEST="$ECR_REPOSITORY_URI:latest"
   IMAGE_TAG_VERSIONED="$ECR_REPOSITORY_URI:$TIMESTAMP"
 
-  if docker build -t "$IMAGE_TAG_LATEST" -t "$IMAGE_TAG_VERSIONED" .; then
-    echo -e "${GREEN}Docker image built successfully.${NC}"
-  else
-    echo -e "${RED}Docker build failed.${NC}"
-    exit 1
-  fi
-
+  echo -e "${YELLOW}Creating multi-architecture build using buildx...${NC}"
+  docker buildx use multiarch || docker buildx create --name multiarch --use
+  
   echo -e "${YELLOW}Logging into AWS ECR...${NC}"
   if aws ecr get-login-password --region "$AWS_REGION" | docker login --username AWS --password-stdin "$ECR_REPOSITORY_URI"; then
     echo -e "${GREEN}ECR login successful.${NC}"
@@ -156,11 +152,11 @@ build_and_push_go_image() {
     exit 1
   fi
 
-  echo -e "${YELLOW}Pushing image to ECR ($IMAGE_TAG_LATEST and $IMAGE_TAG_VERSIONED)...${NC}"
-  if docker push "$IMAGE_TAG_LATEST" && docker push "$IMAGE_TAG_VERSIONED"; then
-    echo -e "${GREEN}Image pushed successfully.${NC}"
+  echo -e "${YELLOW}Building and pushing multi-architecture image to ECR...${NC}"
+  if docker buildx build --platform linux/amd64,linux/arm64 -t "$IMAGE_TAG_LATEST" -t "$IMAGE_TAG_VERSIONED" --push .; then
+    echo -e "${GREEN}Multi-architecture image built and pushed successfully.${NC}"
   else
-    echo -e "${RED}Docker push failed.${NC}"
+    echo -e "${RED}Docker buildx build and push failed.${NC}"
     exit 1
   fi
 }
@@ -232,32 +228,31 @@ configure_nginx_for_go() {
 
   echo -e "${YELLOW}Configuring Nginx for Go backend on $EC2_IP...${NC}"
 
-  # Nginx config proxies requests from port 80 to the Go app's port (GO_APP_PORT)
+  # Simpler Nginx config that just proxies to the Go app
   NGINX_CONF="server {
     listen 80 default_server;
-    server_name _; # Listen for any hostname
+    server_name _;
 
     location / {
-        # If you want Nginx to serve frontend files directly (alternative to S3)
-        # root /path/to/your/frontend/build; 
-        # try_files \\$uri /index.html;
-        # Otherwise, typically you'd only proxy API requests
-        return 404; # Or redirect to your main domain
+        return 404;
     }
 
-    # Proxy API requests to the Go app container
-    location /api/ {
-        proxy_pass http://127.0.0.1:$GO_APP_PORT; # Point to Go app port
+    # Direct API route
+    location /api {
+        proxy_pass http://127.0.0.1:$GO_APP_PORT;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \\$http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host \\$host;
-        proxy_set_header X-Real-IP \\$remote_addr;
-        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \\$scheme;
-        proxy_cache_bypass \\$http_upgrade;
-        proxy_read_timeout 300s;
-        proxy_connect_timeout 75s;
+    }
+
+    # API v1 specific route
+    location /api/v1 {
+        proxy_pass http://127.0.0.1:$GO_APP_PORT;
+        proxy_http_version 1.1;
+    }
+
+    # Health check endpoint
+    location /health {
+        proxy_pass http://127.0.0.1:$GO_APP_PORT;
+        proxy_http_version 1.1;
     }
 }"
 

@@ -11,7 +11,7 @@ const Login: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   
   // Auto-fill credentials in dev mode
   useEffect(() => {

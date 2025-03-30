@@ -3,7 +3,6 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { useAuth } from '../../lib/authContext';
-import { cn } from "@/lib/utils";
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();

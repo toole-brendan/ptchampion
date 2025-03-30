@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { logExercise } from '../../lib/apiClient';
 import { LogExerciseRequest } from '../../lib/types';
 import { useAuth } from '../../lib/authContext';
-import { calculateScore } from '../../lib/utils'; // Keep if scoring is needed
 // --- MediaPipe Imports ---
 import {
   PoseLandmarker,
@@ -18,7 +17,6 @@ import {
 
 // --- Pull-up specific logic constants (adjust as needed) ---
 const PULLUP_THRESHOLD_ELBOW_ANGLE_DOWN = 160; // Angle for fully extended arms at bottom
-const PULLUP_THRESHOLD_ELBOW_ANGLE_UP = 60;   // Max elbow angle when up (less critical than chin)
 const PULLUP_THRESHOLD_VISIBILITY = 0.6;      // Visibility threshold for landmarks
 // Threshold for chin (nose landmark) being above wrists (bar)
 // Positive value means nose needs to be *higher* than wrists (smaller y-coordinate)
@@ -175,7 +173,6 @@ const PullupTracker: React.FC = () => {
       return;
     }
 
-    const nowInMs = Date.now();
     if (video.currentTime !== lastVideoTimeRef.current) {
       lastVideoTimeRef.current = video.currentTime;
       const startTimeMs = performance.now();

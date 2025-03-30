@@ -11,7 +11,6 @@ import {
   LoginRequest, 
   RegisterUserRequest, 
   UserResponse,
-  LoginResponse 
 } from './types';
 
 // Default auth state
@@ -193,7 +192,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       
       // Register the user
-      const user = await registerUser(data);
+      await registerUser(data);
       
       // Auto login after registration
       await login({
