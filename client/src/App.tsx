@@ -44,6 +44,10 @@ function AppRoutes() {
       } />
       <Route path="/register-debug" element={<RegisterDebug />} />
       
+      <Route path="/auth" element={
+        isAuthenticated ? <Navigate to="/" replace /> : <Navigate to="/login" replace />
+      } />
+      
       <Route path="/" element={
         <ProtectedRoute>
           <Layout />

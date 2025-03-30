@@ -108,6 +108,10 @@ func NewRouter(h *handlers.Handler, cfg *config.Config) http.Handler {
 
 	// --- Static File Serving for React App ---
 	staticFilesDir := "/app/static"
+	// For local development, check if directory exists and fall back to ./client/dist
+	if _, err := os.Stat(staticFilesDir); os.IsNotExist(err) {
+		staticFilesDir = "./client/dist"
+	}
 	staticFS := http.Dir(staticFilesDir)
 
 	// Serve static files (like /assets/...)
