@@ -2,17 +2,18 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
-	customMiddleware "ptchampion/internal/api/middleware"
-	"ptchampion/internal/api/utils"
 	"ptchampion/internal/grading"
 	dbStore "ptchampion/internal/store/postgres"
+
 	// REMOVE: "github.com/go-playground/validator/v10"
+
+	"github.com/labstack/echo/v4"
 )
 
 // REMOVE: Define a global validator instance for this package
@@ -46,65 +47,91 @@ type LogExerciseResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+// PaginatedExerciseHistoryResponse defines the structure for paginated user exercise history
+type PaginatedExerciseHistoryResponse struct {
+	Items      []LogExerciseResponse `json:"items"`
+	TotalCount int64                 `json:"total_count"`
+	Page       int                   `json:"page"`
+	PageSize   int                   `json:"page_size"`
+}
+
 // ExerciseHistoryResponse defines the structure for returning user exercise history
 // ... existing struct ...
 
 // LogExercise handles logging a completed exercise session
-func (h *Handler) LogExercise(w http.ResponseWriter, r *http.Request) {
-	// 1. Get User ID from context
-	userID, ok := r.Context().Value(customMiddleware.UserIDContextKey).(int32)
+func (h *Handler) LogExercise(c echo.Context) error {
+	// 1. Get User ID from context (echo JWT middleware will provide this)
+	userID, ok := c.Get("user_id").(int32)
 	if !ok {
 		log.Printf("ERROR: Could not get user ID from context")
-		http.Error(w, "Authentication error", http.StatusInternalServerError)
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, "Authentication error")
 	}
 
 	// 2. Decode request body
 	var req LogExerciseRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := c.Bind(&req); err != nil {
 		log.Printf("ERROR: Failed to decode log exercise request: %v", err)
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	// 3. Validate the request struct using the shared validator
-	if err := utils.Validate.Struct(req); err != nil {
+	// 3. Validate the request struct
+	if err := c.Validate(req); err != nil {
 		log.Printf("INFO: Invalid log exercise request: %v", err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		if encodeErr := json.NewEncoder(w).Encode(utils.ValidationErrorResponse(err)); encodeErr != nil {
-			log.Printf("ERROR: Failed to encode validation error response: %v", encodeErr)
-		}
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	// 4. Fetch the Exercise definition by ID to get its type and name
-	exercise, err := h.Queries.GetExercise(r.Context(), req.ExerciseID) // Use GetExercise by ID
+	exercise, err := h.Queries.GetExercise(c.Request().Context(), req.ExerciseID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Printf("INFO: Attempt to log exercise with invalid ID: %d", req.ExerciseID)
-			http.Error(w, fmt.Sprintf("Invalid exercise ID: %d", req.ExerciseID), http.StatusBadRequest)
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid exercise ID: %d", req.ExerciseID))
 		} else {
 			log.Printf("ERROR: Failed to get exercise by ID %d: %v", req.ExerciseID, err)
-			http.Error(w, "Failed to retrieve exercise details", http.StatusInternalServerError)
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercise details")
 		}
-		return
 	}
 
 	// 5. Calculate Grade based on exercise type and performance value
 	var performanceValue float64
-	if exercise.Type == "timed" && req.Duration != nil { // Check fetched exercise type
-		performanceValue = float64(*req.Duration)
-	} else if (exercise.Type == "reps" || exercise.Type == "distance") && req.Reps != nil { // Assuming distance also uses reps field for simplicity?
-		// If distance is treated differently, add specific logic
-		// For now, using Reps for both reps and distance based exercises
-		performanceValue = float64(*req.Reps)
-	} else if exercise.Type == "distance" && req.Distance != nil {
-		// If distance has its own field and distinct grading
-		performanceValue = float64(*req.Distance) // Example: Using Distance field for grading if applicable
+	var metricMissing bool = false
+
+	// Use constants from grading package
+	switch exercise.Type {
+	case grading.ExerciseTypeRun: // Run is timed
+		if req.Duration != nil {
+			performanceValue = float64(*req.Duration)
+		} else {
+			metricMissing = true
+		}
+	case grading.ExerciseTypePushup, grading.ExerciseTypeSitup, grading.ExerciseTypePullup: // These are reps-based
+		if req.Reps != nil {
+			performanceValue = float64(*req.Reps)
+		} else {
+			metricMissing = true
+		}
+	// Add case for purely distance-based exercises if they exist
+	// case "some_distance_exercise_type":
+	// 	if req.Distance != nil {
+	// 		performanceValue = float64(*req.Distance) // Assumes distance is in relevant unit for grading
+	// 	} else {
+	// 		metricMissing = true
+	// 	}
+	default:
+		// This case should ideally not be hit if exercise type exists in DB and grading
+		log.Printf("Warning: Attempting to grade unknown or unhandled exercise type '%s'", exercise.Type)
+		// metricMissing = true // Or handle as appropriate
+		// For now, let CalculateScore handle it, which returns 0
 	}
-	// Add logic validation: e.g., ensure Reps is provided for 'reps' type, Duration for 'timed'
-	// This check could be more robust.
+
+	// Validate that the required metric was provided for the exercise type
+	if metricMissing {
+		log.Printf("INFO: Missing required performance metric for user %d, exercise type %s", userID, exercise.Type)
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Missing required performance metric (duration, reps, or distance) for exercise type %s", exercise.Type))
+	}
+
+	// TODO: If distance exercises are added, ensure req.Distance (expected in meters from frontend)
+	// is compatible with the unit expected by calculateDistanceScore if that's different.
 
 	calculatedGrade := grading.CalculateScore(exercise.Type, performanceValue)
 
@@ -125,11 +152,10 @@ func (h *Handler) LogExercise(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 7. Save to database
-	loggedExercise, err := h.Queries.LogUserExercise(r.Context(), params)
+	loggedExercise, err := h.Queries.LogUserExercise(c.Request().Context(), params)
 	if err != nil {
 		log.Printf("ERROR: Failed to log user exercise for user %d, exercise %d: %v", userID, exercise.ID, err)
-		http.Error(w, "Failed to save exercise log", http.StatusInternalServerError)
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to save exercise log")
 	}
 
 	// 8. Prepare response
@@ -148,67 +174,87 @@ func (h *Handler) LogExercise(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 9. Send response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		log.Printf("ERROR: Failed to encode log exercise response: %v", err)
-	}
+	return c.JSON(http.StatusCreated, resp)
 }
 
-// GetUserExercises handles retrieving exercise history for the logged-in user
-func (h *Handler) GetUserExercises(w http.ResponseWriter, r *http.Request) {
+// GetUserExercises handles retrieving exercise history for the logged-in user with pagination
+func (h *Handler) GetUserExercises(c echo.Context) error {
 	// 1. Get User ID from context
-	userID, ok := r.Context().Value(customMiddleware.UserIDContextKey).(int32)
+	userID, ok := c.Get("user_id").(int32)
 	if !ok {
 		log.Printf("ERROR: Could not get user ID from context")
-		http.Error(w, "Authentication error", http.StatusInternalServerError)
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, "Authentication error")
 	}
 
-	// 2. Fetch exercises from database
-	dbExercises, err := h.Queries.GetUserExercises(r.Context(), userID)
+	// 2. Get Pagination Parameters from query string
+	pageStr := c.QueryParam("page")
+	pageSizeStr := c.QueryParam("pageSize")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1 // Default to page 1 if invalid or missing
+	}
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 || pageSize > 100 { // Add a max page size
+		pageSize = 20 // Default page size
+	}
+
+	limit := int32(pageSize)
+	offset := int32((page - 1) * pageSize)
+
+	// 3. Fetch total count
+	totalCount, err := h.Queries.GetUserExercisesCount(c.Request().Context(), userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			// No exercises found is not an error, return empty list
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			json.NewEncoder(w).Encode([]LogExerciseResponse{}) // Return empty array
-			return
-		}
-		log.Printf("ERROR: Failed to get user exercises for user %d: %v", userID, err)
-		http.Error(w, "Failed to retrieve exercise history", http.StatusInternalServerError)
-		return
+		log.Printf("ERROR: Failed to get user exercises count for user %d: %v", userID, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercise count")
 	}
 
-	// 3. Map DB results to response struct
-	respExercises := make([]LogExerciseResponse, len(dbExercises))
+	var dbExercises []dbStore.GetUserExercisesRow // Assuming sqlc generated this type
+	if totalCount > 0 {
+		// 4. Fetch exercises for the current page from database
+		params := dbStore.GetUserExercisesParams{
+			UserID: userID,
+			Limit:  limit,  // Use int32 for limit
+			Offset: offset, // Use int32 for offset
+		}
+		dbExercises, err = h.Queries.GetUserExercises(c.Request().Context(), params)
+		if err != nil && err != sql.ErrNoRows { // Ignore ErrNoRows here, could happen if page is beyond total
+			log.Printf("ERROR: Failed to get user exercises for user %d (page %d, size %d): %v", userID, page, pageSize, err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercise history")
+		}
+	} else {
+		dbExercises = []dbStore.GetUserExercisesRow{} // Empty slice if total count is 0
+	}
+
+	// 5. Map DB results to response struct
+	respItems := make([]LogExerciseResponse, len(dbExercises))
 	for i, dbEx := range dbExercises {
-		respExercises[i] = LogExerciseResponse{
+		respItems[i] = LogExerciseResponse{
 			ID:            dbEx.ID,
 			UserID:        dbEx.UserID,
 			ExerciseID:    dbEx.ExerciseID,
-			ExerciseName:  dbEx.ExerciseName, // Directly use the string fields
+			ExerciseName:  dbEx.ExerciseName,
 			ExerciseType:  dbEx.ExerciseType,
 			Reps:          nullInt32ToInt32Ptr(dbEx.Repetitions),
 			TimeInSeconds: nullInt32ToInt32Ptr(dbEx.TimeInSeconds),
 			Distance:      nullInt32ToInt32Ptr(dbEx.Distance),
 			Notes:         nullStringToStringPtr(dbEx.Notes),
 			Grade:         dbEx.Grade.Int32,
-			CreatedAt:     getNullTime(dbEx.CreatedAt),
+			CreatedAt:     getNullTime(dbEx.CreatedAt), // Ensure getNullTime handles potential null timestamp
 		}
 	}
 
-	// 4. Send response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(respExercises); err != nil {
-		log.Printf("ERROR: Failed to encode user exercises response: %v", err)
+	// 6. Prepare paginated response object
+	paginatedResp := PaginatedExerciseHistoryResponse{
+		Items:      respItems,
+		TotalCount: totalCount,
+		Page:       page,
+		PageSize:   pageSize,
 	}
+
+	// 7. Send response
+	return c.JSON(http.StatusOK, paginatedResp)
 }
 
-// --- Grading Logic --- (Should probably move to a separate service/package later)
-// ... existing logic (assuming it's in grading package now) ...
-
-// --- Nullable Type Helpers ---
-// These should be in helpers.go and imported if needed
-// ... removed ...
+// Helper functions are defined in helpers.go

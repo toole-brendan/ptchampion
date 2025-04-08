@@ -1,47 +1,51 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
+import { Loader2 } from 'lucide-react';
 
-// Check if in development mode
-const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
+// Remove development mode check here, handle elsewhere if needed
+// const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  
-  const { login } = useAuth();
-  
-  // Auto-fill credentials in dev mode
+  const navigate = useNavigate();
+
+  // Get login function, loading state, and error state from context
+  const { login, isLoading, error, clearError, isAuthenticated } = useAuth();
+
+  // Redirect if already authenticated
   useEffect(() => {
-    if (isDevelopment) {
-      setUsername('devuser');
-      setPassword('password');
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
     }
-  }, []);
-  
+  }, [isAuthenticated, navigate]);
+
+  // Clear errors when component mounts or inputs change
+  useEffect(() => {
+    clearError();
+  }, [clearError, username, password]); // Clear error on input change too
+
+  const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>) => 
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      // clearError(); // Optional: Clear error immediately on typing
+      setter(e.target.value);
+    };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!isDevelopment && (!username || !password)) {
-      setError('Username and password are required');
-      return;
+
+    if (!username || !password) {
+      // Basic client-side validation (can enhance)
+      // Error from context will handle backend validation
+      return; 
     }
-    
-    setError('');
-    setIsSubmitting(true);
-    
-    try {
-      await login({ username, password });
-      // Successful login will redirect in the protected route
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
+
+    await login({ username, password });
+    // AuthContext handles success (token set -> user query runs -> ProtectedRoute allows access)
+    // AuthContext handles error state update
   };
-  
+
   return (
     <div className="flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-100">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -55,30 +59,15 @@ const Login: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-          {isDevelopment && (
-            <div className="mb-4 rounded-md bg-yellow-50 p-4 border border-yellow-200">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">Development Mode Active</h3>
-                  <div className="mt-2 text-sm text-yellow-700">
-                    <p>Auto-login is enabled. Just click "Sign in" without entering credentials!</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
+          {/* Remove development mode banner */}
+
           {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+            <div className="mb-4 rounded-md bg-red-50 p-4 border border-red-200">
+              <p className="text-sm font-medium text-red-800">Login Failed</p>
+              <p className="mt-1 text-sm text-red-700">{error}</p>
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
@@ -90,10 +79,11 @@ const Login: React.FC = () => {
                   name="username"
                   type="text"
                   autoComplete="username"
-                  required={!isDevelopment}
+                  required // Standard HTML required attribute
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  onChange={handleInputChange(setUsername)}
+                  disabled={isLoading} // Disable input while loading
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
                 />
               </div>
             </div>
@@ -108,10 +98,11 @@ const Login: React.FC = () => {
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  required={!isDevelopment}
+                  required // Standard HTML required attribute
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  onChange={handleInputChange(setPassword)}
+                  disabled={isLoading} // Disable input while loading
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
                 />
               </div>
             </div>
@@ -119,10 +110,15 @@ const Login: React.FC = () => {
             <div>
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+                disabled={isLoading || !username || !password} // Disable if loading or inputs empty
+                className="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Signing in...' : 'Sign in'}
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : 'Sign in'}
               </button>
             </div>
           </form>
@@ -142,7 +138,7 @@ const Login: React.FC = () => {
             <div className="mt-6 text-center">
               <Link
                 to="/register"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className={`font-medium text-indigo-600 hover:text-indigo-500 ${isLoading ? 'pointer-events-none opacity-50' : ''}`}
               >
                 Create an account
               </Link>

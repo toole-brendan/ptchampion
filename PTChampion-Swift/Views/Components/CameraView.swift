@@ -2,6 +2,7 @@ import SwiftUI
 import AVFoundation
 import Vision
 import UIKit
+import Combine
 
 struct CameraView: UIViewControllerRepresentable {
     @ObservedObject var exerciseViewModel: ExerciseViewModel
@@ -148,6 +149,9 @@ class ExerciseViewModel: ObservableObject {
     @Published var overlayImage: UIImage?
     @Published var exerciseState: ExerciseState = ExerciseState()
     @Published var countdown: Int = 3
+    @Published var isSaving = false
+    @Published var saveError: String? = nil
+    @Published var savedExerciseResult: UserExercise? = nil
     
     private let poseDetectionService = PoseDetectionService()
     private var countdownTimer: Timer?
@@ -201,11 +205,15 @@ class ExerciseViewModel: ObservableObject {
         }
     }
     
-    func saveExerciseResult(userId: Int, exerciseId: Int, completion: @escaping (Bool, UserExercise?) -> Void) {
-        guard isExerciseActive else {
-            completion(false, nil)
+    func saveExerciseResult(userId: Int, exerciseId: Int, completion: @escaping (Bool) -> Void) {
+        guard !isSaving else {
+            completion(false)
             return
         }
+        
+        isSaving = true
+        saveError = nil
+        savedExerciseResult = nil
         
         // Create the exercise result
         let request = CreateUserExerciseRequest(
@@ -220,16 +228,16 @@ class ExerciseViewModel: ObservableObject {
         // Save via API
         APIClient.shared.createUserExercise(userExercise: request)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] result in
-                if case .failure(let error) = result {
+            .sink(receiveCompletion: { [weak self] completionResult in
+                self?.isSaving = false
+                if case .failure(let error) = completionResult {
                     print("Error saving exercise: \(error.localizedDescription)")
-                    completion(false, nil)
+                    self?.saveError = error.localizedDescription
+                    completion(false)
                 }
-                
-                // Reset exercise state once saved
-                self?.isExerciseActive = false
-            }, receiveValue: { userExercise in
-                completion(true, userExercise)
+            }, receiveValue: { savedExercise in
+                self.savedExerciseResult = savedExercise
+                completion(true)
             })
             .store(in: &cancellables)
     }
@@ -335,9 +343,11 @@ struct ExerciseViewContainer: View {
                             viewModel.stopExercise()
                             
                             if let userId = authManager.currentUser?.id {
-                                viewModel.saveExerciseResult(userId: userId, exerciseId: exercise.id) { success, userExercise in
-                                    savedExercise = userExercise
-                                    showingCompletionAlert = true
+                                viewModel.saveExerciseResult(userId: userId, exerciseId: exercise.id) { success in
+                                    if success {
+                                        savedExercise = viewModel.savedExerciseResult
+                                        showingCompletionAlert = true
+                                    }
                                 }
                             }
                         }) {

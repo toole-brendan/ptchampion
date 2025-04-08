@@ -115,6 +115,11 @@ struct RunExerciseView: View {
             }
         }
         .background(Color(.systemGroupedBackground).edgesIgnoringSafeArea(.all))
+        .alert("Error Saving Run", isPresented: .constant(viewModel.saveError != nil), actions: {
+            Button("OK") { viewModel.saveError = nil }
+        }, message: {
+            Text(viewModel.saveError ?? "An unknown error occurred.")
+        })
     }
     
     // View shown before starting the run
@@ -377,10 +382,10 @@ struct RunExerciseView: View {
                                 .font(.headline)
                                 .foregroundColor(.secondary)
                             
-                            Text("\(viewModel.calculatedGrade)/100")
+                            Text("\(viewModel.formattedGrade)/100")
                                 .font(.title2)
                                 .fontWeight(.bold)
-                                .foregroundColor(scoreColor(viewModel.calculatedGrade))
+                                .foregroundColor(scoreColor(viewModel.formattedGrade))
                         }
                     }
                     .padding()
@@ -513,15 +518,15 @@ struct RunExerciseView: View {
         }
     }
     
-    private func scoreColor(_ score: Int) -> Color {
+    private func scoreColor(_ score: String) -> Color {
         switch score {
-        case 90...100:
+        case "Excellent":
             return .green
-        case 75..<90:
+        case "Good":
             return .blue
-        case 60..<75:
+        case "Satisfactory":
             return .orange
-        case 40..<60:
+        case "Marginal":
             return .yellow
         default:
             return .red
@@ -645,9 +650,9 @@ class RunViewModel: ObservableObject {
     @Published var timeElapsed: TimeInterval = 0
     @Published var distanceInMeters: Double = 0
     @Published var heartRate: Int = 0
-    @Published var currentPace: Double = 0 // minutes per km
+    @Published var currentPace: Double = 0 // min/km
     @Published var calories: Int = 0
-    @Published var calculatedGrade: Int = 0
+    @Published var savedExerciseResult: UserExercise? = nil // To store result from API
     
     // Formatted values for display
     var formattedTime: String {
@@ -698,7 +703,9 @@ class RunViewModel: ObservableObject {
     }
     
     var formattedGrade: String {
-        return "\(calculatedGrade)/100 \(gradeToRating(calculatedGrade))"
+        // Removed: Use savedExerciseResult.grade
+        // return "\(calculatedGrade)/100 \(gradeToRating(calculatedGrade))"
+        return "" // Placeholder, actual implementation needed
     }
     
     var formattedTimeOfDay: String {
@@ -874,10 +881,10 @@ class RunViewModel: ObservableObject {
         timer?.invalidate()
         bluetoothManager.stopExerciseTracking()
         
-        // Calculate grade based on run time
-        if timeElapsed > 0 {
-            calculatedGrade = ExerciseGrader.calculateRunGrade(timeInSeconds: Int(timeElapsed))
-        }
+        // Removed local grade calculation
+        // if timeElapsed > 0 {
+        //     calculatedGrade = ExerciseGrader.calculateRunGrade(timeInSeconds: Int(timeElapsed))
+        // }
     }
     
     func cancelRun() {
@@ -895,6 +902,10 @@ class RunViewModel: ObservableObject {
         distanceInMeters = 0
         startTime = nil
         pausedDuration = 0
+        
+        // Clear previous errors
+        saveError = nil
+        savedExerciseResult = nil
     }
     
     private func startTimer() {
@@ -938,7 +949,10 @@ class RunViewModel: ObservableObject {
     // MARK: - Results Management
     
     func saveRunResults(userId: Int, exerciseId: Int, completion: @escaping (Bool) -> Void) {
+        guard !isSaving else { return } // Prevent double saves
         isSaving = true
+        saveError = nil // Clear previous errors
+        savedExerciseResult = nil // Clear previous result
         
         // Assume 2 miles is complete even if distance tracking shows less
         // This is because the API expects a completed exercise
@@ -963,9 +977,11 @@ class RunViewModel: ObservableObject {
                 
                 if case .failure(let error) = completionResult {
                     print("Error saving run: \(error.localizedDescription)")
+                    self?.saveError = error.localizedDescription // Set error for alert
                     completion(false)
                 }
-            }, receiveValue: { _ in
+            }, receiveValue: { savedExercise in
+                self?.savedExerciseResult = savedExercise // Store the full result
                 completion(true)
             })
             .store(in: &cancellables)
@@ -973,20 +989,7 @@ class RunViewModel: ObservableObject {
     
     // MARK: - Helpers
     
-    private func gradeToRating(_ grade: Int) -> String {
-        switch grade {
-        case 90...100:
-            return "Excellent"
-        case 75..<90:
-            return "Good"
-        case 60..<75:
-            return "Satisfactory"
-        case 40..<60:
-            return "Marginal"
-        default:
-            return "Poor"
-        }
-    }
+    // Removed gradeToRating, can be added back if needed using savedExerciseResult.grade
 }
 
 // Preview

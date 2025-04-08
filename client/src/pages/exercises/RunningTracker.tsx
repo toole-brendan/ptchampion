@@ -8,7 +8,7 @@ import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet'; // Import Leaflet library itself for icon customization
 import { logExercise } from '../../lib/apiClient';
-import { LogExerciseRequest } from '../../lib/types';
+import { LogExerciseRequest, ExerciseResponse } from '../../lib/types';
 
 // Fix leaflet's default icon path issue with bundlers like Vite
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -21,9 +21,9 @@ L.Icon.Default.mergeOptions({
 // Placeholder type for coordinates
 type LatLngTuple = [number, number];
 
-// Haversine formula to calculate distance between two points in km
+// Haversine formula to calculate distance between two points in miles
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Radius of the Earth in km
+  const R = 3959; // Radius of the Earth in miles
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a =
@@ -36,10 +36,10 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 const RunningTracker: React.FC = () => {
   const navigate = useNavigate();
-  const [distance, setDistance] = useState(0); // Distance in kilometers
-  const [timer, setTimer] = useState(0);
+  const [distance, setDistance] = useState(0); // Distance in MILES
+  const [timer, setTimer] = useState(0); // Timer in seconds
   const [isActive, setIsActive] = useState(false);
-  const [isFinished, setIsFinished] = useState(false);
+  const [isFinished, setIsFinished] = useState(false); // Indicates tracking is done, form might be pre-filled
   const [pathCoordinates, setPathCoordinates] = useState<LatLngTuple[]>([]);
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
@@ -49,17 +49,20 @@ const RunningTracker: React.FC = () => {
   const watchIdRef = useRef<number | null>(null);
   const mapRef = useRef<L.Map>(null); // Ref for map instance
 
-  // Exercise state
-  const [minutes, setMinutes] = useState<number>(0);
-  const [seconds, setSeconds] = useState<number>(0);
+  // --- State for the Manual/Submission Form ---
+  // These will be pre-filled by the tracker when finished, or manually entered otherwise
+  const [formMinutes, setFormMinutes] = useState<number>(0);
+  const [formSeconds, setFormSeconds] = useState<number>(0);
+  const [formDistance, setFormDistance] = useState<number>(0); // Distance in MILES for the form
   const [notes, setNotes] = useState<string>('');
   
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [loggedGrade, setLoggedGrade] = useState<number | null>(null); // State to hold the returned grade
   
-  // Constants for this exercise
+  // Constants for this exercise (TODO: Should be passed dynamically)
   const EXERCISE_ID = 4; // Assuming 4 is the ID for running in your database
   const EXERCISE_NAME = '2-Mile Run';
 
@@ -81,6 +84,7 @@ const RunningTracker: React.FC = () => {
             if (updatedCoords.length > 1) {
               const prevCoord = updatedCoords[updatedCoords.length - 2];
               const addedDistance = calculateDistance(prevCoord[0], prevCoord[1], newCoord[0], newCoord[1]);
+              // Accumulate distance in miles
               setDistance((prevDistance) => prevDistance + addedDistance);
             }
             return updatedCoords;
@@ -132,7 +136,7 @@ const RunningTracker: React.FC = () => {
     };
   }, [isActive]); // Rerun effect when isActive changes
 
-  // Timer logic (similar to other trackers)
+  // Timer logic
   useEffect(() => {
     if (isActive) {
       timerIntervalRef.current = setInterval(() => {
@@ -151,37 +155,58 @@ const RunningTracker: React.FC = () => {
 
   // Control handlers
   const handleStartPause = () => {
-    if (isFinished) return;
-    // Check permission before starting (or let useEffect handle error)
+    if (isFinished) return; // Don't allow start/pause if already finished and pending submission
     setIsActive(!isActive);
     console.log(isActive ? "Pausing Run Tracking..." : "Starting Run Tracking...");
   };
 
   const handleFinish = () => {
     setIsActive(false);
-    setIsFinished(true);
+    setIsFinished(true); // Mark as finished, ready to log
+
     // Stop geolocation watch if active
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
-    alert(`Run finished! Distance: ${distance.toFixed(2)} km, Time: ${formatTime(timer)}`);
+
+    // Pre-fill form state with tracked values
+    const trackedMinutes = Math.floor(timer / 60);
+    const trackedSeconds = timer % 60;
+    setFormMinutes(trackedMinutes);
+    setFormSeconds(trackedSeconds);
+    // Ensure distance is rounded reasonably for the form
+    setFormDistance(parseFloat(distance.toFixed(2))); 
+
+    console.log(`Run finished! Distance: ${distance.toFixed(2)} miles, Time: ${formatTime(timer)}`);
+    // Removed alert, form is now pre-filled
   };
 
   const handleReset = () => {
     setIsActive(false);
     setIsFinished(false);
-    setDistance(0);
-    setTimer(0);
+    setDistance(0); // Reset live tracker distance
+    setTimer(0);    // Reset live tracker timer
     setPathCoordinates([]);
     setCurrentPosition(null);
     setGeoError(null);
     setPermissionGranted(null); // Re-check permission on next start attempt
+    
+    // Reset form fields
+    setFormMinutes(0);
+    setFormSeconds(0);
+    setFormDistance(0);
+    setNotes('');
+    setError(null);
+    setSuccess(false);
+    setIsSubmitting(false);
+    setLoggedGrade(null); // Reset logged grade
+
     if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
         watchIdRef.current = null;
     }
-    console.log("Resetting Run Tracker state...");
+    console.log("Resetting Run Tracker state and form...");
   };
 
   const formatTime = (timeInSeconds: number): string => {
@@ -190,24 +215,25 @@ const RunningTracker: React.FC = () => {
     return `${minutes}:${seconds}`;
   };
 
+  // --- Form Input Handlers ---
   const handleMinutesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
     if (!isNaN(value) && value >= 0) {
-      setMinutes(value);
+      setFormMinutes(value);
     }
   };
   
   const handleSecondsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
     if (!isNaN(value) && value >= 0 && value < 60) {
-      setSeconds(value);
+      setFormSeconds(value);
     }
   };
   
   const handleDistanceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseFloat(e.target.value);
     if (!isNaN(value) && value >= 0) {
-      setDistance(value);
+      setFormDistance(value);
     }
   };
   
@@ -215,54 +241,61 @@ const RunningTracker: React.FC = () => {
     setNotes(e.target.value);
   };
   
-  const getTotalSeconds = (): number => {
-    return (minutes * 60) + seconds;
+  // --- Form Submission Logic ---
+  const getTotalSecondsFromForm = (): number => {
+    return (formMinutes * 60) + formSeconds;
   };
   
   const formatTimeForDisplay = (): string => {
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    const formattedSeconds = seconds.toString().padStart(2, '0');
+    const formattedMinutes = formMinutes.toString().padStart(2, '0');
+    const formattedSeconds = formSeconds.toString().padStart(2, '0');
     return `${formattedMinutes}:${formattedSeconds}`;
   };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (getTotalSeconds() <= 0) {
-      setError('Please enter a valid time');
+    const totalSeconds = getTotalSecondsFromForm();
+    if (totalSeconds <= 0) {
+      setError('Please enter a valid time (or track a run)');
+      return;
+    }
+    if (formDistance <= 0) {
+      setError('Please enter a valid distance (or track a run)');
       return;
     }
     
-    // Convert distance from miles to meters if needed
-    const distanceMeters = Math.round(distance * 1609.34); // Convert miles to meters
+    // Convert form distance (miles) to meters for the API
+    const distanceMeters = Math.round(formDistance * 1609.34); 
     
     setIsSubmitting(true);
     setError(null);
     setSuccess(false);
+    setLoggedGrade(null); // Clear previous grade on new submission attempt
     
     try {
       const exerciseData: LogExerciseRequest = {
         exercise_id: EXERCISE_ID,
-        duration: getTotalSeconds(),
-        distance: distanceMeters,
+        duration: totalSeconds, // Total seconds from form/tracked data
+        distance: distanceMeters, // Distance in meters from form/tracked data
         notes: notes || undefined,
       };
       
-      await logExercise(exerciseData);
+      // Assume logExercise returns the LogExerciseResponse which includes the grade
+      const response: ExerciseResponse = await logExercise(exerciseData); 
       
       setSuccess(true);
-      setMinutes(0);
-      setSeconds(0);
-      setDistance(0);
-      setNotes('');
-      
-      // After 2 seconds, redirect to the history page to see the logged exercise
+      setLoggedGrade(response.grade ?? null); // Store the returned grade, handle potential undefined
+
+      // After 2 seconds, redirect to the history page
       setTimeout(() => {
-        navigate('/history');
+        navigate('/history'); 
       }, 2000);
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to log exercise');
+      setSuccess(false); // Ensure success is false on error
+      setLoggedGrade(null); // Ensure grade is null on error
     } finally {
       setIsSubmitting(false);
     }
@@ -318,7 +351,7 @@ const RunningTracker: React.FC = () => {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Distance</p>
               <p className="text-4xl font-bold text-foreground">
-                 {distance.toFixed(2)} <span className="text-xl font-normal">km</span>
+                 {distance.toFixed(2)} <span className="text-xl font-normal">miles</span>
               </p>
             </div>
             <div>
@@ -337,11 +370,11 @@ const RunningTracker: React.FC = () => {
                   {isActive ? <Pause className="mr-2 h-5 w-5" /> : <Play className="mr-2 h-5 w-5" />}
                   {isActive ? 'Pause' : 'Start'}
                 </Button>
-                <Button size="lg" variant="secondary" onClick={handleReset} disabled={isActive || isFinished}>
+                <Button size="lg" variant="secondary" onClick={handleReset} disabled={isActive || isFinished || timer > 0 || distance > 0}>
                   <RotateCcw className="mr-2 h-5 w-5" />
                   Reset
                 </Button>
-                <Button size="lg" variant="outline" onClick={handleFinish} disabled={!isActive && timer === 0}>
+                <Button size="lg" variant="outline" onClick={handleFinish} disabled={(!isActive && timer === 0) || isFinished}>
                   Finish Session
                 </Button>
               </>
@@ -354,17 +387,27 @@ const RunningTracker: React.FC = () => {
           </CardFooter>
       </Card>
 
+      {/* --- Log Submission Section --- */}
       <div className="max-w-3xl mx-auto p-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{EXERCISE_NAME}</h1>
-          <p className="text-gray-600">
-            Track your running time and distance to improve your cardiovascular fitness.
-          </p>
+          <h1 className="text-3xl font-bold mb-2">Log Your {EXERCISE_NAME}</h1>
+          {isFinished && !success && (
+             <p className="text-green-600 bg-green-50 p-3 rounded-md border border-green-200">
+               Run tracked! Review the details below and click "Log Exercise" to save.
+             </p>
+          )}
+          {!isFinished && !success && (
+            <p className="text-gray-600">
+              Complete the fields below to manually log your run, or use the tracker above.
+            </p>
+          )}
         </div>
         
         {success && (
           <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-md">
-            Exercise logged successfully! Redirecting to history...
+            Exercise logged successfully! 
+            {loggedGrade !== null && ` Grade: ${loggedGrade}. `} 
+            Redirecting to history...
           </div>
         )}
         
@@ -385,11 +428,11 @@ const RunningTracker: React.FC = () => {
                   <input
                     type="number"
                     min="0"
-                    value={minutes}
+                    value={formMinutes} // Use formMinutes state
                     onChange={handleMinutesChange}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                     placeholder="Minutes"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (isFinished && !success)} // Disable if tracked data is shown and not yet submitted/succeeded
                     required
                   />
                 </div>
@@ -398,17 +441,17 @@ const RunningTracker: React.FC = () => {
                     type="number"
                     min="0"
                     max="59"
-                    value={seconds}
+                    value={formSeconds} // Use formSeconds state
                     onChange={handleSecondsChange}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                     placeholder="Seconds"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (isFinished && !success)} // Disable if tracked data is shown
                     required
                   />
                 </div>
               </div>
               <p className="mt-1 text-sm text-gray-500">
-                Format: MM:SS (e.g., 13:30 for 13 minutes and 30 seconds)
+                {isFinished ? "Time from tracked run." : "Format: MM:SS (e.g., 13:30)"}
               </p>
             </div>
             
@@ -421,14 +464,15 @@ const RunningTracker: React.FC = () => {
                 type="number"
                 min="0"
                 step="0.01"
-                value={distance}
+                value={formDistance} // Use formDistance state
                 onChange={handleDistanceChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                 placeholder="2.0"
-                disabled={isSubmitting}
+                disabled={isSubmitting || (isFinished && !success)} // Disable if tracked data is shown
+                required // Make distance required
               />
               <p className="mt-1 text-sm text-gray-500">
-                Enter distance in miles (e.g., 2.0 for a 2-mile run)
+                {isFinished ? "Distance from tracked run." : "Enter distance in miles (e.g., 2.0)"}
               </p>
             </div>
             
@@ -449,15 +493,15 @@ const RunningTracker: React.FC = () => {
             
             <div className="flex items-center justify-between pt-4">
               <div>
-                {getTotalSeconds() > 0 && (
+                {getTotalSecondsFromForm() > 0 && (
                   <div className="text-sm text-gray-500">
-                    Logged time: {formatTimeForDisplay()}
+                    {isFinished ? "Logged time from tracker:" : "Manually entered time:"} {formatTimeForDisplay()}
                   </div>
                 )}
               </div>
               <button
                 type="submit"
-                disabled={isSubmitting || getTotalSeconds() <= 0}
+                disabled={isSubmitting || getTotalSecondsFromForm() <= 0 || formDistance <= 0 || success}
                 className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
               >
                 {isSubmitting ? 'Logging...' : 'Log Exercise'}

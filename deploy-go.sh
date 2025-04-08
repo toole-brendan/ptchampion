@@ -13,7 +13,7 @@ if [ -f ".env.production" ]; then
     echo -e "${YELLOW}Loading configuration from .env.production...${NC}"
     # Use a more robust method to export variables, ignoring comments and handling potential whitespace
     # Filter only the variables needed for deployment
-    export $(grep -v '^#' .env.production | grep -E '^(AWS_REGION|ECR_REPOSITORY_URI|EC2_IP|EC2_HOSTNAME|S3_BUCKET|CLOUDFRONT_DISTRIBUTION_ID|DATABASE_URL|JWT_SECRET|CLIENT_ORIGIN)=' | sed -e 's/[[:space:]]*$//' -e 's/^[[:space:]]*//' | xargs)
+    export $(grep -v '^#' .env.production | grep -E '^(AWS_REGION|ECR_REPOSITORY_URI|EC2_IP|EC2_HOSTNAME|S3_BUCKET|CLOUDFRONT_DISTRIBUTION_ID|DATABASE_URL|JWT_SECRET|CLIENT_ORIGIN|DB_SECRET_ARN|JWT_SECRET_ARN)=' | sed -e 's/[[:space:]]*$//' -e 's/^[[:space:]]*//' | xargs)
 else
     echo -e "${RED}Error: .env.production file not found.${NC}"
     exit 1
@@ -21,8 +21,18 @@ fi
 
 # --- Deployment Variables ---
 # Mandatory variables - check if they are loaded
-if [ -z "$AWS_REGION" ] || [ -z "$ECR_REPOSITORY_URI" ] || [ -z "$EC2_IP" ] || [ -z "$DATABASE_URL" ] || [ -z "$JWT_SECRET" ] || [ -z "$CLIENT_ORIGIN" ]; then
-    echo -e "${RED}Error: One or more mandatory variables (AWS_REGION, ECR_REPOSITORY_URI, EC2_IP, DATABASE_URL, JWT_SECRET, CLIENT_ORIGIN) are not set in .env.production.${NC}"
+if [ -z "$AWS_REGION" ] || [ -z "$ECR_REPOSITORY_URI" ] || [ -z "$EC2_IP" ]; then
+    echo -e "${RED}Error: One or more mandatory variables (AWS_REGION, ECR_REPOSITORY_URI, EC2_IP) are not set in .env.production.${NC}"
+    exit 1
+fi
+
+# Check if we're using AWS Secrets Manager or direct secrets
+USE_AWS_SECRETS=false
+if [ -n "$DB_SECRET_ARN" ] && [ -n "$JWT_SECRET_ARN" ]; then
+    USE_AWS_SECRETS=true
+    echo -e "${GREEN}Using AWS Secrets Manager for sensitive configuration.${NC}"
+elif [ -z "$DATABASE_URL" ] || [ -z "$JWT_SECRET" ]; then
+    echo -e "${RED}Error: Either AWS Secret ARNs (DB_SECRET_ARN, JWT_SECRET_ARN) or direct secrets (DATABASE_URL, JWT_SECRET) must be set in .env.production.${NC}"
     exit 1
 fi
 
@@ -190,15 +200,30 @@ if [ \$(docker ps -aq -f status=exited -f name=$GO_CONTAINER_NAME) ]; then
 fi
 
 echo 'Starting new container: $GO_CONTAINER_NAME...'
-docker run -d \\
-    --name $GO_CONTAINER_NAME \\
-    --restart always \\
-    -p $GO_APP_PORT:$GO_APP_PORT \\
-    -e PORT=$GO_APP_PORT \\
-    -e DATABASE_URL='$DATABASE_URL' \\
-    -e JWT_SECRET='$JWT_SECRET' \\
-    -e CLIENT_ORIGIN='$CLIENT_ORIGIN' \\
-    $IMAGE_TAG_LATEST
+if [ "$USE_AWS_SECRETS" = true ]; then
+    # Use AWS Secrets Manager - pass ARNs
+    docker run -d \\
+        --name $GO_CONTAINER_NAME \\
+        --restart always \\
+        -p $GO_APP_PORT:$GO_APP_PORT \\
+        -e PORT=$GO_APP_PORT \\
+        -e AWS_REGION='$AWS_REGION' \\
+        -e DB_SECRET_ARN='$DB_SECRET_ARN' \\
+        -e JWT_SECRET_ARN='$JWT_SECRET_ARN' \\
+        -e CLIENT_ORIGIN='$CLIENT_ORIGIN' \\
+        $IMAGE_TAG_LATEST
+else
+    # Use direct secrets
+    docker run -d \\
+        --name $GO_CONTAINER_NAME \\
+        --restart always \\
+        -p $GO_APP_PORT:$GO_APP_PORT \\
+        -e PORT=$GO_APP_PORT \\
+        -e DATABASE_URL='$DATABASE_URL' \\
+        -e JWT_SECRET='$JWT_SECRET' \\
+        -e CLIENT_ORIGIN='$CLIENT_ORIGIN' \\
+        $IMAGE_TAG_LATEST
+fi
 
 echo 'Waiting a few seconds for container to start...'
 sleep 5

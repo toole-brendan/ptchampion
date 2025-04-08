@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { logExercise } from '../../lib/apiClient';
-import { LogExerciseRequest } from '../../lib/types';
+import { LogExerciseRequest, ExerciseResponse } from '../../lib/types';
 import { useAuth } from '../../lib/authContext';
 // --- MediaPipe Imports ---
 import {
@@ -55,6 +55,7 @@ const PullupTracker: React.FC = () => {
   // --- Pull-up Tracking State ---
   const [pullupState, setPullupState] = useState<'start' | 'down' | 'up'>('start'); // State machine
   const [formFault, setFormFault] = useState(false); // Track form issues during a rep
+  const [formFaultMessage, setFormFaultMessage] = useState<string | null>(null); // Added for feedback
   // Ref to store initial hip position at the bottom of the rep to check kipping
   const initialHipYRef = useRef<number | null>(null);
   const initialShoulderYRef = useRef<number | null>(null); // Relative reference for hip
@@ -63,6 +64,7 @@ const PullupTracker: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [loggedGrade, setLoggedGrade] = useState<number | null>(null); // Added for grade
 
   // Constants for this exercise
   const EXERCISE_ID = 3; // Assuming 3 is the ID for pull-ups
@@ -225,7 +227,12 @@ const PullupTracker: React.FC = () => {
 
     if (!areLandmarksVisible) {
       // console.warn("Key landmarks not visible for pull-up detection.");
-      setFormFault(true); // Mark potential fault if landmarks disappear mid-rep
+      if (pullupState !== 'start') { // Only trigger fault/reset if tracking started
+          setFormFault(true); // Mark potential fault if landmarks disappear mid-rep
+          setPullupState('start'); // Reset state on visibility loss
+          setFormFaultMessage("Ensure full body is visible");
+          setTimeout(() => setFormFaultMessage(null), 2000);
+      }
       return;
     }
 
@@ -246,12 +253,16 @@ const PullupTracker: React.FC = () => {
     const isChinOverBar = noseY < avgWristY - CHIN_OVER_BAR_VERTICAL_THRESHOLD;
 
     // --- State Machine Logic ---
+    let kippingFaultDetected = false;
+    let faultMsg = "";
+
     switch (pullupState) {
         case 'start':
             // Waiting to reach the bottom hang position (arms extended)
             if (isArmsExtended) {
                 setPullupState('down');
                 setFormFault(false); // Reset fault flag for the new rep attempt
+                setFormFaultMessage(null); // Clear previous messages
                 // Record initial positions for kipping check
                 initialHipYRef.current = avgHipY;
                 initialShoulderYRef.current = avgShoulderY;
@@ -266,25 +277,28 @@ const PullupTracker: React.FC = () => {
                 const currentRelativeHipY = avgHipY - avgShoulderY;
                 const initialRelativeHipY = initialHipYRef.current !== null && initialShoulderYRef.current !== null
                     ? initialHipYRef.current - initialShoulderYRef.current
-                    : currentRelativeHipY; // Use current if initial wasn't set (unlikely)
+                    : currentRelativeHipY; 
 
-                // Kipping check: Did the hips move upwards significantly MORE than the shoulders?
-                // We check if the initial relative position (hip below shoulder) decreased too much
-                // (i.e., hip got much closer to shoulder vertically during the pull)
                 const verticalHipDisplacement = initialRelativeHipY - currentRelativeHipY;
 
                 if (verticalHipDisplacement > KIPPING_VERTICAL_THRESHOLD) {
-                    console.warn(`Form Fault: Excessive Kipping Detected! Displacement: ${verticalHipDisplacement.toFixed(3)}`);
+                    faultMsg = "Excessive Kipping Detected!";
+                    kippingFaultDetected = true;
+                    console.warn(`Form Fault: ${faultMsg} Displacement: ${verticalHipDisplacement.toFixed(3)}`);
                     setFormFault(true); // Mark rep as faulty due to kipping
                 }
 
                 // Transition to 'up' regardless of kipping for state flow, fault flag handles counting
                 setPullupState('up');
+                if (kippingFaultDetected) {
+                    setFormFaultMessage(faultMsg);
+                    setTimeout(() => setFormFaultMessage(null), 1500);
+                }
                 console.log(`State -> UP (Chin Over Bar: ${isChinOverBar}, Kipping Fault: ${formFault})`);
 
             } else if (!isArmsExtended) {
-                // If arms start bending but chin isn't over bar yet, still 'down'
-                // Optional: Add checks here for partial reps or getting stuck
+                // Optional: Check if arms bend significantly without chin going over -> Partial rep?
+                // Potentially set a specific fault message here?
             }
             break;
 
@@ -298,15 +312,18 @@ const PullupTracker: React.FC = () => {
                     console.log("State -> DOWN (Rep Counted:", repCount + 1, ")");
                 } else {
                     console.log("State -> DOWN (Rep Not Counted due to Form Fault)");
+                    // Give feedback that the previous rep was invalid
+                    setFormFaultMessage("Invalid Rep - Check Form");
+                    setTimeout(() => setFormFaultMessage(null), 1500);
                 }
                 setPullupState('down'); // Go back to down state, ready for next rep
-                setFormFault(false); // Reset fault flag
+                setFormFault(false); // Reset fault flag for the NEW rep cycle
+                setFormFaultMessage(null); // Clear message
                 // Record new initial positions
                 initialHipYRef.current = avgHipY;
                 initialShoulderYRef.current = avgShoulderY;
             }
-            // Else: Still in 'up' state or moving down but not fully extended yet.
-            // If landmarks become invisible here, the fault flag should already be set.
+            // Else: Still moving down. If visibility lost here, fault should be set.
             break;
     }
   };
@@ -340,6 +357,7 @@ const PullupTracker: React.FC = () => {
         isPredictingRef.current = true;
         setPullupState('start'); // Reset state on start/resume
         setFormFault(false);
+        setFormFaultMessage(null); // Clear messages
         initialHipYRef.current = null; // Clear initial positions
         initialShoulderYRef.current = null;
         lastVideoTimeRef.current = -1;
@@ -364,6 +382,7 @@ const PullupTracker: React.FC = () => {
         setIsSubmitting(true);
         setError(null);
         setSuccess(false);
+        setLoggedGrade(null);
         try {
              const exerciseData: LogExerciseRequest = {
                 exercise_id: EXERCISE_ID,
@@ -371,20 +390,30 @@ const PullupTracker: React.FC = () => {
                 duration: timer,
                 notes: `Tracked via webcam. Final State: ${pullupState}`
             };
-            await logExercise(exerciseData);
+            // Capture response
+            const response: ExerciseResponse = await logExercise(exerciseData); 
             console.log("Pull-up exercise logged successfully!");
             setSuccess(true);
-             setTimeout(() => navigate('/history'), 2000); // Redirect after success
+            setLoggedGrade(response.grade ?? null); // Store grade
+            
+            // Keep results displayed, don't redirect automatically
+            // setTimeout(() => navigate('/history'), 2000); 
         } catch (err) {
             console.error("Failed to log pull-up exercise:", err);
             setError(err instanceof Error ? err.message : 'Failed to save workout');
             setSuccess(false);
+            setLoggedGrade(null);
         } finally {
             setIsSubmitting(false);
         }
-    } else if (repCount === 0) {
-         console.log("No reps counted, session not saved.");
-         navigate('/exercises');
+    } else if (repCount === 0 && isFinished) {
+         console.log("No live reps counted, session not saved.");
+         // Don't navigate, allow reset
+         // navigate('/exercises');
+    } else if (!user) {
+        setError("You must be logged in to save results.");
+        console.warn("Attempted to save workout while not logged in.");
+        setIsFinished(false); // Allow reset
     }
   };
 
@@ -396,11 +425,13 @@ const PullupTracker: React.FC = () => {
     setTimer(0);
     setPullupState('start');
     setFormFault(false);
+    setFormFaultMessage(null); // Reset message
     initialHipYRef.current = null;
     initialShoulderYRef.current = null;
     setError(null);
     setSuccess(false);
     setIsSubmitting(false);
+    setLoggedGrade(null); // Reset grade
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
     console.log("Resetting MediaPipe state...");
   };
@@ -440,6 +471,12 @@ const PullupTracker: React.FC = () => {
               ref={canvasRef}
               className="absolute top-0 left-0 w-full h-full"
             />
+            {/* Form Fault Message Overlay */} 
+            {formFaultMessage && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/80 text-white px-4 py-2 rounded-md text-sm font-semibold">
+                {formFaultMessage}
+              </div>
+            )}
             {/* Overlay messages (Loading, Errors, Permissions) */}
              {isModelLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white z-10">
@@ -522,11 +559,16 @@ const PullupTracker: React.FC = () => {
             ) : (
                  <div className="text-center w-full">
                     {isSubmitting && <p className="flex items-center justify-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</p>}
-                    {error && <p className="text-destructive text-sm mt-2">Error: {error}</p>}
-                    {success && <p className="text-green-600 text-sm mt-2">Workout saved! Redirecting...</p>}
-                    {!isSubmitting && !error && !success && <p>Workout Complete!</p>}
+                    {error && !isSubmitting && <p className="text-destructive text-sm mt-2">Error Saving: {error}</p>}
+                    {success && !isSubmitting && (
+                      <p className="text-green-600 text-sm mt-2">
+                        Workout saved successfully!
+                        {loggedGrade !== null && ` Grade: ${loggedGrade}`}
+                      </p>
+                    )}
+                    {!isSubmitting && !error && !success && <p>Workout Complete! Press Reset to start again.</p>}
                     <Button size="lg" variant="outline" onClick={handleReset} className="mt-4">
-                        Track Another Session
+                        Reset Tracker
                     </Button>
                  </div>
             )}

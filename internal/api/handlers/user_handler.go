@@ -2,17 +2,15 @@ package handlers
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
-	customMiddleware "ptchampion/internal/api/middleware"
-	"ptchampion/internal/api/utils"
 	dbStore "ptchampion/internal/store/postgres"
 
+	"github.com/labstack/echo/v4"
 	"github.com/lib/pq"
 )
 
@@ -39,32 +37,25 @@ type UpdateUserRequest struct {
 }
 
 // UpdateCurrentUser handles requests to update the authenticated user's profile
-func (h *Handler) UpdateCurrentUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateCurrentUser(c echo.Context) error {
 	// 1. Get User ID from context
-	userID, ok := r.Context().Value(customMiddleware.UserIDContextKey).(int32)
+	userID, ok := c.Get("user_id").(int32)
 	if !ok {
 		log.Printf("ERROR: Could not get user ID from context")
-		http.Error(w, "Authentication error", http.StatusInternalServerError)
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, "Authentication error")
 	}
 
 	// 2. Decode request body
 	var req UpdateUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := c.Bind(&req); err != nil {
 		log.Printf("ERROR: Failed to decode update user request: %v", err)
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	// Validate the request struct using the shared validator
-	if err := utils.Validate.Struct(req); err != nil {
+	// Validate the request struct
+	if err := c.Validate(req); err != nil {
 		log.Printf("INFO: Invalid update user request: %v", err)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		if encodeErr := json.NewEncoder(w).Encode(utils.ValidationErrorResponse(err)); encodeErr != nil {
-			log.Printf("ERROR: Failed to encode validation error response: %v", encodeErr)
-		}
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	// 3. Prepare parameters for DB update
@@ -93,31 +84,28 @@ func (h *Handler) UpdateCurrentUser(w http.ResponseWriter, r *http.Request) {
 		// We need to pass the existing username for COALESCE to work correctly if not updating.
 		// Fetch current user data first, or adjust query/params handling.
 		// For simplicity now, let's fetch the current user data first.
-		currentUser, err := h.Queries.GetUser(r.Context(), userID)
+		currentUser, err := h.Queries.GetUser(c.Request().Context(), userID)
 		if err != nil {
 			log.Printf("ERROR: Failed to get current user %d for update: %v", userID, err)
-			http.Error(w, "Failed to update profile", http.StatusInternalServerError)
-			return
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update profile")
 		}
 		params.Username = currentUser.Username // Use current username
 	}
 
 	// 4. Update user in database
-	updatedUser, err := h.Queries.UpdateUser(r.Context(), params)
+	updatedUser, err := h.Queries.UpdateUser(c.Request().Context(), params)
 	if err != nil {
 		// Check for unique constraint violation (duplicate username if username was updated)
 		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
 			log.Printf("INFO: Attempt to update to duplicate username: %s by user ID %d", params.Username, userID)
 			// Check if the constraint is specifically on the username column
 			if strings.Contains(pqErr.Constraint, "users_username_key") { // Adjust constraint name if different
-				http.Error(w, "Username already taken", http.StatusConflict) // 409 Conflict
-				return
+				return echo.NewHTTPError(http.StatusConflict, "Username already taken") // 409 Conflict
 			}
 		}
 		// Handle other errors
 		log.Printf("ERROR: Failed to update user %d: %v", userID, err)
-		http.Error(w, "Failed to update profile", http.StatusInternalServerError)
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update profile")
 	}
 
 	// 5. Prepare response (similar to RegisterUser response)
@@ -132,9 +120,5 @@ func (h *Handler) UpdateCurrentUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 6. Send response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		log.Printf("ERROR: Failed to encode update user response: %v", err)
-	}
+	return c.JSON(http.StatusOK, resp)
 }

@@ -45,9 +45,13 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /server cmd/server/mai
 
 # --- Runtime Stage ---
 # Switch to Alpine for easier debugging
+# Consider pinning to a specific version, e.g., alpine:3.19
 FROM alpine:latest
 
-# Install packages needed for troubleshooting
+# Create a non-root user and group
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Install packages needed for troubleshooting and runtime
 RUN apk --no-cache add ca-certificates tzdata curl
 
 # Set the Current Working Directory inside the container
@@ -60,10 +64,17 @@ COPY --from=go-builder /server /app/server
 # The Go app should be configured to serve files from this directory
 COPY --from=frontend-builder /app/client/dist /app/static
 
+# Change ownership of the app directory to the non-root user
+RUN chown -R appuser:appgroup /app
+
 # For debugging: List the contents of the static directory
 RUN ls -la /app/static || echo "Static directory is empty or missing!"
 
+# Switch to the non-root user
+USER appuser
+
 # Expose port 8080 to the outside world (adjust if your config uses a different default)
+# Note: Non-root users cannot bind to ports below 1024 by default
 EXPOSE 8080
 
 # Command to run the executable

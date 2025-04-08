@@ -56,3 +56,29 @@ func nullStringToStringPtr(ns sql.NullString) *string {
 	val := ns.String // Create a new variable to take the address of
 	return &val
 }
+
+// DerefString safely dereferences a *string, returning "" if nil
+func DerefString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+// NullTimeToRFC3339StringPtr converts sql.NullTime to a pointer to an RFC3339 formatted string
+func NullTimeToRFC3339StringPtr(nt sql.NullTime) *string {
+	if !nt.Valid {
+		return nil
+	}
+	formatted := nt.Time.Format(time.RFC3339)
+	return &formatted
+}
+
+// NullStringToStringPtr converts sql.NullString to *string
+func NullStringToStringPtr(ns sql.NullString) *string {
+	if !ns.Valid {
+		return nil
+	}
+	val := ns.String // Create a new variable to take the address of
+	return &val
+}

@@ -1,248 +1,161 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
-import { 
-  clearAuthData, 
-  getStoredUser, 
-  loginUser, 
-  registerUser, 
-  storeAuthData 
+import React, { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  clearToken,
+  getToken,
+  storeToken,
+  loginUser,
+  registerUser,
+  getCurrentUser,
 } from './apiClient';
-import { 
-  AuthState, 
-  LoginRequest, 
-  RegisterUserRequest, 
+import {
+  LoginRequest,
+  RegisterUserRequest,
   UserResponse,
+  LoginResponse,
 } from './types';
 
-// Default auth state
-const defaultAuthState: AuthState = {
-  isAuthenticated: false,
-  user: null,
-  token: null,
-  loading: true,
-  error: null,
-};
-
-// Mock development user data
-const DEV_USER: UserResponse = {
-  id: 1,
-  username: 'devuser',
-  display_name: 'Development User',
-  profile_picture_url: 'https://ui-avatars.com/api/?name=Dev+User&background=random',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
-};
-
-// Mock JWT token for development
-const DEV_TOKEN = 'dev-jwt-token-for-local-development-only';
-
-// Check if in development mode
-const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
-
-interface AuthContextType extends AuthState {
+// Define the shape of the authentication context
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: UserResponse | null;
+  token: string | null;
+  isLoading: boolean; // Represents loading state of user fetch or auth mutations
+  error: string | null; // Represents error from user fetch or auth mutations
   login: (data: LoginRequest) => Promise<void>;
   register: (data: RegisterUserRequest) => Promise<void>;
   logout: () => void;
-  clearError: () => void;
+  clearError: () => void; // Optional: To clear mutation errors manually if needed
 }
+
+// Query key for the current user data
+const userQueryKey = ['currentUser'];
 
 // Create the context with undefined default value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Provider component that wraps the app and makes auth available to child components
+// Provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<AuthState>(defaultAuthState);
+  const queryClient = useQueryClient();
+  const [token, setToken] = useState<string | null>(getToken()); // Initialize token from localStorage
+  const [mutationError, setMutationError] = useState<string | null>(null);
 
-  // Initialize auth state from localStorage on component mount
+  // Effect to update localStorage when token changes
   useEffect(() => {
-    const initializeAuth = () => {
-      try {
-        const token = localStorage.getItem('authToken');
-        const user = getStoredUser();
-        
-        if (token && user) {
-          setState({
-            ...defaultAuthState,
-            isAuthenticated: true,
-            user,
-            token,
-            loading: false,
-          });
-        } else if (isDevelopment) {
-          // Auto-login for development
-          console.log('🔧 Development mode: Auto-logging in with dev user');
-          
-          // Store dev auth data
-          storeAuthData(DEV_TOKEN, DEV_USER);
-          
-          setState({
-            isAuthenticated: true,
-            user: DEV_USER,
-            token: DEV_TOKEN,
-            loading: false,
-            error: null,
-          });
-        } else {
-          setState({
-            ...defaultAuthState,
-            loading: false,
-          });
-        }
-      } catch (error) {
-        setState({
-          ...defaultAuthState,
-          loading: false,
-        });
-      }
-    };
+    if (token) {
+      storeToken(token);
+    } else {
+      clearToken();
+    }
+  }, [token]);
 
-    initializeAuth();
+  // Query to fetch the current user data - enabled only if a token exists
+  const { data: user, isLoading: isLoadingUser, error: userError } = useQuery<
+    UserResponse,
+    Error // Explicitly type Error
+  >({ // Pass options object directly
+    queryKey: userQueryKey,
+    queryFn: getCurrentUser,
+    enabled: !!token, // Only run query if token is truthy
+    staleTime: Infinity, // User data is generally stable, refetch manually on updates
+    gcTime: Infinity, // Keep user data cached indefinitely while authenticated (use gcTime)
+    retry: 1, // Retry fetching user once on failure
+  });
+
+  // --- Mutations --- //
+
+  // Login Mutation
+  const { mutateAsync: performLogin, isPending: isLoggingIn } = useMutation<
+    LoginResponse,
+    Error, // Explicitly type Error
+    LoginRequest
+  >({
+    mutationFn: loginUser, // mutationFn inside options
+    onSuccess: (data: LoginResponse) => { // Explicitly type data
+      setToken(data.token); // Set the token in state (triggers useEffect to store it)
+      // Set user data directly in the cache for immediate UI update
+      queryClient.setQueryData(userQueryKey, data.user);
+      setMutationError(null);
+    },
+    onError: (error: Error) => { // Explicitly type error
+      clearToken(); // Ensure token is cleared on login failure
+      // Correct usage of removeQueries
+      queryClient.removeQueries({ queryKey: userQueryKey });
+      setMutationError(error.message || 'Login failed');
+    },
+  });
+
+  // Register Mutation
+  const { mutateAsync: performRegister, isPending: isRegistering } = useMutation<
+    UserResponse,
+    Error, // Explicitly type Error
+    RegisterUserRequest
+  >({
+    mutationFn: registerUser, // mutationFn inside options
+    onSuccess: async (_registeredUser: UserResponse, variables: RegisterUserRequest) => { // Explicitly type params
+      // After successful registration, automatically log the user in
+      await performLogin({ username: variables.username, password: variables.password });
+      // Error state will be handled by performLogin's onError
+    },
+    onError: (error: Error) => { // Explicitly type error
+      setMutationError(error.message || 'Registration failed');
+    },
+  });
+
+  // --- Context Methods --- //
+
+  // Login method exposed by context
+  const login = useCallback(async (data: LoginRequest) => {
+    try {
+      setMutationError(null); // Clear previous errors before attempting
+      await performLogin(data);
+      // Success is handled by mutation's onSuccess
+    } catch (error) {
+      // Error is now set by mutation's onError
+      console.error('Login mutation failed:', error);
+    }
+  }, [performLogin]);
+
+  // Register method exposed by context
+  const register = useCallback(async (data: RegisterUserRequest) => {
+    try {
+      setMutationError(null); // Clear previous errors before attempting
+      await performRegister(data);
+      // Success includes auto-login handled by mutation's onSuccess
+    } catch (error) {
+      // Error is now set by mutation's onError
+      console.error('Register mutation failed:', error);
+    }
+  }, [performRegister]);
+
+  // Logout method
+  const logout = useCallback(() => {
+    setToken(null); // Clear token state (triggers useEffect to clear storage)
+    queryClient.removeQueries({ queryKey: userQueryKey }); // Use correct signature
+    setMutationError(null); // Clear any lingering mutation errors
+  }, [queryClient]);
+
+  // Method to clear mutation errors manually if needed
+  const clearError = useCallback(() => {
+    setMutationError(null);
   }, []);
 
-  // Login function
-  const login = async (data: LoginRequest) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    try {
-      // Skip actual API call in development mode
-      if (isDevelopment) {
-        console.log('🔧 Development mode: Simulating login for', data.username);
-        
-        // Create a custom dev user with the provided username
-        const customDevUser = {
-          ...DEV_USER,
-          username: data.username,
-          display_name: `${data.username} (Dev)`,
-        };
-        
-        // Store auth data in localStorage
-        storeAuthData(DEV_TOKEN, customDevUser);
-        
-        // Update state
-        setState({
-          isAuthenticated: true,
-          user: customDevUser,
-          token: DEV_TOKEN,
-          loading: false,
-          error: null,
-        });
-        
-        return;
-      }
-      
-      const response = await loginUser(data);
-      const { token, user } = response;
-      
-      // Store auth data in localStorage
-      storeAuthData(token, user);
-      
-      // Update state
-      setState({
-        isAuthenticated: true,
-        user,
-        token,
-        loading: false,
-        error: null,
-      });
-    } catch (error) {
-      if (isDevelopment) {
-        // Even if API call fails in dev, still log in with dev user
-        console.log('🔧 Development mode: API call failed but still logging in');
-        
-        // Create a custom dev user with the provided username
-        const customDevUser = {
-          ...DEV_USER,
-          username: data.username,
-          display_name: `${data.username} (Dev)`,
-        };
-        
-        storeAuthData(DEV_TOKEN, customDevUser);
-        setState({
-          isAuthenticated: true,
-          user: customDevUser,
-          token: DEV_TOKEN,
-          loading: false,
-          error: null,
-        });
-        return;
-      }
-      
-      setState(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to login'
-      }));
-      throw error;
-    }
-  };
+  // Determine overall loading state
+  // Loading is true if we don't have a token yet but are initializing (handled by token state),
+  // or if we have a token but are fetching the user (isLoadingUser),
+  // or if a login/registration mutation is in progress (isPending...).
+  const isLoading = isLoadingUser || isLoggingIn || isRegistering;
 
-  // Register function
-  const register = async (data: RegisterUserRequest) => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    try {
-      // Skip actual API call in development mode
-      if (isDevelopment) {
-        console.log('🔧 Development mode: Simulating registration for', data.username);
-        
-        // Auto login after simulated registration
-        await login({
-          username: data.username,
-          password: data.password,
-        });
-        
-        return;
-      }
-      
-      // Register the user
-      await registerUser(data);
-      
-      // Auto login after registration
-      await login({
-        username: data.username,
-        password: data.password,
-      });
-    } catch (error) {
-      if (isDevelopment) {
-        // Even if API call fails in dev, still log in with dev user
-        console.log('🔧 Development mode: API call failed but still registering and logging in');
-        await login({
-          username: data.username,
-          password: data.password,
-        });
-        return;
-      }
-      
-      setState(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: error instanceof Error ? error.message : 'Failed to register'
-      }));
-      throw error;
-    }
-  };
-
-  // Logout function
-  const logout = () => {
-    clearAuthData();
-    setState({
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      loading: false,
-      error: null,
-    });
-    
-    if (isDevelopment) {
-      console.log('🔧 Development mode: Logged out. Refresh to auto-login again.');
-    }
-  };
-
-  // Clear error function
-  const clearError = () => {
-    setState(prev => ({ ...prev, error: null }));
-  };
+  // Determine overall error state (prefer mutation errors over user fetch errors)
+  const error = mutationError || (userError ? userError.message : null);
 
   // Create the context value object
   const contextValue: AuthContextType = {
-    ...state,
+    isAuthenticated: !!token && !!user, // Authenticated if token exists AND user data loaded
+    user: user || null, // User data from the query
+    token: token,
+    isLoading: isLoading,
+    error: error,
     login,
     register,
     logout,

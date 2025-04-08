@@ -1,14 +1,13 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
 
 	db "ptchampion/internal/store/postgres"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/labstack/echo/v4"
 )
 
 const defaultLeaderboardLimit = 20
@@ -21,15 +20,14 @@ type LeaderboardEntry struct {
 }
 
 // GetLeaderboard handles requests to retrieve the leaderboard for a specific exercise type
-func (h *Handler) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
-	exerciseType := chi.URLParam(r, "exerciseType")
+func (h *Handler) GetLeaderboard(c echo.Context) error {
+	exerciseType := c.Param("exerciseType")
 	if exerciseType == "" {
-		http.Error(w, "Exercise type is required", http.StatusBadRequest)
-		return
+		return echo.NewHTTPError(http.StatusBadRequest, "Exercise type is required")
 	}
 
 	// Get limit from query param, default if not provided or invalid
-	limitStr := r.URL.Query().Get("limit")
+	limitStr := c.QueryParam("limit")
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
 		limit = defaultLeaderboardLimit
@@ -42,11 +40,10 @@ func (h *Handler) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Fetch leaderboard data from database
-	dbEntries, err := h.Queries.GetLeaderboardByExerciseType(r.Context(), params)
+	dbEntries, err := h.Queries.GetLeaderboardByExerciseType(c.Request().Context(), params)
 	if err != nil {
 		log.Printf("ERROR: Failed to get leaderboard for type '%s': %v", exerciseType, err)
-		http.Error(w, "Failed to retrieve leaderboard", http.StatusInternalServerError)
-		return
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve leaderboard")
 	}
 
 	// Map DB results to response struct
@@ -65,9 +62,5 @@ func (h *Handler) GetLeaderboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(respEntries); err != nil {
-		log.Printf("ERROR: Failed to encode leaderboard response: %v", err)
-	}
+	return c.JSON(http.StatusOK, respEntries)
 }

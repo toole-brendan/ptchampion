@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { logExercise } from '../../lib/apiClient';
-import { LogExerciseRequest } from '../../lib/types';
+import { LogExerciseRequest, ExerciseResponse } from '../../lib/types';
 import { useAuth } from '../../lib/authContext';
 // --- MediaPipe Imports ---
 import {
@@ -62,8 +62,10 @@ const SitupTracker: React.FC = () => {
 
   // UI state for Live Tracking submission
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null); // For manual form errors
-  const [success, setSuccess] = useState(false); // For manual form success
+  const [error, setError] = useState<string | null>(null); // Error for API submission
+  const [success, setSuccess] = useState(false); // Success for API submission
+  const [loggedGrade, setLoggedGrade] = useState<number | null>(null); // Grade from API response
+  const [formFaultMessage, setFormFaultMessage] = useState<string | null>(null);
 
   // Constants for this exercise
   const EXERCISE_ID = 2; // Correct ID for sit-ups
@@ -270,6 +272,8 @@ const SitupTracker: React.FC = () => {
             initialLeftAnkleY.current = null;
             initialRightAnkleY.current = null;
             console.warn("Visibility lost, resetting sit-up state.");
+            setFormFaultMessage("Ensure full body is visible.");
+            setTimeout(() => setFormFaultMessage(null), 2000);
        }
        return;
     }
@@ -310,13 +314,20 @@ const SitupTracker: React.FC = () => {
 
     // 5. Implement State Machine with Form Checks
     let currentFormFault = false;
+    let faultMsg = "";
     if (!handsBehindHead) {
-        // console.log("Form Fault: Hands moved from head");
+        faultMsg = "Keep hands behind head!";
         currentFormFault = true;
     }
-    if (!feetOnGround && situpState !== 'start' && initialLeftAnkleY.current !== null) { // Only check feet after initial down state recorded
-        // console.log("Form Fault: Feet lifted");
+    if (!feetOnGround && situpState !== 'start' && initialLeftAnkleY.current !== null) {
+        faultMsg = "Keep feet on the ground!";
         currentFormFault = true;
+    }
+
+    // Display form fault message if there's a new fault
+    if (currentFormFault && !formFaultDuringRep.current) {
+        setFormFaultMessage(faultMsg);
+        setTimeout(() => setFormFaultMessage(null), 1500);
     }
 
     // Update persistent form fault flag if a fault occurs during the rep cycle
@@ -347,6 +358,8 @@ const SitupTracker: React.FC = () => {
                 } else {
                     // Reached UP but form was bad during the rep
                     setSitupState('up'); // Still transition state
+                    setFormFaultMessage("Invalid Rep - Check Form");
+                    setTimeout(() => setFormFaultMessage(null), 1500);
                     console.warn("State -> UP (Rep INVALID - Form Fault Detected, Hip Angle:", hipAngle.toFixed(0), ")");
                 }
             }
@@ -357,7 +370,7 @@ const SitupTracker: React.FC = () => {
             if (isDown) {
                 // Returned to the DOWN position, reset for next rep
                 setSitupState('down');
-                formFaultDuringRep.current = currentFormFault; // Reset fault flag based on current form
+                formFaultDuringRep.current = currentFormFault; // Reset fault flag based on current form at bottom
                 initialLeftAnkleY.current = leftAnkle.y; // Record new initial ankle positions
                 initialRightAnkleY.current = rightAnkle.y;
                 console.log("State -> DOWN (Completed Rep Cycle, Ready for Next)");
@@ -417,9 +430,10 @@ const SitupTracker: React.FC = () => {
 
     // Save workout session data (Live Tracking)
     if (repCount > 0 && user) {
-      // Note: Reusing the manual submission state for simplicity here
       setIsSubmitting(true);
-      setError(null); // Clear manual form error
+      setError(null); 
+      setSuccess(false);
+      setLoggedGrade(null);
       try {
         const exerciseData: LogExerciseRequest = {
           exercise_id: EXERCISE_ID,
@@ -427,28 +441,35 @@ const SitupTracker: React.FC = () => {
           duration: timer,
           notes: `Tracked via webcam. State: ${situpState}`
         };
-        await logExercise(exerciseData);
+        // Capture response to get grade
+        const response: ExerciseResponse = await logExercise(exerciseData); 
         console.log("Live Exercise logged successfully!");
-        setSuccess(true); // Show success state (shared with manual form)
-        // Reset live tracker state, keep manual form state
-        setRepCount(0);
-        setTimer(0);
-        setSitupState('start');
-        setIsFinished(false); // Allow restarting live tracker
-        // Maybe navigate or just show success
-        // setTimeout(() => navigate('/history'), 2000); // Optional: Navigate after saving
+        setSuccess(true); 
+        setLoggedGrade(response.grade ?? null); // Store grade
+        
+        // Reset live tracker state, but keep finished state until reset
+        // setRepCount(0); // Keep reps visible until reset
+        // setTimer(0); // Keep time visible until reset
+        // setSitupState('start'); // Keep state as is
+        // setIsFinished(false); // Keep finished state
+        
       } catch (err) {
         console.error("Failed to log live exercise:", err);
-        // Show error specific to live tracking save?
         setError(err instanceof Error ? err.message : 'Failed to save live workout session');
         setSuccess(false);
+        setLoggedGrade(null);
       } finally {
-        setIsSubmitting(false); // Used by both forms now
+        setIsSubmitting(false); 
       }
     } else if (repCount === 0 && isFinished) {
        console.log("No live reps counted, session not saved.");
-       // Reset live tracker state
-       setIsFinished(false);
+       // Reset live tracker state if nothing to save
+       handleReset(); // Use handleReset for consistency?
+       // setIsFinished(false); // Or just allow reset
+    } else if (!user) {
+        setError("You must be logged in to save results.");
+        console.warn("Attempted to save workout while not logged in.");
+        setIsFinished(false); // Allow user to try again? Or just block?
     }
   };
 
@@ -459,9 +480,15 @@ const SitupTracker: React.FC = () => {
     setRepCount(0);
     setTimer(0);
     setSitupState('start');
-    setError(null); // Clear errors for both
-    setSuccess(false); // Clear success for both
+    setError(null); 
+    setSuccess(false); 
     setIsSubmitting(false);
+    setLoggedGrade(null); // Reset grade
+    setFormFaultMessage(null); // Reset fault message
+    formFaultDuringRep.current = false; // Reset fault ref
+    initialLeftAnkleY.current = null;
+    initialRightAnkleY.current = null;
+    
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
       console.log("Resetting MediaPipe state...");
@@ -496,6 +523,11 @@ const SitupTracker: React.FC = () => {
             <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" muted onLoadedMetadata={() => console.log("Video metadata loaded.")} />
             <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
             {/* Overlays */}
+            {formFaultMessage && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/80 text-white px-4 py-2 rounded-md text-sm font-semibold">
+                {formFaultMessage}
+              </div>
+            )}
             {isModelLoading && ( <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white z-10"><Loader2 className="h-10 w-10 mb-3 animate-spin" /><span>Loading AI Model...</span></div> )}
             {!isModelLoading && modelError && ( <div className="absolute inset-0 flex flex-col items-center justify-center bg-destructive/80 text-white p-4 text-center z-10"><VideoOff className="h-12 w-12 mb-2" /><p className="font-semibold mb-1">Model Loading Failed</p><p className="text-sm">{modelError}</p></div> )}
             {permissionGranted === null && !isModelLoading && !modelError && ( <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white"><Camera className="h-8 w-8 mr-2 animate-pulse" /><span>Requesting camera access...</span></div> )}
@@ -550,8 +582,13 @@ const SitupTracker: React.FC = () => {
                  <div className="text-center w-full">
                     {isSubmitting && <p className="flex items-center justify-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving Live Session...</p>}
                     {/* Display error/success related to live save attempt */}
-                    {error && <p className="text-destructive text-sm mt-2">Error Saving: {error}</p>}
-                    {success && <p className="text-green-600 text-sm mt-2">Live Workout saved successfully!</p>}
+                    {error && !isSubmitting && <p className="text-destructive text-sm mt-2">Error Saving: {error}</p>}
+                    {success && !isSubmitting && (
+                      <p className="text-green-600 text-sm mt-2">
+                        Live Workout saved successfully!
+                        {loggedGrade !== null && ` Grade: ${loggedGrade}`}
+                      </p>
+                    )}
                     {!isSubmitting && !error && !success && <p>Live Workout Complete! Press Reset to start again.</p>}
                     <Button size="lg" variant="outline" onClick={handleReset} className="mt-4">
                         Reset Tracker

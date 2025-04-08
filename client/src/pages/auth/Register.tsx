@@ -1,54 +1,60 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
+import { Loader2 } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  
-  const { register } = useAuth();
-  
+  const [validationError, setValidationError] = useState('');
+  const navigate = useNavigate();
+
+  const { register, isLoading, error: apiError, clearError, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    clearError();
+  }, [clearError, username, password, confirmPassword, displayName]);
+
+  const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setValidationError('');
+      setter(e.target.value);
+    };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate form
-    if (!username || !password) {
-      setError('Username and password are required');
+    setValidationError('');
+
+    if (!username || !password || !confirmPassword) {
+      setValidationError('Username, password, and confirmation are required.');
       return;
     }
-    
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    
-    // Validate password strength
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setValidationError('Password must be at least 8 characters long.');
       return;
     }
-    
-    setError('');
-    setIsSubmitting(true);
-    
-    try {
-      await register({ 
-        username, 
-        password,
-        display_name: displayName || undefined
-      });
-      // Successful registration will redirect via the auth context login
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+    if (password !== confirmPassword) {
+      setValidationError('Passwords do not match.');
+      return;
     }
+
+    await register({
+      username,
+      password,
+      display_name: displayName || undefined
+    });
   };
-  
+
+  const displayError = validationError || apiError;
+
   return (
     <div className="flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-100">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -62,12 +68,15 @@ const Register: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-4">
-              <div className="text-sm text-red-700">{error}</div>
+          {displayError && (
+            <div className="mb-4 rounded-md bg-red-50 p-4 border border-red-200">
+               <p className="text-sm font-medium text-red-800">
+                 {validationError ? 'Validation Error' : 'Registration Failed'}
+               </p>
+               <p className="mt-1 text-sm text-red-700">{displayError}</p>
             </div>
           )}
-          
+
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
@@ -81,8 +90,9 @@ const Register: React.FC = () => {
                   autoComplete="username"
                   required
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  onChange={handleInputChange(setUsername)}
+                  disabled={isLoading}
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
                 />
               </div>
             </div>
@@ -98,8 +108,9 @@ const Register: React.FC = () => {
                   type="text"
                   autoComplete="name"
                   value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  onChange={handleInputChange(setDisplayName)}
+                  disabled={isLoading}
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
                 />
               </div>
             </div>
@@ -116,12 +127,13 @@ const Register: React.FC = () => {
                   autoComplete="new-password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  onChange={handleInputChange(setPassword)}
+                  disabled={isLoading}
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
-                Password must be at least 8 characters long
+                Must be at least 8 characters long.
               </p>
             </div>
             
@@ -137,8 +149,9 @@ const Register: React.FC = () => {
                   autoComplete="new-password"
                   required
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  onChange={handleInputChange(setConfirmPassword)}
+                  disabled={isLoading}
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
                 />
               </div>
             </div>
@@ -146,10 +159,15 @@ const Register: React.FC = () => {
             <div>
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
+                disabled={isLoading || !username || !password || !confirmPassword}
+                className="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Creating account...' : 'Create account'}
+                {isLoading ? (
+                   <>
+                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                     Creating account...
+                   </>
+                 ) : 'Create account'}
               </button>
             </div>
           </form>
@@ -159,7 +177,7 @@ const Register: React.FC = () => {
               Already have an account?{' '}
               <Link
                 to="/login"
-                className="font-medium text-indigo-600 hover:text-indigo-500"
+                className={`font-medium text-indigo-600 hover:text-indigo-500 ${isLoading ? 'pointer-events-none opacity-50' : ''}`}
               >
                 Sign in
               </Link>

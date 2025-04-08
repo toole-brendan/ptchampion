@@ -27,3 +27,9 @@ vite.config.ts.*
 
 # Binaries for programs and plugins
 bin/
+
+# Generated files
+openapi.yaml
+internal/api/openapi.gen.go
+PTChampion-Swift/Sources/GeneratedAPI/
+PTChampion-Kotlin/app/src/main/java/com/example/ptchampion/generatedapi/

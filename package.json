@@ -5,7 +5,8 @@
   "license": "MIT",
   "scripts": {
     "build:client": "vite build",
-    "check": "tsc"
+    "check": "tsc",
+    "generate:openapi": "tsx scripts/generate-openapi.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -44,11 +45,13 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.6.0",
+    "drizzle-zod": "^0.7.1",
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^11.13.1",
     "input-otp": "^1.2.4",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.453.0",
+    "pg": "^8.14.1",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
     "react-dom": "^18.3.1",
@@ -62,17 +65,25 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@asteasolutions/zod-to-openapi": "^7.3.0",
     "@tailwindcss/postcss": "^4.0.17",
     "@tailwindcss/typography": "^0.5.15",
+    "@types/js-yaml": "^4.0.9",
     "@types/leaflet": "^1.9.17",
     "@types/node": "20.16.11",
+    "@types/pg": "^8.11.11",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.21",
+    "dotenv": "^16.4.7",
+    "drizzle-kit": "^0.30.6",
+    "drizzle-orm": "^0.41.0",
+    "js-yaml": "^4.1.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
+    "tsx": "^4.19.3",
     "typescript": "5.6.3",
     "vite": "^5.4.14"
   }

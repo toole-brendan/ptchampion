@@ -15,154 +15,137 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 ## Project Structure
 
 ```
-/ (Root - Web Application)
+/
 ├── cmd/
-│   └── server/                  # Main Go application entry point
+│   └── server/                  # Main Go application entry point (Echo framework)
 │       └── main.go
 ├── internal/                  # Private Go application code
-│   ├── api/                   # HTTP handlers & routing
-│   │   ├── handlers/          # Request handlers (exercises, users, leaderboard, etc.)
-│   │   │   ├── auth_handler.go
-│   │   │   ├── exercise_handler.go
-│   │   │   ├── leaderboard_handler.go
-│   │   │   └── user_handler.go
-│   │   ├── middleware/        # HTTP middleware (auth, logging, etc.)
-│   │   │   └── auth_middleware.go
-│   │   └── router.go          # API route definitions
-│   │
-│   ├── auth/                  # Authentication logic (interfacing with service or libs)
-│   │   └── auth.go
-│   ├── config/                # Configuration loading
-│   │   └── config.go
-│   ├── store/                 # Data access layer
-│   │   ├── postgres/          # PostgreSQL specific implementation
-│   │   │   ├── db.go          # Database connection setup
-│   │   │   ├── querier.go     # Interface for sqlc generated queries
-│   │   │   └── models.go      # sqlc generated Go models from schema
-│   │   └── store.go           # Generic data store interfaces
-│   │
-│   └── models/                # Core application domain models (if different from DB models)
-│       └── exercise.go
+│   ├── api/                   # HTTP handlers, routing (Echo), middleware, generated code
+│   │   ├── handlers/          # Request handler implementations
+│   │   ├── middleware/        # Custom middleware (e.g., auth)
+│   │   ├── api_handler.go     # Connects generated interface to handlers
+│   │   ├── openapi.gen.go     # Generated code from OpenAPI spec (oapi-codegen)
+│   │   └── router.go          # Echo router setup & static file serving
+│   ├── auth/                  # Authentication logic helpers
+│   ├── config/                # Configuration loading (env vars)
+│   ├── grading/               # Exercise grading logic
+│   ├── store/                 # Data access layer interfaces/implementations
+│   │   └── postgres/          # PostgreSQL specific implementation using sqlc
+│   │       ├── db.go          # Database connection & sqlc Querier setup
+│   │       ├── models.go      # sqlc generated Go structs from schema
+│   │       └── query.sql.go   # sqlc generated Go methods from queries
+│   └── models/                # (Potentially unused - models seem defined via sqlc/OpenAPI)
 │
-├── sql/                     # SQL files for sqlc
-│   ├── queries/             # SQL queries for sqlc generation
-│   │   ├── exercise.sql
-│   │   ├── session.sql
-│   │   ├── user.sql
-│   │   └── leaderboard.sql
-│   └── schema/              # Database schema definitions
-│       └── schema.sql
+├── pkg/                     # (Currently unused) Shared Go libraries
 │
-├── client/                  # Web frontend (React) - Structure largely similar
-│   ├── public/
+├── sql/                     # SQL files for sqlc and schema definition
+│   ├── queries/             # SQL queries (.sql) for sqlc generation
+│   ├── schema/              # Base database schema (.sql)
+│   └── migrations/          # (Seems unused by backend? Migrations in db/)
+│
+├── db/                      # Database migrations (sql-migrate or similar)
+│   └── migrations/          # .sql migration files (up/down)
+│
+├── client/                  # Web frontend (React + Vite + TypeScript)
+│   ├── public/              # Static assets
 │   ├── src/
-│   │   ├── components/      # Reusable UI components (shadcn)
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── lib/             # Utility functions and services
-│   │   │   ├── apiClient.ts     # Functions to call the Go backend API
-│   │   │   ├── auth.ts          # Frontend auth helpers
-│   │   │   ├── mediapipe.ts     # MediaPipe integration logic
-│   │   │   ├── queryClient.ts   # React Query or similar setup
-│   │   │   └── utils.ts         # General utilities
-│   │   │
-│   │   ├── pages/          # Application pages
-│   │   │   ├── auth/          # Login/Register pages
-│   │   │   ├── exercises/     # Exercise tracking pages (Pushups, Situps, etc.)
-│   │   │   ├── history/       # User progress/history page
-│   │   │   ├── leaderboard/   # Leaderboard page
-│   │   │   ├── profile/       # User profile page
-│   │   │   └── Dashboard.tsx  # Main dashboard/home page
-│   │   │
-│   │   ├── App.tsx         # Main app component & routing
-│   │   └── main.tsx        # Application entry point
+│   │   ├── assets/          # Project-specific assets (images, etc.)
+│   │   ├── components/      # Reusable UI components (using shadcn/ui)
+│   │   ├── lib/             # Core logic, API client, auth, state management
+│   │   │   ├── apiClient.ts # Typed client for backend API calls (fetch)
+│   │   │   ├── authContext.tsx# React Context for authentication state
+│   │   │   ├── config.ts    # Frontend configuration (e.g., API URL)
+│   │   │   ├── types.ts     # TypeScript types for API/data
+│   │   │   └── utils.ts     # General utility functions
+│   │   ├── pages/           # Route components (views) for different app sections
+│   │   ├── App.tsx          # Main app component (Routing setup with react-router-dom)
+│   │   └── main.tsx         # Application entry point (React DOM render)
+│   ├── index.html           # HTML entry point for Vite
+│   ├── package.json         # Node dependencies
+│   ├── tsconfig.json        # TypeScript configuration
+│   └── vite.config.ts     # Vite build configuration
+│   └── tailwind.config.cjs # Tailwind CSS configuration
+│
+├── PTChampion-Swift/        # iOS Application (Swift + SwiftUI - Placeholder/Structure)
+│   ├── Views/
+│   ├── Services/
+│   ├── Models/
+│   └── ...                 # Standard iOS project structure
+│
+├── PTChampion-Kotlin/       # Android Application (Kotlin + Jetpack Compose)
+│   ├── app/
+│   │   └── src/main/
+│   │       ├── kotlin/com/example/ptchampion/
+│   │       │   ├── data/            # Data layer (API, Repositories, DataStore for persistence)
+│   │       │   ├── di/              # Dependency Injection (Hilt modules)
+│   │       │   ├── domain/          # Business logic (Use Cases, Models)
+│   │       │   ├── model/           # Data models (shared or UI specific)
+│   │       │   ├── ui/              # UI layer (Compose Screens, ViewModels)
+│   │       │   ├── util/            # Utility classes & helpers
+│   │       │   └── MainActivity.kt  # Main Activity
+│   │       │
+│   │       └── res/                 # Android resources (drawables, values, etc.)
 │   │
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── tailwind.config.ts  # Tailwind CSS configuration
+│   ├── build.gradle.kts          # Module-level Gradle build script
+│   └── ...                       # Other standard Android project files
 │
-├── scripts/                 # Build, migration scripts
-│   └── migrate.sh           # Database migration script helper
-│
+├── scripts/                 # Utility scripts (build, deploy, etc.)
+├── Dockerfile               # Docker configuration for Go backend deployment
+├── openapi.yaml             # OpenAPI (Swagger) specification for the backend API
 ├── go.mod                   # Go module definition
 ├── go.sum                   # Go module checksums
-├── Dockerfile               # Optional: Docker configuration for deployment
-│
-├── PTChampion-Swift/           # iOS Application (Swift + SwiftUI)
-│   ├── Views/                  # UI layer
-│   │   ├── Auth/               # Authentication screens
-│   │   ├── Dashboard/          # Main dashboard screens
-│   │   ├── Exercises/          # Exercise-specific views
-│   │   ├── History/            # Training history views
-│   │   ├── Profile/            # User profile views
-│   │   └── Components/         # Reusable UI components
-│   │
-│   ├── Services/               # Business logic and services
-│   │   ├── API/                # API client for backend communication
-│   │   ├── Vision/             # Computer vision with Apple Vision framework
-│   │   ├── Bluetooth/          # Bluetooth connectivity for fitness devices
-│   │   └── Storage/            # Local storage with Core Data
-│   │
-│   ├── Models/                 # Data models
-│   ├── Utilities/              # Helper utilities
-│   └── Resources/              # App resources (images, fonts, etc.)
-│
-└── PTChampion-Kotlin/          # Android Application (Kotlin + Jetpack Compose)
-    ├── app/
-    │   └── src/
-    │       └── main/
-    │           ├── kotlin/com/ptchampion/
-    │           │   ├── ui/                # UI layer (Jetpack Compose)
-    │           │   │   ├── auth/          # Authentication screens
-    │           │   │   ├── dashboard/     # Main dashboard screens
-    │           │   │   ├── exercises/     # Exercise-specific views
-    │           │   │   ├── history/       # Training history views
-    │           │   │   ├── profile/       # User profile views
-    │           │   │   └── components/    # Reusable UI components
-    │           │   │
-    │           │   ├── data/              # Data layer
-    │           │   │   ├── api/           # API services for backend communication
-    │           │   │   ├── repository/    # Repository implementations
-    │           │   │   └── local/         # Local storage with Room
-    │           │   │
-    │           │   ├── domain/            # Business logic
-    │           │   │   ├── model/         # Domain models
-    │           │   │   └── usecase/       # Business use cases
-    │           │   │
-    │           │   └── util/              # Utility classes
-    │           │
-    │           └── res/                   # Resources (layouts, drawables, etc.)
-    │
-    └── build.gradle                       # Gradle build configuration
+└── README.md                # This file
 ```
 
 ## Technology Stack
 
-### Web Application
+### Backend (Go)
 
-- **Frontend**: TypeScript with Tailwind CSS and shadcn UI components
-- **Backend**: Go
-- **Database**: PostgreSQL with `sqlc` for data access
-- **Authentication**: Auth-as-a-Service (e.g., Supabase Auth, Clerk) or Go standard libraries (`golang-jwt/jwt/v5`, `alexedwards/scs/v2`)
-- **Computer Vision**: MediaPipe
+- **Framework**: [Echo](https://echo.labstack.com/) (Web Framework)
+- **Database**: PostgreSQL
+- **ORM/Data Access**: [sqlc](https://sqlc.dev/) (Generate Go code from SQL)
+- **Migrations**: [migrate](https://github.com/golang-migrate/migrate) or similar (SQL-based migrations)
+- **API Specification**: OpenAPI 3.0 (`openapi.yaml`)
+- **Code Generation**: [oapi-codegen](https://github.com/deepmap/oapi-codegen) (Generate Echo server code from OpenAPI spec)
+- **Configuration**: Environment Variables
+- **Authentication**: JWT (using `golang-jwt/jwt/v5` likely implemented in handlers/middleware)
 
-### iOS Application
+### Web Frontend (React)
+
+- **Framework/Library**: [React](https://reactjs.org/) with [TypeScript](https://www.typescriptlang.org/)
+- **Build Tool**: [Vite](https://vitejs.dev/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
+- **Routing**: [React Router DOM](https://reactrouter.com/)
+- **State Management / Data Fetching**: [TanStack Query (React Query)](https://tanstack.com/query/latest)
+- **API Client**: Native `fetch` API within a typed client (`apiClient.ts`)
+
+### iOS Application (Swift)
 
 - **UI Framework**: SwiftUI
 - **Architecture**: MVVM (Model-View-ViewModel)
-- **Networking**: URLSession with Combine
-- **Local Storage**: Core Data
-- **Vision Processing**: Apple Vision framework
-- **Bluetooth**: CoreBluetooth for fitness device connectivity
+- **Networking**: URLSession with Combine/AsyncAwait
+- **Local Storage**: Core Data (Planned/Typical)
+- **Vision Processing**: Apple Vision framework (Planned)
+- **Bluetooth**: CoreBluetooth (Planned)
 
-### Android Application
+### Android Application (Kotlin)
 
-- **UI Framework**: Jetpack Compose
-- **Architecture**: MVVM with Clean Architecture
-- **Networking**: Retrofit with Kotlin Coroutines
-- **Local Storage**: Room Database
-- **Dependency Injection**: Hilt
-- **Vision Processing**: TensorFlow Lite and ML Kit
-- **Bluetooth**: Bluetooth Low Energy (BLE) APIs
+- **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose)
+- **Architecture**: MVVM with elements of Clean Architecture
+- **Networking**: [Retrofit](https://square.github.io/retrofit/) with [OkHttp](https://square.github.io/okhttp/) and [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serialization)
+- **Asynchronous Programming**: Kotlin Coroutines
+- **Local Storage**: [Jetpack DataStore (Preferences)](https://developer.android.com/topic/libraries/architecture/datastore) (for auth token) - Room planned for caching.
+- **Dependency Injection**: [Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
+- **Navigation**: [Jetpack Navigation Compose](https://developer.android.com/jetpack/compose/navigation)
+- **Vision Processing**: [MediaPipe](https://developers.google.com/mediapipe) (Planned/In Progress via `PoseLandmarker`)
+- **Camera**: [CameraX](https://developer.android.com/training/camerax)
+- **Bluetooth**: Nordic BLE Library or Android BLE APIs (Planned)
+
+### Cross-Cutting
+
+- **Computer Vision**: MediaPipe (Intended primary library for pose analysis across platforms)
+- **API Design**: OpenAPI (Swagger) driving backend API structure
 
 ## Getting Started
 

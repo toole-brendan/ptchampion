@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { logExercise } from '../../lib/apiClient';
-import { LogExerciseRequest } from '../../lib/types';
+import { LogExerciseRequest, ExerciseResponse } from '../../lib/types';
 import { useAuth } from '../../lib/authContext';
 // --- MediaPipe Imports ---
 import {
@@ -51,11 +51,13 @@ const PushupTracker: React.FC = () => {
 
   // --- Push-up Tracking State ---
   const [pushupState, setPushupState] = useState<'start' | 'down' | 'up'>('start'); // State machine for push-up
+  const [formFaultMessage, setFormFaultMessage] = useState<string | null>(null); // Added for form feedback
 
   // UI state for Live Tracking submission
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null); // Changed from manual form error
   const [success, setSuccess] = useState(false); // Changed from manual form success
+  const [loggedGrade, setLoggedGrade] = useState<number | null>(null); // Added for grade display
 
   // Constants for this exercise
   const EXERCISE_ID = 1; // Assuming 1 is the ID for pushups in your database
@@ -293,7 +295,11 @@ const PushupTracker: React.FC = () => {
 
     if (!areLandmarksVisible) {
       // console.log("Key landmarks not visible enough for push-up detection.");
-      // Optionally provide feedback to the user about visibility
+      if (pushupState !== 'start') { // Only reset if active
+          setPushupState('start');
+          setFormFaultMessage("Ensure full body is visible");
+          setTimeout(() => setFormFaultMessage(null), 2000);
+      }
       return; // Skip processing if visibility is low
     }
 
@@ -318,12 +324,14 @@ const PushupTracker: React.FC = () => {
     // 'down' = successfully reached down position with good form. Expecting extension.
     // 'up' = successfully extended from down position with good form (rep counted). Expecting bend.
 
+    // Handle form fault (back not straight)
     if (!isBackStraight) {
-      // If back is not straight at any point, reset state and wait for good form.
-      // Optionally provide feedback about back form here.
       if (pushupState !== 'start') {
           console.log("Form Error: Back not straight. Resetting state. Body Angle:", bodyAngle.toFixed(0));
           setPushupState('start');
+          // Provide feedback
+          setFormFaultMessage("Keep body straight!");
+          setTimeout(() => setFormFaultMessage(null), 1500); // Clear after 1.5s
       }
       return; // Don't process rep logic if back isn't straight
     }
@@ -410,6 +418,7 @@ const PushupTracker: React.FC = () => {
         console.log("Starting MediaPipe prediction loop (setting ref to true)...");
         isPredictingRef.current = true; // <-- Set ref to true
         setPushupState('start'); // Reset state on start
+        setFormFaultMessage(null); // Clear any previous fault messages
         lastVideoTimeRef.current = -1; // Reset timer ref
         // Clear previous animation frame just in case
         if (requestRef.current) cancelAnimationFrame(requestRef.current);
@@ -440,37 +449,44 @@ const PushupTracker: React.FC = () => {
     if (repCount > 0 && user) { // Only save if reps were counted and user is logged in
         setIsSubmitting(true);
         setError(null);
+        setSuccess(false); // Reset success state
+        setLoggedGrade(null); // Reset grade state
         try {
-            // TODO: Define the backend endpoint and API client function properly
-            // Assuming logExercise can handle this or needs modification
+            // Assume logExercise can handle this or needs modification
              const exerciseData: LogExerciseRequest = {
                 exercise_id: EXERCISE_ID,
                 reps: repCount, // Use the counted reps
-                duration: timer, // Fixed: Use duration instead of duration_seconds
-                // Add other metrics if available (form score, etc.)
+                duration: timer, // Fixed: Use duration
                 notes: `Tracked via webcam. State: ${pushupState}` // Example note
             };
-            await logExercise(exerciseData); // Call the API
+            // Capture response
+            const response: ExerciseResponse = await logExercise(exerciseData); // Call the API
             console.log("Exercise logged successfully!");
-            // Maybe show a success message before navigating
              setSuccess(true); // Show success state
-             setTimeout(() => navigate('/history'), 2000); // Navigate after showing success
+             setLoggedGrade(response.grade ?? null); // Store grade
+             
+             // Keep results displayed, redirect handled via UI feedback
+             // setTimeout(() => navigate('/history'), 2000); // Remove automatic redirect
 
         } catch (err) {
             console.error("Failed to log exercise:", err);
             setError(err instanceof Error ? err.message : 'Failed to save workout session');
              setSuccess(false);
+             setLoggedGrade(null);
         } finally {
             setIsSubmitting(false);
         }
-    } else if (repCount === 0) {
-        // Optionally handle case where no reps were done
-         console.log("No reps counted, session not saved.");
-         // Maybe navigate back directly or show a message
-         navigate('/exercises'); // Example: go back if nothing was done
+    } else if (repCount === 0 && isFinished) { // Changed condition
+         console.log("No live reps counted, session not saved.");
+         // Don't navigate away, allow user to Reset
+         // navigate('/exercises'); // Example: go back if nothing was done
+    } else if (!user) {
+        setError("You must be logged in to save results.");
+        console.warn("Attempted to save workout while not logged in.");
+        setIsFinished(false); // Allow reset
     }
 
-    // alert(`Workout finished! Reps: ${repCount}, Time: ${formatTime(timer)}`); // Replace alert with API call + feedback
+    // alert(`Workout finished! Reps: ${repCount}, Time: ${formatTime(timer)}`); // Removed alert
   };
 
   const handleReset = () => {
@@ -483,6 +499,8 @@ const PushupTracker: React.FC = () => {
     setError(null); // Clear errors
     setSuccess(false); // Clear success state
     setIsSubmitting(false);
+    setLoggedGrade(null); // Reset grade
+    setFormFaultMessage(null); // Reset fault message
 
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
@@ -526,6 +544,12 @@ const PushupTracker: React.FC = () => {
               ref={canvasRef}
               className="absolute top-0 left-0 w-full h-full"
             />
+            {/* Form Fault Message Overlay */} 
+            {formFaultMessage && (
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/80 text-white px-4 py-2 rounded-md text-sm font-semibold">
+                {formFaultMessage}
+              </div>
+            )}
             {/* Overlay messages based on camera/model state */}
             {/* Model Loading Indicator */}
             {isModelLoading && (
@@ -615,11 +639,16 @@ const PushupTracker: React.FC = () => {
             ) : (
                  <div className="text-center w-full">
                     {isSubmitting && <p className="flex items-center justify-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</p>}
-                    {error && <p className="text-destructive text-sm mt-2">Error: {error}</p>}
-                    {success && <p className="text-green-600 text-sm mt-2">Workout saved successfully! Redirecting...</p>}
-                    {!isSubmitting && !error && !success && <p>Workout Complete!</p>}
+                    {error && !isSubmitting && <p className="text-destructive text-sm mt-2">Error Saving: {error}</p>}
+                    {success && !isSubmitting && (
+                      <p className="text-green-600 text-sm mt-2">
+                        Workout saved successfully!
+                        {loggedGrade !== null && ` Grade: ${loggedGrade}`}
+                      </p>
+                    )}
+                    {!isSubmitting && !error && !success && <p>Workout Complete! Press Reset to start again.</p>}
                     <Button size="lg" variant="outline" onClick={handleReset} className="mt-4">
-                        Track Another Session
+                        Reset Tracker
                     </Button>
                  </div>
             )}

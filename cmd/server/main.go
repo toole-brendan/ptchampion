@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"ptchampion/internal/api"
-	"ptchampion/internal/api/handlers"
+	// "ptchampion/internal/api/handlers" // No longer needed directly here
 	"ptchampion/internal/config"
 	dbStore "ptchampion/internal/store/postgres"
 )
@@ -28,11 +28,11 @@ func main() {
 	// Dependency Injection: Create DB Querier
 	queries := dbStore.New(dbPool)
 
-	// Create handler with dependencies
-	handler := handlers.NewHandler(cfg, queries)
+	// Create the API Handler (which embeds the core handler)
+	apiHandler := api.NewApiHandler(cfg, queries)
 
-	// 3. Setup Router (Pass dependencies)
-	router := api.NewRouter(handler, cfg)
+	// 3. Setup Router (Pass the API Handler)
+	router := api.NewRouter(apiHandler, cfg)
 
 	// 4. Start Server
 	port := cfg.Port

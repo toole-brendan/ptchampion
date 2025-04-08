@@ -1,7 +1,9 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData } from '@tanstack/react-query';
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,10 +21,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getUserExercises } from '../lib/apiClient';
-import { ExerciseResponse } from '../lib/types';
+import { PaginatedExercisesResponse, ExerciseResponse } from '../lib/types';
 import { useAuth } from '../lib/authContext';
 import { formatTime, formatDistance } from '../lib/utils';
-import config from '../lib/config';
 
 // Helper to determine metric and unit for an exercise
 const getExerciseMetric = (exercise: string): { metric: 'reps' | 'distance' | null, unit: string } => {
@@ -40,73 +41,49 @@ const getExerciseMetric = (exercise: string): { metric: 'reps' | 'distance' | nu
   }
 };
 
+const DEFAULT_PAGE_SIZE = 15;
+
 const History: React.FC = () => {
-  const { user } = useAuth();
-  const [exercises, setExercises] = useState<ExerciseResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const [page, setPage] = useState(1);
+  const [pageSize] = useState(DEFAULT_PAGE_SIZE);
   const [exerciseFilter, setExerciseFilter] = useState<string>('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  // Function to fetch exercise history
-  const fetchExerciseHistory = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      console.log("Fetching exercise history...");
-      // Also log auth state to help debug
-      console.log("Auth state when fetching:", { user, isAuthenticated: !!user });
-      
-      const data = await getUserExercises();
-      console.log("Exercise history fetched successfully:", data);
-      setExercises(data || []); // Ensure we always set an array even if null is returned
-    } catch (err) {
-      console.error("Error fetching exercise history:", err);
-      
-      // Check if it's an authentication error
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch exercise history';
-      if (errorMessage.includes('Authentication required') || 
-          errorMessage.includes('Unauthorized') || 
-          errorMessage.includes('401')) {
-        setError(`Authentication error: ${errorMessage}. Try logging out and back in.`);  
-      } else {
-        setError(errorMessage);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-  
-  // Initial fetch
-  useEffect(() => {
-    if (user) { // Only fetch if we have a user
-      // Add a small delay before first fetch to allow port discovery to complete
-      const initialFetchTimeout = setTimeout(() => {
-        fetchExerciseHistory();
-      }, 500); // 500ms should be enough to allow port discovery
-      
-      // Cleanup on unmount
-      return () => clearTimeout(initialFetchTimeout);
-    } else {
-      setLoading(false);
-      setError("You must be logged in to view your exercise history.");
-    }
-  }, [fetchExerciseHistory, user]);
+  const { 
+    data: paginatedData, 
+    isLoading: isLoadingHistory, 
+    error: historyError, 
+    isFetching,
+    refetch
+  } = useQuery<PaginatedExercisesResponse, Error>({
+    queryKey: ['exerciseHistory', user?.id, page, pageSize],
+    queryFn: () => getUserExercises(page, pageSize),
+    enabled: !!user,
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 60,
+  });
 
-  // ----- ALWAYS CALCULATE THESE MEMOIZED VALUES, REGARDLESS OF LOADING/ERROR STATE -----
-  
-  // Filtered Data Source based on Date Range
+  const exercises: ExerciseResponse[] = useMemo(() => paginatedData?.items || [], [paginatedData]);
+  const totalCount = useMemo(() => paginatedData?.total_count || 0, [paginatedData]);
+  const totalPages = useMemo(() => Math.ceil(totalCount / pageSize), [totalCount, pageSize]);
+
+  const isLoading = isAuthLoading || isLoadingHistory;
+  const error = historyError;
+
+  useEffect(() => {
+    setPage(1);
+  }, [exerciseFilter, dateRange]);
+
   const dateFilteredHistory = useMemo(() => {
     if (!dateRange?.from && !dateRange?.to) {
-      return exercises; // No date filter applied
+      return exercises;
     }
-    return exercises.filter(session => {
+    return exercises.filter((session: ExerciseResponse) => {
       try {
         const sessionDate = new Date(session.created_at);
         const from = dateRange?.from;
         const to = dateRange?.to;
-        // Set time to 00:00:00 for from date and 23:59:59 for to date for inclusive range
         const startOfDayFrom = from ? new Date(from.setHours(0, 0, 0, 0)) : null;
         const endOfDayTo = to ? new Date(to.setHours(23, 59, 59, 999)) : null;
 
@@ -120,19 +97,18 @@ const History: React.FC = () => {
         return true;
       } catch (e) {
         console.error("Error parsing date:", session.created_at, e);
-        return false; // Exclude if date format is invalid
+        return false;
       }
     });
   }, [exercises, dateRange]);
 
-  // Recalculate summary stats based on date-filtered data
   const summaryStats = useMemo(() => {
     let totalWorkouts = dateFilteredHistory.length;
     let totalSeconds = 0;
     let totalReps = 0;
     let totalDistance = 0;
 
-    dateFilteredHistory.forEach(session => {
+    dateFilteredHistory.forEach((session: ExerciseResponse) => {
       if (session.time_in_seconds) {
         totalSeconds += session.time_in_seconds;
       }
@@ -142,7 +118,7 @@ const History: React.FC = () => {
       }
       
       if (session.distance) {
-        totalDistance += session.distance / 1000; // Convert meters to km
+        totalDistance += session.distance / 1000;
       }
     });
 
@@ -154,28 +130,24 @@ const History: React.FC = () => {
     };
   }, [dateFilteredHistory]);
 
-  // Update exerciseTypes based on date-filtered data
   const exerciseTypes = useMemo(() => {
-    const types = new Set(dateFilteredHistory.map(session => session.exercise_type));
+    const types = new Set(dateFilteredHistory.map((session: ExerciseResponse) => session.exercise_type));
     return ['All', ...Array.from(types).sort()];
   }, [dateFilteredHistory]);
 
-  // Reset exercise filter if the selected exercise is no longer in the filtered list
   useEffect(() => {
     if (!exerciseTypes.includes(exerciseFilter)) {
       setExerciseFilter('All');
     }
   }, [exerciseTypes, exerciseFilter]);
 
-  // Filter history table based on exercise and date
   const filteredHistory = useMemo(() => {
     if (exerciseFilter === 'All') {
       return dateFilteredHistory;
     }
-    return dateFilteredHistory.filter(session => session.exercise_type === exerciseFilter);
+    return dateFilteredHistory.filter((session: ExerciseResponse) => session.exercise_type === exerciseFilter);
   }, [dateFilteredHistory, exerciseFilter]);
 
-  // Prepare chart data based on exercise and date
   const { chartData, metricName, yAxisLabel } = useMemo(() => {
     if (exerciseFilter === 'All') {
       return { chartData: [], metricName: '', yAxisLabel: '' };
@@ -185,13 +157,13 @@ const History: React.FC = () => {
       return { chartData: [], metricName: '', yAxisLabel: '' };
     }
     const data = dateFilteredHistory
-      .filter(session => session.exercise_type === exerciseFilter)
+      .filter((session: ExerciseResponse) => session.exercise_type === exerciseFilter)
       .map(session => {
         let value;
         if (metric === 'reps') {
           value = session.reps;
         } else if (metric === 'distance' && session.distance) {
-          value = session.distance / 1000; // Convert meters to km
+          value = session.distance / 1000;
         }
         return { date: session.created_at.split('T')[0], value };
       })
@@ -202,10 +174,9 @@ const History: React.FC = () => {
     return { chartData: data, metricName: name, yAxisLabel: yLabel };
   }, [dateFilteredHistory, exerciseFilter]);
 
-  // Calculate Personal Bests based on exercise and date
   const personalBests = useMemo(() => {
     const bests: { [key: string]: { exercise: string, metric: string, value: number | string, date: string } } = {};
-    dateFilteredHistory.forEach(session => {
+    dateFilteredHistory.forEach((session: ExerciseResponse) => {
       const { metric, unit } = getExerciseMetric(session.exercise_type);
       if (!metric) return;
       
@@ -216,10 +187,10 @@ const History: React.FC = () => {
         currentValue = session.reps;
         formattedValue = currentValue || 0;
       } else if (metric === 'distance' && session.distance) {
-        currentValue = session.distance / 1000; // Convert meters to km
+        currentValue = session.distance / 1000;
         formattedValue = `${currentValue.toFixed(2)} ${unit}`;
       } else {
-        return; // Skip if no valid value
+        return;
       }
       
       if (currentValue === undefined) return;
@@ -243,21 +214,18 @@ const History: React.FC = () => {
     return Object.values(bests).sort((a,b) => a.exercise.localeCompare(b.exercise));
   }, [dateFilteredHistory]);
 
-  // NOW HANDLE RENDERING STATES
-  
-  // Show loading state
-  if (loading) {
+  if (isLoading && !paginatedData) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
         <div className="text-center text-muted-foreground">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2"/>
           <p className="text-lg">Loading history...</p>
         </div>
       </div>
     );
   }
 
-  // Show error state if there's an error
-  if (error) {
+  if (error && !isFetching) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
         <Card className="w-full max-w-md border-destructive/50 bg-destructive/10">
@@ -265,29 +233,17 @@ const History: React.FC = () => {
             <CardTitle className="text-destructive text-center">Error Loading History</CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
-            <p className="text-sm text-destructive">{error}</p>
-            <Button onClick={fetchExerciseHistory} variant="destructive">
+            <p className="text-sm text-destructive">{error instanceof Error ? error.message : String(error)}</p>
+            <Button onClick={() => refetch()} variant="destructive">
               Try Again
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                // MOCK DATA FOR DEV
-                setExercises([
-                  { id: 1, user_id: 1, exercise_id: 1, exercise_name: 'Push-ups', exercise_type: 'Push-ups', reps: 30, distance: undefined, time_in_seconds: 45, notes: 'Good form', grade: 85, created_at: '2024-03-28T10:30:00Z'},
-                  { id: 2, user_id: 1, exercise_id: 4, exercise_name: 'Running', exercise_type: 'Running', reps: undefined, distance: 5200, time_in_seconds: 1815, notes: 'Morning run', grade: 90, created_at: '2024-03-27T18:00:00Z'},
-                  { id: 3, user_id: 1, exercise_id: 2, exercise_name: 'Sit-ups', exercise_type: 'Sit-ups', reps: 55, distance: undefined, time_in_seconds: 70, notes: 'Abdominal workout', grade: 88, created_at: '2024-03-26T11:00:00Z'}
-                ]); setError(null); setLoading(false);
-              }}
-            > Use Demo Data </Button>
-            <p className="text-xs text-muted-foreground mt-4">Server: {config.api.baseUrl}</p>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (exercises.length === 0) {
+  if (!isLoading && totalCount === 0) {
     return (
       <div className="space-y-6">
         <h1 className="text-2xl font-semibold text-foreground">Training History</h1>
@@ -305,13 +261,11 @@ const History: React.FC = () => {
   }
   
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", isFetching && "opacity-75 transition-opacity duration-300")}>
       <h1 className="text-2xl font-semibold text-foreground">Training History</h1>
 
-      {/* Filter Controls Row */}
       <Card>
         <CardContent className="pt-6 flex flex-col sm:flex-row gap-3">
-          {/* Date Range Picker */}
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -350,7 +304,6 @@ const History: React.FC = () => {
             </PopoverContent>
           </Popover>
 
-          {/* Exercise Filter Dropdown */}
           <div className="w-full sm:w-auto sm:max-w-[240px] flex-grow">
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
                 <SelectTrigger className="w-full">
@@ -373,7 +326,6 @@ const History: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Summary Stats Section */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {[
           { title: 'Total Workouts', value: summaryStats.totalWorkouts, icon: Dumbbell, unit: '' },
@@ -393,7 +345,6 @@ const History: React.FC = () => {
         ))}
       </div>
 
-      {/* Dynamic Progress Chart Card */}
       <Card className="transition-shadow hover:shadow-md">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">
@@ -442,7 +393,6 @@ const History: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Personal Bests Card */}
       <Card className="transition-shadow hover:shadow-md">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center">
@@ -474,7 +424,6 @@ const History: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* History Table Card */}
       <Card className="overflow-hidden transition-shadow hover:shadow-md">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Filtered Sessions</CardTitle>
@@ -509,17 +458,38 @@ const History: React.FC = () => {
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground h-24 text-sm">
-                    No sessions found matching your current filters.
+                    {exercises.length > 0 
+                      ? "No sessions found matching your current filters."
+                      : "Loading sessions..."}
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-           {filteredHistory.length > 0 && (
-             <div className="text-xs text-muted-foreground text-center py-3 px-6 border-t border-border/50">
-                {`Showing ${filteredHistory.length} workout${filteredHistory.length === 1 ? '' : 's'} ${dateRange?.from ? `from ${format(dateRange.from, "PP")}` : ''} ${dateRange?.to ? `to ${format(dateRange.to, "PP")}` : ''} ${exerciseFilter !== 'All' ? ` for ${exerciseFilter}` : ''}.`}
-             </div>
-           )}
+          
+           <div className="flex items-center justify-between p-4 border-t border-border/50">
+              <div className="text-sm text-muted-foreground">
+                Page {page} of {totalPages} ({totalCount} total records)
+              </div>
+              <div className="space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                  disabled={page <= 1 || isFetching}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={page >= totalPages || isFetching}
+                >
+                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
         </CardContent>
       </Card>
     </div>
