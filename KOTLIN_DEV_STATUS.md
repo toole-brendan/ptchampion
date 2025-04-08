@@ -41,11 +41,11 @@ The Kotlin application has been bootstrapped with a modern Android development s
 While the foundation is laid, significant work remains to make the app fully functional and feature-complete:
 
 1.  **Core Feature Implementation:** **[PARTIALLY DONE]**
-    *   `[TODO]` **HomeScreen:** Implement the main screen UI after login (e.g., user dashboard, quick actions, navigation to other features). (Placeholder created)
+    *   `[PARTIALLY DONE]` **HomeScreen:** Implement the main screen UI after login (e.g., user dashboard, quick actions, navigation to other features). (Basic structure with ViewModel/State and placeholder sections added, uses UserRepository)
     *   `[DONE]` **ExerciseList Screen:** Display available exercises fetched from the API. (Implemented with hardcoded list, navigates to Camera)
     *   `[TODO]` **ExerciseDetail Screen:** Show details for a selected exercise.
     *   `[DONE]` **Leaderboard Screen:** Fetch and display global/local leaderboards from the API. (Implemented)
-    *   `[TODO]` **Profile Screen:** Display user information, allow editing. (Placeholder created, Logout implemented).
+    *   `[PARTIALLY DONE]` **Profile Screen:** Display user information, allow editing. (Basic UI with ViewModel/State showing placeholder user data added, uses UserRepository, Logout implemented).
 
 2.  **Logout Functionality:** **[PARTIALLY DONE]**
     *   `[DONE]` Add a mechanism (e.g., button in Profile/Home) to clear the saved auth token from DataStore (`UserPreferencesRepository.clearAuthToken`). (Added to basic ProfileScreen)
@@ -72,18 +72,21 @@ While the foundation is laid, significant work remains to make the app fully fun
 
 6.  **Data Layer Enhancements:** **[PARTIALLY DONE]**
     *   `[DONE]` Implement remaining repositories (e.g., `LeaderboardRepository`).
-    *   `[TODO]` Implement `ExerciseRepository` (for history/logging), `UserRepository` (for profile data).
+    *   `[PARTIALLY DONE]` Implement `ExerciseRepository` (for history/logging), `UserRepository` (for profile data). (UserRepository interface, basic impl with placeholder data, and Hilt binding added)
+    *   `[TODO]` Implement `ExerciseRepository` (for history/logging).
     *   `[TODO]` Find/implement way to get list of available exercises (API endpoint or keep hardcoded).
     *   `[TODO]` Consider local caching strategies (e.g., using Room database) if offline support or improved performance is needed.
+    *   `[PARTIALLY DONE]` Integrate actual API call for fetching user profile in `UserRepositoryImpl`. (API injected, basic call structure and error handling added; requires verification of endpoint/DTO and mapping implementation).
 
 7.  **UI/UX Refinements:** **[PARTIALLY DONE]**
-    *   `[DONE]` Replace placeholder screens with actual implementations (Leaderboard, ExerciseList, basic Home/Profile).
+    *   `[DONE]` Replace placeholder screens with actual implementations (Leaderboard, ExerciseList).
+    *   `[PARTIALLY DONE]` Replace placeholder screens with actual implementations (Basic Home/Profile UI structure added).
     *   `[DONE]` Add UI elements like `AppBar` or `BottomNavigationBar` as needed (using `Scaffold`). (BottomNav implemented)
-    *   `[TODO]` Implement proper loading indicators and empty states for lists/data fetching. (Basic implemented in Leaderboard).
+    *   `[TODO]` Implement proper loading indicators and empty states for lists/data fetching. (Basic implemented in Leaderboard, Home, Profile).
     *   `[TODO]` Improve error handling feedback (e.g., using Snackbars).
     *   `[TODO]` Refine the industrial theme and potentially add custom fonts.
-    *   `[TODO]` Implement actual Home screen UI.
-    *   `[TODO]` Implement actual Profile screen UI.
+    *   `[TODO]` Implement actual Home screen UI (beyond basic structure).
+    *   `[TODO]` Implement actual Profile screen UI (beyond basic structure).
 
 8.  **Testing:** **[TODO]**
     *   Add Unit tests for ViewModels and Repositories.
