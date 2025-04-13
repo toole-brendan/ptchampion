@@ -1,0 +1,120 @@
+import { db } from './db';
+import { User as SelectUser } from '@shared/schema';
+import { users } from '@shared/schema';
+import { and, eq, like } from 'drizzle-orm';
+import session from 'express-session';
+import postgresSession from 'connect-pg-simple';
+
+const PostgresSessionStore = postgresSession(session);
+
+// Interface for storage operations
+interface IStorage {
+  getUser(id: number): Promise<SelectUser | undefined>;
+  getUserByUsername(username: string): Promise<SelectUser | undefined>;
+  createUser(username: string, password: string): Promise<SelectUser>;
+  updateUserLocation(
+    userId: number,
+    latitude: number,
+    longitude: number
+  ): Promise<SelectUser>;
+  sessionStore: session.Store; // Use session.Store for consistency
+}
+
+export class DatabaseStorage implements IStorage {
+  sessionStore: session.Store;
+
+  constructor() {
+    // Instantiate the store correctly
+    this.sessionStore = new PostgresSessionStore({
+      conObject: {
+        connectionString: process.env.DATABASE_URL
+      },
+      tableName: 'session',
+      createTableIfMissing: true
+    });
+  }
+
+  async getUser(id: number): Promise<SelectUser | undefined> {
+    try {
+      // Check if id is valid
+      if (id === undefined || id === null) {
+        console.error("Invalid user id:", id);
+        return undefined;
+      }
+
+      // Use Drizzle's query builder
+      const userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, id))
+        .limit(1);
+
+      return userResult.length > 0 ? userResult[0] : undefined;
+    } catch (error) {
+      console.error("Error fetching user by ID:", error);
+      throw error;
+    }
+  }
+
+  async getUserByUsername(username: string): Promise<SelectUser | undefined> {
+    try {
+      // Use Drizzle's query builder
+      const userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
+
+      return userResult.length > 0 ? userResult[0] : undefined;
+    } catch (error) {
+      console.error("Error fetching user by username:", error);
+      throw error;
+    }
+  }
+
+  async createUser(username: string, password: string): Promise<SelectUser> {
+    try {
+      // Use Drizzle's insert
+      const insertResult = await db
+        .insert(users)
+        .values({ username, password })
+        .returning();
+
+      if (!insertResult.length) {
+        throw new Error("Failed to create user");
+      }
+
+      return insertResult[0];
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+  }
+
+  async updateUserLocation(
+    userId: number,
+    latitude: number,
+    longitude: number
+  ): Promise<SelectUser> {
+    try {
+      // Use Drizzle's update
+      const updateResult = await db
+        .update(users)
+        .set({ latitude, longitude })
+        .where(eq(users.id, userId))
+        .returning();
+
+      if (!updateResult.length) {
+        throw new Error("Failed to update user location");
+      }
+
+      return updateResult[0];
+    } catch (error) {
+      console.error("Error updating user location:", error);
+      throw error;
+    }
+  }
+}
+
+// Export a singleton instance
+export const storage = new DatabaseStorage();

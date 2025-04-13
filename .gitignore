@@ -1,0 +1,46 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Database Migrations (optional, if preferred)
+# migrations/
+
+# sqlc Schema Source (if derived from migrations)
+# sql/schema/schema.sql
+
+# Environment variables
+.env*
+!/.env.example
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test artifacts
+*.test
+
+# Binaries for programs and plugins
+bin/
+
+# Generated files
+openapi.yaml
+internal/api/openapi.gen.go
+PTChampion-Swift/Sources/GeneratedAPI/
+PTChampion-Kotlin/app/src/main/java/com/example/ptchampion/generatedapi/
+
+# Android build outputs
+PTChampion-Kotlin/app/build/outputs/
+PTChampion-Kotlin/.gradle/
+PTChampion-Kotlin/build/
+
+# Android heap dumps
+*.hprof
+
+# Android local configuration files
+PTChampion-Kotlin/local.properties
