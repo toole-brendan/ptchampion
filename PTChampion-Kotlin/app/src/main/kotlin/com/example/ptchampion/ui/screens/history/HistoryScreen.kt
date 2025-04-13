@@ -14,6 +14,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ptchampion.domain.model.WorkoutResponse
 import com.example.ptchampion.ui.theme.PTChampionTheme
+import androidx.compose.material3.CardDefaults
 import java.time.format.DateTimeFormatter
 import java.time.OffsetDateTime
 
@@ -77,7 +78,11 @@ fun HistoryScreen(
 fun WorkoutHistoryItem(workout: WorkoutResponse) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = MaterialTheme.shapes.medium,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(workout.exerciseName, style = MaterialTheme.typography.titleMedium)
