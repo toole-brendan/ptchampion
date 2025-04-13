@@ -183,3 +183,149 @@ For Docker deployment instructions, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT
 5. **Complete Session**: Finish your workout to save your score and form rating
 6. **View Progress**: Check your history and leaderboard ranking
 
+# PT Champion Mobile App Styling Guide
+
+## 1. Overall Theme
+
+*   **Theme:** Light Theme with Military Inspiration
+*   **Feel:** Modern, clean, focused, military-inspired with sand and gold colors
+*   **Background:** Light sand/off-white
+*   **Contrast:** Strong contrast between background and text elements
+
+## 2. Color Palette
+
+| Purpose | Color | Hex Code |
+|---------|-------|----------|
+| Primary Background | Off-white / Sand | #F9F6EF |
+| Primary Text | Deep Green | #1E2D24 |
+| Secondary Text | Desaturated Olive | #4E5A48 |
+| Accent Color | Military Gold | #BFA24D |
+| Interactive Icons | Brass | #A6863D |
+| Card Background | Dark Green | #2F3B2F |
+
+## 3. Logo Use
+
+* **Full Logo (Emblem + Text):** Only on splash screens and login page
+* **Emblem Only:** Top corner of all authenticated app pages (e.g., dashboard, leaderboard, progress)
+* **Placement:** Subtle but consistent, preferably:
+  ```jsx
+  <LogoIcon size="sm" style={{ position: "absolute", top: 16, left: 16 }} />
+  ```
+
+## 4. Typography
+
+| Type | Font Style | Weight | Size | Color |
+|------|------------|--------|------|-------|
+| Headings | Bebas Neue or Orbitron | Bold | 24–32 px | #1E2D24 |
+| Subheading | Montserrat | Semi-bold | 18–20 px | #4E5A48 |
+| Body Text | Montserrat | Regular | 14–16 px | #1E2D24 |
+| Numbers / Stats | Roboto Mono | Medium | 20–28 px | #BFA24D |
+
+Use uppercase for labels and headers, and use mono fonts for stats to evoke military-grade precision.
+
+## 5. Component Styles
+
+*   **Cards:**
+    *   Background: `#2F3B2F`
+    *   Padding: 16px
+    *   Border radius: 12px
+    *   Text color: `#F9F6EF`
+    *   Example use:
+      ```jsx
+      <Card style={{ backgroundColor: '#2F3B2F', color: '#F9F6EF' }}>
+        <h4>Total Pull-Ups</h4>
+        <h1>325</h1>
+      </Card>
+      ```
+
+*   **Charts:**
+    *   Background: Transparent or `#F9F6EF`
+    *   Stroke: `#BFA24D`
+    *   Fill: rgba(191,162,77,0.15)
+    *   Axis Font: Montserrat, size 12, `#4E5A48`
+
+*   **Bottom Navigation Bar:**
+    *   Background: `#1E2D24`
+    *   Icon Color: Inactive `#BFA24D`, Active `#F9F6EF`
+    *   Font: Montserrat, uppercase, size 10–12px
+    *   Example use:
+      ```jsx
+      <BottomTabBar style={{ backgroundColor: '#1E2D24' }}>
+        <Tab icon={<HomeIcon />} label="HOME" />
+        <Tab icon={<ChartIcon />} label="PROGRESS" active />
+      </BottomTabBar>
+      ```
+
+*   **Buttons (Primary - e.g., "LOG IN"):**
+    *   Background: `#BFA24D`
+    *   Text: `#1E2D24`, Uppercase
+    *   Font: Montserrat Bold
+    *   Shape: Rounded corners (8px radius)
+    *   Padding: 10px 20px
+
+*   **Buttons (Secondary/Toggle - e.g., "Global", "Local"):**
+    *   Background (Selected): `Accent Color` (`#BFA24D`)
+    *   Background (Unselected): `Card Background` (`#2F3B2F`)
+    *   Text (Selected): `Primary Background` (`#F9F6EF`)
+    *   Text (Unselected): `Primary Background` (`#F9F6EF`)
+    *   Shape: Rounded corners (medium radius)
+
+*   **Text Buttons / Links (e.g., "Forgot password?", "Sign up"):**
+    *   Background: None
+    *   Text Color: `Interactive Icons` (`#A6863D`)
+    *   Underline: None visible, but maybe on hover/press
+
+*   **Forms:**
+    *   Input Background: `#F9F6EF`
+    *   Border: 1px solid `#4E5A48`
+    *   Focus: Outline `#BFA24D`
+
+*   **Modals:**
+    *   Overlay: Dark mode with 90% opacity `#1E2D24`
+    *   Main content: Light box with rounded corners (20px radius)
+
+## 6. Layout & Spacing
+
+*   **Page Padding:** 20px
+*   **Card Spacing:** 16px
+*   **Element Gap (vertical stack):** 12px
+*   **Corner Radius:** 12px for cards, 20px for modals
+
+## 7. MediaPipe Integration
+
+If you're using overlays during camera-based form analysis (e.g., push-up detection), match the overlay elements:
+
+*   **Line/Keypoint Color:** `#BFA24D`
+*   **Confidence indicator:** Use brightness levels (lighter = more confident)
+*   **Background fade:** Semi-transparent dark green (rgba(30,45,36,0.7))
+
+## 8. Sample Theming Setup (Tailwind CSS Example)
+
+```js
+theme: {
+  extend: {
+    colors: {
+      'pt-bg': '#F9F6EF',
+      'pt-primary': '#1E2D24',
+      'pt-accent': '#BFA24D',
+      'pt-muted': '#4E5A48',
+      'pt-card': '#2F3B2F',
+    },
+    fontFamily: {
+      display: ['Bebas Neue', 'sans-serif'],
+      body: ['Montserrat', 'sans-serif'],
+      mono: ['Roboto Mono', 'monospace'],
+    },
+    borderRadius: {
+      card: '12px',
+      modal: '20px',
+    }
+  }
+}
+```
+
+## 9. Iconography
+
+*   **Style:** Solid, filled icons.
+*   **Color:** Match the active/inactive colors defined for the Navigation Bar.
+

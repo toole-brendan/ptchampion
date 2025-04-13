@@ -1,5 +1,9 @@
 [
     {
+        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_pt_champion_logo_2.png.flat",
+        "source": "com.example.ptchampion.app-main-69:/drawable/pt_champion_logo_2.png"
+    },
+    {
         "merged": "com.example.ptchampion.app-merged_res-67:/drawable_ic_launcher_foreground.xml.flat",
         "source": "com.example.ptchampion.app-main-69:/drawable/ic_launcher_foreground.xml"
     },
@@ -10,6 +14,10 @@
     {
         "merged": "com.example.ptchampion.app-merged_res-67:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
         "source": "com.example.ptchampion.app-main-69:/mipmap-anydpi-v26/ic_launcher_round.xml"
+    },
+    {
+        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_pt_champion_logo.png.flat",
+        "source": "com.example.ptchampion.app-main-69:/drawable/pt_champion_logo.png"
     },
     {
         "merged": "com.example.ptchampion.app-merged_res-67:/xml_backup_rules.xml.flat",
