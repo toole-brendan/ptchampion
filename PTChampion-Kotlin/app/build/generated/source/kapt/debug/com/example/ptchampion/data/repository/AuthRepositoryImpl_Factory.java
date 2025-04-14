@@ -1,5 +1,6 @@
 package com.example.ptchampion.data.repository;
 
+import android.content.Context;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.Factory;
 import dagger.internal.QualifierMetadata;
@@ -9,7 +10,7 @@ import javax.inject.Provider;
 import org.openapitools.client.apis.AuthApi;
 
 @ScopeMetadata("javax.inject.Singleton")
-@QualifierMetadata
+@QualifierMetadata("dagger.hilt.android.qualifiers.ApplicationContext")
 @DaggerGenerated
 @Generated(
     value = "dagger.internal.codegen.ComponentProcessor",
@@ -24,20 +25,25 @@ import org.openapitools.client.apis.AuthApi;
 public final class AuthRepositoryImpl_Factory implements Factory<AuthRepositoryImpl> {
   private final Provider<AuthApi> apiProvider;
 
-  public AuthRepositoryImpl_Factory(Provider<AuthApi> apiProvider) {
+  private final Provider<Context> contextProvider;
+
+  public AuthRepositoryImpl_Factory(Provider<AuthApi> apiProvider,
+      Provider<Context> contextProvider) {
     this.apiProvider = apiProvider;
+    this.contextProvider = contextProvider;
   }
 
   @Override
   public AuthRepositoryImpl get() {
-    return newInstance(apiProvider.get());
+    return newInstance(apiProvider.get(), contextProvider.get());
   }
 
-  public static AuthRepositoryImpl_Factory create(Provider<AuthApi> apiProvider) {
-    return new AuthRepositoryImpl_Factory(apiProvider);
+  public static AuthRepositoryImpl_Factory create(Provider<AuthApi> apiProvider,
+      Provider<Context> contextProvider) {
+    return new AuthRepositoryImpl_Factory(apiProvider, contextProvider);
   }
 
-  public static AuthRepositoryImpl newInstance(AuthApi api) {
-    return new AuthRepositoryImpl(api);
+  public static AuthRepositoryImpl newInstance(AuthApi api, Context context) {
+    return new AuthRepositoryImpl(api, context);
   }
 }

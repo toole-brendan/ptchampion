@@ -1,9 +1,16 @@
 package com.example.ptchampion;
 
+import com.example.ptchampion.di.AppModule;
 import com.example.ptchampion.di.DataStoreModule;
 import com.example.ptchampion.di.LocationModule;
 import com.example.ptchampion.di.NetworkModule;
 import com.example.ptchampion.di.RepositoryModule;
+import com.example.ptchampion.di.ServiceModule;
+import com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementViewModel_HiltModules;
+import com.example.ptchampion.ui.screens.onboarding.OnboardingViewModel_HiltModules;
+import com.example.ptchampion.ui.screens.running.RunningTrackingViewModel_HiltModules;
+import com.example.ptchampion.ui.screens.settings.SettingsViewModel_HiltModules;
+import com.example.ptchampion.ui.screens.workoutdetail.WorkoutDetailViewModel_HiltModules;
 import dagger.Binds;
 import dagger.Component;
 import dagger.Module;
@@ -118,6 +125,7 @@ public final class PTChampionApp_HiltComponents {
 
   @Component(
       modules = {
+          AppModule.class,
           ApplicationContextModule.class,
           DataStoreModule.class,
           HiltWrapper_FragmentGetContextFix_FragmentGetContextFixModule.class,
@@ -125,7 +133,8 @@ public final class PTChampionApp_HiltComponents {
           NetworkModule.class,
           ActivityRetainedCBuilderModule.class,
           ServiceCBuilderModule.class,
-          RepositoryModule.class
+          RepositoryModule.class,
+          ServiceModule.class
       }
   )
   @Singleton
@@ -148,9 +157,14 @@ public final class PTChampionApp_HiltComponents {
 
   @Subcomponent(
       modules = {
+          BluetoothDeviceManagementViewModel_HiltModules.KeyModule.class,
           HiltWrapper_ActivityRetainedComponentManager_LifecycleModule.class,
+          OnboardingViewModel_HiltModules.KeyModule.class,
           ActivityCBuilderModule.class,
-          ViewModelCBuilderModule.class
+          ViewModelCBuilderModule.class,
+          RunningTrackingViewModel_HiltModules.KeyModule.class,
+          SettingsViewModel_HiltModules.KeyModule.class,
+          WorkoutDetailViewModel_HiltModules.KeyModule.class
       }
   )
   @ActivityRetainedScoped
@@ -184,7 +198,14 @@ public final class PTChampionApp_HiltComponents {
   }
 
   @Subcomponent(
-      modules = HiltWrapper_HiltViewModelFactory_ViewModelModule.class
+      modules = {
+          BluetoothDeviceManagementViewModel_HiltModules.BindsModule.class,
+          HiltWrapper_HiltViewModelFactory_ViewModelModule.class,
+          OnboardingViewModel_HiltModules.BindsModule.class,
+          RunningTrackingViewModel_HiltModules.BindsModule.class,
+          SettingsViewModel_HiltModules.BindsModule.class,
+          WorkoutDetailViewModel_HiltModules.BindsModule.class
+      }
   )
   @ViewModelScoped
   public abstract static class ViewModelC implements ViewModelComponent,

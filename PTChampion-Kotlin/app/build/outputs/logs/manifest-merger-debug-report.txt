@@ -12,6 +12,7 @@ MERGED from [androidx.navigation:navigation-runtime:2.7.5] /Users/brendantoole/.
 MERGED from [androidx.navigation:navigation-common-ktx:2.7.5] /Users/brendantoole/.gradle/caches/transforms-3/26f5da6d28fb39add2e400e683fedcf7/transformed/navigation-common-ktx-2.7.5/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.5] /Users/brendantoole/.gradle/caches/transforms-3/802eb67d78db32694afeb6a82b66027c/transformed/navigation-runtime-ktx-2.7.5/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.navigation:navigation-compose:2.7.5] /Users/brendantoole/.gradle/caches/transforms-3/98ac3d9a482ef638dc869b4665a1a712/transformed/jetified-navigation-compose-2.7.5/AndroidManifest.xml:2:1-7:12
+MERGED from [com.google.accompanist:accompanist-permissions:0.31.5-beta] /Users/brendantoole/.gradle/caches/transforms-3/4ef135fe627fa551c736154994f27433/transformed/jetified-accompanist-permissions-0.31.5-beta/AndroidManifest.xml:17:1-25:12
 MERGED from [com.google.dagger:hilt-android:2.48.1] /Users/brendantoole/.gradle/caches/transforms-3/ecf077d8459e64f1c65dd8b3a1f8d622/transformed/jetified-hilt-android-2.48.1/AndroidManifest.xml:16:1-19:12
 MERGED from [androidx.camera:camera-video:1.3.1] /Users/brendantoole/.gradle/caches/transforms-3/be6aa3fe00587fe555065ebc84624bb9/transformed/jetified-camera-video-1.3.1/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.camera:camera-core:1.3.1] /Users/brendantoole/.gradle/caches/transforms-3/2f3ce1baaa029436b72ae339ed717b28/transformed/jetified-camera-core-1.3.1/AndroidManifest.xml:17:1-36:12
@@ -74,6 +75,7 @@ MERGED from [androidx.core:core:1.12.0] /Users/brendantoole/.gradle/caches/trans
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.7.0] /Users/brendantoole/.gradle/caches/transforms-3/1560889aacd1fe8513b8e4593fdb41ea/transformed/lifecycle-runtime-2.7.0/AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /Users/brendantoole/.gradle/caches/transforms-3/a3759a6fbbd1459eb4a3dda00957eb20/transformed/jetified-lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.annotation:annotation-experimental:1.3.1] /Users/brendantoole/.gradle/caches/transforms-3/b6bd103233ed3788654e4927da6b43d7/transformed/jetified-annotation-experimental-1.3.1/AndroidManifest.xml:17:1-22:12
+MERGED from [io.github.aakira:napier-android-debug:1.4.1] /Users/brendantoole/.gradle/caches/transforms-3/c8ccafbe5acff48dc9750446c8222996/transformed/jetified-napier-debug/AndroidManifest.xml:2:1-11:12
 MERGED from [com.google.mediapipe:tasks-vision:0.10.1] /Users/brendantoole/.gradle/caches/transforms-3/ff474044c8e54e2ebed124cb7c74a4ce/transformed/jetified-tasks-vision-0.10.1/AndroidManifest.xml:2:1-9:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/brendantoole/.gradle/caches/transforms-3/5b4cb2a2f959c8bb7947524e0d26443f/transformed/interpolator-1.0.0/AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] /Users/brendantoole/.gradle/caches/transforms-3/424ef26e7afc2efb80b544d5533c13cb/transformed/versionedparcelable-1.1.1/AndroidManifest.xml:17:1-27:12
@@ -251,6 +253,8 @@ MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.5] /Users/brendantoo
 MERGED from [androidx.navigation:navigation-runtime-ktx:2.7.5] /Users/brendantoole/.gradle/caches/transforms-3/802eb67d78db32694afeb6a82b66027c/transformed/navigation-runtime-ktx-2.7.5/AndroidManifest.xml:5:5-44
 MERGED from [androidx.navigation:navigation-compose:2.7.5] /Users/brendantoole/.gradle/caches/transforms-3/98ac3d9a482ef638dc869b4665a1a712/transformed/jetified-navigation-compose-2.7.5/AndroidManifest.xml:5:5-44
 MERGED from [androidx.navigation:navigation-compose:2.7.5] /Users/brendantoole/.gradle/caches/transforms-3/98ac3d9a482ef638dc869b4665a1a712/transformed/jetified-navigation-compose-2.7.5/AndroidManifest.xml:5:5-44
+MERGED from [com.google.accompanist:accompanist-permissions:0.31.5-beta] /Users/brendantoole/.gradle/caches/transforms-3/4ef135fe627fa551c736154994f27433/transformed/jetified-accompanist-permissions-0.31.5-beta/AndroidManifest.xml:21:5-23:42
+MERGED from [com.google.accompanist:accompanist-permissions:0.31.5-beta] /Users/brendantoole/.gradle/caches/transforms-3/4ef135fe627fa551c736154994f27433/transformed/jetified-accompanist-permissions-0.31.5-beta/AndroidManifest.xml:21:5-23:42
 MERGED from [com.google.dagger:hilt-android:2.48.1] /Users/brendantoole/.gradle/caches/transforms-3/ecf077d8459e64f1c65dd8b3a1f8d622/transformed/jetified-hilt-android-2.48.1/AndroidManifest.xml:18:3-42
 MERGED from [com.google.dagger:hilt-android:2.48.1] /Users/brendantoole/.gradle/caches/transforms-3/ecf077d8459e64f1c65dd8b3a1f8d622/transformed/jetified-hilt-android-2.48.1/AndroidManifest.xml:18:3-42
 MERGED from [androidx.camera:camera-video:1.3.1] /Users/brendantoole/.gradle/caches/transforms-3/be6aa3fe00587fe555065ebc84624bb9/transformed/jetified-camera-video-1.3.1/AndroidManifest.xml:5:5-44
@@ -375,6 +379,8 @@ MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /Users/brendantoole
 MERGED from [androidx.lifecycle:lifecycle-runtime-ktx:2.7.0] /Users/brendantoole/.gradle/caches/transforms-3/a3759a6fbbd1459eb4a3dda00957eb20/transformed/jetified-lifecycle-runtime-ktx-2.7.0/AndroidManifest.xml:20:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.3.1] /Users/brendantoole/.gradle/caches/transforms-3/b6bd103233ed3788654e4927da6b43d7/transformed/jetified-annotation-experimental-1.3.1/AndroidManifest.xml:20:5-44
 MERGED from [androidx.annotation:annotation-experimental:1.3.1] /Users/brendantoole/.gradle/caches/transforms-3/b6bd103233ed3788654e4927da6b43d7/transformed/jetified-annotation-experimental-1.3.1/AndroidManifest.xml:20:5-44
+MERGED from [io.github.aakira:napier-android-debug:1.4.1] /Users/brendantoole/.gradle/caches/transforms-3/c8ccafbe5acff48dc9750446c8222996/transformed/jetified-napier-debug/AndroidManifest.xml:7:5-9:41
+MERGED from [io.github.aakira:napier-android-debug:1.4.1] /Users/brendantoole/.gradle/caches/transforms-3/c8ccafbe5acff48dc9750446c8222996/transformed/jetified-napier-debug/AndroidManifest.xml:7:5-9:41
 MERGED from [com.google.mediapipe:tasks-vision:0.10.1] /Users/brendantoole/.gradle/caches/transforms-3/ff474044c8e54e2ebed124cb7c74a4ce/transformed/jetified-tasks-vision-0.10.1/AndroidManifest.xml:5:5-7:41
 MERGED from [com.google.mediapipe:tasks-vision:0.10.1] /Users/brendantoole/.gradle/caches/transforms-3/ff474044c8e54e2ebed124cb7c74a4ce/transformed/jetified-tasks-vision-0.10.1/AndroidManifest.xml:5:5-7:41
 MERGED from [androidx.interpolator:interpolator:1.0.0] /Users/brendantoole/.gradle/caches/transforms-3/5b4cb2a2f959c8bb7947524e0d26443f/transformed/interpolator-1.0.0/AndroidManifest.xml:20:5-44
@@ -409,6 +415,8 @@ MERGED from [com.google.dagger:dagger-lint-aar:2.48.1] /Users/brendantoole/.grad
 MERGED from [com.google.dagger:dagger-lint-aar:2.48.1] /Users/brendantoole/.gradle/caches/transforms-3/ec1ce267c72946a12c58fe13e9eca278/transformed/jetified-dagger-lint-aar-2.48.1/AndroidManifest.xml:18:3-42
 	android:targetSdkVersion
 		INJECTED from /Users/brendantoole/projects/ptchampion/PTChampion-Kotlin/app/src/main/AndroidManifest.xml
+	tools:ignore
+		ADDED from [com.google.accompanist:accompanist-permissions:0.31.5-beta] /Users/brendantoole/.gradle/caches/transforms-3/4ef135fe627fa551c736154994f27433/transformed/jetified-accompanist-permissions-0.31.5-beta/AndroidManifest.xml:23:9-39
 	android:minSdkVersion
 		INJECTED from /Users/brendantoole/projects/ptchampion/PTChampion-Kotlin/app/src/main/AndroidManifest.xml
 service#androidx.camera.core.impl.MetadataHolderService

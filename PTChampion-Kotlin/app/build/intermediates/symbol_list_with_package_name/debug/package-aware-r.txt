@@ -702,6 +702,10 @@ drawable notification_tile_bg
 drawable notify_panel_notification_icon_bg
 drawable pt_champion_logo
 drawable pt_champion_logo_2
+drawable pullup
+drawable pushup
+drawable running
+drawable situp
 drawable tooltip_frame_dark
 drawable tooltip_frame_light
 id ALT

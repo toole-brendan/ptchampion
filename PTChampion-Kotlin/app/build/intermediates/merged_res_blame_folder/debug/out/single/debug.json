@@ -1,34 +1,50 @@
 [
     {
-        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_pt_champion_logo_2.png.flat",
-        "source": "com.example.ptchampion.app-main-69:/drawable/pt_champion_logo_2.png"
+        "merged": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-merged_res-67:/drawable_ic_launcher_foreground.xml.flat",
+        "source": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-main-69:/drawable/ic_launcher_foreground.xml"
     },
     {
-        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_ic_launcher_foreground.xml.flat",
-        "source": "com.example.ptchampion.app-main-69:/drawable/ic_launcher_foreground.xml"
+        "merged": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-merged_res-67:/mipmap-anydpi-v26_ic_launcher.xml.flat",
+        "source": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-main-69:/mipmap-anydpi-v26/ic_launcher.xml"
     },
     {
-        "merged": "com.example.ptchampion.app-merged_res-67:/xml_data_extraction_rules.xml.flat",
-        "source": "com.example.ptchampion.app-main-69:/xml/data_extraction_rules.xml"
+        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_running.png.flat",
+        "source": "com.example.ptchampion.app-main-69:/drawable/running.png"
     },
     {
-        "merged": "com.example.ptchampion.app-merged_res-67:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
-        "source": "com.example.ptchampion.app-main-69:/mipmap-anydpi-v26/ic_launcher_round.xml"
+        "merged": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-merged_res-67:/drawable_pt_champion_logo.png.flat",
+        "source": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-main-69:/drawable/pt_champion_logo.png"
     },
     {
-        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_pt_champion_logo.png.flat",
-        "source": "com.example.ptchampion.app-main-69:/drawable/pt_champion_logo.png"
+        "merged": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-merged_res-67:/drawable_pt_champion_logo_2.png.flat",
+        "source": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-main-69:/drawable/pt_champion_logo_2.png"
     },
     {
-        "merged": "com.example.ptchampion.app-merged_res-67:/xml_backup_rules.xml.flat",
-        "source": "com.example.ptchampion.app-main-69:/xml/backup_rules.xml"
+        "merged": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-merged_res-67:/drawable_ic_launcher_background.xml.flat",
+        "source": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-main-69:/drawable/ic_launcher_background.xml"
     },
     {
-        "merged": "com.example.ptchampion.app-merged_res-67:/mipmap-anydpi-v26_ic_launcher.xml.flat",
-        "source": "com.example.ptchampion.app-main-69:/mipmap-anydpi-v26/ic_launcher.xml"
+        "merged": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-merged_res-67:/xml_backup_rules.xml.flat",
+        "source": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-main-69:/xml/backup_rules.xml"
     },
     {
-        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_ic_launcher_background.xml.flat",
-        "source": "com.example.ptchampion.app-main-69:/drawable/ic_launcher_background.xml"
+        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_pullup.png.flat",
+        "source": "com.example.ptchampion.app-main-69:/drawable/pullup.png"
+    },
+    {
+        "merged": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-merged_res-67:/xml_data_extraction_rules.xml.flat",
+        "source": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-main-69:/xml/data_extraction_rules.xml"
+    },
+    {
+        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_pushup.png.flat",
+        "source": "com.example.ptchampion.app-main-69:/drawable/pushup.png"
+    },
+    {
+        "merged": "com.example.ptchampion.app-merged_res-67:/drawable_situp.png.flat",
+        "source": "com.example.ptchampion.app-main-69:/drawable/situp.png"
+    },
+    {
+        "merged": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-merged_res-67:/mipmap-anydpi-v26_ic_launcher_round.xml.flat",
+        "source": "/Users/brendantoole/.gradle/daemon/8.4/com.example.ptchampion.app-main-69:/mipmap-anydpi-v26/ic_launcher_round.xml"
     }
 ]

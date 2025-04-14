@@ -25,6 +25,8 @@ import com.example.ptchampion.ui.theme.PtAccent
 import com.example.ptchampion.ui.theme.PtBackground
 import com.example.ptchampion.ui.theme.PtCommandBlack
 import com.example.ptchampion.ui.theme.PtSecondaryText
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 
 @Composable
 fun ExerciseListScreen(
@@ -112,12 +114,13 @@ fun ExerciseCard(
                 .padding(16.dp), // 16px padding per styling guide
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Exercise icon based on type
-            Icon(
-                imageVector = getExerciseIcon(exercise.type),
+            // Use custom image based on exercise type
+            val iconRes = getExerciseIconResource(exercise.type)
+            Image(
+                painter = painterResource(id = iconRes),
                 contentDescription = exercise.name,
-                tint = PtAccent, // Brass Gold
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(48.dp),
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(PtAccent) // Apply gold tint
             )
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -152,14 +155,29 @@ fun ExerciseCard(
     }
 }
 
-// Helper function to get appropriate icon based on exercise type
+// Helper function to get the resource ID for exercise icons
 @Composable
-fun getExerciseIcon(type: String): ImageVector {
+fun getExerciseIconResource(type: String): Int {
     return when (type.lowercase()) {
-        "pushup" -> Icons.Default.FitnessCenter
-        "situp" -> Icons.Default.SelfImprovement
-        "pullup" -> Icons.Default.FitnessCenter
-        "run" -> Icons.Default.DirectionsRun
-        else -> Icons.Default.FitnessCenter
+        "push_ups" -> com.example.ptchampion.R.drawable.pushup
+        "pushup" -> com.example.ptchampion.R.drawable.pushup
+        "pull_ups" -> com.example.ptchampion.R.drawable.pullup  
+        "pullup" -> com.example.ptchampion.R.drawable.pullup
+        "sit_ups" -> com.example.ptchampion.R.drawable.situp
+        "situp" -> com.example.ptchampion.R.drawable.situp
+        "run" -> com.example.ptchampion.R.drawable.running
+        else -> com.example.ptchampion.R.drawable.pushup // Default icon
     }
-} 
+}
+
+// Keep the original function but mark as unused
+// @Composable
+// private fun getExerciseIcon(type: String): ImageVector {
+//     return when (type.lowercase()) {
+//         "pushup" -> Icons.Default.FitnessCenter
+//         "situp" -> Icons.Default.SelfImprovement
+//         "pullup" -> Icons.Default.FitnessCenter
+//         "run" -> Icons.Default.DirectionsRun
+//         else -> Icons.Default.FitnessCenter
+//     }
+// } 

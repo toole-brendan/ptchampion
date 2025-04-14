@@ -4,7 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -28,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,6 +69,11 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import com.example.ptchampion.ui.theme.PtAccent
 import com.example.ptchampion.ui.theme.PtBackground
 import com.example.ptchampion.ui.theme.PtPrimaryText
+import com.example.ptchampion.ui.screens.workoutdetail.WorkoutDetailScreen
+import com.example.ptchampion.ui.screens.running.RunningTrackingScreen
+import com.example.ptchampion.ui.screens.settings.SettingsScreen
+import com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementScreen
+import com.example.ptchampion.ui.screens.onboarding.OnboardingScreen
 
 // Define items for the bottom navigation bar
 // data class BottomNavItem(val screen: Screen, val label: String, val icon: ImageVector)
@@ -103,54 +117,74 @@ fun PTChampionApp() {
         )
 
         Scaffold(
-            // Add TopAppBar with logo emblem
             topBar = {
                 if (isAuthenticatedScreen) {
                     TopAppBar(
-                        title = { Text("PT Champion") },
+                        title = { /* No Title Text Needed Per Guide */ },
                         navigationIcon = {
-                            // Logo emblem in the top corner
+                            // Logo emblem in the top corner, styled
                             Image(
-                                painter = painterResource(id = R.drawable.pt_champion_logo),
+                                painter = painterResource(id = R.drawable.pt_champion_logo), // Use available logo resource
                                 contentDescription = "PT Champion Logo",
-                                modifier = Modifier.size(32.dp) // Small emblem size
+                                modifier = Modifier
+                                    .padding(start = 16.dp) // Add padding to position it
+                                    .size(32.dp) // Guide says 32-48px
                             )
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.background, // Use theme background color
-                            titleContentColor = MaterialTheme.colorScheme.onBackground, // Use theme text color
+                            containerColor = MaterialTheme.colorScheme.background, // Tactical Cream
+                            navigationIconContentColor = PtAccent, // Brass Gold for logo emblem
+                            // No title, so titleContentColor is not directly used
                         )
                     )
                 }
             },
             bottomBar = {
                 if (isAuthenticatedScreen) {
-                    NavigationBar(
-                        containerColor = PtPrimaryText // Deep Ops Green as nav background
+                    // Custom implementation for better alignment control
+                    Surface(
+                        color = PtPrimaryText, // Deep Ops Green as nav background
+                        modifier = Modifier.height(60.dp)
                     ) {
-                        bottomNavItems.forEach { item ->
-                            val isSelected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true
-                            NavigationBarItem(
-                                icon = { Icon(item.icon, contentDescription = item.label) },
-                                label = { Text(item.label, style = MaterialTheme.typography.labelSmall) },
-                                selected = isSelected,
-                                onClick = {
-                                    navController.navigate(item.screen.route) {
-                                        popUpTo(navController.graph.findStartDestination().id) {
-                                            saveState = true
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
+                        ) {
+                            bottomNavItems.forEach { item ->
+                                val isSelected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true
+                                
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .padding(vertical = 4.dp)
+                                        .clickable {
+                                            navController.navigate(item.screen.route) {
+                                                popUpTo(navController.graph.findStartDestination().id) {
+                                                    saveState = true
+                                                }
+                                                launchSingleTop = true
+                                                restoreState = true
+                                            }
                                         }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
-                                },
-                                colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = PtBackground, // Tactical Cream for selected text
-                                    selectedTextColor = PtBackground, // Tactical Cream for selected text
-                                    unselectedIconColor = PtAccent,   // Brass Gold for unselected 
-                                    unselectedTextColor = PtAccent,   // Brass Gold for unselected
-                                    indicatorColor = PtPrimaryText    // Indicator matches background
-                                )
-                            )
+                                ) {
+                                    Icon(
+                                        imageVector = item.icon,
+                                        contentDescription = item.label,
+                                        tint = if (isSelected) PtBackground else PtAccent,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    
+                                    Text(
+                                        text = item.label.uppercase(),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = if (isSelected) PtBackground else PtAccent
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -159,7 +193,7 @@ fun PTChampionApp() {
             NavHost(
                 navController = navController,
                 startDestination = Screen.Splash.route,
-                modifier = Modifier.padding(innerPadding)
+                modifier = Modifier.padding(innerPadding).fillMaxSize() // Ensure NavHost fills size
             ) {
                 composable(Screen.Splash.route) { SplashScreen(navController = navController) }
                 composable(Screen.Home.route) { HomeScreen() }
@@ -170,21 +204,17 @@ fun PTChampionApp() {
                         }
                     )
                 }
-                composable(Screen.History.route) { HistoryScreen() }
-                composable(
-                    route = Screen.ExerciseDetail.route,
-                    arguments = listOf(navArgument("exerciseId") { type = NavType.StringType })
-                ) {
-                    ExerciseDetailScreen(
-                        exerciseId = it.arguments?.getString("exerciseId")
-                    )
+                composable(Screen.History.route) {
+                    HistoryScreen()
                 }
-                composable(Screen.Leaderboard.route) { LocalLeaderboardScreen() }
+                composable(Screen.Leaderboard.route) {
+                    LocalLeaderboardScreen()
+                }
                 composable(Screen.Profile.route) {
                     ProfileScreen(
                         navigateToLogin = {
                             navController.navigate(Screen.Login.route) {
-                                popUpTo(Screen.Login.route) { inclusive = true }
+                                popUpTo(navController.graph.id) { inclusive = true }
                                 launchSingleTop = true
                             }
                         }
@@ -194,14 +224,61 @@ fun PTChampionApp() {
                 composable(Screen.SignUp.route) { SignUpScreen(navController = navController) }
                 composable(
                     route = Screen.Camera.route,
-                    arguments = listOf(
-                        navArgument("exerciseId") { type = NavType.IntType },
-                        navArgument("exerciseType") { type = NavType.StringType }
-                    )
-                ) {
+                    arguments = Screen.Camera.arguments
+                ) { backStackEntry ->
                     CameraScreen(
-                        exerciseId = it.arguments?.getInt("exerciseId") ?: -1,
-                        exerciseType = it.arguments?.getString("exerciseType")
+                        exerciseId = backStackEntry.arguments?.getInt("exerciseId") ?: -1,
+                        exerciseType = backStackEntry.arguments?.getString("exerciseType"),
+                        onWorkoutComplete = {
+                            navController.popBackStack()
+                        }
+                    )
+                }
+                composable(
+                    route = Screen.WorkoutDetail.route,
+                    arguments = Screen.WorkoutDetail.arguments
+                ) { backStackEntry ->
+                    val workoutId = backStackEntry.arguments?.getString("workoutId")
+                    if (workoutId != null) {
+                        WorkoutDetailScreen(
+                            workoutId = workoutId,
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    } else {
+                        navController.popBackStack()
+                    }
+                }
+                composable(Screen.RunningTracking.route) {
+                    RunningTrackingScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.Settings.route) {
+                    SettingsScreen(
+                        onNavigateToBluetooth = {
+                            navController.navigate(Screen.BluetoothDeviceManagement.route)
+                        },
+                        onLogout = {
+                            navController.navigate(Screen.Login.route) {
+                                popUpTo(navController.graph.id) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                }
+                composable(Screen.BluetoothDeviceManagement.route) {
+                    BluetoothDeviceManagementScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Screen.Onboarding.route) {
+                    OnboardingScreen(
+                        onCompleteOnboarding = {
+                            navController.navigate(Screen.Home.route) {
+                                popUpTo(Screen.Onboarding.route) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        }
                     )
                 }
             }
@@ -209,13 +286,13 @@ fun PTChampionApp() {
     }
 }
 
-// Remove old Greeting preview
+// Remove old Greeting preview or update it if needed for component testing
 /*
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun DefaultPreview() {
     PTChampionTheme {
-        Greeting("Android")
+        PTChampionApp()
     }
 }
 */ 

@@ -188,4 +188,7 @@ dependencies {
 
     // Location Services
     implementation("com.google.android.gms:play-services-location:21.0.1") // Use latest stable version
+
+    // Accompanist Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.31.5-beta") // Use latest stable/suitable version
 }

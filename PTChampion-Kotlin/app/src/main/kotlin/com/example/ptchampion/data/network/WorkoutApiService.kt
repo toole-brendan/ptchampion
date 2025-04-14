@@ -12,6 +12,7 @@ import com.example.ptchampion.domain.model.PaginatedWorkoutResponse
 import com.example.ptchampion.domain.model.UpdateLocationRequest
 import com.example.ptchampion.domain.model.LocalLeaderboardEntry
 import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface WorkoutApiService {
     @POST("api/v1/workouts") // Matches the backend route
@@ -36,4 +37,9 @@ interface WorkoutApiService {
         @Query("longitude") longitude: Double,
         @Query("radius_meters") radiusMeters: Double? // Optional
     ): Response<List<LocalLeaderboardEntry>> // Expecting a list of entries
+
+    @GET("/api/v1/workouts/{workoutId}")
+    suspend fun getWorkoutById(
+        @Path("workoutId") workoutId: String
+    ): Response<WorkoutResponse> // Assuming the backend returns a single WorkoutResponse object
 } 

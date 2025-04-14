@@ -4,10 +4,14 @@ import com.example.ptchampion.data.repository.AuthRepositoryImpl;
 import com.example.ptchampion.data.repository.LeaderboardRepositoryImpl;
 import com.example.ptchampion.data.repository.UserRepositoryImpl;
 import com.example.ptchampion.data.repository.WorkoutRepositoryImpl;
+import com.example.ptchampion.data.repository.UserProfileRepositoryImpl;
+import com.example.ptchampion.data.repository.SettingsRepositoryImpl;
 import com.example.ptchampion.domain.repository.AuthRepository;
 import com.example.ptchampion.domain.repository.LeaderboardRepository;
 import com.example.ptchampion.domain.repository.UserRepository;
 import com.example.ptchampion.domain.repository.WorkoutRepository;
+import com.example.ptchampion.domain.repository.UserProfileRepository;
+import com.example.ptchampion.domain.repository.SettingsRepository;
 import dagger.Binds;
 import dagger.Module;
 import dagger.hilt.InstallIn;
@@ -15,7 +19,7 @@ import dagger.hilt.components.SingletonComponent;
 import javax.inject.Singleton;
 
 @dagger.Module
-@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u00006\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b\'\u0018\u00002\u00020\u0001B\u0005\u00a2\u0006\u0002\u0010\u0002J\u0010\u0010\u0003\u001a\u00020\u00042\u0006\u0010\u0005\u001a\u00020\u0006H\'J\u0010\u0010\u0007\u001a\u00020\b2\u0006\u0010\u0005\u001a\u00020\tH\'J\u0010\u0010\n\u001a\u00020\u000b2\u0006\u0010\u0005\u001a\u00020\fH\'J\u0010\u0010\r\u001a\u00020\u000e2\u0006\u0010\u0005\u001a\u00020\u000fH\'\u00a8\u0006\u0010"}, d2 = {"Lcom/example/ptchampion/di/RepositoryModule;", "", "()V", "bindAuthRepository", "Lcom/example/ptchampion/domain/repository/AuthRepository;", "impl", "Lcom/example/ptchampion/data/repository/AuthRepositoryImpl;", "bindLeaderboardRepository", "Lcom/example/ptchampion/domain/repository/LeaderboardRepository;", "Lcom/example/ptchampion/data/repository/LeaderboardRepositoryImpl;", "bindUserRepository", "Lcom/example/ptchampion/domain/repository/UserRepository;", "Lcom/example/ptchampion/data/repository/UserRepositoryImpl;", "bindWorkoutRepository", "Lcom/example/ptchampion/domain/repository/WorkoutRepository;", "Lcom/example/ptchampion/data/repository/WorkoutRepositoryImpl;", "app_debug"})
+@kotlin.Metadata(mv = {1, 9, 0}, k = 1, xi = 48, d1 = {"\u0000J\n\u0002\u0018\u0002\n\u0002\u0010\u0000\n\u0002\b\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\n\u0002\u0018\u0002\n\u0002\u0018\u0002\n\u0000\b\'\u0018\u00002\u00020\u0001B\u0005\u00a2\u0006\u0002\u0010\u0002J\u0010\u0010\u0003\u001a\u00020\u00042\u0006\u0010\u0005\u001a\u00020\u0006H\'J\u0010\u0010\u0007\u001a\u00020\b2\u0006\u0010\u0005\u001a\u00020\tH\'J\u0010\u0010\n\u001a\u00020\u000b2\u0006\u0010\u0005\u001a\u00020\fH\'J\u0010\u0010\r\u001a\u00020\u000e2\u0006\u0010\u0005\u001a\u00020\u000fH\'J\u0010\u0010\u0010\u001a\u00020\u00112\u0006\u0010\u0005\u001a\u00020\u0012H\'J\u0010\u0010\u0013\u001a\u00020\u00142\u0006\u0010\u0005\u001a\u00020\u0015H\'\u00a8\u0006\u0016"}, d2 = {"Lcom/example/ptchampion/di/RepositoryModule;", "", "()V", "bindAuthRepository", "Lcom/example/ptchampion/domain/repository/AuthRepository;", "impl", "Lcom/example/ptchampion/data/repository/AuthRepositoryImpl;", "bindLeaderboardRepository", "Lcom/example/ptchampion/domain/repository/LeaderboardRepository;", "Lcom/example/ptchampion/data/repository/LeaderboardRepositoryImpl;", "bindSettingsRepository", "Lcom/example/ptchampion/domain/repository/SettingsRepository;", "Lcom/example/ptchampion/data/repository/SettingsRepositoryImpl;", "bindUserProfileRepository", "Lcom/example/ptchampion/domain/repository/UserProfileRepository;", "Lcom/example/ptchampion/data/repository/UserProfileRepositoryImpl;", "bindUserRepository", "Lcom/example/ptchampion/domain/repository/UserRepository;", "Lcom/example/ptchampion/data/repository/UserRepositoryImpl;", "bindWorkoutRepository", "Lcom/example/ptchampion/domain/repository/WorkoutRepository;", "Lcom/example/ptchampion/data/repository/WorkoutRepositoryImpl;", "app_debug"})
 @dagger.hilt.InstallIn(value = {dagger.hilt.components.SingletonComponent.class})
 public abstract class RepositoryModule {
     
@@ -46,4 +50,16 @@ public abstract class RepositoryModule {
     @org.jetbrains.annotations.NotNull
     public abstract com.example.ptchampion.domain.repository.WorkoutRepository bindWorkoutRepository(@org.jetbrains.annotations.NotNull
     com.example.ptchampion.data.repository.WorkoutRepositoryImpl impl);
+    
+    @dagger.Binds
+    @javax.inject.Singleton
+    @org.jetbrains.annotations.NotNull
+    public abstract com.example.ptchampion.domain.repository.UserProfileRepository bindUserProfileRepository(@org.jetbrains.annotations.NotNull
+    com.example.ptchampion.data.repository.UserProfileRepositoryImpl impl);
+    
+    @dagger.Binds
+    @javax.inject.Singleton
+    @org.jetbrains.annotations.NotNull
+    public abstract com.example.ptchampion.domain.repository.SettingsRepository bindSettingsRepository(@org.jetbrains.annotations.NotNull
+    com.example.ptchampion.data.repository.SettingsRepositoryImpl impl);
 }

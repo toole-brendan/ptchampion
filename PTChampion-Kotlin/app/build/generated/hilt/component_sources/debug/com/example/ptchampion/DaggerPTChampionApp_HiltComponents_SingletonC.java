@@ -4,11 +4,41 @@ package com.example.ptchampion;
 import android.app.Activity;
 import android.app.Service;
 import android.view.View;
+import androidx.datastore.core.DataStore;
+import androidx.datastore.preferences.core.Preferences;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.SavedStateHandle;
 import androidx.lifecycle.ViewModel;
+import com.example.ptchampion.data.network.AuthInterceptor;
+import com.example.ptchampion.data.network.WorkoutApiService;
+import com.example.ptchampion.data.repository.AuthRepositoryImpl;
+import com.example.ptchampion.data.repository.SettingsRepositoryImpl;
+import com.example.ptchampion.data.repository.UserPreferencesRepository;
+import com.example.ptchampion.data.repository.WorkoutRepositoryImpl;
+import com.example.ptchampion.data.service.LocationServiceImpl;
+import com.example.ptchampion.di.AppModule;
 import com.example.ptchampion.di.DataStoreModule;
+import com.example.ptchampion.di.DataStoreModule_ProvidePreferencesDataStoreFactory;
+import com.example.ptchampion.di.LocationModule_Companion_ProvideFusedLocationProviderClientFactory;
 import com.example.ptchampion.di.NetworkModule;
+import com.example.ptchampion.di.NetworkModule_ProvideAuthApiFactory;
+import com.example.ptchampion.di.NetworkModule_ProvideAuthInterceptorFactory;
+import com.example.ptchampion.di.NetworkModule_ProvideJsonFactory;
+import com.example.ptchampion.di.NetworkModule_ProvideLoggingInterceptorFactory;
+import com.example.ptchampion.di.NetworkModule_ProvideOkHttpClientFactory;
+import com.example.ptchampion.di.NetworkModule_ProvideRetrofitFactory;
+import com.example.ptchampion.di.NetworkModule_ProvideWorkoutApiServiceFactory;
+import com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementViewModel;
+import com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.example.ptchampion.ui.screens.onboarding.OnboardingViewModel;
+import com.example.ptchampion.ui.screens.onboarding.OnboardingViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.example.ptchampion.ui.screens.running.RunningTrackingViewModel;
+import com.example.ptchampion.ui.screens.running.RunningTrackingViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.example.ptchampion.ui.screens.settings.SettingsViewModel;
+import com.example.ptchampion.ui.screens.settings.SettingsViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.example.ptchampion.ui.screens.workoutdetail.WorkoutDetailViewModel;
+import com.example.ptchampion.ui.screens.workoutdetail.WorkoutDetailViewModel_HiltModules_KeyModule_ProvideFactory;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import dagger.hilt.android.ActivityRetainedLifecycle;
@@ -25,12 +55,19 @@ import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories;
 import dagger.hilt.android.internal.lifecycle.DefaultViewModelFactories_InternalFactoryFactory_Factory;
 import dagger.hilt.android.internal.managers.ActivityRetainedComponentManager_LifecycleModule_ProvideActivityRetainedLifecycleFactory;
 import dagger.hilt.android.internal.modules.ApplicationContextModule;
+import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideApplicationFactory;
+import dagger.hilt.android.internal.modules.ApplicationContextModule_ProvideContextFactory;
 import dagger.internal.DaggerGenerated;
 import dagger.internal.DoubleCheck;
 import dagger.internal.Preconditions;
 import java.util.Map;
 import java.util.Set;
 import javax.inject.Provider;
+import kotlinx.serialization.json.Json;
+import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
+import org.openapitools.client.apis.AuthApi;
+import retrofit2.Retrofit;
 
 @DaggerGenerated
 @SuppressWarnings({
@@ -47,11 +84,9 @@ public final class DaggerPTChampionApp_HiltComponents_SingletonC {
     return new Builder();
   }
 
-  public static PTChampionApp_HiltComponents.SingletonC create() {
-    return new Builder().build();
-  }
-
   public static final class Builder {
+    private ApplicationContextModule applicationContextModule;
+
     private Builder() {
     }
 
@@ -59,8 +94,13 @@ public final class DaggerPTChampionApp_HiltComponents_SingletonC {
      * @deprecated This module is declared, but an instance is not used in the component. This method is a no-op. For more, see https://dagger.dev/unused-modules.
      */
     @Deprecated
+    public Builder appModule(AppModule appModule) {
+      Preconditions.checkNotNull(appModule);
+      return this;
+    }
+
     public Builder applicationContextModule(ApplicationContextModule applicationContextModule) {
-      Preconditions.checkNotNull(applicationContextModule);
+      this.applicationContextModule = Preconditions.checkNotNull(applicationContextModule);
       return this;
     }
 
@@ -93,7 +133,8 @@ public final class DaggerPTChampionApp_HiltComponents_SingletonC {
     }
 
     public PTChampionApp_HiltComponents.SingletonC build() {
-      return new SingletonCImpl();
+      Preconditions.checkBuilderRequirement(applicationContextModule, ApplicationContextModule.class);
+      return new SingletonCImpl(applicationContextModule);
     }
   }
 
@@ -373,12 +414,12 @@ public final class DaggerPTChampionApp_HiltComponents_SingletonC {
 
     @Override
     public DefaultViewModelFactories.InternalFactoryFactory getHiltInternalFactoryFactory() {
-      return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(ImmutableSet.<String>of(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
+      return DefaultViewModelFactories_InternalFactoryFactory_Factory.newInstance(getViewModelKeys(), new ViewModelCBuilder(singletonCImpl, activityRetainedCImpl));
     }
 
     @Override
     public Set<String> getViewModelKeys() {
-      return ImmutableSet.<String>of();
+      return ImmutableSet.<String>of(BluetoothDeviceManagementViewModel_HiltModules_KeyModule_ProvideFactory.provide(), OnboardingViewModel_HiltModules_KeyModule_ProvideFactory.provide(), RunningTrackingViewModel_HiltModules_KeyModule_ProvideFactory.provide(), SettingsViewModel_HiltModules_KeyModule_ProvideFactory.provide(), WorkoutDetailViewModel_HiltModules_KeyModule_ProvideFactory.provide());
     }
 
     @Override
@@ -398,24 +439,88 @@ public final class DaggerPTChampionApp_HiltComponents_SingletonC {
   }
 
   private static final class ViewModelCImpl extends PTChampionApp_HiltComponents.ViewModelC {
+    private final SavedStateHandle savedStateHandle;
+
     private final SingletonCImpl singletonCImpl;
 
     private final ActivityRetainedCImpl activityRetainedCImpl;
 
     private final ViewModelCImpl viewModelCImpl = this;
 
+    private Provider<BluetoothDeviceManagementViewModel> bluetoothDeviceManagementViewModelProvider;
+
+    private Provider<OnboardingViewModel> onboardingViewModelProvider;
+
+    private Provider<RunningTrackingViewModel> runningTrackingViewModelProvider;
+
+    private Provider<SettingsViewModel> settingsViewModelProvider;
+
+    private Provider<WorkoutDetailViewModel> workoutDetailViewModelProvider;
+
     private ViewModelCImpl(SingletonCImpl singletonCImpl,
         ActivityRetainedCImpl activityRetainedCImpl, SavedStateHandle savedStateHandleParam,
         ViewModelLifecycle viewModelLifecycleParam) {
       this.singletonCImpl = singletonCImpl;
       this.activityRetainedCImpl = activityRetainedCImpl;
+      this.savedStateHandle = savedStateHandleParam;
+      initialize(savedStateHandleParam, viewModelLifecycleParam);
 
+    }
 
+    @SuppressWarnings("unchecked")
+    private void initialize(final SavedStateHandle savedStateHandleParam,
+        final ViewModelLifecycle viewModelLifecycleParam) {
+      this.bluetoothDeviceManagementViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 0);
+      this.onboardingViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 1);
+      this.runningTrackingViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 2);
+      this.settingsViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 3);
+      this.workoutDetailViewModelProvider = new SwitchingProvider<>(singletonCImpl, activityRetainedCImpl, viewModelCImpl, 4);
     }
 
     @Override
     public Map<String, Provider<ViewModel>> getHiltViewModelMap() {
-      return ImmutableMap.<String, Provider<ViewModel>>of();
+      return ImmutableMap.<String, Provider<ViewModel>>of("com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementViewModel", ((Provider) bluetoothDeviceManagementViewModelProvider), "com.example.ptchampion.ui.screens.onboarding.OnboardingViewModel", ((Provider) onboardingViewModelProvider), "com.example.ptchampion.ui.screens.running.RunningTrackingViewModel", ((Provider) runningTrackingViewModelProvider), "com.example.ptchampion.ui.screens.settings.SettingsViewModel", ((Provider) settingsViewModelProvider), "com.example.ptchampion.ui.screens.workoutdetail.WorkoutDetailViewModel", ((Provider) workoutDetailViewModelProvider));
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final ActivityRetainedCImpl activityRetainedCImpl;
+
+      private final ViewModelCImpl viewModelCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, ActivityRetainedCImpl activityRetainedCImpl,
+          ViewModelCImpl viewModelCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.activityRetainedCImpl = activityRetainedCImpl;
+        this.viewModelCImpl = viewModelCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementViewModel 
+          return (T) new BluetoothDeviceManagementViewModel(ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule));
+
+          case 1: // com.example.ptchampion.ui.screens.onboarding.OnboardingViewModel 
+          return (T) new OnboardingViewModel(singletonCImpl.settingsRepositoryImplProvider.get());
+
+          case 2: // com.example.ptchampion.ui.screens.running.RunningTrackingViewModel 
+          return (T) new RunningTrackingViewModel(ApplicationContextModule_ProvideApplicationFactory.provideApplication(singletonCImpl.applicationContextModule), singletonCImpl.locationServiceImplProvider.get(), singletonCImpl.workoutRepositoryImplProvider.get());
+
+          case 3: // com.example.ptchampion.ui.screens.settings.SettingsViewModel 
+          return (T) new SettingsViewModel(singletonCImpl.settingsRepositoryImplProvider.get(), singletonCImpl.authRepositoryImplProvider.get());
+
+          case 4: // com.example.ptchampion.ui.screens.workoutdetail.WorkoutDetailViewModel 
+          return (T) new WorkoutDetailViewModel(singletonCImpl.workoutRepositoryImplProvider.get(), viewModelCImpl.savedStateHandle);
+
+          default: throw new AssertionError(id);
+        }
+      }
     }
   }
 
@@ -488,11 +593,60 @@ public final class DaggerPTChampionApp_HiltComponents_SingletonC {
   }
 
   private static final class SingletonCImpl extends PTChampionApp_HiltComponents.SingletonC {
+    private final ApplicationContextModule applicationContextModule;
+
     private final SingletonCImpl singletonCImpl = this;
 
-    private SingletonCImpl() {
+    private Provider<SettingsRepositoryImpl> settingsRepositoryImplProvider;
 
+    private Provider<FusedLocationProviderClient> provideFusedLocationProviderClientProvider;
 
+    private Provider<LocationServiceImpl> locationServiceImplProvider;
+
+    private Provider<HttpLoggingInterceptor> provideLoggingInterceptorProvider;
+
+    private Provider<DataStore<Preferences>> providePreferencesDataStoreProvider;
+
+    private Provider<UserPreferencesRepository> userPreferencesRepositoryProvider;
+
+    private Provider<AuthInterceptor> provideAuthInterceptorProvider;
+
+    private Provider<OkHttpClient> provideOkHttpClientProvider;
+
+    private Provider<Json> provideJsonProvider;
+
+    private Provider<Retrofit> provideRetrofitProvider;
+
+    private Provider<WorkoutApiService> provideWorkoutApiServiceProvider;
+
+    private Provider<WorkoutRepositoryImpl> workoutRepositoryImplProvider;
+
+    private Provider<AuthApi> provideAuthApiProvider;
+
+    private Provider<AuthRepositoryImpl> authRepositoryImplProvider;
+
+    private SingletonCImpl(ApplicationContextModule applicationContextModuleParam) {
+      this.applicationContextModule = applicationContextModuleParam;
+      initialize(applicationContextModuleParam);
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initialize(final ApplicationContextModule applicationContextModuleParam) {
+      this.settingsRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<SettingsRepositoryImpl>(singletonCImpl, 0));
+      this.provideFusedLocationProviderClientProvider = DoubleCheck.provider(new SwitchingProvider<FusedLocationProviderClient>(singletonCImpl, 2));
+      this.locationServiceImplProvider = DoubleCheck.provider(new SwitchingProvider<LocationServiceImpl>(singletonCImpl, 1));
+      this.provideLoggingInterceptorProvider = DoubleCheck.provider(new SwitchingProvider<HttpLoggingInterceptor>(singletonCImpl, 7));
+      this.providePreferencesDataStoreProvider = DoubleCheck.provider(new SwitchingProvider<DataStore<Preferences>>(singletonCImpl, 10));
+      this.userPreferencesRepositoryProvider = DoubleCheck.provider(new SwitchingProvider<UserPreferencesRepository>(singletonCImpl, 9));
+      this.provideAuthInterceptorProvider = DoubleCheck.provider(new SwitchingProvider<AuthInterceptor>(singletonCImpl, 8));
+      this.provideOkHttpClientProvider = DoubleCheck.provider(new SwitchingProvider<OkHttpClient>(singletonCImpl, 6));
+      this.provideJsonProvider = DoubleCheck.provider(new SwitchingProvider<Json>(singletonCImpl, 11));
+      this.provideRetrofitProvider = DoubleCheck.provider(new SwitchingProvider<Retrofit>(singletonCImpl, 5));
+      this.provideWorkoutApiServiceProvider = DoubleCheck.provider(new SwitchingProvider<WorkoutApiService>(singletonCImpl, 4));
+      this.workoutRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<WorkoutRepositoryImpl>(singletonCImpl, 3));
+      this.provideAuthApiProvider = DoubleCheck.provider(new SwitchingProvider<AuthApi>(singletonCImpl, 13));
+      this.authRepositoryImplProvider = DoubleCheck.provider(new SwitchingProvider<AuthRepositoryImpl>(singletonCImpl, 12));
     }
 
     @Override
@@ -512,6 +666,67 @@ public final class DaggerPTChampionApp_HiltComponents_SingletonC {
     @Override
     public ServiceComponentBuilder serviceComponentBuilder() {
       return new ServiceCBuilder(singletonCImpl);
+    }
+
+    private static final class SwitchingProvider<T> implements Provider<T> {
+      private final SingletonCImpl singletonCImpl;
+
+      private final int id;
+
+      SwitchingProvider(SingletonCImpl singletonCImpl, int id) {
+        this.singletonCImpl = singletonCImpl;
+        this.id = id;
+      }
+
+      @SuppressWarnings("unchecked")
+      @Override
+      public T get() {
+        switch (id) {
+          case 0: // com.example.ptchampion.data.repository.SettingsRepositoryImpl 
+          return (T) new SettingsRepositoryImpl(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 1: // com.example.ptchampion.data.service.LocationServiceImpl 
+          return (T) new LocationServiceImpl(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule), singletonCImpl.provideFusedLocationProviderClientProvider.get());
+
+          case 2: // com.google.android.gms.location.FusedLocationProviderClient 
+          return (T) LocationModule_Companion_ProvideFusedLocationProviderClientFactory.provideFusedLocationProviderClient(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 3: // com.example.ptchampion.data.repository.WorkoutRepositoryImpl 
+          return (T) new WorkoutRepositoryImpl(singletonCImpl.provideWorkoutApiServiceProvider.get());
+
+          case 4: // com.example.ptchampion.data.network.WorkoutApiService 
+          return (T) NetworkModule_ProvideWorkoutApiServiceFactory.provideWorkoutApiService(singletonCImpl.provideRetrofitProvider.get());
+
+          case 5: // retrofit2.Retrofit 
+          return (T) NetworkModule_ProvideRetrofitFactory.provideRetrofit(singletonCImpl.provideOkHttpClientProvider.get(), singletonCImpl.provideJsonProvider.get());
+
+          case 6: // okhttp3.OkHttpClient 
+          return (T) NetworkModule_ProvideOkHttpClientFactory.provideOkHttpClient(singletonCImpl.provideLoggingInterceptorProvider.get(), singletonCImpl.provideAuthInterceptorProvider.get());
+
+          case 7: // okhttp3.logging.HttpLoggingInterceptor 
+          return (T) NetworkModule_ProvideLoggingInterceptorFactory.provideLoggingInterceptor();
+
+          case 8: // com.example.ptchampion.data.network.AuthInterceptor 
+          return (T) NetworkModule_ProvideAuthInterceptorFactory.provideAuthInterceptor(singletonCImpl.userPreferencesRepositoryProvider.get());
+
+          case 9: // com.example.ptchampion.data.repository.UserPreferencesRepository 
+          return (T) new UserPreferencesRepository(singletonCImpl.providePreferencesDataStoreProvider.get());
+
+          case 10: // androidx.datastore.core.DataStore<androidx.datastore.preferences.core.Preferences> 
+          return (T) DataStoreModule_ProvidePreferencesDataStoreFactory.providePreferencesDataStore(ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 11: // kotlinx.serialization.json.Json 
+          return (T) NetworkModule_ProvideJsonFactory.provideJson();
+
+          case 12: // com.example.ptchampion.data.repository.AuthRepositoryImpl 
+          return (T) new AuthRepositoryImpl(singletonCImpl.provideAuthApiProvider.get(), ApplicationContextModule_ProvideContextFactory.provideContext(singletonCImpl.applicationContextModule));
+
+          case 13: // org.openapitools.client.apis.AuthApi 
+          return (T) NetworkModule_ProvideAuthApiFactory.provideAuthApi(singletonCImpl.provideRetrofitProvider.get());
+
+          default: throw new AssertionError(id);
+        }
+      }
     }
   }
 }
