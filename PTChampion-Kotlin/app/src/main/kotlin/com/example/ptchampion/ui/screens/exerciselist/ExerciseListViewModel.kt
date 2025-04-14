@@ -60,7 +60,8 @@ class ExerciseListViewModel /* @Inject */ constructor(
              val dummyExercises = listOf(
                  ExerciseResponse(id = 1, name = "Push-ups", type = "PUSH_UPS", description = "Standard push-ups"),
                  ExerciseResponse(id = 2, name = "Pull-ups", type = "PULL_UPS", description = "Standard pull-ups"),
-                 ExerciseResponse(id = 3, name = "Sit-ups", type = "SIT_UPS", description = "Standard sit-ups")
+                 ExerciseResponse(id = 3, name = "Sit-ups", type = "SIT_UPS", description = "Standard sit-ups"),
+                 ExerciseResponse(id = 4, name = "Running", type = "RUN", description = "Cardio running exercise")
              )
              _state.update { it.copy(isLoading = false, exercises = dummyExercises) }
         }

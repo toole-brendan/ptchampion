@@ -5,6 +5,8 @@ import com.example.ptchampion.domain.model.WorkoutResponse
 import com.example.ptchampion.util.Resource
 import com.example.ptchampion.domain.model.ExerciseResponse
 import com.example.ptchampion.domain.model.PaginatedWorkoutResponse
+import com.example.ptchampion.domain.model.WorkoutSession
+import kotlinx.coroutines.flow.Flow
 
 interface WorkoutRepository {
     /**
@@ -30,4 +32,12 @@ interface WorkoutRepository {
      * @return A Resource containing the paginated workout history or an error.
      */
     suspend fun getWorkoutHistory(page: Int, pageSize: Int): Resource<PaginatedWorkoutResponse>
+
+    /**
+     * Fetches a specific workout by its ID.
+     *
+     * @param workoutId The ID of the workout to fetch.
+     * @return A Resource containing the workout details or an error.
+     */
+    suspend fun getWorkoutById(workoutId: String): Resource<WorkoutResponse>
 } 

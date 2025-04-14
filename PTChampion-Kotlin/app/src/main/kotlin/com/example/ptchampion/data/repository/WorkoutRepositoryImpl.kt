@@ -11,6 +11,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import com.example.ptchampion.domain.model.ExerciseResponse
 import com.example.ptchampion.domain.model.PaginatedWorkoutResponse
+import com.example.ptchampion.domain.model.WorkoutSession
 
 @Singleton
 class WorkoutRepositoryImpl @Inject constructor(
@@ -42,16 +43,16 @@ class WorkoutRepositoryImpl @Inject constructor(
             if (response.isSuccessful) {
                 response.body()?.let {
                     Resource.Success(it)
-                } ?: Resource.Error("API returned successful but empty body")
+                } ?: Resource.Error("API returned successful but empty body for exercises")
             } else {
-                Resource.Error("API Error: ${response.code()} ${response.message()}")
+                Resource.Error("API Error fetching exercises: ${response.code()} ${response.message()}")
             }
         } catch (e: HttpException) {
-            Resource.Error("HTTP Error: ${e.message()}")
+            Resource.Error("HTTP Error fetching exercises: ${e.message()}")
         } catch (e: IOException) {
-            Resource.Error("Network Error: Could not reach server. ${e.message}")
+            Resource.Error("Network Error fetching exercises: Could not reach server. ${e.message}")
         } catch (e: Exception) {
-            Resource.Error("An unexpected error occurred: ${e.message}")
+            Resource.Error("An unexpected error occurred fetching exercises: ${e.message}")
         }
     }
 
@@ -71,6 +72,25 @@ class WorkoutRepositoryImpl @Inject constructor(
             Resource.Error("Network Error fetching history: Could not reach server. ${e.message}")
         } catch (e: Exception) {
             Resource.Error("An unexpected error occurred fetching history: ${e.message}")
+        }
+    }
+
+    override suspend fun getWorkoutById(workoutId: String): Resource<WorkoutResponse> {
+        return try {
+            val response = workoutApiService.getWorkoutById(workoutId)
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Resource.Success(it)
+                } ?: Resource.Error("API returned successful but empty body for workout ID: $workoutId")
+            } else {
+                Resource.Error("API Error fetching workout $workoutId: ${response.code()} ${response.message()}")
+            }
+        } catch (e: HttpException) {
+            Resource.Error("HTTP Error fetching workout $workoutId: ${e.message()}")
+        } catch (e: IOException) {
+            Resource.Error("Network Error fetching workout $workoutId: Could not reach server. ${e.message}")
+        } catch (e: Exception) {
+            Resource.Error("An unexpected error occurred fetching workout $workoutId: ${e.message}")
         }
     }
 } 

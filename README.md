@@ -183,149 +183,125 @@ For Docker deployment instructions, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT
 5. **Complete Session**: Finish your workout to save your score and form rating
 6. **View Progress**: Check your history and leaderboard ranking
 
-# PT Champion Mobile App Styling Guide
+# PT CHAMPION STYLING GUIDE V2
+Refined for Clean Brass-on-Cream Aesthetic
 
-## 1. Overall Theme
+## 🎨 Color Palette
 
-*   **Theme:** Light Theme with Military Inspiration
-*   **Feel:** Modern, clean, focused, military-inspired with sand and gold colors
-*   **Background:** Light sand/off-white
-*   **Contrast:** Strong contrast between background and text elements
+| Usage | Color Name | HEX | Notes |
+|---------|-------|----------|----------|
+| Light Background | Tactical Cream | #F4F1E6 | Page and card backgrounds |
+| Primary Dark Background | Deep Ops Green | #1E241E | Nav bar, logos, header backgrounds |
+| Accent / Highlight | Brass Gold | #BFA24D | Chart strokes, icons, highlights |
+| Button/Text Highlight | Army Tan | #E0D4A6 | Optional light highlight |
+| Chart Fill | Olive Mist | #C9CCA6 | Light, translucent area fills |
+| Primary Text | Command Black | #1E1E1E | Headings, stat numbers |
+| Secondary Text | Tactical Gray | #4E5A48 | Labels, descriptions |
 
-## 2. Color Palette
+## 🛡️ Logo Usage
 
-| Purpose | Color | Hex Code |
-|---------|-------|----------|
-| Primary Background | Off-white / Sand | #F9F6EF |
-| Primary Text | Deep Green | #1E2D24 |
-| Secondary Text | Desaturated Olive | #4E5A48 |
-| Accent Color | Military Gold | #BFA24D |
-| Interactive Icons | Brass | #A6863D |
-| Card Background | Dark Green | #2F3B2F |
+Use just the emblem (without text) in top-center or top-left of authenticated pages.
 
-## 3. Logo Use
+Logo color: #BFA24D on dark backgrounds, #1E241E on light backgrounds.
 
-* **Full Logo (Emblem + Text):** Only on splash screens and login page
-* **Emblem Only:** Top corner of all authenticated app pages (e.g., dashboard, leaderboard, progress)
-* **Placement:** Subtle but consistent, preferably:
-  ```jsx
-  <LogoIcon size="sm" style={{ position: "absolute", top: 16, left: 16 }} />
-  ```
+Size should be small (32–48px height max) and not dominate the header.
 
-## 4. Typography
+```tsx
+<LogoIcon className="h-8 w-auto text-brass-gold" />
+```
 
-| Type | Font Style | Weight | Size | Color |
-|------|------------|--------|------|-------|
-| Headings | Bebas Neue or Orbitron | Bold | 24–32 px | #1E2D24 |
-| Subheading | Montserrat | Semi-bold | 18–20 px | #4E5A48 |
-| Body Text | Montserrat | Regular | 14–16 px | #1E2D24 |
-| Numbers / Stats | Roboto Mono | Medium | 20–28 px | #BFA24D |
+## Typography
 
-Use uppercase for labels and headers, and use mono fonts for stats to evoke military-grade precision.
+| Text Element | Font | Size | Weight | Color | Style |
+|-------------|------|------|--------|-------|-------|
+| Headings | Bebas Neue | 24–32px | Bold | #1E1E1E | UPPERCASE |
+| Subheadings | Montserrat | 18–20px | Semi-Bold | #4E5A48 | Uppercase |
+| Stats / Numbers | Roboto Mono | 20–28px | Medium | #1E1E1E or #BFA24D | Lined-up mono spacing |
+| Labels | Montserrat | 12–14px | Regular | #4E5A48 | Sentence case |
 
-## 5. Component Styles
+## 📊 Charts & Data
 
-*   **Cards:**
-    *   Background: `#2F3B2F`
-    *   Padding: 16px
-    *   Border radius: 12px
-    *   Text color: `#F9F6EF`
-    *   Example use:
-      ```jsx
-      <Card style={{ backgroundColor: '#2F3B2F', color: '#F9F6EF' }}>
-        <h4>Total Pull-Ups</h4>
-        <h1>325</h1>
-      </Card>
-      ```
+**Chart Colors:**
+- Line Stroke: #BFA24D
+- Fill Under Line: rgba(201, 204, 166, 0.2)
+- Gridlines: #E3E0D5
+- Axis Label Font: Montserrat, #4E5A48
 
-*   **Charts:**
-    *   Background: Transparent or `#F9F6EF`
-    *   Stroke: `#BFA24D`
-    *   Fill: rgba(191,162,77,0.15)
-    *   Axis Font: Montserrat, size 12, `#4E5A48`
+**Metric Cards:**
+- Background: #F4F1E6 (or slightly darker with #EDE9DB)
+- Border Radius: 12px
+- Shadow: Soft subtle shadow (1px)
 
-*   **Bottom Navigation Bar:**
-    *   Background: `#1E2D24`
-    *   Icon Color: Inactive `#BFA24D`, Active `#F9F6EF`
-    *   Font: Montserrat, uppercase, size 10–12px
-    *   Example use:
-      ```jsx
-      <BottomTabBar style={{ backgroundColor: '#1E2D24' }}>
-        <Tab icon={<HomeIcon />} label="HOME" />
-        <Tab icon={<ChartIcon />} label="PROGRESS" active />
-      </BottomTabBar>
-      ```
+**Typography:**
+- Label: Montserrat uppercase, small
+- Number: Roboto Mono, bold
+- Layout: Even 3-column layout on mobile
 
-*   **Buttons (Primary - e.g., "LOG IN"):**
-    *   Background: `#BFA24D`
-    *   Text: `#1E2D24`, Uppercase
-    *   Font: Montserrat Bold
-    *   Shape: Rounded corners (8px radius)
-    *   Padding: 10px 20px
+## 🧩 Components
 
-*   **Buttons (Secondary/Toggle - e.g., "Global", "Local"):**
-    *   Background (Selected): `Accent Color` (`#BFA24D`)
-    *   Background (Unselected): `Card Background` (`#2F3B2F`)
-    *   Text (Selected): `Primary Background` (`#F9F6EF`)
-    *   Text (Unselected): `Primary Background` (`#F9F6EF`)
-    *   Shape: Rounded corners (medium radius)
+### ✅ Buttons
+- Background: #BFA24D
+- Text: #1E241E
+- Font: Montserrat Bold, 14px, UPPERCASE
+- Border-radius: 8px
+- Hover: Darken brass or underline text
 
-*   **Text Buttons / Links (e.g., "Forgot password?", "Sign up"):**
-    *   Background: None
-    *   Text Color: `Interactive Icons` (`#A6863D`)
-    *   Underline: None visible, but maybe on hover/press
+### ✅ Bottom Navigation
+| Element | Style |
+|---------|-------|
+| Background | #1E241E |
+| Active Icon Color | #BFA24D |
+| Inactive Icon Color | #A3A390 |
+| Label Font | Montserrat UPPERCASE, 10px |
 
-*   **Forms:**
-    *   Input Background: `#F9F6EF`
-    *   Border: 1px solid `#4E5A48`
-    *   Focus: Outline `#BFA24D`
+```tsx
+<nav className="bg-deep-ops text-brass-gold">
+  <Tab icon={<ProgressIcon />} label="PROGRESS" active />
+</nav>
+```
 
-*   **Modals:**
-    *   Overlay: Dark mode with 90% opacity `#1E2D24`
-    *   Main content: Light box with rounded corners (20px radius)
+### Cards / Panels
+| Style | Value |
+|-------|-------|
+| Background Color | #F4F1E6 |
+| Border Radius | 12px |
+| Shadow | Soft, muted |
+| Padding | 16px |
 
-## 6. Layout & Spacing
-
-*   **Page Padding:** 20px
-*   **Card Spacing:** 16px
-*   **Element Gap (vertical stack):** 12px
-*   **Corner Radius:** 12px for cards, 20px for modals
-
-## 7. MediaPipe Integration
-
-If you're using overlays during camera-based form analysis (e.g., push-up detection), match the overlay elements:
-
-*   **Line/Keypoint Color:** `#BFA24D`
-*   **Confidence indicator:** Use brightness levels (lighter = more confident)
-*   **Background fade:** Semi-transparent dark green (rgba(30,45,36,0.7))
-
-## 8. Sample Theming Setup (Tailwind CSS Example)
+## 🔧 Spacing & Layout
+- Global padding: 20px
+- Card gap: 12px
+- Bottom nav height: 60px
+- Logo margin-top: 16px
+- Border radius for large panels: 16px
 
 ```js
 theme: {
   extend: {
     colors: {
-      'pt-bg': '#F9F6EF',
-      'pt-primary': '#1E2D24',
-      'pt-accent': '#BFA24D',
-      'pt-muted': '#4E5A48',
-      'pt-card': '#2F3B2F',
+      'cream': '#F4F1E6',
+      'deep-ops': '#1E241E',
+      'brass-gold': '#BFA24D',
+      'olive-mist': '#C9CCA6',
+      'tactical-gray': '#4E5A48',
+      'command-black': '#1E1E1E',
     },
     fontFamily: {
-      display: ['Bebas Neue', 'sans-serif'],
+      heading: ['Bebas Neue', 'sans-serif'],
       body: ['Montserrat', 'sans-serif'],
       mono: ['Roboto Mono', 'monospace'],
     },
     borderRadius: {
       card: '12px',
-      modal: '20px',
+      panel: '16px',
     }
   }
 }
 ```
 
-## 9. Iconography
 
-*   **Style:** Solid, filled icons.
-*   **Color:** Match the active/inactive colors defined for the Navigation Bar.
-
+Logo Use
+Full Logo (Emblem + Text): Only on splash screens and login page
+Emblem Only: Top corner of all authenticated app pages (e.g., dashboard, leaderboard, progress)
+Placement: Subtle but consistent, preferably:
+<LogoIcon size="sm" style={{ position: "absolute", top: 16, left: 16 }} />
