@@ -73,6 +73,7 @@ import com.example.ptchampion.ui.screens.running.RunningTrackingScreen
 import com.example.ptchampion.ui.screens.settings.SettingsScreen
 import com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementScreen
 import com.example.ptchampion.ui.screens.onboarding.OnboardingScreen
+import com.example.ptchampion.ui.screens.editprofile.EditProfileScreen
 
 // Define items for the bottom navigation bar
 // data class BottomNavItem(val screen: Screen, val label: String, val icon: ImageVector)
@@ -216,11 +217,18 @@ fun PTChampionApp() {
                                 popUpTo(navController.graph.id) { inclusive = true }
                                 launchSingleTop = true
                             }
-                        }
+                        },
+                        navigateToEditProfile = { navController.navigate(Screen.EditProfile.route) },
+                        navigateToSettings = { navController.navigate(Screen.Settings.route) }
                     )
                 }
                 composable(Screen.Login.route) { LoginScreen(navController = navController) }
                 composable(Screen.SignUp.route) { SignUpScreen(navController = navController) }
+                composable(Screen.EditProfile.route) {
+                    EditProfileScreen(
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
                 composable(
                     route = Screen.Camera.route,
                     arguments = Screen.Camera.arguments
@@ -254,9 +262,11 @@ fun PTChampionApp() {
                 }
                 composable(Screen.Settings.route) {
                     SettingsScreen(
+                        onNavigateBack = { navController.popBackStack() },
                         onNavigateToBluetooth = {
                             navController.navigate(Screen.BluetoothDeviceManagement.route)
                         },
+                        onNavigateToAccount = { /* TODO: Navigate to account management screen if separate */ },
                         onLogout = {
                             navController.navigate(Screen.Login.route) {
                                 popUpTo(navController.graph.id) { inclusive = true }
