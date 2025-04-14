@@ -126,7 +126,7 @@ fun PTChampionApp() {
             bottomBar = {
                 if (isAuthenticatedScreen) {
                     NavigationBar(
-                        containerColor = PtPrimaryText
+                        containerColor = PtPrimaryText // Deep Ops Green as nav background
                     ) {
                         bottomNavItems.forEach { item ->
                             val isSelected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true
@@ -144,11 +144,11 @@ fun PTChampionApp() {
                                     }
                                 },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = PtBackground,
-                                    selectedTextColor = PtBackground,
-                                    unselectedIconColor = PtAccent,
-                                    unselectedTextColor = PtAccent,
-                                    indicatorColor = PtPrimaryText
+                                    selectedIconColor = PtBackground, // Tactical Cream for selected text
+                                    selectedTextColor = PtBackground, // Tactical Cream for selected text
+                                    unselectedIconColor = PtAccent,   // Brass Gold for unselected 
+                                    unselectedTextColor = PtAccent,   // Brass Gold for unselected
+                                    indicatorColor = PtPrimaryText    // Indicator matches background
                                 )
                             )
                         }

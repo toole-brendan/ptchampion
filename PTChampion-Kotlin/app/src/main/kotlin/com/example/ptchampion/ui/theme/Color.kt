@@ -2,51 +2,56 @@ package com.example.ptchampion.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// PT Champion Styling Guide Colors (Light Theme)
-val PtBackground = Color(0xFFF9F6EF)      // Primary Background (Off-white / Sand)
-val PtPrimaryText = Color(0xFF1E2D24)     // Primary Text (Deep Green)
-val PtSecondaryText = Color(0xFF4E5A48)   // Secondary Text (Desaturated Olive)
-val PtAccent = Color(0xFFBFA24D)          // Accent Color (Military Gold)
-val PtInteractive = Color(0xFFA6863D)     // Interactive Icons / Links (Brass)
-val PtCardBackground = Color(0xFF2F3B2F)  // Card Background (Dark Green)
-val PtCardText = Color(0xFFF9F6EF)        // Text on Dark Cards (Off-white / Sand)
+// PT Champion Styling Guide V2 Colors (Light Theme)
+val PtBackground = Color(0xFFF4F1E6)      // Tactical Cream - Light Background
+val PtPrimaryText = Color(0xFF1E241E)     // Deep Ops Green - Primary Dark Background
+val PtSecondaryText = Color(0xFF4E5A48)   // Tactical Gray - Secondary Text
+val PtAccent = Color(0xFFBFA24D)          // Brass Gold - Accent/Highlight
+val PtArmyTan = Color(0xFFE0D4A6)         // Army Tan - Button/Text Highlight
+val PtOliveMist = Color(0xFFC9CCA6)       // Olive Mist - Chart Fill
+val PtCommandBlack = Color(0xFF1E1E1E)    // Command Black - Primary Text
 
 // Material 3 Color Mapping for Light Theme
 val primaryLight = PtAccent
-val onPrimaryLight = PtPrimaryText
+val onPrimaryLight = PtCommandBlack
 val primaryContainerLight = PtAccent
-val onPrimaryContainerLight = PtPrimaryText
+val onPrimaryContainerLight = PtCommandBlack
 
 val secondaryLight = PtSecondaryText
 val onSecondaryLight = PtBackground
-val secondaryContainerLight = PtCardBackground // Used for elements like unselected toggles as per guide? Needs review in components.
-val onSecondaryContainerLight = PtCardText // Text on secondary container elements
+val secondaryContainerLight = PtPrimaryText 
+val onSecondaryContainerLight = PtBackground
 
-val tertiaryLight = PtInteractive
-val onTertiaryLight = PtPrimaryText
-val tertiaryContainerLight = PtInteractive
-val onTertiaryContainerLight = PtPrimaryText
+val tertiaryLight = PtArmyTan
+val onTertiaryLight = PtCommandBlack
+val tertiaryContainerLight = PtArmyTan
+val onTertiaryContainerLight = PtCommandBlack
 
 val backgroundLight = PtBackground
-val onBackgroundLight = PtPrimaryText
+val onBackgroundLight = PtCommandBlack
 
-val surfaceLight = PtBackground // Default surfaces use the main background
-val onSurfaceLight = PtPrimaryText // Default text on surfaces
+val surfaceLight = PtBackground 
+val onSurfaceLight = PtCommandBlack
 
-// Specific surface for dark cards as defined in the guide
-val surfaceVariantLight = PtCardBackground
-val onSurfaceVariantLight = PtCardText // Text specifically on the dark card background
+// Surface variant for cards
+val surfaceVariantLight = PtBackground
+val onSurfaceVariantLight = PtSecondaryText
 
 val errorLight = Color(0xFFB00020)
 val onErrorLight = Color.White
 val errorContainerLight = Color(0xFFFCD8DB)
 val onErrorContainerLight = Color(0xFFB00020)
 
-val outlineLight = PtSecondaryText // Borders, dividers, input borders
-val outlineVariantLight = PtSecondaryText // Subtle outlines
+val outlineLight = PtSecondaryText
+val outlineVariantLight = PtSecondaryText
 
-// Scrim for modals (using primary text color with alpha)
+// Scrim for modals
 val scrimLight = PtPrimaryText.copy(alpha = 0.9f)
+
+// ---- Dark Theme Colors (not used in current design but kept for reference) ----
+
+// Non-material specific colors (inactive icon etc)
+val InactiveIconColor = Color(0xFFA3A390)  // For bottom nav inactive icons
 
 // PT Champion Dark Theme Palette (Approximated from images)
 val AppBackground = Color(0xFF1A1A1A)         // Primary Background
