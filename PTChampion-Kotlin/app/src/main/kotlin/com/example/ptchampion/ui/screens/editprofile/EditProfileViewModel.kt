@@ -2,24 +2,26 @@ package com.example.ptchampion.ui.screens.editprofile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import com.example.ptchampion.domain.repository.UserRepository
+import com.example.ptchampion.domain.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay // For simulating network calls
+import javax.inject.Inject
 
 data class EditProfileUiState(
-    val isLoading: Boolean = false,
-    val name: String = "",
-    val email: String = "",
-    val avatarUrl: String? = null, // Placeholder for avatar
+    val isLoading: Boolean = true, // Start loading
+    val name: String = "", // Corresponds to displayName
+    val email: String = "", // Keep for display, but might not be editable
+    val profilePictureUrl: String? = null,
+    val location: String? = null,
     val error: String? = null,
     val isSaveSuccess: Boolean = false
 )
 
-class EditProfileViewModel(
-    // TODO: Inject UserRepository, UserPreferencesRepository when DI is set up
+@HiltViewModel
+class EditProfileViewModel @Inject constructor(
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(EditProfileUiState())
@@ -31,17 +33,23 @@ class EditProfileViewModel(
 
     private fun loadUserProfile() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            // Simulate loading data
-            delay(500)
-            // TODO: Replace with actual data fetching from repository
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    name = "Current User", // Replace with actual data
-                    email = "current@example.com", // Replace with actual data
-                    avatarUrl = null // Replace with actual avatar URL if available
-                )
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            // Get the current user data once
+            val currentUser = userRepository.getCurrentUserFlow().first()
+            
+            if (currentUser != null) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        name = currentUser.displayName ?: currentUser.username, // Fallback to username
+                        email = currentUser.email ?: "", // Use email if available
+                        profilePictureUrl = currentUser.profilePictureUrl,
+                        // TODO: Load location/lat/lon if needed for editing
+                        location = null // Placeholder
+                    )
+                }
+            } else {
+                _uiState.update { it.copy(isLoading = false, error = "Failed to load user profile.") }
             }
         }
     }
@@ -50,44 +58,70 @@ class EditProfileViewModel(
         _uiState.update { it.copy(name = newName, error = null) }
     }
 
+    // Email likely isn't editable, remove if not needed
     fun onEmailChange(newEmail: String) {
         _uiState.update { it.copy(email = newEmail, error = null) }
     }
 
+    fun onProfilePictureUrlChange(newUrl: String?) {
+        _uiState.update { it.copy(profilePictureUrl = newUrl, error = null) }
+    }
+
+    fun onLocationChange(newLocation: String?) {
+         _uiState.update { it.copy(location = newLocation, error = null) }
+    }
+
+    // TODO: Implement avatar selection/upload logic
     fun onAvatarChange() {
-        // TODO: Implement avatar selection logic (e.g., open image picker)
-        // For now, maybe just cycle a placeholder or show a message
-        println("Avatar change requested")
+        // This should trigger image picker, upload, get URL, then call onProfilePictureUrlChange
+        println("Avatar change requested - requires implementation")
+        _uiState.update { it.copy(error = "Avatar change not implemented yet.") }
     }
 
     fun saveProfile() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, isSaveSuccess = false) }
+            
+            // Get current state for saving
+            val state = _uiState.value
+
+            // Basic validation
+            if (state.name.isBlank()) {
+                _uiState.update { it.copy(isLoading = false, error = "Name cannot be empty") }
+                return@launch
+            }
+
             try {
-                // Simulate network delay
-                delay(1000)
-                // TODO: Add validation logic here (e.g., check email format)
-                if (_uiState.value.name.isBlank() || _uiState.value.email.isBlank()) {
-                   throw IllegalArgumentException("Name and Email cannot be empty")
+                val result = userRepository.updateProfile(
+                    displayName = state.name,
+                    profilePictureUrl = state.profilePictureUrl, // Assume URL is already updated
+                    location = state.location
+                    // TODO: Add lat/lon if location is structured
+                )
+
+                when (result) {
+                    is Resource.Success -> {
+                        _uiState.update { it.copy(isLoading = false, isSaveSuccess = true) }
+                    }
+                    is Resource.Error -> {
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = result.message ?: "Failed to save profile",
+                                isSaveSuccess = false
+                            )
+                        }
+                    }
+                    else -> { // Handle Loading case if necessary, though should be brief
+                        _uiState.update { it.copy(isLoading = true) }
+                    }
                 }
 
-                // TODO: Call repository to save the updated profile data
-                // val success = userRepository.updateProfile(...)
-
-                // Simulate success
-                val success = true // Replace with actual API call result
-
-                if (success) {
-                    _uiState.update { it.copy(isLoading = false, isSaveSuccess = true) }
-                } else {
-                    throw Exception("Failed to save profile")
-                }
-
-            } catch (e: Exception) {
+            } catch (e: Exception) { // Catch any unexpected errors during the process
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "An unknown error occurred",
+                        error = e.message ?: "An unknown error occurred during save",
                         isSaveSuccess = false
                     )
                 }
@@ -95,7 +129,6 @@ class EditProfileViewModel(
         }
     }
 
-    // Call this after navigation to reset the success flag
     fun resetSaveSuccess() {
         _uiState.update { it.copy(isSaveSuccess = false) }
     }

@@ -73,8 +73,8 @@ func (h *Handler) PostAuthRegister(c echo.Context) error {
 
 	// Prepare user data for database insertion - ONLY fields defined in CreateUserParams
 	params := dbStore.CreateUserParams{
-		Username: req.Username,
-		Password: string(hashedPassword),
+		Username:     req.Username,
+		PasswordHash: string(hashedPassword),
 		DisplayName: sql.NullString{
 			String: DerefString(req.DisplayName), // Use helper from this package
 			Valid:  req.DisplayName != nil,
@@ -88,7 +88,7 @@ func (h *Handler) PostAuthRegister(c echo.Context) error {
 				return echo.NewHTTPError(http.StatusConflict, "Username already exists")
 			}
 		}
-		log.Printf("ERROR: Failed to create user: %v", err)
+		log.Printf("ERROR: Failed to create user: %v (detailed error: %+v)", err, err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to register user")
 	}
 
@@ -132,7 +132,9 @@ func (h *Handler) PostAuthLogin(c echo.Context) error {
 		}
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+	// Compare the provided password with the stored hash
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
+		log.Printf("WARN: Password comparison failed for user %s: %v", req.Username, err)
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid username or password")
 	}
 

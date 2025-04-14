@@ -3,13 +3,19 @@ package com.example.ptchampion.domain.model
 import java.time.Instant
 
 /**
- * Domain model representing a workout session
+ * Domain model representing a recorded workout session
  */
 data class WorkoutSession(
+    val id: Int,
+    val userId: Int,
     val exerciseId: Int,
+    val exerciseName: String,
     val repetitions: Int?,
     val durationSeconds: Int?,
-    val completedAt: Instant = Instant.now()
+    val formScore: Int?,
+    val grade: Int,
+    val createdAt: String, // Representing ISO 8601 String
+    val completedAt: String // Representing ISO 8601 String
 )
 
 /**
@@ -52,14 +58,15 @@ data class PaginatedWorkoutResponse(
     val totalPages: Int
 )
 
-/**
- * DTO model representing a single entry in the local leaderboard response.
- */
-@kotlinx.serialization.Serializable
-data class LocalLeaderboardEntry(
-    val userId: Int,
-    val username: String,
-    val displayName: String? = null, // Matches nullable field in API
-    val exerciseId: Int,
-    val score: Int
-) 
+// REMOVED LocalLeaderboardEntry from here
+// /**
+//  * DTO model representing a single entry in the local leaderboard response.
+//  */
+// @kotlinx.serialization.Serializable
+// data class LocalLeaderboardEntry(
+//     val userId: Int,
+//     val username: String,
+//     val displayName: String? = null, // Matches nullable field in API
+//     val exerciseId: Int,
+//     val score: Int
+// ) 

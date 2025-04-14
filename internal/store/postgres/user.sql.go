@@ -13,26 +13,26 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   username, 
-  password, 
+  password_hash, 
   display_name
 )
 VALUES ($1, $2, $3)
-RETURNING id, username, password, display_name, profile_picture_url, location, latitude, longitude, last_location, last_synced_at, created_at, updated_at
+RETURNING id, username, password_hash, display_name, profile_picture_url, location, latitude, longitude, last_location, last_synced_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
 	Username    string         `json:"username"`
-	Password    string         `json:"password"`
+	PasswordHash    string         `json:"password_hash"`
 	DisplayName sql.NullString `json:"display_name"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.Password, arg.DisplayName)
+	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.PasswordHash, arg.DisplayName)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
+		&i.PasswordHash,
 		&i.DisplayName,
 		&i.ProfilePictureUrl,
 		&i.Location,
@@ -47,7 +47,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, username, password, display_name, profile_picture_url, location, latitude, longitude, last_location, last_synced_at, created_at, updated_at FROM users
+SELECT id, username, password_hash, display_name, profile_picture_url, location, latitude, longitude, last_location, last_synced_at, created_at, updated_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -57,7 +57,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
+		&i.PasswordHash,
 		&i.DisplayName,
 		&i.ProfilePictureUrl,
 		&i.Location,
@@ -72,7 +72,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, password, display_name, profile_picture_url, location, latitude, longitude, last_location, last_synced_at, created_at, updated_at FROM users
+SELECT id, username, password_hash, display_name, profile_picture_url, location, latitude, longitude, last_location, last_synced_at, created_at, updated_at FROM users
 WHERE username = $1 LIMIT 1
 `
 
@@ -82,7 +82,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
+		&i.PasswordHash,
 		&i.DisplayName,
 		&i.ProfilePictureUrl,
 		&i.Location,
@@ -100,41 +100,50 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET 
   username = COALESCE($2, username),
-  display_name = COALESCE($3, display_name),
-  profile_picture_url = COALESCE($4, profile_picture_url),
-  location = COALESCE($5, location),
-  latitude = COALESCE($6, latitude),
-  longitude = COALESCE($7, longitude),
+  password_hash = COALESCE($3, password_hash),
+  display_name = COALESCE($4, display_name),
+  profile_picture_url = COALESCE($5, profile_picture_url),
+  location = COALESCE($6, location),
+  latitude = COALESCE($7, latitude),
+  longitude = COALESCE($8, longitude),
+  last_location = ST_SetSRID(ST_MakePoint($9, $10), 4326),
+  last_synced_at = $11,
   updated_at = now()
 WHERE id = $1
-RETURNING id, username, password, display_name, profile_picture_url, location, latitude, longitude, last_location, last_synced_at, created_at, updated_at
+RETURNING id, username, password_hash, display_name, profile_picture_url, location, latitude, longitude, last_location, last_synced_at, created_at, updated_at
 `
 
 type UpdateUserParams struct {
 	ID                int32          `json:"id"`
 	Username          string         `json:"username"`
+	PasswordHash      string         `json:"password_hash"`
 	DisplayName       sql.NullString `json:"display_name"`
 	ProfilePictureUrl sql.NullString `json:"profile_picture_url"`
 	Location          sql.NullString `json:"location"`
 	Latitude          sql.NullString `json:"latitude"`
 	Longitude         sql.NullString `json:"longitude"`
+	LastSyncedAt      sql.NullTime   `json:"last_synced_at"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
 	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.ID,
 		arg.Username,
+		arg.PasswordHash,
 		arg.DisplayName,
 		arg.ProfilePictureUrl,
 		arg.Location,
 		arg.Latitude,
 		arg.Longitude,
+		arg.Longitude,
+		arg.Latitude,
+		arg.LastSyncedAt,
 	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
-		&i.Password,
+		&i.PasswordHash,
 		&i.DisplayName,
 		&i.ProfilePictureUrl,
 		&i.Location,

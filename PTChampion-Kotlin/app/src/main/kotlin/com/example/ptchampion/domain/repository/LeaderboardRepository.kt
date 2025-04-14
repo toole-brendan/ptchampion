@@ -6,5 +6,13 @@ import com.example.ptchampion.util.Resource
 interface LeaderboardRepository {
     // Define exercise types - could be an enum or sealed class later
     // For now, just use strings matching the API enum values
-    suspend fun getLeaderboard(exerciseType: String, limit: Int = 20): Resource<List<LeaderboardEntry>>
+    suspend fun getGlobalLeaderboard(exerciseType: String, limit: Int = 20): Resource<List<LeaderboardEntry>>
+
+    suspend fun getLocalLeaderboard(
+        exerciseId: Int,
+        latitude: Double,
+        longitude: Double,
+        radiusMeters: Double? = null, // Use default from API spec later if needed
+        limit: Int = 20 // Added limit, though API doesn't explicitly mention it here
+    ): Resource<List<LeaderboardEntry>>
 } 

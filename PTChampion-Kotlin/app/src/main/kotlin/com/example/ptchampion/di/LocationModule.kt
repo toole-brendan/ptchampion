@@ -1,8 +1,8 @@
 package com.example.ptchampion.di
 
 import android.content.Context
-import com.example.ptchampion.util.LocationService
-import com.example.ptchampion.util.LocationServiceImpl
+import com.example.ptchampion.domain.service.LocationService
+import com.example.ptchampion.data.service.LocationServiceImpl
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.Binds

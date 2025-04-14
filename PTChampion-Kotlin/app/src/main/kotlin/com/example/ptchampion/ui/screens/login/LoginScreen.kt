@@ -21,234 +21,149 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-// import androidx.hilt.navigation.compose.hiltViewModel // Remove Hilt import
-import androidx.lifecycle.viewmodel.compose.viewModel // Add standard ViewModel import
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.ptchampion.R
 import com.example.ptchampion.ui.navigation.Screen
-import com.example.ptchampion.ui.theme.PtAccent
-import com.example.ptchampion.ui.theme.PtCommandBlack
-import com.example.ptchampion.ui.theme.PtSecondaryText
+import com.example.ptchampion.ui.theme.*
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LoginScreen(
     navController: NavController,
-    // viewModel: LoginViewModel = hiltViewModel() // Replace Hilt function
-    viewModel: LoginViewModel = viewModel() // Use standard ViewModel function
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
-    val state = viewModel.state
-    val focusManager = LocalFocusManager.current
-    var passwordVisible by remember { mutableStateOf(false) }
+    val uiState by viewModel.uiState.collectAsState()
 
+    // Handle navigation effects
     LaunchedEffect(key1 = true) {
-        viewModel.effect.collectLatest { effect ->
+        viewModel.effect.collect { effect ->
             when (effect) {
-                LoginEffect.NavigateToHome -> {
-                    // Navigate to Home and clear back stack
+                is LoginEffect.NavigateToHome -> {
+                    // Navigate to Home and clear back stack up to Login
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
+                        launchSingleTop = true
                     }
                 }
-                LoginEffect.NavigateToSignUp -> {
-                     navController.navigate(Screen.SignUp.route)
+                is LoginEffect.NavigateToSignUp -> {
+                    navController.navigate(Screen.SignUp.route)
                 }
             }
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background) // Use theme background
+    // Alternative way to handle navigation on success (if effect isn't desired for this)
+    /*
+    LaunchedEffect(uiState.isLoginSuccess) {
+        if (uiState.isLoginSuccess) {
+             navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
+                launchSingleTop = true
+            }
+            viewModel.resetLoginSuccess() // Reset flag after navigation
+        }
+    }
+    */
+
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = PtBackground // Use theme background
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 32.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            Spacer(modifier = Modifier.weight(0.15f))
-            
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.pt_champion_logo_2),
-                contentDescription = "PT Champion Logo",
-                modifier = Modifier
-                    .width(200.dp) // Adjusted size slightly based on image proportions
-                    .padding(bottom = 12.dp)
-            )
-            
-            Spacer(modifier = Modifier.height(48.dp))
-            
-            // Email field
-            OutlinedTextField(
-                value = state.email,
-                onValueChange = { viewModel.onEvent(LoginEvent.EmailChanged(it)) },
-                label = { Text("Email") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedLabelColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    errorContainerColor = MaterialTheme.colorScheme.surface,
-                    errorBorderColor = MaterialTheme.colorScheme.error,
-                    errorLabelColor = MaterialTheme.colorScheme.error,
-                    errorCursorColor = MaterialTheme.colorScheme.error,
-                    errorTextColor = MaterialTheme.colorScheme.error,
-                ),
-                textStyle = MaterialTheme.typography.bodyMedium,
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Email,
-                    imeAction = ImeAction.Next
-                ),
-                isError = state.error != null,
-                singleLine = true,
-                shape = MaterialTheme.shapes.small
-            )
+            Text("Login", style = MaterialTheme.typography.headlineLarge, color = PtCommandBlack)
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Password field
+            // Email/Username Field
             OutlinedTextField(
-                value = state.password,
+                value = uiState.email, // Use email field from state
+                onValueChange = { viewModel.onEvent(LoginEvent.EmailChanged(it)) },
+                label = { Text("Email or Username") }, // Adjusted label
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = PtAccent,
+                    unfocusedBorderColor = PtSecondaryText,
+                    cursorColor = PtAccent,
+                    focusedLabelColor = PtAccent,
+                    unfocusedLabelColor = PtSecondaryText
+                ),
+                isError = uiState.error?.contains("Email", ignoreCase = true) == true || uiState.error?.contains("Username", ignoreCase = true) == true
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Password Field
+            OutlinedTextField(
+                value = uiState.password,
                 onValueChange = { viewModel.onEvent(LoginEvent.PasswordChanged(it)) },
                 label = { Text("Password") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp),
-                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Password,
-                    imeAction = ImeAction.Done
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { focusManager.clearFocus() }
-                ),
-                trailingIcon = {
-                    val image = if (passwordVisible)
-                        Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
-                    val description = if (passwordVisible) "Hide password" else "Show password"
-
-                    IconButton(onClick = {passwordVisible = !passwordVisible}){
-                        Icon(
-                            imageVector = image,
-                            contentDescription = description,
-                            tint = if (state.error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedLabelColor = MaterialTheme.colorScheme.secondary,
-                    unfocusedLabelColor = MaterialTheme.colorScheme.secondary,
-                    cursorColor = MaterialTheme.colorScheme.primary,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outline,
-                    errorContainerColor = MaterialTheme.colorScheme.surface,
-                    errorBorderColor = MaterialTheme.colorScheme.error,
-                    errorLabelColor = MaterialTheme.colorScheme.error,
-                    errorCursorColor = MaterialTheme.colorScheme.error,
-                    errorTextColor = MaterialTheme.colorScheme.error,
-                    errorTrailingIconColor = MaterialTheme.colorScheme.error
-                ),
-                textStyle = MaterialTheme.typography.bodyMedium,
-                isError = state.error != null,
+                modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                shape = MaterialTheme.shapes.small
+                visualTransformation = PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = PtAccent,
+                    unfocusedBorderColor = PtSecondaryText,
+                    cursorColor = PtAccent,
+                    focusedLabelColor = PtAccent,
+                    unfocusedLabelColor = PtSecondaryText
+                ),
+                isError = uiState.error?.contains("Password", ignoreCase = true) == true
             )
+            Spacer(modifier = Modifier.height(24.dp))
 
-            if (state.error != null) {
+            // Error Message Display
+            uiState.error?.let {
                 Text(
-                    text = state.error,
+                    text = it,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.align(Alignment.Start).padding(start = 4.dp)
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-            } else {
-                 Spacer(modifier = Modifier.height(8.dp + (MaterialTheme.typography.bodySmall.fontSize.value * MaterialTheme.typography.bodySmall.lineHeight.value / MaterialTheme.typography.bodySmall.fontSize.value).dp))
             }
 
-            // Login button
+            // Login Button with Loading Indicator
             Button(
-                onClick = {
-                    focusManager.clearFocus()
-                    viewModel.onEvent(LoginEvent.Submit)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                enabled = !state.isLoading,
+                onClick = { viewModel.onEvent(LoginEvent.Submit) },
+                enabled = !uiState.isLoading, // Disable button when loading
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = PtAccent, // Brass Gold
-                    contentColor = PtCommandBlack, // Command Black (text on button)
-                    disabledContainerColor = PtAccent.copy(alpha = 0.5f)
+                    containerColor = PtAccent,
+                    contentColor = PtCommandBlack,
+                    disabledContainerColor = PtAccent.copy(alpha = 0.5f),
+                    disabledContentColor = PtCommandBlack.copy(alpha = 0.5f)
                 ),
                 shape = MaterialTheme.shapes.small
             ) {
-                if (state.isLoading) {
+                if (uiState.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp,
-                        color = PtCommandBlack
+                        color = PtCommandBlack,
+                        strokeWidth = 2.dp
                     )
                 } else {
-                    Text(
-                        text = "LOG IN",
-                        style = MaterialTheme.typography.labelLarge
-                    )
+                    Text("LOGIN")
                 }
             }
-            
-            // Forgot password
-            TextButton(
-                onClick = { /* TODO: Implement forgot password */ },
-                modifier = Modifier.padding(top = 8.dp)
-            ) {
-                Text(
-                    text = "Forgot password?",
-                    color = PtAccent, // Brass Gold for links
-                    style = MaterialTheme.typography.bodySmall
-                )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Sign Up Link
+            TextButton(onClick = { viewModel.navigateToSignUp() }) {
+                Text("Don't have an account? Sign Up", color = PtAccent)
             }
-            
-            // Sign up
-            Row(
-                modifier = Modifier.padding(top = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "Don't have an account:",
-                    color = PtSecondaryText, // Tactical Gray
-                    style = MaterialTheme.typography.bodySmall
-                )
-                TextButton(
-                    onClick = { viewModel.navigateToSignUp() },
-                    contentPadding = PaddingValues(start = 4.dp)
-                ) {
-                    Text(
-                        text = "Sign up",
-                        color = PtAccent, // Brass Gold for links
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.weight(0.2f))
         }
     }
 } 

@@ -19,7 +19,7 @@ type Exercise struct {
 type User struct {
 	ID                int32          `json:"id"`
 	Username          string         `json:"username"`
-	Password          string         `json:"password"`
+	PasswordHash      string         `json:"password_hash"`
 	DisplayName       sql.NullString `json:"display_name"`
 	ProfilePictureUrl sql.NullString `json:"profile_picture_url"`
 	Location          sql.NullString `json:"location"`

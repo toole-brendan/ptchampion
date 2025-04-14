@@ -170,6 +170,77 @@ For Android Development:
 - JDK 11+
 - Android device or emulator with API level 29+
 
+### Running with Docker Compose
+
+This is the recommended way to run the backend and its database dependency locally for development and testing.
+
+**Prerequisites:**
+
+*   [Docker](https://docs.docker.com/get-docker/) installed and running.
+*   [Docker Compose](https://docs.docker.com/compose/install/) installed (usually included with Docker Desktop).
+
+**Configuration:**
+
+1.  **Create `.env` file:** If it doesn't exist, create a file named `.env` in the project root directory (`/Users/brendantoole/projects/ptchampion`).
+2.  **Populate `.env`:** Copy the contents from `.env.example` (if one exists) or add the following variables, replacing placeholder values as needed:
+
+    ```dotenv
+    # PostgreSQL Configuration for Docker Compose
+    DB_HOST=db
+    DB_PORT=5432
+    DB_USER=user        # Change if needed
+    DB_PASSWORD=password  # Change if needed
+    DB_NAME=ptchampion   # Change if needed
+
+    # JWT Configuration
+    JWT_SECRET=your_strong_jwt_secret_here # Replace with a real secret!
+    JWT_EXPIRES_IN=24h
+
+    # Application Port Configuration (inside container)
+    APP_PORT_CONTAINER=8080
+
+    # Host Port Mappings (for accessing services from your machine)
+    DB_PORT_HOST=5432
+    APP_PORT_HOST=8080
+
+    # Add any other environment variables your Go application needs
+    # e.g., GIN_MODE=debug
+    ```
+    *Ensure this `.env` file is listed in your `.gitignore` to avoid committing secrets.*
+
+**Running the Stack:**
+
+1.  Open a terminal in the project root directory (`/Users/brendantoole/projects/ptchampion`).
+2.  Run the following command:
+    ```bash
+    docker-compose up --build -d
+    ```
+    *   `--build`: Builds the backend image if it doesn't exist or if the `Dockerfile` or source code has changed.
+    *   `-d`: Runs the containers in detached mode (in the background).
+
+**Accessing Services:**
+
+*   **Backend API:** The Go backend should be accessible on your host machine at `http://localhost:8080` (or the value of `APP_PORT_HOST` if you changed it in `.env`).
+*   **Database:** The PostgreSQL database should be accessible on `localhost:5432` (or the value of `DB_PORT_HOST`) using the credentials defined in `.env` (`DB_USER`, `DB_PASSWORD`, `DB_NAME`). You can connect using tools like `psql` or a GUI client.
+
+**Database Migrations:**
+
+*   Database migrations are located in the `db/migrations` directory.
+*   Currently, you need to run migrations manually against the running database container. You can do this using a migration tool compatible with `golang-migrate/migrate`'s format. If you have `migrate` installed locally:
+    ```bash
+    # Ensure DB_USER, DB_PASSWORD, DB_NAME, DB_PORT_HOST are set in your environment or .env
+    migrate -path db/migrations -database "postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT_HOST}/${DB_NAME}?sslmode=disable" up
+    ```
+    *Alternatively, you can execute commands inside the running backend container if it includes a migration tool, or use a dedicated migration tool connected to the exposed database port.*
+
+**Stopping the Stack:**
+
+*   To stop the running containers, execute:
+    ```bash
+    docker-compose down
+    ```
+    This stops and removes the containers but preserves the database data volume (`postgres_data`). To remove the volume as well (deleting all database data), use `docker-compose down -v`.
+
 ### Deployment
 
 For Docker deployment instructions, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md).
