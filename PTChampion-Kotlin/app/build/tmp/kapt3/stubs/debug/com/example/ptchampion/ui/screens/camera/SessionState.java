@@ -13,7 +13,6 @@ import com.example.ptchampion.domain.exercise.ExerciseAnalyzer;
 import com.example.ptchampion.domain.exercise.analyzers.PullupAnalyzer;
 import com.example.ptchampion.domain.exercise.analyzers.PushupAnalyzer;
 import com.example.ptchampion.domain.exercise.analyzers.SitupAnalyzer;
-import com.example.ptchampion.ui.screens.leaderboard.ExerciseType;
 import com.example.ptchampion.domain.repository.WorkoutRepository;
 import com.example.ptchampion.domain.model.SaveWorkoutRequest;
 import com.example.ptchampion.util.Resource;

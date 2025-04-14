@@ -18,7 +18,6 @@ import com.example.ptchampion.domain.exercise.ExerciseAnalyzer
 import com.example.ptchampion.domain.exercise.analyzers.PullupAnalyzer
 import com.example.ptchampion.domain.exercise.analyzers.PushupAnalyzer
 import com.example.ptchampion.domain.exercise.analyzers.SitupAnalyzer
-import com.example.ptchampion.ui.screens.leaderboard.ExerciseType
 import com.example.ptchampion.domain.repository.WorkoutRepository
 import com.example.ptchampion.domain.model.SaveWorkoutRequest
 import com.example.ptchampion.util.Resource
@@ -29,6 +28,14 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import androidx.camera.core.CameraSelector
 import com.example.ptchampion.posedetection.RunningMode
+
+// Define string constants for exercise types
+object ExerciseTypes {
+    const val PUSH_UPS = "pushups"
+    const val PULL_UPS = "pullups"
+    const val SIT_UPS = "situps"
+    const val RUNNING = "running"
+}
 
 // Represents the state of the exercise tracking session
 enum class SessionState {
@@ -90,16 +97,6 @@ class CameraViewModel constructor(
     private val exerciseTypeString: String? = savedStateHandle.get<String>("exerciseType")
     private val exerciseId: Int? = savedStateHandle.get<Int>("exerciseId")
 
-    // Convert type string to enum (already present, just using new variable name)
-    private val exerciseType: ExerciseType? = exerciseTypeString?.let {
-        try {
-            ExerciseType.valueOf(it)
-        } catch (e: IllegalArgumentException) {
-            Log.e("CameraViewModel", "Invalid exercise type received: $it")
-            null // Handle invalid type
-        }
-    }
-
     // Initialize the helper only once
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -108,14 +105,17 @@ class CameraViewModel constructor(
             _uiState.update { it.copy(isInitializing = false) } // Simulate initialization done
 
             // Then initialize the correct analyzer based on the exercise type
-            if (exerciseType != null) {
-                exerciseAnalyzer = when (exerciseType) {
-                    ExerciseType.PUSH_UPS -> PushupAnalyzer()
-                    ExerciseType.PULL_UPS -> PullupAnalyzer()
-                    ExerciseType.SIT_UPS -> SitupAnalyzer()
-                    // TODO: Add cases for other exercises if needed
+            if (exerciseTypeString != null) {
+                exerciseAnalyzer = when (exerciseTypeString.lowercase()) {
+                    ExerciseTypes.PUSH_UPS -> PushupAnalyzer()
+                    ExerciseTypes.PULL_UPS -> PullupAnalyzer()
+                    ExerciseTypes.SIT_UPS -> SitupAnalyzer()
+                    else -> {
+                        _uiState.update { it.copy(initializationError = "Unsupported exercise type: $exerciseTypeString") }
+                        null
+                    }
                 }
-                Log.d("CameraViewModel", "Initialized analyzer for: $exerciseType")
+                Log.d("CameraViewModel", "Initialized analyzer for: $exerciseTypeString")
             } else {
                 _uiState.update {
                     it.copy(initializationError = "Exercise type not specified or invalid.")

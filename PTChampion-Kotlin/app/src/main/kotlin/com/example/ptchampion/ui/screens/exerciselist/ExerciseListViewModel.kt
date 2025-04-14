@@ -1,9 +1,12 @@
 package com.example.ptchampion.ui.screens.exerciselist
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DirectionsRun
+import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 // import com.example.ptchampion.domain.repository.ExerciseRepository // Remove unused import
-import com.example.ptchampion.domain.model.ExerciseResponse
 // import com.example.ptchampion.util.Resource // Remove unused import
 // import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,9 +25,18 @@ import kotlinx.coroutines.launch
 //     val description: String?
 // )
 
-data class ExerciseListState(
-    val exercises: List<ExerciseResponse> = emptyList(),
-    val isLoading: Boolean = false,
+// Data class to hold exercise information including Personal Best (PB)
+data class ExerciseInfo(
+    val id: Int, // Assuming some ID from backend/local db
+    val type: String, // Type identifier (e.g., "pushups")
+    val name: String,
+    val icon: ImageVector,
+    val personalBest: String? // String to represent PB (e.g., "35 Reps", "10:30")
+)
+
+data class ExerciseListUiState(
+    val isLoading: Boolean = true,
+    val exercises: List<ExerciseInfo> = emptyList(),
     val error: String? = null
 )
 
@@ -33,37 +45,64 @@ class ExerciseListViewModel /* @Inject */ constructor(
     // private val exerciseRepository: ExerciseRepository // Remove repo injection
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(ExerciseListState())
-    val state: StateFlow<ExerciseListState> = _state.asStateFlow()
+    private val _uiState = MutableStateFlow(ExerciseListUiState())
+    val uiState: StateFlow<ExerciseListUiState> = _uiState.asStateFlow()
 
     init {
-        fetchExercises()
+        loadExercisesWithPBs()
     }
 
-    private fun fetchExercises() {
+    private fun loadExercisesWithPBs() {
         viewModelScope.launch {
-             _state.update { it.copy(isLoading = true, error = null) }
-             kotlinx.coroutines.delay(1000) // Simulate loading
-             // TODO: Re-enable actual fetching when DI is setup
-             /*
-            when (val result = exerciseRepository.getExercises()) {
-                is Resource.Success -> {
-                    _state.update { it.copy(isLoading = false, exercises = result.data ?: emptyList()) }
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                // TODO: Replace with actual data fetching (API call or local DB query)
+                val mockExercises = listOf(
+                    ExerciseInfo(
+                        id = 1,
+                        type = "pushups",
+                        name = "Push-ups",
+                        icon = Icons.Default.FitnessCenter,
+                        personalBest = "PB: 35 Reps"
+                    ),
+                    ExerciseInfo(
+                        id = 2,
+                        type = "pullups",
+                        name = "Pull-ups",
+                        icon = Icons.Default.FitnessCenter,
+                        personalBest = "PB: 12 Reps"
+                    ),
+                    ExerciseInfo(
+                        id = 3,
+                        type = "situps",
+                        name = "Sit-ups",
+                        icon = Icons.Default.FitnessCenter,
+                        personalBest = "PB: 50 Reps"
+                    ),
+                    ExerciseInfo(
+                        id = 4,
+                        type = "running",
+                        name = "Running",
+                        icon = Icons.Filled.DirectionsRun,
+                        personalBest = "Best 1.5 Mile: 10:30"
+                    )
+                )
+
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        exercises = mockExercises,
+                        error = null
+                    )
                 }
-                is Resource.Error -> {
-                    _state.update { it.copy(isLoading = false, error = result.message ?: "Failed to load exercises") }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = "Failed to load exercises: ${e.message}"
+                    )
                 }
-                is Resource.Loading -> { /* Already handled */ }
             }
-            */
-            // Simulate success with dummy data
-             val dummyExercises = listOf(
-                 ExerciseResponse(id = 1, name = "Push-ups", type = "PUSH_UPS", description = "Standard push-ups"),
-                 ExerciseResponse(id = 2, name = "Pull-ups", type = "PULL_UPS", description = "Standard pull-ups"),
-                 ExerciseResponse(id = 3, name = "Sit-ups", type = "SIT_UPS", description = "Standard sit-ups"),
-                 ExerciseResponse(id = 4, name = "Running", type = "RUN", description = "Cardio running exercise")
-             )
-             _state.update { it.copy(isLoading = false, exercises = dummyExercises) }
         }
     }
 } 
