@@ -1,28 +1,30 @@
 package com.example.ptchampion.ui.screens.profile
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ptchampion.ui.theme.PtAccent
+import com.example.ptchampion.ui.theme.PtBackground
+import com.example.ptchampion.ui.theme.PtCommandBlack
+import com.example.ptchampion.ui.theme.PtPrimaryText
+import com.example.ptchampion.ui.theme.PtSecondaryText
 
 @Composable
 fun ProfileScreen(
@@ -33,57 +35,264 @@ fun ProfileScreen(
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+        color = PtBackground // Tactical Cream background
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(20.dp), // 20px global padding per style guide
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator()
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = PtAccent) // Brass Gold
+                }
             } else if (uiState.error != null) {
-                Text(
-                    text = "Error: ${uiState.error}",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                // Optionally add a retry button here
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "Error: ${uiState.error}",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        // Retry button with styling guide colors
+                        Button(
+                            onClick = { /* TODO: Add retry logic */ },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = PtAccent, // Brass Gold
+                                contentColor = PtCommandBlack // Command Black
+                            )
+                        ) {
+                            Text("RETRY")
+                        }
+                    }
+                }
             } else {
-                // Profile Icon (Placeholder)
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Profile",
-                    modifier = Modifier.size(120.dp),
-                    tint = MaterialTheme.colorScheme.primary
+                // Profile Header
+                ProfileHeader(
+                    userName = uiState.userName ?: "User",
+                    userEmail = uiState.userEmail ?: "user@example.com"
                 )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // User Name
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Stats Cards
                 Text(
-                    text = uiState.userName ?: "Loading...",
-                    style = MaterialTheme.typography.headlineSmall
+                    text = "YOUR STATS",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = PtSecondaryText
                 )
-                Spacer(modifier = Modifier.height(4.dp))
-
-                // User Email
-                Text(
-                    text = uiState.userEmail ?: "Loading...",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // TODO: Add other profile details (stats, settings link, etc.)
-
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Stats Card
+                StatsCard()
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                // Settings and Options
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = PtBackground
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 1.dp // Soft subtle shadow per styling guide
+                    ),
+                    shape = MaterialTheme.shapes.medium // 12px radius as per styling guide
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        SettingsOption(
+                            icon = Icons.Default.Person,
+                            title = "Edit Profile",
+                            onClick = { /* TODO: Navigate to edit profile */ }
+                        )
+                        
+                        Divider(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            color = PtSecondaryText.copy(alpha = 0.2f)
+                        )
+                        
+                        SettingsOption(
+                            icon = Icons.Default.Settings,
+                            title = "App Settings",
+                            onClick = { /* TODO: Navigate to settings */ }
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.weight(1f))
+                
                 // Logout Button
-                Button(onClick = { viewModel.logout(onLoggedOut = navigateToLogin) }) {
-                    Text("Logout")
+                Button(
+                    onClick = { viewModel.logout(onLoggedOut = navigateToLogin) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = PtAccent, // Brass Gold
+                        contentColor = PtCommandBlack // Command Black
+                    ),
+                    shape = MaterialTheme.shapes.small // 8px radius as per styling guide
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ExitToApp,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "LOGOUT",
+                        style = MaterialTheme.typography.labelLarge
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+fun ProfileHeader(
+    userName: String,
+    userEmail: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // Profile Avatar
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .clip(CircleShape)
+                .background(PtPrimaryText), // Deep Ops Green
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.AccountCircle,
+                contentDescription = "Profile",
+                modifier = Modifier.size(80.dp),
+                tint = PtBackground // Tactical Cream for contrast
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(16.dp))
+        
+        // User Name - UPPERCASE per styling guide for headings
+        Text(
+            text = userName.uppercase(),
+            style = MaterialTheme.typography.headlineSmall,
+            color = PtCommandBlack // Command Black
+        )
+        
+        Spacer(modifier = Modifier.height(4.dp))
+        
+        // User Email
+        Text(
+            text = userEmail,
+            style = MaterialTheme.typography.bodyMedium,
+            color = PtSecondaryText // Tactical Gray
+        )
+    }
+}
+
+@Composable
+fun StatsCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = PtBackground
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp // Soft subtle shadow per styling guide
+        ),
+        shape = MaterialTheme.shapes.medium // 12px radius as per styling guide
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp) // 16px padding per styling guide
+        ) {
+            // 3-column layout for metrics as per styling guide
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Total Workouts
+                StatColumn(label = "WORKOUTS", value = "43")
+                
+                // Total Pushups
+                StatColumn(label = "PUSHUPS", value = "412")
+                
+                // Average Score
+                StatColumn(label = "AVG SCORE", value = "87", isAccent = true)
+            }
+        }
+    }
+}
+
+@Composable
+fun StatColumn(
+    label: String,
+    value: String,
+    isAccent: Boolean = false
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = PtSecondaryText // Tactical Gray
+        )
+        
+        Text(
+            text = value,
+            style = MaterialTheme.typography.displaySmall,
+            color = if (isAccent) PtAccent else PtCommandBlack // Brass Gold for important stats
+        )
+    }
+}
+
+@Composable
+fun SettingsOption(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = PtAccent, // Brass Gold
+            modifier = Modifier.size(24.dp)
+        )
+        
+        Spacer(modifier = Modifier.width(16.dp))
+        
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            color = PtCommandBlack // Command Black
+        )
+        
+        Spacer(modifier = Modifier.weight(1f))
+        
+        Icon(
+            imageVector = Icons.Default.KeyboardArrowRight,
+            contentDescription = null,
+            tint = PtSecondaryText, // Tactical Gray
+            modifier = Modifier.size(24.dp)
+        )
     }
 } 

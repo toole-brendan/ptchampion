@@ -11,16 +11,16 @@ val BebasNeue = FontFamily.Default // Temporarily use default font
 val Montserrat = FontFamily.Default // Temporarily use default font
 val RobotoMono = FontFamily.Monospace // Use built-in monospace
 
-// Define custom text styles based on the styling guide
+// Define custom text styles based on the styling guide V2
 val AppTypography = Typography(
-    // Headings: Bebas Neue, Bold, 24–32 px
+    // Headings: Bebas Neue, Bold, 24–32px, UPPERCASE
     headlineLarge = TextStyle(
         fontFamily = BebasNeue,
         fontWeight = FontWeight.Bold,
         fontSize = 32.sp,
         lineHeight = 40.sp,
         letterSpacing = 0.5.sp,
-        color = PtPrimaryText
+        color = PtCommandBlack
     ),
     headlineMedium = TextStyle(
         fontFamily = BebasNeue,
@@ -28,7 +28,7 @@ val AppTypography = Typography(
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.5.sp,
-        color = PtPrimaryText
+        color = PtCommandBlack
     ),
     headlineSmall = TextStyle(
         fontFamily = BebasNeue,
@@ -36,10 +36,10 @@ val AppTypography = Typography(
         fontSize = 24.sp,
         lineHeight = 32.sp,
         letterSpacing = 0.5.sp,
-        color = PtPrimaryText
+        color = PtCommandBlack
     ),
 
-    // Subheading: Montserrat, Semi-bold, 18–20 px
+    // Subheadings: Montserrat, Semi-bold, 18–20px, Uppercase
     titleLarge = TextStyle(
         fontFamily = Montserrat,
         fontWeight = FontWeight.SemiBold,
@@ -57,14 +57,14 @@ val AppTypography = Typography(
         color = PtSecondaryText
     ),
 
-    // Body Text: Montserrat, Regular, 14–16 px
+    // Body Text: Montserrat
     bodyLarge = TextStyle(
         fontFamily = Montserrat,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
         letterSpacing = 0.5.sp,
-        color = PtPrimaryText
+        color = PtCommandBlack
     ),
     bodyMedium = TextStyle(
         fontFamily = Montserrat,
@@ -72,27 +72,44 @@ val AppTypography = Typography(
         fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.25.sp,
-        color = PtPrimaryText
+        color = PtCommandBlack
     ),
 
-    // Buttons: Montserrat Bold, Uppercase (Using labelLarge)
+    // Labels: Montserrat (12-14px, Regular, Sentence case)
+    bodySmall = TextStyle(
+        fontFamily = Montserrat,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 18.sp,
+        letterSpacing = 0.4.sp,
+        color = PtSecondaryText
+    ),
+    
+    labelSmall = TextStyle(
+        fontFamily = Montserrat,
+        fontWeight = FontWeight.Medium,
+        fontSize = 10.sp, // Bottom nav label size
+        lineHeight = 16.sp,
+        letterSpacing = 0.5.sp
+    ),
+    
+    // Buttons: Montserrat Bold, UPPERCASE, 14px
     labelLarge = TextStyle(
         fontFamily = Montserrat,
         fontWeight = FontWeight.Bold,
-        fontSize = 16.sp,
+        fontSize = 14.sp,
         lineHeight = 20.sp,
         letterSpacing = 0.5.sp
     ),
 
-    // Numbers / Stats: Roboto Mono, Medium, 20–28 px
-    // Let's use displayMedium for larger stats and displaySmall for smaller ones
+    // Stats / Numbers: Roboto Mono, Medium, 20–28px, Lined-up mono spacing
     displayMedium = TextStyle(
         fontFamily = RobotoMono,
         fontWeight = FontWeight.Medium,
         fontSize = 28.sp,
         lineHeight = 36.sp,
         letterSpacing = 0.sp,
-        color = PtAccent
+        color = PtCommandBlack
     ),
     displaySmall = TextStyle(
         fontFamily = RobotoMono,
@@ -100,24 +117,6 @@ val AppTypography = Typography(
         fontSize = 20.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp,
-        color = PtAccent
-    ),
-
-    // Smaller Text / Links: Montserrat, Regular
-    bodySmall = TextStyle(
-        fontFamily = Montserrat,
-        fontWeight = FontWeight.Normal,
-        fontSize = 14.sp,
-        lineHeight = 18.sp,
-        letterSpacing = 0.4.sp,
-        color = PtInteractive
-    ),
-    // Labels (e.g., bottom nav)
-    labelSmall = TextStyle(
-        fontFamily = Montserrat,
-        fontWeight = FontWeight.Medium,
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        color = PtCommandBlack
     )
 ) 

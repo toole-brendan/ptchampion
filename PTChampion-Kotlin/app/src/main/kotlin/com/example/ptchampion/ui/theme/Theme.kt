@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.LocalContext // No longer needed for dynamic
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
-// Define the Light Color Scheme using the M3 names from Color.kt
+// Define the Light Color Scheme using the V2 styling guide
 private val LightColorScheme = lightColorScheme(
     primary = primaryLight,
     onPrimary = onPrimaryLight,
@@ -38,11 +38,11 @@ private val LightColorScheme = lightColorScheme(
     onBackground = onBackgroundLight,
     surface = surfaceLight,
     onSurface = onSurfaceLight,
-    surfaceVariant = surfaceVariantLight, // For dark cards
-    onSurfaceVariant = onSurfaceVariantLight, // Text on dark cards
+    surfaceVariant = surfaceVariantLight,
+    onSurfaceVariant = onSurfaceVariantLight,
     outline = outlineLight,
     outlineVariant = outlineVariantLight,
-    scrim = scrimLight, // For modal overlay
+    scrim = scrimLight,
 )
 
 // Remove the Dark Color Scheme definition
@@ -68,7 +68,7 @@ fun PTChampionTheme(
     // dynamicColor: Boolean = false, // Disable dynamic color
     content: @Composable () -> Unit
 ) {
-    // Force light scheme using our defined colors
+    // Use the light theme defined with V2 styling guide colors
     val colorScheme = LightColorScheme
 
     // Remove dynamic color logic
@@ -79,17 +79,17 @@ fun PTChampionTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            // Set status bar color to match the app's light background
+            // Set status bar color to match the app's tactical cream background
             window.statusBarColor = colorScheme.background.toArgb()
             // Ensure status bar icons are dark (since background is light)
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true // Set to true for light background
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = true
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = AppTypography, // Use our custom typography
-        shapes = Shapes, // Keep existing shapes for now (can be updated later if needed)
+        typography = AppTypography,
+        shapes = Shapes,
         content = content
     )
 } 

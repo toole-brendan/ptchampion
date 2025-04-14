@@ -15,6 +15,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.ptchampion.domain.model.WorkoutResponse
 import com.example.ptchampion.ui.theme.PTChampionTheme
 import androidx.compose.material3.CardDefaults
+import com.example.ptchampion.ui.theme.PtBackground
+import com.example.ptchampion.ui.theme.PtCommandBlack
+import com.example.ptchampion.ui.theme.PtSecondaryText
+import com.example.ptchampion.ui.theme.PtAccent
 import java.time.format.DateTimeFormatter
 import java.time.OffsetDateTime
 
@@ -80,21 +84,71 @@ fun WorkoutHistoryItem(workout: WorkoutResponse) {
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            containerColor = PtBackground,
+            contentColor = PtCommandBlack
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 1.dp
         )
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(workout.exerciseName, style = MaterialTheme.typography.titleMedium)
+            Text(
+                workout.exerciseName, 
+                style = MaterialTheme.typography.titleMedium,
+                color = PtCommandBlack
+            )
             Spacer(modifier = Modifier.height(4.dp))
-            Text("Completed: ${formatDateTime(workout.completedAt)}")
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                workout.repetitions?.let { Text("Reps: $it") }
-                workout.durationSeconds?.let { Text("Duration: ${it}s") }
-            }
-            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                workout.formScore?.let { Text("Form: $it%") }
-                Text("Grade: ${workout.grade}")
+            
+            Text(
+                "Completed: ${formatDateTime(workout.completedAt)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = PtSecondaryText
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween, 
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+                    Text(
+                        "REPS", 
+                        style = MaterialTheme.typography.labelSmall,
+                        color = PtSecondaryText
+                    )
+                    Text(
+                        workout.repetitions?.toString() ?: "N/A", 
+                        style = MaterialTheme.typography.displaySmall,
+                        color = PtCommandBlack
+                    )
+                }
+                
+                Column {
+                    Text(
+                        "TIME", 
+                        style = MaterialTheme.typography.labelSmall,
+                        color = PtSecondaryText
+                    )
+                    Text(
+                        if (workout.durationSeconds != null) "${workout.durationSeconds}s" else "N/A",
+                        style = MaterialTheme.typography.displaySmall,
+                        color = PtCommandBlack
+                    )
+                }
+                
+                Column {
+                    Text(
+                        "GRADE", 
+                        style = MaterialTheme.typography.labelSmall,
+                        color = PtSecondaryText
+                    )
+                    Text(
+                        workout.grade.toString(),
+                        style = MaterialTheme.typography.displaySmall,
+                        color = PtAccent
+                    )
+                }
             }
         }
     }

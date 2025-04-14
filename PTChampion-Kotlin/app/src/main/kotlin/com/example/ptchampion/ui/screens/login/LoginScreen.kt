@@ -28,6 +28,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel // Add standard ViewModel 
 import androidx.navigation.NavController
 import com.example.ptchampion.R
 import com.example.ptchampion.ui.navigation.Screen
+import com.example.ptchampion.ui.theme.PtAccent
+import com.example.ptchampion.ui.theme.PtCommandBlack
+import com.example.ptchampion.ui.theme.PtSecondaryText
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -191,8 +194,9 @@ fun LoginScreen(
                     .height(56.dp),
                 enabled = !state.isLoading,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = PtAccent, // Brass Gold
+                    contentColor = PtCommandBlack, // Command Black (text on button)
+                    disabledContainerColor = PtAccent.copy(alpha = 0.5f)
                 ),
                 shape = MaterialTheme.shapes.small
             ) {
@@ -200,7 +204,7 @@ fun LoginScreen(
                     CircularProgressIndicator(
                         modifier = Modifier.size(24.dp),
                         strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = PtCommandBlack
                     )
                 } else {
                     Text(
@@ -217,7 +221,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Forgot password?",
-                    color = MaterialTheme.colorScheme.tertiary,
+                    color = PtAccent, // Brass Gold for links
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -229,7 +233,7 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Don't have an account:",
-                    color = MaterialTheme.colorScheme.secondary,
+                    color = PtSecondaryText, // Tactical Gray
                     style = MaterialTheme.typography.bodySmall
                 )
                 TextButton(
@@ -238,7 +242,7 @@ fun LoginScreen(
                 ) {
                     Text(
                         text = "Sign up",
-                        color = MaterialTheme.colorScheme.tertiary,
+                        color = PtAccent, // Brass Gold for links
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
