@@ -266,14 +266,14 @@ func (h *Handler) GetUserExercises(c echo.Context) error {
 	return c.JSON(http.StatusOK, paginatedResp)
 }
 
-// handleListExercises retrieves all available exercises
-func (h *Handler) handleListExercises(c echo.Context) error {
+// HandleListExercises retrieves all available exercises (Exported)
+func (h *Handler) HandleListExercises(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	// 1. Fetch exercises from database using the existing sqlc query
 	dbExercises, err := h.Queries.ListExercises(ctx)
 	if err != nil {
-		log.Printf("ERROR [handleListExercises]: Failed to list exercises: %v", err)
+		log.Printf("ERROR [HandleListExercises]: Failed to list exercises: %v", err)
 		// Don't expose detailed error to client
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercises")
 	}

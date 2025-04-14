@@ -1,5 +1,6 @@
 package com.example.ptchampion.domain.repository
 
+import androidx.paging.PagingData
 import com.example.ptchampion.domain.model.SaveWorkoutRequest
 import com.example.ptchampion.domain.model.WorkoutResponse
 import com.example.ptchampion.util.Resource
@@ -31,7 +32,8 @@ interface WorkoutRepository {
      * @param pageSize The number of items per page.
      * @return A Resource containing the paginated workout history or an error.
      */
-    suspend fun getWorkoutHistory(page: Int, pageSize: Int): Resource<PaginatedWorkoutResponse>
+    // suspend fun getWorkoutHistory(page: Int, pageSize: Int): Resource<PaginatedWorkoutResponse> // Removed old signature
+    fun getWorkoutHistoryStream(): Flow<PagingData<WorkoutSession>> // New Paging 3 signature
 
     /**
      * Fetches a specific workout by its ID.

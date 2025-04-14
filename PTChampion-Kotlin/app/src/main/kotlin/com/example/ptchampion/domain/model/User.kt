@@ -1,14 +1,14 @@
 package com.example.ptchampion.domain.model
 
 /**
- * Represents a user in the application.
- * This is a domain model that is distinct from the API model.
+ * Represents user data within the application domain.
  */
 data class User(
     val id: Int,
     val username: String,
-    val displayName: String? = null,
-    val email: String? = null,
+    val displayName: String?,
+    val email: String?, // Assuming email is part of user data needed by UI
+    val profilePictureUrl: String?,
     val createdAt: String? = null,
     val updatedAt: String? = null,
     val location: UserLocation? = null

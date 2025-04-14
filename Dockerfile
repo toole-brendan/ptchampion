@@ -22,26 +22,24 @@ RUN ls -la /app/client/dist || echo "Dist directory not found!"
 # --- Go Build Stage ---
 # Use the official Go image as a builder image
 # Rename alias for clarity
-FROM golang:1.24-alpine AS go-builder
+FROM golang:1.24-alpine AS builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
-# Copy go mod and sum files
+# Copy go module and sum files
 COPY go.mod go.sum ./
 
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
 RUN go mod download
 
 # Copy the source code into the container
-# Note: This copies everything, including the client dir again, but it's simpler.
-# For optimization, you could copy only specific Go related folders.
 COPY . .
 
 # Build the Go app
-# -ldflags "-w -s" reduces the size of the binary by removing debug information
-# CGO_ENABLED=0 builds a static binary which is important for distroless/alpine images
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /server cmd/server/main.go
+# CGO_ENABLED=0 produces a statically linked binary
+# -ldflags="-w -s" reduces the size of the binary by removing debug information
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /ptchampion_server ./cmd/server/main.go
 
 # --- Runtime Stage ---
 # Switch to Alpine for easier debugging
@@ -55,20 +53,20 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 RUN apk --no-cache add ca-certificates tzdata curl
 
 # Set the Current Working Directory inside the container
-WORKDIR /app
+WORKDIR /root/
 
-# Copy the Pre-built Go binary file from the go-builder stage
-COPY --from=go-builder /server /app/server
+# Copy the pre-built binary file from the previous stage
+COPY --from=builder /ptchampion_server .
 
-# Copy the built frontend assets from the frontend-builder stage
-# The Go app should be configured to serve files from this directory
-COPY --from=frontend-builder /app/client/dist /app/static
+# Copy migrations (if needed by the entrypoint or app itself)
+# Adjust the path if your migrations are elsewhere
+COPY db/migrations ./db/migrations
 
 # Change ownership of the app directory to the non-root user
-RUN chown -R appuser:appgroup /app
+RUN chown -R appuser:appgroup /root
 
 # For debugging: List the contents of the static directory
-RUN ls -la /app/static || echo "Static directory is empty or missing!"
+RUN ls -la /root/static || echo "Static directory is empty or missing!"
 
 # Switch to the non-root user
 USER appuser
@@ -78,4 +76,4 @@ USER appuser
 EXPOSE 8080
 
 # Command to run the executable
-ENTRYPOINT ["/app/server"] 
+CMD ["./ptchampion_server"] 

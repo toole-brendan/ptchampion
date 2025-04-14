@@ -78,8 +78,8 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 	return c.JSON(http.StatusOK, respEntries)
 }
 
-// handleGetLocalLeaderboard handles GET /leaderboards/local
-func (h *Handler) handleGetLocalLeaderboard(c echo.Context) error {
+// HandleGetLocalLeaderboard handles GET /leaderboards/local (Exported)
+func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 	// 1. Parse required query parameters: exercise_id, latitude, longitude
 	exerciseIDStr := c.QueryParam("exercise_id")
 	latStr := c.QueryParam("latitude")

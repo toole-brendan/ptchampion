@@ -1,7 +1,7 @@
 package com.example.ptchampion.data.network
 
-import com.example.ptchampion.data.repository.UserPreferencesRepository
-import kotlinx.coroutines.flow.firstOrNull
+import com.example.ptchampion.data.datastore.UserPreferencesRepository
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -27,20 +27,20 @@ class AuthInterceptor @Inject constructor(
             return chain.proceed(originalRequest)
         }
 
-        // Blockingly get the current token. This runs on OkHttp's background threads.
+        // Fetch token synchronously (required for interceptor)
+        // Note: This blocks the network thread. Consider alternative approaches if performance is critical.
         val token = runBlocking {
-            userPreferencesRepository.authToken.firstOrNull()
+            userPreferencesRepository.authToken.first()
         }
 
-        val newRequestBuilder = originalRequest.newBuilder()
-
-        if (token != null) {
-            newRequestBuilder.header("Authorization", "Bearer $token")
+        val requestBuilder = originalRequest.newBuilder()
+        
+        // Add Authorization header only if token exists
+        token?.let {
+            requestBuilder.addHeader("Authorization", "Bearer $it")
         }
 
-        // TODO: Handle cases where token is null but required (e.g., redirect to login?)
-        // For now, proceed without the token if it's missing, the API should reject it.
-
-        return chain.proceed(newRequestBuilder.build())
+        val request = requestBuilder.build()
+        return chain.proceed(request)
     }
 } 

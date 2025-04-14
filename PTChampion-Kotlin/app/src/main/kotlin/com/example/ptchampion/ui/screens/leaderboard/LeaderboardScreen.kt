@@ -1,5 +1,6 @@
 package com.example.ptchampion.ui.screens.leaderboard
 
+import android.Manifest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,87 +15,141 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.ptchampion.domain.model.LeaderboardEntry
 import com.example.ptchampion.ui.theme.*
-import java.util.concurrent.TimeUnit
+import com.google.accompanist.permissions.*
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun LeaderboardScreen(
-    viewModel: LeaderboardViewModel = viewModel()
+    viewModel: LeaderboardViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = PtBackground // Tactical Cream
+    val locationPermissionsState = rememberMultiplePermissionsState(
+        listOf(
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        )
+    )
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+
+    val onSelectLocalScope: () -> Unit = {
+        if (locationPermissionsState.allPermissionsGranted) {
+            viewModel.selectScope(LeaderboardScope.LOCAL)
+        } else {
+            locationPermissionsState.launchMultiplePermissionRequest()
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp)
+        Surface(
+            modifier = Modifier.fillMaxSize().padding(it),
+            color = PtBackground
         ) {
-            // Screen Title
-            Text(
-                text = "LEADERBOARD",
-                style = MaterialTheme.typography.headlineMedium,
-                color = PtCommandBlack,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                Text(
+                    text = "LEADERBOARD",
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = PtCommandBlack,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
 
-            // Local/Global Toggle Buttons
-            LeaderboardTypeToggle(selectedType = uiState.selectedLeaderboardType, onTypeSelected = viewModel::selectLeaderboardType)
-            Spacer(modifier = Modifier.height(16.dp))
+                LeaderboardScopeToggle(
+                    selectedScope = uiState.selectedScope,
+                    onScopeSelected = {
+                        scope ->
+                        if (scope == LeaderboardScope.LOCAL) {
+                            onSelectLocalScope()
+                        } else {
+                            viewModel.selectScope(LeaderboardScope.GLOBAL)
+                        }
+                    }
+                )
+                Spacer(modifier = Modifier.height(16.dp))
 
-            // Header for the list section
-            ListHeader(leaderboardType = uiState.selectedLeaderboardType)
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Exercise Type Dropdown
-            ExerciseTypeDropdown(selectedType = uiState.selectedExerciseType, availableTypes = uiState.availableExerciseTypes, onTypeSelected = viewModel::selectExerciseType)
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Leaderboard List or Loading/Error/Empty State
-            when {
-                uiState.isLoading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = PtAccent)
+                if (!locationPermissionsState.allPermissionsGranted && locationPermissionsState.shouldShowRationale) {
+                     Snackbar(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        action = {
+                            Button(onClick = { locationPermissionsState.launchMultiplePermissionRequest() }) {
+                                Text("Request Again")
+                            }
+                        }
+                    ) {
+                        Text("Location permission is needed to show the local leaderboard.")
                     }
                 }
-                uiState.error != null -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "Error: ${uiState.error}", 
-                            color = MaterialTheme.colorScheme.error,
-                            textAlign = TextAlign.Center
-                        )
+
+                ListHeader(leaderboardScope = uiState.selectedScope)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ExerciseTypeDropdown(
+                    selectedType = uiState.selectedExerciseType,
+                    availableTypes = uiState.availableExerciseTypes,
+                    onTypeSelected = viewModel::selectExerciseType
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                if (uiState.isLoadingLocation) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+                       CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                       Spacer(modifier = Modifier.width(8.dp))
+                       Text("Getting location...", style = MaterialTheme.typography.bodySmall)
                     }
                 }
-                uiState.leaderboardEntries.isEmpty() -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            text = "No leaderboard data found for ${uiState.selectedExerciseType}.",
-                            color = PtSecondaryText,
-                             textAlign = TextAlign.Center
-                        )
+
+                when {
+                    uiState.isLoading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = PtAccent)
+                        }
                     }
-                }
-                else -> {
-                    // Column Headers
-                    LeaderboardHeaderRow(isTimeBased = uiState.selectedExerciseType == "running")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    // List
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(uiState.leaderboardEntries) { entry ->
-                            LeaderboardListItem(
-                                entry = entry,
-                                isCurrentUser = entry.userId == uiState.currentUserId,
-                                isTimeBased = uiState.selectedExerciseType == "running"
+                    uiState.error != null -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "Error: ${uiState.error}",
+                                color = MaterialTheme.colorScheme.error,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp)
                             )
+                        }
+                    }
+                    uiState.leaderboardEntries.isEmpty() -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                text = "No leaderboard data found for ${uiState.selectedExerciseType}.",
+                                color = PtSecondaryText,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    }
+                    else -> {
+                        LeaderboardHeaderRow()
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            items(uiState.leaderboardEntries, key = { it.rank }) { entry ->
+                                LeaderboardListItem(
+                                    entry = entry,
+                                    isCurrentUser = uiState.currentUserId != null && entry.userId == uiState.currentUserId
+                                )
+                            }
                         }
                     }
                 }
@@ -104,52 +159,52 @@ fun LeaderboardScreen(
 }
 
 @Composable
-fun LeaderboardTypeToggle(
-    selectedType: LeaderboardType,
-    onTypeSelected: (LeaderboardType) -> Unit
+fun LeaderboardScopeToggle(
+    selectedScope: LeaderboardScope,
+    onScopeSelected: (LeaderboardScope) -> Unit
 ) {
     Row(modifier = Modifier.fillMaxWidth()) {
         Button(
-            onClick = { onTypeSelected(LeaderboardType.LOCAL) },
+            onClick = { onScopeSelected(LeaderboardScope.LOCAL) },
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (selectedType == LeaderboardType.LOCAL) PtPrimaryText else PtBackground,
-                contentColor = PtAccent // Keep this for potential icon tinting if icons were added
+                containerColor = if (selectedScope == LeaderboardScope.LOCAL) PtCommandBlack else PtBackground,
+                contentColor = if (selectedScope == LeaderboardScope.LOCAL) PtAccent else PtCommandBlack
             ),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = if (selectedType == LeaderboardType.LOCAL) 2.dp else 0.dp)
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = if (selectedScope == LeaderboardScope.LOCAL) 2.dp else 0.dp)
         ) {
             Text(
                 text = "LOCAL",
-                fontWeight = if (selectedType == LeaderboardType.LOCAL) FontWeight.Bold else FontWeight.Normal,
-                fontSize = if (selectedType == LeaderboardType.LOCAL) 16.sp else 14.sp,
-                color = if (selectedType == LeaderboardType.LOCAL) PtAccent else PtPrimaryText // Explicitly set text color
+                fontWeight = if (selectedScope == LeaderboardScope.LOCAL) FontWeight.Bold else FontWeight.Normal,
+                fontSize = 14.sp,
+                color = if (selectedScope == LeaderboardScope.LOCAL) PtAccent else PtCommandBlack
             )
         }
         Button(
-            onClick = { onTypeSelected(LeaderboardType.GLOBAL) },
+            onClick = { onScopeSelected(LeaderboardScope.GLOBAL) },
             modifier = Modifier.weight(1f),
             shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (selectedType == LeaderboardType.GLOBAL) PtPrimaryText else PtBackground,
-                contentColor = PtAccent // Keep this for potential icon tinting
+                containerColor = if (selectedScope == LeaderboardScope.GLOBAL) PtCommandBlack else PtBackground,
+                contentColor = if (selectedScope == LeaderboardScope.GLOBAL) PtAccent else PtCommandBlack
             ),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = if (selectedType == LeaderboardType.GLOBAL) 2.dp else 0.dp)
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = if (selectedScope == LeaderboardScope.GLOBAL) 2.dp else 0.dp)
         ) {
             Text(
                 text = "GLOBAL",
-                fontWeight = if (selectedType == LeaderboardType.GLOBAL) FontWeight.Bold else FontWeight.Normal,
-                fontSize = if (selectedType == LeaderboardType.GLOBAL) 16.sp else 14.sp,
-                color = if (selectedType == LeaderboardType.GLOBAL) PtAccent else PtPrimaryText // Explicitly set text color
+                fontWeight = if (selectedScope == LeaderboardScope.GLOBAL) FontWeight.Bold else FontWeight.Normal,
+                fontSize = 14.sp,
+                color = if (selectedScope == LeaderboardScope.GLOBAL) PtAccent else PtCommandBlack
             )
         }
     }
 }
 
 @Composable
-fun ListHeader(leaderboardType: LeaderboardType) {
+fun ListHeader(leaderboardScope: LeaderboardScope) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        if (leaderboardType == LeaderboardType.LOCAL) {
+        if (leaderboardScope == LeaderboardScope.LOCAL) {
             Icon(
                 imageVector = Icons.Default.LocationOn,
                 contentDescription = "Nearby",
@@ -159,7 +214,7 @@ fun ListHeader(leaderboardType: LeaderboardType) {
             Spacer(modifier = Modifier.width(4.dp))
         }
         Text(
-            text = if (leaderboardType == LeaderboardType.LOCAL) "NEARBY COMPETITORS" else "GLOBAL RANKING",
+            text = if (leaderboardScope == LeaderboardScope.LOCAL) "NEARBY COMPETITORS" else "GLOBAL RANKING",
             style = MaterialTheme.typography.titleMedium,
             color = PtSecondaryText,
             fontWeight = FontWeight.Bold
@@ -183,12 +238,12 @@ fun ExerciseTypeDropdown(
     ) {
         OutlinedTextField(
             value = selectedType.replaceFirstChar { it.uppercase() },
-            onValueChange = {}, // Read-only
+            onValueChange = {},
             readOnly = true,
             label = { Text("EXERCISE TYPE", style = MaterialTheme.typography.labelSmall, color = PtSecondaryText) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
-                .menuAnchor() // Important for positioning the dropdown
+                .menuAnchor()
                 .fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors(
@@ -203,7 +258,7 @@ fun ExerciseTypeDropdown(
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false },
-            modifier = Modifier.background(PtBackground) // Cream background for dropdown menu
+            modifier = Modifier.background(PtBackground)
         ) {
             availableTypes.forEach { type ->
                 DropdownMenuItem(
@@ -219,14 +274,19 @@ fun ExerciseTypeDropdown(
 }
 
 @Composable
-fun LeaderboardHeaderRow(isTimeBased: Boolean) {
+fun LeaderboardHeaderRow() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Rank column is implicit
+        Text(
+            text = "RANK",
+            style = MaterialTheme.typography.labelSmall,
+            color = PtSecondaryText,
+            modifier = Modifier.width(50.dp)
+        )
         Text(
             text = "COMPETITOR",
             style = MaterialTheme.typography.labelSmall,
@@ -234,10 +294,11 @@ fun LeaderboardHeaderRow(isTimeBased: Boolean) {
             modifier = Modifier.weight(1f)
         )
         Text(
-            text = if (isTimeBased) "TIME" else "SCORE",
+            text = "SCORE",
             style = MaterialTheme.typography.labelSmall,
             color = PtSecondaryText,
-            textAlign = TextAlign.End
+            textAlign = TextAlign.End,
+            modifier = Modifier.width(60.dp)
         )
     }
 }
@@ -245,10 +306,10 @@ fun LeaderboardHeaderRow(isTimeBased: Boolean) {
 @Composable
 fun LeaderboardListItem(
     entry: LeaderboardEntry,
-    isCurrentUser: Boolean,
-    isTimeBased: Boolean
+    isCurrentUser: Boolean
 ) {
     val backgroundColor = if (isCurrentUser) PtArmyTan.copy(alpha = 0.3f) else PtBackground
+    val fontWeight = if (isCurrentUser) FontWeight.Bold else FontWeight.Normal
     val rankColor = when (entry.rank) {
         1 -> Color(0xFFFFD700) // Gold
         2 -> Color(0xFFC0C0C0) // Silver
@@ -274,7 +335,6 @@ fun LeaderboardListItem(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Rank Circle
             Box(
                 modifier = Modifier
                     .size(32.dp)
@@ -292,37 +352,24 @@ fun LeaderboardListItem(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Competitor Name
             Text(
-                text = entry.competitorName,
+                text = entry.displayName ?: entry.username,
                 style = MaterialTheme.typography.bodyLarge,
                 color = PtCommandBlack,
                 modifier = Modifier.weight(1f),
-                fontWeight = if (isCurrentUser) FontWeight.Bold else FontWeight.Normal
+                fontWeight = fontWeight
             )
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Score or Time
-            val scoreOrTimeText = if (isTimeBased) {
-                 entry.timeMillis?.let { formatDuration(it) } ?: "--:--"
-            } else {
-                entry.score?.toString() ?: "-"
-            }
             Text(
-                text = scoreOrTimeText,
+                text = entry.score.toString(),
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (isCurrentUser) PtAccent else PtCommandBlack,
-                 fontWeight = FontWeight.Bold,
-                 textAlign = TextAlign.End
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.End,
+                modifier = Modifier.width(60.dp)
             )
         }
     }
-}
-
-// Helper function to format milliseconds to MM:SS
-fun formatDuration(millis: Long): String {
-    val minutes = TimeUnit.MILLISECONDS.toMinutes(millis)
-    val seconds = TimeUnit.MILLISECONDS.toSeconds(millis) % 60
-    return String.format("%d:%02d", minutes, seconds)
 } 

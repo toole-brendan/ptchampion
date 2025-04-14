@@ -122,8 +122,8 @@ const apiRequest = async <T>(
 // --- Auth Endpoints ---
 
 export const registerUser = (data: RegisterUserRequest): Promise<UserResponse> => {
-  // Assuming registration returns the created user directly (adjust if needed)
-  return apiRequest<UserResponse>('/users/register', 'POST', data, false);
+  // Changed from '/users/register' to '/auth/register' to match backend endpoint
+  return apiRequest<UserResponse>('/auth/register', 'POST', data, false);
 };
 
 export const loginUser = (data: LoginRequest): Promise<LoginResponse> => {

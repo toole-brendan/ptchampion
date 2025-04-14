@@ -5,26 +5,28 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ptchampion.domain.repository.AuthRepository
-// import com.example.ptchampion.generatedapi.models.RegisterRequest - Removed
-import org.openapitools.client.models.InsertUser // Correct import
-import com.example.ptchampion.util.Resource
-// import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import com.example.ptchampion.domain.repository.UserRepository
+import com.example.ptchampion.domain.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
-// import javax.inject.Inject
+import javax.inject.Inject
 
 data class SignUpState(
+    val username: String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isSignUpSuccess: Boolean = false
 )
 
 sealed class SignUpEvent {
+    data class UsernameChanged(val value: String) : SignUpEvent()
     data class EmailChanged(val value: String) : SignUpEvent()
     data class PasswordChanged(val value: String) : SignUpEvent()
     data class ConfirmPasswordChanged(val value: String) : SignUpEvent()
@@ -35,66 +37,82 @@ sealed class SignUpEffect {
     object NavigateToLogin : SignUpEffect()
 }
 
-// @HiltViewModel
-class SignUpViewModel /* @Inject */ constructor(
-    // private val authRepository: AuthRepository
+@HiltViewModel
+class SignUpViewModel @Inject constructor(
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    var state by mutableStateOf(SignUpState())
-        private set
+    private val _uiState = MutableStateFlow(SignUpState())
+    val uiState: StateFlow<SignUpState> = _uiState.asStateFlow()
 
-    private val _effect = MutableSharedFlow<SignUpEffect>()
-    val effect = _effect.asSharedFlow()
+    private val _effect = MutableStateFlow<SignUpEffect?>(null)
+    val effect: StateFlow<SignUpEffect?> = _effect.asStateFlow()
 
     fun onEvent(event: SignUpEvent) {
         when (event) {
-            is SignUpEvent.EmailChanged -> state = state.copy(email = event.value, error = null)
-            is SignUpEvent.PasswordChanged -> state = state.copy(password = event.value, error = null)
-            is SignUpEvent.ConfirmPasswordChanged -> state = state.copy(confirmPassword = event.value, error = null)
-            SignUpEvent.Submit -> registerUser()
+            is SignUpEvent.UsernameChanged -> _uiState.update { it.copy(username = event.value, error = null) }
+            is SignUpEvent.EmailChanged -> _uiState.update { it.copy(email = event.value, error = null) }
+            is SignUpEvent.PasswordChanged -> _uiState.update { it.copy(password = event.value, error = null) }
+            is SignUpEvent.ConfirmPasswordChanged -> _uiState.update { it.copy(confirmPassword = event.value, error = null) }
+            SignUpEvent.Submit -> signUp()
         }
     }
 
-    private fun registerUser() {
+    fun signUp() {
+        if (_uiState.value.isLoading) return
+
+        val state = _uiState.value
+        if (state.username.isBlank() || state.password.isBlank() || state.email.isBlank()) {
+            _uiState.update { it.copy(error = "Username, Email, and Password cannot be empty") }
+            return
+        }
         if (state.password != state.confirmPassword) {
-            state = state.copy(error = "Passwords do not match")
+            _uiState.update { it.copy(error = "Passwords do not match") }
             return
         }
-        
-        if (state.password.length < 6) { // Example basic validation
-             state = state.copy(error = "Password must be at least 6 characters")
-            return
-        }
+        // TODO: Add more robust validation (email format, password complexity)
 
         viewModelScope.launch {
-            // Temporarily bypass registration logic
-            state = state.copy(isLoading = true)
-            kotlinx.coroutines.delay(1000)
-            // TODO: Re-enable actual registration logic when DI is set up
-            /*
-            state = state.copy(isLoading = true, error = null)
-            val result = authRepository.register(
-                InsertUser(username = state.email, password = state.password)
+            _uiState.update { it.copy(isLoading = true, error = null, isSignUpSuccess = false) }
+
+            val result = userRepository.register(
+                username = state.username,
+                password = state.password,
+                // Pass other optional fields if collected (displayName, etc.)
+                // Assuming email might be used as username or displayName initially
+                displayName = state.username, // Or use email, or add a separate field
+                profilePictureUrl = null, // Default
+                location = null, // Default
+                latitude = null,
+                longitude = null
             )
+
             when (result) {
                 is Resource.Success -> {
-                    state = state.copy(isLoading = false)
-                    _effect.emit(SignUpEffect.NavigateToLogin) // Navigate back to Login on success
+                    _uiState.update { it.copy(isLoading = false, isSignUpSuccess = true, error = null) }
+                    _effect.update { SignUpEffect.NavigateToLogin }
                 }
                 is Resource.Error -> {
-                    state = state.copy(isLoading = false, error = result.message)
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = result.message ?: "An unknown sign-up error occurred",
+                            isSignUpSuccess = false
+                        )
+                    }
                 }
-                 is Resource.Loading -> { }
+                is Resource.Loading -> {
+                    _uiState.update { it.copy(isLoading = true) }
+                }
             }
-            */
-             state = state.copy(isLoading = false)
-            _effect.emit(SignUpEffect.NavigateToLogin)
         }
     }
-    
+
     fun navigateToLogin() {
-         viewModelScope.launch {
-            _effect.emit(SignUpEffect.NavigateToLogin)
-        }
+        _effect.update { SignUpEffect.NavigateToLogin }
+    }
+
+    fun resetSignUpSuccess() {
+        _uiState.update { it.copy(isSignUpSuccess = false) }
     }
 } 

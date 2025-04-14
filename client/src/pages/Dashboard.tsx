@@ -1,12 +1,12 @@
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/card";
+import { Button } from '../components/ui/button';
 import { Dumbbell, Activity, Zap, TrendingUp, PersonStanding, Clock, Repeat, Trophy, ArrowRight, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/lib/authContext'; // Import useAuth
+import { useAuth } from '../lib/authContext'; // Using relative path
 // import { useQuery } from '@tanstack/react-query'; // Uncomment if fetching dashboard data
 // import { getDashboardSummary } from '@/lib/apiClient'; // Uncomment if fetching dashboard data
-import { cn } from "@/lib/utils";
+import { cn } from "../lib/utils";
 
 // Define exercise types for quick start
 const exercises = [

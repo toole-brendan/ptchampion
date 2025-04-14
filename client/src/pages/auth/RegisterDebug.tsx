@@ -51,7 +51,7 @@ const RegisterDebug: React.FC = () => {
       console.log('API URL:', apiUrl);
       
       // Make the API request manually to see detailed errors
-      const response = await fetch(`${apiUrl}/users/register`, {
+      const response = await fetch(`${apiUrl}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

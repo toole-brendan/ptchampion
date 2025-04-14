@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgis/postgis:16-3.4-alpine # Use PostGIS image instead of standard PostgreSQL
+    container_name: ptchampion_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-user} # Use environment variables from .env, with defaults
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-ptchampion}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist data
+    ports:
+      - "${DB_PORT_HOST:-5432}:5432" # Expose DB port to host (optional, for direct access/debugging)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-user} -d ${DB_NAME:-ptchampion}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: . # Use the Dockerfile in the current directory
+      dockerfile: Dockerfile
+    container_name: ptchampion_backend
+    env_file:
+      - .env # Load environment variables from .env file
+    environment:
+      # Ensure the backend waits for the DB host (service name)
+      # The DB_HOST env var in .env should match the service name 'db'
+      DB_HOST: db # Override DB_HOST to use the service name within Docker network
+      # Other necessary env vars will be loaded from .env
+    ports:
+      - "${APP_PORT_HOST:-8080}:${APP_PORT_CONTAINER:-3000}" # Map host port to container port
+    depends_on:
+      db:
+        condition: service_healthy # Wait for DB to be healthy
+    restart: unless-stopped
+    # Optional: Add volume for live code reloading during development (if using tools like air)
+    # volumes:
+    #   - .:/app
+
+volumes:
+  postgres_data: # Define the named volume for data persistence 

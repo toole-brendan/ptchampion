@@ -9,18 +9,25 @@ import com.example.ptchampion.domain.repository.AuthRepository
 // import com.example.ptchampion.generatedapi.models.AuthRequest - Removed
 import org.openapitools.client.models.LoginRequest // Correct import
 import com.example.ptchampion.util.Resource
-// import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-// import javax.inject.Inject
+import javax.inject.Inject
 import com.example.ptchampion.data.repository.UserPreferencesRepository
+import com.example.ptchampion.domain.repository.UserRepository
+import com.example.ptchampion.domain.util.Resource as DomainResource
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 
 data class LoginState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val isLoginSuccess: Boolean = false
 )
 
 sealed class LoginEvent {
@@ -34,59 +41,68 @@ sealed class LoginEffect {
     object NavigateToSignUp : LoginEffect() // Example for navigation effect
 }
 
-// @HiltViewModel
-class LoginViewModel /* @Inject */ constructor(
-    // private val authRepository: AuthRepository,
-    // private val userPreferencesRepository: UserPreferencesRepository
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    var state by mutableStateOf(LoginState())
-        private set
+    private val _uiState = MutableStateFlow(LoginState())
+    val uiState: StateFlow<LoginState> = _uiState.asStateFlow()
 
     private val _effect = MutableSharedFlow<LoginEffect>()
     val effect = _effect.asSharedFlow()
 
     fun onEvent(event: LoginEvent) {
         when (event) {
-            is LoginEvent.EmailChanged -> state = state.copy(email = event.value, error = null)
-            is LoginEvent.PasswordChanged -> state = state.copy(password = event.value, error = null)
-            LoginEvent.Submit -> loginUser()
+            is LoginEvent.EmailChanged -> _uiState.update { it.copy(email = event.value, error = null) }
+            is LoginEvent.PasswordChanged -> _uiState.update { it.copy(password = event.value, error = null) }
+            LoginEvent.Submit -> login()
         }
     }
 
-    private fun loginUser() {
+    fun login() {
+        // Prevent multiple login attempts while one is in progress
+        if (_uiState.value.isLoading) return
+
+        val email = _uiState.value.email
+        val password = _uiState.value.password
+
+        // Basic client-side validation (optional, but good practice)
+        if (email.isBlank() || password.isBlank()) {
+            _uiState.update { it.copy(error = "Email and password cannot be empty") }
+            return
+        }
+
         viewModelScope.launch {
-            // Temporarily bypass login logic as dependencies are commented out
-            state = state.copy(isLoading = true) // Show loading briefly
-            kotlinx.coroutines.delay(1000) // Simulate network call
-            // TODO: Re-enable actual login logic when DI is set up
-            /*
-            state = state.copy(isLoading = true, error = null)
-            val result = authRepository.login(
-                LoginRequest(username = state.email, password = state.password)
-            )
+            _uiState.update { it.copy(isLoading = true, error = null, isLoginSuccess = false) }
+            
+            val result = userRepository.login(email, password)
+
             when (result) {
-                is Resource.Success -> {
-                    result.data?.token?.let { token ->
-                        userPreferencesRepository.saveAuthToken(token)
-                    } ?: run {
-                        state = state.copy(isLoading = false, error = "Login successful but token missing.")
-                        return@launch
+                is DomainResource.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            isLoginSuccess = true,
+                            error = null
+                        )
                     }
-                   
-                    state = state.copy(isLoading = false)
                     _effect.emit(LoginEffect.NavigateToHome)
                 }
-                is Resource.Error -> {
-                    state = state.copy(isLoading = false, error = result.message)
+                is DomainResource.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = result.message ?: "An unknown login error occurred",
+                            isLoginSuccess = false
+                        )
+                    }
                 }
-                is Resource.Loading -> {
-                    // Can be ignored here as we set isLoading explicitly
+                is DomainResource.Loading -> {
+                    // Optional: Handle loading state if needed, though already set
+                    _uiState.update { it.copy(isLoading = true) }
                 }
             }
-            */
-            state = state.copy(isLoading = false)
-             _effect.emit(LoginEffect.NavigateToHome)
         }
     }
     
@@ -94,5 +110,10 @@ class LoginViewModel /* @Inject */ constructor(
         viewModelScope.launch {
             _effect.emit(LoginEffect.NavigateToSignUp)
         }
+    }
+
+    // Optional: Function to reset the success flag after navigation
+    fun resetLoginSuccess() {
+        _uiState.update { it.copy(isLoginSuccess = false) }
     }
 } 

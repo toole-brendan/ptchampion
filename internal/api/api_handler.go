@@ -5,6 +5,9 @@ import (
 	"ptchampion/internal/config"
 	dbStore "ptchampion/internal/store/postgres"
 
+	"log"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -37,8 +40,9 @@ func (h *ApiHandler) PostAuthRegister(ctx echo.Context) error {
 }
 
 func (h *ApiHandler) GetExercises(ctx echo.Context, params GetExercisesParams) error {
-	// We can now call the updated handler method directly
-	return h.Handler.GetUserExercises(ctx)
+	// Call the exported handler that lists all exercises
+	// Pass only the context as the underlying handler doesn't need params
+	return h.Handler.HandleListExercises(ctx)
 }
 
 func (h *ApiHandler) PostExercises(ctx echo.Context) error {
@@ -63,4 +67,26 @@ func (h *ApiHandler) PostSync(ctx echo.Context) error {
 func (h *ApiHandler) PatchUsersMe(ctx echo.Context) error {
 	// Call the updated handler method directly
 	return h.Handler.UpdateCurrentUser(ctx)
+}
+
+// Implement HandleGetLocalLeaderboard to match the ServerInterface
+func (h *ApiHandler) HandleGetLocalLeaderboard(ctx echo.Context, params HandleGetLocalLeaderboardParams) error {
+	// Call the exported handler method
+	// The underlying handler parses query params directly from ctx, so params are not passed
+	return h.Handler.HandleGetLocalLeaderboard(ctx)
+}
+
+// Add missing HandleGetWorkouts implementation
+func (h *ApiHandler) HandleGetWorkouts(ctx echo.Context, params HandleGetWorkoutsParams) error {
+	// Call the handler for user exercise history (assuming GetUserExercises handles /workouts logic)
+	return h.Handler.GetUserExercises(ctx)
+}
+
+// Add missing HandleUpdateUserLocation implementation
+func (h *ApiHandler) HandleUpdateUserLocation(ctx echo.Context) error {
+	// Assuming there's a handler function UpdateUserLocation in handlers/profile_handler.go or similar
+	// return h.Handler.UpdateUserLocation(ctx) // Example call
+	// Placeholder implementation:
+	log.Println("HandleUpdateUserLocation called, but handler not implemented/connected yet.")
+	return ctx.JSON(http.StatusNotImplemented, "Update location not implemented")
 }

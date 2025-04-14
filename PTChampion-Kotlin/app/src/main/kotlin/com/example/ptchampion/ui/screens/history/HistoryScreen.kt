@@ -2,17 +2,17 @@ package com.example.ptchampion.ui.screens.history
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.ptchampion.domain.model.WorkoutResponse
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
+import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.items
+import com.example.ptchampion.domain.model.WorkoutSession
 import com.example.ptchampion.ui.theme.PTChampionTheme
 import androidx.compose.material3.CardDefaults
 import com.example.ptchampion.ui.theme.PtBackground
@@ -25,75 +25,111 @@ import java.time.OffsetDateTime
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen(
-    viewModel: HistoryViewModel = viewModel()
+    viewModel: HistoryViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val lazyPagingItems = viewModel.historyFlow.collectAsLazyPagingItems()
 
     Scaffold(
         topBar = {
             TopAppBar(title = { Text("Workout History") })
-        }
+        },
+        containerColor = PtBackground
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
+                .padding(paddingValues),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            if (uiState.isLoading && uiState.workouts.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+            items(
+                items = lazyPagingItems,
+                key = { workout -> workout.id }
+            ) { workoutSession ->
+                workoutSession?.let {
+                    WorkoutHistoryItem(workout = it)
                 }
-            } else if (uiState.error != null && uiState.workouts.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Error: ${uiState.error}", color = MaterialTheme.colorScheme.error)
-                }
-            } else if (uiState.workouts.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No workout history yet.")
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(uiState.workouts) { workout ->
-                        WorkoutHistoryItem(workout = workout)
-                    }
+            }
 
-                    // Optional: Add loading indicator at the bottom for pagination
-                    if (uiState.isLoading && uiState.workouts.isNotEmpty()) {
-                        item {
-                            Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator()
+            when (val refreshState = lazyPagingItems.loadState.refresh) {
+                is LoadState.Loading -> {
+                    item {
+                        Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+                is LoadState.Error -> {
+                    item {
+                        Box(modifier = Modifier.fillParentMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    "Error loading history: ${refreshState.error.localizedMessage ?: "Unknown error"}",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(onClick = { lazyPagingItems.retry() }) {
+                                    Text("Retry")
+                                }
                             }
                         }
                     }
-
-                    // Optional: Add logic to trigger loading more items when reaching the end
-                    // This usually involves checking scroll state in LazyColumn
                 }
+                is LoadState.NotLoading -> {
+                    if (lazyPagingItems.itemCount == 0) {
+                        item {
+                            Box(modifier = Modifier.fillParentMaxSize().padding(16.dp), contentAlignment = Alignment.Center) {
+                                Text("No workout history yet.")
+                            }
+                        }
+                    }
+                }
+            }
+
+            when (val appendState = lazyPagingItems.loadState.append) {
+                is LoadState.Loading -> {
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
+                is LoadState.Error -> {
+                    item {
+                         Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                 Text(
+                                     "Error loading more: ${appendState.error.localizedMessage ?: "Unknown error"}",
+                                     color = MaterialTheme.colorScheme.error,
+                                     modifier = Modifier.padding(8.dp)
+                                 )
+                                 Button(onClick = { lazyPagingItems.retry() }) {
+                                     Text("Retry")
+                                 }
+                             }
+                         }
+                    }
+                }
+                is LoadState.NotLoading -> Unit
             }
         }
     }
 }
 
 @Composable
-fun WorkoutHistoryItem(workout: WorkoutResponse) {
+fun WorkoutHistoryItem(workout: WorkoutSession) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(
-            containerColor = PtBackground,
-            contentColor = PtCommandBlack
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                workout.exerciseName, 
+                workout.exerciseName,
                 style = MaterialTheme.typography.titleMedium,
                 color = PtCommandBlack
             )
@@ -105,56 +141,39 @@ fun WorkoutHistoryItem(workout: WorkoutResponse) {
                 color = PtSecondaryText
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
-            
+            Spacer(modifier = Modifier.height(12.dp))
+
             Row(
-                horizontalArrangement = Arrangement.SpaceBetween, 
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Column {
-                    Text(
-                        "REPS", 
-                        style = MaterialTheme.typography.labelSmall,
-                        color = PtSecondaryText
-                    )
-                    Text(
-                        workout.repetitions?.toString() ?: "N/A", 
-                        style = MaterialTheme.typography.displaySmall,
-                        color = PtCommandBlack
-                    )
-                }
-                
-                Column {
-                    Text(
-                        "TIME", 
-                        style = MaterialTheme.typography.labelSmall,
-                        color = PtSecondaryText
-                    )
-                    Text(
-                        if (workout.durationSeconds != null) "${workout.durationSeconds}s" else "N/A",
-                        style = MaterialTheme.typography.displaySmall,
-                        color = PtCommandBlack
-                    )
-                }
-                
-                Column {
-                    Text(
-                        "GRADE", 
-                        style = MaterialTheme.typography.labelSmall,
-                        color = PtSecondaryText
-                    )
-                    Text(
-                        workout.grade.toString(),
-                        style = MaterialTheme.typography.displaySmall,
-                        color = PtAccent
-                    )
-                }
+                StatItem("REPS", workout.repetitions?.toString() ?: "N/A")
+                StatItem("TIME", if (workout.durationSeconds != null) "${workout.durationSeconds}s" else "N/A")
+                StatItem("GRADE", workout.grade.toString(), highlight = true)
             }
         }
     }
 }
 
-// Helper to format date string
+@Composable
+fun StatItem(label: String, value: String, highlight: Boolean = false) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = PtSecondaryText
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            value,
+            style = MaterialTheme.typography.bodyLarge,
+            color = if (highlight) PtAccent else PtCommandBlack,
+            fontWeight = if (highlight) androidx.compose.ui.text.font.FontWeight.Bold else androidx.compose.ui.text.font.FontWeight.Normal
+        )
+    }
+}
+
 fun formatDateTime(dateTimeString: String?): String {
     if (dateTimeString == null) return "N/A"
     return try {
@@ -162,33 +181,31 @@ fun formatDateTime(dateTimeString: String?): String {
         val formatter = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a")
         offsetDateTime.format(formatter)
     } catch (e: Exception) {
-        dateTimeString // Return original string if parsing fails
+        dateTimeString
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "History Screen Empty")
 @Composable
-fun HistoryScreenPreview() {
+fun HistoryScreenPreviewEmpty() {
     PTChampionTheme {
-        // Preview needs a way to mock the ViewModel or pass mock state
-        // For simplicity, just showing the screen structure
         Scaffold(topBar = { TopAppBar(title = { Text("Workout History") }) }) {
             Box(modifier = Modifier.padding(it).fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("History Preview (No Data)")
+                Text("No workout history yet.")
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Preview(showBackground = true)
+@Preview(showBackground = true, name = "Workout History Item")
 @Composable
 fun WorkoutHistoryItemPreview() {
     PTChampionTheme {
         WorkoutHistoryItem(
-            workout = WorkoutResponse(
+            workout = WorkoutSession(
                 id = 1,
+                userId = 1,
                 exerciseId = 1,
                 exerciseName = "Push-ups",
                 repetitions = 25,

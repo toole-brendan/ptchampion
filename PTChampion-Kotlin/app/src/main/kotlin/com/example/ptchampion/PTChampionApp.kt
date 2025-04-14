@@ -7,6 +7,6 @@ import dagger.hilt.android.HiltAndroidApp
 class PTChampionApp : Application() {
     override fun onCreate() {
         super.onCreate()
-        // Initialization logic can go here if needed
+        // Initialization logic can go here
     }
-} 
+}
