@@ -1,6 +1,9 @@
 package com.example.ptchampion.ui.screens.home
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -13,10 +16,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.ptchampion.R
 import com.example.ptchampion.ui.theme.*
 
 @Composable
@@ -25,6 +30,8 @@ fun HomeScreen(
     onNavigateToExercises: () -> Unit = {},
     onNavigateToPushups: () -> Unit = {},
     onNavigateToRun: () -> Unit = {},
+    onNavigateToSitups: () -> Unit = {},
+    onNavigateToPullups: () -> Unit = {},
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -35,7 +42,8 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp), // 20px global padding per style guide
+                .padding(20.dp) // 20px global padding per style guide
+                .verticalScroll(rememberScrollState()), // Add scrolling capability
             horizontalAlignment = Alignment.Start
         ) {
             if (uiState.isLoading) {
@@ -56,22 +64,6 @@ fun HomeScreen(
                     )
                 }
             } else {
-                // App Logo
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    // Logo would go here - placeholder
-                    Text(
-                        text = "PT CHAMPION",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = PtCommandBlack,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
                 // Welcome Message - Using UPPERCASE headings as per style guide
                 uiState.userName?.let {
                     Text(
@@ -91,26 +83,43 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Quick Action Buttons - Now with just two primary actions
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    QuickActionButton(
-                        icon = Icons.Default.FitnessCenter,
-                        label = "START PUSH-UPS",
-                        modifier = Modifier.weight(1f),
-                        onClick = onNavigateToPushups
-                    )
-                    
-                    Spacer(modifier = Modifier.width(12.dp))
-                    
-                    QuickActionButton(
-                        icon = Icons.Default.DirectionsRun,
-                        label = "START RUN",
-                        modifier = Modifier.weight(1f),
-                        onClick = onNavigateToRun
-                    )
+                // Quick Action Buttons - Changed to a 2x2 grid
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp) // Add spacing between buttons
+                    ) {
+                        QuickActionButton(
+                            iconResId = R.drawable.pushup,
+                            label = "START PUSH-UPS",
+                            modifier = Modifier.weight(1f),
+                            onClick = onNavigateToPushups
+                        )
+                        QuickActionButton(
+                            iconResId = R.drawable.situp,
+                            label = "START SIT-UPS",
+                            modifier = Modifier.weight(1f),
+                            onClick = onNavigateToSitups
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp)) // Add spacing between rows
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp) // Add spacing between buttons
+                    ) {
+                        QuickActionButton(
+                            iconResId = R.drawable.pullup,
+                            label = "START PULL-UPS",
+                            modifier = Modifier.weight(1f),
+                            onClick = onNavigateToPullups
+                        )
+                        QuickActionButton(
+                            iconResId = R.drawable.running,
+                            label = "START RUN",
+                            modifier = Modifier.weight(1f),
+                            onClick = onNavigateToRun
+                        )
+                    }
                 }
                 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -143,7 +152,7 @@ fun HomeScreen(
 
 @Composable
 fun QuickActionButton(
-    icon: ImageVector,
+    @DrawableRes iconResId: Int,
     label: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
@@ -166,9 +175,9 @@ fun QuickActionButton(
             verticalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = icon,
+                painter = painterResource(id = iconResId),
                 contentDescription = label,
-                tint = PtAccent, // Brass Gold
+                tint = PtAccent,
                 modifier = Modifier.size(36.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))

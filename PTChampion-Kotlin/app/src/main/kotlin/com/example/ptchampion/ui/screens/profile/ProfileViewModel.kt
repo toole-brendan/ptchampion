@@ -14,8 +14,9 @@ import kotlinx.coroutines.launch
 
 data class ProfileState(
     val isLoading: Boolean = false,
-    val userName: String? = null, // Use nullable now
-    val userEmail: String? = null, // Use nullable now
+    val userName: String? = null,
+    val userEmail: String? = null,
+    val totalWorkouts: Int? = null,
     val error: String? = null
 )
 
@@ -29,8 +30,12 @@ class ProfileViewModel constructor(
 
     init {
         // observeProfileData() // Temporarily disable observation
-        // Simulate initial loading and success state for UI preview
-        _uiState.value = ProfileState(userName = "Temp User", userEmail = "temp@example.com")
+        // Simulate initial loading and success state
+        _uiState.value = ProfileState(
+            userName = "Temp User",
+            userEmail = "temp@example.com",
+            totalWorkouts = 43
+        )
     }
 
     private fun observeProfileData() {
