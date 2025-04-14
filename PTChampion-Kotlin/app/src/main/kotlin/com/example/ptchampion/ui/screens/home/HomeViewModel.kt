@@ -8,16 +8,32 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 // import javax.inject.Inject
+
+data class RecentWorkout(
+    val type: String,
+    val date: String,
+    val reps: Int,
+    val score: Int,
+    val durationMinutes: Int,
+    val durationSeconds: Int
+)
+
+data class UserRank(
+    val exerciseType: String,
+    val globalRank: Int,
+    val localRank: Int
+)
 
 data class HomeUiState(
     val isLoading: Boolean = false,
     val userName: String? = null,
-    val error: String? = null
-    // Add other relevant home screen data (e.g., recent workout summary)
+    val error: String? = null,
+    val recentWorkout: RecentWorkout? = null,
+    val userRank: UserRank? = null,
+    val isBluetoothConnected: Boolean = false
 )
 
 class HomeViewModel constructor(
@@ -28,13 +44,39 @@ class HomeViewModel constructor(
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     init {
-        observeUserProfile()
+        loadMockData() // For prototype, load mock data instead of real data
     }
 
+    private fun loadMockData() {
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                currentState.copy(
+                    isLoading = false,
+                    userName = "Temp User",
+                    recentWorkout = RecentWorkout(
+                        type = "Push-ups",
+                        date = "April 13, 2025",
+                        reps = 24,
+                        score = 92,
+                        durationMinutes = 1,
+                        durationSeconds = 30
+                    ),
+                    userRank = UserRank(
+                        exerciseType = "Push-ups",
+                        globalRank = 253,
+                        localRank = 12
+                    ),
+                    isBluetoothConnected = true,
+                    error = null
+                )
+            }
+        }
+    }
+    
+    // When repository and DI is set up, uncomment and implement real data methods
+    
+    /*
     private fun observeUserProfile() {
-        _uiState.value = HomeUiState(userName = "Temp User") // Simulate success
-        // TODO: Re-enable actual fetching when DI is setup
-        /*
         userRepository.getUserProfileFlow()
             .onEach { resource ->
                 val currentState = _uiState.value
@@ -59,8 +101,24 @@ class HomeViewModel constructor(
                 }
             }
             .launchIn(viewModelScope)
-        */
     }
-
-    // Add functions for any actions triggered from the home screen
+    
+    private fun loadUserRanks() {
+        viewModelScope.launch {
+            // Implement call to leaderboard repository to get user ranks
+        }
+    }
+    
+    private fun loadRecentWorkout() {
+        viewModelScope.launch {
+            // Implement call to workout history repository to get recent workout
+        }
+    }
+    
+    private fun observeBluetoothConnections() {
+        viewModelScope.launch {
+            // Implement call to bluetooth service to observe connections
+        }
+    }
+    */
 } 

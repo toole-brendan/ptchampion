@@ -1,155 +1,138 @@
 package com.example.ptchampion.ui.screens.exerciselist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DirectionsRun
-import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.SelfImprovement
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.ptchampion.domain.model.ExerciseResponse
-import com.example.ptchampion.ui.theme.PtAccent
-import com.example.ptchampion.ui.theme.PtBackground
-import com.example.ptchampion.ui.theme.PtCommandBlack
-import com.example.ptchampion.ui.theme.PtSecondaryText
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
+import com.example.ptchampion.ui.theme.*
 
 @Composable
 fun ExerciseListScreen(
     viewModel: ExerciseListViewModel = viewModel(),
     navigateToCamera: (exerciseId: Int, exerciseType: String) -> Unit
 ) {
-    val state by viewModel.state.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
-        color = PtBackground // Tactical Cream background
+        color = PtBackground // Use the main cream background
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp) // 20px global padding per style guide
-            ) {
-                // Title with styling guide typography
-                Text(
-                    text = "SELECT EXERCISE",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = PtCommandBlack
-                )
-                Spacer(modifier = Modifier.height(20.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp)
+        ) {
+            Text(
+                text = "SELECT EXERCISE",
+                style = MaterialTheme.typography.headlineMedium,
+                color = PtCommandBlack,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-                if (!state.isLoading && state.error == null) {
+            when {
+                uiState.isLoading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = PtAccent)
+                    }
+                }
+                uiState.error != null -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("Error: ${uiState.error}", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+                else -> {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp) // 12px card gap per style guide
+                        verticalArrangement = Arrangement.spacedBy(12.dp) // Spacing between cards
                     ) {
-                        items(state.exercises) { exercise ->
-                            ExerciseCard(
+                        itemsIndexed(uiState.exercises) { index, exercise ->
+                            // Determine background color based on index
+                            val backgroundColor = if (index % 2 == 0) {
+                                PtBackground // Standard cream for even items
+                            } else {
+                                PtBackground.copy(alpha = 0.95f) // Slightly darker cream for odd items
+                            }
+                            ExerciseListItem(
                                 exercise = exercise,
-                                onClick = {
-                                    navigateToCamera(exercise.id, exercise.type)
-                                }
+                                backgroundColor = backgroundColor,
+                                onClick = { navigateToCamera(exercise.id, exercise.type) }
                             )
                         }
                     }
                 }
-            }
-
-            // Centered Loading Indicator
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = PtAccent // Brass Gold color
-                )
-            }
-
-            // Centered Error Message
-            state.error?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .padding(16.dp)
-                )
             }
         }
     }
 }
 
 @Composable
-fun ExerciseCard(
-    exercise: ExerciseResponse,
+fun ExerciseListItem(
+    exercise: ExerciseInfo,
+    backgroundColor: Color,
     onClick: () -> Unit
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = PtBackground // Tactical Cream
+            containerColor = backgroundColor // Apply alternating background
         ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 1.dp // Soft subtle shadow per styling guide
-        ),
-        shape = MaterialTheme.shapes.medium // 12px radius as per styling guide
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp) // Subtle shadow
     ) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp), // 16px padding per styling guide
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 16.dp, vertical = 20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Use custom image based on exercise type
-            val iconRes = getExerciseIconResource(exercise.type)
-            Image(
-                painter = painterResource(id = iconRes),
-                contentDescription = exercise.name,
-                modifier = Modifier.size(48.dp),
-                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(PtAccent) // Apply gold tint
-            )
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
-                // Exercise name
-                Text(
-                    text = exercise.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = PtCommandBlack
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = exercise.icon,
+                    contentDescription = exercise.name,
+                    tint = PtAccent, // Brass Gold for icon
+                    modifier = Modifier.size(32.dp)
                 )
-                
-                // Exercise description or details (if available)
-                exercise.description?.let {
-                    Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
                     Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = PtSecondaryText
+                        text = exercise.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = PtCommandBlack
                     )
+                    // Display Personal Best instead of description
+                    exercise.personalBest?.let { pbText ->
+                        Text(
+                            text = pbText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = PtSecondaryText
+                        )
+                    }
                 }
             }
-            
             Icon(
-                imageVector = Icons.Default.KeyboardArrowRight,
-                contentDescription = "Start Exercise",
-                tint = PtAccent // Brass Gold
+                imageVector = Icons.Filled.KeyboardArrowRight,
+                contentDescription = "Select Exercise",
+                tint = PtAccent // Brass Gold for arrow
             )
         }
     }

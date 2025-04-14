@@ -60,7 +60,6 @@ import com.example.ptchampion.ui.screens.profile.ProfileScreen
 import com.example.ptchampion.ui.screens.home.HomeScreen
 import com.example.ptchampion.ui.screens.leaderboard.LeaderboardScreen
 import com.example.ptchampion.ui.screens.exerciselist.ExerciseListScreen
-import com.example.ptchampion.ui.screens.leaderboard.LocalLeaderboardScreen
 import com.example.ptchampion.ui.screens.camera.CameraScreen
 import com.example.ptchampion.ui.screens.history.HistoryScreen
 import com.example.ptchampion.ui.navigation.BottomNavItem
@@ -208,7 +207,7 @@ fun PTChampionApp() {
                     HistoryScreen()
                 }
                 composable(Screen.Leaderboard.route) {
-                    LocalLeaderboardScreen()
+                    LeaderboardScreen()
                 }
                 composable(Screen.Profile.route) {
                     ProfileScreen(
