@@ -3,9 +3,11 @@ package com.example.ptchampion.ui.screens.workoutdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.ptchampion.domain.model.Exercise
+import com.example.ptchampion.domain.model.Workout
 import com.example.ptchampion.domain.model.WorkoutResponse // Use WorkoutResponse from API
 import com.example.ptchampion.domain.repository.WorkoutRepository
-import com.example.ptchampion.util.Resource // Import your Resource class
+import com.example.ptchampion.domain.util.Resource // Import the domain Resource class
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

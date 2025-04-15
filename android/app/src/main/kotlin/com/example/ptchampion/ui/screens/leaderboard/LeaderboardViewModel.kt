@@ -8,7 +8,7 @@ import com.example.ptchampion.domain.repository.LeaderboardRepository
 import com.example.ptchampion.domain.repository.WorkoutRepository
 import com.example.ptchampion.domain.repository.UserRepository
 import com.example.ptchampion.domain.service.LocationService
-import com.example.ptchampion.util.Resource
+import com.example.ptchampion.domain.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

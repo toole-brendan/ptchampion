@@ -1,7 +1,7 @@
 package com.example.ptchampion.domain.repository
 
 import com.example.ptchampion.domain.model.LeaderboardEntry
-import com.example.ptchampion.util.Resource
+import com.example.ptchampion.domain.util.Resource
 
 interface LeaderboardRepository {
     // Define exercise types - could be an enum or sealed class later

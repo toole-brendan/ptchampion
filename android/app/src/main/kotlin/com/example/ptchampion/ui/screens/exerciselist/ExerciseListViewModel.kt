@@ -6,15 +6,15 @@ import androidx.compose.material.icons.filled.FitnessCenter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-// import com.example.ptchampion.domain.repository.ExerciseRepository // Remove unused import
-// import com.example.ptchampion.util.Resource // Remove unused import
-// import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.ptchampion.domain.repository.ExerciseRepository
+import com.example.ptchampion.domain.util.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-// import javax.inject.Inject
+import javax.inject.Inject
 
 // Model for the UI list - Use the backend response structure directly or map it
 // Using ExerciseResponse directly for simplicity now
@@ -40,9 +40,9 @@ data class ExerciseListUiState(
     val error: String? = null
 )
 
-// @HiltViewModel // Remove Hilt annotation
-class ExerciseListViewModel /* @Inject */ constructor(
-    // private val exerciseRepository: ExerciseRepository // Remove repo injection
+@HiltViewModel
+class ExerciseListViewModel @Inject constructor(
+    private val exerciseRepository: ExerciseRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExerciseListUiState())
@@ -55,54 +55,83 @@ class ExerciseListViewModel /* @Inject */ constructor(
     private fun loadExercisesWithPBs() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            try {
-                // TODO: Replace with actual data fetching (API call or local DB query)
-                val mockExercises = listOf(
-                    ExerciseInfo(
-                        id = 1,
-                        type = "pushups",
-                        name = "Push-ups",
-                        icon = Icons.Default.FitnessCenter,
-                        personalBest = "PB: 35 Reps"
-                    ),
-                    ExerciseInfo(
-                        id = 2,
-                        type = "pullups",
-                        name = "Pull-ups",
-                        icon = Icons.Default.FitnessCenter,
-                        personalBest = "PB: 12 Reps"
-                    ),
-                    ExerciseInfo(
-                        id = 3,
-                        type = "situps",
-                        name = "Sit-ups",
-                        icon = Icons.Default.FitnessCenter,
-                        personalBest = "PB: 50 Reps"
-                    ),
-                    ExerciseInfo(
-                        id = 4,
-                        type = "running",
-                        name = "Running",
-                        icon = Icons.Filled.DirectionsRun,
-                        personalBest = "Best 1.5 Mile: 10:30"
-                    )
-                )
-
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        exercises = mockExercises,
-                        error = null
-                    )
+            
+            when (val result = exerciseRepository.getExercises()) {
+                is Resource.Success -> {
+                    val exercises = result.data?.map { exercise ->
+                        ExerciseInfo(
+                            id = exercise.id,
+                            type = exercise.type,
+                            name = exercise.name,
+                            icon = getIconForExerciseType(exercise.type),
+                            personalBest = null // You would fetch this from a separate repository
+                        )
+                    } ?: emptyList()
+                    
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            exercises = exercises,
+                            error = null
+                        )
+                    }
                 }
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        error = "Failed to load exercises: ${e.message}"
-                    )
+                is Resource.Error -> {
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = result.message ?: "Failed to load exercises"
+                        )
+                    }
+                    // Fallback to mock data for development
+                    _uiState.update {
+                        it.copy(exercises = createMockExercises())
+                    }
+                }
+                is Resource.Loading -> {
+                    _uiState.update { it.copy(isLoading = true) }
                 }
             }
         }
+    }
+    
+    private fun getIconForExerciseType(type: String): ImageVector {
+        return when (type) {
+            "running" -> Icons.Filled.DirectionsRun
+            else -> Icons.Default.FitnessCenter
+        }
+    }
+    
+    private fun createMockExercises(): List<ExerciseInfo> {
+        return listOf(
+            ExerciseInfo(
+                id = 1,
+                type = "pushups",
+                name = "Push-ups",
+                icon = Icons.Default.FitnessCenter,
+                personalBest = "PB: 35 Reps"
+            ),
+            ExerciseInfo(
+                id = 2,
+                type = "pullups",
+                name = "Pull-ups",
+                icon = Icons.Default.FitnessCenter,
+                personalBest = "PB: 12 Reps"
+            ),
+            ExerciseInfo(
+                id = 3,
+                type = "situps",
+                name = "Sit-ups",
+                icon = Icons.Default.FitnessCenter,
+                personalBest = "PB: 50 Reps"
+            ),
+            ExerciseInfo(
+                id = 4,
+                type = "running",
+                name = "Running",
+                icon = Icons.Filled.DirectionsRun,
+                personalBest = "Best 1.5 Mile: 10:30"
+            )
+        )
     }
 } 

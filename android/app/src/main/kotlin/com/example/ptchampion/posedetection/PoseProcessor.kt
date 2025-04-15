@@ -27,6 +27,12 @@ interface PoseProcessor {
     }
 
     /**
+     * The current listener for pose detection events
+     * Can be changed dynamically if needed
+     */
+    var listener: PoseProcessorListener?
+
+    /**
      * Initialize the pose detector
      */
     fun initialize()
