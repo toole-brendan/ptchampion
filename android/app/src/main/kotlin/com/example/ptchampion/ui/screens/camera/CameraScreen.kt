@@ -27,7 +27,6 @@ import androidx.lifecycle.LifecycleOwner
 import com.example.ptchampion.posedetection.PoseOverlay
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import com.google.common.util.concurrent.ListenableFuture
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -55,7 +54,16 @@ import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.shouldShowRationale
-// import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult // Comment out import
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+
+// Create a helper class to handle the Camera functionality with stubs
+class CameraHelper {
+    companion object {
+        fun createCamera(context: Context): ProcessCameraProvider {
+            return ProcessCameraProvider.getInstance(context).get()
+        }
+    }
+}
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
@@ -67,13 +75,16 @@ fun CameraScreen(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    // Restore CameraX setup
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    val cameraExecutor: ExecutorService? = null // Placeholder
+    
+    // Use a helper method to create the camera provider
+    val cameraProvider = remember { CameraHelper.createCamera(context) }
+    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
 
     val uiState by viewModel.uiState.collectAsState()
-    // var poseResult by remember { mutableStateOf<PoseLandmarkerResult?>(null) } // Comment out state
     var sourceInfo by remember { mutableStateOf(Pair(0, 0)) } // Width, Height
+    
+    // Track latest pose detection result for overlay
+    var latestPoseResult by remember { mutableStateOf<PoseLandmarkerResult?>(null) }
 
     // Handle camera permissions
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
@@ -100,14 +111,14 @@ fun CameraScreen(
                 CameraContent(
                     context = context,
                     lifecycleOwner = lifecycleOwner,
-                    cameraProviderFuture = cameraProviderFuture,
+                    cameraProvider = cameraProvider,
                     cameraExecutor = cameraExecutor,
                     uiState = uiState,
                     viewModel = viewModel,
-                    // poseResult: PoseLandmarkerResult?, // Comment out parameter
                     sourceInfo = sourceInfo,
-                    // onPoseResultUpdate: (PoseLandmarkerResult?) -> Unit, // Comment out callback
-                    onSourceInfoUpdate = { sourceInfo = it }
+                    onSourceInfoUpdate = { sourceInfo = it },
+                    latestPoseResult = latestPoseResult,
+                    onPoseResultUpdate = { latestPoseResult = it }
                 )
             } else {
                 // Show permission request UI
@@ -122,7 +133,7 @@ fun CameraScreen(
     // Cleanup camera executor
     DisposableEffect(Unit) {
         onDispose {
-            cameraExecutor?.shutdown()
+            cameraExecutor.shutdown()
         }
     }
 }
@@ -168,14 +179,14 @@ private fun PermissionRequestScreen(
 private fun CameraContent(
     context: Context,
     lifecycleOwner: LifecycleOwner,
-    cameraProviderFuture: java.util.concurrent.ListenableFuture<ProcessCameraProvider>,
+    cameraProvider: ProcessCameraProvider,
     cameraExecutor: ExecutorService,
     uiState: CameraUiState,
     viewModel: CameraViewModel,
-    // poseResult: PoseLandmarkerResult?, // Comment out parameter
     sourceInfo: Pair<Int, Int>,
-    // onPoseResultUpdate: (PoseLandmarkerResult?) -> Unit, // Comment out callback
-    onSourceInfoUpdate: (Pair<Int, Int>) -> Unit
+    onSourceInfoUpdate: (Pair<Int, Int>) -> Unit,
+    latestPoseResult: PoseLandmarkerResult?,
+    onPoseResultUpdate: (PoseLandmarkerResult?) -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         // Camera Preview
@@ -183,13 +194,12 @@ private fun CameraContent(
             factory = { ctx ->
                 val previewView = PreviewView(ctx)
                 // Restore CameraX logic
-                val cameraProvider = cameraProviderFuture.get()
                 val preview = Preview.Builder().build().also {
                     it.setSurfaceProvider(previewView.surfaceProvider)
                 }
 
                 val imageAnalysis = ImageAnalysis.Builder()
-                    .setTargetResolution(android.util.Size(1280, 720)) // Example resolution
+                    .setTargetResolution(android.util.Size(1280, 720))
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
                     .build()
@@ -201,9 +211,24 @@ private fun CameraContent(
                                 onSourceInfoUpdate(Pair(imageProxy.width, imageProxy.height))
                             }
                             
-                            // Pass frame to ViewModel ONLY IF PoseDetectorProcessor is ready
+                            // Pass frame to ViewModel
                             val processor = viewModel.poseDetectorProcessor
                             if (processor != null && processor.isInitialized()) {
+                                // Get the latest result for the overlay
+                                // We use an intermediary listener to capture results for overlay
+                                val originalListener = processor.listener
+                                processor.listener = object : com.example.ptchampion.posedetection.PoseProcessor.PoseProcessorListener {
+                                    override fun onPoseDetected(result: PoseLandmarkerResult, timestampMs: Long) {
+                                        // Update the latest result for overlay
+                                        onPoseResultUpdate(result)
+                                        // Forward to original listener
+                                        originalListener?.onPoseDetected(result, timestampMs)
+                                    }
+                                    
+                                    override fun onError(error: String, errorCode: Int) {
+                                        originalListener?.onError(error, errorCode)
+                                    }
+                                }
                                 processor.processImageProxy(imageProxy, rotationDegrees)
                             } else {
                                 imageProxy.close() // Close if processor not ready
@@ -223,7 +248,6 @@ private fun CameraContent(
                         )
                     } catch (exc: Exception) {
                         Log.e("CameraScreen", "Use case binding failed", exc)
-                        Toast.makeText(context, "Failed to start camera: ${exc.message}", Toast.LENGTH_LONG).show()
                     }
                 }
 
@@ -236,7 +260,7 @@ private fun CameraContent(
 
         // Pose Overlay
         PoseOverlay(
-            // poseResult = poseResult, // Comment out argument
+            poseResult = latestPoseResult,
             sourceInfo = sourceInfo,
             modifier = Modifier.fillMaxSize()
         )

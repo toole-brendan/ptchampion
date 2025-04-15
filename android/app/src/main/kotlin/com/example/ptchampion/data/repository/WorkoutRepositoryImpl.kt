@@ -14,7 +14,7 @@ import com.example.ptchampion.domain.model.SaveWorkoutRequest
 import com.example.ptchampion.domain.model.WorkoutResponse
 import com.example.ptchampion.domain.model.WorkoutSession
 import com.example.ptchampion.domain.repository.WorkoutRepository
-import com.example.ptchampion.util.Resource
+import com.example.ptchampion.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
 import retrofit2.HttpException
 import java.io.IOException

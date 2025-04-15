@@ -11,7 +11,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
-import androidx.paging.compose.items
 import com.example.ptchampion.domain.model.WorkoutSession
 import com.example.ptchampion.ui.theme.PTChampionTheme
 import androidx.compose.material3.CardDefaults
@@ -42,13 +41,9 @@ fun HistoryScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Use modern Paging items approach
-            items(
-                count = lazyPagingItems.itemCount,
-                key = lazyPagingItems.itemKey { it.id }, // Use itemKey extension
-                // contentType = lazyPagingItems.itemContentType { "workoutItem" } // Optional: for performance
-            ) { index ->
-                val workoutSession = lazyPagingItems[index] // Get item by index
+            // Use standard items approach instead of paging extensions
+            items(count = lazyPagingItems.itemCount) { index ->
+                val workoutSession = lazyPagingItems[index]
                 workoutSession?.let {
                     WorkoutHistoryItem(workout = it)
                 }

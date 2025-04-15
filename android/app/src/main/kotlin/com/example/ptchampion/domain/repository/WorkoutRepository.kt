@@ -3,7 +3,7 @@ package com.example.ptchampion.domain.repository
 import androidx.paging.PagingData
 import com.example.ptchampion.domain.model.SaveWorkoutRequest
 import com.example.ptchampion.domain.model.WorkoutResponse
-import com.example.ptchampion.util.Resource
+import com.example.ptchampion.domain.util.Resource
 import com.example.ptchampion.domain.model.ExerciseResponse
 import com.example.ptchampion.domain.model.PaginatedWorkoutResponse
 import com.example.ptchampion.domain.model.WorkoutSession

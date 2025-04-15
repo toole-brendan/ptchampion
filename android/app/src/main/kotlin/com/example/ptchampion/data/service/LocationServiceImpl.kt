@@ -10,7 +10,7 @@ import android.os.Looper
 import androidx.core.content.ContextCompat
 import com.example.ptchampion.domain.model.LocationData
 import com.example.ptchampion.domain.service.LocationService
-import com.example.ptchampion.util.Resource
+import com.example.ptchampion.domain.util.Resource
 import com.google.android.gms.location.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi

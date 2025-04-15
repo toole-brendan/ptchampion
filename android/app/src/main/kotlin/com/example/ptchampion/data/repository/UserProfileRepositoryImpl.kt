@@ -98,9 +98,8 @@ class UserProfileRepositoryImpl @Inject constructor(
 
     private fun createUpdateRequestFromProfile(profile: UserProfile): UpdateUserRequestDto {
         return UpdateUserRequestDto(
-            username = profile.username,
             displayName = profile.displayName
-            // Add other fields as needed
+            // Note: Other fields are not present in UserProfile model
         )
     }
 } 

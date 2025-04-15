@@ -6,89 +6,74 @@ import androidx.camera.core.CameraSelector
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.example.ptchampion.domain.exercise.ExerciseAnalyzer
+import com.example.ptchampion.domain.exercise.analyzers.PushupAnalyzer
+import com.example.ptchampion.domain.exercise.analyzers.PullupAnalyzer
+import com.example.ptchampion.domain.exercise.analyzers.SitupAnalyzer
 import com.example.ptchampion.domain.repository.ExerciseRepository
 import com.example.ptchampion.domain.util.Resource
-import com.example.ptchampion.posedetection.ExerciseAnalyzer
-import com.example.ptchampion.posedetection.ExerciseType
-// import com.example.ptchampion.posedetection.PoseDetectorProcessor // Comment out import
-// import com.example.ptchampion.posedetection.PoseProcessor // Comment out import
+import com.example.ptchampion.posedetection.PoseDetectorProcessor
+import com.example.ptchampion.posedetection.PoseProcessor
+import com.example.ptchampion.posedetection.PoseLandmarkerHelper
 import com.google.mediapipe.tasks.vision.core.RunningMode
-// import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult // Comment out import
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.*
 import javax.inject.Inject
-
-// Data class to hold all state relevant to the Camera Screen UI
-data class CameraUiState(
-    val lensFacing: Int = CameraSelector.LENS_FACING_FRONT,
-    val reps: Int = 0,
-    val timerSeconds: Int = 0,
-    val feedback: String = "Initializing...",
-    val formScore: Double = 100.0, // Overall form score
-    val isFinished: Boolean = false,
-    val error: String? = null,
-    val isLoadingSave: Boolean = false // For showing loading during save
-)
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     application: Application,
     savedStateHandle: SavedStateHandle,
-    private val exerciseRepository: ExerciseRepository // Inject repository
-) : AndroidViewModel(application)/*, PoseProcessor.PoseProcessorListener*/ { // Comment out listener interface
+    private val exerciseRepository: ExerciseRepository
+) : AndroidViewModel(application), PoseProcessor.PoseProcessorListener {
 
     private val _uiState = MutableStateFlow(CameraUiState())
     val uiState: StateFlow<CameraUiState> = _uiState.asStateFlow()
 
-    // Make public to access from camera screen
-    val poseDetectorProcessor: Any? = null // Change type to avoid unresolved reference
-        // get() = _poseDetectorProcessor // Comment out getter
-        
-    // private var _poseDetectorProcessor: PoseDetectorProcessor? = null // Comment out processor instance
+    private var _poseDetectorProcessor: PoseDetectorProcessor? = null
+    val poseDetectorProcessor: PoseDetectorProcessor?
+        get() = _poseDetectorProcessor
+
     private lateinit var exerciseAnalyzer: ExerciseAnalyzer
 
     private val exerciseId: Int = savedStateHandle.get<Int>("exerciseId") ?: -1
-    private val exerciseApiType: String = savedStateHandle.get<String>("exerciseType") ?: "unknown"
+    private val exerciseTypeKey: String = savedStateHandle.get<String>("exerciseType") ?: "pushup"
 
+    private var repCount = 0
+    private var timerJob: kotlinx.coroutines.Job? = null
+    
     init {
-        Log.d("CameraViewModel", "Initializing for exerciseId: $exerciseId, type: $exerciseApiType")
-        setupExerciseAnalyzer(exerciseApiType)
-        // setupPoseDetector() // Comment out setup call
+        Log.d("CameraViewModel", "Initializing for exerciseId: $exerciseId, type: $exerciseTypeKey")
+        setupExerciseAnalyzer(exerciseTypeKey)
+        setupPoseDetector()
         startTimer()
     }
 
     private fun setupExerciseAnalyzer(type: String) {
-        val exerciseType = when (type.lowercase()) {
-            "pushups", "pushup" -> ExerciseType.PUSH_UPS
-            "situps", "situp" -> ExerciseType.SIT_UPS
-            "pullups", "pullup" -> ExerciseType.PULL_UPS
-            // Add other types if needed
-            else -> ExerciseType.PUSH_UPS // Default or throw error
+        // Create appropriate analyzer based on exercise type
+        exerciseAnalyzer = when (type.lowercase()) {
+            "pushup", "pushups" -> PushupAnalyzer()
+            "pullup", "pullups" -> PullupAnalyzer()
+            "situp", "situps" -> SitupAnalyzer()
+            else -> PushupAnalyzer() // Default to pushup
         }
         
-        // Create a simple analyzer that updates the UI state
-        exerciseAnalyzer = ExerciseAnalyzer(exerciseType) { reps, feedbackMessage, currentFormScore ->
-            _uiState.update {
-                it.copy(
-                    reps = reps,
-                    feedback = feedbackMessage,
-                    formScore = currentFormScore
-                )
-            }
+        _uiState.update { 
+            it.copy(feedback = "Position yourself for ${type.replaceFirstChar { c -> c.uppercase() }}") 
         }
-        
-        _uiState.update { it.copy(feedback = "Position yourself for ${exerciseType.name.replace('_', ' ')}") }
     }
 
-    /* // Comment out PoseDetector setup
     private fun setupPoseDetector() {
         viewModelScope.launch {
             try {
                 _poseDetectorProcessor = PoseDetectorProcessor(
                     context = getApplication(),
                     runningMode = RunningMode.LIVE_STREAM,
-                    showConfidence = true, // Example configuration
+                    showConfidence = true,
                     poseProcessorListener = this@CameraViewModel
                 ).also {
                     it.initialize()
@@ -100,46 +85,45 @@ class CameraViewModel @Inject constructor(
             }
         }
     }
-    */
 
     private fun startTimer() {
-        viewModelScope.launch {
-            // Simple timer, replace with more robust implementation if needed
+        timerJob?.cancel() // Cancel previous timer if any
+        timerJob = viewModelScope.launch {
             while (true) {
-                 kotlinx.coroutines.delay(1000)
-                 if (!_uiState.value.isFinished) {
-                     _uiState.update { it.copy(timerSeconds = it.timerSeconds + 1) }
-                 }
+                kotlinx.coroutines.delay(1000)
+                if (!_uiState.value.isFinished) {
+                    _uiState.update { it.copy(timerSeconds = it.timerSeconds + 1) }
+                }
             }
         }
     }
 
-    /* // Comment out unused processFrame
-    fun processFrame(result: Any, timestampMs: Long) { // Change result type
-         // Don't process if finished or detector not ready
-         if (_uiState.value.isFinished /*|| _poseDetectorProcessor == null*/) return
-         
-         // Forward result to exercise analyzer
-         // This is a simplified approach - the real analyzer would process the pose data
-         _uiState.update { 
-             it.copy(
-                 reps = it.reps + 1, // Increment reps as a placeholder
-                 feedback = "Processing pose..." // Update feedback
-             )
-         }
-    }
-    */
-
-    /* // Comment out listener methods
+    // Process pose detection results
     override fun onPoseDetected(result: PoseLandmarkerResult, timestampMs: Long) {
-        // processFrame(result, timestampMs)
+        if (_uiState.value.isFinished || _poseDetectorProcessor == null) return
+        
+        try {
+            // Pass the result directly to the analyzer
+            // The analyzer should handle conversion between PoseLandmarkerResult and MockNormalizedLandmark
+            val analysisResult = exerciseAnalyzer.analyze(result)
+            
+            // Update UI state with analyzer results
+            _uiState.update { 
+                it.copy(
+                    reps = analysisResult.repCount,
+                    feedback = analysisResult.feedback ?: "Good form",
+                    formScore = analysisResult.formScore.toDouble()
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("CameraViewModel", "Error analyzing pose", e)
+        }
     }
 
     override fun onError(error: String, errorCode: Int) {
         Log.e("CameraViewModel", "Pose detection error ($errorCode): $error")
         _uiState.update { it.copy(error = "Pose detection error: $error") }
     }
-    */
 
     fun switchCamera() {
         val currentLens = _uiState.value.lensFacing
@@ -149,10 +133,7 @@ class CameraViewModel @Inject constructor(
             CameraSelector.LENS_FACING_FRONT
         }
         _uiState.update { it.copy(lensFacing = newLens) }
-        // Re-setup detector or notify CameraX view to use new lens
-        // _poseDetectorProcessor?.setLensFacing(newLens) // Assuming processor handles this // Comment out call
-        Log.d("CameraViewModel", "Switching camera to: ${if (newLens == 1) "FRONT" else "BACK"}")
-        // Note: Actual camera switching is handled by CameraX setup in the Composable
+        _poseDetectorProcessor?.setLensFacing(newLens)
     }
 
     fun finishWorkout() {
@@ -167,11 +148,10 @@ class CameraViewModel @Inject constructor(
             _uiState.update { it.copy(isLoadingSave = true, error = null) }
             val state = _uiState.value
 
-            Log.d("CameraViewModel", "Attempting to save workout - ID: $exerciseId, Reps: ${state.reps}, Duration: ${state.timerSeconds}, Form: ${state.formScore}")
+            Log.d("CameraViewModel", "Saving workout - ID: $exerciseId, Reps: ${state.reps}, Duration: ${state.timerSeconds}, Form: ${state.formScore}")
 
             if (exerciseId == -1) {
                 _uiState.update { it.copy(isLoadingSave = false, error = "Invalid Exercise ID. Cannot save.") }
-                Log.e("CameraViewModel", "Invalid Exercise ID (-1) received. Cannot save.")
                 return@launch
             }
 
@@ -179,25 +159,24 @@ class CameraViewModel @Inject constructor(
                 exerciseId = exerciseId,
                 reps = state.reps,
                 duration = state.timerSeconds,
-                formScore = state.formScore.toInt(), // Convert form score to Int (0-100)
+                distance = null,
+                notes = null,
+                formScore = state.formScore.toInt(),
                 completed = true,
-                distance = null, // Not applicable for non-running
-                notes = "Logged from Android App", // Optional notes
-                deviceId = null // Optional device ID
+                deviceId = null
             )
 
             when (result) {
                 is Resource.Success -> {
                     _uiState.update { it.copy(isLoadingSave = false, feedback = "Workout Saved Successfully!") }
                     Log.i("CameraViewModel", "Workout saved successfully: ${result.data}")
-                    // Consider adding a small delay before navigating back or triggering navigation via effect
                 }
                 is Resource.Error -> {
                     _uiState.update { it.copy(isLoadingSave = false, error = result.message ?: "Failed to save workout") }
                     Log.e("CameraViewModel", "Error saving workout: ${result.message}")
                 }
-                else -> {
-                    // Loading state handled by isLoadingSave
+                is Resource.Loading -> {
+                    // Already handled
                 }
             }
         }
@@ -205,7 +184,19 @@ class CameraViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        // _poseDetectorProcessor?.close() // Comment out close call
-        Log.d("CameraViewModel", "ViewModel cleared, PoseDetectorProcessor closed.")
+        _poseDetectorProcessor?.close()
+        timerJob?.cancel()
+        Log.d("CameraViewModel", "ViewModel cleared, resources released.")
     }
-} 
+}
+
+data class CameraUiState(
+    val reps: Int = 0,
+    val formScore: Float = 85f,
+    val timerSeconds: Int = 0,
+    val feedback: String = "Ready",
+    val isFinished: Boolean = false,
+    val isLoadingSave: Boolean = false,
+    val error: String? = null,
+    val lensFacing: Int = CameraSelector.LENS_FACING_BACK
+) 

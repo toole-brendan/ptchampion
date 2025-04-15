@@ -4,7 +4,7 @@ import com.example.ptchampion.data.network.WorkoutApiService
 import com.example.ptchampion.data.network.mapper.toLeaderboardEntry
 import com.example.ptchampion.domain.model.LeaderboardEntry
 import com.example.ptchampion.domain.repository.LeaderboardRepository
-import com.example.ptchampion.util.Resource
+import com.example.ptchampion.domain.util.Resource
 import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject

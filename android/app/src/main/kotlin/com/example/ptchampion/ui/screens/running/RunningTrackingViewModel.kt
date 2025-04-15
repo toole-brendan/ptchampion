@@ -9,7 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.ptchampion.domain.model.SaveWorkoutRequest
 import com.example.ptchampion.domain.repository.WorkoutRepository
 import com.example.ptchampion.domain.service.LocationService
-import com.example.ptchampion.util.Resource
+import com.example.ptchampion.domain.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*

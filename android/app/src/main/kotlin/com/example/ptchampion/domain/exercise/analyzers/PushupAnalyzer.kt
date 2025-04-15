@@ -1,220 +1,46 @@
 package com.example.ptchampion.domain.exercise.analyzers
 
+import android.util.Log
 import com.example.ptchampion.domain.exercise.AnalysisResult
 import com.example.ptchampion.domain.exercise.ExerciseAnalyzer
 import com.example.ptchampion.domain.exercise.ExerciseState
 import com.example.ptchampion.domain.exercise.utils.AngleCalculator
-import com.example.ptchampion.domain.exercise.utils.MockNormalizedLandmark
 import com.example.ptchampion.domain.exercise.utils.PoseLandmark
-import com.example.ptchampion.domain.exercise.utils.landmarks
-import com.example.ptchampion.domain.exercise.utils.visibility
-import com.example.ptchampion.domain.exercise.utils.worldLandmarks
+import com.example.ptchampion.domain.exercise.utils.PoseResultExtensions.getLandmark
+import com.example.ptchampion.domain.exercise.utils.PoseResultExtensions.isLandmarkVisible
+import com.example.ptchampion.domain.exercise.utils.PoseResultExtensions.areAllLandmarksVisible
+import com.example.ptchampion.domain.exercise.utils.PoseResultExtensions.getAverageConfidence
 import com.example.ptchampion.posedetection.PoseLandmarkerHelper
+import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import kotlin.math.abs
 import kotlin.math.min
 
 /**
- * Concrete implementation of [ExerciseAnalyzer] for push-ups.
+ * Analyzer for push-ups according to US Army APFT standards.
+ * 
+ * Army standards require:
+ * - Body forms a generally straight line from head to heels
+ * - Starting position has fully extended arms
+ * - Lowering until upper arms are at least parallel to the ground
+ * - No arching of the back or raising the buttocks
+ * - Movement as a single unit
  */
 class PushupAnalyzer : ExerciseAnalyzer {
 
-    private var repCount = 0
-    private var currentState = ExerciseState.IDLE
-    private var previousState = ExerciseState.IDLE
-    private var minElbowAngle = 180f  // Track minimum angle during a rep for depth check
-    private var formIssues = mutableListOf<String>()
-
-    // Constants for form analysis - These can be tuned
-    private val MIN_ELBOW_ANGLE_THRESHOLD = 80f  // Arms should bend significantly at the bottom
-    private val FULL_EXTENSION_THRESHOLD = 160f  // Arms nearly straight at top
-    private val SHOULDER_ALIGNMENT_THRESHOLD = 0.15f // X-axis alignment tolerance
-    private val HIP_SAG_THRESHOLD = 0.08f // Y-axis difference threshold
-    private val REQUIRED_VISIBILITY = 0.5f       // Minimum visibility for a landmark to be considered
-
-    override fun analyze(result: PoseLandmarkerHelper.ResultBundle): AnalysisResult {
-        formIssues.clear()
-
-        // Ensure pose data is available
-        if (result.results.landmarks.isEmpty()) {
-            return AnalysisResult(repCount, "No pose detected", ExerciseState.INVALID)
-        }
-
-        val landmarks = result.results.landmarks
-
-        // Check if key landmarks are visible before proceeding
-        if (!areKeyLandmarksVisible(landmarks)) {
-            return AnalysisResult(repCount, "Position yourself fully in frame", ExerciseState.INVALID, 0f)
-        }
-
-        // Get key landmarks
-        val leftShoulder = landmarks[PoseLandmark.LEFT_SHOULDER]
-        val rightShoulder = landmarks[PoseLandmark.RIGHT_SHOULDER]
-        val leftElbow = landmarks[PoseLandmark.LEFT_ELBOW]
-        val rightElbow = landmarks[PoseLandmark.RIGHT_ELBOW]
-        val leftWrist = landmarks[PoseLandmark.LEFT_WRIST]
-        val rightWrist = landmarks[PoseLandmark.RIGHT_WRIST]
-        val leftHip = landmarks[PoseLandmark.LEFT_HIP]
-        val rightHip = landmarks[PoseLandmark.RIGHT_HIP]
-        val leftKnee = landmarks[PoseLandmark.LEFT_KNEE]
-        val rightKnee = landmarks[PoseLandmark.RIGHT_KNEE]
-
-        // Calculate angles
-        val leftElbowAngle = AngleCalculator.calculateAngle(leftShoulder, leftElbow, leftWrist)
-        val rightElbowAngle = AngleCalculator.calculateAngle(rightShoulder, rightElbow, rightWrist)
-
-        // Use the average or the minimum angle, depending on desired strictness
-        val avgElbowAngle = if (leftElbowAngle > 0 && rightElbowAngle > 0) {
-            (leftElbowAngle + rightElbowAngle) / 2
-        } else {
-             -1f // Indicate error or insufficient data
-        }
-
-        if (avgElbowAngle < 0) {
-            return AnalysisResult(repCount, "Cannot calculate elbow angle", ExerciseState.INVALID)
-        }
-
-        // Update minimum elbow angle reached during the down phase
-        if (currentState == ExerciseState.DOWN || (currentState == ExerciseState.STARTING && previousState == ExerciseState.UP)) {
-            minElbowAngle = min(minElbowAngle, avgElbowAngle)
-        }
-
-        // Form Checks
-        checkShoulderAlignment(leftShoulder, rightShoulder)
-        checkHipSag(leftShoulder, rightShoulder, leftHip, rightHip)
-
-        // State machine logic
-        previousState = currentState
-        currentState = determineState(avgElbowAngle)
-
-        // Rep counting logic
-        if (previousState == ExerciseState.DOWN && currentState == ExerciseState.UP) {
-            repCount++
-            // Check depth after completing the rep
-            if (minElbowAngle > MIN_ELBOW_ANGLE_THRESHOLD) {
-                formIssues.add("Go deeper (elbow angle: ${minElbowAngle.toInt()}°)")
-            }
-            // Reset min angle for the next rep
-            minElbowAngle = 180f
-        }
-
-        // Handle transition from IDLE or INVALID to STARTING
-        if ((previousState == ExerciseState.IDLE || previousState == ExerciseState.INVALID) &&
-            (currentState == ExerciseState.UP || currentState == ExerciseState.DOWN) ) {
-            currentState = ExerciseState.STARTING
-        }
-
-        // Generate feedback string
-        val feedback = if (formIssues.isNotEmpty()) formIssues.joinToString(". ") else null
-
-        // Calculate form score (placeholder)
-        val formScore = calculateFormScore(
-            minElbowAngleAchieved = minElbowAngle,
-            shoulders = Pair(leftShoulder, rightShoulder),
-            hips = Pair(leftHip, rightHip)
-        )
-
-        // Use overall pose confidence from MediaPipe results
-        val confidence = result.results.worldLandmarks.map { it.visibility }.average().toFloat()
-
-        return AnalysisResult(
-            repCount = repCount,
-            feedback = feedback,
-            state = currentState,
-            confidence = confidence,
-            formScore = formScore
-        )
-    }
-
-    /**
-     * Determines the current state based on the average elbow angle.
-     */
-    private fun determineState(elbowAngle: Float): ExerciseState {
-        return when {
-            elbowAngle < MIN_ELBOW_ANGLE_THRESHOLD * 1.2 -> ExerciseState.DOWN // Arms significantly bent
-            elbowAngle > FULL_EXTENSION_THRESHOLD * 0.9 -> ExerciseState.UP // Arms nearly straight
-            currentState == ExerciseState.IDLE -> ExerciseState.STARTING // Initial movement detected
-            else -> currentState // Maintain current state if in transition zone
-        }
-    }
-
-    /**
-     * Checks if the shoulders are aligned horizontally.
-     * Adds form issues if misalignment exceeds the threshold.
-     */
-    private fun checkShoulderAlignment(leftShoulder: MockNormalizedLandmark, rightShoulder: MockNormalizedLandmark) {
-        val horizontalOffset = abs(leftShoulder.y - rightShoulder.y)
-        if (horizontalOffset > SHOULDER_ALIGNMENT_THRESHOLD) {
-            formIssues.add("Keep shoulders level")
-        }
-    }
-
-    /**
-     * Checks if the hips are sagging.
-     * Adds form issues if the hips are significantly lower than the shoulders.
-     */
-    private fun checkHipSag(
-        leftShoulder: MockNormalizedLandmark,
-        rightShoulder: MockNormalizedLandmark,
-        leftHip: MockNormalizedLandmark,
-        rightHip: MockNormalizedLandmark
-    ) {
-        // Average Y positions
-        val avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2
-        val avgHipY = (leftHip.y + rightHip.y) / 2
-
-        // Check if hips are significantly lower than shoulders
-        // Note: In normalized coordinates, y increases downwards in the image
-        val hipSag = abs(avgHipY - avgShoulderY)
-        if (hipSag > HIP_SAG_THRESHOLD) {
-            formIssues.add("Keep your core tight, hips are sagging")
-        }
-    }
-
-    /**
-     * Calculates a basic form score (0-100).
-     * Deducts points for insufficient depth and hip sag.
-     */
-    private fun calculateFormScore(
-        minElbowAngleAchieved: Float,
-        shoulders: Pair<MockNormalizedLandmark, MockNormalizedLandmark>,
-        hips: Pair<MockNormalizedLandmark, MockNormalizedLandmark>
-    ): Int {
-        var score = 100
-
-        // Deduct points for insufficient depth
-        if (minElbowAngleAchieved > MIN_ELBOW_ANGLE_THRESHOLD) {
-            // More deduction for larger deviation
-            val depthPenalty = ((minElbowAngleAchieved - MIN_ELBOW_ANGLE_THRESHOLD) * 1.5).toInt().coerceAtMost(40)
-            score -= depthPenalty
-        }
-
-        // Deduct for poor shoulder alignment
-        val horizontalOffset = abs(shoulders.first.y - shoulders.second.y)
-        if (horizontalOffset > SHOULDER_ALIGNMENT_THRESHOLD) {
-            val alignmentPenalty = (horizontalOffset * 200).toInt().coerceAtMost(30)
-            score -= alignmentPenalty
-        }
-
-        // Deduct for hip sag
-        val avgShoulderY = (shoulders.first.y + shoulders.second.y) / 2
-        val avgHipY = (hips.first.y + hips.second.y) / 2
-        val hipSag = abs(avgHipY - avgShoulderY)
+    companion object {
+        private const val TAG = "PushupAnalyzer"
         
-        if (hipSag > HIP_SAG_THRESHOLD) {
-            val sagPenalty = (hipSag * 300).toInt().coerceAtMost(30)
-            score -= sagPenalty 
-        }
-
-        // TODO: Add deductions for other factors like elbow flare if implemented
-
-        return score.coerceIn(0, 100)
-    }
-
-    /**
-     * Checks if all essential landmarks for pushup analysis are visible.
-     */
-    private fun areKeyLandmarksVisible(landmarks: List<MockNormalizedLandmark>): Boolean {
-        val keyPoints = listOf(
+        // Constants for APFT standard form checking
+        private const val MIN_ELBOW_ANGLE_THRESHOLD = 90f  // Upper arms must be parallel to ground
+        private const val FULL_EXTENSION_THRESHOLD = 160f  // Arms nearly straight at top
+        private const val SHOULDER_ALIGNMENT_THRESHOLD = 0.10f // X-axis alignment tolerance
+        private const val HIP_SAG_THRESHOLD = 0.10f // Hip sagging threshold
+        private const val HIP_PIKE_THRESHOLD = 0.12f // Hip raising/piking threshold
+        private const val BODY_ALIGNMENT_THRESHOLD = 0.15f // Shoulders-hips-ankles alignment
+        private const val REQUIRED_VISIBILITY = 0.5f       // Minimum visibility for landmarks
+        
+        // Key landmarks required for proper pushup analysis
+        private val KEY_LANDMARKS = listOf(
             PoseLandmark.LEFT_SHOULDER,
             PoseLandmark.RIGHT_SHOULDER,
             PoseLandmark.LEFT_ELBOW,
@@ -222,26 +48,436 @@ class PushupAnalyzer : ExerciseAnalyzer {
             PoseLandmark.LEFT_WRIST,
             PoseLandmark.RIGHT_WRIST,
             PoseLandmark.LEFT_HIP,
-            PoseLandmark.RIGHT_HIP
+            PoseLandmark.RIGHT_HIP,
+            PoseLandmark.LEFT_KNEE,
+            PoseLandmark.RIGHT_KNEE,
+            PoseLandmark.LEFT_ANKLE,
+            PoseLandmark.RIGHT_ANKLE
         )
+    }
 
-        return keyPoints.all { landmarks.getOrNull(it)?.visibility ?: 0f >= REQUIRED_VISIBILITY }
+    private var repCount = 0
+    private var currentState = ExerciseState.IDLE
+    private var previousState = ExerciseState.IDLE
+    private var minElbowAngle = 180f  // Track minimum angle during rep for depth check
+    private var maxHipDeviation = 0f  // Track maximum hip deviation from straight line
+    private val formIssues = mutableListOf<String>()
+    
+    // Store previous valid positions for movement analysis
+    private var lastValidShoulderY = 0f
+    private var lastValidHipY = 0f
+    private var lastValidElbowAngle = 180f
+
+    override fun analyze(resultBundle: PoseLandmarkerHelper.ResultBundle): AnalysisResult {
+        formIssues.clear()
+        
+        // Extract MediaPipe results
+        val results = resultBundle.results
+        
+        // Ensure we have landmarks
+        if (results.landmarks().isEmpty()) {
+            return AnalysisResult(
+                repCount = repCount,
+                feedback = "No pose detected",
+                state = ExerciseState.INVALID,
+                confidence = 0f,
+                formScore = 0
+            )
+        }
+        
+        // Get the first person's landmarks
+        val landmarks = results.landmarks()[0]
+        
+        // Check if we have necessary landmarks with good visibility
+        if (!areKeyLandmarksVisible(landmarks)) {
+            return AnalysisResult(
+                repCount = repCount,
+                feedback = "Position your full body in frame",
+                state = ExerciseState.INVALID,
+                confidence = getAverageConfidence(landmarks),
+                formScore = 0
+            )
+        }
+
+        try {
+            // Extract key landmarks for analysis
+            val leftShoulder = landmarks[PoseLandmark.LEFT_SHOULDER]
+            val rightShoulder = landmarks[PoseLandmark.RIGHT_SHOULDER]
+            val leftElbow = landmarks[PoseLandmark.LEFT_ELBOW]
+            val rightElbow = landmarks[PoseLandmark.RIGHT_ELBOW]
+            val leftWrist = landmarks[PoseLandmark.LEFT_WRIST]
+            val rightWrist = landmarks[PoseLandmark.RIGHT_WRIST]
+            val leftHip = landmarks[PoseLandmark.LEFT_HIP]
+            val rightHip = landmarks[PoseLandmark.RIGHT_HIP]
+            val leftKnee = landmarks[PoseLandmark.LEFT_KNEE]
+            val rightKnee = landmarks[PoseLandmark.RIGHT_KNEE]
+            val leftAnkle = landmarks[PoseLandmark.LEFT_ANKLE]
+            val rightAnkle = landmarks[PoseLandmark.RIGHT_ANKLE]
+
+            // Calculate joint angles
+            val leftElbowAngle = calculateAngle(leftShoulder, leftElbow, leftWrist)
+            val rightElbowAngle = calculateAngle(rightShoulder, rightElbow, rightWrist)
+            val avgElbowAngle = (leftElbowAngle + rightElbowAngle) / 2
+
+            // Store current position data
+            val avgShoulderY = (leftShoulder.y() + rightShoulder.y()) / 2
+            val avgHipY = (leftHip.y() + rightHip.y()) / 2
+            val avgAnkleY = (leftAnkle.y() + rightAnkle.y()) / 2
+            
+            // Update position tracking
+            if (avgElbowAngle > 0 && avgShoulderY > 0 && avgHipY > 0) {
+                lastValidShoulderY = avgShoulderY
+                lastValidHipY = avgHipY
+                lastValidElbowAngle = avgElbowAngle
+            }
+
+            // Update minimum elbow angle during a rep
+            if (currentState == ExerciseState.DOWN || 
+                (currentState == ExerciseState.STARTING && previousState == ExerciseState.UP)) {
+                minElbowAngle = min(minElbowAngle, avgElbowAngle)
+            }
+
+            // APFT Form checks
+            
+            // 1. Body straight line check (shoulders-hips-ankles)
+            checkBodyAlignment(leftShoulder, rightShoulder, leftHip, rightHip, leftAnkle, rightAnkle)
+            
+            // 2. Hip sagging check
+            checkHipSag(leftShoulder, rightShoulder, leftHip, rightHip, leftAnkle, rightAnkle)
+            
+            // 3. Hip piking check (butt raising too high)
+            checkHipPike(leftShoulder, rightShoulder, leftHip, rightHip, leftAnkle, rightAnkle)
+            
+            // 4. Shoulder alignment check (level shoulders)
+            checkShoulderAlignment(leftShoulder, rightShoulder)
+            
+            // 5. Proper arm movement check
+            checkArmMovement(avgElbowAngle)
+
+            // State machine logic to track rep phases
+            previousState = currentState
+            currentState = determineState(avgElbowAngle)
+
+            // Rep counting logic - only count when proper form is maintained
+            if (previousState == ExerciseState.DOWN && currentState == ExerciseState.UP) {
+                // Check depth at bottom of pushup (did they go low enough?)
+                if (minElbowAngle > MIN_ELBOW_ANGLE_THRESHOLD) {
+                    formIssues.add("Not low enough (arms weren't parallel to ground)")
+                } else {
+                    // Only count the rep if it meets depth requirement
+                    repCount++
+                }
+                
+                // Reset tracking variables for next rep
+                minElbowAngle = 180f
+                maxHipDeviation = 0f
+            }
+
+            // Handle transition from IDLE or INVALID to STARTING
+            if ((previousState == ExerciseState.IDLE || previousState == ExerciseState.INVALID) &&
+                (currentState == ExerciseState.UP || currentState == ExerciseState.DOWN)) {
+                currentState = ExerciseState.STARTING
+            }
+
+            // Generate feedback message
+            val feedback = when {
+                formIssues.isNotEmpty() -> formIssues.joinToString(". ")
+                currentState == ExerciseState.UP -> "Good form, upper position"
+                currentState == ExerciseState.DOWN -> "Good form, lower position"
+                currentState == ExerciseState.STARTING -> "Starting position OK"
+                else -> null
+            }
+
+            // Calculate overall form score
+            val formScore = calculateFormScore(
+                minElbowAngleAchieved = minElbowAngle,
+                bodyDeviations = maxHipDeviation,
+                shoulders = Pair(leftShoulder, rightShoulder),
+                hips = Pair(leftHip, rightHip)
+            )
+
+            // Calculate confidence from landmark visibility
+            val confidence = getAverageConfidence(landmarks)
+
+            return AnalysisResult(
+                repCount = repCount,
+                feedback = feedback,
+                state = currentState,
+                confidence = confidence,
+                formScore = formScore
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error analyzing pose: ${e.message}", e)
+            return AnalysisResult(
+                repCount = repCount,
+                feedback = "Error analyzing pose",
+                state = ExerciseState.INVALID,
+                confidence = 0f,
+                formScore = 0
+            )
+        }
     }
 
     /**
-     * Checks if the detected pose is suitable for starting analysis.
-     * Requires key landmarks to be visible.
+     * Determines the current push-up state based on the elbow angle.
      */
-    override fun isValidPose(result: PoseLandmarkerHelper.ResultBundle): Boolean {
-        if (result.results.landmarks.isEmpty()) {
-            return false
+    private fun determineState(elbowAngle: Float): ExerciseState {
+        return when {
+            elbowAngle < MIN_ELBOW_ANGLE_THRESHOLD * 1.1 -> ExerciseState.DOWN // Low position
+            elbowAngle > FULL_EXTENSION_THRESHOLD * 0.95 -> ExerciseState.UP // High position
+            currentState == ExerciseState.IDLE -> ExerciseState.STARTING
+            else -> currentState // Maintain current state during transition
         }
-        return areKeyLandmarksVisible(result.results.landmarks)
+    }
+
+    /**
+     * Checks if the body forms a straight line from shoulders to ankles.
+     * APFT requires the body to move as a unit without sagging or piking.
+     */
+    private fun checkBodyAlignment(
+        leftShoulder: NormalizedLandmark,
+        rightShoulder: NormalizedLandmark,
+        leftHip: NormalizedLandmark,
+        rightHip: NormalizedLandmark,
+        leftAnkle: NormalizedLandmark,
+        rightAnkle: NormalizedLandmark
+    ) {
+        // Calculate average y-coordinates (vertical position)
+        val avgShoulderY = (leftShoulder.y() + rightShoulder.y()) / 2
+        val avgHipY = (leftHip.y() + rightHip.y()) / 2
+        val avgAnkleY = (leftAnkle.y() + rightAnkle.y()) / 2
+        
+        // In a perfect plank position, shoulders, hips and ankles should form a straight line
+        // We'll use a linear approximation and check deviation of hips from that line
+        
+        // Calculate expected hip position if on straight line between shoulders and ankles
+        val shoulderToAnkleRatio = 0.5 // Hips should be approximately halfway
+        val expectedHipY = avgShoulderY + (avgAnkleY - avgShoulderY) * shoulderToAnkleRatio
+        
+        // Calculate actual deviation
+        val hipDeviation = abs(avgHipY - expectedHipY)
+        
+        // Track maximum hip deviation during the rep
+        maxHipDeviation = kotlin.math.max(maxHipDeviation, hipDeviation)
+        
+        // Check if deviation exceeds threshold
+        if (hipDeviation > BODY_ALIGNMENT_THRESHOLD) {
+            if (avgHipY > expectedHipY) {
+                formIssues.add("Keep your body straight, hips are sagging")
+            } else {
+                formIssues.add("Keep your body straight, hips are too high")
+            }
+        }
+    }
+
+    /**
+     * Specifically checks for hip sagging (common issue).
+     * In APFT, the torso must be kept rigid and move as a unit.
+     */
+    private fun checkHipSag(
+        leftShoulder: NormalizedLandmark,
+        rightShoulder: NormalizedLandmark,
+        leftHip: NormalizedLandmark,
+        rightHip: NormalizedLandmark,
+        leftAnkle: NormalizedLandmark,
+        rightAnkle: NormalizedLandmark
+    ) {
+        val avgShoulderY = (leftShoulder.y() + rightShoulder.y()) / 2
+        val avgHipY = (leftHip.y() + rightHip.y()) / 2
+        val avgAnkleY = (leftAnkle.y() + rightAnkle.y()) / 2
+        
+        // Calculate angles in the side view
+        // In a straight line, the angle between shoulder-hip-ankle should be nearly 180 degrees
+        val hipAngle = calculateAngle(
+            createMidpointLandmark(leftShoulder, rightShoulder),
+            createMidpointLandmark(leftHip, rightHip),
+            createMidpointLandmark(leftAnkle, rightAnkle)
+        )
+        
+        // If angle is significantly less than 180, hips are sagging
+        if (hipAngle < 160 && avgHipY > (avgShoulderY + avgAnkleY) / 2) {
+            formIssues.add("Keep your core tight, hips are sagging")
+        }
+    }
+
+    /**
+     * Checks for hip piking (raising the butt too high).
+     * APFT requires the body to maintain a straight line.
+     */
+    private fun checkHipPike(
+        leftShoulder: NormalizedLandmark,
+        rightShoulder: NormalizedLandmark,
+        leftHip: NormalizedLandmark,
+        rightHip: NormalizedLandmark,
+        leftAnkle: NormalizedLandmark,
+        rightAnkle: NormalizedLandmark
+    ) {
+        val avgShoulderY = (leftShoulder.y() + rightShoulder.y()) / 2
+        val avgHipY = (leftHip.y() + rightHip.y()) / 2
+        val avgAnkleY = (leftAnkle.y() + rightAnkle.y()) / 2
+        
+        // Calculate angles in the side view
+        val hipAngle = calculateAngle(
+            createMidpointLandmark(leftShoulder, rightShoulder),
+            createMidpointLandmark(leftHip, rightHip),
+            createMidpointLandmark(leftAnkle, rightAnkle)
+        )
+        
+        // If angle is significantly more than 180, hips are piked (butt too high)
+        if (hipAngle > 200 && avgHipY < (avgShoulderY + avgAnkleY) / 2) {
+            formIssues.add("Lower your hips, buttocks are too high")
+        }
+    }
+
+    /**
+     * Checks if shoulders are level (not tilted).
+     * APFT requires balanced, controlled movement.
+     */
+    private fun checkShoulderAlignment(
+        leftShoulder: NormalizedLandmark,
+        rightShoulder: NormalizedLandmark
+    ) {
+        val shoulderTilt = abs(leftShoulder.y() - rightShoulder.y())
+        if (shoulderTilt > SHOULDER_ALIGNMENT_THRESHOLD) {
+            formIssues.add("Keep shoulders level")
+        }
+    }
+
+    /**
+     * Monitors arm movement to ensure proper lowering and raising.
+     * APFT requires controlled movement.
+     */
+    private fun checkArmMovement(currentElbowAngle: Float) {
+        // Check for sudden changes in elbow angle which might indicate jerky movements
+        val angleDelta = abs(currentElbowAngle - lastValidElbowAngle)
+        
+        // Only check when in motion (not at extremes)
+        if (currentState != ExerciseState.IDLE && 
+            currentElbowAngle > MIN_ELBOW_ANGLE_THRESHOLD && 
+            currentElbowAngle < FULL_EXTENSION_THRESHOLD) {
+            
+            // Large sudden changes might indicate jerky motion, not controlled
+            if (angleDelta > 30) {
+                formIssues.add("Keep movements slow and controlled")
+            }
+        }
+    }
+
+    /**
+     * Calculates form score based on APFT standards.
+     * Returns 0-100 where 100 is perfect form.
+     */
+    private fun calculateFormScore(
+        minElbowAngleAchieved: Float,
+        bodyDeviations: Float,
+        shoulders: Pair<NormalizedLandmark, NormalizedLandmark>,
+        hips: Pair<NormalizedLandmark, NormalizedLandmark>
+    ): Int {
+        var score = 100
+        
+        // Penalty for insufficient depth (most critical for APFT)
+        if (minElbowAngleAchieved > MIN_ELBOW_ANGLE_THRESHOLD) {
+            val depthPenalty = ((minElbowAngleAchieved - MIN_ELBOW_ANGLE_THRESHOLD) * 1.5).toInt()
+                .coerceAtMost(50) // Major penalty - up to 50 points
+            score -= depthPenalty
+        }
+        
+        // Penalty for body alignment issues
+        val alignmentPenalty = (bodyDeviations * 300).toInt().coerceAtMost(40)
+        score -= alignmentPenalty
+        
+        // Penalty for shoulder alignment issues
+        val shoulderTilt = abs(shoulders.first.y() - shoulders.second.y())
+        if (shoulderTilt > SHOULDER_ALIGNMENT_THRESHOLD) {
+            val tiltPenalty = (shoulderTilt * 100).toInt().coerceAtMost(20)
+            score -= tiltPenalty
+        }
+        
+        return score.coerceIn(0, 100)
+    }
+
+    /**
+     * Creates a synthetic landmark at the midpoint between two landmarks.
+     * Used for calculating angles along the centerline of the body.
+     */
+    private fun createMidpointLandmark(
+        landmark1: NormalizedLandmark, 
+        landmark2: NormalizedLandmark
+    ): NormalizedLandmark {
+        // Use anonymous class to create a custom normalized landmark
+        return object : NormalizedLandmark {
+            override fun x(): Float = (landmark1.x() + landmark2.x()) / 2
+            override fun y(): Float = (landmark1.y() + landmark2.y()) / 2
+            override fun z(): Float = (landmark1.z() + landmark2.z()) / 2
+            override fun visibility(): Float = (landmark1.visibility() + landmark2.visibility()) / 2
+            override fun presence(): Float = (landmark1.presence() + landmark2.presence()) / 2
+        }
+    }
+
+    /**
+     * Calculates the angle between three landmarks.
+     */
+    private fun calculateAngle(
+        first: NormalizedLandmark,
+        middle: NormalizedLandmark,
+        last: NormalizedLandmark
+    ): Float {
+        // Calculate vectors from middle point
+        val v1x = first.x() - middle.x()
+        val v1y = first.y() - middle.y()
+        val v1z = first.z() - middle.z()
+
+        val v2x = last.x() - middle.x()
+        val v2y = last.y() - middle.y()
+        val v2z = last.z() - middle.z()
+
+        // Calculate dot product
+        val dotProduct = v1x * v2x + v1y * v2y + v1z * v2z
+
+        // Calculate magnitudes
+        val v1Mag = kotlin.math.sqrt(v1x * v1x + v1y * v1y + v1z * v1z)
+        val v2Mag = kotlin.math.sqrt(v2x * v2x + v2y * v2y + v2z * v2z)
+
+        // Handle potential division by zero
+        if (v1Mag < 0.0001f || v2Mag < 0.0001f) {
+            return 0f
+        }
+
+        // Calculate angle in radians, clamp to [-1, 1] to avoid NaN from acos
+        val cosTheta = (dotProduct / (v1Mag * v2Mag)).coerceIn(-1.0f, 1.0f)
+        val angleRad = kotlin.math.acos(cosTheta)
+
+        // Convert to degrees
+        return Math.toDegrees(angleRad.toDouble()).toFloat()
+    }
+
+    /**
+     * Gets the average confidence across all landmarks.
+     */
+    private fun getAverageConfidence(landmarks: List<NormalizedLandmark>): Float {
+        if (landmarks.isEmpty()) return 0f
+        return landmarks.map { it.visibility() }.average().toFloat()
+    }
+
+    /**
+     * Checks if all key landmarks needed for pushup analysis are visible.
+     */
+    private fun areKeyLandmarksVisible(landmarks: List<NormalizedLandmark>): Boolean {
+        if (landmarks.size < 33) return false // Full pose has 33 landmarks
+        
+        return KEY_LANDMARKS.all { 
+            landmarks[it].visibility() >= REQUIRED_VISIBILITY 
+        }
+    }
+
+    override fun isValidPose(resultBundle: PoseLandmarkerHelper.ResultBundle): Boolean {
+        if (resultBundle.results.landmarks().isEmpty()) return false
+        return areKeyLandmarksVisible(resultBundle.results.landmarks()[0])
     }
 
     override fun start() {
         reset()
-        currentState = ExerciseState.STARTING // Move to starting state when explicitly started
+        currentState = ExerciseState.STARTING
     }
 
     override fun stop() {
@@ -253,6 +489,10 @@ class PushupAnalyzer : ExerciseAnalyzer {
         currentState = ExerciseState.IDLE
         previousState = ExerciseState.IDLE
         minElbowAngle = 180f
+        maxHipDeviation = 0f
+        lastValidShoulderY = 0f
+        lastValidHipY = 0f
+        lastValidElbowAngle = 180f
         formIssues.clear()
     }
 } 

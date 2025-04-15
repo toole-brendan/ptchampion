@@ -13,8 +13,7 @@ tasks.withType<KotlinCompile>().configureEach {
     exclude("**/generatedapi/src/test/**")
 }
 
-// Temporarily disable Kapt config
-/* 
+// Enable Kapt configuration
 kapt {
     correctErrorTypes = true
     includeCompileClasspath = false
@@ -22,7 +21,6 @@ kapt {
         option("-J-Xmx2g")
     }
 }
-*/
 
 // Add the configurations block here
 configurations.all {
@@ -200,6 +198,12 @@ dependencies {
     // implementation("com.google.mediapipe:tasks-vision:0.10.15")
     // Keep GPU version commented out if repository issues persist
     // implementation("com.google.mediapipe:tasks-vision-gpu:0.10.15")
+    
+    // MediaPipe - Now enabled for pose detection
+    implementation("com.google.mediapipe:tasks-vision:0.10.15")
+    // Optional GPU acceleration
+    implementation("org.tensorflow:tensorflow-lite-gpu:2.9.0")
+    implementation("org.tensorflow:tensorflow-lite-gpu-delegate-plugin:2.9.0")
     
     // Bluetooth - Comment out problematic library
     // implementation("com.github.NordicSemiconductor:Android-BLE-Library:v2.6.1")

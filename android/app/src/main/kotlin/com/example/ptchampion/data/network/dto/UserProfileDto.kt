@@ -11,14 +11,4 @@ data class UserProfileDto(
     val location: String? = null,
     val latitude: Double? = null,
     val longitude: Double? = null
-)
-
-@Serializable
-data class UpdateUserRequestDto(
-    val username: String? = null,
-    val displayName: String? = null,
-    val profilePictureUrl: String? = null,
-    val location: String? = null,
-    val latitude: Double? = null,
-    val longitude: Double? = null
 ) 

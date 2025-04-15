@@ -2,7 +2,7 @@ package com.example.ptchampion.domain.service
 
 import android.location.Location
 import com.example.ptchampion.domain.model.LocationData
-import com.example.ptchampion.util.Resource
+import com.example.ptchampion.domain.util.Resource
 import kotlinx.coroutines.flow.Flow
 
 /**
