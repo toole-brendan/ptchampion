@@ -1,861 +1,97 @@
-CameraX Implementation Issues in PT Champion App
-Looking at your code, I can identify several potential issues with your CameraX implementation that might be causing problems:
-1. Lifecycle Management
-Your CameraX setup in CameraScreen.kt creates a new camera provider for each composition, which can lead to lifecycle issues:
-kotlinval cameraProvider = remember { CameraHelper.createCamera(context) }
-This static helper approach may not properly bind to the Compose lifecycle, causing the camera to stop working when the screen rotates or goes into background.
-2. Camera Use Case Configuration Issues
-Your code attempts to bind multiple use cases to the camera provider:
-kotlincameraProvider.bindToLifecycle(
-    lifecycleOwner,
-    CameraSelector.Builder().requireLensFacing(uiState.lensFacing).build(),
-    preview,
-    imageAnalysis
-)
-If any use case configuration is incompatible with others (resolution conflicts, etc.), binding will fail silently.
-3. Image Analysis Pipeline Problems
-Your ImageAnalysis setup has potential issues:
-kotlinval imageAnalysis = ImageAnalysis.Builder()
-    .setTargetResolution(android.util.Size(1280, 720))
-    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-    .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-    .build()
-Setting both a target resolution and a specific output format can cause conflicts on some devices.
-4. Memory Leaks with ImageProxy
-You're switching between listeners in your code, which can lead to unclosed ImageProxy instances:
-kotlinval originalListener = processor.listener
-processor.listener = object : com.example.ptchampion.posedetection.PoseProcessor.PoseProcessorListener {
-    // ...implementation
-}
-5. Missing Error Handling
-Your binding code lacks proper error handling:
-kotlintry {
-    cameraProvider.unbindAll()
-    cameraProvider.bindToLifecycle(
-        // binding code
-    )
-} catch (exc: Exception) {
-    Log.e("CameraScreen", "Use case binding failed", exc)
-}
-This catches the exception but doesn't communicate the error to the user or attempt recovery.
-6. Recommended Fixes
-
-Use CameraX Lifecycle Extension for Compose:
-
-kotlinval lifecycleOwner = LocalLifecycleOwner.current
-val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-
-DisposableEffect(lifecycleOwner) {
-    val listener = LifecycleEventObserver { _, event ->
-        if (event == Lifecycle.Event.ON_DESTROY) {
-            cameraProviderFuture.get().unbindAll()
-        }
-    }
-    lifecycleOwner.lifecycle.addObserver(listener)
-    onDispose {
-        lifecycleOwner.lifecycle.removeObserver(listener)
+Build Error Analysis for PT Champion Android App
+After reviewing your Android codebase, I've identified several potential areas that could be causing build errors and type mismatches. Here's a detailed analysis of the issues I found:
+1. Authentication Storage Inconsistency
+There's an inconsistency between how the auth token is stored and retrieved:
+In AuthDataStore.kt, tokens are stored using DataStore:
+kotlinsuspend fun saveAuthToken(token: String) {
+    dataStore.edit {
+        it[PreferencesKeys.AUTH_TOKEN] = token
     }
 }
-
-Simplify Image Analysis Configuration:
-
-kotlinval imageAnalysis = ImageAnalysis.Builder()
-    .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-    .build()
-
-Fix ImageProxy Handling:
-
-kotlinimageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
-    try {
-        if (processor != null && processor.isInitialized()) {
-            processor.processImageProxy(imageProxy, imageProxy.imageInfo.rotationDegrees)
-        } else {
-            imageProxy.close()
-        }
-    } catch (e: Exception) {
-        Log.e(TAG, "Analysis error", e)
-        imageProxy.close()
+But in AuthInterceptor.kt, tokens are retrieved from encryptedPrefs:
+kotlinval token = encryptedPrefs.getString(AUTH_TOKEN_KEY, null)
+Similar inconsistency in AuthRepositoryImpl.kt, which uses EncryptedSharedPreferences:
+kotlinoverride suspend fun storeAuthToken(token: String) {
+    withContext(Dispatchers.IO) {
+        encryptedPrefs.edit().putString(AUTH_TOKEN_KEY, token).apply()
     }
 }
+2. Duplicate Resource Classes
+You have two different Resource classes:
 
-Add Camera Feature Check:
+com.example.ptchampion.domain.util.Resource (in domain/util/Resource.kt)
+com.example.ptchampion.domain.exercise.bluetooth.Resource (in domain/exercise/bluetooth/Resource.kt)
 
-kotlinval hasCamera = context.packageManager.hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY)
-if (!hasCamera) {
-    // Show error to user
-}
+This leads to import confusion in files like:
 
-Handle Camera Provider Initialization:
+RunningTrackingViewModel.kt where both Resource types are used
+LeaderboardViewModel.kt which may be importing the wrong Resource class
 
-kotlinLaunchedEffect(Unit) {
-    try {
-        val cameraProvider = cameraProviderFuture.await()
-        // Now bind use cases
-    } catch (e: Exception) {
-        Log.e(TAG, "Camera provider initialization failed", e)
-        // Show error to user
+3. Location-related Type Mismatches
+In RunningTrackingViewModel.kt, there's a type casting issue:
+kotlin// Use star projection for runtime check due to type erasure
+if (resource is Resource.Success<*>) { 
+    // Smart cast should allow accessing data as Location? if the flow emits Resource<Location>
+    (resource.data as? Location)?.let { location -> 
+        processLocationUpdate(location)
     }
 }
-These fixes should address the core issues with your CameraX implementation and provide a more stable camera experience in your PT Champion app.RetryBTCan you give me full implementation plan for fixing everything we’ve discussed and anything else you think needs to be updated?EditEngineered comprehensive implementation strategy for app development challenges.2sI need to create a comprehensive implementation plan to address all the issues we've discussed with both the MediaPipe and CameraX implementations in the PT Champion app. I'll break this down into logical steps with specific code recommendations and a timeline.
-The primary issues include:
-
-MediaPipe pose landmark detection integration
-CameraX implementation problems
-Camera lifecycle management
-Image processing pipeline for pose detection
-
-I'll create a structured plan with:
-
-Clear phases of implementation
-Specific code changes
-Dependency updates
-Required assets
-Testing approaches
-
-I'll make sure to be thorough and address all potential issues that might arise.Comprehensive Implementation Plan: PT Champion App Camera & Pose Detection Fix
-This plan addresses all issues with MediaPipe implementation and CameraX integration to create a stable, production-ready exercise tracking system.
-Phase 1: Update Dependencies (Day 1)
-1.1 Update Gradle Dependencies
-gradledependencies {
-    // MediaPipe dependencies
-    implementation 'com.google.mediapipe:tasks-vision:latest.release'  // Current: 0.10.10
-    implementation 'com.google.mediapipe:mediapipe-tasks-vision:latest.release'
-    
-    // CameraX dependencies - use stable versions
-    implementation "androidx.camera:camera-core:1.3.0"
-    implementation "androidx.camera:camera-camera2:1.3.0"
-    implementation "androidx.camera:camera-lifecycle:1.3.0"
-    implementation "androidx.camera:camera-view:1.3.0"
-    
-    // RenderScript for YUV conversion
-    implementation "androidx.renderscript:renderscript:1.0.0"
-    
-    // Kotlin coroutines
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3"
+The problem is that locationService.getLocationUpdates() might return a Flow<Resource<LocationData>> but the code tries to cast to Location.
+4. MediaPipe API Compatibility Issues
+The PoseLandmarkerHelper.kt file has several commented sections that might indicate API compatibility issues:
+kotlin// Comment out setNumThreads for now
+// if (delegate != Delegate.GPU) {
+//     baseOptionsBuilder.setNumThreads(defaultNumThreads)
+// }
+In PoseDetectorProcessor.kt there are similar concerns:
+kotlin// rotationDegrees is not directly used by detectLiveStream in PoseLandmarkerHelper
+// but might be needed if implementing rotation logic inside the helper
+5. Bluetooth Service Integration Issues
+In RunningTrackingViewModel.kt, there's a commented out section:
+kotlin// Fix: Comment out unresolved connectedDevice access
+// watchDataRepository.connectedDevice.value?.let { device ->
+//     _connectedWatchName.value = device.name
+// }
+The issue might be that WatchDataRepository doesn't expose connectedDevice directly, but instead from the underlying BluetoothService.
+Similarly in WatchBluetoothService.kt, a function is commented out with the note:
+kotlin/* // Temporarily commented out for debugging Kapt error
+private fun processLocationAndSpeedData(value: ByteArray) {
+    ...
 }
-1.2 Add Model Files to Assets
-Download MediaPipe pose landmarker models and add to assets folder:
+*/
+6. Inconsistent Generic Usage with Workout Repository
+In WorkoutRepository.kt, methods like getWorkoutById return Resource<WorkoutResponse>, but implementation in WorkoutRepositoryImpl.kt may have mismatched types.
+The error handling in repositories often returns specific types within Resource.Error that might not match the expected generic type:
+kotlinreturn Resource.Error("API Error fetching workout $workoutId: ${response.code()} ${response.message()}")
+7. Incomplete Bluetooth Implementation
+The BluetoothDeviceManagementViewModel.kt has placeholder TODO comments for critical functionality:
+kotlin// TODO: Implement permission checking logic
+// TODO: Implement Bluetooth adapter state checking
+// TODO: Implement scan callbacks to update discoveredDevices
+// TODO: Implement connection callbacks
+Recommended Fixes
 
-app/src/main/assets/pose_landmarker_full.task
-app/src/main/assets/pose_landmarker_lite.task
+Standardize authentication storage: Choose either DataStore or EncryptedSharedPreferences, not both.
+Consolidate Resource classes: Remove one of the duplicate Resource classes and update all imports.
+Fix type mismatches:
 
-Phase 2: Fix PoseLandmarkerHelper Class (Day 1-2)
-2.1 Update PoseLandmarkerHelper.kt
-kotlinpackage com.example.ptchampion.posedetection
-
-import android.content.Context
-import android.graphics.Bitmap
-import android.os.SystemClock
-import androidx.camera.core.ImageProxy
-import com.google.mediapipe.framework.image.BitmapImageBuilder
-import com.google.mediapipe.framework.image.MPImage
-import com.google.mediapipe.tasks.core.BaseOptions
-import com.google.mediapipe.tasks.core.Delegate
-import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerOptions
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
-import com.example.ptchampion.utils.YuvToRgbConverter
-
-class PoseLandmarkerHelper(
-    private val context: Context,
-    private val runningMode: RunningMode = RunningMode.LIVE_STREAM,
-    private val minPoseDetectionConfidence: Float = 0.5f,
-    private val minPoseTrackingConfidence: Float = 0.5f,
-    private val minPosePresenceConfidence: Float = 0.5f,
-    private val currentModel: Int = MODEL_FULL,
-    private val delegate: Delegate = Delegate.CPU,
-    private val resultListener: LandmarkerListener? = null
-) {
-    data class ResultBundle(
-        val results: PoseLandmarkerResult,
-        val inputImageWidth: Int,
-        val inputImageHeight: Int,
-        val inferenceTime: Long
-    )
-
-    companion object {
-        const val TAG = "PoseLandmarkerHelper"
-        const val MODEL_FULL = 0
-        const val MODEL_LITE = 1
-        const val MODEL_HEAVY = 2
-
-        private const val POSE_LANDMARKER_FULL = "pose_landmarker_full.task"
-        private const val POSE_LANDMARKER_LITE = "pose_landmarker_lite.task"
-        private const val POSE_LANDMARKER_HEAVY = "pose_landmarker_heavy.task"
-    }
-
-    private var poseLandmarker: PoseLandmarker? = null
-    private var defaultNumThreads = 2
-    private val yuvToRgbConverter by lazy { YuvToRgbConverter(context) }
-
-    init {
-        setupPoseLandmarker()
-    }
-
-    private fun setupPoseLandmarker() {
-        val modelName = when (currentModel) {
-            MODEL_FULL -> POSE_LANDMARKER_FULL
-            MODEL_LITE -> POSE_LANDMARKER_LITE
-            MODEL_HEAVY -> POSE_LANDMARKER_HEAVY
-            else -> POSE_LANDMARKER_FULL
-        }
-
-        try {
-            val baseOptions = BaseOptions.builder()
-                .setModelAssetPath(modelName)
-                .setDelegate(delegate)
-                .setNumThreads(defaultNumThreads)
-                .build()
-
-            val optionsBuilder = PoseLandmarkerOptions.builder()
-                .setBaseOptions(baseOptions)
-                .setMinPoseDetectionConfidence(minPoseDetectionConfidence)
-                .setMinPosePresenceConfidence(minPosePresenceConfidence)
-                .setMinTrackingConfidence(minPoseTrackingConfidence)
-                .setRunningMode(runningMode)
-                .setOutputSegmentationMasks(false)
-
-            if (runningMode == RunningMode.LIVE_STREAM) {
-                optionsBuilder.setResultListener { result: PoseLandmarkerResult?, inputImage: MPImage ->
-                    result?.let {
-                        val resultBundle = ResultBundle(
-                            results = it,
-                            inputImageWidth = inputImage.width,
-                            inputImageHeight = inputImage.height,
-                            inferenceTime = 0
-                        )
-                        resultListener?.onResults(resultBundle)
-                    }
-                }
-                .setErrorListener { error: RuntimeException, errorCode: Int ->
-                    resultListener?.onError(error.message ?: "Unknown error", errorCode)
-                }
-            }
-
-            poseLandmarker = PoseLandmarker.createFromOptions(context, optionsBuilder.build())
-            android.util.Log.d(TAG, "PoseLandmarker initialized with model: $modelName")
-        } catch (e: Exception) {
-            android.util.Log.e(TAG, "Failed to setup pose landmarker: ${e.message}")
-            resultListener?.onError("Failed to setup pose landmarker: ${e.message}")
-        }
-    }
-
-    fun detectLiveStream(imageProxy: ImageProxy) {
-        if (poseLandmarker == null) {
-            setupPoseLandmarker()
-        }
-
-        val frameTime = SystemClock.uptimeMillis()
-        
-        // Create a bitmap for conversion
-        val bitmap = Bitmap.createBitmap(
-            imageProxy.width, imageProxy.height, Bitmap.Config.ARGB_8888
-        )
-
-        // Convert YUV to RGB
-        imageProxy.image?.let { image ->
-            yuvToRgbConverter.yuvToRgb(image, bitmap)
-            
-            // Process with MediaPipe
-            val mpImage = BitmapImageBuilder(bitmap).build()
-            
-            when (runningMode) {
-                RunningMode.LIVE_STREAM -> {
-                    poseLandmarker?.detectAsync(mpImage, frameTime)
-                }
-                RunningMode.IMAGE -> {
-                    val result = poseLandmarker?.detect(mpImage)
-                    result?.let {
-                        resultListener?.onResults(
-                            ResultBundle(
-                                results = it,
-                                inputImageWidth = mpImage.width,
-                                inputImageHeight = mpImage.height,
-                                inferenceTime = 0
-                            )
-                        )
-                    }
-                }
-                else -> {
-                    // Not supported
-                }
-            }
-        }
-        
-        // Always close the imageProxy
-        imageProxy.close()
-    }
-
-    fun clearPoseLandmarker() {
-        poseLandmarker?.close()
-        poseLandmarker = null
-    }
-
-    interface LandmarkerListener {
-        fun onError(error: String, errorCode: Int = 0)
-        fun onResults(resultBundle: ResultBundle)
-    }
-}
-2.2 Create YuvToRgbConverter
-kotlinpackage com.example.ptchampion.utils
-
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.ImageFormat
-import android.media.Image
-import androidx.renderscript.Allocation
-import androidx.renderscript.Element
-import androidx.renderscript.RenderScript
-import androidx.renderscript.ScriptIntrinsicYuvToRGB
-import androidx.renderscript.Type
-import java.nio.ByteBuffer
-
-class YuvToRgbConverter(context: Context) {
-    private val rs = RenderScript.create(context)
-    private val scriptYuvToRgb = ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs))
-    
-    private var yuvBuffer: ByteBuffer? = null
-    private var rgbBuffer: ByteBuffer? = null
-    private var inputAllocation: Allocation? = null
-    private var outputAllocation: Allocation? = null
-    
-    @Synchronized
-    fun yuvToRgb(image: Image, output: Bitmap) {
-        // Ensure image format is correct
-        if (image.format != ImageFormat.YUV_420_888) {
-            throw IllegalArgumentException("Unsupported image format: ${image.format}")
-        }
-        
-        val width = image.width
-        val height = image.height
-        
-        // Reuse buffers if possible
-        val yuvBytes = getYuvBytes(image)
-        
-        // Create or update allocations
-        if (inputAllocation == null || inputAllocation?.type?.x != yuvBytes.size) {
-            inputAllocation?.destroy()
-            inputAllocation = Allocation.createSized(rs, Element.U8(rs), yuvBytes.size)
-        }
-        
-        if (outputAllocation == null || 
-            outputAllocation?.type?.x != width || 
-            outputAllocation?.type?.y != height) {
-            outputAllocation?.destroy()
-            val typeBuilder = Type.Builder(rs, Element.RGBA_8888(rs))
-                .setX(width)
-                .setY(height)
-            outputAllocation = Allocation.createTyped(rs, typeBuilder.create())
-        }
-        
-        // Process conversion
-        inputAllocation?.copyFrom(yuvBytes)
-        scriptYuvToRgb.setInput(inputAllocation)
-        scriptYuvToRgb.forEach(outputAllocation)
-        outputAllocation?.copyTo(output)
-    }
-    
-    private fun getYuvBytes(image: Image): ByteArray {
-        val yPlane = image.planes[0]
-        val uPlane = image.planes[1]
-        val vPlane = image.planes[2]
-        
-        val yBuffer = yPlane.buffer
-        val uBuffer = uPlane.buffer
-        val vBuffer = vPlane.buffer
-        
-        val ySize = yBuffer.remaining()
-        val uSize = uBuffer.remaining()
-        val vSize = vBuffer.remaining()
-        
-        val totalSize = ySize + uSize + vSize
-        
-        // Reuse buffer if possible
-        if (yuvBuffer == null || yuvBuffer!!.capacity() < totalSize) {
-            yuvBuffer = ByteBuffer.allocateDirect(totalSize)
-        }
-        yuvBuffer!!.clear()
-        
-        // Copy Y plane
-        yuvBuffer!!.put(yBuffer)
-        
-        // Copy U and V planes
-        yuvBuffer!!.put(uBuffer)
-        yuvBuffer!!.put(vBuffer)
-        
-        return yuvBuffer!!.array()
-    }
-    
-    fun close() {
-        inputAllocation?.destroy()
-        outputAllocation?.destroy()
-        scriptYuvToRgb.destroy()
-        rs.destroy()
-    }
-}
-Phase 3: Fix CameraX Implementation (Day 2-3)
-3.1 Update CameraScreen.kt with proper lifecycle handling
-kotlin@Composable
-fun CameraScreen(
-    exerciseId: Int,
-    exerciseType: String?,
-    viewModel: CameraViewModel = hiltViewModel(),
-    onWorkoutComplete: () -> Unit
-) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
-
-    val uiState by viewModel.uiState.collectAsState()
-    val previewView = remember { PreviewView(context) }
-    
-    var cameraProvider by remember { mutableStateOf<ProcessCameraProvider?>(null) }
-    var hasInitializedCamera by remember { mutableStateOf(false) }
-    
-    // Track latest pose result for overlay
-    var latestPoseResult by remember { mutableStateOf<PoseLandmarkerResult?>(null) }
-    var imageSize by remember { mutableStateOf(Pair(0, 0)) }
-
-    // Handle camera permissions
-    val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
-    val hasPermission = cameraPermissionState.status.isGranted
-
-    // Effect to initialize camera provider once
-    LaunchedEffect(Unit) {
-        try {
-            cameraProvider = cameraProviderFuture.get()
-        } catch (e: Exception) {
-            Log.e("CameraScreen", "Failed to get camera provider", e)
-        }
-    }
-    
-    // Handle proper lifecycle binding
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                if (hasPermission && cameraProvider != null && !hasInitializedCamera) {
-                    bindCameraUseCases(
-                        cameraProvider = cameraProvider!!,
-                        lifecycleOwner = lifecycleOwner,
-                        previewView = previewView,
-                        cameraExecutor = cameraExecutor,
-                        lensFacing = uiState.lensFacing,
-                        poseProcessor = viewModel.poseDetectorProcessor,
-                        onImageSizeChanged = { width, height -> 
-                            imageSize = Pair(width, height)
-                        },
-                        onPoseResultUpdate = { result ->
-                            latestPoseResult = result
-                        }
-                    )
-                    hasInitializedCamera = true
-                }
-            } else if (event == Lifecycle.Event.ON_PAUSE) {
-                if (cameraProvider != null) {
-                    cameraProvider?.unbindAll()
-                    hasInitializedCamera = false
-                }
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
-
-    // Navigate back when workout saved
-    LaunchedEffect(uiState.feedback) {
-        if (uiState.feedback == "Workout Saved Successfully!") {
-            Toast.makeText(context, "Workout Saved!", Toast.LENGTH_SHORT).show()
-            delay(500)
-            onWorkoutComplete()
-        }
-    }
-    
-    // Effect to switch camera when lens facing changes
-    LaunchedEffect(uiState.lensFacing) {
-        if (hasPermission && cameraProvider != null && hasInitializedCamera) {
-            cameraProvider?.unbindAll()
-            bindCameraUseCases(
-                cameraProvider = cameraProvider!!,
-                lifecycleOwner = lifecycleOwner,
-                previewView = previewView,
-                cameraExecutor = cameraExecutor,
-                lensFacing = uiState.lensFacing,
-                poseProcessor = viewModel.poseDetectorProcessor,
-                onImageSizeChanged = { width, height -> 
-                    imageSize = Pair(width, height)
-                },
-                onPoseResultUpdate = { result ->
-                    latestPoseResult = result
-                }
-            )
-        }
-    }
-
-    Scaffold { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (hasPermission) {
-                // Camera preview
-                AndroidView(
-                    factory = { previewView },
-                    modifier = Modifier.fillMaxSize()
-                )
-                
-                // Pose overlay
-                PoseOverlay(
-                    poseResult = latestPoseResult,
-                    sourceInfo = imageSize,
-                    modifier = Modifier.fillMaxSize()
-                )
-                
-                // Exercise UI overlay
-                CameraUIOverlay(
-                    uiState = uiState,
-                    onSwitchCamera = viewModel::switchCamera,
-                    onFinishWorkout = viewModel::finishWorkout
-                )
-                
-            } else {
-                PermissionRequestScreen(
-                    onRequestPermission = { cameraPermissionState.launchPermissionRequest() },
-                    showRationale = cameraPermissionState.status.shouldShowRationale
-                )
-            }
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            cameraExecutor.shutdown()
-        }
-    }
-}
-
-// Function to bind camera use cases
-private fun bindCameraUseCases(
-    cameraProvider: ProcessCameraProvider,
-    lifecycleOwner: LifecycleOwner,
-    previewView: PreviewView,
-    cameraExecutor: ExecutorService,
-    lensFacing: Int,
-    poseProcessor: PoseDetectorProcessor?,
-    onImageSizeChanged: (Int, Int) -> Unit,
-    onPoseResultUpdate: (PoseLandmarkerResult) -> Unit
-) {
-    // Set up the preview use case
-    val preview = Preview.Builder()
-        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-        .build()
-        .also {
-            it.setSurfaceProvider(previewView.surfaceProvider)
-        }
-
-    // Setup image analysis use case
-    val imageAnalysis = ImageAnalysis.Builder()
-        .setTargetAspectRatio(AspectRatio.RATIO_16_9)
-        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        .build()
-        
-    // Set up the image analyzer
-    imageAnalysis.setAnalyzer(cameraExecutor) { imageProxy ->
-        onImageSizeChanged(imageProxy.width, imageProxy.height)
-        
-        if (poseProcessor != null && poseProcessor.isInitialized()) {
-            // Use a middleman listener to capture results for the overlay
-            val originalListener = poseProcessor.listener
-            poseProcessor.listener = object : PoseProcessor.PoseProcessorListener {
-                override fun onPoseDetected(result: PoseLandmarkerResult, timestampMs: Long) {
-                    onPoseResultUpdate(result)
-                    originalListener?.onPoseDetected(result, timestampMs)
-                }
-                
-                override fun onError(error: String, errorCode: Int) {
-                    originalListener?.onError(error, errorCode)
-                }
-            }
-            
-            try {
-                poseProcessor.processImageProxy(imageProxy, imageProxy.imageInfo.rotationDegrees)
-            } catch (e: Exception) {
-                Log.e("CameraScreen", "Error processing image", e)
-                imageProxy.close()
-            }
-        } else {
-            imageProxy.close()
-        }
-    }
-
-    try {
-        // Unbind all use cases before rebinding
-        cameraProvider.unbindAll()
-        
-        // Get available cameras
-        val cameraSelector = CameraSelector.Builder()
-            .requireLensFacing(lensFacing)
-            .build()
-            
-        // Bind use cases to camera
-        cameraProvider.bindToLifecycle(
-            lifecycleOwner,
-            cameraSelector,
-            preview,
-            imageAnalysis
-        )
-    } catch (e: Exception) {
-        Log.e("CameraScreen", "Use case binding failed", e)
-    }
-}
-
-// Camera UI Overlay composable
-@Composable
-private fun CameraUIOverlay(
-    uiState: CameraUiState,
-    onSwitchCamera: () -> Unit,
-    onFinishWorkout: () -> Unit
-) {
-    // UI code here - this stays mostly the same as your existing implementation
-}
-Phase 4: Fix PoseDetectorProcessor (Day 3)
-4.1 Update PoseDetectorProcessor
-kotlinpackage com.example.ptchampion.posedetection
-
-import android.content.Context
-import android.util.Log
-import androidx.camera.core.ImageProxy
-import com.google.mediapipe.tasks.vision.core.RunningMode
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
-
-class PoseDetectorProcessor(
-    private val context: Context,
-    private val runningMode: RunningMode = RunningMode.LIVE_STREAM,
-    private val showConfidence: Boolean = true,
-    override var listener: PoseProcessor.PoseProcessorListener?
-) : PoseProcessor, PoseLandmarkerHelper.LandmarkerListener {
-
-    companion object {
-        private const val TAG = "PoseDetectorProcessor"
-    }
-
-    private var poseLandmarkerHelper: PoseLandmarkerHelper? = null
-    private var initialized = false
-    private var lensFacing = 0 // Default camera direction
-
-    override fun initialize() {
-        try {
-            poseLandmarkerHelper = PoseLandmarkerHelper(
-                context = context,
-                runningMode = runningMode,
-                minPoseDetectionConfidence = 0.5f,
-                minPoseTrackingConfidence = 0.5f,
-                minPosePresenceConfidence = 0.5f,
-                currentModel = PoseLandmarkerHelper.MODEL_LITE, // Use LITE for better performance
-                resultListener = this
-            )
-            initialized = true
-            Log.d(TAG, "Model initialized successfully")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error initializing pose landmarker: ${e.message}")
-            listener?.onError("Error initializing pose detector: ${e.message}", -1)
-            initialized = false
-        }
-    }
-
-    override fun isInitialized(): Boolean = initialized
-
-    override fun processImageProxy(imageProxy: ImageProxy, rotationDegrees: Int) {
-        if (!initialized || poseLandmarkerHelper == null) {
-            imageProxy.close()
-            return
-        }
-
-        try {
-            poseLandmarkerHelper?.detectLiveStream(imageProxy)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error processing image: ${e.message}")
-            listener?.onError("Error processing image: ${e.message}", -1)
-            imageProxy.close()
-        }
-    }
-
-    override fun setLensFacing(lensFacing: Int) {
-        this.lensFacing = lensFacing
-    }
-
-    override fun close() {
-        try {
-            poseLandmarkerHelper?.clearPoseLandmarker()
-            initialized = false
-        } catch (e: Exception) {
-            Log.e(TAG, "Error closing pose landmarker: ${e.message}")
-        }
-    }
-
-    // PoseLandmarkerHelper.LandmarkerListener implementation
-    override fun onError(error: String, errorCode: Int) {
-        listener?.onError(error, errorCode)
-    }
-
-    override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
-        // Forward the results to the PoseProcessor listener
-        listener?.onPoseDetected(resultBundle.results, System.currentTimeMillis())
-    }
-}
-Phase 5: Fix Exercise Analyzers (Day 4)
-5.1 Update ExerciseAnalyzer Interface
-kotlinpackage com.example.ptchampion.domain.exercise
-
-import com.example.ptchampion.posedetection.PoseLandmarkerHelper
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
-
-interface ExerciseAnalyzer {
-    /**
-     * Analyzes a single frame of pose landmark data from a PoseLandmarkerHelper.ResultBundle.
-     */
-    fun analyze(result: PoseLandmarkerHelper.ResultBundle): AnalysisResult
-
-    /**
-     * Analyzes a single frame of pose landmark data directly from a PoseLandmarkerResult.
-     */
-    fun analyze(result: PoseLandmarkerResult): AnalysisResult {
-        // Create a simple ResultBundle wrapper
-        val bundle = PoseLandmarkerHelper.ResultBundle(
-            results = result,
-            inputImageWidth = 0,
-            inputImageHeight = 0,
-            inferenceTime = 0
-        )
-        return analyze(bundle)
-    }
-
-    /**
-     * Checks if the detected pose is valid for starting the exercise analysis.
-     */
-    fun isValidPose(result: PoseLandmarkerHelper.ResultBundle): Boolean
-
-    /**
-     * Starts the exercise analysis session, resetting any internal state.
-     */
-    fun start()
-
-    /**
-     * Stops the exercise analysis session.
-     */
-    fun stop()
-
-    /**
-     * Resets the analyzer's state (e.g., rep count).
-     */
-    fun reset()
-}
-Phase 6: Testing and Debugging (Day 5-6)
-6.1 Create Testing Utility
-kotlinpackage com.example.ptchampion.utils
-
-import android.content.Context
-import android.util.Log
-import com.example.ptchampion.posedetection.PoseLandmarkerHelper
-import com.google.mediapipe.tasks.vision.core.RunningMode
-
-class PoseDetectionTester(
-    private val context: Context
-) {
-    private val TAG = "PoseDetectionTester"
-    
-    fun testPoseLandmarkerInitialization(): Boolean {
-        return try {
-            val poseLandmarker = PoseLandmarkerHelper(
-                context = context,
-                runningMode = RunningMode.IMAGE,
-                resultListener = object : PoseLandmarkerHelper.LandmarkerListener {
-                    override fun onError(error: String, errorCode: Int) {
-                        Log.e(TAG, "Error: $error (code: $errorCode)")
-                    }
-                    
-                    override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
-                        Log.d(TAG, "Got results: ${resultBundle.results.landmarks().size} poses")
-                    }
-                }
-            )
-            
-            // If initialization succeeded, the helper should not be null
-            poseLandmarker != null
-        } catch (e: Exception) {
-            Log.e(TAG, "Initialization failed: ${e.message}")
-            false
-        }
-    }
-    
-    fun logSystemInfo() {
-        Log.d(TAG, "Device: ${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}")
-        Log.d(TAG, "Android version: ${android.os.Build.VERSION.RELEASE} (SDK ${android.os.Build.VERSION.SDK_INT})")
-        
-        // Check if device has required camera features
-        val pm = context.packageManager
-        val hasCameraFeature = pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_CAMERA_ANY)
-        Log.d(TAG, "Has camera: $hasCameraFeature")
-        
-        // Check available camera types
-        val hasFrontCamera = pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_CAMERA_FRONT)
-        val hasBackCamera = pm.hasSystemFeature(android.content.pm.PackageManager.FEATURE_CAMERA)
-        Log.d(TAG, "Front camera: $hasFrontCamera, Back camera: $hasBackCamera")
-    }
-}
-6.2 Add Diagnostic Button to CameraScreen
-Add a hidden diagnostic button that only appears in debug builds to help with testing:
-kotlin// Add to CameraScreen.kt
-if (BuildConfig.DEBUG) {
-    FloatingActionButton(
-        onClick = { 
-            val tester = PoseDetectionTester(context)
-            tester.logSystemInfo()
-            val result = tester.testPoseLandmarkerInitialization()
-            Toast.makeText(context, "Pose detector test: $result", Toast.LENGTH_LONG).show()
-        },
-        modifier = Modifier
-            .align(Alignment.BottomStart)
-            .padding(16.dp)
-    ) {
-        Icon(Icons.Default.BugReport, contentDescription = "Run diagnostics")
-    }
-}
-Phase 7: Integration and Final Testing (Day 7)
-
-Run full integration tests on devices with different:
-
-Android versions
-Camera configurations
-Processing capabilities
+In RunningTrackingViewModel.kt, ensure correct type handling between LocationData and Location
+Check all Resource generic types to ensure they match expected return types
 
 
-Verify rep counting for each exercise type:
+Update MediaPipe implementation:
 
-Push-ups
-Pull-ups
-Sit-ups
-
-
-Check performance and battery usage:
-
-Implement frame rate limiting if needed
-Add configuration options for lower-end devices
+Update PoseLandmarkerHelper.kt to use compatible APIs
+Fix the commented out sections if needed
 
 
-Create a debug toggle in Settings for switching between LITE and FULL pose detection models
+Fix Bluetooth service integration:
 
-Implementation Timeline
+Complete the implementation of BluetoothDeviceManagementViewModel
+Correctly access the connectedDevice property
 
-Day 1: Update dependencies and add model files
-Day 2: Fix PoseLandmarkerHelper and create YuvToRgbConverter
-Day 3: Fix CameraX implementation with proper lifecycle
-Day 4: Update ExerciseAnalyzer interfaces and implementations
-Day 5-6: Test and debug on various devices
-Day 7: Final integration and performance optimization
+
+Check Kapt configuration:
+
+Ensure kapt is correctly configured in your build.gradle
+Fix the Kapt error in WatchBluetoothService.kt

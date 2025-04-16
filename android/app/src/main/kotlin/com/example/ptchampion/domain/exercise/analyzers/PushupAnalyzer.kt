@@ -74,7 +74,7 @@ class PushupAnalyzer : ExerciseAnalyzer {
     private var lastValidHipY = 0f
     private var lastValidElbowAngle = 180f
 
-    override fun analyze(resultBundle: PoseLandmarkerHelper.ResultBundle): ExerciseAnalyzer.AnalysisResult {
+    override fun analyze(resultBundle: PoseLandmarkerHelper.ResultBundle): AnalysisResult {
         formIssues.clear()
         
         // Extract MediaPipe results
