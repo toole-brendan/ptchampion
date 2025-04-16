@@ -6,7 +6,8 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ptchampion.domain.exercise.bluetooth.GpsLocation
-import com.example.ptchampion.domain.exercise.bluetooth.Resource
+import com.example.ptchampion.domain.exercise.bluetooth.ResourceHelpers
+import com.example.ptchampion.domain.util.Resource
 import com.example.ptchampion.domain.exercise.bluetooth.WatchDataRepository
 import com.example.ptchampion.domain.service.ConnectionState
 import com.example.ptchampion.domain.service.LocationService
@@ -268,9 +269,10 @@ class RunningTrackingViewModel @Inject constructor(
             watchDataRepository.getWatchLocation().collect { resource ->
                 when (resource) {
                     is Resource.Success -> {
-                        val watchLocation = resource.data
-                        // Process location data for distance/pace calculations
-                        processWatchLocation(watchLocation)
+                        resource.data?.let { watchLocation ->
+                            // Process location data for distance/pace calculations
+                            processWatchLocation(watchLocation)
+                        }
                     }
                     is Resource.Error -> {
                         // Fall back to phone GPS if watch GPS fails
@@ -298,19 +300,23 @@ class RunningTrackingViewModel @Inject constructor(
         locationJob?.cancel()
         locationJob = viewModelScope.launch {
             locationService.getLocationUpdates().collect { resource ->
-                // Use star projection for runtime check due to type erasure
-                if (resource is Resource.Success<*>) { 
-                    // Smart cast should allow accessing data as Location? if the flow emits Resource<Location>
-                    (resource.data as? Location)?.let { location -> 
-                        processLocationUpdate(location)
+                when (resource) {
+                    is Resource.Success -> {
+                        // No need for star projection or type casting since we know it's Resource<Location>
+                        resource.data?.let { location -> 
+                            processLocationUpdate(location)
+                        }
                     }
-                } else if (resource is Resource.Error<*>) { 
-                    Log.e(TAG, "Phone location error: ${resource.message}")
-                    _uiState.update { 
-                        it.copy(locationError = "Phone GPS error: ${resource.message}") 
+                    is Resource.Error -> { 
+                        Log.e(TAG, "Phone location error: ${resource.message}")
+                        _uiState.update { 
+                            it.copy(locationError = "Phone GPS error: ${resource.message}") 
+                        }
                     }
-                } 
-                // Implicitly handle Resource.Loading<*>
+                    is Resource.Loading -> {
+                        // Handle loading state
+                    }
+                }
             }
         }
     }
@@ -398,20 +404,38 @@ class RunningTrackingViewModel @Inject constructor(
             try {
                 // Start a workout session in the repository
                 val result = watchDataRepository.startWorkoutSession()
-                if (result is Resource.Success) {
-                    Log.d(TAG, "Started workout session: ${result.data.id}")
-                    
-                    // Stop the session to generate summary
-                    val summaryResult = watchDataRepository.stopWorkoutSession()
-                    if (summaryResult is Resource.Success) {
-                        Log.d(TAG, "Workout saved successfully")
-                    } else if (summaryResult is Resource.Error) {
-                        Log.e(TAG, "Error saving workout: ${summaryResult.message}")
-                        _uiState.update { it.copy(saveError = summaryResult.message) }
+                when (result) {
+                    is Resource.Success -> {
+                        val session = result.data
+                        if (session != null) {
+                            Log.d(TAG, "Started workout session: ${session.id}")
+                            
+                            // Stop the session to generate summary
+                            val summaryResult = watchDataRepository.stopWorkoutSession()
+                            when (summaryResult) {
+                                is Resource.Success -> {
+                                    Log.d(TAG, "Workout saved successfully")
+                                }
+                                is Resource.Error -> {
+                                    Log.e(TAG, "Error saving workout: ${summaryResult.message}")
+                                    _uiState.update { it.copy(saveError = summaryResult.message) }
+                                }
+                                is Resource.Loading -> {
+                                    // Ignore loading state for stopWorkoutSession
+                                }
+                            }
+                        } else {
+                            Log.e(TAG, "Error: Started session was null")
+                            _uiState.update { it.copy(saveError = "Error: Started session was null") }
+                        }
                     }
-                } else if (result is Resource.Error) {
-                    Log.e(TAG, "Error starting workout session: ${result.message}")
-                    _uiState.update { it.copy(saveError = result.message) }
+                    is Resource.Error -> {
+                        Log.e(TAG, "Error starting workout session: ${result.message}")
+                        _uiState.update { it.copy(saveError = result.message) }
+                    }
+                    is Resource.Loading -> {
+                        // Ignore loading state for startWorkoutSession
+                    }
                 }
                 
                 _uiState.update { it.copy(isSaving = false) }

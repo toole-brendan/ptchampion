@@ -11,6 +11,7 @@ import com.example.ptchampion.domain.exercise.bluetooth.WatchDataRepository
 import com.example.ptchampion.domain.service.BleDevice
 import com.example.ptchampion.domain.service.BluetoothService
 import com.example.ptchampion.domain.service.ConnectionState
+import com.example.ptchampion.domain.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
@@ -160,7 +161,7 @@ class WatchDeviceManagementViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
         viewModelScope.launch {
             val result = watchDataRepository.connectToDevice(address)
-            if (result is com.example.ptchampion.domain.exercise.bluetooth.Resource.Error) {
+            if (result is Resource.Error) {
                 _uiState.update { it.copy(error = result.message) }
             }
         }
@@ -172,7 +173,7 @@ class WatchDeviceManagementViewModel @Inject constructor(
     fun disconnectFromDevice() {
         viewModelScope.launch {
             val result = watchDataRepository.disconnectFromDevice()
-            if (result is com.example.ptchampion.domain.exercise.bluetooth.Resource.Error) {
+            if (result is Resource.Error) {
                 _uiState.update { it.copy(error = result.message) }
             }
         }

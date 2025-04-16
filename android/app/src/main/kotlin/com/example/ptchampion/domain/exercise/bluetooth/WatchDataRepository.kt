@@ -1,6 +1,7 @@
 package com.example.ptchampion.domain.exercise.bluetooth
 
 import android.util.Log
+import com.example.ptchampion.domain.util.Resource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -94,32 +95,32 @@ class WatchDataRepositoryImpl @Inject constructor(
     
     override fun getWatchLocation(): Flow<Resource<GpsLocation>> = flow {
         // Start with loading state
-        emit(Resource.loading())
+        emit(Resource.Loading())
         
         // Then map location updates to resource states
         gpsWatchService.watchGpsData.collect { location ->
             if (location != null) {
-                emit(Resource.success(location))
+                emit(Resource.Success(location))
             } else {
-                emit(Resource.error("No GPS data available from watch"))
+                emit(Resource.Error("No GPS data available from watch"))
             }
         }
     }
     
     override fun getWatchHeartRate(): Flow<Resource<Int>> = flow {
-        emit(Resource.loading())
+        emit(Resource.Loading())
         
         gpsWatchService.watchHeartRate.collect { heartRate ->
             if (heartRate != null) {
-                emit(Resource.success(heartRate))
+                emit(Resource.Success(heartRate))
             } else {
-                emit(Resource.error("No heart rate data available from watch"))
+                emit(Resource.Error("No heart rate data available from watch"))
             }
         }
     }
     
     override fun getWorkoutMetrics(): Flow<Resource<RunningMetrics>> = flow {
-        emit(Resource.loading())
+        emit(Resource.Loading())
         
         // Combine location and heart rate data
         gpsWatchService.watchGpsData
@@ -129,9 +130,9 @@ class WatchDataRepositoryImpl @Inject constructor(
             .collect { (location, heartRate) ->
                 if (location != null) {
                     val metrics = metricsProcessor.processNewLocation(location, heartRate)
-                    emit(Resource.success(metrics))
+                    emit(Resource.Success(metrics))
                 } else {
-                    emit(Resource.error("No location data available to calculate metrics"))
+                    emit(Resource.Error("No location data available to calculate metrics"))
                 }
             }
     }
@@ -139,7 +140,7 @@ class WatchDataRepositoryImpl @Inject constructor(
     override suspend fun startWorkoutSession(): Resource<WorkoutSession> {
         // Check if a session is already in progress
         if (_currentSession.value != null && _currentSession.value?.isActive == true) {
-            return Resource.error("A workout session is already in progress")
+            return Resource.Error("A workout session is already in progress")
         }
         
         // Reset the metrics processor
@@ -150,46 +151,46 @@ class WatchDataRepositoryImpl @Inject constructor(
         _currentSession.value = newSession
         
         Log.d(TAG, "Started new workout session: ${newSession.id}")
-        return Resource.success(newSession)
+        return Resource.Success(newSession)
     }
     
     override suspend fun pauseWorkoutSession(): Resource<Unit> {
-        val session = _currentSession.value ?: return Resource.error("No active workout session")
+        val session = _currentSession.value ?: return Resource.Error("No active workout session")
         
         session.pause()
         // Update to trigger state flow
         _currentSession.value = session.copy()
         
         Log.d(TAG, "Paused workout session: ${session.id}")
-        return Resource.success(Unit)
+        return Resource.Success(Unit)
     }
     
     override suspend fun resumeWorkoutSession(): Resource<Unit> {
-        val session = _currentSession.value ?: return Resource.error("No workout session to resume")
+        val session = _currentSession.value ?: return Resource.Error("No workout session to resume")
         
         session.resume()
         // Update to trigger state flow
         _currentSession.value = session.copy()
         
         Log.d(TAG, "Resumed workout session: ${session.id}")
-        return Resource.success(Unit)
+        return Resource.Success(Unit)
     }
     
     override suspend fun stopWorkoutSession(): Resource<WorkoutSummary> {
-        val session = _currentSession.value ?: return Resource.error("No workout session to stop")
+        val session = _currentSession.value ?: return Resource.Error("No workout session to stop")
         
         // End the session
         session.end()
         
         // Generate summary
         val summary = metricsProcessor.generateWorkoutSummary(session.id)
-            ?: return Resource.error("Failed to generate workout summary")
+            ?: return Resource.Error("Failed to generate workout summary")
         
         // Clear current session
         _currentSession.value = null
         
         Log.d(TAG, "Stopped workout session: ${session.id}")
-        return Resource.success(summary)
+        return Resource.Success(summary)
     }
     
     override suspend fun startDeviceScan() {
@@ -203,20 +204,20 @@ class WatchDataRepositoryImpl @Inject constructor(
     override suspend fun connectToDevice(address: String): Resource<Unit> {
         try {
             gpsWatchService.connectToWatch(address)
-            return Resource.success(Unit)
+            return Resource.Success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Error connecting to device", e)
-            return Resource.error("Failed to connect: ${e.message}")
+            return Resource.Error("Failed to connect: ${e.message}")
         }
     }
     
     override suspend fun disconnectFromDevice(): Resource<Unit> {
         try {
             gpsWatchService.disconnectFromWatch()
-            return Resource.success(Unit)
+            return Resource.Success(Unit)
         } catch (e: Exception) {
             Log.e(TAG, "Error disconnecting from device", e)
-            return Resource.error("Failed to disconnect: ${e.message}")
+            return Resource.Error("Failed to disconnect: ${e.message}")
         }
     }
 } 
