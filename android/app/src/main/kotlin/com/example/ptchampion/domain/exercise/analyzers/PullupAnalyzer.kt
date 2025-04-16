@@ -317,7 +317,9 @@ class PullupAnalyzer : ExerciseAnalyzer {
      */
     private fun getAverageConfidence(landmarks: List<NormalizedLandmark>): Float {
         if (landmarks.isEmpty()) return 0f
-        return landmarks.map { it.visibility() }.average().toFloat()
+        // Handle Optional<Float>, provide default 0f if visibility is absent
+        val visibilities = landmarks.mapNotNull { it.visibility().orElse(0f) }
+        return if (visibilities.isNotEmpty()) visibilities.average().toFloat() else 0f
     }
 
     /**
@@ -327,7 +329,8 @@ class PullupAnalyzer : ExerciseAnalyzer {
         if (landmarks.size < 33) return false // Full pose has 33 landmarks
         
         return KEY_LANDMARKS.all { 
-            landmarks[it].visibility() >= REQUIRED_VISIBILITY 
+            // Get visibility value or default to 0f before comparison
+            (landmarks[it].visibility().orElse(0f)) >= REQUIRED_VISIBILITY 
         }
     }
 

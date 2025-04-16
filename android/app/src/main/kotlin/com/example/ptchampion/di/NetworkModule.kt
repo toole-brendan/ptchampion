@@ -5,7 +5,7 @@ import com.example.ptchampion.data.network.AuthInterceptor
 import com.example.ptchampion.data.service.AuthApiService
 import com.example.ptchampion.data.service.UserApiService
 import com.example.ptchampion.data.service.ExerciseApiService
-import com.example.ptchampion.data.service.WorkoutApiService
+import com.example.ptchampion.data.network.WorkoutApiService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -102,8 +102,8 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideWorkoutApiService(retrofit: Retrofit): WorkoutApiService {
-        return retrofit.create(WorkoutApiService::class.java)
+    fun provideWorkoutApiService(retrofit: Retrofit): com.example.ptchampion.data.network.WorkoutApiService {
+        return retrofit.create(com.example.ptchampion.data.network.WorkoutApiService::class.java)
     }
 
     // Remove providers for other APIs we don't need right now

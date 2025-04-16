@@ -11,6 +11,9 @@ class StubPoseProcessor : PoseProcessor {
     private var initialized = false
     private var lensFacing = 0
 
+    // Implement the abstract listener property
+    override var listener: PoseProcessor.PoseProcessorListener? = null
+
     override fun initialize() {
         Log.d(TAG, "initialize() called - stub implementation")
         initialized = true
