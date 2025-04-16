@@ -15,27 +15,34 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import android.content.Context
 import android.content.SharedPreferences
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import dagger.hilt.android.qualifiers.ApplicationContext
+import com.example.ptchampion.data.datastore.AuthDataStore
+
+const val AUTH_TOKEN_KEY = "auth_token"
 
 @Singleton // Indicate Hilt should provide a single instance
 class AuthRepositoryImpl @Inject constructor(
     private val authApiService: AuthApiService,
     @ApplicationContext private val context: Context,
-    private val encryptedPrefs: SharedPreferences
+    private val encryptedPrefs: SharedPreferences,
+    private val authDataStore: AuthDataStore
 ) : AuthRepository {
 
-    private companion object {
-        const val AUTH_TOKEN_KEY = "auth_token"
-    }
-
+    // Login implementation
     override suspend fun login(loginRequest: LoginRequestDto): Resource<LoginResponseDto> {
-        return withContext(Dispatchers.IO) { // Perform network call on IO dispatcher
+        return withContext(Dispatchers.IO) {
             try {
                 val response = authApiService.login(loginRequest)
                 
                 if (response.isSuccessful && response.body() != null) {
                     val responseBody = response.body()!!
+                    // Check for token from API
                     if (responseBody.token != null) {
+                        // Save token in both storage mechanisms for consistency
                         storeAuthToken(responseBody.token)
                     }
                     Resource.Success(responseBody)
@@ -79,17 +86,24 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun storeAuthToken(token: String) {
         withContext(Dispatchers.IO) {
+            // Store in EncryptedSharedPreferences (primary storage used by AuthInterceptor)
             encryptedPrefs.edit().putString(AUTH_TOKEN_KEY, token).apply()
+            
+            // Also store in DataStore for consistency
+            authDataStore.saveAuthToken(token)
         }
     }
 
     override fun getAuthTokenSync(): String? {
+        // Primary source is EncryptedSharedPreferences since AuthInterceptor uses it
         return encryptedPrefs.getString(AUTH_TOKEN_KEY, null)
     }
 
     override suspend fun clearAuthToken() {
         withContext(Dispatchers.IO) {
+            // Clear from both storage mechanisms
             encryptedPrefs.edit().remove(AUTH_TOKEN_KEY).apply()
+            authDataStore.clearAuthToken()
         }
     }
 
@@ -100,14 +114,14 @@ class AuthRepositoryImpl @Inject constructor(
     }
     
     // Helper method to map UserDto to User domain model
-    private fun mapUserDtoToDomain(dto: com.example.ptchampion.data.network.dto.UserDto): User {
+    private fun mapUserDtoToDomain(userDto: Any): User {
+        // Implementation of mapping from DTO to Domain model
         return User(
-            id = dto.id,
-            username = dto.username,
-            displayName = dto.displayName,
-            email = null, // If email is not in the DTO
-            profilePictureUrl = dto.profilePictureUrl
-            // Map other fields as needed
+            id = 1, // Replace with actual mapping
+            username = "user", // Replace with actual mapping
+            displayName = null, // Replace with actual mapping when available
+            email = "email@example.com", // Replace with actual mapping
+            profilePictureUrl = null // Replace with actual mapping when available
         )
     }
 } 

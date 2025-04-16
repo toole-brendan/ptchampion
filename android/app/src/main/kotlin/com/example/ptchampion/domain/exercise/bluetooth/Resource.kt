@@ -1,16 +1,19 @@
 package com.example.ptchampion.domain.exercise.bluetooth
 
+import com.example.ptchampion.domain.util.Resource
+
 /**
- * Generic class to wrap data with its loading state
+ * Type alias pointing to the main Resource class
+ * This helps migrate code that was using the duplicate Resource class
  */
-sealed class Resource<T> {
-    class Loading<T> : Resource<T>()
-    data class Success<T>(val data: T) : Resource<T>()
-    data class Error<T>(val message: String, val data: T? = null) : Resource<T>()
-    
-    companion object {
-        fun <T> loading(): Resource<T> = Loading()
-        fun <T> success(data: T): Resource<T> = Success(data)
-        fun <T> error(message: String, data: T? = null): Resource<T> = Error(message, data)
-    }
+typealias Resource<T> = com.example.ptchampion.domain.util.Resource<T>
+
+/**
+ * Extension functions to provide convenient factory methods
+ * These maintain compatibility with existing code
+ */
+object ResourceHelpers {
+    fun <T> loading(data: T? = null): Resource<T> = Resource.Loading(data)
+    fun <T> success(data: T): Resource<T> = Resource.Success(data)
+    fun <T> error(message: String, data: T? = null): Resource<T> = Resource.Error(message, data)
 } 
