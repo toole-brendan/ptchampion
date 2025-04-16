@@ -14,29 +14,18 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.core.emptyPreferences
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.map
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.preferencesDataStoreFile
+import android.content.SharedPreferences
 import dagger.hilt.android.qualifiers.ApplicationContext
 
 @Singleton // Indicate Hilt should provide a single instance
 class AuthRepositoryImpl @Inject constructor(
     private val authApiService: AuthApiService,
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
+    private val encryptedPrefs: SharedPreferences
 ) : AuthRepository {
 
-    private val dataStore: DataStore<Preferences> = PreferenceDataStoreFactory.create(
-        produceFile = { context.preferencesDataStoreFile("auth") }
-    )
-    private object PreferencesKeys {
-        val AUTH_TOKEN = stringPreferencesKey("auth_token")
+    private companion object {
+        const val AUTH_TOKEN_KEY = "auth_token"
     }
 
     override suspend fun login(loginRequest: LoginRequestDto): Resource<LoginResponseDto> {
@@ -89,35 +78,25 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun storeAuthToken(token: String) {
-        dataStore.edit {
-            preferences ->
-            preferences[PreferencesKeys.AUTH_TOKEN] = token
+        withContext(Dispatchers.IO) {
+            encryptedPrefs.edit().putString(AUTH_TOKEN_KEY, token).apply()
         }
     }
 
-    override fun getAuthToken(): Flow<String?> {
-        return dataStore.data
-            .catch { exception ->
-                if (exception is IOException) {
-                    emit(emptyPreferences())
-                } else {
-                    throw exception
-                }
-            }.map {
-                preferences ->
-                preferences[PreferencesKeys.AUTH_TOKEN]
-            }
+    override fun getAuthTokenSync(): String? {
+        return encryptedPrefs.getString(AUTH_TOKEN_KEY, null)
     }
 
     override suspend fun clearAuthToken() {
-        dataStore.edit {
-            preferences ->
-            preferences.remove(PreferencesKeys.AUTH_TOKEN)
+        withContext(Dispatchers.IO) {
+            encryptedPrefs.edit().remove(AUTH_TOKEN_KEY).apply()
         }
     }
 
     override suspend fun logout() {
-        clearAuthToken()
+        withContext(Dispatchers.IO) {
+            clearAuthToken()
+        }
     }
     
     // Helper method to map UserDto to User domain model

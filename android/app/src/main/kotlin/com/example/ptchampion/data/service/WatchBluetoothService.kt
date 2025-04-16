@@ -650,33 +650,34 @@ class WatchBluetoothService @Inject constructor(
     
     // Scan callback implementation
     private val scanCallback = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult?) {
-            result?.let { scanResult ->
-                val device = scanResult.device
-                val address = device.address
+        @SuppressLint("MissingPermission")
+        override fun onScanResult(callbackType: Int, scanResult: ScanResult?) {
+            if (scanResult == null) return
+
+            val device = scanResult.device
+            val address = device.address
+            
+            if (!scanResults.containsKey(address)) {
+                val manufacturer = determineManufacturer(scanResult)
+                val features = determineSupportedFeatures(scanResult)
                 
-                if (!scanResults.containsKey(address)) {
-                    val manufacturer = determineManufacturer(scanResult)
-                    val features = determineSupportedFeatures(scanResult)
+                // Process all fitness watch manufacturers or unknown devices with relevant services
+                if (manufacturer != WatchManufacturer.UNKNOWN || features.isNotEmpty()) {
+                    val watchDevice = WatchDevice(
+                        name = device.name,
+                        address = address,
+                        manufacturer = manufacturer,
+                        supportedFeatures = features
+                    )
                     
-                    // Process all fitness watch manufacturers or unknown devices with relevant services
-                    if (manufacturer != WatchManufacturer.UNKNOWN || features.isNotEmpty()) {
-                        val watchDevice = WatchDevice(
-                            name = device.name,
-                            address = address,
-                            manufacturer = manufacturer,
-                            supportedFeatures = features
-                        )
-                        
-                        Log.d(TAG, "Found fitness device: ${device.name ?: "Unknown"} ($address), " +
-                                "Manufacturer: $manufacturer, Features: $features")
-                        
-                        scanResults[address] = watchDevice
-                        
-                        // Update discovered devices for UI
-                        _discoveredDevices.value = scanResults.values.map { 
-                            BleDevice(it.name, it.address) 
-                        }
+                    Log.d(TAG, "Found fitness device: ${device.name ?: "Unknown"} ($address), " +
+                            "Manufacturer: $manufacturer, Features: $features")
+                    
+                    scanResults[address] = watchDevice
+                    
+                    // Update discovered devices for UI
+                    _discoveredDevices.value = scanResults.values.map { 
+                        BleDevice(it.name, it.address) 
                     }
                 }
             }
