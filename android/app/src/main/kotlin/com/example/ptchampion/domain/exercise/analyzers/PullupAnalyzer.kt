@@ -9,6 +9,7 @@ import com.example.ptchampion.domain.exercise.utils.PoseLandmark
 import com.example.ptchampion.posedetection.PoseLandmarkerHelper
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -63,36 +64,31 @@ class PullupAnalyzer : ExerciseAnalyzer {
     override fun analyze(resultBundle: PoseLandmarkerHelper.ResultBundle): AnalysisResult {
         formIssues.clear()
         
-        // Extract MediaPipe results
         val results = resultBundle.results
         
-        // Ensure we have landmarks
         if (results.landmarks().isEmpty()) {
             return AnalysisResult(
                 repCount = repCount,
                 feedback = "No pose detected",
                 state = ExerciseState.INVALID,
                 confidence = 0f,
-                formScore = 0
+                formScore = 0.0
             )
         }
         
-        // Get the first person's landmarks
         val landmarks = results.landmarks()[0]
         
-        // Check if we have necessary landmarks with good visibility
         if (!areKeyLandmarksVisible(landmarks)) {
             return AnalysisResult(
                 repCount = repCount,
                 feedback = "Position yourself fully in frame",
                 state = ExerciseState.INVALID,
                 confidence = getAverageConfidence(landmarks),
-                formScore = 0
+                formScore = 0.0
             )
         }
 
         try {
-            // Extract key landmarks for analysis
             val leftShoulder = landmarks[PoseLandmark.LEFT_SHOULDER]
             val rightShoulder = landmarks[PoseLandmark.RIGHT_SHOULDER]
             val leftElbow = landmarks[PoseLandmark.LEFT_ELBOW]
@@ -118,7 +114,7 @@ class PullupAnalyzer : ExerciseAnalyzer {
                     feedback = "Cannot calculate elbow angle",
                     state = ExerciseState.INVALID,
                     confidence = getAverageConfidence(landmarks),
-                    formScore = 0
+                    formScore = 0.0
                 )
             }
 
@@ -132,7 +128,7 @@ class PullupAnalyzer : ExerciseAnalyzer {
             
             // Calculate hip deviation from starting position
             val hipDeviation = abs(avgHipY - startingHipsY)
-            maxHipsDeviation = kotlin.math.max(maxHipsDeviation, hipDeviation)
+            maxHipsDeviation = max(maxHipsDeviation, hipDeviation)
             
             // Chin-over-bar detection
             // In MediaPipe coordinates, Y increases moving downward in the image
@@ -142,13 +138,13 @@ class PullupAnalyzer : ExerciseAnalyzer {
             // Track maximum elbow angle for full extension check
             if (currentState == ExerciseState.DOWN || 
                 (currentState == ExerciseState.STARTING && previousState == ExerciseState.UP)) {
-                maxElbowAngle = kotlin.math.max(maxElbowAngle, avgElbowAngle)
+                maxElbowAngle = max(maxElbowAngle, avgElbowAngle)
             }
             
             // Track minimum elbow angle for proper pull-up height check
             if (currentState == ExerciseState.UP || 
                 (currentState == ExerciseState.STARTING && previousState == ExerciseState.DOWN)) {
-                minElbowAngle = kotlin.math.min(minElbowAngle, avgElbowAngle)
+                minElbowAngle = min(minElbowAngle, avgElbowAngle)
             }
 
             // Determine state with stability check
@@ -250,13 +246,13 @@ class PullupAnalyzer : ExerciseAnalyzer {
                 formScore = formScore
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error analyzing pose: ${e.message}", e)
+            Log.e(TAG, "Error during pull-up analysis: ${e.message}", e)
             return AnalysisResult(
                 repCount = repCount,
-                feedback = "Error analyzing pose",
+                feedback = "Error during analysis",
                 state = ExerciseState.INVALID,
                 confidence = 0f,
-                formScore = 0
+                formScore = 0.0
             )
         }
     }
@@ -288,8 +284,8 @@ class PullupAnalyzer : ExerciseAnalyzer {
         minElbowAngleAchieved: Float,
         hipDeviation: Float,
         chinOverBar: Boolean
-    ): Int {
-        var score = 100
+    ): Double {
+        var score = 100.0
         
         // Deduct for insufficient extension at bottom
         if (maxElbowAngleAchieved < FULL_EXTENSION_THRESHOLD) {
@@ -309,7 +305,7 @@ class PullupAnalyzer : ExerciseAnalyzer {
             score -= kippingPenalty
         }
         
-        return score.coerceIn(0, 100)
+        return maxOf(0.0, score)
     }
 
     /**

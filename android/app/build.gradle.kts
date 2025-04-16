@@ -151,7 +151,7 @@ android {
     }
     
     // Add explicit TensorFlow Lite related config
-    packagingOptions {
+    packaging {
         resources {
             excludes += setOf("/META-INF/{AL2.0,LGPL2.1}")
             
@@ -215,22 +215,18 @@ dependencies {
     implementation("androidx.security:security-crypto:1.1.0-alpha06") // Or use latest stable
     
     // CameraX dependencies - use stable versions
-    implementation "androidx.camera:camera-core:1.3.0"
-    implementation "androidx.camera:camera-camera2:1.3.0"
-    implementation "androidx.camera:camera-lifecycle:1.3.0"
-    implementation "androidx.camera:camera-view:1.3.0"
+    implementation("androidx.camera:camera-core:1.3.0")
+    implementation("androidx.camera:camera-camera2:1.3.0")
+    implementation("androidx.camera:camera-lifecycle:1.3.0")
+    implementation("androidx.camera:camera-view:1.3.0")
     
     // Accompanist - Re-enable
     implementation("com.google.accompanist:accompanist-permissions:0.31.5-beta")
     
-    // MediaPipe dependencies - Use latest.release as per plan (Note: plan has conflicting lines, using latest.release for both)
-    implementation 'com.google.mediapipe:tasks-vision:latest.release'
-    implementation 'com.google.mediapipe:mediapipe-tasks-vision:latest.release' 
+    // MediaPipe dependencies - Use specific version instead of latest.release
+    implementation("com.google.mediapipe:tasks-vision:latest.release") // Use the latest stable release from repositories
     // Optional GPU acceleration - Keep specific version or update if needed
     implementation("org.tensorflow:tensorflow-lite-gpu:2.12.0")
-    
-    // RenderScript for YUV conversion (Deprecated, but needed for the provided YuvToRgbConverter)
-    implementation "androidx.renderscript:renderscript-toolchain:23.0.3" // Example version, ensure compatibility or migrate
     
     // Bluetooth - Comment out problematic library
     // implementation("com.github.NordicSemiconductor:Android-BLE-Library:v2.6.1")

@@ -74,7 +74,7 @@ class PushupAnalyzer : ExerciseAnalyzer {
     private var lastValidHipY = 0f
     private var lastValidElbowAngle = 180f
 
-    override fun analyze(resultBundle: PoseLandmarkerHelper.ResultBundle): AnalysisResult {
+    override fun analyze(resultBundle: PoseLandmarkerHelper.ResultBundle): ExerciseAnalyzer.AnalysisResult {
         formIssues.clear()
         
         // Extract MediaPipe results
@@ -87,7 +87,7 @@ class PushupAnalyzer : ExerciseAnalyzer {
                 feedback = "No pose detected",
                 state = ExerciseState.INVALID,
                 confidence = 0f,
-                formScore = 0
+                formScore = 0.0
             )
         }
         
@@ -101,7 +101,7 @@ class PushupAnalyzer : ExerciseAnalyzer {
                 feedback = "Position your full body in frame",
                 state = ExerciseState.INVALID,
                 confidence = getAverageConfidence(landmarks),
-                formScore = 0
+                formScore = 0.0
             )
         }
 
@@ -216,10 +216,10 @@ class PushupAnalyzer : ExerciseAnalyzer {
             Log.e(TAG, "Error analyzing pose: ${e.message}", e)
             return AnalysisResult(
                 repCount = repCount,
-                feedback = "Error analyzing pose",
+                feedback = "Error during analysis",
                 state = ExerciseState.INVALID,
                 confidence = 0f,
-                formScore = 0
+                formScore = 0.0
             )
         }
     }
@@ -415,28 +415,28 @@ class PushupAnalyzer : ExerciseAnalyzer {
         bodyDeviations: Float,
         shoulders: Pair<NormalizedLandmark, NormalizedLandmark>,
         hips: Pair<NormalizedLandmark, NormalizedLandmark>
-    ): Int {
-        var score = 100
+    ): Double {
+        var score = 100.0
         
         // Penalty for insufficient depth (most critical for APFT)
         if (minElbowAngleAchieved > MIN_ELBOW_ANGLE_THRESHOLD) {
             val depthPenalty = ((minElbowAngleAchieved - MIN_ELBOW_ANGLE_THRESHOLD) * 1.5).toInt()
                 .coerceAtMost(50) // Major penalty - up to 50 points
-            score -= depthPenalty
+            score -= depthPenalty.toDouble()
         }
         
         // Penalty for body alignment issues
         val alignmentPenalty = (bodyDeviations * 300).toInt().coerceAtMost(40)
-        score -= alignmentPenalty
+        score -= alignmentPenalty.toDouble()
         
         // Penalty for shoulder alignment issues
         val shoulderTilt = abs(shoulders.first.y() - shoulders.second.y())
         if (shoulderTilt > SHOULDER_ALIGNMENT_THRESHOLD) {
             val tiltPenalty = (shoulderTilt * 100).toInt().coerceAtMost(20)
-            score -= tiltPenalty
+            score -= tiltPenalty.toDouble()
         }
         
-        return score.coerceIn(0, 100)
+        return score.coerceIn(0.0, 100.0)
     }
 
     /**

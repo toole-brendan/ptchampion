@@ -1,7 +1,7 @@
 package com.example.ptchampion.domain.exercise
 
 /**
- * Represents the current state of an exercise during analysis.
+ * Represents the different states an exercise can be in during analysis.
  */
 enum class ExerciseState {
     IDLE,       // Initial state, no movement detected

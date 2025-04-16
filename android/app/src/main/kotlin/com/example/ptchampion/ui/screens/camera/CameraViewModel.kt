@@ -73,7 +73,6 @@ class CameraViewModel @Inject constructor(
                 _poseDetectorProcessor = PoseDetectorProcessor(
                     context = getApplication(),
                     runningMode = RunningMode.LIVE_STREAM,
-                    showConfidence = true,
                     listener = this@CameraViewModel
                 ).also {
                     it.initialize()
