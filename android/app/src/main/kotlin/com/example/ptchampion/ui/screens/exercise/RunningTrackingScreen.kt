@@ -14,6 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.ptchampion.R
 
 /**
  * Running tracking screen with watch integration
@@ -25,8 +27,13 @@ fun RunningTrackingScreen(
     onNavigateBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val trackingStatus by viewModel.trackingStatus.collectAsState()
-    val watchConnected by viewModel.watchConnectionState.collectAsState()
+    val trackingStatus by viewModel.trackingStatus.collectAsStateWithLifecycle()
+    val watchConnected by viewModel.watchConnectionState.collectAsStateWithLifecycle()
+    
+    // Collect other states needed
+    val watchName by viewModel.connectedWatchName.collectAsStateWithLifecycle()
+    val watchBatteryLevel by viewModel.watchBatteryLevel.collectAsStateWithLifecycle()
+    val currentHeartRate by viewModel.currentHeartRate.collectAsStateWithLifecycle()
     
     Scaffold(
         topBar = {
@@ -50,8 +57,8 @@ fun RunningTrackingScreen(
             // Add watch connection status indicator
             if (watchConnected) {
                 WatchConnectionBanner(
-                    watchName = viewModel.connectedWatchName.value,
-                    batteryLevel = viewModel.watchBatteryLevel.value
+                    watchName = watchName,
+                    batteryLevel = watchBatteryLevel
                 )
             }
             
@@ -80,7 +87,7 @@ fun RunningTrackingScreen(
                 // Add heart rate display if watch is connected
                 if (watchConnected) {
                     HeartRateDisplay(
-                        heartRate = viewModel.currentHeartRate.value
+                        heartRate = currentHeartRate
                     )
                     
                     Spacer(modifier = Modifier.height(16.dp))

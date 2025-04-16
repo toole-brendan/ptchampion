@@ -102,7 +102,7 @@ fun ProfileScreen(
 
                     // Logout Button
                     Button(
-                        onClick = { viewModel.logout(onLoggedOut = navigateToLogin) },
+                        onClick = { viewModel.onEvent(ProfileEvent.LogoutClicked) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = PtAccent, // Brass Gold

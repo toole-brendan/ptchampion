@@ -25,11 +25,12 @@ interface AuthRepository {
     suspend fun storeAuthToken(token: String)
 
     /**
-     * Retrieves the stored authentication token as a Flow.
-     * Emits null if no token is stored.
-     * @return A Flow emitting the auth token or null.
+     * Retrieves the stored authentication token synchronously.
+     * Returns null if no token is stored.
+     * Should be called from a background thread if accessed frequently.
+     * @return The auth token or null.
      */
-    fun getAuthToken(): Flow<String?>
+    fun getAuthTokenSync(): String?
 
     /**
      * Clears the stored authentication token.

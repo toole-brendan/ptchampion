@@ -19,5 +19,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "android"
 include(":app")
-// include(":generatedapi") // Include the generatedapi as a proper module
 include(":api_client") // API client module with generated models
+// include(":generatedapi") // Include the generatedapi as a proper module

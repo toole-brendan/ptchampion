@@ -5,7 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ptchampion.domain.repository.UserRepository
+import com.example.ptchampion.data.network.dto.RegisterRequestDto
+import com.example.ptchampion.domain.repository.AuthRepository
 import com.example.ptchampion.domain.util.Resource as DomainResource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,7 +40,7 @@ sealed class SignUpEffect {
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SignUpState())
@@ -58,7 +59,7 @@ class SignUpViewModel @Inject constructor(
         }
     }
 
-    fun signUp() {
+    private fun signUp() {
         if (_uiState.value.isLoading) return
 
         val state = _uiState.value
@@ -75,17 +76,12 @@ class SignUpViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null, isSignUpSuccess = false) }
 
-            val result = userRepository.register(
+            val registerRequest = RegisterRequestDto(
                 username = state.username,
-                password = state.password,
-                // Pass other optional fields if collected (displayName, etc.)
-                // Assuming email might be used as username or displayName initially
-                displayName = state.username, // Or use email, or add a separate field
-                profilePictureUrl = null, // Default
-                location = null, // Default
-                latitude = null,
-                longitude = null
+                password = state.password
             )
+
+            val result = authRepository.register(registerRequest)
 
             when (result) {
                 is DomainResource.Success -> {
@@ -114,5 +110,9 @@ class SignUpViewModel @Inject constructor(
 
     fun resetSignUpSuccess() {
         _uiState.update { it.copy(isSignUpSuccess = false) }
+    }
+
+    fun consumeEffect() {
+        _effect.value = null
     }
 } 

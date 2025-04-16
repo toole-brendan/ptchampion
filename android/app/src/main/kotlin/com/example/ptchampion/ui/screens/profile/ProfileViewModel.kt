@@ -3,6 +3,7 @@ package com.example.ptchampion.ui.screens.profile
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ptchampion.domain.model.User
+import com.example.ptchampion.domain.repository.AuthRepository
 import com.example.ptchampion.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
@@ -16,13 +17,21 @@ data class ProfileState(
     // Removed totalWorkouts as it's not directly in the User model yet
 )
 
+sealed class ProfileEffect {
+    object NavigateToLogin : ProfileEffect()
+}
+
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ProfileState())
     val uiState: StateFlow<ProfileState> = _uiState.asStateFlow()
+
+    private val _effect = MutableSharedFlow<ProfileEffect>()
+    val effect = _effect.asSharedFlow()
 
     init {
         observeProfileData()
@@ -47,13 +56,17 @@ class ProfileViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun logout(onLoggedOut: () -> Unit) {
+    fun onEvent(event: ProfileEvent) {
+        when (event) {
+            ProfileEvent.LogoutClicked -> logoutUser()
+        }
+    }
+
+    private fun logoutUser() {
         viewModelScope.launch {
-            // Consider showing loading state during logout
-            // _uiState.update { it.copy(isLoading = true) }
-            userRepository.logout()
-            // Flow update will set user to null
-            onLoggedOut() // Trigger navigation callback
+            // Call authRepository.logout
+            authRepository.logout()
+            _effect.emit(ProfileEffect.NavigateToLogin)
         }
     }
 
@@ -67,4 +80,9 @@ class ProfileViewModel @Inject constructor(
     //         } // Success is handled by the flow observation
     //     }
     // }
+}
+
+sealed class ProfileEvent {
+    object LogoutClicked : ProfileEvent()
+    // TODO: Add events for editing profile
 } 

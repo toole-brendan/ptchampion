@@ -32,6 +32,7 @@ import com.example.ptchampion.ui.navigation.Screen
 import com.example.ptchampion.ui.theme.*
 import kotlinx.coroutines.flow.collectLatest
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,132 +41,101 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val effect by viewModel.effect.collectAsState(initial = null)
+    val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    // Handle navigation effects
-    LaunchedEffect(key1 = true) {
-        viewModel.effect.collect { effect ->
-            when (effect) {
-                is LoginEffect.NavigateToHome -> {
-                    // Navigate to Home and clear back stack up to Login
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                        launchSingleTop = true
-                    }
+    LaunchedEffect(effect) {
+        when (val currentEffect = effect) {
+            is LoginEffect.NavigateToHome -> {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    launchSingleTop = true
                 }
-                is LoginEffect.NavigateToSignUp -> {
-                    navController.navigate(Screen.SignUp.route)
-                }
+                viewModel.onEvent(LoginEvent.EffectConsumed)
             }
+            is LoginEffect.ShowError -> {
+                snackbarHostState.showSnackbar(currentEffect.message)
+                viewModel.onEvent(LoginEvent.EffectConsumed)
+            }
+            null -> { /* Do nothing when effect is null */ }
         }
     }
 
-    // Alternative way to handle navigation on success (if effect isn't desired for this)
-    /*
-    LaunchedEffect(uiState.isLoginSuccess) {
-        if (uiState.isLoginSuccess) {
-             navController.navigate(Screen.Home.route) {
-                popUpTo(Screen.Login.route) { inclusive = true }
-                launchSingleTop = true
-            }
-            viewModel.resetLoginSuccess() // Reset flag after navigation
-        }
-    }
-    */
-
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = PtBackground // Use theme background
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = PtBackground
         ) {
-            Text("Login", style = MaterialTheme.typography.headlineLarge, color = PtCommandBlack)
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Email/Username Field
-            OutlinedTextField(
-                value = uiState.email, // Use email field from state
-                onValueChange = { viewModel.onEvent(LoginEvent.EmailChanged(it)) },
-                label = { Text("Email or Username") }, // Adjusted label
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = PtAccent,
-                    unfocusedBorderColor = PtSecondaryText,
-                    cursorColor = PtAccent,
-                    focusedLabelColor = PtAccent,
-                    unfocusedLabelColor = PtSecondaryText
-                ),
-                isError = uiState.error?.contains("Email", ignoreCase = true) == true || uiState.error?.contains("Username", ignoreCase = true) == true
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Password Field
-            OutlinedTextField(
-                value = uiState.password,
-                onValueChange = { viewModel.onEvent(LoginEvent.PasswordChanged(it)) },
-                label = { Text("Password") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = PtAccent,
-                    unfocusedBorderColor = PtSecondaryText,
-                    cursorColor = PtAccent,
-                    focusedLabelColor = PtAccent,
-                    unfocusedLabelColor = PtSecondaryText
-                ),
-                isError = uiState.error?.contains("Password", ignoreCase = true) == true
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Error Message Display
-            uiState.error?.let {
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-            }
-
-            // Login Button with Loading Indicator
-            Button(
-                onClick = { viewModel.onEvent(LoginEvent.Submit) },
-                enabled = !uiState.isLoading, // Disable button when loading
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = PtAccent,
-                    contentColor = PtCommandBlack,
-                    disabledContainerColor = PtAccent.copy(alpha = 0.5f),
-                    disabledContentColor = PtCommandBlack.copy(alpha = 0.5f)
-                ),
-                shape = MaterialTheme.shapes.small
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                if (uiState.isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = PtCommandBlack,
-                        strokeWidth = 2.dp
+                Text("Login", style = MaterialTheme.typography.headlineLarge, color = PtCommandBlack)
+                Spacer(modifier = Modifier.height(24.dp))
+
+                OutlinedTextField(
+                    value = uiState.email,
+                    onValueChange = { viewModel.onEvent(LoginEvent.EmailChanged(it)) },
+                    label = { Text("Email or Username") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = PtAccent,
+                        unfocusedBorderColor = PtSecondaryText,
+                        cursorColor = PtAccent,
+                        focusedLabelColor = PtAccent,
+                        unfocusedLabelColor = PtSecondaryText
+                    ),
+                    isError = uiState.error?.contains("Email", ignoreCase = true) == true || uiState.error?.contains("Username", ignoreCase = true) == true
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = uiState.password,
+                    onValueChange = { viewModel.onEvent(LoginEvent.PasswordChanged(it)) },
+                    label = { Text("Password") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = PtAccent,
+                        unfocusedBorderColor = PtSecondaryText,
+                        cursorColor = PtAccent,
+                        focusedLabelColor = PtAccent,
+                        unfocusedLabelColor = PtSecondaryText
+                    ),
+                    isError = uiState.error?.contains("Password", ignoreCase = true) == true
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+
+                uiState.error?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                } else {
-                    Text("LOGIN")
                 }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = { viewModel.onEvent(LoginEvent.Submit) },
+                    enabled = !uiState.isLoading,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (uiState.isLoading) "Logging In..." else "Login")
+                }
 
-            // Sign Up Link
-            TextButton(onClick = { viewModel.navigateToSignUp() }) {
-                Text("Don't have an account? Sign Up", color = PtAccent)
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
     }
-} 
+}

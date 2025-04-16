@@ -4,56 +4,70 @@ import com.example.ptchampion.posedetection.PoseLandmarkerHelper
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 
 /**
- * Base interface for analyzing exercises based on pose landmark results.
+ * Interface for analyzing exercise form and counting reps from pose data.
  */
 interface ExerciseAnalyzer {
-    /**
-     * Analyzes a single frame of pose landmark data from a PoseLandmarkerHelper.ResultBundle.
-     * This is the original method for backward compatibility.
-     *
-     * @param result The pose landmark data bundle for the current frame.
-     * @return An [AnalysisResult] containing rep count, feedback, and state.
-     */
-    fun analyze(result: PoseLandmarkerHelper.ResultBundle): AnalysisResult
 
     /**
-     * Analyzes a single frame of pose landmark data directly from a PoseLandmarkerResult.
-     * This is the direct method using MediaPipe results.
-     *
-     * @param result The pose landmark result from MediaPipe.
-     * @return An [AnalysisResult] containing rep count, feedback, and state.
+     * Analyzes a single frame of pose landmark data provided as a ResultBundle.
+     * This is the primary analysis method expected to be used.
+     * 
+     * @param resultBundle Contains pose landmarks, image dimensions, and inference time.
+     * @return AnalysisResult containing rep count, feedback, and form score.
+     */
+    fun analyze(resultBundle: PoseLandmarkerHelper.ResultBundle): AnalysisResult
+
+    /**
+     * Analyzes a single frame of pose landmark data provided directly as PoseLandmarkerResult.
+     * Provides a convenience wrapper around the primary analyze method.
+     * 
+     * @param result The raw PoseLandmarkerResult.
+     * @return AnalysisResult derived from wrapping the input in a ResultBundle.
      */
     fun analyze(result: PoseLandmarkerResult): AnalysisResult {
-        // Create a simple ResultBundle wrapper
+        // Create a simple ResultBundle wrapper, dimensions might be inaccurate if not available
+        // Consider if image dimensions are actually needed by analyzers or if they can be optional
         val bundle = PoseLandmarkerHelper.ResultBundle(
             results = result,
-            inputImageWidth = 0,
-            inputImageHeight = 0,
-            inferenceTime = 0
+            inputImageWidth = 0, // Placeholder - update if actual width/height available
+            inputImageHeight = 0, // Placeholder
+            inferenceTime = 0 // Placeholder
         )
         return analyze(bundle)
     }
 
     /**
-     * Checks if the detected pose is valid for starting the exercise analysis.
-     *
-     * @param result The pose landmark data bundle.
-     * @return True if the pose is valid, false otherwise.
+     * Checks if the detected pose in the ResultBundle is valid for starting 
+     * or continuing the exercise analysis.
+     * 
+     * @param resultBundle The pose data to validate.
+     * @return true if the pose is considered valid, false otherwise.
      */
-    fun isValidPose(result: PoseLandmarkerHelper.ResultBundle): Boolean
+    fun isValidPose(resultBundle: PoseLandmarkerHelper.ResultBundle): Boolean
 
     /**
-     * Starts the exercise analysis session, resetting any internal state.
+     * Starts or restarts the exercise analysis session, resetting internal state like rep count
+     * and tracking variables.
      */
     fun start()
 
     /**
-     * Stops the exercise analysis session.
+     * Stops the exercise analysis session. May perform cleanup if necessary.
      */
     fun stop()
 
     /**
-     * Resets the analyzer's state (e.g., rep count).
+     * Resets the analyzer's state (e.g., rep count, internal counters) without 
+     * necessarily stopping the session. Useful for starting a new set, for example.
      */
     fun reset()
+    
+    /**
+     * Data class to hold the results of the analysis for a single frame.
+     */
+    data class AnalysisResult(
+        val repCount: Int = 0,
+        val feedback: String? = null,
+        val formScore: Double = 100.0 // Score out of 100
+    )
 } 
