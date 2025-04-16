@@ -70,7 +70,7 @@ class SitupAnalyzer : ExerciseAnalyzer {
                 feedback = "No pose detected",
                 state = ExerciseState.INVALID,
                 confidence = 0f,
-                formScore = 0
+                formScore = 0.0
             )
         }
         
@@ -84,7 +84,7 @@ class SitupAnalyzer : ExerciseAnalyzer {
                 feedback = "Position yourself fully in frame",
                 state = ExerciseState.INVALID,
                 confidence = getAverageConfidence(landmarks),
-                formScore = 0
+                formScore = 0.0
             )
         }
 
@@ -117,7 +117,7 @@ class SitupAnalyzer : ExerciseAnalyzer {
                     feedback = "Cannot calculate hip angle",
                     state = ExerciseState.INVALID,
                     confidence = getAverageConfidence(landmarks),
-                    formScore = 0
+                    formScore = 0.0
                 )
             }
 
@@ -227,13 +227,13 @@ class SitupAnalyzer : ExerciseAnalyzer {
                 formScore = formScore
             )
         } catch (e: Exception) {
-            Log.e(TAG, "Error analyzing pose: ${e.message}", e)
+            Log.e(TAG, "Error during sit-up analysis: ${e.message}", e)
             return AnalysisResult(
                 repCount = repCount,
-                feedback = "Error analyzing pose",
+                feedback = "Error during analysis",
                 state = ExerciseState.INVALID,
                 confidence = 0f,
-                formScore = 0
+                formScore = 0.0
             )
         }
     }
@@ -294,27 +294,27 @@ class SitupAnalyzer : ExerciseAnalyzer {
         maxHipAngleAchieved: Float,
         minHipAngleAchieved: Float,
         armsCorrect: Boolean
-    ): Int {
-        var score = 100
+    ): Double {
+        var score = 100.0
         
         // Deduct for insufficient back flatness in down position
         if (maxHipAngleAchieved < HIP_ANGLE_DOWN_THRESHOLD) {
-            val backFlatnessPenalty = ((HIP_ANGLE_DOWN_THRESHOLD - maxHipAngleAchieved) * 0.5f).toInt()
+            val backFlatnessPenalty = ((HIP_ANGLE_DOWN_THRESHOLD - maxHipAngleAchieved) * 0.5).toInt()
             score -= backFlatnessPenalty.coerceAtMost(30)
         }
         
         // Deduct for insufficient curl in up position
         if (minHipAngleAchieved > HIP_ANGLE_UP_THRESHOLD) {
-            val curlPenalty = ((minHipAngleAchieved - HIP_ANGLE_UP_THRESHOLD) * 0.8f).toInt()
+            val curlPenalty = ((minHipAngleAchieved - HIP_ANGLE_UP_THRESHOLD) * 0.8).toInt()
             score -= curlPenalty.coerceAtMost(40)
         }
         
         // Deduct for incorrect arm position
         if (!armsCorrect) {
-            score -= 20
+            score -= 20.0
         }
         
-        return score.coerceIn(0, 100)
+        return score.coerceIn(0.0, 100.0)
     }
 
     /**

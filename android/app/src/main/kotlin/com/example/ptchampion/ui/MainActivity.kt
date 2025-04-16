@@ -233,8 +233,6 @@ fun PTChampionApp() {
                     arguments = Screen.Camera.arguments
                 ) { backStackEntry ->
                     CameraScreen(
-                        exerciseId = backStackEntry.arguments?.getInt("exerciseId") ?: -1,
-                        exerciseType = backStackEntry.arguments?.getString("exerciseType"),
                         onWorkoutComplete = {
                             navController.popBackStack()
                         }

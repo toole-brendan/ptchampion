@@ -2,6 +2,7 @@ package com.example.ptchampion.posedetection
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.media.Image
 import android.os.SystemClock
 import android.util.Log
 import androidx.camera.core.ImageProxy
@@ -11,11 +12,13 @@ import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerOptions
+// Comment out potentially problematic import if options class name changed
+// import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerOptions 
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
-import com.example.ptchampion.utils.YuvToRgbConverter
 import java.lang.RuntimeException
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 /**
  * Helper for MediaPipe pose detection
@@ -28,7 +31,8 @@ class PoseLandmarkerHelper(
     private val minPosePresenceConfidence: Float = 0.5f,
     private val currentModel: Int = MODEL_FULL,
     private val delegate: Delegate = Delegate.CPU,
-    private val resultListener: LandmarkerListener? = null
+    private val resultListener: LandmarkerListener? = null,
+    private val maxNumPoses: Int = 1
 ) {
     // For pose landmarker results
     data class ResultBundle(
@@ -52,7 +56,6 @@ class PoseLandmarkerHelper(
 
     private var poseLandmarker: PoseLandmarker? = null
     private var defaultNumThreads = Runtime.getRuntime().availableProcessors() // Use available cores
-    private val yuvToRgbConverter by lazy { YuvToRgbConverter(context) }
     private var isClosing = AtomicBoolean(false)
 
     init {
@@ -84,49 +87,54 @@ class PoseLandmarkerHelper(
             val baseOptionsBuilder = BaseOptions.builder()
                 .setModelAssetPath(modelName)
                 .setDelegate(delegate)
-                // Don't set numThreads for GPU delegate
-                if (delegate != Delegate.GPU) {
-                    baseOptionsBuilder.setNumThreads(defaultNumThreads)
-                }
+            // Comment out setNumThreads for now
+            // if (delegate != Delegate.GPU) {
+            //     baseOptionsBuilder.setNumThreads(defaultNumThreads)
+            // }
             val baseOptions = baseOptionsBuilder.build()
 
-            val optionsBuilder = PoseLandmarkerOptions.builder()
-                .setBaseOptions(baseOptions)
-                .setMinPoseDetectionConfidence(minPoseDetectionConfidence)
-                .setMinPosePresenceConfidence(minPosePresenceConfidence)
-                .setMinTrackingConfidence(minPoseTrackingConfidence)
-                .setRunningMode(runningMode)
-                .setOutputSegmentationMasks(false)
+            // --- Corrected Options Configuration ---
+            // Create the options builder
+            val optionsBuilder = 
+                PoseLandmarker.PoseLandmarkerOptions.builder()
+                    .setBaseOptions(baseOptions) // Set the base options (model, delegate)
+                    .setMinPoseDetectionConfidence(minPoseDetectionConfidence)
+                    .setMinTrackingConfidence(minPoseTrackingConfidence) 
+                    .setMinPosePresenceConfidence(minPosePresenceConfidence)
+                    .setNumPoses(maxNumPoses) // Set the max number of poses
+                    .setRunningMode(runningMode) // Set the running mode
+                    .setOutputSegmentationMasks(false) // Or true if you need masks
 
             // Configure listeners based on RunningMode
             if (runningMode == RunningMode.LIVE_STREAM) {
-                optionsBuilder.setResultListener { result: PoseLandmarkerResult?, inputImage: MPImage ->
-                    // Check if closing before processing result
-                    if (isClosing.get()) return@setResultListener
-                    
-                    val finishTime = SystemClock.uptimeMillis()
-                    // Calculate approximate inference time (may not be accurate)
-                    val inferenceTime = finishTime - (result?.timestampMs() ?: finishTime) 
-
-                    result?.let {
-                        val resultBundle = ResultBundle(
-                            results = it,
-                            inputImageWidth = inputImage.width, // Use inputImage dimensions
-                            inputImageHeight = inputImage.height,
-                            inferenceTime = inferenceTime // Pass calculated time
+                optionsBuilder
+                    .setResultListener { result, inputImage -> 
+                        // Call your listener with the result bundle
+                        resultListener?.onResults(
+                            ResultBundle(
+                                results = result,
+                                inputImageWidth = inputImage.width,
+                                inputImageHeight = inputImage.height,
+                                // Inference time might not be directly available in the async result
+                                // Use SystemClock.uptimeMillis() difference if needed
+                                inferenceTime = 0L // Use placeholder for now
+                            )
                         )
-                        resultListener?.onResults(resultBundle)
                     }
-                }
-                .setErrorListener { error: RuntimeException, errorCode: Int ->
-                    // Check if closing before processing error
-                    if (isClosing.get()) return@setErrorListener
-                    resultListener?.onError(error.message ?: "Unknown error in Pose Landmarker", errorCode)
-                }
+                    .setErrorListener { error ->
+                        // Call your error listener
+                        resultListener?.onError(error.message ?: "An unknown error occurred")
+                    }
             }
+            
+            // Build the options
+            val options = optionsBuilder.build()
 
-            poseLandmarker = PoseLandmarker.createFromOptions(context, optionsBuilder.build())
-            Log.d(TAG, "PoseLandmarker initialized successfully with model: $modelName, mode: $runningMode, delegate: $delegate")
+            // Create the PoseLandmarker instance
+            poseLandmarker = PoseLandmarker.createFromOptions(context, options) 
+            // --- End Corrected Options Configuration ---
+
+            Log.d(TAG, "PoseLandmarker initialized with model: $modelName, mode: $runningMode, delegate: $delegate")
         } catch (e: Exception) {
              // Don't report error if closing
             if (!isClosing.get()) {
@@ -141,22 +149,17 @@ class PoseLandmarkerHelper(
      * Process camera frame for pose detection
      */
     fun detectLiveStream(imageProxy: ImageProxy) {
-         // Check if closing or not initialized
-        if (isClosing.get() || poseLandmarker == null) {
-             if (poseLandmarker == null && !isClosing.get()) {
-                Log.w(TAG, "PoseLandmarker is null, attempting setup...")
-                setupPoseLandmarker() // Try to re-initialize if null but not closing
-                if (poseLandmarker == null) {
-                    Log.e(TAG, "Setup failed, cannot process frame.")
-                    imageProxy.close()
-                    return
-                } 
-            } else {
-                imageProxy.close()
-                return
-            }
+        if (runningMode != RunningMode.LIVE_STREAM) {
+            Log.e(TAG, "Attempted to run live stream detection in non-live stream mode.")
+            imageProxy.close()
+            return
         }
-        
+        if (isClosing.get() || poseLandmarker == null) {
+            Log.w(TAG, "Skipping detection: Helper is closing or not initialized.")
+            imageProxy.close()
+            return
+        }
+
         // Ensure image is valid
         val image = imageProxy.image
         if (image == null) {
@@ -167,32 +170,27 @@ class PoseLandmarkerHelper(
 
         val frameTime = SystemClock.uptimeMillis() // Timestamp for detectAsync
 
-        // Create a bitmap for conversion (consider buffer reuse later if performance bottleneck)
-        val bitmap = Bitmap.createBitmap(
-            imageProxy.width, imageProxy.height, Bitmap.Config.ARGB_8888
-        )
+        // Revert to BitmapImageBuilder, assuming internal handling or ARGB default
+        val bitmap = imageProxy.toBitmap() // Use CameraX ImageProxy.toBitmap()
 
-        // Convert YUV to RGB
-        try {
-            yuvToRgbConverter.yuvToRgb(image, bitmap)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error converting YUV to RGB: ${e.message}", e)
-            imageProxy.close()
+        if (bitmap == null) {
+            Log.e(TAG, "Failed to convert ImageProxy to Bitmap.")
+             imageProxy.close()
             return
         }
-
-        // Process with MediaPipe
+        
         val mpImage = BitmapImageBuilder(bitmap).build()
+
         try {
             poseLandmarker?.detectAsync(mpImage, frameTime)
         } catch (e: Exception) {
              Log.e(TAG, "Error calling detectAsync: ${e.message}", e)
              // Report error via listener if needed
              resultListener?.onError("Error during pose detection: ${e.message}")
+        } finally {
+             // Always close the imageProxy
+            imageProxy.close()
         }
-
-        // Always close the imageProxy
-        imageProxy.close()
     }
     
     // Method for non-live stream modes (IMAGE, VIDEO) - simplified
@@ -236,11 +234,6 @@ class PoseLandmarkerHelper(
             poseLandmarker?.close() // Close MediaPipe instance
         } catch (e: Exception) {
              Log.e(TAG, "Error closing PoseLandmarker: ${e.message}", e)
-        }
-        try {
-            yuvToRgbConverter.close() // Close RenderScript resources
-        } catch (e: Exception) {
-            Log.e(TAG, "Error closing YuvToRgbConverter: ${e.message}", e)
         }
         poseLandmarker = null
     }

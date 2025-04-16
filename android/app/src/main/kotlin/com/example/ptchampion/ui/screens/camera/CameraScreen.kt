@@ -38,7 +38,6 @@ import com.example.ptchampion.BuildConfig // Import BuildConfig
 import com.example.ptchampion.posedetection.PoseDetectorProcessor
 import com.example.ptchampion.posedetection.PoseLandmarkerHelper
 import com.example.ptchampion.posedetection.PoseProcessor
-import com.example.ptchampion.ui.common.PoseOverlay
 import com.example.ptchampion.utils.PoseDetectionTester // Import Tester
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -52,9 +51,12 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import android.util.Size // Import android.util.Size
+import android.content.Context // Import Context
+import android.view.Surface // Import Surface
 
-// Helper extension function for CameraProviderFuture
-suspend fun <T> ListenableFuture<T>.await(): T = suspendCoroutine { continuation ->
+// Helper extension function for CameraProviderFuture - pass context
+suspend fun <T> ListenableFuture<T>.await(context: Context): T = suspendCoroutine { continuation ->
     addListener({ continuation.resume(get()) }, ContextCompat.getMainExecutor(context))
 }
 
@@ -90,7 +92,8 @@ fun CameraScreen(
     // Effect to get camera provider instance
     LaunchedEffect(cameraProviderFuture) {
         try {
-            cameraProvider = cameraProviderFuture.await()
+            // Pass context to await()
+            cameraProvider = cameraProviderFuture.await(context)
             Log.d("CameraScreen", "CameraProvider obtained successfully.")
         } catch (e: Exception) {
             Log.e("CameraScreen", "Failed to get camera provider", e)
@@ -171,11 +174,14 @@ fun CameraScreen(
                 )
 
                 // Pose Overlay (draws detected landmarks)
+                // Comment out PoseOverlay usage for now
+                /*
                 PoseOverlay(
                     poseResult = latestPoseResult,
                     sourceInfo = imageSize, // Pass image dimensions
                     modifier = Modifier.fillMaxSize()
                 )
+                */
 
                 // UI Overlay (buttons, stats, feedback)
                 CameraUIOverlay(
@@ -273,8 +279,9 @@ private fun bindCameraUseCases(
     // Set up the ImageAnalysis use case
     val imageAnalysis = ImageAnalysis.Builder()
         .setTargetAspectRatio(AspectRatio.RATIO_16_9) // Keep consistent
+        .setTargetResolution(Size(1280, 720)) // Use imported Size
+        .setTargetRotation(previewView.display?.rotation ?: Surface.ROTATION_0) // Use imported Surface
         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-        // .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888) // YUV is needed by YuvToRgbConverter
         .build()
 
     // Set up the analyzer

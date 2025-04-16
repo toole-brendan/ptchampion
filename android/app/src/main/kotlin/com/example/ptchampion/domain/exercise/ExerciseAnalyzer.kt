@@ -61,13 +61,4 @@ interface ExerciseAnalyzer {
      * necessarily stopping the session. Useful for starting a new set, for example.
      */
     fun reset()
-    
-    /**
-     * Data class to hold the results of the analysis for a single frame.
-     */
-    data class AnalysisResult(
-        val repCount: Int = 0,
-        val feedback: String? = null,
-        val formScore: Double = 100.0 // Score out of 100
-    )
 } 
