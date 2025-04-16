@@ -12,6 +12,9 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 - **Cross-Platform Synchronization**: Seamlessly sync your data between web and mobile apps
 - **Offline Support**: Continue using the mobile apps without an internet connection
 - **Bluetooth Integration**: Connect to fitness devices for heart rate and running metrics
+  - **GPS Watch Integration**: Specialized support for Garmin, Polar, Suunto and other GPS fitness watches
+  - **Heart Rate Monitoring**: Real-time heart rate data from Bluetooth LE devices
+  - **Pace and Cadence**: Running metrics from compatible fitness devices
 
 ## Project Structure
 
@@ -143,7 +146,7 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 - **Vision Processing**: [MediaPipe](https://developers.google.com/mediapipe) (via `PoseLandmarker` for exercise analysis)
 - **Camera**: [CameraX](https://developer.android.com/training/camerax)
 - **Location**: Fused Location Provider (for local leaderboards)
-- **Bluetooth**: Nordic BLE Library or Android BLE APIs (Planned)
+- **Bluetooth**: Android Bluetooth Low Energy API with specialized watch service implementation for GPS-enabled fitness devices (Garmin, Polar, Suunto)
 
 ### Cross-Cutting
 

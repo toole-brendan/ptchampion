@@ -18,7 +18,7 @@ class PoseDetectorProcessor(
     private val context: Context,
     private val runningMode: RunningMode = RunningMode.LIVE_STREAM,
     private val showConfidence: Boolean = true,
-    private val poseProcessorListener: PoseProcessor.PoseProcessorListener
+    override var listener: PoseProcessor.PoseProcessorListener?
 ) : PoseProcessor, PoseLandmarkerHelper.LandmarkerListener {
 
     companion object {
@@ -44,7 +44,7 @@ class PoseDetectorProcessor(
             Log.d(TAG, "Model initialized successfully")
         } catch (e: Exception) {
             Log.e(TAG, "Error initializing pose landmarker: ${e.message}")
-            poseProcessorListener.onError("Error initializing pose detector: ${e.message}", -1)
+            listener?.onError("Error initializing pose detector: ${e.message}", -1)
             initialized = false
         }
     }
@@ -61,7 +61,7 @@ class PoseDetectorProcessor(
             poseLandmarkerHelper?.detectLiveStream(imageProxy)
         } catch (e: Exception) {
             Log.e(TAG, "Error processing image: ${e.message}")
-            poseProcessorListener.onError("Error processing image: ${e.message}", -1)
+            listener?.onError("Error processing image: ${e.message}", -1)
             imageProxy.close()
         }
     }
@@ -81,11 +81,11 @@ class PoseDetectorProcessor(
 
     // PoseLandmarkerHelper.LandmarkerListener implementation
     override fun onError(error: String, errorCode: Int) {
-        poseProcessorListener.onError(error, errorCode)
+        listener?.onError(error, errorCode)
     }
 
     override fun onResults(resultBundle: PoseLandmarkerHelper.ResultBundle) {
         // Forward the results to the PoseProcessor listener
-        poseProcessorListener.onPoseDetected(resultBundle.results, System.currentTimeMillis())
+        listener?.onPoseDetected(resultBundle.results, System.currentTimeMillis())
     }
 } 

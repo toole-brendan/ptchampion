@@ -29,7 +29,7 @@ object PoseResultExtensions {
         minVisibility: Float = 0.5f
     ): Boolean {
         val landmark = getLandmark(landmarkIndex) ?: return false
-        return landmark.visibility() >= minVisibility
+        return (landmark.visibility().orElse(0f)) >= minVisibility
     }
 
     /**
@@ -55,6 +55,7 @@ object PoseResultExtensions {
         val landmarks = results.landmarks()[0]
         if (landmarks.isEmpty()) return 0f
         
-        return landmarks.map { it.visibility() }.average().toFloat()
+        val visibilities = landmarks.mapNotNull { it.visibility().orElse(0f) }
+        return if (visibilities.isNotEmpty()) visibilities.average().toFloat() else 0f
     }
 } 

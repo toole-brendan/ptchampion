@@ -2,6 +2,7 @@ package com.example.ptchampion.domain.exercise.utils
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
+import com.google.mediapipe.tasks.components.containers.Landmark
 
 /**
  * Constants representing the standard landmark indices in the MediaPipe pose detection model.
@@ -47,5 +48,5 @@ val PoseLandmarkerResult.landmarks: List<NormalizedLandmark>
     get() = if (this.landmarks().isNotEmpty()) this.landmarks()[0] else emptyList()
 
 // Extension property to access the first pose's world landmarks
-val PoseLandmarkerResult.worldLandmarks: List<NormalizedLandmark>
+val PoseLandmarkerResult.worldLandmarks: List<Landmark>
     get() = if (this.worldLandmarks().isNotEmpty()) this.worldLandmarks()[0] else emptyList() 

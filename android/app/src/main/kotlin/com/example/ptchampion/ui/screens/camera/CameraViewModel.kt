@@ -74,7 +74,7 @@ class CameraViewModel @Inject constructor(
                     context = getApplication(),
                     runningMode = RunningMode.LIVE_STREAM,
                     showConfidence = true,
-                    poseProcessorListener = this@CameraViewModel
+                    listener = this@CameraViewModel
                 ).also {
                     it.initialize()
                 }
@@ -112,7 +112,7 @@ class CameraViewModel @Inject constructor(
                 it.copy(
                     reps = analysisResult.repCount,
                     feedback = analysisResult.feedback ?: "Good form",
-                    formScore = analysisResult.formScore.toDouble()
+                    formScore = analysisResult.formScore.toFloat()
                 )
             }
         } catch (e: Exception) {

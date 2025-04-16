@@ -3,8 +3,6 @@ package com.example.ptchampion.ui.screens.workoutdetail
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.ptchampion.domain.model.Exercise
-import com.example.ptchampion.domain.model.Workout
 import com.example.ptchampion.domain.model.WorkoutResponse // Use WorkoutResponse from API
 import com.example.ptchampion.domain.repository.WorkoutRepository
 import com.example.ptchampion.domain.util.Resource // Import the domain Resource class
@@ -45,7 +43,7 @@ class WorkoutDetailViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) } // Start loading
 
             when (val result = workoutRepository.getWorkoutById(workoutId)) {
-                is Resource.Success -> {
+                is Resource.Success<WorkoutResponse> -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -54,7 +52,7 @@ class WorkoutDetailViewModel @Inject constructor(
                         )
                     }
                 }
-                is Resource.Error -> {
+                is Resource.Error<WorkoutResponse> -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -63,7 +61,7 @@ class WorkoutDetailViewModel @Inject constructor(
                         )
                     }
                 }
-                is Resource.Loading -> {
+                is Resource.Loading<WorkoutResponse> -> {
                      // Optional: Handle loading state update if repository emits it
                      _uiState.update { it.copy(isLoading = true) }
                 }

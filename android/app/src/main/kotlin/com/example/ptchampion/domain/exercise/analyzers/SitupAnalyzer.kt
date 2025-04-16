@@ -322,7 +322,9 @@ class SitupAnalyzer : ExerciseAnalyzer {
      */
     private fun getAverageConfidence(landmarks: List<NormalizedLandmark>): Float {
         if (landmarks.isEmpty()) return 0f
-        return landmarks.map { it.visibility() }.average().toFloat()
+        // Handle Optional<Float>, provide default 0f if visibility is absent
+        val visibilities = landmarks.mapNotNull { it.visibility().orElse(0f) }
+        return if (visibilities.isNotEmpty()) visibilities.average().toFloat() else 0f
     }
 
     /**
@@ -331,8 +333,10 @@ class SitupAnalyzer : ExerciseAnalyzer {
     private fun areKeyLandmarksVisible(landmarks: List<NormalizedLandmark>): Boolean {
         if (landmarks.size < 33) return false // Full pose has 33 landmarks
         
-        return KEY_LANDMARKS.all { 
-            landmarks[it].visibility() >= REQUIRED_VISIBILITY 
+        return KEY_LANDMARKS.all { landmarkIndex ->
+            val landmark = landmarks.getOrNull(landmarkIndex)
+            // Get visibility value or default to 0f before comparison
+            landmark != null && (landmark.visibility().orElse(0f)) >= REQUIRED_VISIBILITY 
         }
     }
 

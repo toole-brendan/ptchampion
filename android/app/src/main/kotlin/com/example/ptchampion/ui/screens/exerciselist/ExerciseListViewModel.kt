@@ -7,7 +7,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ptchampion.domain.repository.ExerciseRepository
+import com.example.ptchampion.domain.repository.WorkoutRepository
 import com.example.ptchampion.domain.util.Resource
+import com.example.ptchampion.domain.model.ExerciseResponse
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -42,7 +44,8 @@ data class ExerciseListUiState(
 
 @HiltViewModel
 class ExerciseListViewModel @Inject constructor(
-    private val exerciseRepository: ExerciseRepository
+    // private val exerciseRepository: ExerciseRepository
+    private val workoutRepository: WorkoutRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ExerciseListUiState())
@@ -56,8 +59,8 @@ class ExerciseListViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             
-            when (val result = exerciseRepository.getExercises()) {
-                is Resource.Success -> {
+            when (val result = workoutRepository.getExercises()) {
+                is Resource.Success<List<ExerciseResponse>> -> {
                     val exercises = result.data?.map { exercise ->
                         ExerciseInfo(
                             id = exercise.id,
@@ -76,7 +79,7 @@ class ExerciseListViewModel @Inject constructor(
                         )
                     }
                 }
-                is Resource.Error -> {
+                is Resource.Error<List<ExerciseResponse>> -> {
                     _uiState.update {
                         it.copy(
                             isLoading = false,
@@ -88,7 +91,7 @@ class ExerciseListViewModel @Inject constructor(
                         it.copy(exercises = createMockExercises())
                     }
                 }
-                is Resource.Loading -> {
+                is Resource.Loading<List<ExerciseResponse>> -> {
                     _uiState.update { it.copy(isLoading = true) }
                 }
             }

@@ -12,8 +12,14 @@ import com.example.ptchampion.domain.exercise.utils.PoseResultExtensions.areAllL
 import com.example.ptchampion.domain.exercise.utils.PoseResultExtensions.getAverageConfidence
 import com.example.ptchampion.posedetection.PoseLandmarkerHelper
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import kotlin.math.abs
 import kotlin.math.min
+import kotlin.math.max
+import java.util.Optional
+import kotlin.math.sqrt
+import kotlin.math.acos
+import kotlin.math.pow
 
 /**
  * Analyzer for push-ups according to US Army APFT standards.
@@ -258,7 +264,7 @@ class PushupAnalyzer : ExerciseAnalyzer {
         val hipDeviation = abs(avgHipY - expectedHipY)
         
         // Track maximum hip deviation during the rep
-        maxHipDeviation = kotlin.math.max(maxHipDeviation, hipDeviation)
+        maxHipDeviation = kotlin.math.max(maxHipDeviation as Float, hipDeviation as Float)
         
         // Check if deviation exceeds threshold
         if (hipDeviation > BODY_ALIGNMENT_THRESHOLD) {
@@ -282,17 +288,35 @@ class PushupAnalyzer : ExerciseAnalyzer {
         leftAnkle: NormalizedLandmark,
         rightAnkle: NormalizedLandmark
     ) {
+        val avgShoulderX = (leftShoulder.x() + rightShoulder.x()) / 2
         val avgShoulderY = (leftShoulder.y() + rightShoulder.y()) / 2
+        val avgShoulderZ = (leftShoulder.z() + rightShoulder.z()) / 2
+
+        val avgHipX = (leftHip.x() + rightHip.x()) / 2
         val avgHipY = (leftHip.y() + rightHip.y()) / 2
-        val avgAnkleY = (leftAnkle.y() + rightAnkle.y()) / 2
+        val avgHipZ = (leftHip.z() + rightHip.z()) / 2
         
-        // Calculate angles in the side view
-        // In a straight line, the angle between shoulder-hip-ankle should be nearly 180 degrees
-        val hipAngle = calculateAngle(
-            createMidpointLandmark(leftShoulder, rightShoulder),
-            createMidpointLandmark(leftHip, rightHip),
-            createMidpointLandmark(leftAnkle, rightAnkle)
-        )
+        val avgAnkleX = (leftAnkle.x() + rightAnkle.x()) / 2
+        val avgAnkleY = (leftAnkle.y() + rightAnkle.y()) / 2
+        val avgAnkleZ = (leftAnkle.z() + rightAnkle.z()) / 2
+        
+        // Manual angle calculation using averaged coordinates
+        val v1x = avgShoulderX - avgHipX
+        val v1y = avgShoulderY - avgHipY
+        val v1z = avgShoulderZ - avgHipZ
+        val v2x = avgAnkleX - avgHipX
+        val v2y = avgAnkleY - avgHipY
+        val v2z = avgAnkleZ - avgHipZ
+        val dotProduct = v1x * v2x + v1y * v2y + v1z * v2z
+        val v1Mag = sqrt(v1x.pow(2) + v1y.pow(2) + v1z.pow(2))
+        val v2Mag = sqrt(v2x.pow(2) + v2y.pow(2) + v2z.pow(2))
+        
+        val hipAngle = if (v1Mag > 0.0001f && v2Mag > 0.0001f) {
+            val cosTheta = (dotProduct / (v1Mag * v2Mag)).coerceIn(-1.0f, 1.0f)
+            Math.toDegrees(acos(cosTheta).toDouble()).toFloat()
+        } else {
+            0f // Default angle if magnitude is near zero
+        }
         
         // If angle is significantly less than 180, hips are sagging
         if (hipAngle < 160 && avgHipY > (avgShoulderY + avgAnkleY) / 2) {
@@ -312,16 +336,35 @@ class PushupAnalyzer : ExerciseAnalyzer {
         leftAnkle: NormalizedLandmark,
         rightAnkle: NormalizedLandmark
     ) {
+        val avgShoulderX = (leftShoulder.x() + rightShoulder.x()) / 2
         val avgShoulderY = (leftShoulder.y() + rightShoulder.y()) / 2
+        val avgShoulderZ = (leftShoulder.z() + rightShoulder.z()) / 2
+
+        val avgHipX = (leftHip.x() + rightHip.x()) / 2
         val avgHipY = (leftHip.y() + rightHip.y()) / 2
+        val avgHipZ = (leftHip.z() + rightHip.z()) / 2
+
+        val avgAnkleX = (leftAnkle.x() + rightAnkle.x()) / 2
         val avgAnkleY = (leftAnkle.y() + rightAnkle.y()) / 2
+        val avgAnkleZ = (leftAnkle.z() + rightAnkle.z()) / 2
         
-        // Calculate angles in the side view
-        val hipAngle = calculateAngle(
-            createMidpointLandmark(leftShoulder, rightShoulder),
-            createMidpointLandmark(leftHip, rightHip),
-            createMidpointLandmark(leftAnkle, rightAnkle)
-        )
+        // Manual angle calculation using averaged coordinates
+        val v1x = avgShoulderX - avgHipX
+        val v1y = avgShoulderY - avgHipY
+        val v1z = avgShoulderZ - avgHipZ
+        val v2x = avgAnkleX - avgHipX
+        val v2y = avgAnkleY - avgHipY
+        val v2z = avgAnkleZ - avgHipZ
+        val dotProduct = v1x * v2x + v1y * v2y + v1z * v2z
+        val v1Mag = sqrt(v1x.pow(2) + v1y.pow(2) + v1z.pow(2))
+        val v2Mag = sqrt(v2x.pow(2) + v2y.pow(2) + v2z.pow(2))
+
+        val hipAngle = if (v1Mag > 0.0001f && v2Mag > 0.0001f) {
+            val cosTheta = (dotProduct / (v1Mag * v2Mag)).coerceIn(-1.0f, 1.0f)
+            Math.toDegrees(acos(cosTheta).toDouble()).toFloat()
+        } else {
+            0f // Default angle if magnitude is near zero
+        }
         
         // If angle is significantly more than 180, hips are piked (butt too high)
         if (hipAngle > 200 && avgHipY < (avgShoulderY + avgAnkleY) / 2) {
@@ -397,24 +440,6 @@ class PushupAnalyzer : ExerciseAnalyzer {
     }
 
     /**
-     * Creates a synthetic landmark at the midpoint between two landmarks.
-     * Used for calculating angles along the centerline of the body.
-     */
-    private fun createMidpointLandmark(
-        landmark1: NormalizedLandmark, 
-        landmark2: NormalizedLandmark
-    ): NormalizedLandmark {
-        // Use anonymous class to create a custom normalized landmark
-        return object : NormalizedLandmark {
-            override fun x(): Float = (landmark1.x() + landmark2.x()) / 2
-            override fun y(): Float = (landmark1.y() + landmark2.y()) / 2
-            override fun z(): Float = (landmark1.z() + landmark2.z()) / 2
-            override fun visibility(): Float = (landmark1.visibility() + landmark2.visibility()) / 2
-            override fun presence(): Float = (landmark1.presence() + landmark2.presence()) / 2
-        }
-    }
-
-    /**
      * Calculates the angle between three landmarks.
      */
     private fun calculateAngle(
@@ -456,7 +481,9 @@ class PushupAnalyzer : ExerciseAnalyzer {
      */
     private fun getAverageConfidence(landmarks: List<NormalizedLandmark>): Float {
         if (landmarks.isEmpty()) return 0f
-        return landmarks.map { it.visibility() }.average().toFloat()
+        // Handle Optional<Float>, provide default 0f if visibility is absent
+        val visibilities = landmarks.mapNotNull { it.visibility().orElse(0f) }
+        return if (visibilities.isNotEmpty()) visibilities.average().toFloat() else 0f
     }
 
     /**
@@ -466,7 +493,8 @@ class PushupAnalyzer : ExerciseAnalyzer {
         if (landmarks.size < 33) return false // Full pose has 33 landmarks
         
         return KEY_LANDMARKS.all { 
-            landmarks[it].visibility() >= REQUIRED_VISIBILITY 
+            // Get visibility value or default to 0f before comparison
+            (landmarks[it].visibility().orElse(0f)) >= REQUIRED_VISIBILITY 
         }
     }
 
