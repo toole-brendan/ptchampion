@@ -73,10 +73,12 @@ import com.example.ptchampion.ui.screens.settings.SettingsScreen
 import com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementScreen
 import com.example.ptchampion.ui.screens.onboarding.OnboardingScreen
 import com.example.ptchampion.ui.screens.editprofile.EditProfileScreen
+import dagger.hilt.android.AndroidEntryPoint
 
 // Define items for the bottom navigation bar
 // data class BottomNavItem(val screen: Screen, val label: String, val icon: ImageVector)
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

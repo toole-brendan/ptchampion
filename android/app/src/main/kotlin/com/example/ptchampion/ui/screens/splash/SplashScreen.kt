@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.ptchampion.R
 import com.example.ptchampion.ui.navigation.Screen
@@ -26,7 +26,7 @@ import com.example.ptchampion.ui.navigation.Screen
 @Composable
 fun SplashScreen(
     navController: NavController,
-    viewModel: SplashViewModel = viewModel()
+    viewModel: SplashViewModel = hiltViewModel()
 ) {
     val destination by viewModel.destination.collectAsState()
 
