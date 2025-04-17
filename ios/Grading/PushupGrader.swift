@@ -19,11 +19,14 @@ class PushupGrader: ExerciseGraderProtocol {
 
     // Configuration Thresholds (aligned with potential Kotlin version)
     // ** IMPORTANT: These need careful tuning based on testing! **
-    private let elbowAngleDownMax: CGFloat = 100.0 // Max elbow angle considered 'down' (stricter than 95?)
-    private let elbowAngleUpMin: CGFloat = 155.0   // Min elbow angle considered 'up'
-    private let bodyStraightnessThreshold: CGFloat = 0.15 // Max deviation of hip from shoulder-ankle line (normalized Y)
-    private let shoulderAlignmentMaxYDiff: CGFloat = 0.08 // Max normalized Y diff between shoulders
-    private let requiredConfidence: Float = 0.4 // Min confidence for key joints
+    private let elbowAngleDownMax: CGFloat = 90.0 // Max elbow angle considered 'down' (Aligned with Android MIN_ELBOW_ANGLE_THRESHOLD)
+    private let elbowAngleUpMin: CGFloat = 160.0   // Min elbow angle considered 'up' (Aligned with Android FULL_EXTENSION_THRESHOLD)
+    // Thresholds for body straightness checks (Aligned with Android)
+    private let hipSagThreshold: CGFloat = 0.10      // Max deviation for hip sagging
+    private let hipPikeThreshold: CGFloat = 0.12     // Max deviation for hip piking/raising
+    // Threshold for shoulder alignment (Aligned with Android)
+    private let shoulderAlignmentMaxXDiff: CGFloat = 0.10 // Max normalized X diff between shoulders
+    private let requiredConfidence: Float = 0.5 // Min confidence for key joints - ALIGNED WITH ANDROID
 
     // State tracking for rep evaluation
     private var minElbowAngleThisRep: CGFloat = 180.0
@@ -58,7 +61,8 @@ class PushupGrader: ExerciseGraderProtocol {
             .leftElbow, .rightElbow,
             .leftWrist, .rightWrist,
             .leftHip, .rightHip,
-            .leftAnkle, .rightAnkle // Ankles needed for body line check
+            .leftKnee, .rightKnee, // Added Knees for alignment checks (Aligned with Android)
+            .leftAnkle, .rightAnkle
         ]
 
         var missingJoints: [String] = []
@@ -86,6 +90,8 @@ class PushupGrader: ExerciseGraderProtocol {
         let rightHip = body.point(.rightHip)!
         let leftAnkle = body.point(.leftAnkle)!
         let rightAnkle = body.point(.rightAnkle)!
+        let leftKnee = body.point(.leftKnee)! // Added Knee points
+        let rightKnee = body.point(.rightKnee)! // Added Knee points
 
         // 2. Calculate Key Angles & Positions
         let leftElbowAngle = calculateAngle(point1: leftWrist.location, centerPoint: leftElbow.location, point2: leftShoulder.location)
@@ -95,31 +101,49 @@ class PushupGrader: ExerciseGraderProtocol {
         let avgShoulderY = (leftShoulder.location.y + rightShoulder.location.y) / 2.0
         let avgHipY = (leftHip.location.y + rightHip.location.y) / 2.0
         let avgAnkleY = (leftAnkle.location.y + rightAnkle.location.y) / 2.0
+        let avgKneeY = (leftKnee.location.y + rightKnee.location.y) / 2.0 // Added Knee Y average
 
         // 3. Form Checks
         var formIssues: [String] = []
 
-        // a) Shoulder alignment (Y-axis difference)
-        let shoulderYDiff = abs(leftShoulder.location.y - rightShoulder.location.y)
-        if shoulderYDiff > shoulderAlignmentMaxYDiff {
-            formIssues.append("Keep shoulders level.")
+        // a) Shoulder alignment (X-axis difference - Aligned with Android)
+        let shoulderXDiff = abs(leftShoulder.location.x - rightShoulder.location.x)
+        if shoulderXDiff > shoulderAlignmentMaxXDiff {
+            formIssues.append("Keep shoulders level horizontally.")
         }
 
-        // b) Body straightness (Hip deviation from shoulder-ankle line)
-        // Project hip onto the shoulder-ankle line and check vertical distance
-        let shoulderAnkleVector = (x: avgAnkleY - avgShoulderY, y: 0) // Use Y diff for vertical line approx.
-        let shoulderHipVector = (x: avgHipY - avgShoulderY, y: 0)
-        // Simplified check: Is hip Y between shoulder Y and ankle Y (assuming normal orientation)?
-        // A more robust check involves line projection.
-        let expectedHipY = avgShoulderY + (avgAnkleY - avgShoulderY) * 0.5 // Midpoint approx
-        let hipDeviation = abs(avgHipY - expectedHipY) / abs(avgAnkleY - avgShoulderY + 1e-6) // Normalize by body length
+        // b) Body straightness checks (Aligned with Android sag/pike logic)
+        // Calculate deviation of hip relative to the shoulder-ankle line
+        // Using a simplified vertical distance check for now
+        let shoulderAnkleLineYatHipX = interpolateY(
+            point1: CGPoint(x: avgShoulderY, y: 0), // Use Y as X for vertical check
+            point2: CGPoint(x: avgAnkleY, y: 0),
+            x: avgHipY
+        )
+        // Calculate deviation of knee relative to the shoulder-hip line
+        let shoulderHipLineYatKneeX = interpolateY(
+             point1: CGPoint(x: avgShoulderY, y: 0),
+             point2: CGPoint(x: avgHipY, y: 0),
+             x: avgKneeY
+        )
 
-        if hipDeviation > bodyStraightnessThreshold {
-            if avgHipY > expectedHipY { // Hips lower than expected -> Sagging
-                formIssues.append("Keep hips from sagging.")
-            } else { // Hips higher than expected -> Piking
-                formIssues.append("Avoid raising hips too high.")
-            }
+        // Estimate body "length" (shoulder to ankle Y difference) for normalization
+        let bodyLengthY = abs(avgAnkleY - avgShoulderY) + 1e-6 // Add epsilon to avoid division by zero
+
+        // Calculate hip deviation (positive = sagging, negative = piking relative to straight line)
+        let hipDeviationRatio = (avgHipY - shoulderAnkleLineYatHipX) / bodyLengthY
+
+        // Check for Sagging (Hips too low)
+        if hipDeviationRatio > hipSagThreshold {
+             formIssues.append("Keep hips from sagging.")
+        }
+
+        // Check for Piking (Hips too high)
+        // Note: Android seems to check hip-to-knee alignment as well,
+        // this check is simplified based only on hip-shoulder-ankle.
+        // A negative deviation means hips are higher than the straight line.
+        if hipDeviationRatio < -hipPikeThreshold { // Check against negative threshold for piking
+             formIssues.append("Avoid raising hips too high.")
         }
 
         if !formIssues.isEmpty {
@@ -189,6 +213,17 @@ class PushupGrader: ExerciseGraderProtocol {
 
         // If no rep completed, return current progress/state
         return .inProgress(phase: currentPhaseDescription)
+    }
+
+    // Helper to interpolate Y value on a line defined by two points at a given X
+    // NOTE: We swap X and Y here because we are checking vertical alignment based on Y coordinates
+    private func interpolateY(point1: CGPoint, point2: CGPoint, x: CGFloat) -> CGFloat {
+        // Avoid division by zero if points have the same 'X' (Y-coordinate in this context)
+        guard abs(point2.x - point1.x) > 1e-6 else {
+            return point1.y // Or average, or handle as error
+        }
+        let slope = (point2.y - point1.y) / (point2.x - point1.x)
+        return point1.y + slope * (x - point1.x)
     }
 
     // Helper to average angles, ignoring nil values

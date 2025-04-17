@@ -34,6 +34,13 @@ struct SettingsView: View {
                         Text("Edit Profile (Not Implemented)")
                         Text("Notification Settings (Not Implemented)")
                     }
+                    
+                    // Section for Device Management
+                    Section(header: Text("Device Management").subheadingStyle()) {
+                        NavigationLink("Scan for Bluetooth Devices") {
+                            DeviceScanningView()
+                        }
+                    }
 
                     Section {
                          Button("Log Out") {

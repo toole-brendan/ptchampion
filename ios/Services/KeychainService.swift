@@ -1,8 +1,12 @@
 import Foundation
 import Security
 
-// Basic implementation of KeychainServiceProtocol using Security framework
+// Concrete implementation using the NetworkClient's Keychain accessors
 class KeychainService: KeychainServiceProtocol {
+
+    // Share a single NetworkClient instance or inject it
+    // Using a shared instance for simplicity here
+    private let networkClient: NetworkClient
 
     // Define unique identifiers for the keychain item
     private let serviceIdentifier: String
@@ -18,9 +22,10 @@ class KeychainService: KeychainServiceProtocol {
     }
 
     // Initialize with unique service and account identifiers
-    init(service: String = "com.ptchampion.auth", account: String = "jwtToken") {
+    init(service: String = "com.ptchampion.auth", account: String = "jwtToken", networkClient: NetworkClient = NetworkClient()) {
         self.serviceIdentifier = service
         self.accountIdentifier = account
+        self.networkClient = networkClient
     }
 
     // Common query dictionary
@@ -30,6 +35,11 @@ class KeychainService: KeychainServiceProtocol {
             kSecAttrService as String: serviceIdentifier,
             kSecAttrAccount as String: accountIdentifier
         ]
+    }
+
+    func getUserId() -> Int? {
+        // Delegate retrieval to the NetworkClient's Keychain logic
+        return networkClient.currentUserId
     }
 
     func saveToken(_ token: String) throws {

@@ -3,6 +3,7 @@ import Combine
 import CoreLocation
 import SwiftData
 import SwiftUI
+import CoreBluetooth
 
 @MainActor
 class RunWorkoutViewModel: ObservableObject {
@@ -13,12 +14,13 @@ class RunWorkoutViewModel: ObservableObject {
     private let locationService: LocationServiceProtocol
     private let workoutService: WorkoutServiceProtocol
     private let keychainService: KeychainServiceProtocol
-    private var modelContext: ModelContext?
+    private let bluetoothService: BluetoothServiceProtocol
+    var modelContext: ModelContext?
 
     private var cancellables = Set<AnyCancellable>()
 
     // Run State
-    enum RunState {
+    enum RunState: Equatable {
         case idle
         case requestingPermission
         case permissionDenied
@@ -27,6 +29,12 @@ class RunWorkoutViewModel: ObservableObject {
         case paused
         case finished
         case error(String)
+    }
+
+    // Location Source
+    enum LocationSource {
+        case phone
+        case watch
     }
 
     @Published var runState: RunState = .idle
@@ -39,6 +47,14 @@ class RunWorkoutViewModel: ObservableObject {
     @Published var currentPaceFormatted: String = "--:-- /mi" // Pace
     @Published var averagePaceFormatted: String = "--:-- /mi"
 
+    // Bluetooth Metrics / Status
+    @Published var bluetoothState: CBManagerState = .unknown
+    @Published var deviceConnectionState: PeripheralConnectionState = .disconnected()
+    @Published var connectedDeviceName: String? = nil
+    @Published var currentHeartRate: Int? = nil
+    @Published var locationSource: LocationSource = .phone // Track active location source
+    @Published var isWatchLocationAvailable: Bool = false // Track if connected watch provides GPS
+
     // Internal Tracking
     private var workoutStartDate: Date?
     private var timerSubscription: AnyCancellable?
@@ -46,20 +62,32 @@ class RunWorkoutViewModel: ObservableObject {
     private var totalDistanceMeters: Double = 0.0
     private var locationUpdates: [CLLocation] = []
     private var isTimerRunning: Bool = false
+    private var locationSubscription: AnyCancellable?
 
     // Constants
     private let metersToMiles = 0.000621371
     private let metersToKilometers = 0.001
 
+    private var useWatchGPS: Bool { // Computed property to check if watch should be preferred
+        // Prefer watch if connected AND location service is available on it
+        if case .connected = deviceConnectionState, isWatchLocationAvailable { return true }
+        return false
+    }
+
     init(locationService: LocationServiceProtocol = LocationService(),
          workoutService: WorkoutServiceProtocol = WorkoutService(),
          keychainService: KeychainServiceProtocol = KeychainService(),
+         bluetoothService: BluetoothServiceProtocol = BluetoothService(),
          modelContext: ModelContext? = nil) {
         self.locationService = locationService
         self.workoutService = workoutService
         self.keychainService = keychainService
+        self.bluetoothService = bluetoothService
         self.modelContext = modelContext
+
+        print("RunWorkoutViewModel: Initializing...")
         subscribeToLocationStatus()
+        subscribeToBluetoothStatus()
         checkInitialLocationPermission()
         // Set initial display based on preference
         updateDistanceDisplay()
@@ -67,7 +95,76 @@ class RunWorkoutViewModel: ObservableObject {
         updateCurrentPaceDisplay(speed: 0)
     }
 
+    private func subscribeToBluetoothStatus() {
+        print("RunWorkoutViewModel: Subscribing to Bluetooth status...")
+        bluetoothService.centralManagerStatePublisher
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.bluetoothState, on: self)
+            .store(in: &cancellables)
+
+        bluetoothService.connectionStatePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                 guard let self = self else { return }
+                 let previousConnectionState = self.deviceConnectionState
+                 self.deviceConnectionState = state
+                 print("RunWorkoutViewModel: Received connection state update: \(state)")
+
+                 switch state {
+                 case .connected(let peripheral):
+                     self.connectedDeviceName = peripheral.name ?? "Connected Device"
+                     // If run is active, switch location source if needed
+                     if self.runState == .running || self.runState == .paused {
+                         self.updateLocationSubscription() // Re-evaluate source
+                     }
+                 case .disconnected, .failed:
+                     self.connectedDeviceName = nil
+                     self.currentHeartRate = nil
+                     // If run was active & using watch, switch back to phone
+                     if (self.runState == .running || self.runState == .paused) && self.locationSource == .watch {
+                          print("RunWorkoutViewModel: Watch disconnected during run, switching to phone GPS.")
+                          self.updateLocationSubscription() // Re-evaluate source
+                     }
+                 default:
+                     break
+                 }
+            }
+            .store(in: &cancellables)
+            
+        bluetoothService.heartRatePublisher
+            .receive(on: DispatchQueue.main)
+            .assign(to: \.currentHeartRate, on: self)
+            .store(in: &cancellables)
+
+        // Subscribe to watch location service availability
+        bluetoothService.locationServiceAvailablePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isAvailable in
+                 guard let self = self else { return }
+                 print("RunWorkoutViewModel: Watch Location Service Available: \(isAvailable)")
+                 let wasAvailable = self.isWatchLocationAvailable
+                 self.isWatchLocationAvailable = isAvailable
+                 // If availability changed during a run, re-evaluate location source
+                 if isAvailable != wasAvailable && (self.runState == .running || self.runState == .paused) {
+                      print("RunWorkoutViewModel: Watch location availability changed, updating subscription.")
+                      self.updateLocationSubscription()
+                 }
+            }
+            .store(in: &cancellables)
+
+        // Subscribe to location data from the WATCH
+        bluetoothService.locationPublisher
+           .receive(on: DispatchQueue.main)
+           .sink { [weak self] location in
+               guard let self = self, self.locationSource == .watch else { return } // Only process if watch is the source
+               print("RunWorkoutViewModel: Received location from WATCH")
+               self.processLocationUpdate(location)
+           }
+           .store(in: &cancellables)
+    }
+
     private func subscribeToLocationStatus() {
+        print("RunWorkoutViewModel: Subscribing to Location status...")
         locationService.authorizationStatusPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
@@ -76,17 +173,13 @@ class RunWorkoutViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // Subscribe to location updates ONLY when running
-        // We will manage this subscription manually in start/stop run methods
-
          locationService.errorPublisher
              .receive(on: DispatchQueue.main)
              .sink { [weak self] error in
                  print("RunWorkoutViewModel: Location Service Error: \(error.localizedDescription)")
                  self?.errorMessage = "Location Error: \(error.localizedDescription)"
-                 // Decide how errors affect state - maybe revert to ready or show error state
                  if self?.runState == .running || self?.runState == .paused {
-                     self?.pauseRun() // Pause run if location fails
+                     self?.pauseRun()
                      self?.runState = .error("Location failed during run.")
                  }
              }
@@ -95,20 +188,24 @@ class RunWorkoutViewModel: ObservableObject {
 
     private func checkInitialLocationPermission() {
          let status = CLLocationManager.authorizationStatus()
+         print("RunWorkoutViewModel: Initial location status: \(status)")
          handleAuthorizationStatusChange(status)
     }
 
     private func handleAuthorizationStatusChange(_ status: CLAuthorizationStatus) {
-        guard runState != .running, runState != .paused else { return } // Don't interrupt run
-
+        guard runState != .running, runState != .paused else {
+             print("RunWorkoutViewModel: Ignoring status change during active run.")
+             return
+        }
+        print("RunWorkoutViewModel: Handling location status change: \(status)")
         switch status {
         case .authorizedWhenInUse, .authorizedAlways:
-            runState = .ready
-            errorMessage = nil
+            if runState != .error("") {
+                 runState = .ready
+                 errorMessage = nil
+             }
         case .notDetermined:
             runState = .requestingPermission
-            errorMessage = "Location permission needed to track runs."
-            locationService.requestLocationPermission()
         case .denied, .restricted:
             runState = .permissionDenied
             errorMessage = "Location access denied. Please enable it in Settings to track runs."
@@ -118,36 +215,37 @@ class RunWorkoutViewModel: ObservableObject {
         }
      }
 
-    // MARK: - Timer Logic (Similar to WorkoutViewModel)
-
     private func startTimer() {
         guard !isTimerRunning else { return }
+        print("RunWorkoutViewModel: Starting timer.")
         if workoutStartDate == nil {
             workoutStartDate = Date()
         }
         let resumeDate = Date()
         isTimerRunning = true
 
-        timerSubscription = Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()
+        timerSubscription = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
             .sink { [weak self] firedDate in
-                guard let self = self, self.isTimerRunning else { return }
-                let currentTime = firedDate.timeIntervalSince(resumeDate)
-                let totalElapsed = self.accumulatedTime + currentTime
+                guard let self = self, self.isTimerRunning, let startDate = self.workoutStartDate else { return }
+                let currentSegmentTime = firedDate.timeIntervalSince(resumeDate)
+                let totalElapsed = self.accumulatedTime + currentSegmentTime
+                
                 self.updateTimerDisplay(totalElapsed)
                 self.updatePaceDisplay(elapsedSeconds: totalElapsed)
             }
     }
 
     private func pauseTimer() {
-        guard isTimerRunning else { return }
+        guard isTimerRunning, let startDate = workoutStartDate else { return }
+        print("RunWorkoutViewModel: Pausing timer.")
+        accumulatedTime += Date().timeIntervalSince(startDate)
         isTimerRunning = false
-        // Accumulate time accurately - Calculate interval since timer started / last resumed
-        // Simplified: Just stop publisher, time is calculated from start/end dates on stop
         timerSubscription?.cancel()
         timerSubscription = nil
     }
 
     private func stopTimer() {
+        print("RunWorkoutViewModel: Stopping timer.")
         isTimerRunning = false
         timerSubscription?.cancel()
         timerSubscription = nil
@@ -157,7 +255,7 @@ class RunWorkoutViewModel: ObservableObject {
     }
 
     private func updateTimerDisplay(_ timeInterval: TimeInterval) {
-        let totalSeconds = Int(timeInterval)
+        let totalSeconds = Int(max(0, timeInterval))
         let hours = totalSeconds / 3600
         let minutes = (totalSeconds % 3600) / 60
         let seconds = totalSeconds % 60
@@ -166,40 +264,73 @@ class RunWorkoutViewModel: ObservableObject {
 
     // MARK: - Run Metrics Logic
 
-    private func subscribeToLocationUpdates() {
-        locationService.locationPublisher
-             .receive(on: DispatchQueue.main)
-             // Filter out inaccurate or old locations if needed
-             .filter { $0 != nil && $0!.horizontalAccuracy >= 0 && $0!.horizontalAccuracy < 100 } // Example filter
-             .sink { [weak self] location in
-                 guard let self = self, let newLocation = location, self.runState == .running else { return }
+    // Centralized method to handle location updates from EITHER source
+    private func processLocationUpdate(_ newLocation: CLLocation) {
+         print("RunWorkoutViewModel: Processing location update from source: \(locationSource)")
+         guard runState == .running else { return } // Only process while running
 
-                 if let lastLocation = self.locationUpdates.last {
-                     let distanceIncrement = newLocation.distance(from: lastLocation)
-                     // Filter out large jumps likely due to GPS error
-                     if distanceIncrement > 0 && distanceIncrement < 500 { // Max reasonable distance in ~1 sec?
-                        self.totalDistanceMeters += distanceIncrement
-                        self.updateDistanceDisplay()
-                        // Update current pace based on this segment
-                        let timeIncrement = newLocation.timestamp.timeIntervalSince(lastLocation.timestamp)
-                        if timeIncrement > 0 {
-                            let speedMetersPerSecond = distanceIncrement / timeIncrement
-                            self.updateCurrentPaceDisplay(speed: speedMetersPerSecond)
-                        }
-                     }
-                 }
-                 self.locationUpdates.append(newLocation)
+         if let lastLocation = self.locationUpdates.last {
+             let distanceIncrement = newLocation.distance(from: lastLocation)
+             if distanceIncrement > 1 && distanceIncrement < 500 {
+                self.totalDistanceMeters += distanceIncrement
+                self.updateDistanceDisplay()
+                let timeIncrement = newLocation.timestamp.timeIntervalSince(lastLocation.timestamp)
+                if timeIncrement > 0.1 {
+                    let speedMetersPerSecond = max(0, distanceIncrement / timeIncrement)
+                    self.updateCurrentPaceDisplay(speed: speedMetersPerSecond)
+                }
+             } else if distanceIncrement <= 1 {
+                  if newLocation.speed > 0 && newLocation.speedAccuracy >= 0 && newLocation.speedAccuracy < 10 {
+                      self.updateCurrentPaceDisplay(speed: newLocation.speed)
+                  }
              }
-             .store(in: &cancellables) // Store this specific subscription to manage it
+         } else {
+             print("RunWorkoutViewModel: Received first location update for this run segment.")
+             updateCurrentPaceDisplay(speed: newLocation.speed > 0 ? newLocation.speed : 0)
+         }
+         self.locationUpdates.append(newLocation)
+    }
+
+    // This method now DECIDES which source to subscribe to
+    private func updateLocationSubscription() {
+        locationSubscription?.cancel() // Cancel previous subscription
+        locationSubscription = nil
+        locationService.stopUpdatingLocation() // Stop phone GPS explicitly
+
+        // Decide source based on preference and connection state
+        if useWatchGPS {
+            print("RunWorkoutViewModel: Attempting to use WATCH for location updates.")
+            // No need to explicitly subscribe here, handled by bluetoothService.locationPublisher subscription
+            // We just set the source state
+            locationSource = .watch
+            // Ensure phone GPS is stopped
+            locationService.stopUpdatingLocation()
+        } else {
+            print("RunWorkoutViewModel: Using PHONE for location updates.")
+            locationSource = .phone
+            // Start phone GPS and subscribe to its publisher
+            locationService.startUpdatingLocation()
+            locationSubscription = locationService.locationPublisher
+                .receive(on: DispatchQueue.main)
+                .compactMap { $0 } // Ensure non-nil location
+                .filter { $0.horizontalAccuracy >= 0 && $0.horizontalAccuracy < 100 } // Basic accuracy filter
+                .sink { [weak self] location in
+                    guard let self = self, self.locationSource == .phone else { return } // Only process if phone is the source
+                     print("RunWorkoutViewModel: Received location from PHONE")
+                    self.processLocationUpdate(location)
+                }
+            locationSubscription?.store(in: &cancellables) // Store the new cancellable
+        }
+        print("RunWorkoutViewModel: Location source set to: \(locationSource)")
     }
 
     private func unsubscribeFromLocationUpdates() {
-         // Cancel only the location subscription - requires managing it separately
-         // Simplification: If only one cancellable is used for location, this works.
-         // Better: Store location sub in its own var `locationCancellable` and cancel that.
-         // cancellables.removeAll() // Temporarily remove all, need refinement
-         print("RunWorkoutViewModel: Unsubscribed from location updates (Placeholder - refine cancellation)")
-    }
+        print("RunWorkoutViewModel: Unsubscribing from location updates (stopping all sources).")
+        locationSubscription?.cancel()
+        locationSubscription = nil
+        locationService.stopUpdatingLocation()
+        // No need to unsubscribe from BT publisher, just ignore based on locationSource state
+     }
 
     private func updateDistanceDisplay() {
         let displayValue: Double
@@ -213,12 +344,12 @@ class RunWorkoutViewModel: ObservableObject {
             displayValue = totalDistanceMeters * metersToKilometers
             unitLabel = "km"
         }
-        distanceFormatted = String(format: "%.2f ", displayValue) + unitLabel
+        distanceFormatted = String(format: "%.2f ", max(0, displayValue)) + unitLabel
     }
 
     private func updatePaceDisplay(elapsedSeconds: TimeInterval) {
         let unitLabel = distanceUnit == .miles ? "/mi" : "/km"
-        guard totalDistanceMeters > 0 && elapsedSeconds > 1 else { // Need some time/distance
+        guard totalDistanceMeters > 10 && elapsedSeconds > 5 else {
             averagePaceFormatted = "--:-- " + unitLabel
             return
         }
@@ -226,16 +357,13 @@ class RunWorkoutViewModel: ObservableObject {
         let averageSpeedMetersPerSec = totalDistanceMeters / elapsedSeconds
         let distanceFactor = distanceUnit == .miles ? metersToMiles : metersToKilometers
 
-        // Prevent division by zero or near-zero speed
-        guard averageSpeedMetersPerSec > 0.01 else {
+        guard averageSpeedMetersPerSec > 0.1 else {
              averagePaceFormatted = "--:-- " + unitLabel
              return
          }
 
-        // Time per unit distance (minutes per mile or km)
-        let minutesPerUnitDistance = (1.0 / (averageSpeedMetersPerSec * distanceFactor * 60.0))
+        let minutesPerUnitDistance = (elapsedSeconds / 60.0) / (totalDistanceMeters * distanceFactor)
 
-        // Check for realistic pace (e.g., less than 60 min/unit)
         if minutesPerUnitDistance.isFinite && minutesPerUnitDistance > 0 && minutesPerUnitDistance < 60 {
             let paceMinutes = Int(minutesPerUnitDistance)
             let paceSeconds = Int((minutesPerUnitDistance - Double(paceMinutes)) * 60)
@@ -247,19 +375,15 @@ class RunWorkoutViewModel: ObservableObject {
 
      private func updateCurrentPaceDisplay(speed: Double) {
         let unitLabel = distanceUnit == .miles ? "/mi" : "/km"
-         // Speed is meters per second
-         guard speed > 0.1 else { // Min speed threshold for pace calc
-             currentPaceFormatted = "--:-- " + unitLabel
-             return
+         guard speed > 0.1 else {
+              currentPaceFormatted = "--:-- " + unitLabel
+              return
          }
 
-        let distanceFactor = distanceUnit == .miles ? metersToMiles : metersToKilometers
+         let distanceFactor = distanceUnit == .miles ? metersToMiles : metersToKilometers
+         let minutesPerUnitDistance = (1.0 / 60.0) / (speed * distanceFactor)
 
-        // Time per unit distance (minutes per mile or km)
-         let minutesPerUnitDistance = (1.0 / (speed * distanceFactor * 60.0))
-
-          // Check for realistic pace
-          if minutesPerUnitDistance.isFinite && minutesPerUnitDistance > 0 && minutesPerUnitDistance < 60 {
+         if minutesPerUnitDistance.isFinite && minutesPerUnitDistance > 0 && minutesPerUnitDistance < 60 {
              let paceMinutes = Int(minutesPerUnitDistance)
              let paceSeconds = Int((minutesPerUnitDistance - Double(paceMinutes)) * 60)
              currentPaceFormatted = String(format: "%d:%02d ", paceMinutes, paceSeconds) + unitLabel
@@ -268,150 +392,209 @@ class RunWorkoutViewModel: ObservableObject {
          }
      }
 
-    // MARK: - Run Control
+    // MARK: - Run Control Actions
 
     func startRun() {
-        guard runState == .ready || runState == .paused else { return }
-        resetMetrics()
-        workoutStartDate = Date()
+        if locationPermissionStatus == .notDetermined {
+             runState = .requestingPermission
+             print("RunWorkoutViewModel: Requesting location permission...")
+             locationService.requestLocationPermission()
+             return
+        }
+        
+        guard locationPermissionStatus == .authorizedWhenInUse || locationPermissionStatus == .authorizedAlways else {
+            print("RunWorkoutViewModel: Cannot start run, permission denied.")
+            runState = .permissionDenied
+            errorMessage = "Location access denied. Please enable it in Settings to track runs."
+            return
+        }
+        
+        guard runState == .ready || runState == .idle || runState == .finished || runState == .error("") else {
+             print("RunWorkoutViewModel: Cannot start run from state \(runState)")
+             return
+        }
+        
+        print("RunWorkoutViewModel: Starting run...")
+        locationUpdates = []
+        totalDistanceMeters = 0.0
+        accumulatedTime = 0
+        errorMessage = nil
+        updateDistanceDisplay()
+        updatePaceDisplay(elapsedSeconds: 0)
+        updateCurrentPaceDisplay(speed: 0)
+        
         runState = .running
         startTimer()
-        subscribeToLocationUpdates() // Start listening to location
-        // Request continuous updates if using that model
-        // locationService.startUpdatingLocation()
-        print("RunWorkoutViewModel: Run started.")
+        updateLocationSubscription() // Decide source and subscribe
     }
 
     func pauseRun() {
         guard runState == .running else { return }
+        print("RunWorkoutViewModel: Pausing run...")
         runState = .paused
         pauseTimer()
-        unsubscribeFromLocationUpdates() // Stop listening to location while paused
-        // locationService.stopUpdatingLocation()
-        print("RunWorkoutViewModel: Run paused.")
+        unsubscribeFromLocationUpdates() // Stop location updates from current source
     }
 
     func resumeRun() {
         guard runState == .paused else { return }
+        print("RunWorkoutViewModel: Resuming run...")
         runState = .running
-        startTimer() // Resumes timer display updates
-        subscribeToLocationUpdates() // Start listening again
-        // locationService.startUpdatingLocation()
-        print("RunWorkoutViewModel: Run resumed.")
+        startTimer()
+        updateLocationSubscription() // Re-subscribe to appropriate source
     }
 
     func stopRun() {
-        let endTime = Date()
-        let duration = workoutStartDate.map { endTime.timeIntervalSince($0) } ?? 0
-
-        pauseTimer() // Stop timer updates first
-        unsubscribeFromLocationUpdates()
-        // locationService.stopUpdatingLocation()
-
-        let finalDistance = self.totalDistanceMeters
-        let finalDuration = Int(duration)
-
+        guard runState == .running || runState == .paused else { return }
+        print("RunWorkoutViewModel: Stopping run...")
+        let wasPaused = runState == .paused
         runState = .finished
-        updateTimerDisplay(duration) // Show final time
-        updatePaceDisplay(elapsedSeconds: duration) // Calculate final average pace
-        print("RunWorkoutViewModel: Run finished. Duration: \(finalDuration)s, Distance: \(finalDistance)m")
+        let endTime = Date()
+        
+        var finalElapsedTime = accumulatedTime
+        if !wasPaused, let startDate = workoutStartDate {
+             finalElapsedTime += endTime.timeIntervalSince(startDate)
+        }
+        finalElapsedTime = workoutStartDate != nil ? endTime.timeIntervalSince(workoutStartDate!) : accumulatedTime
+        
+        stopTimer()
+        unsubscribeFromLocationUpdates() // Stop location updates
 
-        // Save results
-        saveRunResult(startTime: workoutStartDate ?? endTime,
-                      endTime: endTime,
-                      duration: finalDuration,
-                      distance: finalDistance)
+        updateTimerDisplay(finalElapsedTime)
+        updatePaceDisplay(elapsedSeconds: finalElapsedTime)
+        if locationUpdates.isEmpty {
+            updateCurrentPaceDisplay(speed: 0)
+        }
 
-        // Reset internal state after saving attempt
-        resetMetrics()
-        stopTimer() // Fully reset timer state
+        Task { await saveWorkoutToServerAndLocal(elapsedTime: finalElapsedTime) }
     }
 
-    private func resetMetrics() {
-        accumulatedTime = 0
-        totalDistanceMeters = 0.0
-        locationUpdates = []
-        updateDistanceDisplay() // Reset based on current unit preference
-        updateTimerDisplay(0)
-        // Reset pace based on current unit preference
-        updatePaceDisplay(elapsedSeconds: 0)
-        updateCurrentPaceDisplay(speed: 0)
-    }
-
-    // MARK: - Data Saving
-
-    private func saveRunResult(startTime: Date, endTime: Date, duration: Int, distance: Double) {
-         guard duration > 0 else {
-             print("RunWorkoutViewModel: Skipping save for zero duration run.")
-             return
+    private func saveWorkoutToServerAndLocal(elapsedTime: TimeInterval) async {
+         print("RunWorkoutViewModel: Preparing to save workout...")
+         guard let userId = keychainService.getUserId() else {
+              print("RunWorkoutViewModel: Error - User ID not found. Cannot save workout.")
+              errorMessage = "Could not save run: User not logged in."
+              runState = .error("Save failed: Missing User ID")
+              return
          }
+         let runExerciseId = 4
 
-        // Ensure modelContext is available
+         let metadataDict: [String: Any] = [
+             "source": connectedDeviceName ?? "Phone GPS",
+             "distance_unit": distanceUnit.rawValue,
+         ]
+         let metadataString = try? JSONSerialization.data(withJSONObject: metadataDict)
+                                     .toString()
+
+         let workoutData = InsertUserExerciseRequest(
+             userId: userId,
+             exerciseId: runExerciseId,
+             repetitions: nil,
+             formScore: nil,
+             timeInSeconds: Int(max(0, elapsedTime)),
+             grade: nil,
+             completed: true,
+             metadata: metadataString,
+             deviceId: UIDevice.current.identifierForVendor?.uuidString,
+             syncStatus: nil
+         )
+
+         var savedServerId: Int? = nil
+         do {
+             print("RunWorkoutViewModel: Attempting to save workout to server...")
+             let savedRecord = try await workoutService.saveWorkout(workoutData: workoutData)
+             savedServerId = savedRecord.id
+             print("RunWorkoutViewModel: Saved workout successfully to server, ID: \(savedServerId ?? -1)")
+             errorMessage = nil
+
+         } catch {
+             print("RunWorkoutViewModel: Failed to save workout to server: \(error)")
+             errorMessage = "Failed to sync run: \(error.localizedDescription)"
+             runState = .error("Sync failed")
+         }
+         
+         saveWorkoutLocally(workoutData: workoutData, serverId: savedServerId)
+    }
+
+    private func saveWorkoutLocally(workoutData: InsertUserExerciseRequest, serverId: Int?) {
         guard let context = modelContext else {
-            print("RunWorkoutViewModel: ModelContext not available. Cannot save run locally.")
-            errorMessage = "Internal error: Could not save run data."
+            print("RunWorkoutViewModel: ModelContext not available, cannot save locally.")
             return
         }
-
-        // Create the SwiftData object
-        let runData = WorkoutResultSwiftData(
-            exerciseType: ExerciseType.run.rawValue,
-            startTime: startTime,
-            endTime: endTime,
-            durationSeconds: duration,
-            repCount: nil,
-            score: nil,
-            distanceMeters: distance
+        
+        print("RunWorkoutViewModel: Attempting to save workout locally (Server ID: \(serverId ?? -1))...")
+        let localRecord = WorkoutResultSwiftData(
+            serverId: serverId,
+            userId: workoutData.userId,
+            exerciseId: workoutData.exerciseId,
+            repetitions: workoutData.repetitions,
+            formScore: workoutData.formScore,
+            timeInSeconds: workoutData.timeInSeconds ?? 0,
+            grade: workoutData.grade,
+            completed: workoutData.completed ?? true,
+            metadata: workoutData.metadata,
+            deviceId: workoutData.deviceId,
+            syncStatus: serverId != nil ? "synced" : "pending",
+            createdAt: Date()
         )
-
-        // Insert into the context
-        context.insert(runData)
-
-        // Attempt to save the context (optional, often auto-saves)
+        
+        context.insert(localRecord)
+        
         do {
             try context.save()
-            print("RunWorkoutViewModel: Run saved locally successfully!")
+            print("RunWorkoutViewModel: Workout saved locally successfully.")
         } catch {
-            print("RunWorkoutViewModel: Failed to save run locally: \(error.localizedDescription)")
-            errorMessage = "Failed to save run data locally."
-            // Consider reverting the insert or handling the error more robustly
+            print("RunWorkoutViewModel: Failed to save workout locally: \(error)")
+            errorMessage = (errorMessage ?? "") + "\nFailed to save run locally."
         }
-
-         // // --- Keep backend saving logic if needed --- (Commented out for now)
-         // Task {
-         //     do {
-         //         guard let token = try keychainService.loadToken() else {
-         //             print("RunWorkoutViewModel: Cannot save run to backend, user not authenticated.")
-         //             // errorMessage = "Authentication error. Could not save run."
-         //             return
-         //         }
-         //
-         //         let resultPayload = WorkoutResultPayload(
-         //             exerciseType: ExerciseType.run.rawValue,
-         //             startTime: startTime,
-         //             endTime: endTime,
-         //             durationSeconds: duration,
-         //             repCount: nil,
-         //             score: nil,
-         //             // Add distance if model supports it:
-         //             // distanceMeters: distance
-         //         )
-         //
-         //         print("RunWorkoutViewModel: Attempting to save run to backend...")
-         //         try await workoutService.saveWorkout(result: resultPayload, authToken: token)
-         //         print("RunWorkoutViewModel: Run saved to backend successfully!")
-         //
-         //     } catch {
-         //         print("RunWorkoutViewModel: Failed to save run to backend: \(error.localizedDescription)")
-         //         // errorMessage = "Failed to save run data."
-         //     }
-         // }
-     }
+    }
 
     deinit {
-        timerSubscription?.cancel()
-        unsubscribeFromLocationUpdates()
-        // locationService.stopUpdatingLocation()
-        print("RunWorkoutViewModel deinitialized.")
+        print("RunWorkoutViewModel: Deinitializing and cancelling subscriptions.")
+        cancellables.forEach { $0.cancel() }
+        stopTimer()
+    }
+}
+
+@Model
+final class WorkoutResultSwiftData {
+   var serverId: Int?
+   @Attribute(.unique) var localId: UUID
+   var userId: Int
+   var exerciseId: Int
+   var repetitions: Int?
+   var formScore: Int?
+   var timeInSeconds: Int
+   var grade: Int?
+   var completed: Bool
+   @Attribute(.externalStorage) var metadata: String?
+   var deviceId: String?
+   var syncStatus: String?
+   var createdAt: Date
+
+    init(serverId: Int? = nil, localId: UUID = UUID(), userId: Int, exerciseId: Int, repetitions: Int? = nil, formScore: Int? = nil, timeInSeconds: Int, grade: Int? = nil, completed: Bool, metadata: String? = nil, deviceId: String? = nil, syncStatus: String? = nil, createdAt: Date) {
+        self.serverId = serverId
+        self.localId = localId
+        self.userId = userId
+        self.exerciseId = exerciseId
+        self.repetitions = repetitions
+        self.formScore = formScore
+        self.timeInSeconds = timeInSeconds
+        self.grade = grade
+        self.completed = completed
+        self.metadata = metadata
+        self.deviceId = deviceId
+        self.syncStatus = syncStatus
+        self.createdAt = createdAt
+    }
+}
+
+enum DistanceUnit: String, Codable, CaseIterable {
+    case miles, kilometers
+}
+
+extension Data {
+    func toString() -> String? {
+        return String(data: self, encoding: .utf8)
     }
 } 

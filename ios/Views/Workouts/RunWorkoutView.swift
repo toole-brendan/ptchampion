@@ -1,21 +1,23 @@
 import SwiftUI
 import CoreLocation // For CLAuthorizationStatus
 import SwiftData // Import SwiftData
+import CoreBluetooth // For CBManagerState
 
 struct RunWorkoutView: View {
-    @State private var viewModel: RunWorkoutViewModel
+    @StateObject private var viewModel: RunWorkoutViewModel // Use @StateObject
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext // Access ModelContext
 
-    // Custom Initializer to inject ModelContext
+    // Keep the initializer simple for previews, context injected onAppear
     init() {
-        // Must initialize @State properties within init or use default values
-        // We create the ViewModel here, passing the context
-        _viewModel = State(initialValue: RunWorkoutViewModel(modelContext: nil)) // Temp assignment
+        _viewModel = StateObject(wrappedValue: RunWorkoutViewModel(modelContext: nil)) // Use StateObject
     }
 
     var body: some View {
         VStack(spacing: 0) {
+            // Device Connection Status Header
+            deviceStatusHeader()
+
             // Top Metrics Display
             runMetricsHeader()
 
@@ -57,15 +59,60 @@ struct RunWorkoutView: View {
         }
         // Inject the actual modelContext when the view appears and context is available
         .onAppear {
-            // Check if viewModel needs re-initialization with the actual context
-            // This ensures the context is available when the VM is fully used
-            if viewModel.modelContext == nil { // Only initialize if context wasn't set (or needs refresh)
-                 viewModel = RunWorkoutViewModel(modelContext: modelContext)
-            }
+            // Re-initialize the viewModel with the actual context when the view appears.
+            // This ensures the VM has access to the context from the environment.
+             viewModel = RunWorkoutViewModel(modelContext: modelContext)
          }
     }
 
-    // Helper View for Top Metrics
+    // MARK: - Subviews
+
+    // New Header for Device Status
+    @ViewBuilder
+    private func deviceStatusHeader() -> some View {
+        HStack {
+            // Bluetooth Power Status Icon
+            Image(systemName: viewModel.bluetoothState == .poweredOn ? "bolt.fill" : "bolt.slash.fill")
+                .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : .gray)
+
+            // Connection Status Text
+            switch viewModel.deviceConnectionState {
+            case .disconnected:
+                Text("No Device Connected")
+                    .foregroundColor(.gray)
+            case .connecting:
+                HStack {
+                    Text("Connecting...")
+                    ProgressView().scaleEffect(0.7)
+                }.foregroundColor(.orange)
+            case .connected(let peripheral):
+                Text("Connected: \(peripheral.name ?? "Device")")
+                    .foregroundColor(.green)
+            case .disconnecting:
+                Text("Disconnecting...")
+                    .foregroundColor(.gray)
+            case .failed:
+                Text("Connection Failed")
+                    .foregroundColor(.red)
+            }
+            
+            Spacer()
+            
+            // Location Source Indicator
+            HStack(spacing: 3) {
+                Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
+                Text("GPS")
+            }
+            .foregroundColor(viewModel.locationSource == .watch ? .blue : .primary)
+
+        }
+        .font(.caption)
+        .padding(.horizontal)
+        .padding(.vertical, 5)
+        .background(.thinMaterial) // Subtle background
+    }
+
+
     @ViewBuilder
     private func runMetricsHeader() -> some View {
         Grid(alignment: .center, horizontalSpacing: 10, verticalSpacing: 15) {
@@ -77,6 +124,12 @@ struct RunWorkoutView: View {
                  MetricDisplay(label: "AVG PACE", value: viewModel.averagePaceFormatted)
                  MetricDisplay(label: "CUR PACE", value: viewModel.currentPaceFormatted)
             }
+             // Add Heart Rate Display
+             GridRow {
+                  MetricDisplay(label: "HEART RATE",
+                                value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM")
+                                .gridCellColumns(2) // Span across two columns
+             }
         }
         .padding()
         .background(Color.deepOpsGreen) // Use dark background for contrast
@@ -202,4 +255,94 @@ struct MapViewPlaceholder: View {
         RunWorkoutView()
     }
     .modelContainer(for: WorkoutResultSwiftData.self, inMemory: true) // Use in-memory store for preview
+}
+
+// Assume WorkoutResultSwiftData exists
+@Model
+final class WorkoutResultSwiftData { // Make final if no subclasses
+   var serverId: Int?
+   @Attribute(.unique) var localId: UUID // Add a unique local ID
+   var userId: Int
+   var exerciseId: Int
+   var repetitions: Int?
+   var formScore: Int?
+   var timeInSeconds: Int
+   var grade: Int?
+   var completed: Bool
+   @Attribute(.externalStorage) var metadata: String? // Use external storage for potentially large JSON
+   var deviceId: String?
+   var syncStatus: String? // "pending", "synced", "error"
+   var createdAt: Date
+
+    init(serverId: Int? = nil, localId: UUID = UUID(), userId: Int, exerciseId: Int, repetitions: Int? = nil, formScore: Int? = nil, timeInSeconds: Int, grade: Int? = nil, completed: Bool, metadata: String? = nil, deviceId: String? = nil, syncStatus: String? = nil, createdAt: Date) {
+        self.serverId = serverId
+        self.localId = localId
+        self.userId = userId
+        self.exerciseId = exerciseId
+        self.repetitions = repetitions
+        self.formScore = formScore
+        self.timeInSeconds = timeInSeconds
+        self.grade = grade
+        self.completed = completed
+        self.metadata = metadata
+        self.deviceId = deviceId
+        self.syncStatus = syncStatus
+        self.createdAt = createdAt
+    }
+}
+
+// Helper for Primary Button Style (Ensure this exists)
+struct PrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(Color.deepOpsGreen) // Example color
+            .foregroundColor(.white)
+            .cornerRadius(10)
+            .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
+    }
+}
+
+// Helpers for View Styles (Ensure these exist)
+extension Text {
+    func subheadingStyle() -> some View { self.font(.title3).bold() }
+    func labelStyle(size: CGFloat = 14, color: Color = .gray) -> some View { self.font(.system(size: size)).foregroundColor(color) }
+    func statsNumberStyle(size: CGFloat = 32, color: Color = .primary) -> some View { self.font(.system(size: size, weight: .bold)).foregroundColor(color) }
+}
+
+extension View {
+    func cardStyle() -> some View { self.background(Color(UIColor.systemBackground)).cornerRadius(10).shadow(radius: 3) }
+}
+
+struct AppConstants {
+    static let globalPadding: CGFloat = 16
+    static let panelCornerRadius: CGFloat = 12
+}
+
+// Helper for Distance Unit preference
+enum DistanceUnit: String, Codable, CaseIterable {
+    case miles, kilometers
+}
+
+// Assume KeychainService and its getUserId() method exist
+protocol KeychainServiceProtocol { func getUserId() -> Int? }
+class KeychainService: KeychainServiceProtocol { func getUserId() -> Int? { return 123 } } // Mock
+
+// Assume LocationService and its publishers exist
+protocol LocationServiceProtocol {
+    var authorizationStatusPublisher: AnyPublisher<CLAuthorizationStatus, Never> { get }
+    var locationPublisher: AnyPublisher<CLLocation?, Never> { get }
+    var errorPublisher: AnyPublisher<Error, Never> { get }
+    func requestLocationPermission()
+    func startUpdatingLocation()
+    func stopUpdatingLocation()
+}
+class LocationService: LocationServiceProtocol { // Mock
+    var authorizationStatusPublisher: AnyPublisher<CLAuthorizationStatus, Never> = Just(.authorizedWhenInUse).eraseToAnyPublisher()
+    var locationPublisher: AnyPublisher<CLLocation?, Never> = Just(nil).eraseToAnyPublisher()
+    var errorPublisher: AnyPublisher<Error, Never> = Empty().eraseToAnyPublisher()
+    func requestLocationPermission() {}
+    func startUpdatingLocation() {}
+    func stopUpdatingLocation() {}
 } 

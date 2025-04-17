@@ -17,20 +17,20 @@ class SitupGrader: ExerciseGraderProtocol {
     private var repCount: Int = 0
 
     // Configuration Thresholds (tune based on testing!)
-    private let hipAngleDownMin: CGFloat = 140.0  // Min hip angle to be considered 'down'
-    private let hipAngleUpMax: CGFloat = 90.0    // Max hip angle to be considered fully 'up'
+    private let hipAngleDownMin: CGFloat = 150.0  // Min hip angle to be considered 'down' (Aligned w/ Android)
+    private let hipAngleUpMax: CGFloat = 70.0    // Max hip angle to be considered fully 'up' (Aligned w/ Android)
     // Threshold for vertical distance between elbow and knee (normalized Y)
-    private let elbowKneeProximityMaxY: CGFloat = 0.15
+    private let elbowKneeProximityMaxY: CGFloat = 0.10 // Aligned w/ Android
     // Threshold for wrist distance to opposite shoulder (normalized)
-    private let armsCrossedMaxDist: CGFloat = 0.20
-    private let requiredConfidence: Float = 0.4
+    private let armsCrossedMaxDist: CGFloat = 0.15 // Aligned w/ Android
+    private let requiredConfidence: Float = 0.6 // Aligned w/ Android
 
     // State tracking for rep evaluation & stability
     private var maxHipAngleThisRep: CGFloat = 0.0      // Track max angle when down
     private var minHipAngleThisRep: CGFloat = 180.0    // Track min angle when up
     private var armsWereCrossedThisRep: Bool = false   // Track arm position during UP phase
     private var stableFrameCounter: Int = 0
-    private let requiredStableFrames: Int = 2 // Frames needed to confirm state change
+    private let requiredStableFrames: Int = 3 // Frames needed to confirm state change (Aligned w/ Android)
 
     var currentPhaseDescription: String {
         switch currentState {
@@ -66,7 +66,8 @@ class SitupGrader: ExerciseGraderProtocol {
             .leftElbow, .rightElbow,
             .leftWrist, .rightWrist,
             .leftHip, .rightHip,
-            .leftKnee, .rightKnee
+            .leftKnee, .rightKnee,
+            .nose // Added Nose (Aligned w/ Android)
         ]
         var missingJoints: [String] = []
         for jointName in keyJoints {

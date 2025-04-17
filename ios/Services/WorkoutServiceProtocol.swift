@@ -13,4 +13,6 @@ protocol WorkoutServiceProtocol {
 
     // Optional: Fetch details for a specific workout
     // func fetchWorkoutDetail(id: String, authToken: String) async throws -> WorkoutRecord
+
+    func getWorkoutById(id: String) async throws -> UserExerciseRecord
 } 

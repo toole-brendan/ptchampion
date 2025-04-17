@@ -73,6 +73,12 @@ struct LoginView: View {
             .onTapGesture {
                  hideKeyboard()
             }
+            // Add alert for login errors
+            .alert("Login Error", isPresented: .constant(viewModel.errorMessage != nil), actions: {
+                Button("OK", role: .cancel) { viewModel.errorMessage = nil } // Clear error on dismiss
+            }, message: {
+                Text(viewModel.errorMessage ?? "An unknown error occurred.")
+            })
         }
     }
 }

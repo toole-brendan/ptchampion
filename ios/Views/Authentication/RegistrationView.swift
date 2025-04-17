@@ -112,6 +112,12 @@ struct RegistrationView: View {
         .onAppear { clearMessages() }
         .onChange(of: email) { _ in clearMessages() }
         .onChange(of: password) { _ in clearMessages() }
+        // Add alert for registration errors
+        .alert("Registration Error", isPresented: .constant(viewModel.errorMessage != nil), actions: {
+            Button("OK", role: .cancel) { viewModel.errorMessage = nil } // Clear error on dismiss
+        }, message: {
+            Text(viewModel.errorMessage ?? "An unknown error occurred.")
+        })
 
     }
 
