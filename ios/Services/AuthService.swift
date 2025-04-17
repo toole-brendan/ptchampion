@@ -1,135 +1,69 @@
 import Foundation
 
-// Implementation of AuthServiceProtocol using URLSession
+// Implementation of AuthServiceProtocol using the shared NetworkClient
 class AuthService: AuthServiceProtocol {
 
-    // TODO: Replace with your actual backend base URL (e.g., from config)
-    private let baseURL = URL(string: "http://localhost:8080/api/v1")!
+    private let networkClient: NetworkClient
 
-    private let urlSession: URLSession
-    private let jsonDecoder: JSONDecoder
-    private let jsonEncoder: JSONEncoder
-
-    init(urlSession: URLSession = .shared) {
-        self.urlSession = urlSession
-        self.jsonDecoder = JSONDecoder()
-        // Configure decoder/encoder if needed (e.g., date strategies)
-        self.jsonEncoder = JSONEncoder()
+    // Inject the NetworkClient
+    init(networkClient: NetworkClient = NetworkClient()) {
+        self.networkClient = networkClient
     }
 
-    // MARK: - API Endpoints Enum (Helper)
+    // MARK: - API Endpoints (Paths only)
+    // Base URL and methods are handled by NetworkClient
     private enum APIEndpoint {
-        case login
-        case register
-        // case userProfile // Example for fetching user
-
-        var path: String {
-            switch self {
-            case .login: return "/auth/login"
-            case .register: return "/auth/register"
-            // case .userProfile: return "/users/me"
-            }
-        }
-
-        var method: String {
-            switch self {
-            case .login, .register: return "POST"
-            // case .userProfile: return "GET"
-            }
-        }
+        static let login = "/auth/login"
+        static let register = "/auth/register"
+        static let profileLocation = "/profile/location"
     }
 
     // MARK: - Protocol Implementation
 
     func login(credentials: LoginRequest) async throws -> AuthResponse {
-        let endpoint = APIEndpoint.login
-        let url = baseURL.appendingPathComponent(endpoint.path)
-        var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try jsonEncoder.encode(credentials)
-
-        print("AuthService: Sending login request to \(url)")
-        return try await performRequest(request: request)
+        print("AuthService: Attempting login...")
+        let response: AuthResponse = try await networkClient.performRequest(
+            endpointPath: APIEndpoint.login,
+            method: "POST",
+            body: credentials
+        )
+        
+        // On successful login, save the token AND user ID
+        networkClient.saveLoginCredentials(token: response.token, userId: response.user.id)
+        
+        print("AuthService: Login successful, credentials saved.")
+        return response
     }
 
     func register(userInfo: RegistrationRequest) async throws -> Void {
-        let endpoint = APIEndpoint.register
-        let url = baseURL.appendingPathComponent(endpoint.path)
-        var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try jsonEncoder.encode(userInfo)
-
-        print("AuthService: Sending registration request to \(url)")
-        // Perform request, discarding response data if successful
-        let (_, response) = try await urlSession.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-
-        print("AuthService: Registration response status code: \(httpResponse.statusCode)")
-        guard (200...299).contains(httpResponse.statusCode) else {
-            // Attempt to decode error response if available
-            // Note: This assumes the backend sends APIErrorResponse on failure
-            // let errorData = // Need the data from the failed request if we want to decode body
-            // if let errorResponse = try? jsonDecoder.decode(APIErrorResponse.self, from: errorData) {
-            //     throw errorResponse
-            // }
-            throw APIError.requestFailed(statusCode: httpResponse.statusCode)
-        }
-        // Registration successful, return Void
-        return
+        print("AuthService: Attempting registration...")
+        // Use performRequestNoContent as registration likely returns 201 or 204 on success
+        try await networkClient.performRequestNoContent(
+            endpointPath: APIEndpoint.register,
+            method: "POST",
+            body: userInfo
+        )
+        print("AuthService: Registration successful.")
+        // No response body expected, return Void
     }
-
-    // MARK: - Generic Request Helper (Example)
-
-    private func performRequest<T: Decodable>(request: URLRequest) async throws -> T {
-        let (data, response) = try await urlSession.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse
-        }
-
-        print("AuthService: Response status code: \(httpResponse.statusCode)")
-        guard (200...299).contains(httpResponse.statusCode) else {
-            // Attempt to decode standard error response
-            if let errorResponse = try? jsonDecoder.decode(APIErrorResponse.self, from: data) {
-                print("AuthService: Decoded API error: \(errorResponse.message)")
-                throw errorResponse
-            }
-            throw APIError.requestFailed(statusCode: httpResponse.statusCode)
-        }
-
-        do {
-            let decodedData = try jsonDecoder.decode(T.self, from: data)
-            return decodedData
-        } catch {
-            print("AuthService: Failed to decode response: \(error)")
-            throw APIError.decodingError(error)
-        }
+    
+    // Add a logout function to clear the token and user ID
+    func logout() {
+        print("AuthService: Logging out, clearing credentials.")
+        networkClient.clearLoginCredentials()
+        // Post notification or update state if needed
+    }
+    
+    func updateUserLocation(latitude: Double, longitude: Double) async throws -> Void {
+        print("AuthService: Updating user location to (\(latitude), \(longitude))")
+        let requestBody = UpdateLocationRequest(latitude: latitude, longitude: longitude)
+        try await networkClient.performRequestNoContent(
+            endpointPath: APIEndpoint.profileLocation,
+            method: "PUT",
+            body: requestBody
+        )
+        print("AuthService: User location update successful.")
     }
 }
 
-// MARK: - API Error Enum
-
-enum APIError: Error, LocalizedError {
-    case invalidURL
-    case requestFailed(statusCode: Int)
-    case invalidResponse
-    case decodingError(Error)
-    case encodingError(Error)
-    case underlying(Error)
-
-    var errorDescription: String? {
-        switch self {
-        case .invalidURL: return "Invalid URL encountered."
-        case .requestFailed(let code): return "Request failed with status code: \(code)."
-        case .invalidResponse: return "Received an invalid response from the server."
-        case .decodingError(let error): return "Failed to decode response: \(error.localizedDescription)"
-        case .encodingError(let error): return "Failed to encode request: \(error.localizedDescription)"
-        case .underlying(let error): return error.localizedDescription
-        }
-    }
-} 
+// Note: APIError enum and APIErrorResponse struct were moved to NetworkClient.swift 

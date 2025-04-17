@@ -6,4 +6,5 @@ protocol KeychainServiceProtocol {
     func loadToken() throws -> String?
     func deleteToken() throws
     // Optional: Methods for saving/loading other sensitive data like user ID
+    func getUserId() -> Int?
 } 

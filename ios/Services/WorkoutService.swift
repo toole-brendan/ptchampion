@@ -1,110 +1,80 @@
 import Foundation
 
-// Implementation of WorkoutServiceProtocol using URLSession
+// Implementation of WorkoutServiceProtocol using the shared NetworkClient
 class WorkoutService: WorkoutServiceProtocol {
 
-    // TODO: Replace with your actual backend base URL (e.g., from config)
-    private let baseURL = URL(string: "http://localhost:8080/api/v1")!
-    private let urlSession: URLSession
-    private let jsonDecoder: JSONDecoder
-    private let jsonEncoder: JSONEncoder
+    private let networkClient: NetworkClient
 
-    init(urlSession: URLSession = .shared) {
-        self.urlSession = urlSession
-        // Configure date strategy for decoder/encoder
-        self.jsonDecoder = JSONDecoder()
-        self.jsonDecoder.dateDecodingStrategy = .iso8601 // Adjust if backend uses different format
-        self.jsonEncoder = JSONEncoder()
-        self.jsonEncoder.dateEncodingStrategy = .iso8601 // Adjust if backend uses different format
+    // Inject the NetworkClient
+    init(networkClient: NetworkClient = NetworkClient()) {
+        self.networkClient = networkClient
     }
 
-    // MARK: - API Endpoints Enum (Helper)
+    // MARK: - API Endpoints (Paths only)
     private enum APIEndpoint {
-        case saveWorkout
-        case getHistory
-        // case getWorkoutDetail(id: String)
-
-        var path: String {
-            switch self {
-            case .saveWorkout: return "/workouts"
-            case .getHistory: return "/workouts/history"
-            // case .getWorkoutDetail(let id): return "/workouts/\(id)"
-            }
-        }
-
-        var method: String {
-            switch self {
-            case .saveWorkout: return "POST"
-            case .getHistory: return "GET"
-            // case .getWorkoutDetail: return "GET"
-            }
-        }
+        static let workouts = "/workouts"
+        static let exercises = "/exercises"
+        static func workoutDetail(id: String) -> String { return "/workouts/\(id)" }
+        // static let updateUserLocation = "/profile/location" // Placeholder
     }
 
     // MARK: - Protocol Implementation
 
-    func saveWorkout(result: WorkoutResultPayload, authToken: String) async throws -> Void {
-        let endpoint = APIEndpoint.saveWorkout
-        let url = baseURL.appendingPathComponent(endpoint.path)
-        var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.addValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization") // Add auth token
-        request.httpBody = try jsonEncoder.encode(result)
-
-        print("WorkoutService: Saving workout to \(url)")
-        let (_, response) = try await urlSession.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw APIError.invalidResponse // Use APIError from AuthService or define a shared one
-        }
-
-        print("WorkoutService: Save workout response status: \(httpResponse.statusCode)")
-        guard (200...299).contains(httpResponse.statusCode) else {
-            // TODO: Handle potential error response body
-            throw APIError.requestFailed(statusCode: httpResponse.statusCode)
-        }
-        // Success
+    // Save a workout, expect the saved record back
+    func saveWorkout(workoutData: InsertUserExerciseRequest) async throws -> UserExerciseRecord {
+        print("WorkoutService: Saving workout...")
+        let savedRecord: UserExerciseRecord = try await networkClient.performRequest(
+            endpointPath: APIEndpoint.workouts,
+            method: "POST",
+            body: workoutData
+        )
+        print("WorkoutService: Save workout successful. ID: \(savedRecord.id)")
+        return savedRecord
     }
 
-    func fetchWorkoutHistory(authToken: String) async throws -> [WorkoutRecord] {
-        let endpoint = APIEndpoint.getHistory
-        let url = baseURL.appendingPathComponent(endpoint.path)
-        var request = URLRequest(url: url)
-        request.httpMethod = endpoint.method
-        request.addValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization") // Add auth token
-
-        print("WorkoutService: Fetching history from \(url)")
-        return try await performRequest(request: request)
+    // Fetch workout history with pagination
+    func fetchWorkoutHistory(page: Int, pageSize: Int) async throws -> PaginatedUserExerciseResponse {
+        print("WorkoutService: Fetching workout history (page: \(page), size: \(pageSize))...")
+        let queryParams = [
+            "page": String(page),
+            "pageSize": String(pageSize)
+        ]
+        let response: PaginatedUserExerciseResponse = try await networkClient.performRequest(
+            endpointPath: APIEndpoint.workouts,
+            method: "GET",
+            queryParams: queryParams
+        )
+        print("WorkoutService: Fetched \(response.items.count) history items for page \(response.currentPage)")
+        return response
     }
 
-    // MARK: - Generic Request Helper (Similar to AuthService)
-    // Consider moving this to a shared NetworkClient class
-    private func performRequest<T: Decodable>(request: URLRequest) async throws -> T {
-         let (data, response) = try await urlSession.data(for: request)
+    // Fetch list of available exercises
+    func getExercises() async throws -> [Exercise] {
+        print("WorkoutService: Fetching exercises...")
+        let response: [Exercise] = try await networkClient.performRequest(
+            endpointPath: APIEndpoint.exercises,
+            method: "GET"
+        )
+        print("WorkoutService: Fetched \(response.count) exercises.")
+        return response
+    }
 
-         guard let httpResponse = response as? HTTPURLResponse else {
-             throw APIError.invalidResponse
-         }
+    // Fetch a single workout by its ID
+    func getWorkoutById(id: String) async throws -> UserExerciseRecord {
+        print("WorkoutService: Fetching workout with ID: \(id)")
+        let endpointPath = APIEndpoint.workoutDetail(id: id)
+        let response: UserExerciseRecord = try await networkClient.performRequest(
+            endpointPath: endpointPath,
+            method: "GET"
+        )
+        print("WorkoutService: Fetched workout ID \(response.id)")
+        return response
+    }
 
-         print("WorkoutService: Response status code: \(httpResponse.statusCode)")
-         guard (200...299).contains(httpResponse.statusCode) else {
-             if let errorResponse = try? jsonDecoder.decode(APIErrorResponse.self, from: data) {
-                 print("WorkoutService: Decoded API error: \(errorResponse.message)")
-                 throw errorResponse
-             }
-             throw APIError.requestFailed(statusCode: httpResponse.statusCode)
-         }
-
-         do {
-             let decodedData = try jsonDecoder.decode(T.self, from: data)
-             return decodedData
-         } catch {
-             print("WorkoutService: Failed to decode response: \(error)")
-             throw APIError.decodingError(error)
-         }
-     }
+    // TODO: Implement other methods from Android WorkoutApiService
+    // func updateUserLocation(location: LocationUpdateRequest) async throws -> Void
 }
 
-// Assuming APIError and APIErrorResponse are accessible (e.g., defined globally or imported)
-// If not, redefine or move them here or to a shared location. 
+// Note: Relies on aligned models: InsertUserExerciseRequest, UserExerciseRecord,
+// PaginatedUserExerciseResponse, Exercise.
+// APIError moved to NetworkClient.swift 

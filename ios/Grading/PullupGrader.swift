@@ -17,23 +17,26 @@ class PullupGrader: ExerciseGraderProtocol {
     private var repCount: Int = 0
 
     // Configuration Thresholds (tune based on testing!)
-    private let elbowAngleDownMin: CGFloat = 155.0  // Min angle to be considered fully extended ('down')
-    private let elbowAngleUpMax: CGFloat = 95.0    // Max angle to be considered significantly bent ('up')
+    private let elbowAngleDownMin: CGFloat = 160.0  // Min angle to be considered fully extended ('down') (Aligned w/ Android)
+    // Removed elbowAngleUpMax - UP state depends on chin height (Aligned w/ Android)
     // Vertical distance threshold: Nose Y must be *above* Wrist Y by this amount (normalized)
     // Note: In Vision coordinates (0,0 is bottom-left), smaller Y is higher.
-    private let chinAboveBarMinYDiff: CGFloat = 0.04
-    // Max allowed vertical hip movement relative to shoulder height (normalized) - very basic kipping check
-    private let kippingMaxHipYTravel: CGFloat = 0.15
-    private let requiredConfidence: Float = 0.4
+    private let chinAboveBarMinYDiff: CGFloat = 0.05 // Aligned w/ Android
+    // Max allowed vertical hip movement relative to shoulder height (normalized) - basic kipping check
+    private let kippingMaxHipYTravel: CGFloat = 0.10 // Aligned w/ Android
+    private let requiredConfidence: Float = 0.6 // Aligned w/ Android
+    // Minimum bend required during UP phase for rep check
+    private let elbowAngleUpRepCheckMax: CGFloat = 90.0 // Aligned w/ Android MIN_BEND_THRESHOLD
 
     // State tracking for rep evaluation & stability
     private var maxElbowAngleThisRep: CGFloat = 0.0      // Track max angle for extension check
+    private var minElbowAngleThisRep: CGFloat = 180.0    // Track min angle during UP phase for rep check
     private var chinWasAboveBarThisRep: Bool = false   // Track if chin cleared bar during UP phase
     private var startingHipY: CGFloat? = nil         // Initial hip Y for kipping check
     private var minHipYThisRep: CGFloat = 1.0          // Track min/max hip Y during rep
     private var maxHipYThisRep: CGFloat = 0.0
     private var stableFrameCounter: Int = 0
-    private let requiredStableFrames: Int = 2 // Frames needed to confirm state change
+    private let requiredStableFrames: Int = 3 // Frames needed to confirm state change (Aligned w/ Android)
     private var repInProgress: Bool = false // Flag when moving from DOWN state
 
     var currentPhaseDescription: String {
@@ -59,6 +62,7 @@ class PullupGrader: ExerciseGraderProtocol {
 
     private func resetRepTrackingState() {
         maxElbowAngleThisRep = 0.0
+        minElbowAngleThisRep = 180.0
         chinWasAboveBarThisRep = false
         // Don't reset startingHipY here, only on first valid frame or full reset
         minHipYThisRep = 1.0
@@ -123,7 +127,7 @@ class PullupGrader: ExerciseGraderProtocol {
         // Determine potential state
         if avgElbowAngle >= elbowAngleDownMin {
             detectedState = .down
-        } else if avgElbowAngle <= elbowAngleUpMax && chinIsAboveBar {
+        } else if chinIsAboveBar {
             detectedState = .up
         } else {
             // Could be moving up or down
@@ -143,6 +147,7 @@ class PullupGrader: ExerciseGraderProtocol {
         // Track angles and positions during the rep
         if repInProgress {
             maxElbowAngleThisRep = max(maxElbowAngleThisRep, avgElbowAngle)
+            minElbowAngleThisRep = min(minElbowAngleThisRep, avgElbowAngle) // Track min angle too
             if chinIsAboveBar { chinWasAboveBarThisRep = true }
             minHipYThisRep = min(minHipYThisRep, avgHipY)
             maxHipYThisRep = max(maxHipYThisRep, avgHipY)
@@ -167,6 +172,10 @@ class PullupGrader: ExerciseGraderProtocol {
             let bodyHeightEstimate = abs(leftShoulder.location.y - leftHip.location.y) + abs(rightShoulder.location.y - rightHip.location.y) / 2.0
             if startingHipY != nil && bodyHeightEstimate > 0.1 && (hipTravel / bodyHeightEstimate) > kippingMaxHipYTravel {
                  repFormIssues.append("Excessive hip movement (kipping).")
+            }
+            // d) Check Minimum Elbow Bend during Up phase (Aligned w/ Android)
+            if minElbowAngleThisRep > elbowAngleUpRepCheckMax {
+                 repFormIssues.append("Arms not bent enough at top.")
             }
 
             if repFormIssues.isEmpty {
