@@ -5,7 +5,7 @@ import UIKit // Needed for orientation
 
 class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSampleBufferDelegate {
 
-    private let session = AVCaptureSession()
+    let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "com.ptchampion.cameraservice.sessionqueue", qos: .userInitiated)
     private let videoOutput = AVCaptureVideoDataOutput()
     private var videoDeviceInput: AVCaptureDeviceInput?

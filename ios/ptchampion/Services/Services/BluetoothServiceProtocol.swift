@@ -16,6 +16,6 @@ protocol BluetoothServiceProtocol {
     
     func startScan()
     func stopScan()
-    func connect(peripheral: CBPeripheral)
-    func disconnect()
+    func connect(to peripheral: CBPeripheral)
+    func disconnect(from peripheral: CBPeripheral?)
 } 

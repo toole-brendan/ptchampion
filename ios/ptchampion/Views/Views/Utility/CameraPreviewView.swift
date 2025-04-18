@@ -55,7 +55,7 @@ struct CameraPreviewView: UIViewRepresentable {
 }
 
 // Optional: Add a preview for CameraPreviewView itself
-#Preview {
+#Preview(traits: .sizeThatFitsLayout) {
     // Create a dummy session for preview purposes (won't show live feed)
     let dummySession = AVCaptureSession()
     // You could potentially add a dummy input/output to make it look like a camera is active
@@ -63,5 +63,4 @@ struct CameraPreviewView: UIViewRepresentable {
     return CameraPreviewView(session: dummySession)
         .frame(width: 300, height: 500)
         .background(Color.gray)
-        .previewLayout(.sizeThatFits)
 } 

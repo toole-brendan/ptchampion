@@ -37,10 +37,10 @@ struct WorkoutHistoryRow: View {
 
             VStack(alignment: .leading) {
                  // TODO: Display actual exercise name
-                Text(result.exerciseId.description) // Placeholder - Show Exercise Name
+                Text(result.exerciseType.capitalized) // Show exercise type
                     .font(.headline)
                     .foregroundColor(.commandBlack)
-                Text("\(result.createdAt, formatter: Self.dateFormatter)") // Use createdAt from SwiftData model
+                Text("\(result.startTime, formatter: Self.dateFormatter)")
                     .labelStyle()
             }
 
@@ -48,19 +48,19 @@ struct WorkoutHistoryRow: View {
 
             VStack(alignment: .trailing) {
                  // TODO: Format duration based on timeInSeconds from SwiftData model
-                 Text(formatDuration(result.timeInSeconds))
+                 Text(formatDuration(result.durationSeconds))
                      .font(.headline)
                      .foregroundColor(.commandBlack)
                 // Display reps/score or distance based on type
-                if let reps = result.repetitions {
+                if let reps = result.repCount {
                     Text("\(reps) reps")
                         .labelStyle()
-                } else if let distance = result.metadata?.extractDistanceMeters(), distance > 0 { // Example: Extract from metadata
+                } else if let distance = result.distanceMeters, distance > 0 {
                      let distanceMiles = distance * 0.000621371
                      Text(String(format: "%.2f mi", distanceMiles))
                          .labelStyle()
-                 } else if let score = result.formScore {
-                     Text("Score: \(score)%") // Use formScore
+                 } else if let score = result.score {
+                     Text("Score: \(Int(score))%")
                         .labelStyle()
                  }
             }
@@ -85,24 +85,27 @@ extension String {
 
 // Preview requires a ModelContainer setup
 #Preview {
-    // Create an in-memory container
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: WorkoutResultSwiftData.self, configurations: config)
+    // Create an in-memory container and sample data
+    let previewContainer: ModelContainer = {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(for: WorkoutResultSwiftData.self, configurations: config)
 
-    // Add sample data (adjust based on WorkoutResultSwiftData initializer)
-    let sampleRun = WorkoutResultSwiftData(userId: 1, exerciseId: 4, timeInSeconds: 2600, completed: true, metadata: "{\"distanceMeters\": 5012.5}", createdAt: Date().addingTimeInterval(-3600))
-    let samplePushups = WorkoutResultSwiftData(userId: 1, exerciseId: 1, repetitions: 25, formScore: 85, timeInSeconds: 100, completed: true, createdAt: Date().addingTimeInterval(-86400))
-    let sampleSitups = WorkoutResultSwiftData(userId: 1, exerciseId: 2, repetitions: 30, timeInSeconds: 50, completed: true, createdAt: Date().addingTimeInterval(-172800))
+        // Add sample data using current model init
+        let sampleRun = WorkoutResultSwiftData(exerciseType: "run", startTime: Date().addingTimeInterval(-3600), endTime: Date().addingTimeInterval(-100), durationSeconds: 2600, distanceMeters: 5012.5)
+        let samplePushups = WorkoutResultSwiftData(exerciseType: "pushup", startTime: Date().addingTimeInterval(-86400), endTime: Date().addingTimeInterval(-86300), durationSeconds: 100, repCount: 25, score: 85)
+        let sampleSitups = WorkoutResultSwiftData(exerciseType: "situp", startTime: Date().addingTimeInterval(-172800), endTime: Date().addingTimeInterval(-172750), durationSeconds: 50, repCount: 30)
 
-    container.mainContext.insert(sampleRun)
-    container.mainContext.insert(samplePushups)
-    container.mainContext.insert(sampleSitups)
-
-    // Return the Row within a List for context
+        // Insert the sample data
+        container.mainContext.insert(sampleRun)
+        container.mainContext.insert(samplePushups)
+        container.mainContext.insert(sampleSitups)
+        
+        return container
+    }()
+    
+    // Return the preview view
     return List {
-        WorkoutHistoryRow(result: sampleRun)
-        WorkoutHistoryRow(result: samplePushups)
-        WorkoutHistoryRow(result: sampleSitups)
+        WorkoutHistoryRow(result: try! previewContainer.mainContext.fetch(FetchDescriptor<WorkoutResultSwiftData>()).first ?? WorkoutResultSwiftData(exerciseType: "fallback", startTime: Date(), endTime: Date(), durationSeconds: 0))
     }
-    .modelContainer(container)
+    .modelContainer(previewContainer)
 } 

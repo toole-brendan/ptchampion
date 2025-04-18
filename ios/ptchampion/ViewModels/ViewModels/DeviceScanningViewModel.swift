@@ -76,10 +76,10 @@ class DeviceScanningViewModel: ObservableObject {
             return
         }
         // Ask the service to connect
-        bluetoothService.connect(peripheral: peripheral.peripheral)
+        bluetoothService.connect(to: peripheral.peripheral)
     }
     
     func disconnect() {
-        bluetoothService.disconnect()
+        bluetoothService.disconnect(from: nil)
     }
 } 

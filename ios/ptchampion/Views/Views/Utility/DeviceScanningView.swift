@@ -92,7 +92,8 @@ struct DeviceScanningView: View {
                     viewModel.connect(peripheral: discovered)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(viewModel.isScanning || viewModel.connectionState != .disconnected()) // Disable if scanning or not disconnected
+                .disabled(viewModel.isScanning || !(viewModel.connectionState == .disconnected() || viewModel.connectionState == .failed()))
+                .padding(.top)
             }
         }
     }

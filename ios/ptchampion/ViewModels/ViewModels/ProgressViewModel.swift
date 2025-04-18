@@ -7,7 +7,7 @@ class ProgressViewModel: ObservableObject {
     private let workoutService: WorkoutServiceProtocol
     private let keychainService: KeychainServiceProtocol
 
-    @Published var workoutHistory: [WorkoutRecord] = []
+    @Published var workoutHistory: [UserExerciseRecord] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
 
@@ -34,10 +34,10 @@ class ProgressViewModel: ObservableObject {
 
                 print("ProgressViewModel: Fetching workout history...")
                 let history = try await workoutService.fetchWorkoutHistory(authToken: token)
-                // Sort history by date, newest first
-                self.workoutHistory = history.sorted { $0.startTime > $1.startTime }
-                print("ProgressViewModel: Fetched \(self.workoutHistory.count) records.")
+                // Sort history by date, newest first and update published properties
+                self.workoutHistory = history.sorted(by: { $0.createdAt > $1.createdAt })
                 self.isLoading = false
+                print("ProgressViewModel: Fetched and sorted \(self.workoutHistory.count) history records.")
 
             } catch let error as APIErrorResponse {
                  print("ProgressViewModel: Failed to fetch history (API Error): \(error.localizedDescription)")

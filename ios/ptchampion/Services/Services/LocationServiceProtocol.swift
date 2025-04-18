@@ -11,9 +11,9 @@ protocol LocationServiceProtocol {
     func requestLocationPermission()
     func getLastKnownLocation() -> CLLocation?
     func requestLocationUpdate() // One-time location request
-    // Optional: Start/Stop continuous updates if needed
-    // func startUpdatingLocation()
-    // func stopUpdatingLocation()
+    // Add these methods for continuous updates
+    func startUpdatingLocation()
+    func stopUpdatingLocation()
 }
 
 // Custom errors

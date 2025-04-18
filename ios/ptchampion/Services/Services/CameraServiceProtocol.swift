@@ -12,6 +12,9 @@ protocol CameraServiceProtocol {
 
     // Publisher for errors encountered during session setup or runtime
     var errorPublisher: AnyPublisher<Error, Never> { get }
+    
+    // Expose the capture session for preview layer
+    var session: AVCaptureSession { get }
 
     // Requests camera permission from the user
     func requestCameraPermission()

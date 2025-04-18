@@ -54,8 +54,13 @@ struct AppFonts {
 // MARK: - Text Style ViewModifiers
 
 struct HeadingTextStyle: ViewModifier {
-    let size: CGFloat = 28 // Default, adjust as needed per specific usage
-    let color: Color = .commandBlack
+    let size: CGFloat
+    let color: Color
+
+    init(size: CGFloat = 28, color: Color = .commandBlack) {
+        self.size = size
+        self.color = color
+    }
 
     func body(content: Content) -> some View {
         content
@@ -66,8 +71,13 @@ struct HeadingTextStyle: ViewModifier {
 }
 
 struct SubheadingTextStyle: ViewModifier {
-    let size: CGFloat = 19 // Default
-    let color: Color = .tacticalGray
+    let size: CGFloat
+    let color: Color
+
+    init(size: CGFloat = 19, color: Color = .tacticalGray) {
+        self.size = size
+        self.color = color
+    }
 
     func body(content: Content) -> some View {
         content
@@ -78,8 +88,13 @@ struct SubheadingTextStyle: ViewModifier {
 }
 
 struct StatsNumberTextStyle: ViewModifier {
-    let size: CGFloat = 24 // Default
-    let color: Color = .commandBlack // Or .brassGold for highlights
+    let size: CGFloat
+    let color: Color
+
+    init(size: CGFloat = 24, color: Color = .commandBlack) {
+        self.size = size
+        self.color = color
+    }
 
     func body(content: Content) -> some View {
         content
@@ -89,8 +104,13 @@ struct StatsNumberTextStyle: ViewModifier {
 }
 
 struct LabelTextStyle: ViewModifier {
-    let size: CGFloat = 13 // Default
-    let color: Color = .tacticalGray
+    let size: CGFloat
+    let color: Color
+
+    init(size: CGFloat = 13, color: Color = .tacticalGray) {
+        self.size = size
+        self.color = color
+    }
 
     func body(content: Content) -> some View {
         content
@@ -157,6 +177,29 @@ struct AppConstants {
     static let globalPadding: CGFloat = 20
     static let cardGap: CGFloat = 12
     static let bottomNavHeight: CGFloat = 60 // Reference, actual height determined by TabView
+}
+
+// Enum for distance units
+enum DistanceUnit: String, Codable, CaseIterable {
+    case kilometers = "km"
+    case miles = "mi"
+
+    var id: String { self.rawValue }
+
+    var displayName: String {
+        switch self {
+        case .kilometers: return "Kilometers"
+        case .miles: return "Miles"
+        }
+    }
+
+    // Conversion factor from meters
+    func convertFromMeters(_ meters: Double) -> Double {
+        switch self {
+        case .kilometers: return meters / 1000.0
+        case .miles: return meters / 1609.34
+        }
+    }
 }
 
 struct PrimaryButtonStyle: ButtonStyle {

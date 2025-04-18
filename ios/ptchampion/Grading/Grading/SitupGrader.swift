@@ -72,8 +72,8 @@ class SitupGrader: ExerciseGraderProtocol {
         var missingJoints: [String] = []
         for jointName in keyJoints {
             guard let point = body.point(jointName), point.confidence >= requiredConfidence else {
-                missingJoints.append(jointName.rawValue.description)
-                continue
+                missingJoints.append(jointName.rawValue.rawValue)
+                continue // Check all missing joints
             }
         }
         if !missingJoints.isEmpty {
@@ -183,11 +183,35 @@ class SitupGrader: ExerciseGraderProtocol {
         // Always check basic arm crossing form, even if not counting rep yet
          if !armsAreCrossed && currentState != .down && currentState != .starting {
              // Don't override rep completion/failure feedback
-             if gradingResult == .inProgress(phase: currentPhaseDescription) || gradingResult == .noChange {
-                feedback = "Keep arms crossed over chest."
-                return .incorrectForm(feedback: feedback)
+             switch gradingResult {
+             case .inProgress, .noChange:
+                 feedback = "Keep arms crossed over chest."
+                 return .incorrectForm(feedback: feedback)
+             default:
+                 break
              }
          }
+
+        // Immediate feedback on current position if needed
+        if currentState == .down && avgHipAngle < hipAngleDownMin {
+            // Use if-case for comparison
+            if case .inProgress = gradingResult {
+                feedback = "Lower further."
+                gradingResult = .incorrectForm(feedback: feedback)
+            } else if case .noChange = gradingResult {
+                feedback = "Lower further."
+                gradingResult = .incorrectForm(feedback: feedback)
+            }
+        } else if currentState == .up && avgHipAngle > hipAngleUpMax {
+            // Use if-case for comparison
+            if case .inProgress = gradingResult {
+                feedback = "Sit up higher."
+                gradingResult = .incorrectForm(feedback: feedback)
+            } else if case .noChange = gradingResult {
+                feedback = "Sit up higher."
+                gradingResult = .incorrectForm(feedback: feedback)
+            }
+        }
 
         return gradingResult
     }
@@ -218,5 +242,11 @@ class SitupGrader: ExerciseGraderProtocol {
     // Helper to calculate distance between two points
     private func distance(_ p1: CGPoint, _ p2: CGPoint) -> CGFloat {
         return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2))
+    }
+    
+    func calculateFinalScore() -> Double? {
+        // Simple score implementation based on rep count
+        // For now, just return a basic score based on rep count
+        return repCount > 0 ? 100.0 : nil
     }
 } 

@@ -133,7 +133,9 @@ class RunWorkoutViewModel: ObservableObject {
             
         bluetoothService.heartRatePublisher
             .receive(on: DispatchQueue.main)
-            .assign(to: \.currentHeartRate, on: self)
+            .sink { [weak self] heartRate in
+                self?.currentHeartRate = heartRate
+            }
             .store(in: &cancellables)
 
         // Subscribe to watch location service availability
@@ -484,7 +486,7 @@ class RunWorkoutViewModel: ObservableObject {
              "distance_unit": distanceUnit.rawValue,
          ]
          let metadataString = try? JSONSerialization.data(withJSONObject: metadataDict)
-                                     .toString()
+                                     .base64EncodedString()
 
          let workoutData = InsertUserExerciseRequest(
              userId: userId,
@@ -502,11 +504,11 @@ class RunWorkoutViewModel: ObservableObject {
          var savedServerId: Int? = nil
          do {
              print("RunWorkoutViewModel: Attempting to save workout to server...")
-             let savedRecord = try await workoutService.saveWorkout(workoutData: workoutData)
-             savedServerId = savedRecord.id
-             print("RunWorkoutViewModel: Saved workout successfully to server, ID: \(savedServerId ?? -1)")
+             let authToken = try keychainService.loadToken() ?? ""
+             try await workoutService.saveWorkout(result: workoutData, authToken: authToken)
+             savedServerId = nil // Since we don't have a return value, set to nil for now
+             print("RunWorkoutViewModel: Saved workout successfully to server")
              errorMessage = nil
-
          } catch {
              print("RunWorkoutViewModel: Failed to save workout to server: \(error)")
              errorMessage = "Failed to sync run: \(error.localizedDescription)"
@@ -523,19 +525,16 @@ class RunWorkoutViewModel: ObservableObject {
         }
         
         print("RunWorkoutViewModel: Attempting to save workout locally (Server ID: \(serverId ?? -1))...")
+        
+        // Create the local record with the correct initializer
         let localRecord = WorkoutResultSwiftData(
-            serverId: serverId,
-            userId: workoutData.userId,
-            exerciseId: workoutData.exerciseId,
-            repetitions: workoutData.repetitions,
-            formScore: workoutData.formScore,
-            timeInSeconds: workoutData.timeInSeconds ?? 0,
-            grade: workoutData.grade,
-            completed: workoutData.completed ?? true,
-            metadata: workoutData.metadata,
-            deviceId: workoutData.deviceId,
-            syncStatus: serverId != nil ? "synced" : "pending",
-            createdAt: Date()
+            exerciseType: "run",
+            startTime: Date().addingTimeInterval(-Double(workoutData.timeInSeconds ?? 0)), // Approximate start time
+            endTime: Date(), // Current time as end time
+            durationSeconds: workoutData.timeInSeconds ?? 0,
+            repCount: workoutData.repetitions,
+            score: workoutData.grade != nil ? Double(workoutData.grade!) : nil,
+            distanceMeters: Double(totalDistanceMeters)
         )
         
         context.insert(localRecord)
@@ -549,52 +548,132 @@ class RunWorkoutViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Formatting Helpers
+
+    private func formatElapsedTime(_ interval: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.zeroFormattingBehavior = .pad
+        return formatter.string(from: interval) ?? "00:00:00"
+    }
+
+    private func formatDistance(_ meters: Double) -> String {
+        let value: Double
+        let unitString: String
+
+        switch distanceUnit {
+        case .kilometers:
+            value = meters * metersToKilometers
+            unitString = "km"
+        case .miles:
+            value = meters * metersToMiles
+            unitString = "mi"
+        }
+        return String(format: "%.2f \(unitString)", value)
+    }
+
+    private func formatPace(secondsPerMeter: Double) -> String {
+        // Get unit string based on distanceUnit enum
+        let unitStr = distanceUnit == .miles ? "mi" : "km"
+        guard secondsPerMeter > 0 && secondsPerMeter.isFinite else { return "--:-- /" + unitStr }
+
+        let secondsPerUnit: Double
+        switch distanceUnit {
+        case .kilometers:
+            secondsPerUnit = secondsPerMeter * 1000
+        case .miles:
+            secondsPerUnit = secondsPerMeter * 1609.34 // Meters per mile
+        }
+
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.minute, .second]
+        formatter.zeroFormattingBehavior = .pad
+        return (formatter.string(from: secondsPerUnit) ?? "--:--") + " /" + unitStr
+    }
+
+    // MARK: - Deinit
     deinit {
-        print("RunWorkoutViewModel: Deinitializing and cancelling subscriptions.")
+        print("RunWorkoutViewModel deinitialized. Cancelling \(cancellables.count) subscriptions.")
+        // Ensure timer and location updates are stopped
+        Task { @MainActor in
+            stopTimer()
+        }
+        unsubscribeFromLocationUpdates() // Use the correct method name
         cancellables.forEach { $0.cancel() }
-        stopTimer()
     }
 }
 
+/*
+// MARK: - SwiftData Model for Workout Result
+
+// IMPORTANT: This should likely live in its own file within the Models group,
+// not inside the ViewModel file.
 @Model
 final class WorkoutResultSwiftData {
-   var serverId: Int?
-   @Attribute(.unique) var localId: UUID
-   var userId: Int
-   var exerciseId: Int
-   var repetitions: Int?
-   var formScore: Int?
-   var timeInSeconds: Int
-   var grade: Int?
-   var completed: Bool
-   @Attribute(.externalStorage) var metadata: String?
-   var deviceId: String?
-   var syncStatus: String?
-   var createdAt: Date
+    @Attribute(.unique) var id: UUID
+    var userId: Int? // Optional: Link to the user who performed the workout
+    var workoutType: String // e.g., "Run", "Push-ups", "Sit-ups"
+    var date: Date
+    var durationSeconds: Double
+    var distanceMeters: Double? // Optional for non-distance workouts
+    var averagePaceSecondsPerMeter: Double? // Optional
+    var caloriesBurned: Int? // Optional, calculation needed
+    var averageHeartRate: Int? // Optional
+    var maxHeartRate: Int? // Optional
+    var locationDataPoints: [LocationDataPoint]? // Store simplified location data
 
-    init(serverId: Int? = nil, localId: UUID = UUID(), userId: Int, exerciseId: Int, repetitions: Int? = nil, formScore: Int? = nil, timeInSeconds: Int, grade: Int? = nil, completed: Bool, metadata: String? = nil, deviceId: String? = nil, syncStatus: String? = nil, createdAt: Date) {
-        self.serverId = serverId
-        self.localId = localId
+    // Relationships (Example - Adapt as needed)
+    // If you have a User model:
+    // var user: User?
+
+    init(id: UUID = UUID(),
+         userId: Int? = nil,
+         workoutType: String,
+         date: Date,
+         durationSeconds: Double,
+         distanceMeters: Double? = nil,
+         averagePaceSecondsPerMeter: Double? = nil,
+         caloriesBurned: Int? = nil,
+         averageHeartRate: Int? = nil,
+         maxHeartRate: Int? = nil,
+         locationDataPoints: [LocationDataPoint]? = nil
+         // user: User? = nil // Add user relationship if applicable
+    ) {
+        self.id = id
         self.userId = userId
-        self.exerciseId = exerciseId
-        self.repetitions = repetitions
-        self.formScore = formScore
-        self.timeInSeconds = timeInSeconds
-        self.grade = grade
-        self.completed = completed
-        self.metadata = metadata
-        self.deviceId = deviceId
-        self.syncStatus = syncStatus
-        self.createdAt = createdAt
+        self.workoutType = workoutType
+        self.date = date
+        self.durationSeconds = durationSeconds
+        self.distanceMeters = distanceMeters
+        self.averagePaceSecondsPerMeter = averagePaceSecondsPerMeter
+        self.caloriesBurned = caloriesBurned
+        self.averageHeartRate = averageHeartRate
+        self.maxHeartRate = maxHeartRate
+        self.locationDataPoints = locationDataPoints
+       // self.user = user
     }
 }
 
-enum DistanceUnit: String, Codable, CaseIterable {
+// Codable struct for location data points to be stored within WorkoutResultSwiftData
+struct LocationDataPoint: Codable, Hashable {
+    var latitude: Double
+    var longitude: Double
+    var timestamp: Date
+    var speed: Double? // meters per second
+    var altitude: Double?
+}
+
+
+// Distance Unit Enum (Can also be in a separate file)
+enum DistanceUnit: String, CaseIterable, Identifiable {
     case miles, kilometers
-}
+    var id: String { self.rawValue }
 
-extension Data {
-    func toString() -> String? {
-        return String(data: self, encoding: .utf8)
+    var abbreviation: String {
+        switch self {
+        case .miles: return "mi"
+        case .kilometers: return "km"
+        }
     }
-} 
+}
+*/ 

@@ -79,10 +79,9 @@ struct RegistrationView: View {
             } else {
                 Button("Register") {
                     if validatePasswords() {
-                        viewModel.register(email: email,
+                        viewModel.register(username: email,
                                            password: password,
-                                           firstName: firstName,
-                                           lastName: lastName)
+                                           displayName: "\(firstName) \(lastName)")
                     }
                 }
                 .buttonStyle(PrimaryButtonStyle())

@@ -73,6 +73,35 @@ class WorkoutService: WorkoutServiceProtocol {
 
     // TODO: Implement other methods from Android WorkoutApiService
     // func updateUserLocation(location: LocationUpdateRequest) async throws -> Void
+
+    // MARK: - Protocol Stubs (Implement Logic)
+
+    func saveWorkout(result: InsertUserExerciseRequest, authToken: String) async throws -> Void {
+        // TODO: Implement actual API call using networkClient
+        print("WorkoutService: Saving workout...")
+        // Example: Replace with actual network call
+        // Note: Auth token is added automatically by performRequestNoContent if needed
+        // try await networkClient.performRequestNoContent(
+        //     endpointPath: "/workouts", // Adjust endpoint
+        //     method: "POST",
+        //     body: result
+        // )
+        // For now, do nothing
+        print("WorkoutService: Placeholder - Workout save skipped.")
+    }
+
+    func fetchWorkoutHistory(authToken: String) async throws -> [UserExerciseRecord] {
+        // TODO: Implement actual API call using networkClient
+        print("WorkoutService: Fetching workout history...")
+        // Example: Replace with actual network call
+        // Note: Auth token is added automatically by performRequest if needed
+        // let history: [UserExerciseRecord] = try await networkClient.performRequest(
+        //     endpointPath: "/workouts/history", // Adjust endpoint
+        //     method: "GET"
+        // )
+        // return history
+        return [] // Placeholder
+    }
 }
 
 // Note: Relies on aligned models: InsertUserExerciseRequest, UserExerciseRecord,
