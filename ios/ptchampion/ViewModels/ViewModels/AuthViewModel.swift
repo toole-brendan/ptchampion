@@ -28,7 +28,8 @@ class AuthViewModel: ObservableObject {
     func checkInitialAuthenticationState() {
         Task {
             do {
-                if let token = try keychainService.loadToken() {
+                // Check if a token exists without assigning it if not needed
+                if (try keychainService.loadToken()) != nil {
                     print("AuthViewModel: Found token in keychain.")
                     // Optional: Add a step here to validate the token against the backend
                     // If valid:
@@ -58,7 +59,8 @@ class AuthViewModel: ObservableObject {
 
         Task {
             do {
-                let loginRequest = LoginRequest(email: email, password: password)
+                // Use 'username' label as expected by LoginRequest initializer
+                let loginRequest = LoginRequest(username: email, password: password)
                 let authResponse = try await authService.login(credentials: loginRequest)
 
                 print("AuthViewModel: Login successful, received token.")
@@ -90,14 +92,21 @@ class AuthViewModel: ObservableObject {
         }
     }
 
-    func register(email: String, password: String, firstName: String, lastName: String) {
+    func register(username: String, password: String, displayName: String) {
         isLoading = true
         errorMessage = nil
         successMessage = nil
 
         Task {
             do {
-                let registrationRequest = RegistrationRequest(email: email, password: password, firstName: firstName, lastName: lastName)
+                // Create request using the expected properties
+                let registrationRequest = RegistrationRequest(
+                    username: username,
+                    password: password,
+                    displayName: displayName,
+                    profilePictureUrl: nil, // Set to nil or provide default/optional value
+                    location: nil // Set to nil or provide default/optional value
+                )
                 try await authService.register(userInfo: registrationRequest)
 
                 print("AuthViewModel: Registration successful.")

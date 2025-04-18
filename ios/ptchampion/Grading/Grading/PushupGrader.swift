@@ -68,7 +68,7 @@ class PushupGrader: ExerciseGraderProtocol {
         var missingJoints: [String] = []
         for jointName in keyJoints {
             guard let point = body.point(jointName), point.confidence >= requiredConfidence else {
-                missingJoints.append(jointName.rawValue.description)
+                missingJoints.append(String(describing: jointName))
                 continue // Check all missing joints
             }
         }
@@ -234,5 +234,11 @@ class PushupGrader: ExerciseGraderProtocol {
         case (.none, .some(let a2)): return a2
         case (.none, .none): return nil
         }
+    }
+    
+    func calculateFinalScore() -> Double? {
+        // Simple score implementation based on rep count and form
+        // For now, just return a basic score based on rep count
+        return repCount > 0 ? 100.0 : nil
     }
 } 

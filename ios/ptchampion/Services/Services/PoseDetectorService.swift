@@ -8,7 +8,9 @@ class PoseDetectorService: PoseDetectorServiceProtocol {
 
     private let visionQueue = DispatchQueue(label: "com.ptchampion.posedetector.visionqueue", qos: .userInitiated)
     private var requestHandler: VNImageRequestHandler?
-    private var bodyPoseRequest: VNDetectHumanBodyPoseRequest
+    lazy private var bodyPoseRequest: VNDetectHumanBodyPoseRequest = {
+        VNDetectHumanBodyPoseRequest(completionHandler: handlePoseDetectionResults)
+    }()
 
     // Combine Publishers
     private let detectedBodySubject = CurrentValueSubject<DetectedBody?, Never>(nil)
@@ -23,7 +25,6 @@ class PoseDetectorService: PoseDetectorServiceProtocol {
 
     init() {
         // Initialize the Vision request. This can be configured further.
-        self.bodyPoseRequest = VNDetectHumanBodyPoseRequest(completionHandler: handlePoseDetectionResults)
         print("PoseDetectorService initialized.")
     }
 

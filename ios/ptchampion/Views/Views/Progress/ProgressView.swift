@@ -48,7 +48,17 @@ struct ProgressView: View {
                         // Use LazyVStack for potentially long lists
                         LazyVStack(spacing: AppConstants.cardGap) {
                             ForEach(viewModel.workoutHistory) { record in
-                                WorkoutHistoryRow(record: record)
+                                // Convert UserExerciseRecord to WorkoutResultSwiftData
+                                let swiftDataRecord = WorkoutResultSwiftData(
+                                    exerciseType: record.exerciseTypeKey,
+                                    startTime: record.createdAt,
+                                    endTime: record.createdAt.addingTimeInterval(Double(record.timeInSeconds ?? 0)),
+                                    durationSeconds: record.timeInSeconds ?? 0,
+                                    repCount: record.repetitions,
+                                    score: record.grade.map { Double($0) },
+                                    distanceMeters: nil // Extract from metadata if needed
+                                )
+                                WorkoutHistoryRow(result: swiftDataRecord)
                             }
                         }
                         .padding(.horizontal, AppConstants.globalPadding)
@@ -88,47 +98,6 @@ struct PlaceholderChartView: View {
                 .foregroundColor(.tacticalGray)
         }
         // Apply chart styling from Theme.swift when implementing
-    }
-}
-
-// Updated History Row to use WorkoutRecord
-struct WorkoutHistoryRow: View {
-    let record: WorkoutRecord
-    // Inject ViewModel or pass formatter if needed, using static here for simplicity
-    static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none // Just show date for brevity?
-        return formatter
-    }()
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(record.exerciseType)
-                    .font(.headline)
-                    .foregroundColor(.commandBlack)
-                Text(Self.dateFormatter.string(from: record.startTime))
-                    .labelStyle()
-            }
-            Spacer()
-            // Display reps or duration based on type
-            if let reps = record.repCount {
-                Text("\(reps) reps")
-                    .statsNumberStyle(size: 16)
-            } else {
-                // Format duration (e.g., from seconds to mm:ss)
-                let durationFormatted = String(format: "%d:%02d", record.durationSeconds / 60, record.durationSeconds % 60)
-                Text(durationFormatted)
-                     .statsNumberStyle(size: 16)
-            }
-            // Optional: Display score if available
-            // if let score = record.score {
-            //     Text("\(score) pts").labelStyle()
-            // }
-        }
-        .padding()
-        .cardStyle()
     }
 }
 

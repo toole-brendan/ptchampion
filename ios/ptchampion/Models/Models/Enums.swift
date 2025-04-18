@@ -1,35 +1,37 @@
 import Foundation
+import SwiftUI
 
-// Enum for different types of exercises
+// REMOVE ExerciseType - Should be defined ONLY in WorkoutModels.swift
+/*
 enum ExerciseType: String, CaseIterable, Identifiable {
-    case pushups = "Push-ups"
-    case situps = "Sit-ups"
-    case pullups = "Pull-ups"
+    case pushup = "Push-ups"
+    case situp = "Sit-ups"
+    case pullup = "Pull-ups"
     case run = "Run"
-    // Add other exercises as needed
+
+    var id: String { self.rawValue }
+}
+*/
+
+// REMOVE DistanceUnit - Should be defined elsewhere (e.g. Theme.swift or Units.swift)
+/*
+enum DistanceUnit: String, CaseIterable, Identifiable {
+    case kilometers = "km"
+    case miles = "mi"
 
     var id: String { self.rawValue }
 
-    // Display name (could be same as raw value or customized)
     var displayName: String {
-        self.rawValue
-    }
-
-    // Associated system icon name for UI
-    var iconName: String {
         switch self {
-        case .pushups: return "figure.strengthtraining.traditional"
-        case .situps: return "figure.core.training"
-        case .pullups: return "figure.pullups" // Placeholder, might need custom
-        case .run: return "figure.run"
+        case .kilometers: return "Kilometers"
+        case .miles: return "Miles"
         }
     }
 }
+*/
 
-// Enum for distance units preference
-enum DistanceUnit: String, CaseIterable, Identifiable {
-    case miles = "Miles"
-    case kilometers = "Kilometers"
-
-    var id: String { self.rawValue }
+// Potential future enums can go here
+// Example:
+enum AppTab {
+    case dashboard, workout, history, leaderboards, settings
 } 

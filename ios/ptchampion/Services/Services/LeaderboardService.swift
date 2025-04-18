@@ -2,12 +2,15 @@ import Foundation
 import CoreLocation
 
 // Protocol defining the leaderboard service operations
+/* REMOVED: This protocol should be defined in its own file (e.g., LeaderboardServiceProtocol.swift)
 protocol LeaderboardServiceProtocol {
     func getLocalLeaderboard(exerciseId: Int, latitude: Double, longitude: Double, radiusMeters: Double?) async throws -> [LocalLeaderboardEntry]
     func getGlobalLeaderboard(exerciseType: String, limit: Int?) async throws -> [GlobalLeaderboardEntry]
 }
+*/
 
 // Implementation using the shared NetworkClient
+// Make sure this class conforms to the protocol defined elsewhere
 class LeaderboardService: LeaderboardServiceProtocol {
 
     private let networkClient: NetworkClient
@@ -74,6 +77,39 @@ class LeaderboardService: LeaderboardServiceProtocol {
         )
         print("LeaderboardService: Fetched \(response.count) global leaderboard entries.")
         return response
+    }
+
+    // MARK: - Protocol Stubs (Implement Logic)
+
+    func fetchGlobalLeaderboard(authToken: String) async throws -> [LeaderboardEntry] {
+        // TODO: Implement actual API call using networkClient
+        print("LeaderboardService: Fetching global leaderboard...")
+        // Example: Replace with actual network call
+        // let entries: [LeaderboardEntry] = try await networkClient.performRequest(
+        //     endpointPath: "/leaderboards/global", // Adjust endpoint
+        //     method: "GET"
+        //     // No body needed for GET typically
+        // )
+        // return entries
+        return [] // Placeholder
+    }
+
+    func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String) async throws -> [LeaderboardEntry] {
+        // TODO: Implement actual API call using networkClient
+        print("LeaderboardService: Fetching local leaderboard (lat: \(latitude), lon: \(longitude), radius: \(radiusMiles))...")
+        let queryParams = [
+            "latitude": String(latitude),
+            "longitude": String(longitude),
+            "radiusMiles": String(radiusMiles) // Ensure API expects String or convert
+        ]
+        // Example: Replace with actual network call
+        // let entries: [LeaderboardEntry] = try await networkClient.performRequest(
+        //     endpointPath: "/leaderboards/local", // Adjust endpoint
+        //     method: "GET",
+        //     queryParams: queryParams
+        // )
+        // return entries
+        return [] // Placeholder
     }
 }
 

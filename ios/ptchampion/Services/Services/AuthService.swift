@@ -29,7 +29,13 @@ class AuthService: AuthServiceProtocol {
         )
         
         // On successful login, save the token AND user ID
-        networkClient.saveLoginCredentials(token: response.token, userId: response.user.id)
+        // Safely convert user ID string to Int for Keychain storage
+        guard let userIdInt = Int(response.user.id) else {
+            // Handle the error appropriately - throw an error if the ID is invalid
+            print("AuthService Error: Could not convert user ID string '\(response.user.id)' to Int.")
+            throw APIError.underlying(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user ID format received from server: '\(response.user.id)'."])) // Throw specific error
+        }
+        networkClient.saveLoginCredentials(token: response.token, userId: userIdInt)
         
         print("AuthService: Login successful, credentials saved.")
         return response

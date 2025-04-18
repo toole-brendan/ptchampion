@@ -12,13 +12,13 @@ class WorkoutViewModel: ObservableObject {
     private let exerciseGrader: ExerciseGraderProtocol
     private let workoutService: WorkoutServiceProtocol
     private let keychainService: KeychainServiceProtocol
-    private var modelContext: ModelContext? // Add ModelContext
+    var modelContext: ModelContext? // Change from private to internal
 
     private var cancellables = Set<AnyCancellable>()
 
     // Input
     let exerciseName: String
-    private var exerciseType: ExerciseType { ExerciseType(displayName: exerciseName) }
+    private var exerciseType: ExerciseType { ExerciseType(key: exerciseName) }
 
     // Published State for UI
     @Published var cameraAuthorizationStatus: AVAuthorizationStatus = .notDetermined
@@ -36,7 +36,7 @@ class WorkoutViewModel: ObservableObject {
     private var isTimerRunning: Bool = false
 
     // Represents the state of the workout session
-    enum WorkoutState {
+    enum WorkoutState: Equatable {
         case initializing
         case requestingPermission
         case permissionDenied
@@ -45,6 +45,24 @@ class WorkoutViewModel: ObservableObject {
         case paused
         case finished
         case error(String)
+        
+        // Implement Equatable manually since the enum has associated values
+        static func == (lhs: WorkoutState, rhs: WorkoutState) -> Bool {
+            switch (lhs, rhs) {
+            case (.initializing, .initializing),
+                 (.requestingPermission, .requestingPermission),
+                 (.permissionDenied, .permissionDenied),
+                 (.ready, .ready),
+                 (.counting, .counting),
+                 (.paused, .paused),
+                 (.finished, .finished):
+                return true
+            case (.error(let lhsMsg), .error(let rhsMsg)):
+                return lhsMsg == rhsMsg
+            default:
+                return false
+            }
+        }
     }
 
     init(exerciseName: String,
@@ -66,12 +84,12 @@ class WorkoutViewModel: ObservableObject {
         if let providedGrader = exerciseGrader {
             self.exerciseGrader = providedGrader
         } else {
-             switch ExerciseType(displayName: exerciseName) { // Use enum for switch
-             case .pushups:
+             switch ExerciseType(key: exerciseName) { // Use enum for switch
+             case .pushup:
                  self.exerciseGrader = PushupGrader()
-             case .situps:
+             case .situp:
                  self.exerciseGrader = SitupGrader()
-             case .pullups:
+             case .pullup:
                  self.exerciseGrader = PullupGrader()
              case .run, .unknown:
                  print("Warning: No specific pose grader for \(exerciseName). Using NoOpGrader.")
@@ -379,7 +397,10 @@ class WorkoutViewModel: ObservableObject {
     // MARK: - Cleanup
     deinit {
         // Ensure resources are released
-        stopCamera()
+        // Use Task to call the main actor isolated method
+        Task { @MainActor in
+            stopCamera()
+        }
         timerSubscription?.cancel()
         print("WorkoutViewModel for \(exerciseName) deinitialized.")
     }
@@ -391,6 +412,9 @@ class NoOpGrader: ExerciseGraderProtocol {
     func resetState() {}
     func gradePose(body: DetectedBody) -> GradingResult {
         return .noChange
+    }
+    func calculateFinalScore() -> Double? {
+        return nil // No score for no-op grader
     }
 }
 

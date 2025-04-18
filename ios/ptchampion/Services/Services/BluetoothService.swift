@@ -1,6 +1,7 @@
 import Foundation
 import CoreBluetooth
 import Combine
+import CoreLocation
 
 // Define known Service UUIDs (Add more as needed)
 struct KnownServiceUUIDs {
@@ -73,23 +74,25 @@ enum BluetoothError: Error, LocalizedError {
     }
 }
 
-// Protocol for Bluetooth interactions
+// MARK: - Protocol Definition (REMOVE - Defined in BluetoothServiceProtocol.swift)
+/*
 protocol BluetoothServiceProtocol {
-    var centralManagerStatePublisher: AnyPublisher<CBManagerState, Never> { get }
-    var discoveredPeripheralsPublisher: AnyPublisher<[DiscoveredPeripheral], Never> { get }
+    // Publishers for state changes
+    var statePublisher: AnyPublisher<CBManagerState, Never> { get }
+    var discoveredPeripheralsPublisher: AnyPublisher<[CBPeripheral], Never> { get }
     var connectionStatePublisher: AnyPublisher<PeripheralConnectionState, Never> { get }
-    var connectedPeripheralPublisher: AnyPublisher<CBPeripheral?, Never> { get }
     var heartRatePublisher: AnyPublisher<Int, Never> { get }
-    var locationPublisher: AnyPublisher<CLLocation, Never> { get }
-    var manufacturerNamePublisher: AnyPublisher<String?, Never> { get }
-    var locationServiceAvailablePublisher: AnyPublisher<Bool, Never> { get }
-    
+    var locationPublisher: AnyPublisher<CLLocation, Never> { get } // Publisher for location data from watch
+
+    // Methods for interaction
     func startScan()
     func stopScan()
-    func connect(peripheral: CBPeripheral)
-    func disconnect()
+    func connect(to peripheral: CBPeripheral)
+    func disconnect(from peripheral: CBPeripheral?)
 }
+*/
 
+// MARK: - Bluetooth Service Implementation
 class BluetoothService: NSObject, BluetoothServiceProtocol {
     
     private var centralManager: CBCentralManager!
@@ -172,7 +175,7 @@ class BluetoothService: NSObject, BluetoothServiceProtocol {
         print("BluetoothService: Stopped scan.")
     }
     
-    func connect(peripheral: CBPeripheral) {
+    func connect(to peripheral: CBPeripheral) {
         guard centralManager.state == .poweredOn else {
             print("BluetoothService: Cannot connect, Bluetooth is not powered on.")
             connectionStateSubject.send(.failed(error: BluetoothError.poweredOff))
@@ -192,8 +195,8 @@ class BluetoothService: NSObject, BluetoothServiceProtocol {
         centralManager.connect(peripheral, options: nil)
     }
     
-    func disconnect() {
-        guard let connectedPeripheral = connectedPeripheralSubject.value else {
+    func disconnect(from peripheral: CBPeripheral? = nil) {
+        guard let connectedPeripheral = peripheral ?? connectedPeripheralSubject.value else {
             print("BluetoothService: Cannot disconnect, no peripheral connected.")
             // If connecting, cancel the connection attempt
             if let peripheral = peripheralToConnect {
@@ -388,7 +391,7 @@ extension BluetoothService: CBPeripheralDelegate {
         
         print("    Discovered \(characteristics.count) characteristics for service \(service.uuid.uuidString)")
         for characteristic in characteristics {
-            print("      -> Characteristic: \(characteristic.uuid.uuidString) (\(characteristic.uuid.description)) | Properties: \(characteristic.properties.description)")
+            print("      -> Characteristic: \(characteristic.uuid.uuidString) | Properties: \(String(describing: characteristic.properties))")
             
             // Check properties and interact (read value or subscribe to notifications)
             switch characteristic.uuid {

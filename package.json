@@ -68,6 +68,7 @@
   "devDependencies": {
     "@asteasolutions/zod-to-openapi": "^7.3.0",
     "@openapitools/openapi-generator-cli": "^2.18.4",
+    "@react-native-community/cli": "^18.0.0",
     "@tailwindcss/postcss": "^4.0.17",
     "@tailwindcss/typography": "^0.5.15",
     "@types/js-yaml": "^4.0.9",

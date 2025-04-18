@@ -74,7 +74,7 @@ class LeaderboardViewModel: ObservableObject {
         Task {
             do {
                 guard let token = try keychainService.loadToken() else {
-                    throw APIError.requestFailed(statusCode: 401) // Or a specific AuthError
+                    throw APIError.requestFailed(statusCode: 401, message: "Authentication failed")
                 }
 
                 print("LeaderboardViewModel: Fetching \(selectedBoard.rawValue) leaderboard...")

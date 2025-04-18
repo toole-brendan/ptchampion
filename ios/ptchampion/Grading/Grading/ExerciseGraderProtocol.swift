@@ -19,6 +19,10 @@ protocol ExerciseGraderProtocol {
     // - Parameter body: The detected body landmarks
     // - Returns: A GradingResult indicating the outcome
     func gradePose(body: DetectedBody) -> GradingResult
+    
+    // Calculate the final score based on rep count and form quality
+    // - Returns: A score (0-100) representing overall performance, or nil if not applicable
+    func calculateFinalScore() -> Double?
 
     // Optional: Property to get the current state/phase description
     var currentPhaseDescription: String { get }

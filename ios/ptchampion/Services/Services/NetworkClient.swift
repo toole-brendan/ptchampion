@@ -279,7 +279,7 @@ class NetworkClient {
 
     private func requiresAuthentication(path: String) -> Bool {
         // Check if the request path ends with one of the paths that DON'T require auth
-        return noAuthPaths.none { path.hasSuffix($0) }
+        return !noAuthPaths.contains { path.hasSuffix($0) }
     }
     
     // Save token AND User ID to Keychain
@@ -345,8 +345,15 @@ class NetworkClient {
     func clearToken() {
         deleteKeychainItem(key: keychainAuthTokenKey)
     }
+
+    private func shouldAddAuthHeader(for url: URL) -> Bool {
+        guard let path = url.pathComponents.last else {
+            return true // Assume auth needed if path is weird
+        }
+        // Check if the path suffix matches any in the noAuthPaths set
+        return !noAuthPaths.contains { path.hasSuffix($0) }
+    }
 }
 
-// Simple struct to allow decoding empty responses when necessary
-struct EmptyResponse: Decodable {} 
+// Helper for requests that expect no response body (e.g., 204 No Content)
 struct EmptyResponse: Decodable {} 

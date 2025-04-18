@@ -1,0 +1,265 @@
+{
+  "" : {
+    "const-values" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master.swiftconstvalues",
+    "dependencies" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master.d",
+    "diagnostics" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master.dia",
+    "emit-module-dependencies" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master-emit-module.dia",
+    "swift-dependencies" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/ExerciseGraderProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ExerciseGraderProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ExerciseGraderProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ExerciseGraderProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PullupGrader.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PullupGrader.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PullupGrader.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PullupGrader.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PushupGrader.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PushupGrader.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PushupGrader.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PushupGrader.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/SitupGrader.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/SitupGrader.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/SitupGrader.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/SitupGrader.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/AuthModels.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthModels.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthModels.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthModels.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/Enums.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/Enums.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/Enums.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/Enums.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/LeaderboardModels.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardModels.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardModels.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardModels.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/PoseModels.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseModels.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseModels.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseModels.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/User.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/User.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/User.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/User.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/UserProfileModels.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/UserProfileModels.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/UserProfileModels.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/UserProfileModels.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutModels.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutModels.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutModels.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutModels.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutResultSwiftData.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutResultSwiftData.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutResultSwiftData.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutResultSwiftData.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthService.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthService.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthService.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthService.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthServiceProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthServiceProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthServiceProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthServiceProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothService.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/BluetoothService.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/BluetoothService.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/BluetoothService.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothServiceProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/BluetoothServiceProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/BluetoothServiceProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/BluetoothServiceProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraService.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraService.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraService.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraService.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraServiceProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraServiceProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraServiceProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraServiceProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainService.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/KeychainService.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/KeychainService.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/KeychainService.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainServiceProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/KeychainServiceProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/KeychainServiceProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/KeychainServiceProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardService.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardService.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardService.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardService.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardServiceProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardServiceProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardServiceProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardServiceProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationService.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LocationService.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LocationService.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LocationService.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationServiceProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LocationServiceProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LocationServiceProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LocationServiceProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/NetworkClient.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/NetworkClient.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/NetworkClient.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/NetworkClient.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorService.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseDetectorService.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseDetectorService.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseDetectorService.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorServiceProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseDetectorServiceProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseDetectorServiceProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseDetectorServiceProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutService.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutService.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutService.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutService.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutServiceProtocol.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutServiceProtocol.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutServiceProtocol.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutServiceProtocol.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/Theme.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/Theme.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/Theme.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/Theme.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/AuthViewModel.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthViewModel.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthViewModel.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/AuthViewModel.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/DeviceScanningViewModel.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DeviceScanningViewModel.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DeviceScanningViewModel.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DeviceScanningViewModel.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/LeaderboardViewModel.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardViewModel.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardViewModel.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardViewModel.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/ProgressViewModel.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ProgressViewModel.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ProgressViewModel.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ProgressViewModel.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/RunWorkoutViewModel.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RunWorkoutViewModel.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RunWorkoutViewModel.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RunWorkoutViewModel.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/WorkoutViewModel.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutViewModel.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutViewModel.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutViewModel.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/LoginView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LoginView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LoginView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LoginView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/RegistrationView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RegistrationView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RegistrationView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RegistrationView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/ContentView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Dashboard/DashboardView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DashboardView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DashboardView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DashboardView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/History/WorkoutHistoryView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutHistoryView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutHistoryView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutHistoryView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Leaderboards/LeaderboardView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/LeaderboardView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Progress/ProgressView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ProgressView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ProgressView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ProgressView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/SettingsView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/SettingsView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/SettingsView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/SettingsView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/WorkoutHistoryRow 2.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutHistoryRow 2.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutHistoryRow 2.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutHistoryRow 2.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/CameraPreviewView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraPreviewView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraPreviewView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/CameraPreviewView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/DeviceScanningView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DeviceScanningView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DeviceScanningView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/DeviceScanningView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/PoseOverlayView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseOverlayView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseOverlayView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/PoseOverlayView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/RunWorkoutView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RunWorkoutView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RunWorkoutView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/RunWorkoutView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSelectionView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutSelectionView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutSelectionView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutSelectionView.o"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSessionView.swift" : {
+    "index-unit-output-path" : "/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutSessionView.o",
+    "llvm-bc" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutSessionView.bc",
+    "object" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/WorkoutSessionView.o"
+  }
+}
