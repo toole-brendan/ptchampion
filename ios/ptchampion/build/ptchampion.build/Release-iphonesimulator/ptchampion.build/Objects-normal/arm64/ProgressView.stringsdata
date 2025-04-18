@@ -1,0 +1,56 @@
+{
+  "source": "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Progress/ProgressView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Progress",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 72
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your Progress",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 11
+        }
+      },
+      {
+        "comment": "",
+        "key": "Workout History",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "No workout history found. Complete a workout to see your progress!",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 42
+        }
+      },
+      {
+        "comment": "",
+        "key": "Workout Trends",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 18
+        }
+      },
+      {
+        "comment": "",
+        "key": "Chart Area",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 97
+        }
+      }
+    ]
+  },
+  "version": 1
+}

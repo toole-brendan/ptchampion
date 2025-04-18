@@ -43,12 +43,31 @@ struct DiscoveredPeripheral: Identifiable, Equatable {
 }
 
 // Enum representing the connection state of a peripheral
-enum PeripheralConnectionState {
+enum PeripheralConnectionState: Equatable {
     case disconnected(error: Error? = nil)
     case connecting
     case connected(peripheral: CBPeripheral)
     case disconnecting
     case failed(error: Error?)
+
+    // Custom Equatable implementation
+    static func == (lhs: PeripheralConnectionState, rhs: PeripheralConnectionState) -> Bool {
+        switch (lhs, rhs) {
+        case (.disconnected, .disconnected):
+            return true // Ignore associated error for equality check
+        case (.connecting, .connecting):
+            return true
+        case (.connected(let lhsPeripheral), .connected(let rhsPeripheral)):
+            // Optionally compare peripherals if needed, for now just check the case
+            return lhsPeripheral.identifier == rhsPeripheral.identifier
+        case (.disconnecting, .disconnecting):
+            return true
+        case (.failed, .failed):
+            return true // Ignore associated error for equality check
+        default:
+            return false
+        }
+    }
 }
 
 // Define potential Bluetooth errors

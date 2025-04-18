@@ -594,11 +594,11 @@ class RunWorkoutViewModel: ObservableObject {
     // MARK: - Deinit
     deinit {
         print("RunWorkoutViewModel deinitialized. Cancelling \(cancellables.count) subscriptions.")
-        // Ensure timer and location updates are stopped
+        // Ensure timer and location updates are stopped asynchronously on the main actor
         Task { @MainActor in
             stopTimer()
+            unsubscribeFromLocationUpdates() // Move the call here
         }
-        unsubscribeFromLocationUpdates() // Use the correct method name
         cancellables.forEach { $0.cancel() }
     }
 }
