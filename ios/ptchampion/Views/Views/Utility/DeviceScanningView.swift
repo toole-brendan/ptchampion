@@ -92,9 +92,19 @@ struct DeviceScanningView: View {
                     viewModel.connect(peripheral: discovered)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(viewModel.isScanning || !(viewModel.connectionState == .disconnected() || viewModel.connectionState == .failed()))
+                .disabled(viewModel.isScanning || !isConnectable(state: viewModel.connectionState))
                 .padding(.top)
             }
+        }
+    }
+
+    // Helper function to check if the state allows initiating a connection
+    private func isConnectable(state: PeripheralConnectionState) -> Bool {
+        switch state {
+        case .disconnected, .failed:
+            return true
+        default:
+            return false
         }
     }
 }

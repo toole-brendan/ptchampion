@@ -1,0 +1,32 @@
+{
+  "source": "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/History/WorkoutHistoryView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Workout History",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 26
+        }
+      },
+      {
+        "comment": "",
+        "key": "Complete a workout to see your history here.",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 17
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Workouts Yet",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 15
+        }
+      }
+    ]
+  },
+  "version": 1
+}

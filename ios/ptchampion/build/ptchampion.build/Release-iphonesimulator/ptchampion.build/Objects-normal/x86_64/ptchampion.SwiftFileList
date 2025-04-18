@@ -4,11 +4,12 @@
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/LeaderboardModels.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/User.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/AuthModels.swift
+/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionApp.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutModels.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutResultSwiftData.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/LoginView.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/RunWorkoutView.swift
-/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/WorkoutHistoryRow\ 2.swift
+/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/WorkoutHistoryRow.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/PoseOverlayView.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/SettingsView.swift
 /Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/History/WorkoutHistoryView.swift

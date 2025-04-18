@@ -1,9 +1,0 @@
-"/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/Theme.swift":
-  dependencies: "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master.d"
-  swiftsourceinfo: "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion.swiftsourceinfo"
-  swiftdoc: "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion.swiftdoc"
-  diagnostics: "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master.dia"
-  abi-baseline-json: "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion.abi.json"
-  swiftmodule: "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion.swiftmodule"
-  const-values: "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-master.swiftconstvalues"
-  objc-header: "/Users/brendantoole/projects/ptchampion/ios/ptchampion/build/ptchampion.build/Release-iphonesimulator/ptchampion.build/Objects-normal/arm64/ptchampion-Swift.h"
