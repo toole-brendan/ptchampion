@@ -3,21 +3,21 @@
 FROM node:20-alpine AS frontend-builder
 
 # Set working directory for frontend build
-WORKDIR /app/client
+WORKDIR /app/web
 
 # Copy package.json and package-lock.json (or yarn.lock)
-COPY client/package*.json ./
+COPY web/package*.json ./
 
 # Install frontend dependencies
 RUN npm install
 
-# Copy the rest of the client source code
-COPY client/ ./
+# Copy the rest of the web source code
+COPY web/ ./
 
 # Build the frontend application
-# This should output files to /app/client/dist by default (Vite standard)
+# This should output files to /app/web/dist by default (Vite standard)
 RUN npm run build
-RUN ls -la /app/client/dist || echo "Dist directory not found!"
+RUN ls -la /app/web/dist || echo "Dist directory not found!"
 
 # --- Go Build Stage ---
 # Use the official Go image as a builder image
@@ -46,27 +46,36 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /ptchampion_server ./c
 # Consider pinning to a specific version, e.g., alpine:3.19
 FROM alpine:latest
 
+# Install packages needed for troubleshooting, runtime, and migrations
+# Adding migrate tool - see https://github.com/golang-migrate/migrate/blob/master/cmd/migrate/README.md
+RUN apk --no-cache add ca-certificates tzdata curl tar postgresql-client && \
+    curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz | tar xvz && \
+    mv migrate /usr/local/bin/migrate && \
+    chmod +x /usr/local/bin/migrate
+
 # Create a non-root user and group
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-# Install packages needed for troubleshooting and runtime
-RUN apk --no-cache add ca-certificates tzdata curl
-
 # Set the Current Working Directory inside the container
-WORKDIR /root/
+WORKDIR /app
 
 # Copy the pre-built binary file from the previous stage
 COPY --from=builder /ptchampion_server .
 
-# Copy migrations (if needed by the entrypoint or app itself)
-# Adjust the path if your migrations are elsewhere
+# Copy migrations
 COPY db/migrations ./db/migrations
 
-# Change ownership of the app directory to the non-root user
-RUN chown -R appuser:appgroup /root
+# Copy entrypoint script
+COPY scripts/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 
+# Copy built frontend assets to the static directory
+COPY --from=frontend-builder /app/web/dist ./static
 # For debugging: List the contents of the static directory
-RUN ls -la /root/static || echo "Static directory is empty or missing!"
+RUN ls -la ./static || echo "Static directory is empty or missing!"
+
+# Change ownership of the app directory to the non-root user
+RUN chown -R appuser:appgroup /app
 
 # Switch to the non-root user
 USER appuser
@@ -74,6 +83,9 @@ USER appuser
 # Expose port 8080 to the outside world (adjust if your config uses a different default)
 # Note: Non-root users cannot bind to ports below 1024 by default
 EXPOSE 8080
+
+# Use the entrypoint script to run migrations before starting the app
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Command to run the executable
 CMD ["./ptchampion_server"] 

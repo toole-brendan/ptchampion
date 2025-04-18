@@ -32,8 +32,8 @@ func GetUserIDFromContext(c echo.Context) (int32, error) {
 
 // --- Helper functions for nullable types ---
 
-// getNullString safely gets string value from sql.NullString
-func getNullString(ns sql.NullString) string {
+// GetNullString safely gets string value from sql.NullString (renamed to avoid conflict)
+func GetNullString(ns sql.NullString) string {
 	if ns.Valid {
 		return ns.String
 	}

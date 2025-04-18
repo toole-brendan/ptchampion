@@ -26,31 +26,25 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 ├── internal/                  # Private Go application code
 │   ├── api/                   # HTTP handlers, routing (Echo), middleware, generated code
 │   │   ├── handlers/          # Request handler implementations
-│   │   ├── middleware/        # Custom middleware (e.g., auth)
+│   │   ├── middleware/        # Custom middleware (e.g., auth, OTEL)
 │   │   ├── api_handler.go     # Connects generated interface to handlers
 │   │   ├── openapi.gen.go     # Generated code from OpenAPI spec (oapi-codegen)
 │   │   └── router.go          # Echo router setup & static file serving
 │   ├── auth/                  # Authentication logic helpers
 │   ├── config/                # Configuration loading (env vars)
 │   ├── grading/               # Exercise grading logic
-│   ├── store/                 # Data access layer interfaces/implementations
-│   │   └── postgres/          # PostgreSQL specific implementation using sqlc
-│   │       ├── db.go          # Database connection & sqlc Querier setup
-│   │       ├── models.go      # sqlc generated Go structs from schema
-│   │       └── query.sql.go   # sqlc generated Go methods from queries
-│   └── models/                # (Potentially unused - models seem defined via sqlc/OpenAPI)
+│   └── store/                 # Data access layer interfaces/implementations
+│       └── postgres/          # PostgreSQL specific implementation using sqlc
+│           ├── db.go          # Database connection & sqlc Querier setup
+│           ├── models.go      # sqlc generated Go structs from schema
+│           └── query.sql.go   # sqlc generated Go methods from queries
 │
 ├── pkg/                     # (Currently unused) Shared Go libraries
 │
-├── sql/                     # SQL files for sqlc and schema definition
-│   ├── queries/             # SQL queries (.sql) for sqlc generation
-│   ├── schema/              # Base database schema (.sql)
-│   └── migrations/          # (Seems unused by backend? Migrations in db/)
-│
-├── db/                      # Database migrations (sql-migrate or similar)
+├── db/                      # Database migration files
 │   └── migrations/          # .sql migration files (up/down)
 │
-├── client/                  # Web frontend (React + Vite + TypeScript)
+├── web/                     # Web frontend (React + Vite + TypeScript)
 │   ├── public/              # Static assets
 │   ├── src/
 │   │   ├── assets/          # Project-specific assets (images, etc.)
@@ -67,16 +61,17 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 │   ├── index.html           # HTML entry point for Vite
 │   ├── package.json         # Node dependencies
 │   ├── tsconfig.json        # TypeScript configuration
-│   └── vite.config.ts     # Vite build configuration
-│   └── tailwind.config.cjs # Tailwind CSS configuration
+│   └── vite.config.ts       # Vite build configuration
+│   └── tailwind.config.cjs  # Tailwind CSS configuration
 │
-├── PTChampion-Swift/        # iOS Application (Swift + SwiftUI - Placeholder/Structure)
-│   ├── Views/
-│   ├── Services/
-│   ├── Models/
-│   └── ...                 # Standard iOS project structure
+├── ios/                     # iOS Application (Swift + SwiftUI)
+│   ├── ptchampion/          # Main iOS project directory
+│   │   ├── Views/           # SwiftUI views
+│   │   ├── ViewModels/      # View models for business logic
+│   │   ├── Services/        # API clients, local storage, etc.
+│   │   └── Models/          # Data models
 │
-├── PTChampion-Kotlin/       # Android Application (Kotlin + Jetpack Compose)
+├── android/                 # Android Application (Kotlin + Jetpack Compose)
 │   ├── app/
 │   │   ├── build.gradle.kts # Module-level Gradle build script
 │   │   └── src/main/
@@ -95,8 +90,12 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 │   └── settings.gradle.kts   # Gradle settings script
 │
 ├── scripts/                 # Utility scripts (build, deploy, etc.)
+├── docs/                    # Documentation files (how-to guides, etc.)
 ├── Dockerfile               # Docker configuration for Go backend deployment
+├── docker-compose.yml       # Docker Compose for local development
 ├── openapi.yaml             # OpenAPI (Swagger) specification for the backend API
+├── .devcontainer.json       # Dev container configuration for VS Code
+├── Makefile                 # Build and development tasks
 ├── go.mod                   # Go module definition
 ├── go.sum                   # Go module checksums
 └── README.md                # This file
@@ -228,13 +227,47 @@ This is the recommended way to run the backend and its database dependency local
 
 **Database Migrations:**
 
-*   Database migrations are located in the `db/migrations` directory.
-*   Currently, you need to run migrations manually against the running database container. You can do this using a migration tool compatible with `golang-migrate/migrate`'s format. If you have `migrate` installed locally:
-    ```bash
-    # Ensure DB_USER, DB_PASSWORD, DB_NAME, DB_PORT_HOST are set in your environment or .env
-    migrate -path db/migrations -database "postgres://${DB_USER}:${DB_PASSWORD}@localhost:${DB_PORT_HOST}/${DB_NAME}?sslmode=disable" up
-    ```
-    *Alternatively, you can execute commands inside the running backend container if it includes a migration tool, or use a dedicated migration tool connected to the exposed database port.*
+The system uses [golang-migrate](https://github.com/golang-migrate/migrate) to manage database schema changes. Migrations are stored in the `db/migrations` directory as pairs of `.up.sql` and `.down.sql` files.
+
+When using Docker Compose, migrations are automatically applied during container startup via the entrypoint script. However, you may need to run migrations manually during development:
+
+1. **Configure Database Connection**: 
+   *  Set up your database connection details in your `.env` file:
+   ```
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USER=user
+   DB_PASSWORD=password
+   DB_NAME=ptchampion
+   ```
+
+2. **Run Migrations Using Make**:
+   The project Makefile provides convenient commands for managing migrations:
+   ```bash
+   # Apply all pending migrations
+   make migrate-up
+
+   # Roll back the most recent migration
+   make migrate-down
+
+   # Roll back all migrations and apply them again
+   make migrate-reset
+
+   # Create a new migration file
+   make migrate-create name=add_users_table
+   ```
+
+3. **Run Migrations Directly**:
+   If you have `migrate` installed locally, you can also run migrations directly:
+   ```bash
+   # Export variables from .env
+   export $(cat .env | grep -v '#' | xargs)
+
+   # Run migrations
+   migrate -path db/migrations -database "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable" up
+   ```
+
+For more details on working with migrations, see [db/migrations/README.md](db/migrations/README.md).
 
 **Stopping the Stack:**
 
