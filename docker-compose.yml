@@ -32,15 +32,33 @@ services:
       # The DB_HOST env var in .env should match the service name 'db'
       DB_HOST: db # Override DB_HOST to use the service name within Docker network
       # Other necessary env vars will be loaded from .env
+      # OpenTelemetry configuration
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: ptchampion-backend
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${DEPLOY_ENV:-development}
     ports:
       - "${APP_PORT_HOST:-8080}:${APP_PORT_CONTAINER:-3000}" # Map host port to container port
     depends_on:
       db:
         condition: service_healthy # Wait for DB to be healthy
+      jaeger:
+        condition: service_started
     restart: unless-stopped
     # Optional: Add volume for live code reloading during development (if using tools like air)
     # volumes:
     #   - .:/app
+
+  # Jaeger service for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: ptchampion_jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "4317:4317"   # OTLP gRPC endpoint
+      - "4318:4318"   # OTLP HTTP endpoint
+    restart: unless-stopped
 
 volumes:
   postgres_data: # Define the named volume for data persistence 

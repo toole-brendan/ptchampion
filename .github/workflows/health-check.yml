@@ -1,0 +1,161 @@
+name: Synthetic Health Check
+
+on:
+  # Run every 6 hours
+  schedule:
+    - cron: '0 */6 * * *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to run health checks against'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+env:
+  DEV_API_URL: https://dev.ptchampion.com/api/v1
+  STAGING_API_URL: https://staging.ptchampion.com/api/v1
+  PROD_API_URL: https://api.ptchampion.com/api/v1
+
+jobs:
+  health-check:
+    name: Run Synthetic Health Checks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Determine target environment
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Using manually specified environment: ${{ github.event.inputs.environment }}"
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          else
+            echo "Using default environment: dev"
+            echo "environment=dev" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set API URL
+        id: set-url
+        run: |
+          case "${{ steps.set-env.outputs.environment }}" in
+            dev)
+              echo "api_url=${{ env.DEV_API_URL }}" >> $GITHUB_OUTPUT
+              ;;
+            staging)
+              echo "api_url=${{ env.STAGING_API_URL }}" >> $GITHUB_OUTPUT
+              ;;
+            production)
+              echo "api_url=${{ env.PROD_API_URL }}" >> $GITHUB_OUTPUT
+              ;;
+            *)
+              echo "Invalid environment specified"
+              exit 1
+              ;;
+          esac
+
+      - name: Set up test account credentials
+        id: credentials
+        run: |
+          # Retrieve credentials from GitHub secrets based on environment
+          if [ "${{ steps.set-env.outputs.environment }}" = "production" ]; then
+            echo "username=${{ secrets.HEALTH_CHECK_PROD_USERNAME }}" >> $GITHUB_OUTPUT
+            echo "password=${{ secrets.HEALTH_CHECK_PROD_PASSWORD }}" >> $GITHUB_OUTPUT
+          else
+            echo "username=${{ secrets.HEALTH_CHECK_TEST_USERNAME }}" >> $GITHUB_OUTPUT
+            echo "password=${{ secrets.HEALTH_CHECK_TEST_PASSWORD }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Test health endpoint
+        id: health-check
+        run: |
+          HEALTH_ENDPOINT="${{ steps.set-url.outputs.api_url }}/health"
+          echo "Testing health endpoint: $HEALTH_ENDPOINT"
+          
+          RESPONSE=$(curl -s -o response.json -w "%{http_code}" "$HEALTH_ENDPOINT")
+          
+          if [ "$RESPONSE" = "200" ]; then
+            echo "Health check passed with 200 OK"
+            cat response.json
+          else
+            echo "Health check failed with status code: $RESPONSE"
+            cat response.json || echo "No response body"
+            exit 1
+          fi
+
+      - name: Login and get auth token
+        id: auth
+        run: |
+          AUTH_ENDPOINT="${{ steps.set-url.outputs.api_url }}/auth/login"
+          echo "Getting authentication token from: $AUTH_ENDPOINT"
+          
+          AUTH_RESPONSE=$(curl -s -X POST -H "Content-Type: application/json" \
+                          -d '{"username": "${{ steps.credentials.outputs.username }}", "password": "${{ steps.credentials.outputs.password }}"}' \
+                          -o auth.json -w "%{http_code}" \
+                          "$AUTH_ENDPOINT")
+          
+          if [ "$AUTH_RESPONSE" = "200" ]; then
+            echo "Authentication successful"
+            TOKEN=$(cat auth.json | jq -r '.token')
+            echo "token=$TOKEN" >> $GITHUB_OUTPUT
+          else
+            echo "Authentication failed with status code: $AUTH_RESPONSE"
+            cat auth.json || echo "No response body"
+            exit 1
+          fi
+
+      - name: Test video upload simulation
+        id: upload-test
+        run: |
+          UPLOAD_ENDPOINT="${{ steps.set-url.outputs.api_url }}/exercises/upload"
+          echo "Testing video upload endpoint: $UPLOAD_ENDPOINT"
+          
+          # Create a dummy test file
+          dd if=/dev/urandom of=test-video.mp4 bs=1M count=5
+          
+          # Use a multipart/form-data POST request to simulate file upload
+          UPLOAD_RESPONSE=$(curl -s -X POST \
+                            -H "Authorization: Bearer ${{ steps.auth.outputs.token }}" \
+                            -F "exercise_type=push_up" \
+                            -F "video_file=@test-video.mp4" \
+                            -o upload.json -w "%{http_code}" \
+                            "$UPLOAD_ENDPOINT")
+          
+          if [ "$UPLOAD_RESPONSE" = "200" ] || [ "$UPLOAD_RESPONSE" = "201" ]; then
+            echo "Upload simulation passed with status code: $UPLOAD_RESPONSE"
+            cat upload.json
+          else
+            echo "Upload simulation failed with status code: $UPLOAD_RESPONSE"
+            cat upload.json || echo "No response body"
+            exit 1
+          fi
+
+      - name: Send notification on failure
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { repo, owner } = context.repo;
+            const environment = "${{ steps.set-env.outputs.environment }}";
+            
+            // Create an issue for failed health checks
+            github.rest.issues.create({
+              owner,
+              repo,
+              title: `🚨 Health Check Failed for ${environment} environment`,
+              body: `The synthetic health check for ${environment} environment failed on ${new Date().toISOString()}.
+              
+              **Workflow run:** [Link to failed run](https://github.com/${owner}/${repo}/actions/runs/${context.runId})
+              
+              Please investigate this issue as soon as possible.`,
+              labels: ['bug', 'automated', 'health-check']
+            }); 

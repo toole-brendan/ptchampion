@@ -61,3 +61,8 @@ func (s *Store) ExecTx(fn func(*Queries) error) error {
 
 	return tx.Commit()
 }
+
+// DB returns the underlying database interface to allow for custom queries
+func (q *Queries) DB() DBTX {
+	return q.db
+}

@@ -118,9 +118,9 @@ func (h *Handler) UpdateCurrentUser(c echo.Context) error {
 	resp := UserResponse{
 		ID:                updatedUser.ID,
 		Username:          updatedUser.Username,
-		DisplayName:       getNullString(updatedUser.DisplayName),
-		ProfilePictureURL: getNullString(updatedUser.ProfilePictureUrl),
-		Location:          getNullString(updatedUser.Location),
+		DisplayName:       GetNullString(updatedUser.DisplayName),
+		ProfilePictureURL: GetNullString(updatedUser.ProfilePictureUrl),
+		Location:          GetNullString(updatedUser.Location),
 		CreatedAt:         getNullTime(updatedUser.CreatedAt),
 		UpdatedAt:         getNullTime(updatedUser.UpdatedAt),
 	}

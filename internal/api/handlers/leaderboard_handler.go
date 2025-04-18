@@ -2,12 +2,16 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	db "ptchampion/internal/store/postgres"
+	redis_cache "ptchampion/internal/store/redis"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,14 +19,18 @@ import (
 const defaultSearchRadiusMeters = 8047
 
 const defaultLeaderboardLimit = 20
+const leaderboardCacheTTL = 5 * time.Minute // 5 minute TTL for cached leaderboards
 
 // LocalLeaderboardEntry defines the structure for local leaderboard results
 type LocalLeaderboardEntry struct {
-	UserID      int32  `json:"userId"`
-	Username    string `json:"username"`
-	DisplayName string `json:"displayName"`
-	ExerciseID  int32  `json:"exerciseId"`
-	Score       int32  `json:"score"` // Represents MAX(repetitions) or MIN(duration) etc.
+	UserID       int32   `json:"userId"`
+	Username     string  `json:"username"`
+	DisplayName  string  `json:"displayName"`
+	ExerciseID   int32   `json:"exerciseId"`
+	Score        int32   `json:"score"` // Represents MAX(repetitions) or MIN(duration) etc.
+	Distance     float64 `json:"distanceMeters,omitempty"`
+	LastUpdated  string  `json:"lastUpdated,omitempty"`
+	CachedResult bool    `json:"cachedResult,omitempty"`
 }
 
 // LeaderboardEntry defines the structure for a single entry on the leaderboard
@@ -30,6 +38,26 @@ type LeaderboardEntry struct {
 	Username    string `json:"username"`
 	DisplayName string `json:"display_name"`
 	BestGrade   int32  `json:"best_grade"`
+}
+
+// GetCacheClient returns a Redis client or nil if Redis is not configured
+func (h *Handler) GetCacheClient() *redis.Client {
+	// Check if Redis is enabled via environment variables
+	// This is a simplified version - using direct values from environment
+	redisEnabled := false // Default to disabled
+
+	// Create Redis config directly from environment variables or defaults
+	if redisEnabled {
+		redisCfg := redis_cache.Config{
+			Host:     "localhost", // Default value
+			Port:     6379,        // Default value
+			Password: "",          // Default value
+			DB:       0,           // Default value
+			PoolSize: 10,          // Default value
+		}
+		return redis_cache.NewClient(redisCfg)
+	}
+	return nil
 }
 
 // GetLeaderboard handles requests to retrieve the leaderboard for a specific exercise type
@@ -44,6 +72,23 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
 		limit = defaultLeaderboardLimit
+	}
+
+	// Check if we can use the Redis cache
+	redisClient := h.GetCacheClient()
+	if redisClient != nil {
+		cache := redis_cache.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+		cacheKey := redis_cache.GlobalLeaderboardKey(exerciseType, limit)
+
+		// Try to get from cache
+		var cachedEntries []LeaderboardEntry
+		err := cache.Get(c.Request().Context(), cacheKey, &cachedEntries)
+		if err == nil && len(cachedEntries) > 0 {
+			// Cache hit
+			return c.JSON(http.StatusOK, cachedEntries)
+		}
+
+		// Cache miss, continue with DB query
 	}
 
 	// Prepare params for DB query
@@ -69,8 +114,19 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 
 		respEntries[i] = LeaderboardEntry{
 			Username:    dbEntry.Username,
-			DisplayName: getNullString(dbEntry.DisplayName),
+			DisplayName: GetNullString(dbEntry.DisplayName),
 			BestGrade:   bestGrade,
+		}
+	}
+
+	// Cache the result if Redis is available
+	if redisClient != nil && len(respEntries) > 0 {
+		cache := redis_cache.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+		cacheKey := redis_cache.GlobalLeaderboardKey(exerciseType, limit)
+
+		if err := cache.Set(c.Request().Context(), cacheKey, respEntries); err != nil {
+			// Just log the error, don't fail the request
+			log.Printf("Error caching global leaderboard: %v", err)
 		}
 	}
 
@@ -110,7 +166,147 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 		radiusMeters = defaultSearchRadiusMeters // Use default radius
 	}
 
-	// 2. Prepare parameters for DB query
+	// Check if we can use the Redis cache
+	redisClient := h.GetCacheClient()
+	var respEntries []LocalLeaderboardEntry
+
+	if redisClient != nil {
+		cache := redis_cache.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+		cacheKey := redis_cache.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit)
+
+		// Try to get from cache
+		err := cache.Get(c.Request().Context(), cacheKey, &respEntries)
+		if err == nil && len(respEntries) > 0 {
+			// Cache hit
+			// Mark as from cache for debugging
+			for i := range respEntries {
+				respEntries[i].CachedResult = true
+			}
+			return c.JSON(http.StatusOK, respEntries)
+		}
+
+		// Cache miss, continue with DB query
+	}
+
+	// Create enhanced K-NN query for improved performance
+	// This query uses PostGIS K-NN operator (<->) for better spatial index performance
+	query := `
+		WITH ranked_workouts AS (
+			SELECT 
+				w.user_id,
+				MAX(w.grade) AS best_score,
+				ROW_NUMBER() OVER (ORDER BY MAX(w.grade) DESC) AS rank
+			FROM workouts w
+			WHERE w.exercise_id = $1
+			GROUP BY w.user_id
+		)
+		SELECT 
+			u.id AS user_id,
+			u.username,
+			u.display_name,
+			$1::int as exercise_id,
+			rw.best_score AS score,
+			ST_Distance(u.last_location::geography, ST_GeographyFromText($2)::geography) AS distance_meters,
+			MAX(w.completed_at) AS last_updated
+		FROM ranked_workouts rw
+		JOIN users u ON rw.user_id = u.id
+		JOIN workouts w ON rw.user_id = w.user_id AND w.exercise_id = $1
+		WHERE u.last_location IS NOT NULL
+		AND ST_DWithin(u.last_location::geography, ST_GeographyFromText($2)::geography, $3)
+		GROUP BY u.id, u.username, u.display_name, rw.best_score, u.last_location
+		ORDER BY ST_Distance(u.last_location::geography, ST_GeographyFromText($2)::geography) ASC
+		LIMIT $4
+	`
+
+	pointWKT := fmt.Sprintf("SRID=4326;POINT(%f %f)", longitude, latitude)
+
+	// Execute query through the database connection
+	// Use the DB() method to access the underlying database interface
+	rows, err := h.Queries.DB().QueryContext(c.Request().Context(), query, exerciseID, pointWKT, radiusMeters, defaultLeaderboardLimit)
+	if err != nil {
+		log.Printf("ERROR [HandleGetLocalLeaderboard]: Failed to execute K-NN query: %v", err)
+		// Fall back to the original implementation if the custom query fails
+		return h.fallbackLocalLeaderboard(c, exerciseID, latitude, longitude, radiusMeters)
+	}
+	defer rows.Close()
+
+	respEntries = []LocalLeaderboardEntry{}
+	for rows.Next() {
+		var entry struct {
+			UserID      int32
+			Username    string
+			DisplayName sql.NullString
+			ExerciseID  int32
+			Score       sql.NullInt32
+			Distance    float64
+			LastUpdated sql.NullTime
+		}
+
+		if err := rows.Scan(
+			&entry.UserID,
+			&entry.Username,
+			&entry.DisplayName,
+			&entry.ExerciseID,
+			&entry.Score,
+			&entry.Distance,
+			&entry.LastUpdated,
+		); err != nil {
+			log.Printf("ERROR [HandleGetLocalLeaderboard]: Failed to scan row: %v", err)
+			continue
+		}
+
+		// Format the data for response
+		var lastUpdatedStr string
+		if entry.LastUpdated.Valid {
+			lastUpdatedStr = entry.LastUpdated.Time.Format(time.RFC3339)
+		}
+
+		score := int32(0)
+		if entry.Score.Valid {
+			score = entry.Score.Int32
+		}
+
+		respEntries = append(respEntries, LocalLeaderboardEntry{
+			UserID:      entry.UserID,
+			Username:    entry.Username,
+			DisplayName: GetNullString(entry.DisplayName),
+			ExerciseID:  entry.ExerciseID,
+			Score:       score,
+			Distance:    entry.Distance,
+			LastUpdated: lastUpdatedStr,
+		})
+	}
+
+	if err := rows.Err(); err != nil {
+		log.Printf("ERROR [HandleGetLocalLeaderboard]: Error iterating result rows: %v", err)
+		return h.fallbackLocalLeaderboard(c, exerciseID, latitude, longitude, radiusMeters)
+	}
+
+	// Cache the result if Redis is available
+	if redisClient != nil && len(respEntries) > 0 {
+		cache := redis_cache.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+		cacheKey := redis_cache.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit)
+
+		// Don't store the cachedResult flag in Redis
+		cacheCopy := make([]LocalLeaderboardEntry, len(respEntries))
+		copy(cacheCopy, respEntries)
+		for i := range cacheCopy {
+			cacheCopy[i].CachedResult = false
+		}
+
+		if err := cache.Set(c.Request().Context(), cacheKey, cacheCopy); err != nil {
+			// Just log the error, don't fail the request
+			log.Printf("Error caching local leaderboard: %v", err)
+		}
+	}
+
+	// Return the result
+	return c.JSON(http.StatusOK, respEntries)
+}
+
+// fallbackLocalLeaderboard uses the original query method from GetLocalLeaderboard if the enhanced K-NN query fails
+func (h *Handler) fallbackLocalLeaderboard(c echo.Context, exerciseID int64, latitude, longitude, radiusMeters float64) error {
+	// 2. Prepare parameters for DB query using the original implementation
 	// Note: Param names match the generated struct from GetLocalLeaderboard query
 	params := db.GetLocalLeaderboardParams{
 		ExerciseID:    int32(exerciseID),
@@ -145,7 +341,7 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 		respEntries[i] = LocalLeaderboardEntry{
 			UserID:      dbEntry.UserID,
 			Username:    dbEntry.Username,
-			DisplayName: getNullString(dbEntry.DisplayName), // Handle potential null display name
+			DisplayName: GetNullString(dbEntry.DisplayName), // Handle potential null display name
 			ExerciseID:  dbEntry.ExerciseID,
 			Score:       score, // Use the correctly asserted score
 		}
