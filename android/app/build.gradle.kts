@@ -244,7 +244,7 @@ dependencies {
     // Testing
     testImplementation("junit:junit:4.13.2")
     // Kotest for generated tests (based on errors)
-    testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
     testImplementation("io.kotest:kotest-assertions-core:5.8.0")
 
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
