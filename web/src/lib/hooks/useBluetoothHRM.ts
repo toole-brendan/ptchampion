@@ -40,9 +40,9 @@ declare global {
 }
 
 // Constants
-const HEART_RATE_SERVICE = 'heart_rate';
-const HEART_RATE_MEASUREMENT = 'heart_rate_measurement';
-const BODY_SENSOR_LOCATION = 'body_sensor_location';
+// const HEART_RATE_SERVICE = 'heart_rate'; // Unused
+// const HEART_RATE_MEASUREMENT = 'heart_rate_measurement'; // Unused
+// const BODY_SENSOR_LOCATION = 'body_sensor_location'; // Unused
 
 // Types
 export type BluetoothHRMStatus = 'idle' | 'scanning' | 'connected' | 'disconnected' | 'error' | 'unsupported';

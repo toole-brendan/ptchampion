@@ -1,9 +1,9 @@
-import React from 'react';
+// import React from 'react'; // Removed unused import
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Zap, TrendingUp, Activity, PersonStanding } from 'lucide-react'; // Import icons
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { cn } from "@/lib/utils"; // Import cn
+import { cn } from "@/lib/utils"; // Restored cn import
 
 // Define exercise types
 const exerciseTypes = [

@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   clearToken,
   getSyncToken,
-  storeToken,
+  // storeToken, // Removed as it's unused and commented out in apiClient
   loginUser,
   registerUser,
   getCurrentUser,
@@ -152,7 +152,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Create the context value object
   const contextValue: AuthContextType = {
     isAuthenticated: !!token && !!user, // Authenticated if token exists AND user data loaded
-    user: user || null, // User data from the query
+    user: user ?? null, // User data from the query, default to null if undefined
     token: token,
     isLoading: isLoading,
     error: error,

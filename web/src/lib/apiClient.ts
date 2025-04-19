@@ -135,7 +135,8 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
   const response = await apiRequest<LoginResponse>('/auth/login', 'POST', data, false);
   // Store the token securely upon successful login
   if (response && response.token) {
-    await storeToken(response.token);
+    // await storeToken(response.token); // Removed as storeToken is commented out/unused
+    await secureSet(TOKEN_STORAGE_KEY, response.token); // Use secureSet directly
   }
   return response;
 };
@@ -175,9 +176,9 @@ export const getLeaderboard = (exerciseType: string): Promise<LeaderboardEntry[]
 // --- Helper functions for auth state ---
 
 // Store the token securely
-export const storeToken = async (token: string): Promise<void> => {
-  await secureSet(TOKEN_STORAGE_KEY, token);
-};
+// export const storeToken = async (token: string): Promise<void> => {
+//   await secureSet(TOKEN_STORAGE_KEY, token);
+// };
 
 // Clear the token
 export const clearToken = (): void => {

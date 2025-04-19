@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useBluetoothHRM, BluetoothHRMStatus } from '../../lib/hooks/useBluetoothHRM';
+import { useBluetoothHRM } from '../../lib/hooks/useBluetoothHRM';
 import { Button } from './button';
 import { Card } from './card';
 import { Progress } from './progress';
