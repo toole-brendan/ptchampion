@@ -9,13 +9,18 @@ import {
   LeaderboardEntry 
 } from './types';
 import config from './config';
+import { secureGet, secureSet, secureRemove } from './secureStorage';
 
 // Get the configured API base URL
 const getApiBaseUrl = (): string => config.api.baseUrl; // Example: "http://localhost:8080/api/v1"
 
+// Token storage key
+const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
+
 // Helper function to get the JWT token from storage
-const getToken = (): string | null => {
-  return localStorage.getItem(config.auth.storageKeys.token);
+// This is now an async function that uses secure storage
+const getToken = async (): Promise<string | null> => {
+  return await secureGet(TOKEN_STORAGE_KEY);
 };
 
 // Add type for the paginated response
@@ -49,7 +54,7 @@ const apiRequest = async <T>(
   };
 
   if (requiresAuth) {
-    const token = getToken();
+    const token = await getToken();
     if (!token) {
       // Should ideally not happen if routing/UI checks are correct,
       // but throw error if auth is required and token is missing.
@@ -126,9 +131,13 @@ export const registerUser = (data: RegisterUserRequest): Promise<UserResponse> =
   return apiRequest<UserResponse>('/auth/register', 'POST', data, false);
 };
 
-export const loginUser = (data: LoginRequest): Promise<LoginResponse> => {
-  // Login returns { token, user }
-  return apiRequest<LoginResponse>('/users/login', 'POST', data, false);
+export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
+  const response = await apiRequest<LoginResponse>('/auth/login', 'POST', data, false);
+  // Store the token securely upon successful login
+  if (response && response.token) {
+    await storeToken(response.token);
+  }
+  return response;
 };
 
 // --- User Endpoints ---
@@ -153,6 +162,10 @@ export const getUserExercises = (page: number, pageSize: number): Promise<Pagina
   return apiRequest<PaginatedExercisesResponse>(`/exercises?page=${page}&pageSize=${pageSize}`, 'GET', null, true);
 };
 
+export const getExerciseById = (id: string): Promise<ExerciseResponse> => {
+  return apiRequest<ExerciseResponse>(`/exercises/${id}`, 'GET', null, true);
+};
+
 // --- Leaderboard Endpoints ---
 
 export const getLeaderboard = (exerciseType: string): Promise<LeaderboardEntry[]> => {
@@ -161,15 +174,48 @@ export const getLeaderboard = (exerciseType: string): Promise<LeaderboardEntry[]
 
 // --- Helper functions for auth state ---
 
-// Store only the token
-export const storeToken = (token: string): void => {
-  localStorage.setItem(config.auth.storageKeys.token, token);
+// Store the token securely
+export const storeToken = async (token: string): Promise<void> => {
+  await secureSet(TOKEN_STORAGE_KEY, token);
 };
 
-// Clear only the token
+// Clear the token
 export const clearToken = (): void => {
-  localStorage.removeItem(config.auth.storageKeys.token);
+  secureRemove(TOKEN_STORAGE_KEY);
 };
 
-// Keep getToken as it was (used internally by apiRequest)
-export { getToken }; 
+// For compatibility with existing code, make a synchronous token getter
+// that returns null (actual token will be retrieved asynchronously when needed)
+export const getSyncToken = (): string | null => {
+  return localStorage.getItem(TOKEN_STORAGE_KEY);
+};
+
+// React hook for API client
+export const useApi = () => {
+  return {
+    auth: {
+      register: registerUser,
+      login: loginUser,
+      getCurrentUser,
+      updateCurrentUser,
+    },
+    exercises: {
+      logExercise,
+      getUserExercises,
+    },
+    leaderboard: {
+      getLeaderboard,
+      getLocalLeaderboard: (exerciseType: string, lat: number, lng: number, radius: number = 5): Promise<LeaderboardEntry[]> => {
+        return apiRequest<LeaderboardEntry[]>(
+          `/leaderboard/${exerciseType}?lat=${lat}&lng=${lng}&radius=${radius}`, 
+          'GET', 
+          null, 
+          true
+        );
+      }
+    },
+  };
+};
+
+// Export for use in other files
+export { getToken, apiRequest }; 

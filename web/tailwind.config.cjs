@@ -10,9 +10,21 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', ...defaultTheme.fontFamily.sans],
+        sans: ['Montserrat', ...defaultTheme.fontFamily.sans],
+        heading: ['Bebas Neue', 'sans-serif'],
+        mono: ['Roboto Mono', 'monospace'],
       },
       colors: {
+        // PT Champion Style Guide V2 colors
+        'cream': '#F4F1E6',         // Light Background (Tactical Cream)
+        'deep-ops': '#1E241E',      // Primary Dark Background (Deep Ops Green)
+        'brass-gold': '#BFA24D',    // Accent / Highlight (Brass Gold)
+        'army-tan': '#E0D4A6',      // Button/Text Highlight (Army Tan)
+        'olive-mist': '#C9CCA6',    // Chart Fill (Olive Mist)
+        'command-black': '#1E1E1E', // Primary Text (Command Black)
+        'tactical-gray': '#4E5A48', // Secondary Text (Tactical Gray)
+        
+        // shadcn/ui theme colors (mapped to PT Champion colors)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -51,6 +63,8 @@ module.exports = {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        card: '12px',
+        panel: '16px',
       },
       keyframes: {
         "accordion-down": {

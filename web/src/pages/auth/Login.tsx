@@ -1,153 +1,140 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
-import { Loader2 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Alert, AlertDescription } from '../../components/ui/alert';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import logoImage from '../../assets/pt_champion_logo_2.png';
 
-// Remove development mode check here, handle elsewhere if needed
-// const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
+// Real logo component
+const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <img src={logoImage} alt="PT Champion Logo" className={`${className} w-auto h-80`} />
+);
 
-const Login: React.FC = () => {
+interface LocationState {
+  from?: string;
+}
+
+const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
-
-  // Get login function, loading state, and error state from context
-  const { login, isLoading, error, clearError, isAuthenticated } = useAuth();
+  const location = useLocation();
+  
+  // Extract return URL from query params
+  const searchParams = new URLSearchParams(location.search);
+  const returnUrl = searchParams.get('returnUrl') || '/';
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/', { replace: true });
+      navigate(returnUrl, { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, returnUrl]);
 
-  // Clear errors when component mounts or inputs change
+  // Clear error on unmount
   useEffect(() => {
-    clearError();
-  }, [clearError, email, password]);
-
-  const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>) => 
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      // clearError(); // Optional: Clear error immediately on typing
-      setter(e.target.value);
+    return () => {
+      clearError();
     };
+  }, [clearError]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (!email || !password) {
-      // Basic client-side validation (can enhance)
-      // Error from context will handle backend validation
-      return; 
+    
+    try {
+      await login({
+        email,
+        password,
+      });
+      // Redirect handled by effect when isAuthenticated changes
+    } catch (err) {
+      // Error handling is done by the auth context
+      console.error('Login failed:', err);
     }
-
-    await login({ email, password });
-    // AuthContext handles success (token set -> user query runs -> ProtectedRoute allows access)
-    // AuthContext handles error state update
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-100">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-          PT Champion
-        </h2>
-        <h3 className="mt-2 text-center text-2xl font-semibold text-gray-700">
-          Sign in to your account
-        </h3>
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-cream p-4">
+      <div className="w-full max-w-md">
+        <div className="flex flex-col items-center mb-10">
+          <LogoIcon className="mb-4" />
+        </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-          {/* Remove development mode banner */}
+        {error && (
+          <Alert variant="destructive" className="mb-6">
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
 
-          {error && (
-            <div className="mb-4 rounded-md bg-red-50 p-4 border border-red-200">
-              <p className="text-sm font-medium text-red-800">Login Failed</p>
-              <p className="mt-1 text-sm text-red-700">{error}</p>
-            </div>
-          )}
-
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={handleInputChange(setEmail)}
-                  disabled={isLoading}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label htmlFor="email" className="block text-sm font-medium text-tactical-gray">
+              Email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <label htmlFor="password" className="block text-sm font-medium text-tactical-gray">
                 Password
               </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={handleInputChange(setPassword)}
-                  disabled={isLoading}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading || !email || !password}
-                className="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Signing in...
-                  </>
-                ) : 'Sign in'}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-white px-2 text-gray-500">
-                  New to PT Champion?
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-6 text-center">
-              <Link
-                to="/register"
-                className={`font-medium text-indigo-600 hover:text-indigo-500 ${isLoading ? 'pointer-events-none opacity-50' : ''}`}
-              >
-                Create an account
+              <Link to="/forgot-password" className="text-sm text-brass-gold hover:underline">
+                Forgot password?
               </Link>
             </div>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              placeholder="••••••••"
+              autoComplete="current-password"
+            />
           </div>
-        </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                <span className="ml-2">Signing in...</span>
+              </>
+            ) : (
+              'SIGN IN'
+            )}
+          </Button>
+
+          <div className="text-center mt-6">
+            <p className="text-tactical-gray">
+              Don't have an account?{' '}
+              <Link to="/register" className="text-brass-gold hover:underline">
+                Sign up
+              </Link>
+            </p>
+          </div>
+        </form>
       </div>
     </div>
   );
 };
 
-export default Login; 
+export default LoginPage; 

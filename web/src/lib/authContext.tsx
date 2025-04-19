@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext, ReactNode, useCa
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   clearToken,
-  getToken,
+  getSyncToken,
   storeToken,
   loginUser,
   registerUser,
@@ -37,16 +37,13 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
-  const [token, setToken] = useState<string | null>(getToken()); // Initialize token from localStorage
+  // We now initialize from the sync getter, but will update asynchronously
+  const [token, setToken] = useState<string | null>(getSyncToken());
   const [mutationError, setMutationError] = useState<string | null>(null);
 
-  // Effect to update localStorage when token changes
+  // Effect to update isAuthenticated state when token changes
   useEffect(() => {
-    if (token) {
-      storeToken(token);
-    } else {
-      clearToken();
-    }
+    // No need to manually store/clear token here - that's handled by the apiClient methods
   }, [token]);
 
   // Query to fetch the current user data - enabled only if a token exists
@@ -72,13 +69,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   >({
     mutationFn: loginUser, // mutationFn inside options
     onSuccess: (data: LoginResponse) => { // Explicitly type data
-      setToken(data.token); // Set the token in state (triggers useEffect to store it)
+      setToken(data.token); // Update token state to trigger UI updates
       // Set user data directly in the cache for immediate UI update
       queryClient.setQueryData(userQueryKey, data.user);
       setMutationError(null);
     },
     onError: (error: Error) => { // Explicitly type error
       clearToken(); // Ensure token is cleared on login failure
+      setToken(null); // Update token state to match
       // Correct usage of removeQueries
       queryClient.removeQueries({ queryKey: userQueryKey });
       setMutationError(error.message || 'Login failed');
@@ -131,7 +129,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Logout method
   const logout = useCallback(() => {
-    setToken(null); // Clear token state (triggers useEffect to clear storage)
+    clearToken(); // Clear token from storage
+    setToken(null); // Clear token state
     queryClient.removeQueries({ queryKey: userQueryKey }); // Use correct signature
     setMutationError(null); // Clear any lingering mutation errors
   }, [queryClient]);

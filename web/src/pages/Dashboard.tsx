@@ -1,54 +1,122 @@
-import React from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../components/ui/card";
-import { Button } from '../components/ui/button';
-import { Dumbbell, Activity, Zap, TrendingUp, PersonStanding, Clock, Repeat, Trophy, ArrowRight, Loader2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { MetricCard } from '@/components/ui/metric-card';
+import { 
+  Dumbbell, 
+  Activity, 
+  Zap, 
+  TrendingUp, 
+  Clock, 
+  Repeat, 
+  Trophy, 
+  ArrowRight, 
+  Loader2, 
+  CalendarClock, 
+  Flame,
+  AreaChart
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../lib/authContext'; // Using relative path
-// import { useQuery } from '@tanstack/react-query'; // Uncomment if fetching dashboard data
-// import { getDashboardSummary } from '@/lib/apiClient'; // Uncomment if fetching dashboard data
-import { cn } from "../lib/utils";
+import { useAuth } from '@/lib/authContext';
+import { useQuery } from '@tanstack/react-query';
+import { useApi } from '@/lib/apiClient';
+import { cn } from "@/lib/utils";
 
 // Define exercise types for quick start
-const exercises = [
-  { name: "Push-ups", icon: Activity, path: '/exercises/pushup' },
-  { name: "Sit-ups", icon: Zap, path: '/exercises/situp' },
-  { name: "Pull-ups", icon: PersonStanding, path: '/exercises/pullup' },
-  { name: "Running", icon: TrendingUp, path: '/exercises/run' },
+const exerciseLinks = [
+  { name: "Push-ups", icon: Activity, path: '/trackers/pushups' },
+  { name: "Pull-ups", icon: Dumbbell, path: '/trackers/pullups' },
+  { name: "Sit-ups", icon: Zap, path: '/trackers/situps' },
+  { name: "Running", icon: TrendingUp, path: '/trackers/running' },
 ];
-
-// Placeholder function for dashboard data fetching (replace with actual API call and useQuery)
-// const useDashboardData = () => {
-//   return useQuery({ 
-//     queryKey: ['dashboardSummary'], 
-//     queryFn: getDashboardSummary, // Assume getDashboardSummary exists in apiClient
-//     staleTime: 1000 * 60 * 5, // 5 minutes 
-//   });
-// };
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isLoading: isAuthLoading, error: authError } = useAuth(); // Get user, loading, and error state
-
-  // Placeholder for dashboard-specific data loading
-  // const { data: summaryData, isLoading: isSummaryLoading, error: summaryError } = useDashboardData();
-  const isLoading = isAuthLoading; // || isSummaryLoading; // Combine loading states if fetching summary
+  const { user, isLoading: isAuthLoading, error: authError } = useAuth();
+  const api = useApi();
   
-  // Use the error state directly from useAuth (or combine if summaryError exists)
-  const error = authError; // || summaryError?.message;
-
-  // --- MOCK DATA (Remove when summaryData is available) ---
-  const lastWorkout = {
-    exercise: 'Push-ups',
-    date: '2024-07-28',
-    metric: '35 reps'
-  };
-  const performanceStats = {
-    totalWorkouts: 5,
-    bestPushups: 35
-  };
-  const leaderboardRank = 3;
-  // --- END MOCK DATA ---
-
+  // Get user exercise history for dashboard stats
+  const { 
+    data: exerciseHistory, 
+    isLoading: isHistoryLoading,
+    error: historyError
+  } = useQuery({
+    queryKey: ['exerciseHistory', user?.id, 1, 15], // First page, 15 items
+    queryFn: () => api.exercises.getUserExercises(1, 15),
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
+  // Get leaderboard data for user ranking
+  const { 
+    data: leaderboardData, 
+    isLoading: isLeaderboardLoading 
+  } = useQuery({
+    queryKey: ['leaderboard', 'overall'],
+    queryFn: () => api.leaderboard.getLeaderboard('overall'),
+    staleTime: 1000 * 60 * 15, // 15 minutes
+  });
+  
+  const isLoading = isAuthLoading || isHistoryLoading || isLeaderboardLoading;
+  const error = authError || historyError;
+  
+  // Calculate dashboard metrics from history data
+  const dashboardMetrics = React.useMemo(() => {
+    if (!exerciseHistory || !leaderboardData) {
+      return {
+        totalWorkouts: 0,
+        lastWorkoutDate: null,
+        lastWorkoutType: null,
+        lastWorkoutMetric: null,
+        totalReps: 0,
+        totalDistance: 0,
+        totalDuration: 0,
+        userRank: 0
+      };
+    }
+    
+    const items = exerciseHistory.items || [];
+    const totalWorkouts = exerciseHistory.total_count || 0;
+    const lastWorkout = items[0]; // Most recent workout
+    
+    // Calculate totals
+    let totalReps = 0;
+    let totalDistance = 0;
+    let totalDuration = 0;
+    
+    items.forEach(workout => {
+      // For running, we might use reps field for distance or have a separate distance field
+      if (workout.exercise_type === 'RUNNING') {
+        totalDistance += workout.distance || 0;
+      } else {
+        totalReps += workout.reps || 0;
+      }
+      totalDuration += workout.time_in_seconds || 0;
+    });
+    
+    // Find user rank in leaderboard
+    let userRank = 0;
+    if (user) {
+      const userIndex = leaderboardData.findIndex(entry => entry.user_id === user.id);
+      userRank = userIndex !== -1 ? userIndex + 1 : 0;
+    }
+    
+    return {
+      totalWorkouts,
+      lastWorkoutDate: lastWorkout ? new Date(lastWorkout.created_at) : null,
+      lastWorkoutType: lastWorkout ? lastWorkout.exercise_type : null,
+      lastWorkoutMetric: lastWorkout ? 
+        (lastWorkout.exercise_type === 'RUNNING' ? 
+          `${((lastWorkout.distance || 0) / 1000).toFixed(2)} km` : 
+          `${lastWorkout.reps || 0} reps`) 
+        : null,
+      totalReps,
+      totalDistance,
+      totalDuration,
+      userRank
+    };
+  }, [exerciseHistory, leaderboardData, user]);
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -58,95 +126,147 @@ const Dashboard: React.FC = () => {
   }
 
   if (error) {
-    // Display the error string directly from the context
-    return <div className="text-destructive p-4 border border-destructive rounded-md">Error: {error}</div>;
+    return (
+      <div className="text-destructive p-4 border border-destructive rounded-md">
+        Error: {error instanceof Error ? error.message : String(error)}
+      </div>
+    );
   }
 
   // Get user name (fallback to username if display name isn't set)
   const userName = user?.display_name || user?.username || 'User';
+  
+  // Format the last workout date
+  const formattedLastWorkoutDate = dashboardMetrics.lastWorkoutDate ? 
+    dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
 
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
-      <h1 className="text-2xl font-semibold text-foreground">Welcome back, <span className="text-primary font-semibold">{userName}</span>!</h1>
+      <h1 className="text-2xl font-heading tracking-wide text-command-black">
+        Welcome back, <span className="text-brass-gold">{userName}</span>!
+      </h1>
 
-      {/* Start Workout Section */}
-      <Card className="transition-shadow hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center">
-            <Dumbbell className="h-5 w-5 mr-2 text-muted-foreground" />
-            Start New Workout
+      {/* Metrics Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Total Workouts"
+          value={dashboardMetrics.totalWorkouts}
+          icon={Flame}
+          onClick={() => navigate('/history')}
+        />
+        
+        <MetricCard
+          title="Last Activity"
+          value={dashboardMetrics.lastWorkoutType ? 
+            dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Running' : 
+            dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
+            dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
+            dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :
+            dashboardMetrics.lastWorkoutType : 'None'
+          }
+          description={dashboardMetrics.lastWorkoutDate ? 
+            `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
+            'No workouts yet'
+          }
+          icon={CalendarClock}
+          onClick={() => dashboardMetrics.lastWorkoutDate && navigate('/history')}
+        />
+        
+        <MetricCard
+          title="Total Repetitions"
+          value={dashboardMetrics.totalReps}
+          icon={Repeat}
+          unit="reps"
+          onClick={() => navigate('/history')}
+        />
+        
+        <MetricCard
+          title="Total Distance"
+          value={(dashboardMetrics.totalDistance / 1000).toFixed(1)}
+          unit="km"
+          icon={TrendingUp}
+          onClick={() => navigate('/history')}
+        />
+      </div>
+
+      {/* Quick Start Section */}
+      <Card className="bg-cream transition-shadow hover:shadow-md">
+        <CardHeader className="bg-deep-ops text-cream rounded-t-lg">
+          <CardTitle className="text-xl font-heading">
+            Start Tracking
           </CardTitle>
-          <CardDescription>Choose an exercise to begin tracking.</CardDescription>
+          <CardDescription className="text-army-tan">
+            Choose an exercise to begin a new session
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            {exercises.map((exercise) => (
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {exerciseLinks.map((exercise) => (
               <Button
                 key={exercise.name}
                 variant="outline"
-                className={cn(
-                  "flex flex-col items-center justify-center h-24 p-4 space-y-2 text-center",
-                  "transition-colors hover:bg-muted/50 hover:border-border focus:ring-primary/50"
-                )}
+                className="flex flex-col items-center justify-center h-24 p-4 border-brass-gold/30 
+                          hover:border-brass-gold hover:bg-brass-gold/5 transition-colors"
                 onClick={() => navigate(exercise.path)}
               >
-                <exercise.icon className="h-6 w-6 text-primary" />
-                <span className="text-sm font-medium text-foreground">{exercise.name}</span>
+                <exercise.icon className="h-6 w-6 text-brass-gold mb-2" />
+                <span className="text-sm font-medium">{exercise.name}</span>
               </Button>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Row for Summary Cards - Use summaryData when available */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[
-          {
-            title: 'Last Workout',
-            icon: Clock,
-            // value: summaryData?.lastWorkout?.exercise || 'N/A',
-            // description: summaryData?.lastWorkout ? `On ${summaryData.lastWorkout.date} - ${summaryData.lastWorkout.metric}` : 'Log your first workout!',
-            value: lastWorkout.exercise, // MOCK
-            description: `On ${lastWorkout.date} - ${lastWorkout.metric}`, // MOCK
-            link: '/history',
-            linkText: 'View History'
-          },
-          {
-            title: 'Performance Snapshot',
-            icon: Repeat,
-            // value: `${summaryData?.performanceStats?.totalWorkouts || 0} Workouts`,
-            // description: `Push-up PB: ${summaryData?.performanceStats?.bestPushups || 0} reps`,
-            value: `${performanceStats.totalWorkouts} Workouts`, // MOCK
-            description: `Push-up PB: ${performanceStats.bestPushups} reps`, // MOCK
-            link: '/history',
-            linkText: 'Full Analytics'
-          },
-          {
-            title: 'Leaderboard Rank',
-            icon: Trophy,
-            // value: summaryData?.leaderboardRank ? `Rank #${summaryData.leaderboardRank}` : 'Unranked',
-            value: `Rank #${leaderboardRank}`, // MOCK
-            description: 'Overall global standing',
-            link: '/leaderboard',
-            linkText: 'View Leaderboard'
-          }
-        ].map((card, index) => (
-          <Card key={index} className="transition-shadow hover:shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">{card.title}</CardTitle>
-              <card.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-foreground mb-1">{card.value}</p>
-              <p className="text-xs text-muted-foreground">{card.description}</p>
-              <Button variant="link" size="sm" className="px-0 h-auto mt-2 text-primary hover:text-primary/80" onClick={() => navigate(card.link)}>
-                {card.linkText} <ArrowRight className="ml-1 h-3 w-3" />
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Progress Section */}
+      <Card className="bg-cream transition-shadow hover:shadow-md">
+        <CardHeader className="bg-deep-ops text-cream rounded-t-lg">
+          <CardTitle className="text-xl font-heading flex items-center">
+            <AreaChart className="h-5 w-5 mr-2" />
+            Progress Summary
+          </CardTitle>
+          <CardDescription className="text-army-tan">
+            Your training overview at a glance
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-4 bg-white/50 rounded-lg flex flex-col items-center justify-center text-center">
+              <Clock className="h-10 w-10 text-brass-gold mb-2" />
+              <span className="text-2xl font-mono text-brass-gold">
+                {Math.floor(dashboardMetrics.totalDuration / 3600)}h {Math.floor((dashboardMetrics.totalDuration % 3600) / 60)}m
+              </span>
+              <span className="text-sm text-tactical-gray">Total Training Time</span>
+            </div>
+            
+            <div className="p-4 bg-white/50 rounded-lg flex flex-col items-center justify-center text-center">
+              <Flame className="h-10 w-10 text-brass-gold mb-2" />
+              <span className="text-2xl font-mono text-brass-gold">
+                {Math.floor(dashboardMetrics.totalDuration / 60 * 7)}
+              </span>
+              <span className="text-sm text-tactical-gray">Est. Calories Burned</span>
+            </div>
+            
+            <div className="p-4 bg-white/50 rounded-lg flex flex-col items-center justify-center text-center">
+              <Trophy className="h-10 w-10 text-brass-gold mb-2" />
+              <span className="text-2xl font-mono text-brass-gold">
+                {dashboardMetrics.userRank > 0 ? `#${dashboardMetrics.userRank}` : 'Unranked'}
+              </span>
+              <span className="text-sm text-tactical-gray">Global Leaderboard Rank</span>
+            </div>
+          </div>
+          
+          <div className="flex justify-center mt-6">
+            <Button 
+              className="bg-brass-gold hover:bg-brass-gold/90 text-deep-ops"
+              onClick={() => navigate('/history')}
+            >
+              <ArrowRight className="mr-2 h-4 w-4" />
+              View Detailed Progress
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
