@@ -116,11 +116,12 @@ jobs:
       - name: Deploy API to App Service
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
         run: |
-          # Deploy the image to App Service
+          IMAGE_NAME="${{ env.ACR_NAME }}.azurecr.io/ptchampion-api:${{ github.sha }}"
+          echo "Deploying image: $IMAGE_NAME"
           az webapp config container set \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.BACKEND_APP_NAME }} \
-            --docker-custom-image-name ${{ needs.build-backend.outputs.image_name }} \
+            --docker-custom-image-name "$IMAGE_NAME" \
             --docker-registry-server-url https://${{ env.ACR_NAME }}.azurecr.io
 
       # Restart backend app after deployment
