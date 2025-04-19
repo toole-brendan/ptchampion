@@ -1,0 +1,308 @@
+name: Continuous Deployment
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: ptchampion-api
+  CF_DISTRIBUTION_ID_STAGING: ${{ secrets.CF_DISTRIBUTION_ID_STAGING }}
+  CF_DISTRIBUTION_ID_PROD: ${{ secrets.CF_DISTRIBUTION_ID_PROD }}
+  S3_BUCKET_STAGING: ${{ secrets.S3_BUCKET_STAGING }}
+  S3_BUCKET_PROD: ${{ secrets.S3_BUCKET_PROD }}
+
+jobs:
+  # Generate SBOM (Software Bill of Materials) for security monitoring
+  generate-sbom:
+    name: Generate SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM for API
+        run: syft dir:. -o json > sbom-api.json
+
+      - name: Generate SBOM for Web frontend
+        working-directory: ./web
+        run: syft dir:. -o json > ../sbom-web.json
+
+      - name: Upload SBOM as artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sboms
+          path: |
+            sbom-api.json
+            sbom-web.json
+
+  # Scan for vulnerabilities using Grype
+  vulnerability-scan:
+    name: Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: generate-sbom
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download SBOM artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: sboms
+
+      - name: Install grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Scan API SBOM
+        run: |
+          grype sbom:sbom-api.json -o json > api-vulnerabilities.json
+          HIGH_VULNS=$(cat api-vulnerabilities.json | jq '.matches[] | select(.vulnerability.severity=="High" or .vulnerability.severity=="Critical")' | wc -l)
+          echo "High/Critical vulnerabilities found in API: $HIGH_VULNS"
+          # Don't fail the build yet, just report
+          if [ $HIGH_VULNS -gt 0 ]; then
+            echo "::warning::Found $HIGH_VULNS High/Critical vulnerabilities in API"
+          fi
+
+      - name: Scan Web SBOM
+        run: |
+          grype sbom:sbom-web.json -o json > web-vulnerabilities.json
+          HIGH_VULNS=$(cat web-vulnerabilities.json | jq '.matches[] | select(.vulnerability.severity=="High" or .vulnerability.severity=="Critical")' | wc -l)
+          echo "High/Critical vulnerabilities found in Web: $HIGH_VULNS"
+          # Don't fail the build yet, just report
+          if [ $HIGH_VULNS -gt 0 ]; then
+            echo "::warning::Found $HIGH_VULNS High/Critical vulnerabilities in Web"
+          fi
+
+      - name: Upload vulnerability reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: vulnerability-reports
+          path: |
+            api-vulnerabilities.json
+            web-vulnerabilities.json
+
+  # Build and push Docker image for the API
+  build-api:
+    name: Build and Push API
+    runs-on: ubuntu-latest
+    needs: vulnerability-scan
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+          tags: |
+            type=sha,format=short
+            type=ref,event=tag
+            type=ref,event=branch
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Build the web frontend
+  build-web:
+    name: Build Web Frontend
+    runs-on: ubuntu-latest
+    needs: vulnerability-scan
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './web/package-lock.json'
+
+      - name: Determine target environment
+        id: set-env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == "refs/tags/v"* ]]; then
+            echo "environment=production" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm ci
+
+      - name: Build for ${{ steps.set-env.outputs.environment }}
+        working-directory: ./web
+        run: |
+          if [ "${{ steps.set-env.outputs.environment }}" = "production" ]; then
+            npm run build:production
+          else
+            npm run build:staging
+          fi
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-build
+          path: web/dist
+
+  # Deploy to AWS infrastructure
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [build-api, build-web]
+    environment: ${{ needs.build-web.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Download web build artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: web-build
+          path: web-build
+
+      - name: Set S3 bucket and CloudFront distribution
+        id: set-deployment-vars
+        run: |
+          if [ "${{ needs.build-web.outputs.environment }}" = "production" ]; then
+            echo "s3_bucket=${{ env.S3_BUCKET_PROD }}" >> $GITHUB_OUTPUT
+            echo "cf_distribution=${{ env.CF_DISTRIBUTION_ID_PROD }}" >> $GITHUB_OUTPUT
+          else
+            echo "s3_bucket=${{ env.S3_BUCKET_STAGING }}" >> $GITHUB_OUTPUT
+            echo "cf_distribution=${{ env.CF_DISTRIBUTION_ID_STAGING }}" >> $GITHUB_OUTPUT
+          fi
+
+      # Deploy web frontend to S3 and invalidate CloudFront
+      - name: Deploy web to S3
+        run: |
+          aws s3 sync web-build s3://${{ steps.set-deployment-vars.outputs.s3_bucket }} --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ steps.set-deployment-vars.outputs.cf_distribution }} --paths "/*"
+
+      # Deploy API to ECS using Terraform
+      - name: Apply Terraform to update ECS service
+        run: |
+          # Set up Terraform and apply
+          cd terraform/${{ needs.build-web.outputs.environment }}
+          terraform init
+          terraform apply -auto-approve -var="api_image_tag=${{ needs.build-api.outputs.image_tag }}"
+
+      - name: Send deployment notification
+        if: success()
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "text": "✅ Successfully deployed PT Champion to ${{ needs.build-web.outputs.environment }} environment!\n*Image Tag:* ${{ needs.build-api.outputs.image_tag }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # Perform post-deployment health checks
+  post-deploy-checks:
+    name: Post-Deployment Health Checks
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set API URL
+        id: set-url
+        run: |
+          if [ "${{ needs.build-web.outputs.environment }}" = "production" ]; then
+            echo "api_url=https://api.ptchampion.com/api/v1" >> $GITHUB_OUTPUT
+            echo "web_url=https://ptchampion.com" >> $GITHUB_OUTPUT
+          else
+            echo "api_url=https://staging.ptchampion.com/api/v1" >> $GITHUB_OUTPUT
+            echo "web_url=https://staging.ptchampion.com" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check API health
+        run: |
+          HEALTH_ENDPOINT="${{ steps.set-url.outputs.api_url }}/health"
+          echo "Testing API health endpoint: $HEALTH_ENDPOINT"
+          
+          # Wait for up to 2 minutes for the health check to succeed
+          for i in {1..24}; do
+            RESPONSE=$(curl -s -o response.json -w "%{http_code}" "$HEALTH_ENDPOINT")
+            if [ "$RESPONSE" = "200" ]; then
+              echo "Health check passed with 200 OK"
+              cat response.json
+              break
+            else
+              echo "Attempt $i: Health check returned $RESPONSE, waiting 5 seconds..."
+              sleep 5
+            fi
+            
+            # Exit with error if we've tried 24 times (2 minutes)
+            if [ $i -eq 24 ]; then
+              echo "Health check failed after 2 minutes of attempts"
+              exit 1
+            fi
+          done
+
+      - name: Check Web App
+        run: |
+          WEB_URL="${{ steps.set-url.outputs.web_url }}"
+          echo "Testing web app: $WEB_URL"
+          
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$WEB_URL")
+          if [ "$RESPONSE" = "200" ]; then
+            echo "Web check passed with 200 OK"
+          else
+            echo "Web check failed with status code: $RESPONSE"
+            exit 1
+          fi 

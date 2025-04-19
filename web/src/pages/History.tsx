@@ -103,7 +103,7 @@ const History: React.FC = () => {
   }, [exercises, dateRange]);
 
   const summaryStats = useMemo(() => {
-    let totalWorkouts = dateFilteredHistory.length;
+    const totalWorkouts = dateFilteredHistory.length;
     let totalSeconds = 0;
     let totalReps = 0;
     let totalDistance = 0;
@@ -216,9 +216,9 @@ const History: React.FC = () => {
 
   if (isLoading && !paginatedData) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
         <div className="text-center text-muted-foreground">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2"/>
+          <Loader2 className="mx-auto mb-2 size-8 animate-spin"/>
           <p className="text-lg">Loading history...</p>
         </div>
       </div>
@@ -227,12 +227,12 @@ const History: React.FC = () => {
 
   if (error && !isFetching) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
         <Card className="w-full max-w-md border-destructive/50 bg-destructive/10">
           <CardHeader>
-            <CardTitle className="text-destructive text-center">Error Loading History</CardTitle>
+            <CardTitle className="text-center text-destructive">Error Loading History</CardTitle>
           </CardHeader>
-          <CardContent className="text-center space-y-4">
+          <CardContent className="space-y-4 text-center">
             <p className="text-sm text-destructive">{error instanceof Error ? error.message : String(error)}</p>
             <Button onClick={() => refetch()} variant="destructive">
               Try Again
@@ -265,7 +265,7 @@ const History: React.FC = () => {
       <h1 className="text-2xl font-semibold text-foreground">Training History</h1>
 
       <Card>
-        <CardContent className="pt-6 flex flex-col sm:flex-row gap-3">
+        <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row">
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -276,7 +276,7 @@ const History: React.FC = () => {
                   !dateRange && "text-muted-foreground"
                 )}
               >
-                <CalendarIcon className="mr-2 h-4 w-4" />
+                <CalendarIcon className="mr-2 size-4" />
                 {dateRange?.from ? (
                   dateRange.to ? (
                     <>
@@ -304,7 +304,7 @@ const History: React.FC = () => {
             </PopoverContent>
           </Popover>
 
-          <div className="w-full sm:w-auto sm:max-w-[240px] flex-grow">
+          <div className="w-full grow sm:w-auto sm:max-w-[240px]">
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Filter by exercise..." />
@@ -336,7 +336,7 @@ const History: React.FC = () => {
           <Card key={index} className="transition-shadow hover:shadow-md">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-                  <stat.icon className="h-4 w-4 text-muted-foreground" />
+                  <stat.icon className="size-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                   <div className="text-2xl font-bold text-foreground">{stat.value} <span className="text-sm font-normal text-muted-foreground">{stat.unit}</span></div>
@@ -384,7 +384,7 @@ const History: React.FC = () => {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-center text-muted-foreground h-[300px] flex items-center justify-center text-sm p-4">
+            <div className="flex h-[300px] items-center justify-center p-4 text-center text-sm text-muted-foreground">
               {exerciseFilter === 'All'
                 ? 'Select an exercise filter above to display its trend chart.'
                 : `Not enough data points (minimum 2 required) for ${exerciseFilter} to display a trend chart.`}
@@ -395,8 +395,8 @@ const History: React.FC = () => {
 
       <Card className="transition-shadow hover:shadow-md">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center">
-            <Award className="h-5 w-5 mr-2 text-yellow-500" /> Personal Bests
+          <CardTitle className="flex items-center text-lg font-semibold">
+            <Award className="mr-2 size-5 text-yellow-500" /> Personal Bests
           </CardTitle>
           <CardDescription>Your top performance records based on current filters.</CardDescription>
         </CardHeader>
@@ -404,9 +404,9 @@ const History: React.FC = () => {
           {personalBests.length > 0 ? (
             <ul className="space-y-2">
               {personalBests.map((pb, index) => (
-                <li key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-md text-sm transition-colors hover:bg-muted">
+                <li key={index} className="flex items-center justify-between rounded-md bg-muted/50 p-3 text-sm transition-colors hover:bg-muted">
                   <div className="flex items-center gap-2">
-                     <span className="font-medium text-foreground capitalize">{pb.exercise}</span>
+                     <span className="font-medium capitalize text-foreground">{pb.exercise}</span>
                      <span className="text-xs text-muted-foreground">({pb.metric})</span>
                   </div>
                   <div className="text-right">
@@ -417,7 +417,7 @@ const History: React.FC = () => {
               ))}
             </ul>
           ) : (
-            <p className="text-center text-sm text-muted-foreground py-4">
+            <p className="py-4 text-center text-sm text-muted-foreground">
               No personal bests found for the selected filters.
             </p>
           )}
@@ -433,17 +433,17 @@ const History: React.FC = () => {
           <Table>
             <TableHeader>
               <TableRow className="border-b border-border/50 hover:bg-transparent">
-                <TableHead className="w-[130px] text-xs font-medium text-muted-foreground uppercase tracking-wider">Exercise</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</TableHead>
-                <TableHead className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Duration</TableHead>
-                <TableHead className="text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">Performance</TableHead>
+                <TableHead className="w-[130px] text-xs font-medium uppercase tracking-wider text-muted-foreground">Exercise</TableHead>
+                <TableHead className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</TableHead>
+                <TableHead className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Duration</TableHead>
+                <TableHead className="text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Performance</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredHistory.length > 0 ? (
                 filteredHistory.map((session) => (
-                  <TableRow key={session.id} className="text-sm hover:bg-muted/50 transition-colors">
-                    <TableCell className="font-medium text-foreground capitalize">{session.exercise_type}</TableCell>
+                  <TableRow key={session.id} className="text-sm transition-colors hover:bg-muted/50">
+                    <TableCell className="font-medium capitalize text-foreground">{session.exercise_type}</TableCell>
                     <TableCell className="text-muted-foreground">{format(new Date(session.created_at), "PP p")}</TableCell>
                     <TableCell className="text-muted-foreground">{session.time_in_seconds ? formatTime(session.time_in_seconds) : '-'}</TableCell>
                     <TableCell className="text-right font-medium text-foreground">
@@ -457,7 +457,7 @@ const History: React.FC = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground h-24 text-sm">
+                  <TableCell colSpan={4} className="h-24 text-center text-sm text-muted-foreground">
                     {exercises.length > 0 
                       ? "No sessions found matching your current filters."
                       : "Loading sessions..."}
@@ -467,7 +467,7 @@ const History: React.FC = () => {
             </TableBody>
           </Table>
           
-           <div className="flex items-center justify-between p-4 border-t border-border/50">
+           <div className="flex items-center justify-between border-t border-border/50 p-4">
               <div className="text-sm text-muted-foreground">
                 Page {page} of {totalPages} ({totalCount} total records)
               </div>
@@ -478,7 +478,7 @@ const History: React.FC = () => {
                   onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                   disabled={page <= 1 || isFetching}
                 >
-                  <ChevronLeft className="h-4 w-4 mr-1" /> Previous
+                  <ChevronLeft className="mr-1 size-4" /> Previous
                 </Button>
                 <Button
                   variant="outline"
@@ -486,7 +486,7 @@ const History: React.FC = () => {
                   onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={page >= totalPages || isFetching}
                 >
-                  Next <ChevronRight className="h-4 w-4 ml-1" />
+                  Next <ChevronRight className="ml-1 size-4" />
                 </Button>
               </div>
             </div>

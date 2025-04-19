@@ -55,7 +55,7 @@ export const WithNegativeTrend: Story = {
 
 export const Grid: Story = {
   render: () => (
-    <div className="grid grid-cols-2 gap-4 max-w-xl">
+    <div className="grid max-w-xl grid-cols-2 gap-4">
       <MetricCard label="TOTAL PUSH-UPS" value="245" icon={<TrendingUp size={24} />} />
       <MetricCard label="LEADERBOARD RANK" value="#12" icon={<Award size={24} />} />
       <MetricCard 

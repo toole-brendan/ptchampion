@@ -1,0 +1,47 @@
+# PT Champion CODEOWNERS file
+# This file determines who gets automatically requested for review on PRs
+
+# Global owners (fallback reviewers)
+*       @username/ptchampion-admin
+
+# Backend code
+/cmd/           @username/backend-team
+/internal/      @username/backend-team
+/pkg/           @username/backend-team
+/db/            @username/backend-team
+/sql/           @username/backend-team
+/Dockerfile     @username/backend-team
+/docker-compose.yml @username/backend-team
+/openapi.yaml   @username/backend-team @username/web-team
+/go.mod         @username/backend-team
+/go.sum         @username/backend-team
+/Makefile       @username/backend-team
+
+# Web frontend
+/web/           @username/web-team
+/vite.config.ts @username/web-team
+/tsconfig.json  @username/web-team
+/tailwind.config.cjs @username/web-team
+/postcss.config.cjs @username/web-team
+/package.json   @username/web-team
+/package-lock.json @username/web-team
+
+# iOS app
+/ios/           @username/ios-team
+
+# Android app
+/android/       @username/android-team
+/PTChampion-Kotlin/ @username/android-team
+
+# Shared resources
+/shared/        @username/backend-team @username/web-team
+/assets/        @username/web-team @username/ios-team @username/android-team
+
+# DevOps and CI
+/.github/       @username/devops-team
+/.devcontainer.json @username/devops-team
+
+# Documentation
+/docs/          @username/ptchampion-admin
+/README.md      @username/ptchampion-admin
+/*.md           @username/ptchampion-admin 

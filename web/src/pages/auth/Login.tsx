@@ -9,7 +9,7 @@ import logoImage from '../../assets/pt_champion_logo_2.png';
 
 // Real logo component
 const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <img src={logoImage} alt="PT Champion Logo" className={`${className} w-auto h-80`} />
+  <img src={logoImage} alt="PT Champion Logo" className={`${className} h-80 w-auto`} />
 );
 
 interface LocationState {
@@ -57,15 +57,15 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-cream p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-cream p-4">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-10">
+        <div className="mb-10 flex flex-col items-center">
           <LogoIcon className="mb-4" />
         </div>
 
         {error && (
           <Alert variant="destructive" className="mb-6">
-            <ExclamationTriangleIcon className="h-4 w-4" />
+            <ExclamationTriangleIcon className="size-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -81,7 +81,7 @@ const LoginPage: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              className="w-full rounded-md border border-army-tan/50 bg-white p-3"
               placeholder="you@example.com"
               autoComplete="email"
             />
@@ -102,7 +102,7 @@ const LoginPage: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              className="w-full rounded-md border border-army-tan/50 bg-white p-3"
               placeholder="••••••••"
               autoComplete="current-password"
             />
@@ -115,7 +115,7 @@ const LoginPage: React.FC = () => {
           >
             {isLoading ? (
               <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                <div className="size-4 animate-spin rounded-full border-2 border-t-transparent" />
                 <span className="ml-2">Signing in...</span>
               </>
             ) : (
@@ -123,7 +123,7 @@ const LoginPage: React.FC = () => {
             )}
           </Button>
 
-          <div className="text-center mt-6">
+          <div className="mt-6 text-center">
             <p className="text-tactical-gray">
               Don't have an account?{' '}
               <Link to="/register" className="text-brass-gold hover:underline">

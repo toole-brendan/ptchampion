@@ -23,7 +23,7 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
     return (
       <Card className={`p-4 ${className}`}>
         <div className="text-sm text-tactical-gray">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 inline mr-1" viewBox="0 0 20 20" fill="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="mr-1 inline size-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
           </svg>
           Heart rate monitoring requires Chrome or Edge on desktop/Android
@@ -48,7 +48,7 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
           strokeWidth="2" 
           strokeLinecap="round" 
           strokeLinejoin="round" 
-          className="h-5 w-5 mr-2 text-brass-gold"
+          className="mr-2 size-5 text-brass-gold"
         >
           <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
         </svg>
@@ -75,7 +75,7 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
     case 'scanning':
       content = (
         <div className="p-4 text-center">
-          <div className="animate-pulse text-brass-gold mb-4">
+          <div className="mb-4 animate-pulse text-brass-gold">
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               viewBox="0 0 24 24" 
@@ -84,7 +84,7 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
               strokeWidth="2" 
               strokeLinecap="round" 
               strokeLinejoin="round" 
-              className="h-12 w-12 mx-auto"
+              className="mx-auto size-12"
             >
               <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
             </svg>
@@ -131,21 +131,21 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
       content = (
         <div className="p-4">
           <div className="flex flex-col items-center">
-            <div className="text-4xl font-mono font-bold text-brass-gold mb-2">
+            <div className="mb-2 font-mono text-4xl font-bold text-brass-gold">
               {state.heartRate || '--'}
-              <span className="text-sm text-tactical-gray ml-1">BPM</span>
+              <span className="ml-1 text-sm text-tactical-gray">BPM</span>
             </div>
             
-            <div className="text-sm text-tactical-gray mb-4">
+            <div className="mb-4 text-sm text-tactical-gray">
               {state.deviceName}
               {state.sensorLocation && ` (${state.sensorLocation})`}
             </div>
             
-            <div className="w-full mb-2">
+            <div className="mb-2 w-full">
               <Progress value={state.heartRate || 0} max={190} className={zoneColor} />
             </div>
             
-            <div className="text-sm text-tactical-gray mb-4">
+            <div className="mb-4 text-sm text-tactical-gray">
               Zone: <span className="font-semibold">{zoneName}</span>
             </div>
             
@@ -160,15 +160,15 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
     case 'error':
       content = (
         <div className="p-4 text-center">
-          <div className="text-red-500 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mb-4 text-red-500">
+            <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto size-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <p className="mb-4 text-tactical-gray">
             {state.error?.message || 'Failed to connect to heart rate monitor'}
           </p>
-          <div className="flex space-x-2 justify-center">
+          <div className="flex justify-center space-x-2">
             <Button onClick={() => actions.connect()}>Try Again</Button>
             <Button variant="outline" onClick={() => setExpanded(false)}>Close</Button>
           </div>
@@ -180,7 +180,7 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
       content = (
         <div className="p-4 text-center">
           <p className="mb-4 text-tactical-gray">Heart rate monitor disconnected.</p>
-          <div className="flex space-x-2 justify-center">
+          <div className="flex justify-center space-x-2">
             <Button onClick={() => actions.connect()}>Reconnect</Button>
             <Button variant="outline" onClick={() => setExpanded(false)}>Close</Button>
           </div>
@@ -189,14 +189,14 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
   }
   
   return (
-    <Card className={`shadow-md overflow-hidden ${className}`}>
-      <div className="bg-deep-ops text-cream px-4 py-2 flex justify-between items-center">
+    <Card className={`overflow-hidden shadow-md ${className}`}>
+      <div className="flex items-center justify-between bg-deep-ops px-4 py-2 text-cream">
         <h3 className="text-sm font-semibold uppercase">Heart Rate Monitor</h3>
         <button 
           onClick={() => setExpanded(false)}
           className="text-cream/70 hover:text-cream"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <svg xmlns="http://www.w3.org/2000/svg" className="size-5" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
         </button>

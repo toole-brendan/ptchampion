@@ -510,7 +510,7 @@ const SitupTracker: React.FC = () => {
       <h1 className="text-3xl font-semibold text-foreground">{EXERCISE_NAME} Tracker</h1>
 
       {/* Live Tracking Card */}
-      <Card className="bg-card rounded-lg shadow-sm overflow-hidden">
+      <Card className="overflow-hidden rounded-lg bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-medium">Live Tracking</CardTitle>
           <CardDescription>
@@ -519,30 +519,30 @@ const SitupTracker: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Camera Feed Section */}
-          <div className="aspect-video bg-muted rounded-md overflow-hidden relative">
-            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" muted onLoadedMetadata={() => console.log("Video metadata loaded.")} />
-            <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full" />
+          <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
+            <video ref={videoRef} autoPlay playsInline className="size-full object-cover" muted onLoadedMetadata={() => console.log("Video metadata loaded.")} />
+            <canvas ref={canvasRef} className="absolute left-0 top-0 size-full" />
             {/* Overlays */}
             {formFaultMessage && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/80 text-white px-4 py-2 rounded-md text-sm font-semibold">
+              <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md bg-destructive/80 px-4 py-2 text-sm font-semibold text-white">
                 {formFaultMessage}
               </div>
             )}
-            {isModelLoading && ( <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white z-10"><Loader2 className="h-10 w-10 mb-3 animate-spin" /><span>Loading AI Model...</span></div> )}
-            {!isModelLoading && modelError && ( <div className="absolute inset-0 flex flex-col items-center justify-center bg-destructive/80 text-white p-4 text-center z-10"><VideoOff className="h-12 w-12 mb-2" /><p className="font-semibold mb-1">Model Loading Failed</p><p className="text-sm">{modelError}</p></div> )}
-            {permissionGranted === null && !isModelLoading && !modelError && ( <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white"><Camera className="h-8 w-8 mr-2 animate-pulse" /><span>Requesting camera access...</span></div> )}
-            {permissionGranted === false && !isModelLoading && !modelError && ( <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-4 text-center"><VideoOff className="h-12 w-12 mb-2 text-destructive" /><p className="font-semibold mb-1">Camera Access Issue</p><p className="text-sm">{cameraError || "Could not access camera."}</p></div> )}
+            {isModelLoading && ( <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 text-white"><Loader2 className="mb-3 size-10 animate-spin" /><span>Loading AI Model...</span></div> )}
+            {!isModelLoading && modelError && ( <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-destructive/80 p-4 text-center text-white"><VideoOff className="mb-2 size-12" /><p className="mb-1 font-semibold">Model Loading Failed</p><p className="text-sm">{modelError}</p></div> )}
+            {permissionGranted === null && !isModelLoading && !modelError && ( <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white"><Camera className="mr-2 size-8 animate-pulse" /><span>Requesting camera access...</span></div> )}
+            {permissionGranted === false && !isModelLoading && !modelError && ( <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 p-4 text-center text-white"><VideoOff className="mb-2 size-12 text-destructive" /><p className="mb-1 font-semibold">Camera Access Issue</p><p className="text-sm">{cameraError || "Could not access camera."}</p></div> )}
           </div>
           {/* Stats Display */}
           <div className="grid grid-cols-2 gap-4 text-center">
             <div><p className="text-sm font-medium text-muted-foreground">Reps</p><p className="text-4xl font-bold text-foreground">{repCount}</p></div>
-            <div><p className="text-sm font-medium text-muted-foreground">Time</p><p className="text-4xl font-bold text-foreground flex items-center justify-center"><Timer className="h-6 w-6 mr-1 inline-block" />{formatTime(timer)}</p></div>
+            <div><p className="text-sm font-medium text-muted-foreground">Time</p><p className="flex items-center justify-center text-4xl font-bold text-foreground"><Timer className="mr-1 inline-block size-6" />{formatTime(timer)}</p></div>
           </div>
 
           {/* New Instructions Section */}
-          <div className="pt-4 border-t">
-            <h3 className="text-md font-semibold mb-2 text-foreground">Form Requirements for Rep Count:</h3>
-            <ul className="list-disc pl-5 space-y-1 text-sm text-muted-foreground">
+          <div className="border-t pt-4">
+            <h3 className="text-md mb-2 font-semibold text-foreground">Form Requirements for Rep Count:</h3>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>
                 <strong>Camera:</strong> Place side-on to capture your full body clearly.
               </li>
@@ -563,28 +563,28 @@ const SitupTracker: React.FC = () => {
             </ul>
           </div>
         </CardContent>
-        <CardFooter className="border-t bg-background/50 px-6 py-4 flex flex-wrap justify-center gap-4">
+        <CardFooter className="flex flex-wrap justify-center gap-4 border-t bg-background/50 px-6 py-4">
             {!isFinished ? (
               <>
                 <Button size="lg" onClick={handleStartPause} disabled={isFinished || !permissionGranted || !!cameraError || isModelLoading || !!modelError}>
-                  {isModelLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : (isActive ? <Pause className="mr-2 h-5 w-5" /> : <Play className="mr-2 h-5 w-5" />)}
+                  {isModelLoading ? <Loader2 className="mr-2 size-5 animate-spin" /> : (isActive ? <Pause className="mr-2 size-5" /> : <Play className="mr-2 size-5" />)}
                   {isModelLoading ? 'Loading...' : (isActive ? 'Pause' : 'Start')}
                 </Button>
                 <Button size="lg" variant="secondary" onClick={handleReset} disabled={isActive || isFinished || (!permissionGranted && !cameraError && !isModelLoading)}>
-                  <RotateCcw className="mr-2 h-5 w-5" /> Reset
+                  <RotateCcw className="mr-2 size-5" /> Reset
                 </Button>
                 <Button size="lg" variant="destructive" onClick={handleFinish} disabled={isActive || isFinished || repCount === 0} >
-                   {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+                   {isSubmitting ? <Loader2 className="mr-2 size-5 animate-spin" /> : null}
                    Finish & Save Reps
                 </Button>
               </>
             ) : (
-                 <div className="text-center w-full">
-                    {isSubmitting && <p className="flex items-center justify-center"><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving Live Session...</p>}
+                 <div className="w-full text-center">
+                    {isSubmitting && <p className="flex items-center justify-center"><Loader2 className="mr-2 size-4 animate-spin" /> Saving Live Session...</p>}
                     {/* Display error/success related to live save attempt */}
-                    {error && !isSubmitting && <p className="text-destructive text-sm mt-2">Error Saving: {error}</p>}
+                    {error && !isSubmitting && <p className="mt-2 text-sm text-destructive">Error Saving: {error}</p>}
                     {success && !isSubmitting && (
-                      <p className="text-green-600 text-sm mt-2">
+                      <p className="mt-2 text-sm text-green-600">
                         Live Workout saved successfully!
                         {loggedGrade !== null && ` Grade: ${loggedGrade}`}
                       </p>

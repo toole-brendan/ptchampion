@@ -36,7 +36,7 @@ const Exercises: React.FC = () => {
           <CardDescription>Select an exercise to begin tracking your performance.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {exerciseTypes.map((exercise) => (
               <Button
                 key={exercise.name}
@@ -48,10 +48,10 @@ const Exercises: React.FC = () => {
                 onClick={() => handleSelectExercise(exercise.path)}
               >
                 <div className="flex items-center space-x-3">
-                  <exercise.icon className="h-5 w-5 text-primary" />
+                  <exercise.icon className="size-5 text-primary" />
                   <span className="font-medium text-foreground">{exercise.name}</span>
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                <ArrowRight className="size-4 text-muted-foreground" />
               </Button>
             ))}
           </div>

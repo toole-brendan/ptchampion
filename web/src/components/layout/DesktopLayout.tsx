@@ -5,7 +5,7 @@ import { useAuth } from '../../lib/authContext';
 
 // Logo component (temporary, replace with actual logo)
 const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={`${className} text-brass-gold font-heading`}>PT</div>
+  <div className={`${className} font-heading text-brass-gold`}>PT</div>
 );
 
 const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -24,10 +24,10 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   return (
     <div className="flex min-h-screen bg-cream">
       {/* Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-deep-ops text-cream p-6">
-        <div className="flex items-center mb-10">
-          <LogoIcon className="h-8 w-8" />
-          <span className="font-heading text-cream text-xl ml-3">PT CHAMPION</span>
+      <aside className="hidden w-64 flex-col bg-deep-ops p-6 text-cream md:flex">
+        <div className="mb-10 flex items-center">
+          <LogoIcon className="size-8" />
+          <span className="ml-3 font-heading text-xl text-cream">PT CHAMPION</span>
         </div>
         
         <nav className="flex-1">
@@ -36,10 +36,10 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <li key={item.to}>
                 <Link
                   to={item.to}
-                  className={`flex items-center gap-3 py-3 px-4 rounded-lg transition-colors ${
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
                     currentPath === item.to 
                       ? 'bg-brass-gold/10 text-brass-gold' 
-                      : 'text-cream/70 hover:text-brass-gold hover:bg-brass-gold/5'
+                      : 'text-cream/70 hover:bg-brass-gold/5 hover:text-brass-gold'
                   }`}
                 >
                   {item.icon}
@@ -52,7 +52,7 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         
         <button 
           onClick={logout}
-          className="flex items-center gap-3 py-3 px-4 text-cream/70 hover:text-brass-gold mt-auto"
+          className="mt-auto flex items-center gap-3 px-4 py-3 text-cream/70 hover:text-brass-gold"
         >
           <LogOut size={20} />
           <span>Logout</span>
@@ -60,18 +60,18 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       </aside>
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <header className="h-16 bg-cream shadow-sm md:border-b md:border-army-tan/20 flex items-center px-6">
+      <div className="flex flex-1 flex-col">
+        <header className="flex h-16 items-center bg-cream px-6 shadow-sm md:border-b md:border-army-tan/20">
           <div className="flex-1"></div>
           <div className="md:block">
             {/* Profile Menu (Can be expanded later) */}
-            <div className="w-8 h-8 rounded-full bg-brass-gold/20 flex items-center justify-center text-brass-gold">
+            <div className="flex size-8 items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold">
               <User size={18} />
             </div>
           </div>
         </header>
         
-        <main className="flex-1 p-6 max-w-7xl mx-auto w-full">
+        <main className="mx-auto w-full max-w-7xl flex-1 p-6">
           {children}
         </main>
       </div>

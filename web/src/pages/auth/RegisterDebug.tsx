@@ -81,7 +81,7 @@ const RegisterDebug: React.FC = () => {
   };
   
   return (
-    <div className="flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-100">
+    <div className="flex min-h-screen flex-col justify-center bg-gray-100 py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
           PT Champion (Debug)
@@ -93,7 +93,7 @@ const RegisterDebug: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-          <div className="mb-4 p-2 bg-blue-50 text-blue-800 rounded">
+          <div className="mb-4 rounded bg-blue-50 p-2 text-blue-800">
             <p className="text-sm">Debug Mode: Direct API connection to {apiUrl}</p>
           </div>
           
@@ -117,7 +117,7 @@ const RegisterDebug: React.FC = () => {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
@@ -134,7 +134,7 @@ const RegisterDebug: React.FC = () => {
                   autoComplete="name"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
@@ -152,7 +152,7 @@ const RegisterDebug: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
               <p className="mt-1 text-xs text-gray-500">
@@ -173,7 +173,7 @@ const RegisterDebug: React.FC = () => {
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
             </div>
@@ -190,8 +190,8 @@ const RegisterDebug: React.FC = () => {
           </form>
 
           {debugInfo && (
-            <div className="mt-6 p-3 bg-gray-50 rounded-md overflow-auto">
-              <h4 className="text-sm font-semibold mb-2">API Response:</h4>
+            <div className="mt-6 overflow-auto rounded-md bg-gray-50 p-3">
+              <h4 className="mb-2 text-sm font-semibold">API Response:</h4>
               <pre className="text-xs">{JSON.stringify(debugInfo, null, 2)}</pre>
             </div>
           )}

@@ -176,6 +176,16 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 - **Data Synchronization**: Custom sync logic likely used (inferred from `shared/schema.ts` sync types and PWA/offline features).
 - **Shared Schema**: Drizzle ORM + Zod used in `shared/schema.ts` for defining DB schema, validation, and TypeScript types.
 
+## Documentation
+
+For detailed information about the project, please refer to the following documents:
+
+- [Production Readiness Implementation Plan](PRODUCTION_READINESS_PLAN.md) - Detailed plan for making the application production-ready
+- [Architecture Documentation](docs/ARCHITECTURE.md) - C4 model diagrams and technical architecture details
+- [Compliance, Backup & Disaster Recovery](docs/COMPLIANCE_BACKUP_DR.md) - Information about compliance frameworks, data backup strategies, and DR procedures
+- [iOS App Store Submission Guide](ios/AppStoreMetadata.md) - Guide for iOS App Store submission
+- [Android Play Store Submission Guide](android/PlayStoreMetadata.md) - Guide for Google Play Store submission
+
 ## Getting Started
 
 ### Prerequisites

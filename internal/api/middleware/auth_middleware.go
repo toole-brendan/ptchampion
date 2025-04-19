@@ -1,53 +1,68 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
+	"strings"
 
-	"github.com/go-chi/jwtauth/v5"
+	"ptchampion/internal/auth"
+
+	"github.com/labstack/echo/v4"
 )
 
 // ContextKey is a custom type for context keys to avoid collisions
 type ContextKey string
 
-const UserIDContextKey ContextKey = "userID"
+const (
+	UserIDContextKey   ContextKey = "userID"
+	UsernameContextKey ContextKey = "username"
+)
 
-// AuthMiddleware creates a new JWT authenticator middleware
-func AuthMiddleware(jwtSecret string) func(http.Handler) http.Handler {
-	tokenAuth := jwtauth.New("HS256", []byte(jwtSecret), nil)
+// JWTAuthMiddleware creates a middleware for JWT token verification using Echo framework
+func JWTAuthMiddleware(accessSecret, refreshSecret string) echo.MiddlewareFunc {
+	tokenService := auth.NewTokenService(accessSecret, refreshSecret)
 
-	verifier := jwtauth.Verifier(tokenAuth)
-	authenticator := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token, claims, err := jwtauth.FromContext(r.Context())
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			// Extract the token from the Authorization header
+			authHeader := c.Request().Header.Get("Authorization")
+			if authHeader == "" {
+				return echo.NewHTTPError(http.StatusUnauthorized, "Authorization header is required")
+			}
 
+			// Check for Bearer token
+			parts := strings.Split(authHeader, " ")
+			if len(parts) != 2 || parts[0] != "Bearer" {
+				return echo.NewHTTPError(http.StatusUnauthorized, "Authorization header must be Bearer token")
+			}
+
+			tokenString := parts[1]
+			if tokenString == "" {
+				return echo.NewHTTPError(http.StatusUnauthorized, "Token is required")
+			}
+
+			// Verify the token
+			claims, err := tokenService.VerifyAccessToken(tokenString)
 			if err != nil {
-				// Error means token is missing, expired, or signature is invalid
-				http.Error(w, "Unauthorized: "+err.Error(), http.StatusUnauthorized)
-				return
+				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired token")
 			}
 
-			if token == nil { // Should not happen if err is nil, but check for safety
-				http.Error(w, "Unauthorized: Invalid token", http.StatusUnauthorized)
-				return
-			}
+			// Set user ID and username in context for handlers to access
+			c.Set(string(UserIDContextKey), claims.UserID)
+			c.Set(string(UsernameContextKey), claims.Username)
 
-			// Token is considered valid if we reach here without errors
-
-			// Extract user ID (assuming it's stored in 'sub' claim)
-			if userIDFloat, ok := claims["sub"].(float64); ok {
-				userID := int32(userIDFloat) // Convert to int32
-				ctx := context.WithValue(r.Context(), UserIDContextKey, userID)
-				next.ServeHTTP(w, r.WithContext(ctx))
-			} else {
-				http.Error(w, "Unauthorized: Invalid user ID in token", http.StatusUnauthorized)
-				return
-			}
-		})
+			return next(c)
+		}
 	}
+}
 
-	// Return the chained middleware
-	return func(next http.Handler) http.Handler {
-		return verifier(authenticator(next))
-	}
+// GetUserID extracts the user ID from the context
+func GetUserID(c echo.Context) (int64, bool) {
+	userID, ok := c.Get(string(UserIDContextKey)).(int64)
+	return userID, ok
+}
+
+// GetUsername extracts the username from the context
+func GetUsername(c echo.Context) (string, bool) {
+	username, ok := c.Get(string(UsernameContextKey)).(string)
+	return username, ok
 }

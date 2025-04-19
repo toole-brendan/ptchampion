@@ -1,0 +1,69 @@
+version: 2
+updates:
+  # Go dependencies
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "go"
+    assignees:
+      - "backend-team"
+
+  # NPM dependencies (web frontend)
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      dev-dependencies:
+        patterns:
+          - "eslint*"
+          - "prettier*"
+          - "vite*"
+    labels:
+      - "dependencies"
+      - "web"
+    assignees:
+      - "web-team"
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+  # iOS (Swift Package Manager)
+  - package-ecosystem: "swift"
+    directory: "/ios/ptchampion"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ios"
+    assignees:
+      - "ios-team"
+
+  # Android (Gradle)
+  - package-ecosystem: "gradle"
+    directory: "/android"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "android"
+    assignees:
+      - "android-team" 

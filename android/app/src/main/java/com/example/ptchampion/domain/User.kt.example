@@ -1,0 +1,47 @@
+package com.example.ptchampion.domain
+
+import java.util.Date
+
+/**
+ * User model representing a user in the system
+ */
+data class User(
+    val id: Int,
+    val username: String,
+    val email: String,
+    val fullName: String,
+    val createdAt: Date,
+    val profileImageUrl: String?
+) {
+    /**
+     * Display name to show in the UI (uses fullName if available, otherwise username)
+     */
+    val displayName: String
+        get() = if (fullName.isNotEmpty()) fullName else username
+
+    /**
+     * Whether the user has a profile image
+     */
+    val hasProfileImage: Boolean
+        get() = !profileImageUrl.isNullOrEmpty()
+
+    /**
+     * User's initials from their name (e.g., "John Doe" -> "JD")
+     */
+    fun getInitials(): String {
+        val nameParts = fullName.split(" ").filter { it.isNotEmpty() }
+
+        if (nameParts.isEmpty() || fullName.isEmpty()) {
+            // Return first letter of username if no full name
+            return username.take(1).uppercase()
+        } else if (nameParts.size == 1) {
+            // Return first letter of single name
+            return nameParts[0].take(1).uppercase()
+        } else {
+            // Return first letter of first and last name
+            val firstLetter = nameParts.first().take(1)
+            val lastLetter = nameParts.last().take(1)
+            return (firstLetter + lastLetter).uppercase()
+        }
+    }
+} 

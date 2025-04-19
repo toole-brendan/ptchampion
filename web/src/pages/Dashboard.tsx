@@ -119,15 +119,15 @@ const Dashboard: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-destructive p-4 border border-destructive rounded-md">
+      <div className="rounded-md border border-destructive p-4 text-destructive">
         Error: {error instanceof Error ? error.message : String(error)}
       </div>
     );
@@ -143,7 +143,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Welcome Message */}
-      <h1 className="text-2xl font-heading tracking-wide text-command-black">
+      <h1 className="font-heading text-2xl tracking-wide text-command-black">
         Welcome back, <span className="text-brass-gold">{userName}</span>!
       </h1>
 
@@ -192,8 +192,8 @@ const Dashboard: React.FC = () => {
 
       {/* Quick Start Section */}
       <Card className="bg-cream transition-shadow hover:shadow-md">
-        <CardHeader className="bg-deep-ops text-cream rounded-t-lg">
-          <CardTitle className="text-xl font-heading">
+        <CardHeader className="rounded-t-lg bg-deep-ops text-cream">
+          <CardTitle className="font-heading text-xl">
             Start Tracking
           </CardTitle>
           <CardDescription className="text-army-tan">
@@ -201,16 +201,16 @@ const Dashboard: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {exerciseLinks.map((exercise) => (
               <Button
                 key={exercise.name}
                 variant="outline"
-                className="flex flex-col items-center justify-center h-24 p-4 border-brass-gold/30 
-                          hover:border-brass-gold hover:bg-brass-gold/5 transition-colors"
+                className="flex h-24 flex-col items-center justify-center border-brass-gold/30 p-4 
+                          transition-colors hover:border-brass-gold hover:bg-brass-gold/5"
                 onClick={() => navigate(exercise.path)}
               >
-                <exercise.icon className="h-6 w-6 text-brass-gold mb-2" />
+                <exercise.icon className="mb-2 size-6 text-brass-gold" />
                 <span className="text-sm font-medium">{exercise.name}</span>
               </Button>
             ))}
@@ -220,9 +220,9 @@ const Dashboard: React.FC = () => {
 
       {/* Progress Section */}
       <Card className="bg-cream transition-shadow hover:shadow-md">
-        <CardHeader className="bg-deep-ops text-cream rounded-t-lg">
-          <CardTitle className="text-xl font-heading flex items-center">
-            <AreaChart className="h-5 w-5 mr-2" />
+        <CardHeader className="rounded-t-lg bg-deep-ops text-cream">
+          <CardTitle className="flex items-center font-heading text-xl">
+            <AreaChart className="mr-2 size-5" />
             Progress Summary
           </CardTitle>
           <CardDescription className="text-army-tan">
@@ -230,38 +230,38 @@ const Dashboard: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 bg-white/50 rounded-lg flex flex-col items-center justify-center text-center">
-              <Clock className="h-10 w-10 text-brass-gold mb-2" />
-              <span className="text-2xl font-mono text-brass-gold">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="flex flex-col items-center justify-center rounded-lg bg-white/50 p-4 text-center">
+              <Clock className="mb-2 size-10 text-brass-gold" />
+              <span className="font-mono text-2xl text-brass-gold">
                 {Math.floor(dashboardMetrics.totalDuration / 3600)}h {Math.floor((dashboardMetrics.totalDuration % 3600) / 60)}m
               </span>
               <span className="text-sm text-tactical-gray">Total Training Time</span>
             </div>
             
-            <div className="p-4 bg-white/50 rounded-lg flex flex-col items-center justify-center text-center">
-              <Flame className="h-10 w-10 text-brass-gold mb-2" />
-              <span className="text-2xl font-mono text-brass-gold">
+            <div className="flex flex-col items-center justify-center rounded-lg bg-white/50 p-4 text-center">
+              <Flame className="mb-2 size-10 text-brass-gold" />
+              <span className="font-mono text-2xl text-brass-gold">
                 {Math.floor(dashboardMetrics.totalDuration / 60 * 7)}
               </span>
               <span className="text-sm text-tactical-gray">Est. Calories Burned</span>
             </div>
             
-            <div className="p-4 bg-white/50 rounded-lg flex flex-col items-center justify-center text-center">
-              <Trophy className="h-10 w-10 text-brass-gold mb-2" />
-              <span className="text-2xl font-mono text-brass-gold">
+            <div className="flex flex-col items-center justify-center rounded-lg bg-white/50 p-4 text-center">
+              <Trophy className="mb-2 size-10 text-brass-gold" />
+              <span className="font-mono text-2xl text-brass-gold">
                 {dashboardMetrics.userRank > 0 ? `#${dashboardMetrics.userRank}` : 'Unranked'}
               </span>
               <span className="text-sm text-tactical-gray">Global Leaderboard Rank</span>
             </div>
           </div>
           
-          <div className="flex justify-center mt-6">
+          <div className="mt-6 flex justify-center">
             <Button 
-              className="bg-brass-gold hover:bg-brass-gold/90 text-deep-ops"
+              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
               onClick={() => navigate('/history')}
             >
-              <ArrowRight className="mr-2 h-4 w-4" />
+              <ArrowRight className="mr-2 size-4" />
               View Detailed Progress
             </Button>
           </div>

@@ -42,34 +42,34 @@ export function TrackersIndex() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-heading tracking-wide mb-6 text-command-black">Exercise Trackers</h1>
+      <h1 className="mb-6 font-heading text-3xl tracking-wide text-command-black">Exercise Trackers</h1>
       
-      <p className="text-tactical-gray mb-6">
+      <p className="mb-6 text-tactical-gray">
         Select an exercise to begin tracking your form and performance using computer vision analysis.
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {trackerTypes.map((tracker) => (
           <Card 
             key={tracker.name} 
-            className="bg-cream transition-all hover:shadow-md cursor-pointer"
+            className="cursor-pointer bg-cream transition-all hover:shadow-md"
             onClick={() => handleSelectTracker(tracker)}
           >
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-brass-gold/10 rounded-full">
-                    <tracker.icon className="h-6 w-6 text-brass-gold" />
+                  <div className="rounded-full bg-brass-gold/10 p-2">
+                    <tracker.icon className="size-6 text-brass-gold" />
                   </div>
-                  <CardTitle className="text-xl font-heading">{tracker.name}</CardTitle>
+                  <CardTitle className="font-heading text-xl">{tracker.name}</CardTitle>
                 </div>
-                <ArrowRight className="h-5 w-5 text-brass-gold" />
+                <ArrowRight className="size-5 text-brass-gold" />
               </div>
               <CardDescription className="mt-2">{tracker.description}</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-xs text-green-600 font-medium flex items-center gap-1">
-                <span className="inline-block w-2 h-2 bg-green-600 rounded-full"></span>
+              <div className="flex items-center gap-1 text-xs font-medium text-green-600">
+                <span className="inline-block size-2 rounded-full bg-green-600"></span>
                 Available Now
               </div>
             </CardContent>

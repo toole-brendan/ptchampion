@@ -37,11 +37,11 @@ export function MetricCard({
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-tactical-gray">{title}</CardTitle>
-        {Icon && <Icon className="h-4 w-4 text-tactical-gray" />}
+        {Icon && <Icon className="size-4 text-tactical-gray" />}
       </CardHeader>
       <CardContent className="p-6 pt-2">
         <div className="flex items-baseline">
-          <div className="text-2xl font-mono font-bold text-brass-gold">
+          <div className="font-mono text-2xl font-bold text-brass-gold">
             {value}
           </div>
           {unit && (
@@ -50,7 +50,7 @@ export function MetricCard({
         </div>
         
         {description && (
-          <p className="text-xs text-tactical-gray mt-1">
+          <p className="mt-1 text-xs text-tactical-gray">
             {description}
           </p>
         )}

@@ -3,14 +3,21 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"ptchampion/internal/api"
 	// "ptchampion/internal/api/handlers" // No longer needed directly here
 	"ptchampion/internal/config"
+	"ptchampion/internal/logging"
 	dbStore "ptchampion/internal/store/postgres"
 )
 
 func main() {
+	// Initialize structured logging (Zap) early so that all stdlib log calls are captured.
+	if _, err := logging.Init(os.Getenv("LOG_LEVEL")); err != nil {
+		log.Fatalf("Failed to initialize logger: %v", err)
+	}
+
 	// 1. Load Configuration
 	cfg, err := config.Load()
 	if err != nil {

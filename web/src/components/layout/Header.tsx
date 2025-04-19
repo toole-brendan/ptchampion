@@ -17,7 +17,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
         onClick={onMenuClick}
         aria-label="Toggle Menu"
       >
-        <MenuIcon className="h-5 w-5" />
+        <MenuIcon className="size-5" />
       </Button>
       {/* You could add other header elements here if needed, like a logo or page title */}
     </header>

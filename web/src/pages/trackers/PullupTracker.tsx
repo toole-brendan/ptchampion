@@ -286,7 +286,7 @@ export function PullupTracker() {
       const dot = v1.x * v2.x + v1.y * v2.y;
       const det = v1.x * v2.y - v1.y * v2.x;
       const angleRad = Math.atan2(Math.abs(det), dot);
-      let angleDeg = angleRad * (180 / Math.PI);
+      const angleDeg = angleRad * (180 / Math.PI);
       return Math.max(0, Math.min(180, angleDeg));
     } catch (error) {
       console.error("Error calculating angle:", error);
@@ -405,8 +405,8 @@ export function PullupTracker() {
   return (
     <div className="container mx-auto px-4 py-8">
       {!isOnline && (
-        <Alert className="mb-4 bg-amber-50 border-amber-200">
-          <CloudOff className="h-4 w-4 text-amber-500" />
+        <Alert className="mb-4 border-amber-200 bg-amber-50">
+          <CloudOff className="size-4 text-amber-500" />
           <AlertTitle className="text-amber-800">Offline Mode</AlertTitle>
           <AlertDescription className="text-amber-700">
             You're currently offline. Your workout will be saved locally and synced when you reconnect.
@@ -414,9 +414,9 @@ export function PullupTracker() {
         </Alert>
       )}
       
-      <Card className="w-full max-w-3xl mx-auto bg-cream">
-        <CardHeader className="bg-deep-ops text-cream rounded-t-lg">
-          <CardTitle className="text-2xl font-heading tracking-wide">Pull-up Tracker</CardTitle>
+      <Card className="mx-auto w-full max-w-3xl bg-cream">
+        <CardHeader className="rounded-t-lg bg-deep-ops text-cream">
+          <CardTitle className="font-heading text-2xl tracking-wide">Pull-up Tracker</CardTitle>
           <CardDescription className="text-army-tan">
             Track your form and count repetitions
           </CardDescription>
@@ -425,26 +425,26 @@ export function PullupTracker() {
         <CardContent className="p-6">
           {errorMessage && (
             <Alert variant="destructive" className="mb-4">
-              <InfoIcon className="h-4 w-4" />
+              <InfoIcon className="size-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
           
-          <div className="relative aspect-video bg-muted rounded-lg overflow-hidden mb-6">
+          <div className="relative mb-6 aspect-video overflow-hidden rounded-lg bg-muted">
             {/* Base video element (hidden) */}
             <video 
               ref={videoRef}
               autoPlay 
               playsInline
               muted
-              className="absolute inset-0 w-full h-full object-cover opacity-30"
+              className="absolute inset-0 size-full object-cover opacity-30"
             />
             
             {/* Canvas overlay for pose landmarks */}
             <canvas 
               ref={canvasRef}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 size-full"
             />
             
             {/* Countdown overlay */}
@@ -456,17 +456,17 @@ export function PullupTracker() {
             
             {/* Form fault message overlay */}
             {formFaultMessage && (
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 bg-destructive/80 text-white px-4 py-2 rounded-md text-sm font-semibold">
+              <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md bg-destructive/80 px-4 py-2 text-sm font-semibold text-white">
                 {formFaultMessage}
               </div>
             )}
             
             {/* Stats overlay */}
             {isTracking && (
-              <div className="absolute top-4 left-4 bg-black/50 p-3 rounded-lg">
-                <div className="text-lg font-mono text-brass-gold">Reps: {repCount}</div>
-                <div className="text-sm font-mono text-cream">Form: {formScore}%</div>
-                <div className="text-xs font-mono text-cream">
+              <div className="absolute left-4 top-4 rounded-lg bg-black/50 p-3">
+                <div className="font-mono text-lg text-brass-gold">Reps: {repCount}</div>
+                <div className="font-mono text-sm text-cream">Form: {formScore}%</div>
+                <div className="font-mono text-xs text-cream">
                   Phase: {currentPhase === 'up' ? 'UP' : currentPhase === 'down' ? 'DOWN' : 'READY'}
                 </div>
               </div>
@@ -475,32 +475,32 @@ export function PullupTracker() {
           
           {/* Status and progress */}
           <div className="mb-4">
-            <div className="flex justify-between mb-2">
+            <div className="mb-2 flex justify-between">
               <span className="text-sm font-medium">Form Quality</span>
-              <span className="text-sm font-mono">{formScore}%</span>
+              <span className="font-mono text-sm">{formScore}%</span>
             </div>
             <Progress value={formScore} className="h-2" />
           </div>
           
-          <div className="rounded-lg bg-muted p-4 mb-4">
-            <h3 className="font-semibold mb-2">Exercise Stats</h3>
+          <div className="mb-4 rounded-lg bg-muted p-4">
+            <h3 className="mb-2 font-semibold">Exercise Stats</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Repetitions</p>
-                <p className="text-2xl font-mono text-brass-gold">{repCount}</p>
+                <p className="font-mono text-2xl text-brass-gold">{repCount}</p>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Current Phase</p>
-                <p className="text-lg font-mono">
+                <p className="font-mono text-lg">
                   {currentPhase === 'up' ? 'UP' : currentPhase === 'down' ? 'DOWN' : 'READY'}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="rounded-lg bg-muted p-4 mb-4">
-            <h3 className="font-semibold mb-2">Instructions</h3>
-            <ul className="text-sm list-disc pl-5 space-y-1">
+          <div className="mb-4 rounded-lg bg-muted p-4">
+            <h3 className="mb-2 font-semibold">Instructions</h3>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
               <li>Position camera to see your full body and the bar</li>
               <li>Start from a dead hang with arms fully extended</li>
               <li>Pull up until your chin is clearly above the bar</li>
@@ -511,15 +511,15 @@ export function PullupTracker() {
           </div>
         </CardContent>
         
-        <CardFooter className="border-t border-border flex justify-between p-4">
+        <CardFooter className="flex justify-between border-t border-border p-4">
           {!isTracking ? (
             <Button 
               onClick={startCountdown} 
-              className="bg-brass-gold hover:bg-brass-gold/90 text-deep-ops"
+              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
               disabled={!isDetectorReady || isCountingDown}
               size="lg"
             >
-              <PlayIcon className="mr-2 h-5 w-5" />
+              <PlayIcon className="mr-2 size-5" />
               {isCountingDown ? `Starting in ${countdown}...` : 'Begin Tracking'}
             </Button>
           ) : (
@@ -529,7 +529,7 @@ export function PullupTracker() {
               className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
               size="lg"
             >
-              <PauseIcon className="mr-2 h-5 w-5" />
+              <PauseIcon className="mr-2 size-5" />
               End Session
             </Button>
           )}
@@ -540,7 +540,7 @@ export function PullupTracker() {
             className="text-muted-foreground"
             disabled={repCount === 0}
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <RefreshCw className="mr-2 size-4" />
             Reset
           </Button>
         </CardFooter>
@@ -550,16 +550,16 @@ export function PullupTracker() {
       <Dialog open={showResultModal} onOpenChange={setShowResultModal}>
         <DialogContent className="bg-cream sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-heading text-center">Session Results</DialogTitle>
+            <DialogTitle className="text-center font-heading text-2xl">Session Results</DialogTitle>
             <DialogDescription className="text-center">
               {submitSuccess ? (
-                <div className="flex items-center justify-center text-green-600 mt-2">
-                  <CheckCircle className="mr-2 h-5 w-5" />
+                <div className="mt-2 flex items-center justify-center text-green-600">
+                  <CheckCircle className="mr-2 size-5" />
                   Workout saved successfully!
                 </div>
               ) : savedOffline ? (
-                <div className="flex items-center justify-center text-amber-600 mt-2">
-                  <CloudOff className="mr-2 h-5 w-5" />
+                <div className="mt-2 flex items-center justify-center text-amber-600">
+                  <CloudOff className="mr-2 size-5" />
                   Workout saved offline. Will sync when online.
                 </div>
               ) : (
@@ -569,32 +569,32 @@ export function PullupTracker() {
           </DialogHeader>
           
           <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="bg-white/50 p-4 rounded-lg text-center">
-              <div className="text-sm text-tactical-gray font-medium mb-1">Repetitions</div>
-              <div className="text-3xl font-mono text-brass-gold">{repCount}</div>
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="mb-1 text-sm font-medium text-tactical-gray">Repetitions</div>
+              <div className="font-mono text-3xl text-brass-gold">{repCount}</div>
             </div>
             
-            <div className="bg-white/50 p-4 rounded-lg text-center">
-              <div className="text-sm text-tactical-gray font-medium mb-1">Form Score</div>
-              <div className="text-3xl font-mono text-brass-gold">{formScore}%</div>
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="mb-1 text-sm font-medium text-tactical-gray">Form Score</div>
+              <div className="font-mono text-3xl text-brass-gold">{formScore}%</div>
             </div>
             
-            <div className="bg-white/50 p-4 rounded-lg text-center">
-              <div className="text-sm text-tactical-gray font-medium mb-1">Duration</div>
-              <div className="text-2xl font-mono text-brass-gold">{formatTime(sessionTime)}</div>
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="mb-1 text-sm font-medium text-tactical-gray">Duration</div>
+              <div className="font-mono text-2xl text-brass-gold">{formatTime(sessionTime)}</div>
             </div>
             
-            <div className="bg-white/50 p-4 rounded-lg text-center">
-              <div className="text-sm text-tactical-gray font-medium mb-1">Grade</div>
-              <div className="text-3xl font-mono text-brass-gold">{scoreGrade}</div>
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="mb-1 text-sm font-medium text-tactical-gray">Grade</div>
+              <div className="font-mono text-3xl text-brass-gold">{scoreGrade}</div>
             </div>
           </div>
           
-          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between">
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
             {!submitSuccess && !savedOffline ? (
               <Button 
                 onClick={submitWorkout} 
-                className="bg-brass-gold hover:bg-brass-gold/90 text-deep-ops w-full sm:w-auto"
+                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
                 disabled={submitting}
               >
                 {submitting ? 'Saving...' : `Save Results${!isOnline ? ' Offline' : ''}`}
@@ -602,7 +602,7 @@ export function PullupTracker() {
             ) : (
               <Button
                 onClick={() => navigate('/history')}
-                className="bg-brass-gold hover:bg-brass-gold/90 text-deep-ops w-full sm:w-auto"
+                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
               >
                 View History
               </Button>
@@ -611,9 +611,9 @@ export function PullupTracker() {
             <Button 
               onClick={shareResults} 
               variant="outline" 
-              className="border-brass-gold text-brass-gold hover:bg-brass-gold/10 w-full sm:w-auto"
+              className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10 sm:w-auto"
             >
-              <ShareIcon className="mr-2 h-4 w-4" />
+              <ShareIcon className="mr-2 size-4" />
               Share Results
             </Button>
           </DialogFooter>

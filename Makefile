@@ -1,6 +1,6 @@
 # Makefile for ptchampion project
 
-.PHONY: help dev test deploy backend-build backend-test web-build web-test android-build android-test ios-build ios-test clean migrate migrate-up migrate-down migrate-create migrate-force wasm-install-tinygo wasm-build wasm-clean redis-benchmark redis-flush redis-info
+.PHONY: help dev test deploy backend-build backend-test web-build web-test android-build android-test ios-build ios-test clean migrate migrate-up migrate-down migrate-create migrate-force wasm-install-tinygo wasm-build wasm-clean redis-benchmark redis-flush redis-info infra-init-staging infra-plan-staging infra-apply-staging infra-init-production infra-plan-production infra-apply-production
 
 help:
 	@echo "Usage: make [target]"
@@ -36,6 +36,14 @@ help:
 	@echo "  redis-benchmark  Benchmark the leaderboard API for performance"
 	@echo "  redis-flush      Flush all Redis cache data"
 	@echo "  redis-info       Display Redis server information"
+	@echo ""
+	@echo "Infrastructure:"
+	@echo "  infra-init-staging     Initialize Terraform for staging environment"
+	@echo "  infra-plan-staging     Run terraform plan for staging"
+	@echo "  infra-apply-staging    Apply Terraform changes to staging"
+	@echo "  infra-init-production  Initialize Terraform for production environment"
+	@echo "  infra-plan-production  Run terraform plan for production"
+	@echo "  infra-apply-production Apply Terraform changes to production"
 
 # --- Development ---
 dev:
@@ -204,4 +212,31 @@ redis-info:
 		redis-cli -h $(REDIS_HOST) -p $(REDIS_PORT) -a $(REDIS_PASSWORD) INFO; \
 	else \
 		redis-cli -h $(REDIS_HOST) -p $(REDIS_PORT) INFO; \
-	fi 
+	fi
+
+# --- Terraform Infrastructure ---
+TERRAFORM ?= terraform
+
+infra-init-staging:
+	cd terraform/staging && $(TERRAFORM) init
+
+infra-plan-staging:
+	cd terraform/staging && $(TERRAFORM) init -backend=true
+	cd terraform/staging && $(TERRAFORM) validate
+	cd terraform/staging && $(TERRAFORM) plan -var-file=staging.tfvars | tee tfplan-staging.out
+
+infra-apply-staging:
+	cd terraform/staging && $(TERRAFORM) init -backend=true
+	cd terraform/staging && $(TERRAFORM) apply -auto-approve -var-file=staging.tfvars
+
+infra-init-production:
+	cd terraform/production && $(TERRAFORM) init
+
+infra-plan-production:
+	cd terraform/production && $(TERRAFORM) init -backend=true
+	cd terraform/production && $(TERRAFORM) validate
+	cd terraform/production && $(TERRAFORM) plan -var-file=production.tfvars | tee tfplan-production.out
+
+infra-apply-production:
+	cd terraform/production && $(TERRAFORM) init -backend=true
+	cd terraform/production && $(TERRAFORM) apply -auto-approve -var-file=production.tfvars 
