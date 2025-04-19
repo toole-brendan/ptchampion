@@ -1,0 +1,203 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_frontend:
+        description: 'Deploy frontend'
+        type: boolean
+        default: true
+      deploy_backend:
+        description: 'Deploy backend'
+        type: boolean
+        default: true
+
+env:
+  AZURE_RESOURCE_GROUP: ptchampion-rg
+  ACR_NAME: ${{ secrets.ACR_NAME }}
+  STORAGE_ACCOUNT: ptchampionweb
+  FRONTEND_DOMAIN: ptchampion.ai
+  BACKEND_APP_NAME: ptchampion-api-westus
+  FRONT_DOOR_PROFILE: ptchampion-frontend
+  FRONT_DOOR_ENDPOINT: ptchampion
+
+jobs:
+  build-frontend:
+    name: Build Web Frontend
+    if: ${{ inputs.deploy_frontend }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm ci
+
+      - name: Build for production
+        working-directory: ./web
+        run: npm run build:production
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-build
+          path: web/dist
+
+  build-backend:
+    name: Build and Push Backend
+    if: ${{ inputs.deploy_backend }}
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to Azure Container Registry
+        run: az acr login --name ${{ env.ACR_NAME }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.ACR_NAME }}.azurecr.io/ptchampion-api
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy
+    needs: [build-frontend, build-backend]
+    runs-on: ubuntu-latest
+    if: always() && (needs.build-frontend.result == 'success' || needs.build-backend.result == 'success')
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Deploy frontend if it was built
+      - name: Download web build artifact
+        if: ${{ inputs.deploy_frontend && needs.build-frontend.result == 'success' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: web-build
+          path: web-build
+
+      - name: Deploy web to Static Website
+        if: ${{ inputs.deploy_frontend && needs.build-frontend.result == 'success' }}
+        run: |
+          az storage blob upload-batch \
+            -s web-build \
+            -d '$web' \
+            --account-name ${{ env.STORAGE_ACCOUNT }} \
+            --overwrite
+
+      # Deploy backend if it was built
+      - name: Deploy API to App Service
+        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.BACKEND_APP_NAME }}
+          images: ${{ needs.build-backend.outputs.image_tag }}
+
+      # Restart backend app after deployment
+      - name: Restart backend app
+        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
+        run: |
+          az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+
+      # Purge Front Door cache to ensure latest content is served
+      - name: Purge Front Door cache
+        run: |
+          az afd endpoint purge \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+            --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+            --content-paths "/*"
+
+  health-check:
+    name: Post-Deployment Health Checks
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Web App
+        run: |
+          WEB_URL="https://${{ env.FRONTEND_DOMAIN }}"
+          echo "Testing web app: $WEB_URL"
+          
+          for i in {1..12}; do
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$WEB_URL")
+            if [ "$RESPONSE" = "200" ]; then
+              echo "Web check passed with 200 OK"
+              break
+            else
+              echo "Attempt $i: Web check returned $RESPONSE, waiting 10 seconds..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 12 ]; then
+              echo "Web check failed after 2 minutes of attempts"
+              exit 1
+            fi
+          done
+
+      - name: Check API health
+        run: |
+          API_URL="https://${{ env.FRONTEND_DOMAIN }}/api/v1/health"
+          echo "Testing API: $API_URL"
+          
+          for i in {1..12}; do
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL")
+            if [ "$RESPONSE" = "200" ]; then
+              echo "API health check passed with 200 OK"
+              break
+            else
+              echo "Attempt $i: API check returned $RESPONSE, waiting 10 seconds..."
+              sleep 10
+            fi
+            
+            if [ $i -eq 12 ]; then
+              echo "API check failed after 2 minutes of attempts"
+              exit 1
+            fi
+          done
+
+      - name: Notify on successful deployment
+        if: success()
+        run: |
+          echo "✅ Successfully deployed PT Champion to production!"
+          
+          # Add Slack notification if you have a webhook
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"✅ Successfully deployed PT Champion to production!"}' \
+          #   ${{ secrets.SLACK_WEBHOOK_URL }} 
