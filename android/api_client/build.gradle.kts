@@ -88,7 +88,7 @@ dependencies {
     api("com.squareup.retrofit2:converter-scalars:2.9.0")
 
     // Coroutines (if used by generator)
-    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") // Match app module version
+    api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2") // Match app module version
 
     // --- Add any OTHER specific dependencies required by your generated code ---\
     // If using dateLibrary=java8 and minSdk < 26, app needs core library desugaring
