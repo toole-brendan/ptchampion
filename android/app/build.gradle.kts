@@ -27,9 +27,9 @@ configurations.all {
     resolutionStrategy {
         force("com.google.guava:guava:32.1.3-android")
         // Force consistent Moshi versions to avoid conflicts with generatedapi
-        force("com.squareup.moshi:moshi:1.15.0") 
-        force("com.squareup.moshi:moshi-kotlin:1.15.0")
-        force("com.squareup.moshi:moshi-adapters:1.15.0")
+        force("com.squareup.moshi:moshi:1.15.2") 
+        force("com.squareup.moshi:moshi-kotlin:1.15.2")
+        force("com.squareup.moshi:moshi-adapters:1.15.2")
         // Force consistent Retrofit versions
         force("com.squareup.retrofit2:retrofit:2.9.0")
         force("com.squareup.retrofit2:converter-moshi:2.9.0")
@@ -205,8 +205,8 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
     
     // Moshi for generated code serialization (based on errors)
-    implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.15.0") // Re-enable Moshi codegen
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.2")
+    kapt("com.squareup.moshi:moshi-kotlin-codegen:1.15.2") // Re-enable Moshi codegen
     
     // Datastore
     implementation("androidx.datastore:datastore-preferences:1.0.0")
