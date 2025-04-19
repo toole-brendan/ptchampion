@@ -73,10 +73,10 @@ dependencies {
     // Retrofit & Moshi (if used by generator)
     api("com.squareup.retrofit2:retrofit:2.9.0")
     api("com.squareup.retrofit2:converter-moshi:2.9.0")
-    api("com.squareup.moshi:moshi:1.15.0") // Match app module version
-    api("com.squareup.moshi:moshi-kotlin:1.15.0") // Match app module version
+    api("com.squareup.moshi:moshi:1.15.2") // Match app module version
+    api("com.squareup.moshi:moshi-kotlin:1.15.2") // Match app module version
     // kapt("com.squareup.moshi:moshi-kotlin-codegen:1.15.0") // Keep if moshi codegen is used - CHANGED to ksp
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0") // Use KSP for Moshi codegen
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.2") // Use KSP for Moshi codegen
     // Provide Kotest to kapt to resolve ShouldSpec in generated stubs - REMOVED
     // kapt("io.kotest:kotest-runner-junit5-jvm:5.5.4") 
 
