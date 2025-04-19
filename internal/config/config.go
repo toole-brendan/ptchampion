@@ -24,6 +24,13 @@ type Config struct {
 	Port         string `envconfig:"PORT" default:"8080"`
 	ClientOrigin string `envconfig:"CLIENT_ORIGIN" default:"http://localhost:5173"` // Default client origin for CORS
 	Region       string `envconfig:"AWS_REGION" default:"us-west-2"`                // Default AWS region
+
+	// Feature Flag Configuration
+	FlagsmithAPIKey          string `envconfig:"FLAGSMITH_API_KEY"`
+	FlagsmithBaseURL         string `envconfig:"FLAGSMITH_BASE_URL" default:"https://api.flagsmith.com/api/v1"`
+	FlagsmithCacheTTL        int    `envconfig:"FLAGSMITH_CACHE_TTL" default:"300"` // Default to 5 minutes
+	FlagsmithEnvironmentName string `envconfig:"FLAGSMITH_ENVIRONMENT" default:"development"`
+
 	// Add other config fields like SESSION_SECRET later
 	// SessionSecret string `envconfig:"SESSION_SECRET" required:"true"`
 }

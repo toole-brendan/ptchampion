@@ -20,6 +20,21 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: ptchampion_redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT_HOST:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   backend:
     build:
       context: . # Use the Dockerfile in the current directory
@@ -31,6 +46,10 @@ services:
       # Ensure the backend waits for the DB host (service name)
       # The DB_HOST env var in .env should match the service name 'db'
       DB_HOST: db # Override DB_HOST to use the service name within Docker network
+      # Redis configuration for Docker Compose environment
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
       # Other necessary env vars will be loaded from .env
       # OpenTelemetry configuration
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
@@ -41,6 +60,8 @@ services:
     depends_on:
       db:
         condition: service_healthy # Wait for DB to be healthy
+      redis:
+        condition: service_healthy # Wait for Redis to be healthy
       jaeger:
         condition: service_started
     restart: unless-stopped
@@ -61,4 +82,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  postgres_data: # Define the named volume for data persistence 
+  postgres_data: # Define the named volume for data persistence
+  redis_data: # Define the named volume for Redis data persistence 

@@ -15,16 +15,16 @@ module.exports = {
         mono: ['Roboto Mono', 'monospace'],
       },
       colors: {
-        // PT Champion Style Guide V2 colors
-        'cream': '#F4F1E6',         // Light Background (Tactical Cream)
-        'deep-ops': '#1E241E',      // Primary Dark Background (Deep Ops Green)
-        'brass-gold': '#BFA24D',    // Accent / Highlight (Brass Gold)
-        'army-tan': '#E0D4A6',      // Button/Text Highlight (Army Tan)
-        'olive-mist': '#C9CCA6',    // Chart Fill (Olive Mist)
-        'command-black': '#1E1E1E', // Primary Text (Command Black)
-        'tactical-gray': '#4E5A48', // Secondary Text (Tactical Gray)
+        // PT Champion Style Guide V2 colors using CSS variables
+        'cream': 'hsl(var(--color-cream))',
+        'deep-ops': 'hsl(var(--color-deep-ops))',
+        'brass-gold': 'hsl(var(--color-brass-gold))',
+        'army-tan': 'hsl(var(--color-army-tan))',
+        'olive-mist': 'hsl(var(--color-olive-mist))',
+        'command-black': 'hsl(var(--color-command-black))',
+        'tactical-gray': 'hsl(var(--color-tactical-gray))',
         
-        // shadcn/ui theme colors (mapped to PT Champion colors)
+        // shadcn/ui theme colors (mapped to CSS variables)
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -80,8 +80,31 @@ module.exports = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
       },
+      textShadow: {
+        sm: '0 1px 2px var(--tw-shadow-color)',
+        DEFAULT: '0 2px 4px var(--tw-shadow-color)',
+        lg: '0 8px 16px var(--tw-shadow-color)',
+        none: 'none',
+      },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    function({ addUtilities, theme, e }) {
+      const textShadows = theme('textShadow', {})
+      const textShadowUtilities = Object.entries(textShadows).reduce(
+        (acc, [key, value]) => {
+          return {
+            ...acc,
+            [`.${e(`text-shadow${key === 'DEFAULT' ? '' : `-${key}`}`)}`]: {
+              textShadow: value,
+            },
+          }
+        },
+        {}
+      )
+      addUtilities(textShadowUtilities)
+    },
+  ],
 }
 

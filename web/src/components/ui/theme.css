@@ -1,0 +1,58 @@
+/* Theme configuration for shadcn/ui components based on PT Champion Style Guide V2 */
+
+@layer base {
+  :root {
+    /* PT Champion Style Guide V2 base HSL colors */
+    --color-cream: 45 39% 93%; /* #F4F1E6 - Light Background */
+    --color-deep-ops: 120 10% 13%; /* #1E241E - Primary Dark Background */
+    --color-brass-gold: 43 45% 42%; /* Darkened by 20% from #BFA24D to #96812D for better contrast */
+    --color-army-tan: 45 42% 76%; /* #E0D4A6 - Button/Text Highlight */
+    --color-olive-mist: 65 27% 66%; /* #C9CCA6 - Chart Fill */
+    --color-command-black: 0 0% 12%; /* #1E1E1E - Primary Text */
+    --color-tactical-gray: 110 12% 32%; /* #4E5A48 - Secondary Text */
+    
+    /* shadcn/ui variable mapping for light mode */
+    --background: var(--color-cream);
+    --foreground: var(--color-command-black);
+    --card: var(--color-cream);
+    --card-foreground: var(--color-command-black);
+    --popover: var(--color-cream);
+    --popover-foreground: var(--color-command-black);
+    --primary: var(--color-brass-gold);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--color-army-tan);
+    --secondary-foreground: var(--color-command-black);
+    --muted: var(--color-olive-mist);
+    --muted-foreground: var(--color-tactical-gray);
+    --accent: var(--color-brass-gold);
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--color-army-tan);
+    --input: var(--color-cream);
+    --ring: var(--color-brass-gold);
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --background: var(--color-deep-ops);
+    --foreground: var(--color-cream);
+    --card: var(--color-deep-ops);
+    --card-foreground: var(--color-cream);
+    --popover: var(--color-deep-ops);
+    --popover-foreground: var(--color-cream);
+    --primary: var(--color-brass-gold);
+    --primary-foreground: 0 0% 100%;
+    --secondary: var(--color-tactical-gray);
+    --secondary-foreground: var(--color-cream);
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: var(--color-olive-mist);
+    --accent: var(--color-brass-gold);
+    --accent-foreground: var(--color-cream);
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 100%;
+    --border: var(--color-tactical-gray);
+    --input: 215 27.9% 16.9%;
+    --ring: var(--color-brass-gold);
+  }
+} 

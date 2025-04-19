@@ -5,9 +5,14 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import com.google.mediapipe.tasks.components.containers.Landmark
 
 /**
- * Constants representing the standard landmark indices in the MediaPipe pose detection model.
+ * Constants representing the standard landmark indices in the PoseLandmarker detection model.
+ * This class is updated to match the MediaPipe Tasks PoseLandmarker API.
+ * 
+ * The indices correspond to the BlazePose model's 33 keypoints:
+ * https://developers.google.com/mediapipe/solutions/vision/pose_landmarker
  */
 object PoseLandmark {
+    // Face landmarks
     const val NOSE = 0
     const val LEFT_EYE_INNER = 1
     const val LEFT_EYE = 2
@@ -19,6 +24,8 @@ object PoseLandmark {
     const val RIGHT_EAR = 8
     const val MOUTH_LEFT = 9
     const val MOUTH_RIGHT = 10
+    
+    // Upper body landmarks
     const val LEFT_SHOULDER = 11
     const val RIGHT_SHOULDER = 12
     const val LEFT_ELBOW = 13
@@ -31,6 +38,8 @@ object PoseLandmark {
     const val RIGHT_INDEX = 20
     const val LEFT_THUMB = 21
     const val RIGHT_THUMB = 22
+    
+    // Lower body landmarks
     const val LEFT_HIP = 23
     const val RIGHT_HIP = 24
     const val LEFT_KNEE = 25
@@ -43,10 +52,21 @@ object PoseLandmark {
     const val RIGHT_FOOT_INDEX = 32
 }
 
-// Extension property to access the first pose's landmarks
+/**
+ * Extension property to access the first pose's landmarks
+ */
 val PoseLandmarkerResult.landmarks: List<NormalizedLandmark>
     get() = if (this.landmarks().isNotEmpty()) this.landmarks()[0] else emptyList()
 
-// Extension property to access the first pose's world landmarks
+/**
+ * Extension property to access the first pose's world landmarks
+ */
 val PoseLandmarkerResult.worldLandmarks: List<Landmark>
-    get() = if (this.worldLandmarks().isNotEmpty()) this.worldLandmarks()[0] else emptyList() 
+    get() = if (this.worldLandmarks().isNotEmpty()) this.worldLandmarks()[0] else emptyList()
+
+/**
+ * Extension function to safely get landmark visibility with a default value
+ */
+fun NormalizedLandmark.getVisibility(): Float {
+    return this.visibility().orElse(0.0f)
+} 

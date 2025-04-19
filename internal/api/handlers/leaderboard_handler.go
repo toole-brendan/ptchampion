@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -19,7 +20,7 @@ import (
 const defaultSearchRadiusMeters = 8047
 
 const defaultLeaderboardLimit = 20
-const leaderboardCacheTTL = 5 * time.Minute // 5 minute TTL for cached leaderboards
+const leaderboardCacheTTL = 10 * time.Minute // 10 minute TTL for cached leaderboards (increased from 5 minutes)
 
 // LocalLeaderboardEntry defines the structure for local leaderboard results
 type LocalLeaderboardEntry struct {
@@ -43,21 +44,44 @@ type LeaderboardEntry struct {
 // GetCacheClient returns a Redis client or nil if Redis is not configured
 func (h *Handler) GetCacheClient() *redis.Client {
 	// Check if Redis is enabled via environment variables
-	// This is a simplified version - using direct values from environment
-	redisEnabled := false // Default to disabled
+	// We're enabling Redis by default now
+	redisEnabled := true // Changed from false to true
 
-	// Create Redis config directly from environment variables or defaults
+	// Get Redis config from environment or use defaults
+	redisCfg := redis_cache.Config{
+		Host:     getEnvOrDefault("REDIS_HOST", "localhost"),
+		Port:     getEnvIntOrDefault("REDIS_PORT", 6379),
+		Password: getEnvOrDefault("REDIS_PASSWORD", ""),
+		DB:       getEnvIntOrDefault("REDIS_DB", 0),
+		PoolSize: getEnvIntOrDefault("REDIS_POOL_SIZE", 10),
+	}
+
 	if redisEnabled {
-		redisCfg := redis_cache.Config{
-			Host:     "localhost", // Default value
-			Port:     6379,        // Default value
-			Password: "",          // Default value
-			DB:       0,           // Default value
-			PoolSize: 10,          // Default value
-		}
 		return redis_cache.NewClient(redisCfg)
 	}
 	return nil
+}
+
+// Helper function to get environment variables with defaults
+func getEnvOrDefault(key, defaultValue string) string {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	return value
+}
+
+// Helper function to get integer environment variables with defaults
+func getEnvIntOrDefault(key string, defaultValue int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	intValue, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultValue
+	}
+	return intValue
 }
 
 // GetLeaderboard handles requests to retrieve the leaderboard for a specific exercise type
@@ -214,7 +238,7 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 		WHERE u.last_location IS NOT NULL
 		AND ST_DWithin(u.last_location::geography, ST_GeographyFromText($2)::geography, $3)
 		GROUP BY u.id, u.username, u.display_name, rw.best_score, u.last_location
-		ORDER BY ST_Distance(u.last_location::geography, ST_GeographyFromText($2)::geography) ASC
+		ORDER BY u.last_location <-> ST_GeographyFromText($2) ASC -- Using the <-> KNN operator for faster spatial ordering
 		LIMIT $4
 	`
 
