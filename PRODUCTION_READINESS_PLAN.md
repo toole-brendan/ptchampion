@@ -11,9 +11,9 @@
 - ✅ Phase-3: Security Hardening (Completed)
 - ✅ Phase-4: Infrastructure & DevOps (Completed)
 - ✅ Phase-5: Observability & Reliability (Completed)
-- 🔄 Phase-6: Performance & UX Optimisation (In Progress)
+- ✅ Phase-6: Performance & UX Optimisation (In Progress)
 - ⏳ Phase-7: Mobile Store Readiness (Pending)
-- ⏳ Phase-8: Documentation & Knowledge Sharing (Pending)
+- ✅ Phase-8: Documentation & Knowledge Sharing (In Progress)
 - ✅ Phase-9: Compliance, Back-ups & DR (Completed)
 
 ---
@@ -173,9 +173,9 @@
 ---
 
 ## 8. Phase‑6: Performance & UX Optimisation (Week 8‑10)
-- Web: code‑splitting (`react‑lazy`), PWA Lighthouse score ≥ 90, Brotili compression.
-- Mobile: reduce bundle size, LazyList cell reuse, image caching.
-- Backend: Load test with k6, autoscale Azure App Service.
+- Web: code‑splitting (`react‑lazy`) ✅ Implemented, PWA Lighthouse score ≥ 90 ✅ Enforced via Lighthouse CI GitHub Action, Brotli compression ✅ Implemented.
+- Mobile: reduce bundle size (R8/resource shrink), LazyList cell reuse, image caching via Coil ✅ Implemented.
+- Backend: Load test with k6 ✅ Implemented, autoscale (ECS/App Service) ✅ Configured via Terraform target‑tracking policies.
 
 ---
 
@@ -191,7 +191,7 @@
 - **Architecture MD:** diagrams (C4), data flow.
 - **Runbooks:** incident response, on‑call rotations.
 - **Contributing MD:** dev setup, coding standards (gofumpt, prettier, ktlint).
-- **API Docs:** ReDoc HTML generated from `openapi.yaml`, auto‑deploy via GitHub Pages.
+- **API Docs:** ✅ ReDoc HTML auto‑generated from `openapi.yaml` via GitHub Actions and deployed to GitHub Pages.
 
 ---
 
@@ -221,7 +221,7 @@ section Optimisation & Releases
 Performance       :active,  p6, after p5, 14d
 Store Readiness   :         p7, after p6, 14d
 section Docs & DR
-Docs & Knowledge  :         p8, after p4, 14d
+Docs & Knowledge  :active, p8, after p4, 14d
 Back‑up & DR      :done,    p9, after p4, 14d
 ```
 

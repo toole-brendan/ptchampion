@@ -84,9 +84,9 @@ android {
     buildTypes {
         release {
             // Disable minification completely to bypass R8 issues
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             // Disable resource shrinking
-            isShrinkResources = false
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -259,4 +259,7 @@ dependencies {
 
     // Accompanist Permissions
     // implementation("com.google.accompanist:accompanist-permissions:0.31.5-beta") // Use latest stable/suitable version
+
+    // Coil image caching dependency
+    implementation("io.coil-kt:coil-compose:2.4.0")
 }
