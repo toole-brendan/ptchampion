@@ -5,10 +5,11 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import logoImage from '../../assets/pt_champion_logo_2.png';
 
-// Logo component (temporary, replace with actual logo)
+// Real logo component
 const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={`${className} text-brass-gold font-heading`}>PT</div>
+  <img src={logoImage} alt="PT Champion Logo" className={`${className} w-auto h-80`} />
 );
 
 const RegisterPage: React.FC = () => {
@@ -86,10 +87,8 @@ const RegisterPage: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-cream p-4">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
-          <LogoIcon className="text-6xl" />
-          <h1 className="text-3xl font-heading text-command-black mt-4">PT CHAMPION</h1>
-          <p className="text-tactical-gray mt-2">Create your account</p>
+        <div className="flex flex-col items-center mb-10">
+          <LogoIcon className="mb-4" />
         </div>
 
         {(error || validationError) && (

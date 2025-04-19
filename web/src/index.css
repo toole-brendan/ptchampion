@@ -43,79 +43,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import theme variables */
+@import './components/ui/theme.css';
+
 @layer base {
-  /* Define CSS variables first */
-  :root {
-    /* PT Champion Style Guide V2 colors as HSL */
-    --cream: 45 39% 93%; /* #F4F1E6 - Light Background */
-    --deep-ops: 120 10% 13%; /* #1E241E - Primary Dark Background */
-    --brass-gold: 43 45% 52%; /* #BFA24D - Accent / Highlight */
-    --army-tan: 45 42% 76%; /* #E0D4A6 - Button/Text Highlight */
-    --olive-mist: 65 27% 66%; /* #C9CCA6 - Chart Fill */
-    --command-black: 0 0% 12%; /* #1E1E1E - Primary Text */
-    --tactical-gray: 110 12% 32%; /* #4E5A48 - Secondary Text */
-    
-    /* Map shadcn/ui variables to PT Champion colors */
-    --background: var(--cream);
-    --foreground: var(--command-black);
-    --card: var(--cream);
-    --card-foreground: var(--command-black);
-    --popover: var(--cream);
-    --popover-foreground: var(--command-black);
-    --primary: var(--brass-gold);
-    --primary-foreground: var(--command-black);
-    --secondary: var(--army-tan);
-    --secondary-foreground: var(--command-black);
-    --muted: var(--olive-mist);
-    --muted-foreground: var(--tactical-gray);
-    --accent: var(--brass-gold);
-    --accent-foreground: var(--deep-ops);
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 100%;
-    --border: var(--army-tan);
-    --input: 214.3 31.8% 91.4%;
-    --ring: var(--brass-gold);
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: var(--deep-ops);
-    --foreground: var(--cream);
-    --card: var(--deep-ops);
-    --card-foreground: var(--cream);
-    --popover: var(--deep-ops);
-    --popover-foreground: var(--cream);
-    --primary: var(--brass-gold);
-    --primary-foreground: var(--deep-ops);
-    --secondary: var(--tactical-gray);
-    --secondary-foreground: var(--cream);
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: var(--olive-mist);
-    --accent: var(--brass-gold);
-    --accent-foreground: var(--cream);
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 100%;
-    --border: var(--tactical-gray);
-    --input: 215 27.9% 16.9%;
-    --ring: var(--brass-gold);
-  }
-
   body {
-    @apply bg-cream text-command-black;
+    @apply bg-background text-foreground;
     margin: 0;
     padding: 0;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading uppercase text-command-black;
+    @apply font-heading uppercase text-foreground;
   }
   
   .stat-number {
-    @apply font-mono text-xl md:text-2xl font-medium text-command-black;
+    @apply font-mono text-xl md:text-2xl font-medium text-foreground;
   }
   
   .label {
-    @apply font-sans text-sm text-tactical-gray;
+    @apply font-sans text-sm text-muted-foreground;
   }
 }
 
@@ -129,7 +76,7 @@
   }
   
   .bottom-nav-item.active {
-    @apply text-brass-gold;
+    @apply text-brass-gold text-shadow-sm shadow-black;
   }
   
   .bottom-nav-label {
@@ -137,6 +84,6 @@
   }
   
   .metric-card {
-    @apply bg-cream rounded-card p-4 shadow-sm;
+    @apply bg-card rounded-card p-4 shadow-sm text-card-foreground;
   }
 }

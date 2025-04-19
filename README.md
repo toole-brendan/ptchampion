@@ -4,25 +4,25 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 
 ## Features
 
-- **Exercise Tracking**: Monitor push-ups, pull-ups, sit-ups, and running performance
-- **Computer Vision Analysis**: Real-time form analysis and feedback using MediaPipe
-- **Leaderboards**: Compare your performance with others globally or locally
-- **Local Leaderboards**: Compare your performance with others within a defined radius (e.g., 5 miles) of your current location.
-- **Progress Tracking**: Monitor your performance over time with detailed history
-- **Cross-Platform Synchronization**: Seamlessly sync your data between web and mobile apps
-- **Offline Support**: Continue using the mobile apps without an internet connection
-- **Bluetooth Integration**: Connect to fitness devices for heart rate and running metrics
-  - **GPS Watch Integration**: Specialized support for Garmin, Polar, Suunto and other GPS fitness watches
-  - **Heart Rate Monitoring**: Real-time heart rate data from Bluetooth LE devices
-  - **Pace and Cadence**: Running metrics from compatible fitness devices
+- **Exercise Tracking**: Monitor push-ups, pull-ups, sit-ups, and running performance using device cameras or connected watches.
+- **Computer Vision Analysis**: Real-time form analysis and rep counting using MediaPipe (Web, Android) and Apple Vision (iOS).
+- **Leaderboards**: Compare performance globally or locally (within a defined radius).
+- **Progress Tracking**: Monitor performance over time with detailed history and visualizations.
+- **Cross-Platform Synchronization**: Sync data between web and mobile apps (details TBC based on sync implementation).
+- **Offline Support**: Mobile apps and Web PWA support offline data storage (using SwiftData, IndexedDB) and background synchronization.
+- **Bluetooth Integration**: Connect to fitness devices:
+  - **GPS Watch Integration**: Specialized support for Garmin, Polar, Suunto, and other GPS fitness watches (fetching location/metrics).
+  - **Heart Rate Monitoring**: Real-time heart rate data from Bluetooth LE devices (supported on mobile and Web Bluetooth-compatible browsers).
+  - **Pace and Cadence**: Running metrics from compatible fitness devices.
 
 ## Project Structure
 
 ```
 /
 ├── cmd/
-│   └── server/                  # Main Go application entry point (Echo framework)
-│       └── main.go
+│   ├── server/                  # Main Go application entry point (Echo framework)
+│   │   └── main.go
+│   └── wasm/                    # (Experimental/Unused) Potential WASM compilation target
 ├── internal/                  # Private Go application code
 │   ├── api/                   # HTTP handlers, routing (Echo), middleware, generated code
 │   │   ├── handlers/          # Request handler implementations
@@ -31,33 +31,46 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 │   │   ├── openapi.gen.go     # Generated code from OpenAPI spec (oapi-codegen)
 │   │   └── router.go          # Echo router setup & static file serving
 │   ├── auth/                  # Authentication logic helpers
-│   ├── config/                # Configuration loading (env vars)
-│   ├── grading/               # Exercise grading logic
+│   ├── config/                # Configuration loading (env vars, AWS Secrets Manager)
+│   ├── grading/               # Exercise grading logic (backend-side)
 │   └── store/                 # Data access layer interfaces/implementations
-│       └── postgres/          # PostgreSQL specific implementation using sqlc
-│           ├── db.go          # Database connection & sqlc Querier setup
-│           ├── models.go      # sqlc generated Go structs from schema
-│           └── query.sql.go   # sqlc generated Go methods from queries
+│       ├── postgres/          # PostgreSQL specific implementation (using sqlc)
+│       │   ├── db.go          # Database connection & sqlc Querier setup
+│       │   ├── models.go      # sqlc generated Go structs from schema
+│       │   └── query.sql.go   # sqlc generated Go methods from queries
+│       └── redis/             # Redis implementation (e.g., leaderboard caching)
+│           ├── config.go
+│           └── leaderboard_cache.go
 │
 ├── pkg/                     # (Currently unused) Shared Go libraries
 │
 ├── db/                      # Database migration files
-│   └── migrations/          # .sql migration files (up/down)
+│   └── migrations/          # .sql migration files (up/down) using golang-migrate
 │
-├── web/                     # Web frontend (React + Vite + TypeScript)
+├── shared/                  # Shared TypeScript code (potentially across frontend/backend)
+│   └── schema.ts            # Drizzle ORM schema definitions, Zod validation schemas, shared types
+│
+├── web/                     # Web frontend (React + Vite + TypeScript PWA)
 │   ├── public/              # Static assets
 │   ├── src/
 │   │   ├── assets/          # Project-specific assets (images, etc.)
 │   │   ├── components/      # Reusable UI components (using shadcn/ui)
-│   │   ├── lib/             # Core logic, API client, auth, state management
+│   │   ├── lib/             # Core logic, API client, auth, state management, utils
 │   │   │   ├── apiClient.ts # Typed client for backend API calls (fetch)
-│   │   │   ├── authContext.tsx# React Context for authentication state
+│   │   │   ├── authContext.tsx # React Context for authentication state (uses TanStack Query)
 │   │   │   ├── config.ts    # Frontend configuration (e.g., API URL)
-│   │   │   ├── types.ts     # TypeScript types for API/data
+│   │   │   ├── db/          # IndexedDB logic (using idb library)
+│   │   │   │   └── indexedDB.ts
+│   │   │   ├── hooks/       # Custom React Hooks
+│   │   │   │   ├── useBluetoothHRM.ts # Web Bluetooth API hook for HRM
+│   │   │   │   └── usePoseDetector.ts # MediaPipe pose detection hook
+│   │   │   ├── types.ts     # TypeScript types (consider merging/linking with shared/schema.ts)
 │   │   │   └── utils.ts     # General utility functions
 │   │   ├── pages/           # Route components (views) for different app sections
-│   │   ├── App.tsx          # Main app component (Routing setup with react-router-dom)
-│   │   └── main.tsx         # Application entry point (React DOM render)
+│   │   ├── App.tsx          # Main app component (Routing setup with react-router-dom, TanStack Query setup)
+│   │   ├── main.tsx         # Application entry point (React DOM render)
+│   │   ├── serviceWorker.ts # Service Worker logic for PWA features (offline caching)
+│   │   └── serviceWorkerRegistration.ts # Service Worker registration and sync logic
 │   ├── index.html           # HTML entry point for Vite
 │   ├── package.json         # Node dependencies
 │   ├── tsconfig.json        # TypeScript configuration
@@ -67,35 +80,37 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 ├── ios/                     # iOS Application (Swift + SwiftUI)
 │   ├── ptchampion/          # Main iOS project directory
 │   │   ├── Views/           # SwiftUI views
-│   │   ├── ViewModels/      # View models for business logic
-│   │   ├── Services/        # API clients, local storage, etc.
-│   │   └── Models/          # Data models
+│   │   ├── ViewModels/      # View models implementing MVVM
+│   │   ├── Services/        # API clients, Bluetooth, Location, Pose Detection, etc.
+│   │   └── Models/          # Data models (including SwiftData models like WorkoutResultSwiftData)
 │
 ├── android/                 # Android Application (Kotlin + Jetpack Compose)
 │   ├── app/
 │   │   ├── build.gradle.kts # Module-level Gradle build script
 │   │   └── src/main/
-│   │       ├── assets/      # Assets (if any)
+│   │       ├── assets/      # MediaPipe models (.task files), etc.
 │   │       ├── java/        # (Likely contains generated Hilt/other code)
 │   │       │    └── com/example/ptchampion/ # Root package
-│   │       │        ├── data/         # Data layer (API, Repositories, DataStore)
+│   │       │        ├── data/         # Data layer (API impls, Repositories, DataStore)
 │   │       │        ├── di/           # Dependency Injection (Hilt modules)
-│   │       │        ├── domain/       # Business logic (Use Cases, Models, Analyzers)
+│   │       │        ├── domain/       # Business logic (Use Cases, Models, Analyzers, Repositories Interfaces)
 │   │       │        ├── model/        # Data models (shared or UI specific)
-│   │       │        ├── ui/           # UI layer (Compose Screens, ViewModels)
+│   │       │        ├── ui/           # UI layer (Compose Screens, ViewModels, Navigation)
 │   │       │        ├── util/         # Utility classes & helpers
+│   │       │        ├── posedetection/# MediaPipe PoseLandmarker integration code
 │   │       │        └── MainActivity.kt # Main Activity
 │   │       └── res/             # Android resources (drawables, values, etc.)
 │   ├── build.gradle.kts      # Project-level Gradle build script
 │   └── settings.gradle.kts   # Gradle settings script
+│   ├── api_client/          # (Purpose TBD - Potentially shared Kotlin API client?)
 │
-├── scripts/                 # Utility scripts (build, deploy, etc.)
+├── scripts/                 # Utility scripts (e.g., OpenAPI generation)
 ├── docs/                    # Documentation files (how-to guides, etc.)
 ├── Dockerfile               # Docker configuration for Go backend deployment
-├── docker-compose.yml       # Docker Compose for local development
+├── docker-compose.yml       # Docker Compose for local development (Postgres, Backend)
 ├── openapi.yaml             # OpenAPI (Swagger) specification for the backend API
 ├── .devcontainer.json       # Dev container configuration for VS Code
-├── Makefile                 # Build and development tasks
+├── Makefile                 # Build and development tasks (including migrations)
 ├── go.mod                   # Go module definition
 ├── go.sum                   # Go module checksums
 └── README.md                # This file
@@ -107,14 +122,16 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 
 - **Framework**: [Echo](https://echo.labstack.com/) (Web Framework)
 - **Database**: PostgreSQL
-- **ORM/Data Access**: [sqlc](https://sqlc.dev/) (Generate Go code from SQL)
-- **Migrations**: [migrate](https://github.com/golang-migrate/migrate) or similar (SQL-based migrations)
+- **Data Access**: [sqlc](https://sqlc.dev/) (Generate Go code from SQL)
+- **Caching**: Redis (using [go-redis/redis](https://github.com/go-redis/redis)) for leaderboard caching
+- **Migrations**: [golang-migrate](https://github.com/golang-migrate/migrate) (SQL-based migrations managed via `Makefile`)
 - **API Specification**: OpenAPI 3.0 (`openapi.yaml`)
 - **Code Generation**: [oapi-codegen](https://github.com/deepmap/oapi-codegen) (Generate Echo server code from OpenAPI spec)
-- **Configuration**: Environment Variables
-- **Authentication**: JWT (using `golang-jwt/jwt/v5` likely implemented in handlers/middleware)
+- **Configuration**: Environment Variables, `.env` files, [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) integration
+- **Authentication**: JWT (using `golang-jwt/jwt/v5`)
+- **Schema/Types (Potentially)**: [Drizzle ORM](https://orm.drizzle.team/) + [Zod](https://zod.dev/) via `shared/schema.ts` (Needs confirmation on backend integration)
 
-### Web Frontend (React)
+### Web Frontend (React - PWA)
 
 - **Framework/Library**: [React](https://reactjs.org/) with [TypeScript](https://www.typescriptlang.org/)
 - **Build Tool**: [Vite](https://vitejs.dev/)
@@ -123,34 +140,41 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 - **Routing**: [React Router DOM](https://reactrouter.com/)
 - **State Management / Data Fetching**: [TanStack Query (React Query)](https://tanstack.com/query/latest)
 - **API Client**: Native `fetch` API within a typed client (`apiClient.ts`)
+- **Offline Storage**: IndexedDB (using [idb](https://github.com/jakearchibald/idb) library)
+- **PWA Features**: Service Workers for caching and background sync (`serviceWorker.ts`)
+- **Vision Processing**: [MediaPipe Tasks Vision](https://developers.google.com/mediapipe/solutions/vision/pose_landmarker/web_js) (via `@mediapipe/tasks-vision` for pose detection)
+- **Bluetooth**: Web Bluetooth API (via `useBluetoothHRM` hook, requires compatible browser like Chrome/Edge)
 
 ### iOS Application (Swift)
 
 - **UI Framework**: SwiftUI
 - **Architecture**: MVVM (Model-View-ViewModel)
-- **Networking**: URLSession with Combine/AsyncAwait
-- **Local Storage**: Core Data (Planned/Typical)
-- **Vision Processing**: Apple Vision framework (Planned)
-- **Bluetooth**: CoreBluetooth (Planned)
+- **Networking**: URLSession with Combine/AsyncAwait (via `NetworkClient.swift`)
+- **Local Storage**: [SwiftData](https://developer.apple.com/xcode/swiftdata/)
+- **Vision Processing**: [Apple Vision framework](https://developer.apple.com/documentation/vision) (for pose detection)
+- **Bluetooth**: [CoreBluetooth](https://developer.apple.com/documentation/corebluetooth) (for HRM and GPS watch integration)
+- **Location**: CoreLocation
+- **Authentication**: Keychain for secure token storage (`KeychainService.swift`)
 
 ### Android Application (Kotlin)
 
 - **UI Framework**: [Jetpack Compose](https://developer.android.com/jetpack/compose)
-- **Architecture**: MVVM with elements of Clean Architecture (using Use Cases)
+- **Architecture**: MVVM with elements of Clean Architecture (using Use Cases in `domain` layer)
 - **Networking**: [Retrofit](https://square.github.io/retrofit/) with [OkHttp](https://square.github.io/okhttp/) and [Kotlinx Serialization](https://github.com/Kotlin/kotlinx.serialization)
 - **Asynchronous Programming**: Kotlin Coroutines
 - **Local Storage**: [Jetpack DataStore (Preferences)](https://developer.android.com/topic/libraries/architecture/datastore) (for auth token/settings)
 - **Dependency Injection**: [Hilt](https://developer.android.com/training/dependency-injection/hilt-android)
 - **Navigation**: [Jetpack Navigation Compose](https://developer.android.com/jetpack/compose/navigation)
-- **Vision Processing**: [MediaPipe](https://developers.google.com/mediapipe) (via `PoseLandmarker` for exercise analysis)
+- **Vision Processing**: [MediaPipe](https://developers.google.com/mediapipe) (via `PoseLandmarker` task library for exercise analysis)
 - **Camera**: [CameraX](https://developer.android.com/training/camerax)
-- **Location**: Fused Location Provider (for local leaderboards)
-- **Bluetooth**: Android Bluetooth Low Energy API with specialized watch service implementation for GPS-enabled fitness devices (Garmin, Polar, Suunto)
+- **Location**: Fused Location Provider (likely)
+- **Bluetooth**: Android Bluetooth Low Energy API (via `BluetoothService`) with specialized handling for GPS-enabled fitness devices (Garmin, Polar, Suunto).
 
 ### Cross-Cutting
 
-- **Computer Vision**: MediaPipe (Intended primary library for pose analysis across platforms)
-- **API Design**: OpenAPI (Swagger) driving backend API structure
+- **API Design**: OpenAPI (Swagger) driving backend API structure and potentially client generation.
+- **Data Synchronization**: Custom sync logic likely used (inferred from `shared/schema.ts` sync types and PWA/offline features).
+- **Shared Schema**: Drizzle ORM + Zod used in `shared/schema.ts` for defining DB schema, validation, and TypeScript types.
 
 ## Getting Started
 

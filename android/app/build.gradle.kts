@@ -224,7 +224,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.31.5-beta")
     
     // MediaPipe dependencies - Use specific version instead of latest.release
-    implementation("com.google.mediapipe:tasks-vision:latest.release") // Use the latest stable release from repositories
+    implementation("com.google.mediapipe:tasks-vision:0.10.5") // Updated to specific version for PoseLandmarker
     // Optional GPU acceleration - Keep specific version or update if needed
     implementation("org.tensorflow:tensorflow-lite-gpu:2.12.0")
     

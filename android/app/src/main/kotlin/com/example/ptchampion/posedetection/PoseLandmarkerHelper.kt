@@ -12,8 +12,7 @@ import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.core.Delegate
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker
-// Comment out potentially problematic import if options class name changed
-// import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerOptions 
+import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerOptions
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult
 import java.lang.RuntimeException
 import java.util.concurrent.atomic.AtomicBoolean
@@ -21,7 +20,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 /**
- * Helper for MediaPipe pose detection
+ * Helper for MediaPipe pose detection using the PoseLandmarker Task
  */
 class PoseLandmarkerHelper(
     private val context: Context,
@@ -39,19 +38,19 @@ class PoseLandmarkerHelper(
         val results: PoseLandmarkerResult,
         val inputImageWidth: Int,
         val inputImageHeight: Int,
-        val inferenceTime: Long // Note: inferenceTime is not reliably provided by detectAsync
+        val inferenceTime: Long
     )
 
     companion object {
         const val TAG = "PoseLandmarkerHelper"
         const val MODEL_FULL = 0
         const val MODEL_LITE = 1
-        const val MODEL_HEAVY = 2 // Keep HEAVY if model file exists
+        const val MODEL_HEAVY = 2
 
         // Model files
         private const val POSE_LANDMARKER_FULL = "pose_landmarker_full.task"
         private const val POSE_LANDMARKER_LITE = "pose_landmarker_lite.task"
-        private const val POSE_LANDMARKER_HEAVY = "pose_landmarker_heavy.task" // Keep if model file exists
+        private const val POSE_LANDMARKER_HEAVY = "pose_landmarker_heavy.task"
     }
 
     private var poseLandmarker: PoseLandmarker? = null
@@ -66,87 +65,76 @@ class PoseLandmarkerHelper(
      * Sets up the MediaPipe PoseLandmarker
      */
     private fun setupPoseLandmarker() {
-        // Prevent setup if already closing
-        if (isClosing.get()) {
-            Log.w(TAG, "Skipping setup, helper is closing.")
-            return
-        }
-        
-        val modelName = when (currentModel) {
+        // Set up the PoseLandmarker using the appropriate model file
+        val modelFile = when (currentModel) {
             MODEL_FULL -> POSE_LANDMARKER_FULL
             MODEL_LITE -> POSE_LANDMARKER_LITE
             MODEL_HEAVY -> POSE_LANDMARKER_HEAVY
             else -> POSE_LANDMARKER_FULL
         }
 
+        // Create the PoseLandmarker options
         try {
-            // Close existing landmarker before creating a new one
-            poseLandmarker?.close()
-            poseLandmarker = null
-            
             val baseOptionsBuilder = BaseOptions.builder()
-                .setModelAssetPath(modelName)
+                .setModelAssetPath(modelFile)
                 .setDelegate(delegate)
-            // Comment out setNumThreads for now
-            // if (delegate != Delegate.GPU) {
-            //     baseOptionsBuilder.setNumThreads(defaultNumThreads)
-            // }
-            val baseOptions = baseOptionsBuilder.build()
+                .setNumThreads(defaultNumThreads)
 
-            // --- Corrected Options Configuration ---
-            // Create the options builder
-            val optionsBuilder = 
-                PoseLandmarker.PoseLandmarkerOptions.builder()
-                    .setBaseOptions(baseOptions) // Set the base options (model, delegate)
-                    .setMinPoseDetectionConfidence(minPoseDetectionConfidence)
-                    .setMinTrackingConfidence(minPoseTrackingConfidence) 
-                    .setMinPosePresenceConfidence(minPosePresenceConfidence)
-                    .setNumPoses(maxNumPoses) // Set the max number of poses
-                    .setRunningMode(runningMode) // Set the running mode
-                    .setOutputSegmentationMasks(false) // Or true if you need masks
+            val optionsBuilder = PoseLandmarkerOptions.builder()
+                .setBaseOptions(baseOptionsBuilder.build())
+                .setMinPoseDetectionConfidence(minPoseDetectionConfidence)
+                .setMinPosePresenceConfidence(minPosePresenceConfidence)
+                .setMinTrackingConfidence(minPoseTrackingConfidence)
+                .setNumPoses(maxNumPoses)
+                .setOutputSegmentationMasks(false) // Don't need segmentation for PT exercises
 
-            // Configure listeners based on RunningMode
-            if (runningMode == RunningMode.LIVE_STREAM) {
-                optionsBuilder
-                    .setResultListener { result, inputImage -> 
-                        // Call your listener with the result bundle
-                        resultListener?.onResults(
-                            ResultBundle(
-                                results = result,
-                                inputImageWidth = inputImage.width,
-                                inputImageHeight = inputImage.height,
-                                // Inference time might not be directly available in the async result
-                                // Use SystemClock.uptimeMillis() difference if needed
-                                inferenceTime = 0L // Use placeholder for now
-                            )
+            // Set up the landmarker based on running mode
+            when (runningMode) {
+                RunningMode.LIVE_STREAM -> {
+                    optionsBuilder.setRunningMode(RunningMode.LIVE_STREAM)
+                    optionsBuilder.setResultListener { result, input ->
+                        // Convert to our result bundle format
+                        val resultBundle = ResultBundle(
+                            results = result,
+                            inputImageWidth = input.width,
+                            inputImageHeight = input.height,
+                            inferenceTime = 0 // LiveStream mode doesn't provide inference time directly
                         )
+                        // Forward to the application listener
+                        resultListener?.onResults(resultBundle)
                     }
-                    .setErrorListener { error ->
-                        // Call your error listener
-                        resultListener?.onError(error.message ?: "An unknown error occurred")
+                    optionsBuilder.setErrorListener { error, errorCode ->
+                        resultListener?.onError(error, errorCode)
                     }
+                }
+                else -> {
+                    optionsBuilder.setRunningMode(runningMode)
+                }
             }
-            
-            // Build the options
+
+            // Build the PoseLandmarker
             val options = optionsBuilder.build()
-
-            // Create the PoseLandmarker instance
-            poseLandmarker = PoseLandmarker.createFromOptions(context, options) 
-            // --- End Corrected Options Configuration ---
-
-            Log.d(TAG, "PoseLandmarker initialized with model: $modelName, mode: $runningMode, delegate: $delegate")
-        } catch (e: Exception) {
-             // Don't report error if closing
-            if (!isClosing.get()) {
-                val errorMessage = "Failed to setup pose landmarker: ${e.message}"
-                Log.e(TAG, errorMessage, e)
-                resultListener?.onError(errorMessage)
-            }
+            poseLandmarker = PoseLandmarker.createFromOptions(context, options)
+            
+            Log.d(TAG, "PoseLandmarker setup successful with model: $modelFile")
+        } catch (e: IllegalStateException) {
+            resultListener?.onError(
+                "MediaPipe failed to initialize. See error logs for details.",
+                e.hashCode()
+            )
+            Log.e(TAG, "MediaPipe PoseLandmarker initialization error: ${e.message}", e)
+        } catch (e: RuntimeException) {
+            resultListener?.onError(
+                "MediaPipe failed to load model. See error logs for details. " +
+                        "Common causes include missing .task files in assets.",
+                e.hashCode()
+            )
+            Log.e(TAG, "MediaPipe PoseLandmarker failed to load model: ${e.message}", e)
         }
     }
 
     /**
-     * Process camera frame for pose detection
+     * Detects pose landmarks from an ImageProxy (live stream mode)
      */
     fun detectLiveStream(imageProxy: ImageProxy) {
         if (runningMode != RunningMode.LIVE_STREAM) {
@@ -170,30 +158,24 @@ class PoseLandmarkerHelper(
 
         val frameTime = SystemClock.uptimeMillis() // Timestamp for detectAsync
 
-        // Revert to BitmapImageBuilder, assuming internal handling or ARGB default
-        val bitmap = imageProxy.toBitmap() // Use CameraX ImageProxy.toBitmap()
-
-        if (bitmap == null) {
-            Log.e(TAG, "Failed to convert ImageProxy to Bitmap.")
-             imageProxy.close()
-            return
-        }
-        
-        val mpImage = BitmapImageBuilder(bitmap).build()
-
         try {
+            // Convert ImageProxy to MPImage
+            val mpImage = BitmapImageBuilder(imageProxy.toBitmap()).build()
+            
+            // Process the image for pose landmarks
             poseLandmarker?.detectAsync(mpImage, frameTime)
         } catch (e: Exception) {
-             Log.e(TAG, "Error calling detectAsync: ${e.message}", e)
-             // Report error via listener if needed
-             resultListener?.onError("Error during pose detection: ${e.message}")
+            Log.e(TAG, "Error detecting pose landmarks: ${e.message}", e)
+            resultListener?.onError("Error during pose detection: ${e.message}", e.hashCode())
         } finally {
-             // Always close the imageProxy
+            // Always close the imageProxy
             imageProxy.close()
         }
     }
     
-    // Method for non-live stream modes (IMAGE, VIDEO) - simplified
+    /**
+     * Detects pose landmarks from a bitmap synchronously
+     */
     fun detectSync(imageBitmap: Bitmap): ResultBundle? {
         if (runningMode == RunningMode.LIVE_STREAM) {
             Log.e(TAG, "detectSync called on LIVE_STREAM mode helper")
@@ -204,11 +186,15 @@ class PoseLandmarkerHelper(
             return null
         }
 
+        // Convert Bitmap to MPImage
         val mpImage = BitmapImageBuilder(imageBitmap).build()
         val startTime = SystemClock.uptimeMillis()
+        
         return try {
+            // Detect pose landmarks
             val results = poseLandmarker?.detect(mpImage)
             val inferenceTime = SystemClock.uptimeMillis() - startTime
+            
             results?.let {
                 ResultBundle(
                     results = it,
@@ -218,8 +204,8 @@ class PoseLandmarkerHelper(
                 )
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error detecting pose in sync mode: ${e.message}", e)
-            resultListener?.onError("Error detecting pose: ${e.message}")
+            Log.e(TAG, "Error detecting pose landmarks: ${e.message}", e)
+            resultListener?.onError("Error detecting pose landmarks: ${e.message}", e.hashCode())
             null
         }
     }
@@ -233,7 +219,7 @@ class PoseLandmarkerHelper(
         try {
             poseLandmarker?.close() // Close MediaPipe instance
         } catch (e: Exception) {
-             Log.e(TAG, "Error closing PoseLandmarker: ${e.message}", e)
+            Log.e(TAG, "Error closing PoseLandmarker: ${e.message}", e)
         }
         poseLandmarker = null
     }
@@ -244,5 +230,31 @@ class PoseLandmarkerHelper(
     interface LandmarkerListener {
         fun onError(error: String, errorCode: Int = 0)
         fun onResults(resultBundle: ResultBundle)
+    }
+    
+    /**
+     * Extension function to convert ImageProxy to Bitmap
+     */
+    private fun ImageProxy.toBitmap(): Bitmap? {
+        val yBuffer = planes[0].buffer
+        val uBuffer = planes[1].buffer
+        val vBuffer = planes[2].buffer
+        
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+        
+        val nv21 = ByteArray(ySize + uSize + vSize)
+        
+        // U and V are swapped
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+        
+        val yuvImage = android.graphics.YuvImage(nv21, android.graphics.ImageFormat.NV21, width, height, null)
+        val out = java.io.ByteArrayOutputStream()
+        yuvImage.compressToJpeg(android.graphics.Rect(0, 0, width, height), 100, out)
+        val imageBytes = out.toByteArray()
+        return android.graphics.BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
     }
 }

@@ -1,6 +1,6 @@
 # Makefile for ptchampion project
 
-.PHONY: help dev test deploy backend-build backend-test web-build web-test android-build android-test ios-build ios-test clean migrate migrate-up migrate-down migrate-create migrate-force wasm-install-tinygo wasm-build wasm-clean
+.PHONY: help dev test deploy backend-build backend-test web-build web-test android-build android-test ios-build ios-test clean migrate migrate-up migrate-down migrate-create migrate-force wasm-install-tinygo wasm-build wasm-clean redis-benchmark redis-flush redis-info
 
 help:
 	@echo "Usage: make [target]"
@@ -31,6 +31,11 @@ help:
 	@echo "  wasm-install-tinygo Install TinyGo"
 	@echo "  wasm-build        Build WASM grading module"
 	@echo "  wasm-clean        Clean WASM build artifacts"
+	@echo ""
+	@echo "Redis Commands:"
+	@echo "  redis-benchmark  Benchmark the leaderboard API for performance"
+	@echo "  redis-flush      Flush all Redis cache data"
+	@echo "  redis-info       Display Redis server information"
 
 # --- Development ---
 dev:
@@ -172,4 +177,31 @@ wasm-build: wasm-install-tinygo
 wasm-clean:
 	@echo "Cleaning WASM build artifacts..."
 	@rm -rf web/public/wasm/*.wasm web/public/wasm/*.js
-	@echo "WASM artifacts cleaned." 
+	@echo "WASM artifacts cleaned."
+
+# --- Redis Commands ---
+REDIS_HOST ?= localhost
+REDIS_PORT ?= 6379
+REDIS_PASSWORD ?= 
+
+redis-benchmark:
+	@echo "Benchmarking leaderboard API performance..."
+	@chmod +x scripts/benchmark_leaderboard.sh
+	@./scripts/benchmark_leaderboard.sh 100 10
+
+redis-flush:
+	@echo "Flushing Redis cache..."
+	@if [ -n "$(REDIS_PASSWORD)" ]; then \
+		redis-cli -h $(REDIS_HOST) -p $(REDIS_PORT) -a $(REDIS_PASSWORD) FLUSHALL; \
+	else \
+		redis-cli -h $(REDIS_HOST) -p $(REDIS_PORT) FLUSHALL; \
+	fi
+	@echo "Redis cache flushed."
+
+redis-info:
+	@echo "Redis server information:"
+	@if [ -n "$(REDIS_PASSWORD)" ]; then \
+		redis-cli -h $(REDIS_HOST) -p $(REDIS_PORT) -a $(REDIS_PASSWORD) INFO; \
+	else \
+		redis-cli -h $(REDIS_HOST) -p $(REDIS_PORT) INFO; \
+	fi 
