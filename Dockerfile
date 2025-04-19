@@ -30,12 +30,11 @@ WORKDIR /app
 # Copy the pre-built binary file from the previous stage
 COPY --from=builder /app/server_binary .
 
-# Copy env files if needed
-COPY .env.production .env
-
-# Set environment variable for production
+# Set environment variables for production
 ENV NODE_ENV=production
 ENV PORT=8080
+ENV JWT_SECRET=f8a4c3ff94e950fa7b1245d3fe57562d148c371aab9233428c849e9d7ba6d251
+ENV JWT_EXPIRES_IN=24h
 
 # Expose the port that Azure App Service expects (8080 is the default)
 EXPOSE 8080
