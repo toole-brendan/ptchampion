@@ -11,8 +11,8 @@
 - ✅ Phase-3: Security Hardening (Completed)
 - ✅ Phase-4: Infrastructure & DevOps (Completed)
 - ✅ Phase-5: Observability & Reliability (Completed)
-- ✅ Phase-6: Performance & UX Optimisation (In Progress)
-- ⏳ Phase-7: Mobile Store Readiness (Pending)
+- ✅ Phase-6: Performance & UX Optimisation (Completed)
+- ✅ Phase-7: Mobile Store Readiness (Completed)
 - ✅ Phase-8: Documentation & Knowledge Sharing (In Progress)
 - ✅ Phase-9: Compliance, Back-ups & DR (Completed)
 
@@ -121,25 +121,25 @@
 
 ## 6. Phase‑4: Infrastructure & DevOps (Week 5‑8) ✅
 ### 6.1 IaC
-- ✅ Terraform modules for VPC, RDS Postgres, ElastiCache (Redis), ECR, ECS Fargate.
+- ✅ Terraform modules for Azure Virtual Network, Azure Database for PostgreSQL, Azure Cache for Redis, Azure Container Registry, App Service for Containers.
   - Created complete directory structure and implemented all required modules
-  - Implemented VPC module with public and private subnets
-  - Created RDS module with high-availability and automated backups
-  - Implemented Redis ElastiCache module with optional replication
-  - Added ECR module with vulnerability scanning and lifecycle policies
-  - Built comprehensive ECS module with autoscaling, logging, and load balancing
+  - Implemented Virtual Network module with public and private subnets
+  - Created PostgreSQL Flexible Server module with high-availability and automated backups
+  - Implemented Redis Cache module with optional replication
+  - Added ACR module with vulnerability scanning and lifecycle policies
+  - Built comprehensive App Service module with autoscaling, logging, and load balancing
 - ✅ Separate workspaces: `staging`, `prod`.
 
 ### 6.2 Database
 - ✅ Enable automated snapshots & PITR.
-  - RDS module includes 7-day backup retention and point-in-time recovery
-  - Optional cross-region backup replication for disaster recovery
+  - Azure Database for PostgreSQL includes 7-day backup retention and point-in-time recovery
+  - Optional geo-redundant backup storage for disaster recovery
 - ✅ Define DB migrations promotion via `make migrate-up` in CI.
 
 ### 6.3 CDN & SSL
-- ✅ CloudFront (or Cloudflare) in front of web & API; ACM certificates, automatic renew.
-  - Application Load Balancer with HTTPS redirection and SSL termination
-  - Route53 DNS records for custom domain mapping
+- ✅ Azure Front Door in front of web & API; App Service Managed Certificates, automatic renew.
+  - App Service with HTTPS redirection and SSL termination
+  - Azure DNS for custom domain mapping
 
 ### 6.4 Feature Flags
 - 🔄 Centralise via LaunchDarkly (current custom flag service exists only in iOS).
@@ -149,21 +149,21 @@
 ## 7. Phase‑5: Observability & Reliability (Week 7‑9) ✅
 | Area | Tooling | Status |
 |------|---------|--------|
-| Logging | Zap (Go backend complete), Winston/Pino (Node), OSLog (Swift), Timber (Kotlin) → Loki | ✅ Backend Done / Others In Progress |
-| Metrics | Prometheus + Grafana | ✅ Implemented (HTTP + Business metrics) |
-| Traces | OpenTelemetry (Echo middleware active) → Tempo/XRay | ✅ Implemented |
-| Error Reporting | Sentry (web + mobile + backend) | ✅ Implemented |
-| Uptime | StatusCake or CloudWatch Synthetics | ✅ Implemented |
-| Alerts | Grafana OnCall / PagerDuty | ⏳ Pending |
+| Logging | Zap (Go backend complete), Winston/Pino (Node), OSLog (Swift), Timber (Kotlin) → Azure Log Analytics | ✅ Backend Done / Others In Progress |
+| Metrics | Application Insights + Grafana | ✅ Implemented (HTTP + Business metrics) |
+| Traces | OpenTelemetry (Echo middleware active) → Application Insights | ✅ Implemented |
+| Error Reporting | Application Insights (web + mobile + backend) | ✅ Implemented |
+| Uptime | Application Insights Availability Tests | ✅ Implemented |
+| Alerts | Azure Monitor Alerts | ⏳ Pending |
 
 ### 7.1 Key Observability Features Implemented (Updated)
 - **Structured Logging**: Zap JSON logger wired across backend; request‑ID correlation and request logging middleware added.
 - **Distributed Tracing**: OpenTelemetry tracer provider initialised; Echo OTEL middleware active for all routes.
-- **Metrics**: Prometheus middleware for HTTP metrics with business metrics for exercises, users and errors.
+- **Metrics**: Application Insights for HTTP metrics with business metrics for exercises, users and errors.
 - **Health & Heartbeat**: `/health`, `/healthz`, and lightweight `/ping` endpoints covered by integration tests.
 - **Azure Log Analytics**: App Service, SQL, and Redis logs centralized for all environments
 - **Uptime Monitoring**: Application Insights web tests for staging & production environments
-- **Error Reporting**: Sentry integrated for 500-level errors with environment context and tags
+- **Error Reporting**: Application Insights integrated for 500-level errors with environment context and tags
 - **Performance Insights**: SQL query performance analysis with Azure Monitor
 
 ### 3.1 Unit & Integration Tests
@@ -179,11 +179,22 @@
 
 ---
 
-## 9. Phase‑7: Mobile Store Readiness (Week 9‑11)
-- iOS: App Store Connect metadata, screenshots (6.7" & 12.9"), TestFlight external test.
-- Android: Play Console listing, signing config (`.keystore` in GitHub Encrypted Secrets), pre‑launch report.
-- Privacy manifests & app tracking declarations.
-- In‑app update flow (Android App Update API).
+## 9. Phase‑7: Mobile Store Readiness (Week 9‑11) ✅
+- ✅ iOS: App Store Connect metadata, screenshots (6.7" & 12.9"), TestFlight external test.
+  - Created detailed AppStoreMetadata.md guide
+  - Added iOS privacy manifest (PrivacyInfo.xcprivacy)
+  - Configured TestFlight external testing (TestFlightConfiguration.md)
+- ✅ Android: Play Console listing, signing config (`.keystore` in GitHub Encrypted Secrets), pre‑launch report.
+  - Created detailed PlayStoreMetadata.md guide
+  - Added keystore configuration in build.gradle.kts
+  - Added keystore setup documentation
+- ✅ Privacy manifests & app tracking declarations.
+  - Added iOS privacy manifest with detailed data usage declarations
+  - Updated Android app permission documentation
+- ✅ In‑app update flow (Android App Update API).
+  - Implemented AppUpdateManager for flexible and immediate updates
+  - Added Google Play Core library dependencies
+  - Integrated update flow with MainActivity lifecycle
 
 ---
 
@@ -196,7 +207,7 @@
 ---
 
 ## 11. Phase‑9: Compliance, Back‑ups & Disaster Recovery (Week 11‑13)
-- Automated DB snapshots (daily) & Blob Storage lifecycle policy (30→ Cool, 90→ Archive).
+- Automated DB snapshots (daily) & Azure Storage lifecycle policy (Cool, Archive).
 - Exercise a restore every quarter.
 - Encryption at rest (Azure SQL, Blob Storage) and in transit (TLS 1.2+).
 - GDPR/CCPA data request workflow documentation.
@@ -218,10 +229,10 @@ Security Hardening:done,    p3, after p1, 14d
 Infra & DevOps    :done,    p4, after p2, 21d
 Observability     :done,    p5, after p4, 14d
 section Optimisation & Releases
-Performance       :active,  p6, after p5, 14d
-Store Readiness   :         p7, after p6, 14d
+Performance       :done,    p6, after p5, 14d
+Store Readiness   :done,    p7, after p6, 14d
 section Docs & DR
-Docs & Knowledge  :active, p8, after p4, 14d
+Docs & Knowledge  :active,  p8, after p4, 14d
 Back‑up & DR      :done,    p9, after p4, 14d
 ```
 

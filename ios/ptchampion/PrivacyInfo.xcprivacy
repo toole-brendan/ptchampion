@@ -1,0 +1,43 @@
+{
+    "NSPrivacyAccessedAPITypes": [
+        {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryUserDefaults",
+            "NSPrivacyAccessedAPITypeReasons": ["CA92.1"]
+        },
+        {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryFileTimestamp",
+            "NSPrivacyAccessedAPITypeReasons": ["2B45.1"]
+        },
+        {
+            "NSPrivacyAccessedAPIType": "NSPrivacyAccessedAPICategoryDiskSpace",
+            "NSPrivacyAccessedAPITypeReasons": ["8FH3.1"]
+        }
+    ],
+    "NSPrivacyTracking": false,
+    "NSPrivacyTrackingDomains": [],
+    "NSPrivacyCollectedDataTypes": [
+        {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeFitness",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeLocation",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        },
+        {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeContact",
+            "NSPrivacyCollectedDataTypeLinked": true,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+        }
+    ],
+    "NSPrivacyUsageDescriptions": {
+        "NSCameraUsageDescription": "PT Champion uses the camera to track and analyze your exercise form, count repetitions, and provide feedback on your physical training exercises.",
+        "NSLocationWhenInUseUsageDescription": "Your location is used to show you local leaderboards and compare your performance with others nearby. This is optional and can be disabled in settings.",
+        "NSBluetoothAlwaysUsageDescription": "Bluetooth is used to connect to heart rate monitors and fitness devices to track your performance metrics during exercises."
+    }
+} 

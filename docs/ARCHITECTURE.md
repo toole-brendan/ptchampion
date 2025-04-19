@@ -327,7 +327,7 @@ sequenceDiagram
 
 This sequence diagram illustrates how data flows through the system during typical exercise tracking, showing both online and offline scenarios, and the synchronization process.
 
-## 7. Deployment Architecture
+## 7. Deployment Architecture (Azure)
 
 ```mermaid
 graph TD
@@ -336,65 +336,76 @@ graph TD
         iOSDevice["iOS Device"]
         AndroidDevice["Android Device"]
     end
-    
-    subgraph "AWS (Cloud Infrastructure)"
+
+    subgraph "Azure Cloud Infrastructure"
+        subgraph "Networking & Delivery"
+            FrontDoor["Azure Front Door\n(CDN, WAF, Routing)"]
+        end
+
         subgraph "Compute Layer"
-            ALB["Application Load Balancer"]
-            ECS["ECS Fargate Cluster"]
-            CloudFront["CloudFront CDN"]
+            AppService["App Service for Containers\n(Go Backend API)"]
         end
-        
+
         subgraph "Data Layer"
-            RDS["RDS PostgreSQL"]
-            ElastiCache["ElastiCache Redis"]
+            PostgreSQL["Azure Database for PostgreSQL"]
+            RedisCache["Azure Cache for Redis"]
         end
-        
-        subgraph "Storage Layer"
-            S3["S3 Static Assets"]
-            S3Logs["S3 Logs"]
+
+        subgraph "Storage & Registry"
+            StorageAccount["Azure Storage Account\n(Static Web Assets)"]
+            ACR["Azure Container Registry"]
         end
-        
-        subgraph "Observability"
-            CloudWatch["CloudWatch"]
-            XRay["X-Ray Tracing"]
+
+        subgraph "Observability & Security"
+            AppInsights["Application Insights"]
+            Monitor["Azure Monitor"]
+            KeyVault["Azure Key Vault"]
         end
     end
-    
-    WebBrowser -->|HTTPS| CloudFront
-    iOSDevice -->|HTTPS| ALB
-    AndroidDevice -->|HTTPS| ALB
-    
-    CloudFront -->|Origin Requests| ALB
-    CloudFront -->|Static Assets| S3
-    
-    ALB -->|Route API Requests| ECS
-    
-    ECS -->|Query Data| RDS
-    ECS -->|Cache Data| ElastiCache
-    ECS -->|Store Objects| S3
-    
-    ECS -->|Logs & Metrics| CloudWatch
-    ECS -->|Traces| XRay
-    
+
+    WebBrowser -->|HTTPS| FrontDoor
+    iOSDevice -->|HTTPS| FrontDoor
+    AndroidDevice -->|HTTPS| FrontDoor
+
+    FrontDoor -->|Route Web Requests| StorageAccount
+    FrontDoor -->|Route API Requests| AppService
+
+    AppService -->|Pulls Image| ACR
+    AppService -->|Query Data| PostgreSQL
+    AppService -->|Cache Data| RedisCache
+    AppService -->|Secrets| KeyVault
+    AppService -->|Logs & Metrics| AppInsights
+
+    PostgreSQL -->|Logs & Metrics| Monitor
+    RedisCache -->|Logs & Metrics| Monitor
+    StorageAccount -->|Logs & Metrics| Monitor
+    ACR -->|Logs & Metrics| Monitor
+    AppInsights -->|Aggregates Data| Monitor
+
     classDef client fill:#FFFFFF,color:#1E241E,stroke:#4E5A48
+    classDef network fill:#87CEEB,color:#1E241E,stroke:#4E5A48  // Light Sky Blue
     classDef compute fill:#1E241E,color:#BFA24D,stroke:#F4F1E6
     classDef data fill:#4E5A48,color:#F4F1E6,stroke:#BFA24D
     classDef storage fill:#C9CCA6,color:#1E241E,stroke:#4E5A48
     classDef observe fill:#BFA24D,color:#1E241E,stroke:#F4F1E6
-    
+
     class WebBrowser,iOSDevice,AndroidDevice client
-    class ALB,ECS,CloudFront compute
-    class RDS,ElastiCache data
-    class S3,S3Logs storage
-    class CloudWatch,XRay observe
+    class FrontDoor network
+    class AppService compute
+    class PostgreSQL,RedisCache data
+    class StorageAccount,ACR storage
+    class AppInsights,Monitor,KeyVault observe
 ```
 
-The PT Champion system is deployed on AWS using a modern cloud-native architecture with the following components:
-- Web assets served via CloudFront CDN from S3
-- Backend API runs in ECS Fargate containers
-- Database on RDS PostgreSQL
-- Caching via ElastiCache Redis
-- Comprehensive monitoring via CloudWatch and X-Ray
+The PT Champion system is deployed on Microsoft Azure using a suite of managed services:
+- **Azure Front Door**: Provides global HTTP load balancing, CDN capabilities, WAF protection, and custom domain management. It routes traffic to the appropriate backend services.
+- **Azure Storage Account**: Hosts the static files for the React web application (PWA), configured for static website hosting.
+- **Azure App Service for Containers**: Runs the Go backend API as a containerized application, likely using the image stored in ACR.
+- **Azure Container Registry (ACR)**: Stores and manages the Docker images for the backend API.
+- **Azure Database for PostgreSQL - Flexible Server**: Provides a managed PostgreSQL database service.
+- **Azure Cache for Redis**: Used for caching leaderboard data and potentially session management.
+- **Azure Key Vault**: Securely stores application secrets like API keys and database credentials.
+- **Azure Monitor & Application Insights**: Provide comprehensive monitoring, logging, tracing, and alerting for the application and infrastructure components.
 
 ## 8. Security Architecture
 
@@ -499,7 +510,7 @@ The PT Champion system implements a layered security approach covering network, 
 - **Bluetooth**: Android Bluetooth LE API
 
 ### Infrastructure & DevOps
-- **Cloud Provider**: AWS
+- **Cloud Provider**: Azure
 - **IaC**: Terraform
 - **Container Orchestration**: ECS Fargate
 - **CI/CD**: GitHub Actions
