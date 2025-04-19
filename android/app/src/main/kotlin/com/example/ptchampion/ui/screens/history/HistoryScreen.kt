@@ -42,7 +42,7 @@ fun HistoryScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Use standard items approach instead of paging extensions
-            items(count = lazyPagingItems.itemCount) { index ->
+            items(count = lazyPagingItems.itemCount, key = { index -> lazyPagingItems[index]?.id ?: index }) { index ->
                 val workoutSession = lazyPagingItems[index]
                 workoutSession?.let {
                     WorkoutHistoryItem(workout = it)

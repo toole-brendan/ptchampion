@@ -1,6 +1,6 @@
 # Makefile for ptchampion project
 
-.PHONY: help dev test deploy backend-build backend-test web-build web-test android-build android-test ios-build ios-test clean migrate migrate-up migrate-down migrate-create migrate-force wasm-install-tinygo wasm-build wasm-clean redis-benchmark redis-flush redis-info infra-init-staging infra-plan-staging infra-apply-staging infra-init-production infra-plan-production infra-apply-production
+.PHONY: help dev test deploy backend-build backend-test web-build web-test android-build android-test ios-build ios-test clean migrate migrate-up migrate-down migrate-create migrate-force wasm-install-tinygo wasm-build wasm-clean redis-benchmark redis-flush redis-info infra-init-staging infra-plan-staging infra-apply-staging infra-init-production infra-plan-production infra-apply-production load-test
 
 help:
 	@echo "Usage: make [target]"
@@ -44,6 +44,9 @@ help:
 	@echo "  infra-init-production  Initialize Terraform for production environment"
 	@echo "  infra-plan-production  Run terraform plan for production"
 	@echo "  infra-apply-production Apply Terraform changes to production"
+	@echo ""
+	@echo "Load Testing:"
+	@echo "  load-test          Run k6 load test against the API"
 
 # --- Development ---
 dev:
@@ -240,3 +243,12 @@ infra-plan-production:
 infra-apply-production:
 	cd terraform/production && $(TERRAFORM) init -backend=true
 	cd terraform/production && $(TERRAFORM) apply -auto-approve -var-file=production.tfvars 
+
+# --- Load Testing ---
+API_URL ?= http://localhost:8080
+VUS ?= 50
+DURATION ?= 30s
+
+load-test:
+	@echo "Running k6 load test against $(API_URL) with $(VUS) VUs for $(DURATION)..."
+	k6 run -e BASE_URL=$(API_URL) -e VUS=$(VUS) -e DURATION=$(DURATION) scripts/loadtest_k6.js 

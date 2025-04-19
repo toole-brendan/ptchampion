@@ -14,7 +14,9 @@ import (
 
 func main() {
 	// Initialize structured logging (Zap) early so that all stdlib log calls are captured.
-	if _, err := logging.Init(os.Getenv("LOG_LEVEL")); err != nil {
+	// Use LOG_LEVEL to control verbosity and APP_ENV to toggle development mode.
+	logger, err := logging.New(os.Getenv("LOG_LEVEL"), os.Getenv("APP_ENV") == "development")
+	if err != nil {
 		log.Fatalf("Failed to initialize logger: %v", err)
 	}
 
@@ -38,8 +40,8 @@ func main() {
 	// Create the API Handler (which embeds the core handler)
 	apiHandler := api.NewApiHandler(cfg, queries)
 
-	// 3. Setup Router (Pass the API Handler)
-	router := api.NewRouter(apiHandler, cfg)
+	// 3. Setup Router (Pass the API Handler and logger)
+	router := api.NewRouter(apiHandler, cfg, logger)
 
 	// 4. Start Server
 	port := cfg.Port

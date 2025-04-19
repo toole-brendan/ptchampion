@@ -62,7 +62,7 @@ fun ExerciseListScreen(
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(12.dp) // Spacing between cards
                     ) {
-                        itemsIndexed(uiState.exercises) { index, exercise ->
+                        itemsIndexed(uiState.exercises, key = { _, exercise -> exercise.id }) { index, exercise ->
                             // Determine background color based on index
                             val backgroundColor = if (index % 2 == 0) {
                                 PtBackground // Standard cream for even items
