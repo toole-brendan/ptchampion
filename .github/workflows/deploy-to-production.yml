@@ -59,7 +59,7 @@ jobs:
     if: ${{ inputs.deploy_backend }}
     runs-on: ubuntu-latest
     outputs:
-      image_tag: ${{ steps.meta.outputs.tags }}
+      image_name: ${{ env.ACR_NAME }}.azurecr.io/ptchampion-api:${{ github.sha }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,22 +75,12 @@ jobs:
       - name: Login to Azure Container Registry
         run: az acr login --name ${{ env.ACR_NAME }}
 
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.ACR_NAME }}.azurecr.io/ptchampion-api
-          tags: |
-            type=sha,format=short
-            type=raw,value=latest
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ env.ACR_NAME }}.azurecr.io/ptchampion-api:${{ github.sha }},${{ env.ACR_NAME }}.azurecr.io/ptchampion-api:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -130,7 +120,7 @@ jobs:
           az webapp config container set \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.BACKEND_APP_NAME }} \
-            --docker-custom-image-name ${{ needs.build-backend.outputs.image_tag }} \
+            --docker-custom-image-name ${{ needs.build-backend.outputs.image_name }} \
             --docker-registry-server-url https://${{ env.ACR_NAME }}.azurecr.io
 
       # Restart backend app after deployment
