@@ -142,7 +142,14 @@ func (h *Handler) LogExercise(c echo.Context) error {
 	// TODO: If distance exercises are added, ensure req.Distance (expected in meters from frontend)
 	// is compatible with the unit expected by calculateDistanceScore if that's different.
 
-	calculatedGrade := grading.CalculateScore(exercise.Type, performanceValue)
+	calculatedGrade, err := grading.CalculateScore(exercise.Type, performanceValue)
+	if err != nil {
+		// Log the specific grading error. Maybe return BadRequest if it's due to invalid input,
+		// or InternalServerError for unexpected grading issues.
+		log.Printf("ERROR: Failed to calculate grade for user %d, exercise type %s: %v", userID, exercise.Type, err)
+		// Consider if this should be a 400 or 500 based on the nature of CalculateScore errors
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to calculate exercise grade")
+	}
 
 	// 6. Prepare parameters for database insertion
 	params := dbStore.LogUserExerciseParams{
