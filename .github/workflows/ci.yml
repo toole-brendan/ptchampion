@@ -2,11 +2,51 @@ name: CI
 
 on:
   push:
-    branches: [ main, master, dev ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master, dev ]
+    branches: [ main ]
 
 jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          
+      - name: Vet
+        run: go vet ./...
+        
+      - name: Test
+        run: go test -v ./... -tags=unit
+  
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          
+      - name: Install dependencies
+        run: cd web && pnpm install
+        
+      - name: Lint
+        run: cd web && pnpm lint
+        
+      - name: Build
+        run: cd web && pnpm build
+
   test-migrations:
     name: Test Database Migrations
     runs-on: ubuntu-latest
@@ -99,8 +139,31 @@ jobs:
       - name: Install dependencies
         run: go mod download
       
-      - name: Run tests
-        run: go test ./... -v
+      - name: Run tests with coverage
+        run: |
+          go test ./... -v -coverprofile=coverage.out -covermode=atomic
+          go tool cover -func=coverage.out
+      
+      - name: Check coverage threshold
+        run: |
+          # Extract the total coverage percentage
+          COVERAGE_PCT=$(go tool cover -func=coverage.out | grep total | grep -Eo '[0-9]+\.[0-9]+')
+          echo "Total coverage: $COVERAGE_PCT%"
+          
+          # Check if coverage is below threshold (80%)
+          if (( $(echo "$COVERAGE_PCT < 80.0" | bc -l) )); then
+            echo "Error: Code coverage is below 80% threshold ($COVERAGE_PCT%)"
+            exit 1
+          fi
+          
+          echo "Coverage threshold passed!"
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.out
+          flags: backend
+          fail_ci_if_error: true
   
   node-test:
     name: Test Web Frontend
@@ -123,8 +186,70 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: npm run test:coverage
+      
+      - name: Check coverage threshold
+        run: |
+          # Extract the coverage percentage from the coverage summary
+          COVERAGE_PCT=$(cat coverage/coverage-summary.json | jq -r '.total.statements.pct')
+          echo "Total coverage: $COVERAGE_PCT%"
+          
+          # Check if coverage is below threshold (80%)
+          if (( $(echo "$COVERAGE_PCT < 80.0" | bc -l) )); then
+            echo "Error: Code coverage is below 80% threshold ($COVERAGE_PCT%)"
+            exit 1
+          fi
+          
+          echo "Coverage threshold passed!"
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./coverage
+          flags: frontend
+          fail_ci_if_error: true
+      
+      - name: Build Storybook
+        run: npm run build-storybook
+      
+      - name: Publish to Chromatic
+        if: github.event_name == 'pull_request'
+        uses: chromaui/action@v1
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          exitZeroOnChanges: true # Don't fail the build if there are visual changes
+
+  cypress-e2e:
+    name: Cypress E2E Tests
+    runs-on: ubuntu-latest
+    needs: [go-test, node-test]
+    
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          build: npm run build
+          start: npm run dev
+          wait-on: 'http://localhost:5173'
+          browser: chrome
+          record: true
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   android-test:
     name: Test Android App
@@ -151,16 +276,29 @@ jobs:
         with:
           gradle-version: ${{ matrix.gradle-version }}
       
-      - name: Run Android Tests
+      - name: Run Android Tests with Coverage
         working-directory: ./android
         run: |
           # Check if gradlew exists (some projects might use direct gradle command)
           if [ -f "./gradlew" ]; then
             chmod +x ./gradlew
-            ./gradlew test
+            ./gradlew jacocoTestReport
           else
-            gradle test
+            gradle jacocoTestReport
           fi
+      
+      - name: Check Android Coverage Threshold
+        working-directory: ./android
+        run: |
+          # Verify coverage meets minimum threshold (70% for Android)
+          ./gradlew jacocoTestCoverageVerification
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./android/app/build/reports/jacoco/jacocoTestReport
+          flags: android
+          fail_ci_if_error: true
 
   ios-test:
     name: Test iOS App
@@ -188,12 +326,40 @@ jobs:
             swift package resolve
           fi
       
-      - name: Run iOS Tests
+      - name: Run iOS Tests with Coverage
         working-directory: ./ios/ptchampion
         run: |
           # Check if we have a workspace (CocoaPods) or a project
           if [ -d "*.xcworkspace" ]; then
-            xcodebuild test -workspace "*.xcworkspace" -scheme "PTChampion" -destination "platform=iOS Simulator,name=iPhone 14,OS=latest"
+            xcodebuild test -workspace "*.xcworkspace" -scheme "PTChampion" -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" -enableCodeCoverage YES
           else
-            xcodebuild test -project "*.xcodeproj" -scheme "PTChampion" -destination "platform=iOS Simulator,name=iPhone 14,OS=latest"
-          fi 
+            xcodebuild test -project "*.xcodeproj" -scheme "PTChampion" -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" -enableCodeCoverage YES
+          fi
+      
+      - name: Generate Coverage Report
+        run: |
+          xcrun llvm-cov export -format="lcov" $(find . -name "*.xctest" | head -1)/Contents/MacOS/* -instr-profile=$(find . -name "*.profdata" | head -1) > coverage.lcov
+      
+      - name: Check Coverage Threshold
+        run: |
+          # Install lcov to check coverage
+          brew install lcov
+          
+          # Check coverage percentage
+          COVERAGE_PCT=$(lcov --summary coverage.lcov | grep "lines" | cut -d ":" -f 2 | cut -d "%" -f 1 | xargs)
+          echo "Total coverage: $COVERAGE_PCT%"
+          
+          # Check if coverage is below threshold (70% for iOS)
+          if (( $(echo "$COVERAGE_PCT < 70.0" | bc -l) )); then
+            echo "Error: Code coverage is below 70% threshold ($COVERAGE_PCT%)"
+            exit 1
+          fi
+          
+          echo "Coverage threshold passed!"
+      
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: coverage.lcov
+          flags: ios
+          fail_ci_if_error: true 

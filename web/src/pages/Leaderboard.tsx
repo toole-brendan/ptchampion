@@ -234,14 +234,14 @@ const Leaderboard: React.FC = () => {
       )}
 
       {/* Leaderboard Table Card */}
-      <Card className="bg-card rounded-lg shadow-sm border border-border transition-shadow hover:shadow-md"> {/* Added hover effect */}
+      <Card className="rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"> {/* Added hover effect */}
         <CardHeader>
           <CardTitle className="text-lg font-semibold">{cardTitle}</CardTitle> {/* Standardized card title */}
           <CardDescription className="text-muted-foreground">See how you stack up against the competition.</CardDescription> {/* Ensured muted color */}
         </CardHeader>
         <CardContent>
             {/* Filter Controls - Now here */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6"> {/* Increased bottom margin slightly */}
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row"> {/* Increased bottom margin slightly */}
               <div className="flex-1 space-y-1.5"> {/* Added space-y for label consistency */}
                 <Label htmlFor="exercise-filter" className="text-sm font-medium">Exercise</Label> {/* Ensured label style */}
                 <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
@@ -276,38 +276,38 @@ const Leaderboard: React.FC = () => {
             </div>
 
             {isLoading ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brass-gold"></div>
+              <div className="flex items-center justify-center py-12">
+                <div className="size-12 animate-spin rounded-full border-y-2 border-brass-gold"></div>
               </div>
             ) : filteredLeaderboard.length > 0 ? (
               <Table>
-                <TableCaption className="text-muted-foreground py-4">
+                <TableCaption className="py-4 text-muted-foreground">
                   Leaderboard rankings based on selected criteria.
                 </TableCaption>
                 <TableHeader>
                 <TableRow className="border-b border-border hover:bg-transparent"> {/* Removed hover effect from header row */}
-                    <TableHead className="w-[80px] text-muted-foreground font-medium">Rank</TableHead> {/* Styled header */}
-                    <TableHead className="text-muted-foreground font-medium">User</TableHead> {/* Styled header */}
-                    <TableHead className="text-right text-muted-foreground font-medium">Score</TableHead> {/* Styled header */}
+                    <TableHead className="w-[80px] font-medium text-muted-foreground">Rank</TableHead> {/* Styled header */}
+                    <TableHead className="font-medium text-muted-foreground">User</TableHead> {/* Styled header */}
+                    <TableHead className="text-right font-medium text-muted-foreground">Score</TableHead> {/* Styled header */}
                 </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredLeaderboard.map((user) => (
                     // Added hover effect to body rows
-                    <TableRow key={`${user.exercise}-${user.rank}-${user.name}`} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
-                        <TableCell className="font-semibold text-lg text-primary">{user.rank}</TableCell> {/* Kept rank prominent */}
+                    <TableRow key={`${user.exercise}-${user.rank}-${user.name}`} className="border-b border-border/50 transition-colors hover:bg-muted/50">
+                        <TableCell className="text-lg font-semibold text-primary">{user.rank}</TableCell> {/* Kept rank prominent */}
                         <TableCell>
                             <div className="flex items-center space-x-3">
-                                <Avatar className="h-8 w-8"> {/* Slightly smaller avatar */}
+                                <Avatar className="size-8"> {/* Slightly smaller avatar */}
                                     <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                                    <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium"> {/* Consistent fallback style */}
+                                    <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground"> {/* Consistent fallback style */}
                                         {getInitials(user.name)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <span className="font-medium text-foreground">{user.name}</span>
                             </div>
                         </TableCell>
-                        <TableCell className="text-right font-medium text-foreground tabular-nums">{user.score}</TableCell> {/* Ensured consistent font, added tabular-nums */}
+                        <TableCell className="text-right font-medium tabular-nums text-foreground">{user.score}</TableCell> {/* Ensured consistent font, added tabular-nums */}
                     </TableRow>
                   ))}
                 </TableBody>
@@ -321,7 +321,7 @@ const Leaderboard: React.FC = () => {
                   style={{ height: '200px', width: '200px' }}
                   className="text-brass-gold"
                 />
-                <p className="text-center text-muted-foreground mt-4">
+                <p className="mt-4 text-center text-muted-foreground">
                   No rankings found for {exerciseFilter}.
                 </p>
                 <p className="text-center text-sm text-muted-foreground">

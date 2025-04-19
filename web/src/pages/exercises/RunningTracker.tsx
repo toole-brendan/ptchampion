@@ -308,14 +308,14 @@ const RunningTracker: React.FC = () => {
       </Button>
       <h1 className="text-3xl font-semibold text-foreground">Running Tracker</h1>
 
-      <Card className="bg-card rounded-lg shadow-sm overflow-hidden">
+      <Card className="overflow-hidden rounded-lg bg-card shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-medium">Track Your Run</CardTitle>
           <CardDescription>Start the timer to begin tracking distance and path.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Map Integration */}
-          <div className="aspect-video bg-muted rounded-md overflow-hidden relative">
+          <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
             <MapContainer 
               ref={mapRef}
               center={currentPosition || [51.505, -0.09]} // Default center if no position yet
@@ -338,9 +338,9 @@ const RunningTracker: React.FC = () => {
             </MapContainer>
             {/* Show overlay if permission denied */} 
             {permissionGranted === false && !isActive && (
-               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white p-4 text-center z-10">
-                 <MapPin className="h-12 w-12 mb-2 text-destructive" />
-                 <p className="font-semibold mb-1">Location Access Issue</p>
+               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 p-4 text-center text-white">
+                 <MapPin className="mb-2 size-12 text-destructive" />
+                 <p className="mb-1 font-semibold">Location Access Issue</p>
                  <p className="text-sm">{geoError}</p>
                </div>
             )}
@@ -356,22 +356,22 @@ const RunningTracker: React.FC = () => {
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Time</p>
-              <p className="text-4xl font-bold text-foreground flex items-center justify-center">
-                <Timer className="h-6 w-6 mr-1 inline-block" />
+              <p className="flex items-center justify-center text-4xl font-bold text-foreground">
+                <Timer className="mr-1 inline-block size-6" />
                 {formatTime(timer)}
               </p>
             </div>
           </div>
         </CardContent>
-        <CardFooter className="border-t bg-background/50 px-6 py-4 flex justify-center space-x-4">
+        <CardFooter className="flex justify-center space-x-4 border-t bg-background/50 px-6 py-4">
             {!isFinished ? (
               <>
                 <Button size="lg" onClick={handleStartPause} disabled={isFinished || (isActive && permissionGranted === false) }>
-                  {isActive ? <Pause className="mr-2 h-5 w-5" /> : <Play className="mr-2 h-5 w-5" />}
+                  {isActive ? <Pause className="mr-2 size-5" /> : <Play className="mr-2 size-5" />}
                   {isActive ? 'Pause' : 'Start'}
                 </Button>
                 <Button size="lg" variant="secondary" onClick={handleReset} disabled={isActive || isFinished || timer > 0 || distance > 0}>
-                  <RotateCcw className="mr-2 h-5 w-5" />
+                  <RotateCcw className="mr-2 size-5" />
                   Reset
                 </Button>
                 <Button size="lg" variant="outline" onClick={handleFinish} disabled={(!isActive && timer === 0) || isFinished}>
@@ -380,7 +380,7 @@ const RunningTracker: React.FC = () => {
               </>
             ) : (
               <Button size="lg" variant="secondary" onClick={handleReset}>
-                <RotateCcw className="mr-2 h-5 w-5" />
+                <RotateCcw className="mr-2 size-5" />
                 Start New Session
               </Button>
             )}
@@ -388,11 +388,11 @@ const RunningTracker: React.FC = () => {
       </Card>
 
       {/* --- Log Submission Section --- */}
-      <div className="max-w-3xl mx-auto p-4">
+      <div className="mx-auto max-w-3xl p-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Log Your {EXERCISE_NAME}</h1>
+          <h1 className="mb-2 text-3xl font-bold">Log Your {EXERCISE_NAME}</h1>
           {isFinished && !success && (
-             <p className="text-green-600 bg-green-50 p-3 rounded-md border border-green-200">
+             <p className="rounded-md border border-green-200 bg-green-50 p-3 text-green-600">
                Run tracked! Review the details below and click "Log Exercise" to save.
              </p>
           )}
@@ -404,7 +404,7 @@ const RunningTracker: React.FC = () => {
         </div>
         
         {success && (
-          <div className="mb-6 p-4 bg-green-50 text-green-800 rounded-md">
+          <div className="mb-6 rounded-md bg-green-50 p-4 text-green-800">
             Exercise logged successfully! 
             {loggedGrade !== null && ` Grade: ${loggedGrade}. `} 
             Redirecting to history...
@@ -412,15 +412,15 @@ const RunningTracker: React.FC = () => {
         )}
         
         {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-800 rounded-md">
+          <div className="mb-6 rounded-md bg-red-50 p-4 text-red-800">
             {error}
           </div>
         )}
         
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="rounded-lg bg-white p-6 shadow-md">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="mb-1 block text-sm font-medium text-gray-700">
                 Running Time (Minutes:Seconds)
               </label>
               <div className="flex space-x-2">
@@ -430,7 +430,7 @@ const RunningTracker: React.FC = () => {
                     min="0"
                     value={formMinutes} // Use formMinutes state
                     onChange={handleMinutesChange}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100"
                     placeholder="Minutes"
                     disabled={isSubmitting || (isFinished && !success)} // Disable if tracked data is shown and not yet submitted/succeeded
                     required
@@ -443,7 +443,7 @@ const RunningTracker: React.FC = () => {
                     max="59"
                     value={formSeconds} // Use formSeconds state
                     onChange={handleSecondsChange}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                    className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100"
                     placeholder="Seconds"
                     disabled={isSubmitting || (isFinished && !success)} // Disable if tracked data is shown
                     required
@@ -456,7 +456,7 @@ const RunningTracker: React.FC = () => {
             </div>
             
             <div>
-              <label htmlFor="distance" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="distance" className="mb-1 block text-sm font-medium text-gray-700">
                 Distance (Miles)
               </label>
               <input
@@ -466,7 +466,7 @@ const RunningTracker: React.FC = () => {
                 step="0.01"
                 value={formDistance} // Use formDistance state
                 onChange={handleDistanceChange}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 disabled:bg-gray-100"
                 placeholder="2.0"
                 disabled={isSubmitting || (isFinished && !success)} // Disable if tracked data is shown
                 required // Make distance required
@@ -477,7 +477,7 @@ const RunningTracker: React.FC = () => {
             </div>
             
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="notes" className="mb-1 block text-sm font-medium text-gray-700">
                 Notes (Optional)
               </label>
               <textarea
@@ -485,7 +485,7 @@ const RunningTracker: React.FC = () => {
                 value={notes}
                 onChange={handleNotesChange}
                 rows={3}
-                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                className="block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500"
                 disabled={isSubmitting}
                 placeholder="Add any notes about this run..."
               />
@@ -502,7 +502,7 @@ const RunningTracker: React.FC = () => {
               <button
                 type="submit"
                 disabled={isSubmitting || getTotalSecondsFromForm() <= 0 || formDistance <= 0 || success}
-                className="inline-flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
               >
                 {isSubmitting ? 'Logging...' : 'Log Exercise'}
               </button>
@@ -510,9 +510,9 @@ const RunningTracker: React.FC = () => {
           </form>
         </div>
         
-        <div className="mt-8 p-4 bg-gray-50 rounded-md">
-          <h2 className="text-lg font-medium mb-2">Running Tips</h2>
-          <ul className="list-disc pl-5 space-y-1">
+        <div className="mt-8 rounded-md bg-gray-50 p-4">
+          <h2 className="mb-2 text-lg font-medium">Running Tips</h2>
+          <ul className="list-disc space-y-1 pl-5">
             <li>Warm up with dynamic stretching before your run</li>
             <li>Maintain good posture with shoulders relaxed and back straight</li>
             <li>Focus on a steady, consistent pace rather than starting too fast</li>

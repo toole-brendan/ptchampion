@@ -3,11 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { 
-  ArrowLeft, 
-  Clock, 
-  Dumbbell, 
-  Award, 
-  TrendingUp, 
+  // Removed unused icons to avoid linter warnings
   Calendar, 
   Loader2, 
   ChevronLeft,
@@ -23,6 +19,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getExerciseById } from '@/lib/apiClient';
 import { formatTime, formatDistance } from '@/lib/utils';
 
+// Use ExerciseResponse type when fetching workout for stronger typings
+import { ExerciseResponse } from '@/lib/types';
+
 export function HistoryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -32,7 +31,7 @@ export function HistoryDetail() {
     data: workout, 
     isLoading, 
     error 
-  } = useQuery({
+  } = useQuery<ExerciseResponse, Error>({
     queryKey: ['workout', id],
     queryFn: () => getExerciseById(id as string),
     enabled: !!id,
@@ -44,10 +43,14 @@ export function HistoryDetail() {
     
     setIsSharing(true);
     
+    // Determine exercise type helpers
+    const typeLower = workout.exercise_type.toLowerCase();
+    const isRunning = typeLower.includes('run');
+
     try {
-      const shareText = `I completed ${workout.exerciseType === 'RUNNING' ? 
-        `a ${formatDistance(workout.count)} run` : 
-        `${workout.count} ${workout.exerciseType.toLowerCase()}s`} with a form score of ${workout.formScore}% using PT Champion!`;
+      const shareText = `I completed ${isRunning ?
+        `a ${formatDistance(workout.distance ?? 0)} run` :
+        `${workout.reps ?? 0} ${workout.exercise_type.toLowerCase()}s`} with a form score of ${(workout.grade ?? 0)}% using PT Champion!`;
       
       if (navigator.share) {
         await navigator.share({
@@ -57,8 +60,7 @@ export function HistoryDetail() {
         });
       } else {
         await navigator.clipboard.writeText(shareText);
-        // Show temporary copied message
-        // We would typically show a toast here
+        // Ideally use a toast component; fallback to alert
         alert('Results copied to clipboard!');
       }
     } catch (err) {
@@ -70,9 +72,9 @@ export function HistoryDetail() {
   
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-200px)]">
+      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
         <div className="text-center text-muted-foreground">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2"/>
+          <Loader2 className="mx-auto mb-2 size-8 animate-spin"/>
           <p className="text-lg">Loading workout details...</p>
         </div>
       </div>
@@ -87,7 +89,7 @@ export function HistoryDetail() {
           className="flex items-center text-muted-foreground" 
           onClick={() => navigate('/history')}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
+          <ChevronLeft className="mr-1 size-4" />
           Back to History
         </Button>
         
@@ -109,7 +111,7 @@ export function HistoryDetail() {
           className="flex items-center text-muted-foreground" 
           onClick={() => navigate('/history')}
         >
-          <ChevronLeft className="mr-1 h-4 w-4" />
+          <ChevronLeft className="mr-1 size-4" />
           Back to History
         </Button>
         
@@ -129,10 +131,25 @@ export function HistoryDetail() {
   }
 
   // Format the exercise date
-  const exerciseDate = new Date(workout.date);
+  const exerciseDate = new Date(workout.created_at);
   const formattedDate = format(exerciseDate, 'PPPP');
   const formattedTime = format(exerciseDate, 'p');
   
+  // Helpers for UI rendering
+  const typeLower = workout.exercise_type.toLowerCase();
+  const isRunning = typeLower.includes('run');
+  const isPushup = typeLower.includes('push');
+  const isSitup = typeLower.includes('sit');
+  const isPullup = typeLower.includes('pull');
+
+  const prettyExerciseName = isRunning ? 'Running' : isPushup ? 'Push-ups' : isSitup ? 'Sit-ups' : isPullup ? 'Pull-ups' : workout.exercise_type;
+
+  const mainMetricLabel = isRunning ? 'Distance' : 'Repetitions';
+  const mainMetricValue = isRunning ? formatDistance(workout.distance ?? 0) : (workout.reps ?? 0);
+
+  const durationSeconds = workout.time_in_seconds ?? 0;
+  const formScore = workout.grade ?? 0;
+
   return (
     <div className="space-y-6">
       <Button 
@@ -140,50 +157,46 @@ export function HistoryDetail() {
         className="flex items-center text-muted-foreground" 
         onClick={() => navigate('/history')}
       >
-        <ChevronLeft className="mr-1 h-4 w-4" />
+        <ChevronLeft className="mr-1 size-4" />
         Back to History
       </Button>
       
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-heading tracking-wide">Workout Details</h1>
+        <h1 className="font-heading text-2xl tracking-wide">Workout Details</h1>
         <Button 
           variant="outline" 
           size="sm" 
           onClick={shareWorkout}
           disabled={isSharing}
         >
-          <Share2 className="h-4 w-4 mr-2" />
+          <Share2 className="mr-2 size-4" />
           {isSharing ? 'Sharing...' : 'Share'}
         </Button>
       </div>
       
       <Card className="bg-cream">
-        <CardHeader className="bg-deep-ops text-cream rounded-t-lg">
-          <CardTitle className="text-xl font-heading">
-            {workout.exerciseType === 'RUNNING' ? 'Running' : 
-             workout.exerciseType === 'PUSHUP' ? 'Push-ups' :
-             workout.exerciseType === 'SITUP' ? 'Sit-ups' :
-             workout.exerciseType === 'PULLUP' ? 'Pull-ups' :
-             workout.exerciseType}
+        <CardHeader className="rounded-t-lg bg-deep-ops text-cream">
+          <CardTitle className="font-heading text-xl">
+            {prettyExerciseName}
           </CardTitle>
-          <CardDescription className="text-army-tan flex items-center">
-            <Calendar className="h-4 w-4 mr-1" />
+          <CardDescription className="flex items-center text-army-tan">
+            <Calendar className="mr-1 size-4" />
             {formattedDate} at {formattedTime}
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="p-6 space-y-6">
+        <CardContent className="space-y-6 p-6">
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
               <div className="text-sm font-medium text-muted-foreground">
-                {workout.exerciseType === 'RUNNING' ? 'Distance' : 'Repetitions'}
+                {mainMetricLabel}
               </div>
               <div className="flex items-baseline">
-                <span className="text-3xl font-mono text-brass-gold">
-                  {workout.exerciseType === 'RUNNING' ? formatDistance(workout.count) : workout.count}
+                <span className="font-mono text-3xl text-brass-gold">
+                  {mainMetricValue}
                 </span>
                 <span className="ml-1 text-sm text-muted-foreground">
-                  {workout.exerciseType === 'RUNNING' ? '' : 'reps'}
+                  {isRunning ? '' : 'reps'}
                 </span>
               </div>
             </div>
@@ -191,8 +204,8 @@ export function HistoryDetail() {
             <div className="space-y-2">
               <div className="text-sm font-medium text-muted-foreground">Duration</div>
               <div className="flex items-baseline">
-                <span className="text-3xl font-mono text-brass-gold">
-                  {formatTime(workout.durationSeconds)}
+                <span className="font-mono text-3xl text-brass-gold">
+                  {formatTime(durationSeconds)}
                 </span>
               </div>
             </div>
@@ -201,41 +214,41 @@ export function HistoryDetail() {
           <Separator />
           
           <div className="space-y-2">
-            <div className="flex justify-between items-baseline">
+            <div className="flex items-baseline justify-between">
               <div className="text-sm font-medium text-muted-foreground">Form Score</div>
-              <div className="text-sm font-mono">{workout.formScore}%</div>
+              <div className="font-mono text-sm">{formScore}%</div>
             </div>
-            <Progress value={workout.formScore} className="h-2" />
+            <Progress value={formScore} className="h-2" />
           </div>
           
           <div className="space-y-3">
             <div className="text-sm font-medium text-muted-foreground">Performance Grade</div>
-            <div className="p-4 bg-white/50 rounded-lg text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brass-gold text-white font-heading text-4xl">
-                {workout.formScore >= 90 ? 'A' : 
-                 workout.formScore >= 80 ? 'B' : 
-                 workout.formScore >= 70 ? 'C' : 
-                 workout.formScore >= 60 ? 'D' : 'F'}
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="inline-flex size-16 items-center justify-center rounded-full bg-brass-gold font-heading text-4xl text-white">
+                {formScore >= 90 ? 'A' : 
+                 formScore >= 80 ? 'B' : 
+                 formScore >= 70 ? 'C' : 
+                 formScore >= 60 ? 'D' : 'F'}
               </div>
               <div className="mt-2 text-sm text-muted-foreground">
-                {workout.formScore >= 90 ? 'Excellent Form' : 
-                 workout.formScore >= 80 ? 'Good Form' : 
-                 workout.formScore >= 70 ? 'Acceptable Form' : 
-                 workout.formScore >= 60 ? 'Needs Improvement' : 'Poor Form'}
+                {formScore >= 90 ? 'Excellent Form' : 
+                 formScore >= 80 ? 'Good Form' : 
+                 formScore >= 70 ? 'Acceptable Form' : 
+                 formScore >= 60 ? 'Needs Improvement' : 'Poor Form'}
               </div>
             </div>
           </div>
           
-          <div className="p-4 bg-muted/30 rounded-lg">
-            <h3 className="text-sm font-semibold mb-2">Device Information</h3>
+          <div className="rounded-lg bg-muted/30 p-4">
+            <h3 className="mb-2 text-sm font-semibold">Device Information</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Platform:</span>
-                <span className="ml-2">{workout.deviceType || "Web"}</span>
+                <span className="ml-2">Web</span>
               </div>
               <div>
                 <span className="text-muted-foreground">Session ID:</span>
-                <span className="ml-2 font-mono text-xs">{workout.id.substring(0, 8)}</span>
+                <span className="ml-2 font-mono text-xs">{workout.id.toString().substring(0, 8)}</span>
               </div>
             </div>
           </div>

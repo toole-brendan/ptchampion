@@ -6,11 +6,10 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"time"
 
+	"ptchampion/internal/auth"
 	dbStore "ptchampion/internal/store/postgres"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
@@ -48,8 +47,14 @@ type UserResponsePayload struct { // Renamed to avoid conflict if api types were
 }
 
 type LoginResponsePayload struct {
-	Token string              `json:"token"`
-	User  UserResponsePayload `json:"user"`
+	AccessToken  string              `json:"access_token"`
+	RefreshToken string              `json:"refresh_token"`
+	ExpiresIn    int                 `json:"expires_in"`
+	User         UserResponsePayload `json:"user"`
+}
+
+type RefreshTokenRequest struct {
+	RefreshToken string `json:"refresh_token"`
 }
 
 // PostAuthRegister is a method on handlers.Handler
@@ -138,17 +143,13 @@ func (h *Handler) PostAuthLogin(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid username or password")
 	}
 
-	claims := jwt.MapClaims{
-		"sub": user.ID,
-		"usr": user.Username,
-		"exp": time.Now().Add(time.Hour * 24).Unix(),
-		"iat": time.Now().Unix(),
-	}
+	// Create token service
+	tokenService := auth.NewTokenService(h.Config.JWTSecret, h.Config.RefreshTokenSecret)
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(h.Config.JWTSecret))
+	// Generate token pair
+	accessToken, refreshToken, err := tokenService.GenerateTokenPair(int64(user.ID), user.Username)
 	if err != nil {
-		log.Printf("ERROR: Failed to sign JWT token: %v", err)
+		log.Printf("ERROR: Failed to generate token pair: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
 	}
 
@@ -165,13 +166,54 @@ func (h *Handler) PostAuthLogin(c echo.Context) error {
 		CreatedAt:         NullTimeToRFC3339StringPtr(user.CreatedAt),
 		UpdatedAt:         NullTimeToRFC3339StringPtr(user.UpdatedAt),
 	}
+
 	// Use internal response payload
 	loginResp := LoginResponsePayload{
-		Token: tokenString,
-		User:  userResp,
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+		ExpiresIn:    int(auth.AccessTokenDuration.Seconds()),
+		User:         userResp,
 	}
 
 	return c.JSON(http.StatusOK, loginResp)
+}
+
+// PostAuthRefresh handles token refresh requests
+func (h *Handler) PostAuthRefresh(c echo.Context) error {
+	r := c.Request()
+
+	var req RefreshTokenRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		log.Printf("ERROR: Failed to decode refresh token request: %v", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+
+	if req.RefreshToken == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Refresh token is required")
+	}
+
+	// Create token service
+	tokenService := auth.NewTokenService(h.Config.JWTSecret, h.Config.RefreshTokenSecret)
+
+	// Refresh the token
+	newAccessToken, newRefreshToken, err := tokenService.RefreshAccessToken(req.RefreshToken)
+	if err != nil {
+		log.Printf("ERROR: Failed to refresh token: %v", err)
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired refresh token")
+	}
+
+	// Return the new tokens
+	refreshResp := struct {
+		AccessToken  string `json:"access_token"`
+		RefreshToken string `json:"refresh_token"`
+		ExpiresIn    int    `json:"expires_in"`
+	}{
+		AccessToken:  newAccessToken,
+		RefreshToken: newRefreshToken,
+		ExpiresIn:    int(auth.AccessTokenDuration.Seconds()),
+	}
+
+	return c.JSON(http.StatusOK, refreshResp)
 }
 
 // REMOVED Stubs

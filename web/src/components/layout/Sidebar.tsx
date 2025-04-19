@@ -106,14 +106,14 @@ const Sidebar: React.FC<SidebarProps> = ({
       aria-label="Sidebar"
     >
       {isMobileOpen && onMobileClose && (
-        <div className="absolute top-2 right-2 md:hidden">
+        <div className="absolute right-2 top-2 md:hidden">
           <Button 
             variant="ghost" 
             size="icon" 
             onClick={onMobileClose}
-            className="text-gray-400 hover:text-white hover:bg-gray-700"
+            className="text-gray-400 hover:bg-gray-700 hover:text-white"
           >
-            <XIcon className="h-5 w-5" />
+            <XIcon className="size-5" />
           </Button>
         </div>
       )}
@@ -127,7 +127,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <TooltipTrigger asChild>
             <button 
               onClick={toggleSidebarCollapse}
-              className="p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-gray-400 hover:text-white"
+              className="rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {isCollapsed ? <ChevronRightIcon size={20} /> : <ChevronLeftIcon size={20} />}
@@ -146,11 +146,11 @@ const Sidebar: React.FC<SidebarProps> = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <div className={cn("flex items-center", isCollapsed ? 'justify-center' : '')}>
-              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-sm font-semibold text-white">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white">
                 {userInitial}
               </div>
               {!isCollapsed && (
-                <span className="ml-3 text-sm font-medium text-white truncate">
+                <span className="ml-3 truncate text-sm font-medium text-white">
                   {username}
                 </span>
               )}
@@ -164,7 +164,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </Tooltip>
       </div>
       
-      <nav className="flex-grow mt-4 overflow-y-auto">
+      <nav className="mt-4 grow overflow-y-auto">
         <ul className={cn("space-y-1", isCollapsed ? 'px-2' : 'px-4')}>
           {navItems.map((item) => (
             <li key={item.path}>
@@ -224,7 +224,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="hidden md:flex md:flex-shrink-0">
+      <div className="hidden md:flex md:shrink-0">
         {sidebarContent} 
       </div>
 

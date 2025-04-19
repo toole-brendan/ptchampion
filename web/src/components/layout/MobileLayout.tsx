@@ -4,7 +4,7 @@ import { Home, BarChart2, Award, User, Dumbbell } from 'lucide-react';
 
 // Logo component (temporary, replace with actual logo)
 const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={`${className} text-brass-gold font-heading`}>PT</div>
+  <div className={`${className} font-heading text-brass-gold`}>PT</div>
 );
 
 const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -20,15 +20,15 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   ];
 
   return (
-    <div className="flex flex-col min-h-screen bg-cream pb-[60px]">
-      <header className="p-4 bg-cream shadow-sm flex items-center justify-between h-16">
+    <div className="flex min-h-screen flex-col bg-cream pb-[60px]">
+      <header className="flex h-16 items-center justify-between bg-cream p-4 shadow-sm">
         <div className="flex items-center">
-          <LogoIcon className="h-8 w-8" />
-          <span className="font-heading text-command-black text-xl ml-2">PT CHAMPION</span>
+          <LogoIcon className="size-8" />
+          <span className="ml-2 font-heading text-xl text-command-black">PT CHAMPION</span>
         </div>
       </header>
       
-      <main className="flex-1 p-5 max-w-5xl mx-auto w-full">
+      <main className="mx-auto w-full max-w-5xl flex-1 p-5">
         {children}
       </main>
       

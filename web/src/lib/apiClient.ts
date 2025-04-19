@@ -80,7 +80,7 @@ const apiRequest = async <T>(
 
     // Check if the response is ok (status in the range 200-299)
     if (!response.ok) {
-      let errorData = { message: `HTTP error ${response.status}` }; // Default error
+      const errorData = { message: `HTTP error ${response.status}` }; // Default error
       try {
         // Try to parse the error response body for a backend message
         const jsonError = await response.json();

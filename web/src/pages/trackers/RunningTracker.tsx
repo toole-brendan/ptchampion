@@ -362,8 +362,8 @@ export function RunningTracker() {
   return (
     <div className="container mx-auto px-4 py-8">
       {!isOnline && (
-        <Alert className="mb-4 bg-amber-50 border-amber-200">
-          <CloudOff className="h-4 w-4 text-amber-500" />
+        <Alert className="mb-4 border-amber-200 bg-amber-50">
+          <CloudOff className="size-4 text-amber-500" />
           <AlertTitle className="text-amber-800">Offline Mode</AlertTitle>
           <AlertDescription className="text-amber-700">
             You're currently offline. Your workout will be saved locally and synced when you reconnect.
@@ -375,9 +375,9 @@ export function RunningTracker() {
         <HeartRateMonitor onHeartRateChange={handleHeartRateChange} />
       </div>
       
-      <Card className="w-full max-w-3xl mx-auto bg-cream">
-        <CardHeader className="bg-deep-ops text-cream rounded-t-lg">
-          <CardTitle className="text-2xl font-heading tracking-wide">Running Tracker</CardTitle>
+      <Card className="mx-auto w-full max-w-3xl bg-cream">
+        <CardHeader className="rounded-t-lg bg-deep-ops text-cream">
+          <CardTitle className="font-heading text-2xl tracking-wide">Running Tracker</CardTitle>
           <CardDescription className="text-army-tan">
             Track your distance, pace, and time
           </CardDescription>
@@ -386,66 +386,66 @@ export function RunningTracker() {
         <CardContent className="p-6">
           {errorMessage && (
             <Alert variant="destructive" className="mb-4">
-              <InfoIcon className="h-4 w-4" />
+              <InfoIcon className="size-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
           
-          <div className="relative aspect-video bg-muted rounded-lg overflow-hidden mb-6 flex flex-col items-center justify-center">
-            <div className="text-8xl font-mono text-brass-gold font-bold">
+          <div className="relative mb-6 flex aspect-video flex-col items-center justify-center overflow-hidden rounded-lg bg-muted">
+            <div className="font-mono text-8xl font-bold text-brass-gold">
               {formatTime(elapsedTime)}
             </div>
-            <div className="text-2xl font-mono text-deep-ops mt-4">
+            <div className="mt-4 font-mono text-2xl text-deep-ops">
               {formatDistance(totalDistance)}
             </div>
-            <div className="text-lg font-mono text-tactical-gray mt-2">
+            <div className="mt-2 font-mono text-lg text-tactical-gray">
               Pace: {pace} min/mile
             </div>
             
             {!locationPermission && geolocationAvailable && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 z-10">
-                <MapPin className="h-12 w-12 mb-3 text-destructive" />
-                <p className="text-white text-lg font-semibold">Location Access Required</p>
-                <p className="text-white/80 text-center max-w-xs mt-2">Please allow location access to track your runs.</p>
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70">
+                <MapPin className="mb-3 size-12 text-destructive" />
+                <p className="text-lg font-semibold text-white">Location Access Required</p>
+                <p className="mt-2 max-w-xs text-center text-white/80">Please allow location access to track your runs.</p>
               </div>
             )}
             
             {!geolocationAvailable && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 z-10">
-                <MapPin className="h-12 w-12 mb-3 text-destructive" />
-                <p className="text-white text-lg font-semibold">Geolocation Not Available</p>
-                <p className="text-white/80 text-center max-w-xs mt-2">Your browser doesn't support location tracking.</p>
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70">
+                <MapPin className="mb-3 size-12 text-destructive" />
+                <p className="text-lg font-semibold text-white">Geolocation Not Available</p>
+                <p className="mt-2 max-w-xs text-center text-white/80">Your browser doesn't support location tracking.</p>
               </div>
             )}
           </div>
           
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="mb-6 grid grid-cols-3 gap-4">
             <div className="rounded-lg bg-white/50 p-4 text-center">
-              <h3 className="text-sm font-medium text-tactical-gray mb-1">Time</h3>
-              <p className="text-xl font-mono text-brass-gold">{formatTime(elapsedTime)}</p>
+              <h3 className="mb-1 text-sm font-medium text-tactical-gray">Time</h3>
+              <p className="font-mono text-xl text-brass-gold">{formatTime(elapsedTime)}</p>
             </div>
             <div className="rounded-lg bg-white/50 p-4 text-center">
-              <h3 className="text-sm font-medium text-tactical-gray mb-1">Distance</h3>
-              <p className="text-xl font-mono text-brass-gold">{formatDistance(totalDistance)}</p>
+              <h3 className="mb-1 text-sm font-medium text-tactical-gray">Distance</h3>
+              <p className="font-mono text-xl text-brass-gold">{formatDistance(totalDistance)}</p>
             </div>
             <div className="rounded-lg bg-white/50 p-4 text-center">
-              <h3 className="text-sm font-medium text-tactical-gray mb-1">Pace</h3>
-              <p className="text-xl font-mono text-brass-gold">{pace}</p>
+              <h3 className="mb-1 text-sm font-medium text-tactical-gray">Pace</h3>
+              <p className="font-mono text-xl text-brass-gold">{pace}</p>
             </div>
           </div>
           
           <div className="mb-4">
-            <div className="flex justify-between mb-2">
+            <div className="mb-2 flex justify-between">
               <span className="text-sm font-medium">Pace Consistency</span>
-              <span className="text-sm font-mono">{formScore}%</span>
+              <span className="font-mono text-sm">{formScore}%</span>
             </div>
             <Progress value={formScore} className="h-2" />
           </div>
           
-          <div className="rounded-lg bg-muted p-4 mb-4">
-            <h3 className="font-semibold mb-2">Tips</h3>
-            <ul className="text-sm list-disc pl-5 space-y-1">
+          <div className="mb-4 rounded-lg bg-muted p-4">
+            <h3 className="mb-2 font-semibold">Tips</h3>
+            <ul className="list-disc space-y-1 pl-5 text-sm">
               <li>Keep your phone with you while running</li>
               <li>Ensure location services are enabled</li>
               <li>Run in open areas for better GPS accuracy</li>
@@ -455,15 +455,15 @@ export function RunningTracker() {
           </div>
         </CardContent>
         
-        <CardFooter className="border-t border-border flex justify-between p-4">
+        <CardFooter className="flex justify-between border-t border-border p-4">
           {!isTracking ? (
             <Button 
               onClick={startTracking} 
-              className="bg-brass-gold hover:bg-brass-gold/90 text-deep-ops"
+              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
               disabled={!locationPermission || !geolocationAvailable}
               size="lg"
             >
-              <PlayIcon className="mr-2 h-5 w-5" />
+              <PlayIcon className="mr-2 size-5" />
               Begin Tracking
             </Button>
           ) : (
@@ -473,7 +473,7 @@ export function RunningTracker() {
               className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
               size="lg"
             >
-              <PauseIcon className="mr-2 h-5 w-5" />
+              <PauseIcon className="mr-2 size-5" />
               End Run
             </Button>
           )}
@@ -484,7 +484,7 @@ export function RunningTracker() {
             className="text-muted-foreground"
             disabled={isTracking || (totalDistance === 0 && elapsedTime === 0)}
           >
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <RefreshCw className="mr-2 size-4" />
             Reset
           </Button>
         </CardFooter>
@@ -494,16 +494,16 @@ export function RunningTracker() {
       <Dialog open={showResultModal} onOpenChange={setShowResultModal}>
         <DialogContent className="bg-cream sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-heading text-center">Run Results</DialogTitle>
+            <DialogTitle className="text-center font-heading text-2xl">Run Results</DialogTitle>
             <DialogDescription className="text-center">
               {submitSuccess ? (
-                <div className="flex items-center justify-center text-green-600 mt-2">
-                  <CheckCircle className="mr-2 h-5 w-5" />
+                <div className="mt-2 flex items-center justify-center text-green-600">
+                  <CheckCircle className="mr-2 size-5" />
                   Run saved successfully!
                 </div>
               ) : savedOffline ? (
-                <div className="flex items-center justify-center text-amber-600 mt-2">
-                  <CloudOff className="mr-2 h-5 w-5" />
+                <div className="mt-2 flex items-center justify-center text-amber-600">
+                  <CloudOff className="mr-2 size-5" />
                   Run saved offline. Will sync when online.
                 </div>
               ) : (
@@ -513,32 +513,32 @@ export function RunningTracker() {
           </DialogHeader>
           
           <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="bg-white/50 p-4 rounded-lg text-center">
-              <div className="text-sm text-tactical-gray font-medium mb-1">Distance</div>
-              <div className="text-3xl font-mono text-brass-gold">{formatDistance(totalDistance)}</div>
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="mb-1 text-sm font-medium text-tactical-gray">Distance</div>
+              <div className="font-mono text-3xl text-brass-gold">{formatDistance(totalDistance)}</div>
             </div>
             
-            <div className="bg-white/50 p-4 rounded-lg text-center">
-              <div className="text-sm text-tactical-gray font-medium mb-1">Time</div>
-              <div className="text-2xl font-mono text-brass-gold">{formatTime(elapsedTime)}</div>
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="mb-1 text-sm font-medium text-tactical-gray">Time</div>
+              <div className="font-mono text-2xl text-brass-gold">{formatTime(elapsedTime)}</div>
             </div>
             
-            <div className="bg-white/50 p-4 rounded-lg text-center">
-              <div className="text-sm text-tactical-gray font-medium mb-1">Avg. Pace</div>
-              <div className="text-2xl font-mono text-brass-gold">{pace}</div>
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="mb-1 text-sm font-medium text-tactical-gray">Avg. Pace</div>
+              <div className="font-mono text-2xl text-brass-gold">{pace}</div>
             </div>
             
-            <div className="bg-white/50 p-4 rounded-lg text-center">
-              <div className="text-sm text-tactical-gray font-medium mb-1">Grade</div>
-              <div className="text-3xl font-mono text-brass-gold">{scoreGrade}</div>
+            <div className="rounded-lg bg-white/50 p-4 text-center">
+              <div className="mb-1 text-sm font-medium text-tactical-gray">Grade</div>
+              <div className="font-mono text-3xl text-brass-gold">{scoreGrade}</div>
             </div>
           </div>
           
-          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:justify-between">
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
             {!submitSuccess && !savedOffline ? (
               <Button 
                 onClick={submitWorkout} 
-                className="bg-brass-gold hover:bg-brass-gold/90 text-deep-ops w-full sm:w-auto"
+                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
                 disabled={submitting}
               >
                 {submitting ? 'Saving...' : `Save Results${!isOnline ? ' Offline' : ''}`}
@@ -546,7 +546,7 @@ export function RunningTracker() {
             ) : (
               <Button
                 onClick={() => navigate('/history')}
-                className="bg-brass-gold hover:bg-brass-gold/90 text-deep-ops w-full sm:w-auto"
+                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
               >
                 View History
               </Button>
@@ -555,9 +555,9 @@ export function RunningTracker() {
             <Button 
               onClick={shareResults} 
               variant="outline" 
-              className="border-brass-gold text-brass-gold hover:bg-brass-gold/10 w-full sm:w-auto"
+              className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10 sm:w-auto"
             >
-              <ShareIcon className="mr-2 h-4 w-4" />
+              <ShareIcon className="mr-2 size-4" />
               Share Results
             </Button>
           </DialogFooter>

@@ -182,8 +182,8 @@ const WasmGradingExample: React.FC = () => {
   };
   
   return (
-    <div className="p-4 bg-cream rounded-lg shadow">
-      <h2 className="text-xl font-heading mb-4">WASM Grading Demo</h2>
+    <div className="rounded-lg bg-cream p-4 shadow">
+      <h2 className="mb-4 font-heading text-xl">WASM Grading Demo</h2>
       
       <div className="mb-4">
         <p className="mb-2">Status: {isWasmLoaded ? "WASM module loaded" : "Loading WASM module..."}</p>
@@ -194,7 +194,7 @@ const WasmGradingExample: React.FC = () => {
         <button 
           onClick={handleCalculateScore}
           disabled={!isWasmLoaded}
-          className="bg-brass-gold text-deep-ops px-4 py-2 rounded-md mr-2 disabled:opacity-50"
+          className="mr-2 rounded-md bg-brass-gold px-4 py-2 text-deep-ops disabled:opacity-50"
         >
           Calculate 50 Push-ups Score
         </button>
@@ -207,23 +207,23 @@ const WasmGradingExample: React.FC = () => {
         <button 
           onClick={() => handleGradePose(false)}
           disabled={!isWasmLoaded}
-          className="bg-brass-gold text-deep-ops px-4 py-2 rounded-md mr-2 disabled:opacity-50"
+          className="mr-2 rounded-md bg-brass-gold px-4 py-2 text-deep-ops disabled:opacity-50"
         >
           Grade "Up" Position
         </button>
         <button 
           onClick={() => handleGradePose(true)}
           disabled={!isWasmLoaded}
-          className="bg-brass-gold text-deep-ops px-4 py-2 rounded-md disabled:opacity-50"
+          className="rounded-md bg-brass-gold px-4 py-2 text-deep-ops disabled:opacity-50"
         >
           Grade "Down" Position
         </button>
       </div>
       
       {gradingResult && (
-        <div className="mb-4 p-3 bg-white rounded-md">
-          <h3 className="font-heading mb-2">Grading Result:</h3>
-          <div className="grid grid-cols-2 gap-2 mb-2">
+        <div className="mb-4 rounded-md bg-white p-3">
+          <h3 className="mb-2 font-heading">Grading Result:</h3>
+          <div className="mb-2 grid grid-cols-2 gap-2">
             <div>State: <span className="font-mono">{gradingResult.state}</span></div>
             <div>Reps: <span className="font-mono">{repCount}</span></div>
             <div>Valid: <span className="font-mono">{gradingResult.isValid ? "Yes" : "No"}</span></div>

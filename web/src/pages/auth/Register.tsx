@@ -9,7 +9,7 @@ import logoImage from '../../assets/pt_champion_logo_2.png';
 
 // Real logo component
 const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <img src={logoImage} alt="PT Champion Logo" className={`${className} w-auto h-80`} />
+  <img src={logoImage} alt="PT Champion Logo" className={`${className} h-80 w-auto`} />
 );
 
 const RegisterPage: React.FC = () => {
@@ -85,15 +85,15 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-cream p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-cream p-4">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-10">
+        <div className="mb-10 flex flex-col items-center">
           <LogoIcon className="mb-4" />
         </div>
 
         {(error || validationError) && (
           <Alert variant="destructive" className="mb-6">
-            <ExclamationTriangleIcon className="h-4 w-4" />
+            <ExclamationTriangleIcon className="size-4" />
             <AlertDescription>{error || validationError}</AlertDescription>
           </Alert>
         )}
@@ -109,7 +109,7 @@ const RegisterPage: React.FC = () => {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+                className="w-full rounded-md border border-army-tan/50 bg-white p-3"
                 placeholder="John"
               />
             </div>
@@ -123,7 +123,7 @@ const RegisterPage: React.FC = () => {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+                className="w-full rounded-md border border-army-tan/50 bg-white p-3"
                 placeholder="Doe"
               />
             </div>
@@ -139,7 +139,7 @@ const RegisterPage: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              className="w-full rounded-md border border-army-tan/50 bg-white p-3"
               placeholder="you@example.com"
               autoComplete="email"
             />
@@ -155,7 +155,7 @@ const RegisterPage: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              className="w-full rounded-md border border-army-tan/50 bg-white p-3"
               placeholder="••••••••"
               autoComplete="new-password"
             />
@@ -171,7 +171,7 @@ const RegisterPage: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              className="w-full rounded-md border border-army-tan/50 bg-white p-3"
               placeholder="••••••••"
               autoComplete="new-password"
             />
@@ -184,7 +184,7 @@ const RegisterPage: React.FC = () => {
           >
             {isLoading ? (
               <>
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                <div className="size-4 animate-spin rounded-full border-2 border-t-transparent" />
                 <span className="ml-2">Creating Account...</span>
               </>
             ) : (
@@ -192,7 +192,7 @@ const RegisterPage: React.FC = () => {
             )}
           </Button>
 
-          <div className="text-center mt-6">
+          <div className="mt-6 text-center">
             <p className="text-tactical-gray">
               Already have an account?{' '}
               <Link to="/login" className="text-brass-gold hover:underline">

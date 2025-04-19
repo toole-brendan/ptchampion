@@ -14,11 +14,14 @@ import (
 
 	"ptchampion/internal/api/middleware"
 	"ptchampion/internal/config"
+	"ptchampion/internal/logging"
+	"ptchampion/internal/telemetry"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware" // Import echo middleware
+	"go.uber.org/zap"
 )
 
 // FileServer conveniently sets up a http.FileServer handler to serve
@@ -53,16 +56,22 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 // NewRouter creates and configures the main application router.
-func NewRouter(apiHandler *ApiHandler, cfg *config.Config) http.Handler { // Accept *ApiHandler
+func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger) http.Handler { // Accept *ApiHandler
 	// Use Echo router instead of Chi
 	e := echo.New()
 
 	// Setup Validator
 	e.Validator = &CustomValidator{validator: validator.New()}
 
-	// Initialize OpenTelemetry
+	// Initialize OpenTelemetry (no‑op if endpoint not provided)
 	ctx := context.Background()
-	shutdown, err := middleware.InitTracer(ctx)
+	shutdown, err := telemetry.SetupOTelSDK(ctx, telemetry.Config{
+		ServiceName:    "ptchampion",
+		Environment:    cfg.AppEnv,
+		ServiceVersion: cfg.AppVersion,
+		OTLPEndpoint:   cfg.OTLPEndpoint,
+		OTLPInsecure:   cfg.OTLPInsecure,
+	})
 	if err != nil {
 		log.Printf("Failed to initialize OpenTelemetry: %v", err)
 	} else {
@@ -103,6 +112,10 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config) http.Handler { // Acc
 	e.Use(echoMiddleware.RequestID())
 	// Add OpenTelemetry middleware
 	e.Use(middleware.OTELMiddleware())
+	// Add Security Headers middleware
+	e.Use(middleware.SecurityHeaders())
+	// Replace the basic CORS middleware with our secure configuration
+	e.Use(echoMiddleware.CORSWithConfig(middleware.CORSConfig()))
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc { // Heartbeat equivalent
 		return func(c echo.Context) error {
 			if c.Request().URL.Path == "/ping" {
@@ -112,20 +125,32 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config) http.Handler { // Acc
 		}
 	})
 
-	// CORS Middleware for Echo
-	e.Use(echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
-		AllowOriginFunc: func(origin string) (bool, error) {
-			return origin == "https://ptchampion.ai" ||
-					origin == "https://www.ptchampion.ai" ||
-					strings.HasPrefix(origin, "http://localhost:") ||
-					origin == cfg.ClientOrigin,
-				nil
-		},
-		AllowMethods:     []string{http.MethodGet, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete, http.MethodOptions},
-		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization, "X-CSRF-Token"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	}))
+	// Initialize Sentry for error monitoring (if DSN is provided)
+	if cfg.SentryDSN != "" {
+		sentryConfig := middleware.SentryConfig{
+			Dsn:              cfg.SentryDSN,
+			Environment:      cfg.AppEnv,
+			Release:          cfg.AppVersion,
+			Debug:            cfg.AppEnv == "development",
+			AttachStacktrace: true,
+			TracesSampleRate: 0.2,
+			ServerName:       cfg.ServerName,
+			AppVersion:       cfg.AppVersion,
+			Tags: map[string]string{
+				"service": "backend-api",
+			},
+		}
+
+		sentryMiddleware, err := middleware.SentryMiddleware(sentryConfig)
+		if err != nil {
+			logger.Warn("Failed to initialize Sentry middleware", zap.Error(err))
+		} else {
+			logger.Info("Sentry error reporting initialized")
+			e.Use(sentryMiddleware)
+		}
+	} else {
+		logger.Info("Sentry DSN not provided; error reporting disabled")
+	}
 
 	// Health Check endpoints
 	e.GET("/health", func(c echo.Context) error {
@@ -185,6 +210,20 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config) http.Handler { // Acc
 		// Let Echo handle 404 for API routes or missing assets
 		return echo.ErrNotFound
 	})
+
+	// Register Prometheus metrics and expose /metrics endpoint
+	middleware.RegisterMetrics(e)
+
+	// Set up middleware that should be applied to all routes
+	e.Use(middleware.RequestLogging(middleware.RequestLoggingConfig{
+		Logger: logger,
+		SkipPaths: []string{
+			"/health",
+			"/metrics",
+		},
+	}))
+
+	// All routes are registered through OpenAPI‑generated RegisterHandlers above.
 
 	return e // Return the Echo instance
 }
