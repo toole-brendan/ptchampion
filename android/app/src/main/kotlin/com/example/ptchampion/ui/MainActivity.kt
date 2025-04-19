@@ -1,5 +1,6 @@
 package com.example.ptchampion.ui
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -73,18 +74,42 @@ import com.example.ptchampion.ui.screens.settings.SettingsScreen
 import com.example.ptchampion.ui.screens.bluetooth.BluetoothDeviceManagementScreen
 import com.example.ptchampion.ui.screens.onboarding.OnboardingScreen
 import com.example.ptchampion.ui.screens.editprofile.EditProfileScreen
+import com.example.ptchampion.util.AppUpdateManager
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 // Define items for the bottom navigation bar
 // data class BottomNavItem(val screen: Screen, val label: String, val icon: ImageVector)
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    
+    @Inject
+    lateinit var appUpdateManager: AppUpdateManager
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Attach update manager to this activity
+        appUpdateManager.attachToActivity(this)
+        
+        // Check for updates when app starts
+        lifecycleScope.launch {
+            appUpdateManager.checkForUpdates()
+        }
+        
         setContent {
             PTChampionApp()
         }
+    }
+    
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        
+        // Handle app update result
+        appUpdateManager.onActivityResult(requestCode, resultCode)
     }
 }
 

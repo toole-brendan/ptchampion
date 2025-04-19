@@ -80,17 +80,34 @@ android {
             useSupportLibrary = true
         }
     }
+    
+    // App signing configuration for release builds
+    signingConfigs {
+        create("release") {
+            // These values should be provided by environment variables or CI/CD secrets
+            // For local development, you can use placeholder values
+            storeFile = file(System.getenv("KEYSTORE_FILE") ?: "${rootProject.projectDir}/keystore/ptchampion.keystore")
+            storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "placeholder_pwd"
+            keyAlias = System.getenv("KEY_ALIAS") ?: "ptchampion"
+            keyPassword = System.getenv("KEY_PASSWORD") ?: "placeholder_pwd"
+            // Enable v1 and v2 signing
+            enableV1Signing = true
+            enableV2Signing = true
+        }
+    }
 
     buildTypes {
         release {
-            // Disable minification completely to bypass R8 issues
+            // Enable minification
             isMinifyEnabled = true
-            // Disable resource shrinking
+            // Enable resource shrinking
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // Apply release signing config
+            signingConfig = signingConfigs.getByName("release")
             buildConfigField("String", "BASE_URL", "\"https://your-production-api.com/api/v1/\"")
         }
         debug {
@@ -262,4 +279,8 @@ dependencies {
 
     // Coil image caching dependency
     implementation("io.coil-kt:coil-compose:2.4.0")
+
+    // Google Play Core for in-app updates
+    implementation("com.google.android.play:app-update:2.1.0")
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
 }

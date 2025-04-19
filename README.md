@@ -31,7 +31,7 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 │   │   ├── openapi.gen.go     # Generated code from OpenAPI spec (oapi-codegen)
 │   │   └── router.go          # Echo router setup & static file serving
 │   ├── auth/                  # Authentication logic helpers
-│   ├── config/                # Configuration loading (env vars, AWS Secrets Manager)
+│   ├── config/                # Configuration loading (env vars, Azure Key Vault)
 │   ├── grading/               # Exercise grading logic (backend-side)
 │   └── store/                 # Data access layer interfaces/implementations
 │       ├── postgres/          # PostgreSQL specific implementation (using sqlc)
@@ -127,7 +127,7 @@ PT Champion is a cross-platform fitness evaluation system that uses computer vis
 - **Migrations**: [golang-migrate](https://github.com/golang-migrate/migrate) (SQL-based migrations managed via `Makefile`)
 - **API Specification**: OpenAPI 3.0 (`openapi.yaml`)
 - **Code Generation**: [oapi-codegen](https://github.com/deepmap/oapi-codegen) (Generate Echo server code from OpenAPI spec)
-- **Configuration**: Environment Variables, `.env` files, [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) integration
+- **Configuration**: Environment Variables, `.env` files, [Azure Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) integration
 - **Authentication**: JWT (using `golang-jwt/jwt/v5`)
 - **Schema/Types (Potentially)**: [Drizzle ORM](https://orm.drizzle.team/) + [Zod](https://zod.dev/) via `shared/schema.ts` (Needs confirmation on backend integration)
 
@@ -185,6 +185,7 @@ For detailed information about the project, please refer to the following docume
 - [Compliance, Backup & Disaster Recovery](docs/COMPLIANCE_BACKUP_DR.md) - Information about compliance frameworks, data backup strategies, and DR procedures
 - [iOS App Store Submission Guide](ios/AppStoreMetadata.md) - Guide for iOS App Store submission
 - [Android Play Store Submission Guide](android/PlayStoreMetadata.md) - Guide for Google Play Store submission
+- [Azure Deployment Guide](docs/AZURE_DEPLOYMENT.md) - Guide for deploying the application to Azure
 
 ## Getting Started
 
@@ -313,7 +314,7 @@ For more details on working with migrations, see [db/migrations/README.md](db/mi
 
 ### Deployment
 
-For Docker deployment instructions, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md).
+For Azure deployment instructions, see [AZURE_DEPLOYMENT.md](docs/AZURE_DEPLOYMENT.md).
 
 ## Usage
 
