@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     Table,
     TableBody,
@@ -19,6 +19,15 @@ import {
 } from "@/components/ui/select"; // For filtering
 import { Label } from "@/components/ui/label"; // For filter labels
 import { cn } from "@/lib/utils"; // Import cn utility
+import { Button } from "@/components/ui/button";
+import { 
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
+import { useApi } from "@/lib/apiClient"; // Import API client hook
+import { Player } from '@lottiefiles/react-lottie-player'; // Import Lottie player
+import emptyLeaderboardAnimation from '@/assets/empty-leaderboard.json'; // Import animation JSON
 
 // Mock data for leaderboard
 const mockLeaderboard = [
@@ -50,26 +59,144 @@ const getInitials = (name: string) => {
       .join('');
   };
 
+interface GeolocationState {
+  isLoading: boolean;
+  isSupported: boolean;
+  isPermissionGranted: boolean;
+  coordinates: { latitude: number; longitude: number } | null;
+  error: string | null;
+}
+
 const Leaderboard: React.FC = () => {
+  const api = useApi();
   const [exerciseFilter, setExerciseFilter] = useState<string>(exerciseOptions[0]); // Default to Overall
   const [scopeFilter, setScopeFilter] = useState<string>(scopeOptions[0]); // Default to Global
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [leaderboardData, setLeaderboardData] = useState(mockLeaderboard);
+  
+  // Geolocation state
+  const [geoState, setGeoState] = useState<GeolocationState>({
+    isLoading: false,
+    isSupported: 'geolocation' in navigator,
+    isPermissionGranted: false,
+    coordinates: null,
+    error: null
+  });
+
+  // Request geolocation permission
+  const requestGeolocation = () => {
+    if (!geoState.isSupported) {
+      setGeoState(prev => ({ ...prev, error: "Geolocation is not supported by your browser" }));
+      return;
+    }
+
+    setGeoState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setGeoState({
+          isLoading: false,
+          isSupported: true,
+          isPermissionGranted: true,
+          coordinates: {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          },
+          error: null
+        });
+        
+        // When we get location, if scope is local, fetch local leaderboard
+        if (scopeFilter === scopeOptions[1]) {
+          fetchLeaderboardData(exerciseFilter, true, position.coords.latitude, position.coords.longitude);
+        }
+      },
+      (error) => {
+        let errorMessage = "Unknown error occurred while accessing your location";
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = "Location permission was denied. Please enable location services to use the local leaderboard.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            errorMessage = "The request to get your location timed out.";
+            break;
+        }
+        
+        setGeoState({
+          isLoading: false,
+          isSupported: true,
+          isPermissionGranted: false,
+          coordinates: null,
+          error: errorMessage
+        });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+  };
+
+  // Fetch leaderboard data
+  const fetchLeaderboardData = async (exercise: string, isLocal: boolean, lat?: number, lng?: number) => {
+    setIsLoading(true);
+    try {
+      // In a real app, we would use the API client to fetch data
+      // For now, simulate API call with timeout and mock data filtering
+      
+      // Example of how the API call might look:
+      // const params = new URLSearchParams();
+      // if (exercise !== 'Overall') params.append('exercise', exercise.toLowerCase());
+      // if (isLocal && lat && lng) {
+      //   params.append('lat', lat.toString());
+      //   params.append('lng', lng.toString());
+      //   params.append('radius', '5'); // 5 miles
+      // }
+      // const response = await api.get(`/leaderboard?${params.toString()}`);
+      // setLeaderboardData(response.data);
+      
+      // Mock implementation - filter mockLeaderboard
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+      
+      // Just filter the mock data for demo purposes
+      const filtered = mockLeaderboard
+          .filter(user => user.exercise === exercise)
+          .sort((a, b) => a.rank - b.rank);
+      
+      setLeaderboardData(filtered);
+    } catch (error) {
+      console.error("Error fetching leaderboard data:", error);
+      // Could set an error state here
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Effect to handle scope change
+  useEffect(() => {
+    const isLocalScope = scopeFilter === scopeOptions[1];
+    
+    if (isLocalScope && !geoState.coordinates) {
+      // If local scope selected but no coordinates, request them
+      requestGeolocation();
+    } else {
+      // Otherwise fetch appropriate data
+      fetchLeaderboardData(
+        exerciseFilter,
+        isLocalScope,
+        geoState.coordinates?.latitude,
+        geoState.coordinates?.longitude
+      );
+    }
+  }, [scopeFilter, exerciseFilter, geoState.coordinates]);
 
   // Filter leaderboard data based on selections
   const filteredLeaderboard = useMemo(() => {
-    // TODO: Implement actual local filtering based on user location
-    if (scopeFilter === scopeOptions[1]) {
-        // For now, just return a message or empty array for Local
-        console.warn("Local leaderboard filtering not implemented.");
-        // return []; 
-        // Or maybe filter by exercise but show a note about scope?
-    }
+    if (isLoading) return [];
     
-    return mockLeaderboard
-        .filter(user => user.exercise === exerciseFilter) // Filter by selected exercise
-        .sort((a, b) => a.rank - b.rank); // Ensure sorted by rank
-        // .slice(0, 10); // Optionally limit to top N results
-
-  }, [exerciseFilter, scopeFilter]);
+    // Filter is now handled by the API/fetchLeaderboardData
+    return leaderboardData;
+  }, [leaderboardData, isLoading]);
 
   // Dynamically set the card title
   const cardTitle = `Top Performers - ${exerciseFilter} (${scopeFilter})`;
@@ -78,8 +205,33 @@ const Leaderboard: React.FC = () => {
     <div className="space-y-6"> {/* Reduced vertical spacing */}
       <h1 className="text-2xl font-semibold text-foreground">Leaderboard</h1> {/* Standardized heading */}
       
-      {/* Filter Controls - Moved inside CardContent */}
-      {/* <div className="flex flex-col sm:flex-row gap-4 mb-6"> ... </div> */}
+      {/* Geolocation Alert - Show if needed */}
+      {scopeFilter === scopeOptions[1] && geoState.error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Location Error</AlertTitle>
+          <AlertDescription>
+            {geoState.error}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2" 
+              onClick={requestGeolocation}
+            >
+              Try Again
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {/* Location Status Alert - Only show when actively looking for location */}
+      {geoState.isLoading && (
+        <Alert className="mb-4">
+          <AlertTitle>Getting your location</AlertTitle>
+          <AlertDescription>
+            Please allow location access to view the local leaderboard.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Leaderboard Table Card */}
       <Card className="bg-card rounded-lg shadow-sm border border-border transition-shadow hover:shadow-md"> {/* Added hover effect */}
@@ -114,10 +266,8 @@ const Leaderboard: React.FC = () => {
                       <SelectItem
                         key={option}
                         value={option}
-                        disabled={option === scopeOptions[1]} // Disable Local for now
-                        className={cn(option === scopeOptions[1] && "text-muted-foreground")} // Indicate disabled state
                       >
-                          {option}{option === scopeOptions[1] && " (Coming Soon)"} {/* Add coming soon text */}
+                        {option}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -125,13 +275,14 @@ const Leaderboard: React.FC = () => {
               </div>
             </div>
 
-            <Table>
-                <TableCaption className="text-muted-foreground py-4"> {/* Adjusted caption style */}
-                    {filteredLeaderboard.length > 0
-                        ? "Leaderboard rankings based on selected criteria."
-                        : "No data available for the selected filters."
-                    }
-                    {scopeFilter === scopeOptions[1] && " (Local filtering not yet implemented)"}
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brass-gold"></div>
+              </div>
+            ) : filteredLeaderboard.length > 0 ? (
+              <Table>
+                <TableCaption className="text-muted-foreground py-4">
+                  Leaderboard rankings based on selected criteria.
                 </TableCaption>
                 <TableHeader>
                 <TableRow className="border-b border-border hover:bg-transparent"> {/* Removed hover effect from header row */}
@@ -141,34 +292,46 @@ const Leaderboard: React.FC = () => {
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                {filteredLeaderboard.length > 0 ? (
-                    filteredLeaderboard.map((user) => (
-                        // Added hover effect to body rows
-                        <TableRow key={`${user.exercise}-${user.rank}-${user.name}`} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
-                            <TableCell className="font-semibold text-lg text-primary">{user.rank}</TableCell> {/* Kept rank prominent */}
-                            <TableCell>
-                                <div className="flex items-center space-x-3">
-                                    <Avatar className="h-8 w-8"> {/* Slightly smaller avatar */}
-                                        <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                                        <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium"> {/* Consistent fallback style */}
-                                            {getInitials(user.name)}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <span className="font-medium text-foreground">{user.name}</span>
-                                </div>
-                            </TableCell>
-                            <TableCell className="text-right font-medium text-foreground tabular-nums">{user.score}</TableCell> {/* Ensured consistent font, added tabular-nums */}
-                        </TableRow>
-                    ))
-                ) : (
-                    <TableRow>
-                        <TableCell colSpan={3} className="text-center text-muted-foreground py-8"> {/* Adjusted padding for empty state */}
-                            No rankings found for {exerciseFilter}.
+                  {filteredLeaderboard.map((user) => (
+                    // Added hover effect to body rows
+                    <TableRow key={`${user.exercise}-${user.rank}-${user.name}`} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
+                        <TableCell className="font-semibold text-lg text-primary">{user.rank}</TableCell> {/* Kept rank prominent */}
+                        <TableCell>
+                            <div className="flex items-center space-x-3">
+                                <Avatar className="h-8 w-8"> {/* Slightly smaller avatar */}
+                                    <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                                    <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium"> {/* Consistent fallback style */}
+                                        {getInitials(user.name)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium text-foreground">{user.name}</span>
+                            </div>
                         </TableCell>
+                        <TableCell className="text-right font-medium text-foreground tabular-nums">{user.score}</TableCell> {/* Ensured consistent font, added tabular-nums */}
                     </TableRow>
-                )}
+                  ))}
                 </TableBody>
-            </Table>
+              </Table>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8">
+                <Player
+                  autoplay
+                  loop
+                  src={emptyLeaderboardAnimation}
+                  style={{ height: '200px', width: '200px' }}
+                  className="text-brass-gold"
+                />
+                <p className="text-center text-muted-foreground mt-4">
+                  No rankings found for {exerciseFilter}.
+                </p>
+                <p className="text-center text-sm text-muted-foreground">
+                  {scopeFilter === scopeOptions[1]
+                    ? "Try changing to Global scope or completing an exercise in this area."
+                    : "Try selecting a different exercise type or complete your first workout to get on the board."
+                  }
+                </p>
+              </div>
+            )}
         </CardContent>
       </Card>
     </div>

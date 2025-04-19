@@ -1,214 +1,210 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
-import { Loader2 } from 'lucide-react';
+import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
+import { Alert, AlertDescription } from '../../components/ui/alert';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
-const Register: React.FC = () => {
+// Logo component (temporary, replace with actual logo)
+const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <div className={`${className} text-brass-gold font-heading`}>PT</div>
+);
+
+const RegisterPage: React.FC = () => {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [validationError, setValidationError] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
+  
+  const { register, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
-  const { register, isLoading, error: apiError, clearError, isAuthenticated } = useAuth();
-
+  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
       navigate('/', { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
+  // Clear error on unmount
   useEffect(() => {
-    clearError();
-  }, [clearError, email, password, confirmPassword, firstName, lastName]);
-
-  const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValidationError('');
-      setter(e.target.value);
+    return () => {
+      clearError();
     };
+  }, [clearError]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setValidationError('');
-
-    if (!email || !password || !confirmPassword || !firstName || !lastName) {
-      setValidationError('All fields except password confirmation are required.');
-      return;
-    }
-    if (password.length < 8) {
-      setValidationError('Password must be at least 8 characters long.');
-      return;
-    }
+  const validateForm = (): boolean => {
+    // Clear previous validation errors
+    setValidationError(null);
+    
+    // Check if passwords match
     if (password !== confirmPassword) {
-      setValidationError('Passwords do not match.');
-      return;
+      setValidationError("Passwords don't match");
+      return false;
     }
-
-    await register({
-      email,
-      password,
-      firstName,
-      lastName
-    });
+    
+    // Validate password strength (basic check - can be enhanced)
+    if (password.length < 8) {
+      setValidationError('Password must be at least 8 characters');
+      return false;
+    }
+    
+    // Check if all required fields are filled
+    if (!firstName || !lastName || !email || !password) {
+      setValidationError('All fields are required');
+      return false;
+    }
+    
+    return true;
   };
 
-  const displayError = validationError || apiError;
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
+    
+    try {
+      await register({
+        firstName,
+        lastName,
+        email,
+        password,
+      });
+      // Redirect handled by effect when isAuthenticated changes
+    } catch (err) {
+      // Error handling is done by the auth context
+      console.error('Registration failed:', err);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-100">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
-          PT Champion
-        </h2>
-        <h3 className="mt-2 text-center text-2xl font-semibold text-gray-700">
-          Create your account
-        </h3>
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-cream p-4">
+      <div className="w-full max-w-md">
+        <div className="flex flex-col items-center mb-8">
+          <LogoIcon className="text-6xl" />
+          <h1 className="text-3xl font-heading text-command-black mt-4">PT CHAMPION</h1>
+          <p className="text-tactical-gray mt-2">Create your account</p>
+        </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
-          {displayError && (
-            <div className="mb-4 rounded-md bg-red-50 p-4 border border-red-200">
-               <p className="text-sm font-medium text-red-800">
-                 {validationError ? 'Validation Error' : 'Registration Failed'}
-               </p>
-               <p className="mt-1 text-sm text-red-700">{displayError}</p>
-            </div>
-          )}
+        {(error || validationError) && (
+          <Alert variant="destructive" className="mb-6">
+            <ExclamationTriangleIcon className="h-4 w-4" />
+            <AlertDescription>{error || validationError}</AlertDescription>
+          </Alert>
+        )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
-              </label>
-              <div className="mt-1">
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  value={email}
-                  onChange={handleInputChange(setEmail)}
-                  disabled={isLoading}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="firstName" className="block text-sm font-medium text-tactical-gray">
                 First Name
               </label>
-              <div className="mt-1">
-                <input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  autoComplete="given-name"
-                  required
-                  value={firstName}
-                  onChange={handleInputChange(setFirstName)}
-                  disabled={isLoading}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                Last Name
-              </label>
-              <div className="mt-1">
-                <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  autoComplete="family-name"
-                  required
-                  value={lastName}
-                  onChange={handleInputChange(setLastName)}
-                  disabled={isLoading}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={password}
-                  onChange={handleInputChange(setPassword)}
-                  disabled={isLoading}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
-                />
-              </div>
-              <p className="mt-1 text-xs text-gray-500">
-                Must be at least 8 characters long.
-              </p>
+              <Input
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+                placeholder="John"
+              />
             </div>
             
-            <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
-                Confirm Password
+            <div className="space-y-2">
+              <label htmlFor="lastName" className="block text-sm font-medium text-tactical-gray">
+                Last Name
               </label>
-              <div className="mt-1">
-                <input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={confirmPassword}
-                  onChange={handleInputChange(setConfirmPassword)}
-                  disabled={isLoading}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm disabled:opacity-50"
-                />
-              </div>
+              <Input
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+                placeholder="Doe"
+              />
             </div>
+          </div>
+          
+          <div className="space-y-2">
+            <label htmlFor="email" className="block text-sm font-medium text-tactical-gray">
+              Email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              placeholder="you@example.com"
+              autoComplete="email"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label htmlFor="password" className="block text-sm font-medium text-tactical-gray">
+              Password
+            </label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              placeholder="••••••••"
+              autoComplete="new-password"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-medium text-tactical-gray">
+              Confirm Password
+            </label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              className="w-full p-3 bg-white border border-army-tan/50 rounded-md"
+              placeholder="••••••••"
+              autoComplete="new-password"
+            />
+          </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+                <span className="ml-2">Creating Account...</span>
+              </>
+            ) : (
+              'CREATE ACCOUNT'
+            )}
+          </Button>
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading || !email || !password || !confirmPassword || !firstName || !lastName}
-                className="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                   <>
-                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                     Creating account...
-                   </>
-                 ) : 'Create account'}
-              </button>
-            </div>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+          <div className="text-center mt-6">
+            <p className="text-tactical-gray">
               Already have an account?{' '}
-              <Link
-                to="/login"
-                className={`font-medium text-indigo-600 hover:text-indigo-500 ${isLoading ? 'pointer-events-none opacity-50' : ''}`}
-              >
+              <Link to="/login" className="text-brass-gold hover:underline">
                 Sign in
               </Link>
             </p>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
 };
 
-export default Register; 
+export default RegisterPage; 

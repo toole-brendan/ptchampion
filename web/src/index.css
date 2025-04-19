@@ -1,4 +1,43 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap');
+/* Import fonts locally for offline support */
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/BebasNeue-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Montserrat-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Montserrat-SemiBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/RobotoMono-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/RobotoMono-Medium.woff2') format('woff2');
+}
 
 @tailwind base;
 @tailwind components;
@@ -7,58 +46,97 @@
 @layer base {
   /* Define CSS variables first */
   :root {
-    --background: 210 40% 98%; /* Slightly off-white */
-    --foreground: 224 71.4% 4.1%; /* Adjusted foreground for contrast */
-    --card: 0 0% 100%; /* Keep cards white */
-    --card-foreground: 224 71.4% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 71.4% 4.1%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 215 27.9% 92.5%; /* Adjusted secondary */
-    --secondary-foreground: 224 71.4% 4.1%;
-    --muted: 215 27.9% 92.5%;
-    --muted-foreground: 215.4 16.3% 46.9%; /* Kept muted foreground */
-    --accent: 215 27.9% 92.5%;
-    --accent-foreground: 224 71.4% 4.1%;
+    /* PT Champion Style Guide V2 colors as HSL */
+    --cream: 45 39% 93%; /* #F4F1E6 - Light Background */
+    --deep-ops: 120 10% 13%; /* #1E241E - Primary Dark Background */
+    --brass-gold: 43 45% 52%; /* #BFA24D - Accent / Highlight */
+    --army-tan: 45 42% 76%; /* #E0D4A6 - Button/Text Highlight */
+    --olive-mist: 65 27% 66%; /* #C9CCA6 - Chart Fill */
+    --command-black: 0 0% 12%; /* #1E1E1E - Primary Text */
+    --tactical-gray: 110 12% 32%; /* #4E5A48 - Secondary Text */
+    
+    /* Map shadcn/ui variables to PT Champion colors */
+    --background: var(--cream);
+    --foreground: var(--command-black);
+    --card: var(--cream);
+    --card-foreground: var(--command-black);
+    --popover: var(--cream);
+    --popover-foreground: var(--command-black);
+    --primary: var(--brass-gold);
+    --primary-foreground: var(--command-black);
+    --secondary: var(--army-tan);
+    --secondary-foreground: var(--command-black);
+    --muted: var(--olive-mist);
+    --muted-foreground: var(--tactical-gray);
+    --accent: var(--brass-gold);
+    --accent-foreground: var(--deep-ops);
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-    --border: 214.3 31.8% 93%; /* Subtler border */
-    --input: 214.3 31.8% 91.4%; /* Kept input */
-    --ring: 224 71.4% 4.1%;
+    --border: var(--army-tan);
+    --input: 214.3 31.8% 91.4%;
+    --ring: var(--brass-gold);
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 217 91% 65%;
-    --primary-foreground: 224 71.4% 4.1%;
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
+    --background: var(--deep-ops);
+    --foreground: var(--cream);
+    --card: var(--deep-ops);
+    --card-foreground: var(--cream);
+    --popover: var(--deep-ops);
+    --popover-foreground: var(--cream);
+    --primary: var(--brass-gold);
+    --primary-foreground: var(--deep-ops);
+    --secondary: var(--tactical-gray);
+    --secondary-foreground: var(--cream);
     --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
-    --accent: 215 27.9% 16.9%;
-    --accent-foreground: 210 20% 98%;
+    --muted-foreground: var(--olive-mist);
+    --accent: var(--brass-gold);
+    --accent-foreground: var(--cream);
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 100%;
-    --border: 215 27.9% 16.9%;
+    --border: var(--tactical-gray);
     --input: 215 27.9% 16.9%;
-    --ring: 216 12.2% 83.9%;
+    --ring: var(--brass-gold);
   }
-  
-  /* Remove the problematic base style for * */
-  /* * { */
-  /*   @apply border-border; */
-  /* } */
 
   body {
-    /* Apply base background and text colors directly using CSS vars */
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    @apply bg-cream text-command-black;
+    margin: 0;
+    padding: 0;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading uppercase text-command-black;
+  }
+  
+  .stat-number {
+    @apply font-mono text-xl md:text-2xl font-medium text-command-black;
+  }
+  
+  .label {
+    @apply font-sans text-sm text-tactical-gray;
+  }
+}
+
+@layer components {
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 h-[60px] bg-deep-ops flex items-center justify-around px-4;
+  }
+  
+  .bottom-nav-item {
+    @apply flex flex-col items-center text-olive-mist;
+  }
+  
+  .bottom-nav-item.active {
+    @apply text-brass-gold;
+  }
+  
+  .bottom-nav-label {
+    @apply text-[10px] uppercase font-sans mt-1;
+  }
+  
+  .metric-card {
+    @apply bg-cream rounded-card p-4 shadow-sm;
   }
 }
