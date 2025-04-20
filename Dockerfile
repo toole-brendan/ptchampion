@@ -13,19 +13,13 @@ RUN go mod download
 # Install git (required for go install to fetch repositories)
 RUN apk add --no-cache git
 
-# Install oapi-codegen for OpenAPI code generation
-RUN go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
+# We no longer regenerate openapi.gen.go inside the container. The file is
+# committed to the repository and kept in sync via `go generate` during
+# development. This prevents the build from picking up an empty/placeholder
+# spec that CI might create.
 
 # Copy the source code
 COPY . .
-
-# Check if openapi.yaml exists and show it
-RUN ls -la && cat openapi.yaml | head -5
-
-# Generate API code from OpenAPI spec
-RUN oapi-codegen -generate types,echo-server \
-    -package api \
-    -o internal/api/openapi.gen.go openapi.yaml
 
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=linux go build -o server_binary ./cmd/server
