@@ -19,8 +19,8 @@ RUN go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 # Copy the source code
 COPY . .
 
-# Check if openapi.yaml exists
-RUN ls -la
+# Check if openapi.yaml exists and show it
+RUN ls -la && cat openapi.yaml | head -5
 
 # Generate API code from OpenAPI spec
 RUN oapi-codegen -generate types,echo-server \
