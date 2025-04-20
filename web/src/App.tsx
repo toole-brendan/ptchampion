@@ -36,11 +36,11 @@ const queryClient = new QueryClient({
 });
 
 // Loading component for suspense
-const Loading = () => (
-  <div className="flex h-screen items-center justify-center bg-cream">
-    <div className="text-xl text-brass-gold">Loading...</div>
-  </div>
-);
+// const Loading = () => ( // Commented out as unused
+//   <div className="flex h-screen items-center justify-center bg-cream">
+//     <div className="text-xl text-brass-gold">Loading...</div>
+//   </div>
+// );
 
 function App() {
   return (
