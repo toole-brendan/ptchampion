@@ -9,7 +9,7 @@ This document contains the necessary metadata for the PT Champion iOS app submis
 - **App Name**: PT Champion
 - **Subtitle**: Military Fitness Tracker
 - **Bundle ID**: com.ptchampion.app
-- **SKU**: PTCHAMPION2023
+- **SKU**: PTCHAMPION2025
 - **Primary Category**: Health & Fitness
 - **Secondary Category**: Sports
 

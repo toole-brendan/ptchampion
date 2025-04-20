@@ -18,10 +18,24 @@ ptchampion_server
 PTChampion-Kotlin/
 PTChampion-Swift/
 client/
+ios/
+android/
+web/
+
+# Log files and application logs
+webapp_logs/
+*.log
+logs/
 
 # Node.js dependencies (if applicable within backend context, unlikely but safe)
 node_modules/
 
 # OS specific files
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Deployment and documentation
+*.md
+docs/
+dist/
+terraform/ 

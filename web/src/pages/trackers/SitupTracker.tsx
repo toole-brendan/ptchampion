@@ -35,7 +35,8 @@ export function SitupTracker() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const auth = useAuth();
+  const user = auth?.user;
 
   // Track online status
   useEffect(() => {

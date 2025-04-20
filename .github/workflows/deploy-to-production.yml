@@ -124,6 +124,18 @@ jobs:
             --docker-custom-image-name "$IMAGE_NAME" \
             --docker-registry-server-url https://${{ env.ACR_NAME }}.azurecr.io
 
+      # Configure container port & environment variables
+      - name: Configure container port & env-vars
+        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
+        run: |
+          az webapp config appsettings set \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.BACKEND_APP_NAME }} \
+            --settings \
+              WEBSITES_PORT=8080 \
+              PORT=8080 \
+              AZURE_KEY_VAULT_URL=https://ptchampion-kv.vault.azure.net/
+
       # Restart backend app after deployment
       - name: Restart backend app
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}

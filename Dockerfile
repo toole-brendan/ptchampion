@@ -14,7 +14,7 @@ RUN go mod download
 RUN apk add --no-cache git
 
 # Install oapi-codegen for OpenAPI code generation
-RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v2.0.0
+RUN go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 
 # Copy the source code
 COPY . .

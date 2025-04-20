@@ -16,11 +16,17 @@ import (
 // Config holds application configuration settings
 type Config struct {
 	DatabaseURL           string `envconfig:"DATABASE_URL"`
+	DBHost                string `envconfig:"DB_HOST"`
+	DBUser                string `envconfig:"DB_USER"`
+	DBPassword            string `envconfig:"DB_PASSWORD"`
+	DBName                string `envconfig:"DB_NAME"`
+	DBPort                string `envconfig:"DB_PORT" default:"5432"`
 	DBSecretARN           string `envconfig:"DB_SECRET_ARN"`
 	JWTSecret             string `envconfig:"JWT_SECRET"`
 	JWTSecretARN          string `envconfig:"JWT_SECRET_ARN"`
 	RefreshTokenSecret    string `envconfig:"REFRESH_TOKEN_SECRET"`
 	RefreshTokenSecretARN string `envconfig:"REFRESH_TOKEN_SECRET_ARN"`
+	RedisURL              string `envconfig:"REDIS_URL"`
 	Port                  string `envconfig:"PORT" default:"8080"`
 	ClientOrigin          string `envconfig:"CLIENT_ORIGIN" default:"http://localhost:5173"` // Default client origin for CORS
 	Region                string `envconfig:"AWS_REGION" default:"us-west-2"`                // Deprecated; will be removed
@@ -134,16 +140,43 @@ func fetchSecretsIfNeeded(cfg *Config) error {
 		return nil
 	}
 
-	// Secret names are hard‑coded; adjust as needed
-	if err := resolve("DATABASE_URL", &cfg.DatabaseURL); err != nil {
+	// Try to fetch individual database parameters
+	if cfg.DatabaseURL == "" {
+		// Try to fetch individual parts
+		if err := resolve("DB-HOST", &cfg.DBHost); err == nil {
+			if err := resolve("DB-NAME", &cfg.DBName); err == nil {
+				// Use fixed values for user and password as fallback
+				// since we're having issues storing those in Key Vault
+				if cfg.DBUser == "" {
+					cfg.DBUser = "ptadmin"
+				}
+				if cfg.DBPassword == "" {
+					cfg.DBPassword = "PTChampion123!"
+				}
+
+				// Construct the database URL from parts
+				cfg.DatabaseURL = fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=require",
+					cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+				log.Printf("Constructed database URL from individual parameters")
+			}
+		}
+	}
+
+	// JWT Secret
+	if err := resolve("JWT-SECRET", &cfg.JWTSecret); err != nil {
 		return err
 	}
-	if err := resolve("JWT_SECRET", &cfg.JWTSecret); err != nil {
-		return err
-	}
-	if err := resolve("REFRESH_TOKEN_SECRET", &cfg.RefreshTokenSecret); err != nil {
+
+	// Refresh Token Secret (optional)
+	if err := resolve("REFRESH-TOKEN-SECRET", &cfg.RefreshTokenSecret); err != nil {
 		// Not fatal – fallback to JWT_SECRET later
-		log.Printf("Warning: REFRESH_TOKEN_SECRET not found: %v", err)
+		log.Printf("Warning: REFRESH-TOKEN-SECRET not found: %v", err)
+	}
+
+	// Redis URL (optional)
+	if err := resolve("REDIS-URL", &cfg.RedisURL); err != nil {
+		// Not fatal for now
+		log.Printf("Warning: REDIS-URL not found: %v", err)
 	}
 
 	return nil

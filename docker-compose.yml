@@ -50,13 +50,15 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      # Set explicit PORT for Go server
+      PORT: 8080
       # Other necessary env vars will be loaded from .env
       # OpenTelemetry configuration
       OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
       OTEL_SERVICE_NAME: ptchampion-backend
       OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${DEPLOY_ENV:-development}
     ports:
-      - "${APP_PORT_HOST:-8080}:${APP_PORT_CONTAINER:-3000}" # Map host port to container port
+      - "${APP_PORT_HOST:-8080}:8080" # Map host port to container port 8080
     depends_on:
       db:
         condition: service_healthy # Wait for DB to be healthy

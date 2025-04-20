@@ -11,6 +11,34 @@ import { openDB, DBSchema, IDBPDatabase } from 'idb';
 const DB_NAME = 'pt-champion-db';
 const DB_VERSION = 1;
 
+// Define structure for the value within the userData store
+interface UserDataValue {
+  id: string;
+  displayName: string;
+  email: string;
+  profileImageUrl?: string;
+  preferences: {
+    theme: 'light' | 'dark' | 'system';
+    notifications: boolean;
+  };
+  lastSynced: number;
+}
+
+// Define structure for the value within the workouts store
+interface WorkoutValue {
+   id: string;
+   exerciseType: string;
+   count: number;
+   formScore: number;
+   durationSeconds: number;
+   deviceType: string;
+   userId: string;
+   date: string;
+   synced: boolean;
+   createdAt: number;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 // Define the database schema with TypeScript
 interface PTChampionDB extends DBSchema {
   workouts: {
@@ -213,14 +241,15 @@ export const saveUserData = async (userData: UserData): Promise<boolean> => {
 };
 
 /**
- * Get user data by ID
+ * Get user data from IndexedDB
  */
 export const getUserData = async (userId: string): Promise<UserData | null> => {
   try {
     const db = await initDB();
-    return db.get('userData', userId);
+    const data = await db.get('userData', userId);
+    return data ?? null; // Return data or explicitly null if undefined
   } catch (error) {
-    console.error('Error getting user data from IndexedDB:', error);
+    console.error('Error getting user data:', error);
     return null;
   }
 };
