@@ -10,10 +10,18 @@ COPY go.mod go.sum ./
 # Download all dependencies
 RUN go mod download
 
+# Install oapi-codegen for OpenAPI code generation
+RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v2.0.0
+
 # Copy the source code
 COPY . .
 
-# Build the Go app with simplified command
+# Generate API code from OpenAPI spec
+RUN oapi-codegen -generate types,echo-server \
+    -package api \
+    -o internal/api/openapi.gen.go openapi.yaml
+
+# Build the Go app
 RUN CGO_ENABLED=0 GOOS=linux go build -o server_binary ./cmd/server
 
 # Use a minimal base image
