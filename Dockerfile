@@ -10,6 +10,9 @@ COPY go.mod go.sum ./
 # Download all dependencies
 RUN go mod download
 
+# Install git (required for go install to fetch repositories)
+RUN apk add --no-cache git
+
 # Install oapi-codegen for OpenAPI code generation
 RUN go install github.com/deepmap/oapi-codegen/cmd/oapi-codegen@v2.0.0
 
