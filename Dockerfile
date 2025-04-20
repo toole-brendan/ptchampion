@@ -16,11 +16,12 @@ RUN apk add --no-cache git
 # Install oapi-codegen for OpenAPI code generation
 RUN go install github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.4.1
 
-# Copy the source code, including the OpenAPI spec file
-COPY . .
+# First copy only the OpenAPI spec file to verify it exists
+COPY openapi.yaml ./
+RUN ls -la openapi.yaml
 
-# Verify that the OpenAPI spec file exists
-RUN ls -la
+# Now copy the rest of the source code
+COPY . .
 
 # Generate API code from OpenAPI spec
 RUN oapi-codegen -generate types,echo-server \
