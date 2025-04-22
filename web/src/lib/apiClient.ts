@@ -20,7 +20,9 @@ const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 // Helper function to get the JWT token from storage
 // This is now an async function that uses secure storage
 const getToken = async (): Promise<string | null> => {
-  return await secureGet(TOKEN_STORAGE_KEY);
+  const token = await secureGet(TOKEN_STORAGE_KEY);
+  console.log('getToken (async) called, token exists:', !!token);
+  return token;
 };
 
 // Add type for the paginated response
@@ -136,13 +138,38 @@ export const registerUser = (data: RegisterUserRequest): Promise<UserResponse> =
 };
 
 export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
-  const response = await apiRequest<LoginResponse>('/auth/login', 'POST', data, false);
+  console.log('loginUser function called');
+  const response = await apiRequest<any>('/auth/login', 'POST', data, false);
+  
+  // Log the full response object
+  console.log('LOGIN RESPONSE FULL DETAILS:', response);
+  console.log('response.token exists?', response && response.token ? true : false);
+  console.log('response.access_token exists?', response && response.access_token ? true : false);
+  console.log('response type:', typeof response);
+  console.log('response keys:', response ? Object.keys(response) : 'null');
+  
+  // Convert backend response format to frontend expected format
+  const normalizedResponse: LoginResponse = {
+    token: response?.access_token || '',
+    user: response?.user || null
+  };
+  
   // Store the token securely upon successful login
-  if (response && response.token) {
-    // await storeToken(response.token); // Removed as storeToken is commented out/unused
-    await secureSet(TOKEN_STORAGE_KEY, response.token); // Use secureSet directly
+  if (normalizedResponse.token) {
+    console.log('Token received from API (access_token), about to store securely');
+    // Store securely and also set a flag in regular localStorage to trigger auth state
+    await secureSet(TOKEN_STORAGE_KEY, normalizedResponse.token);
+    
+    // For debugging, check if token was stored properly
+    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    console.log('Token stored successfully:', !!storedToken);
+    
+    // Log success for debugging
+    console.log('Login successful, token stored securely');
+  } else {
+    console.warn('No token received in login response');
   }
-  return response;
+  return normalizedResponse;
 };
 
 // --- User Endpoints ---
@@ -190,9 +217,23 @@ export const clearToken = (): void => {
 };
 
 // For compatibility with existing code, make a synchronous token getter
-// that returns null (actual token will be retrieved asynchronously when needed)
+// that checks both encrypted and plain storage
 export const getSyncToken = (): string | null => {
-  return localStorage.getItem(TOKEN_STORAGE_KEY);
+  // First check if there's any token in localStorage (encrypted or not)
+  const tokenValue = localStorage.getItem(TOKEN_STORAGE_KEY);
+  
+  console.log('getSyncToken called, raw value exists:', !!tokenValue);
+  
+  if (!tokenValue) {
+    console.log('getSyncToken: No token found in localStorage');
+    return null;
+  }
+  
+  // If value exists, it might be encrypted - but we can't decrypt synchronously
+  // Just return a non-null value to indicate a token exists
+  // The actual token will be retrieved asynchronously when making API calls
+  console.log('getSyncToken: Token found in localStorage, returning sentinel value');
+  return "token-exists";
 };
 
 // React hook for API client
