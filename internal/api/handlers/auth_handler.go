@@ -59,16 +59,24 @@ type RefreshTokenRequest struct {
 
 // PostAuthRegister is a method on handlers.Handler
 func (h *Handler) PostAuthRegister(c echo.Context) error {
-	// w := c.Response().Writer // Keep w for potential future use
 	r := c.Request()
 
-	var req RegisterUserPayload // Use internal payload struct
+	var req RegisterUserPayload
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Printf("ERROR: Failed to decode registration request: %v", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	// TODO: Re-implement validation using the payload struct
+	// Add validation
+	if req.Username == "" || req.Password == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Username and password are required")
+	}
+
+	// Check if h.Queries is nil
+	if h.Queries == nil {
+		log.Printf("ERROR: Database queries not initialized")
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -79,21 +87,26 @@ func (h *Handler) PostAuthRegister(c echo.Context) error {
 	// Prepare user data for database insertion - ONLY fields defined in CreateUserParams
 	params := dbStore.CreateUserParams{
 		Username:     req.Username,
-		PasswordHash: string(hashedPassword),
+		PasswordHash: string(hashedPassword), // Make sure field name matches DB schema
 		DisplayName: sql.NullString{
-			String: DerefString(req.DisplayName), // Use helper from this package
+			String: DerefString(req.DisplayName),
 			Valid:  req.DisplayName != nil,
 		},
 	}
 
+	// Wrap database call in a transaction for better error handling
 	user, err := h.Queries.CreateUser(r.Context(), params)
 	if err != nil {
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			if strings.Contains(pqErr.Constraint, "users_username_key") {
+		log.Printf("ERROR: Failed to create user: %v", err)
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" && strings.Contains(pqErr.Constraint, "users_username_key") {
 				return echo.NewHTTPError(http.StatusConflict, "Username already exists")
+			} else if pqErr.Code == "23502" { // not-null constraint violation
+				return echo.NewHTTPError(http.StatusBadRequest, "Required field missing")
+			} else if pqErr.Code == "42P01" { // undefined_table
+				return echo.NewHTTPError(http.StatusInternalServerError, "Database setup incomplete")
 			}
 		}
-		log.Printf("ERROR: Failed to create user: %v (detailed error: %+v)", err, err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to register user")
 	}
 

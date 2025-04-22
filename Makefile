@@ -1,6 +1,6 @@
 # Makefile for ptchampion project
 
-.PHONY: help dev test deploy backend-build backend-test web-build web-test android-build android-test ios-build ios-test clean migrate migrate-up migrate-down migrate-create migrate-force wasm-install-tinygo wasm-build wasm-clean redis-benchmark redis-flush redis-info infra-init-staging infra-plan-staging infra-apply-staging infra-init-production infra-plan-production infra-apply-production load-test
+.PHONY: help dev test deploy backend-build backend-test web-build web-test android-build android-test ios-build ios-test clean migrate migrate-up migrate-down migrate-create migrate-force wasm-install-tinygo wasm-build wasm-clean redis-benchmark redis-flush redis-info infra-init-staging infra-plan-staging infra-apply-staging infra-init-production infra-plan-production infra-apply-production load-test azure-init-production azure-plan-production azure-apply-production azure-build-push azure-deploy azure-logs
 
 help:
 	@echo "Usage: make [target]"
@@ -47,6 +47,14 @@ help:
 	@echo ""
 	@echo "Load Testing:"
 	@echo "  load-test          Run k6 load test against the API"
+	@echo ""
+	@echo "Azure Infrastructure:"
+	@echo "  azure-init-production     Initialize Terraform for production environment"
+	@echo "  azure-plan-production     Run terraform plan for production"
+	@echo "  azure-apply-production    Apply Terraform changes to production"
+	@echo "  azure-build-push          Build and push Docker image to Azure Container Registry"
+	@echo "  azure-deploy            Deploy application to Azure Web App"
+	@echo "  azure-logs            View Azure Web App logs"
 
 # --- Development ---
 dev:
@@ -252,3 +260,24 @@ DURATION ?= 30s
 load-test:
 	@echo "Running k6 load test against $(API_URL) with $(VUS) VUs for $(DURATION)..."
 	k6 run -e BASE_URL=$(API_URL) -e VUS=$(VUS) -e DURATION=$(DURATION) scripts/loadtest_k6.js 
+
+# --- Azure Infrastructure ---
+azure-init-production:
+	cd terraform/production && terraform init
+
+azure-plan-production:
+	cd terraform/production && terraform plan -var-file=terraform.tfvars -out=tfplan
+
+azure-apply-production:
+	cd terraform/production && terraform apply tfplan
+
+azure-build-push:
+	docker build -t $(shell cd terraform/production && terraform output -raw acr_login_server)/ptchampion:latest .
+	az acr login --name ptchampionacr
+	docker push $(shell cd terraform/production && terraform output -raw acr_login_server)/ptchampion:latest
+
+azure-deploy: backend-build azure-build-push
+	az webapp restart --name ptchampion-api-westus --resource-group ptchampion-rg
+
+azure-logs:
+	az webapp log tail --name ptchampion-api-westus --resource-group ptchampion-rg 

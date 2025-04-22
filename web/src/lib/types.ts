@@ -2,14 +2,17 @@
 
 // Auth types
 export interface RegisterUserRequest {
-  email: string;
+  username: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  displayName?: string;
+  profilePictureUrl?: string;
+  location?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 export interface LoginRequest {
-  email: string;
+  username: string;
   password: string;
 }
 

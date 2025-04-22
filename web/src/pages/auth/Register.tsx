@@ -72,10 +72,9 @@ const RegisterPage: React.FC = () => {
     
     try {
       await register({
-        firstName,
-        lastName,
-        email,
+        username: email,
         password,
+        displayName: `${firstName} ${lastName}`,
       });
       // Redirect handled by effect when isAuthenticated changes
     } catch (err) {

@@ -178,6 +178,22 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 		})
 	})
 
+	// Add root path handler to avoid AlwaysOn 404s
+	e.GET("/", func(c echo.Context) error {
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"status":  "online",
+			"service": "ptchampion-api",
+			"version": cfg.AppVersion,
+			"env":     cfg.AppEnv,
+			"message": "API is running. Use /api/v1 endpoints to access services.",
+		})
+	})
+
+	// Add Azure liveness probe endpoint
+	e.GET("/robots933456.txt", func(c echo.Context) error {
+		return c.String(http.StatusOK, "")
+	})
+
 	// Register API endpoints
 	apiGroup := e.Group("/api/v1")
 	RegisterHandlers(apiGroup, apiHandler)
@@ -185,6 +201,9 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 	// Add feature flags endpoint if middleware is available
 	if featureFlagMiddleware != nil {
 		apiGroup.GET("/features", featureFlagMiddleware.FeaturesHandler())
+	} else {
+		// Use a fallback feature flags handler when middleware isn't available
+		apiGroup.GET("/features", apiHandler.FeaturesHandler)
 	}
 
 	// --- Static File Serving for React App (Echo version) ---
@@ -193,7 +212,8 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 		// Fallback to local development path if /app/static doesn't exist
 		staticFilesDir = "./web/dist"
 		if _, err := os.Stat(staticFilesDir); os.IsNotExist(err) {
-			log.Printf("Warning: Neither /app/static nor ./web/dist exist. Static file serving may not work correctly.")
+			// Suppressing warning to keep logs cleaner - static files are optional for this API service
+			// log.Printf("Warning: Neither /app/static nor ./web/dist exist. Static file serving may not work correctly.")
 		}
 	}
 
