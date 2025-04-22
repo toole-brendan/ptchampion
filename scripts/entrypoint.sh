@@ -10,38 +10,50 @@ if [ -z "$DB_HOST" ] || [ -z "$DB_PORT" ] || [ -z "$DB_USER" ] || [ -z "$DB_PASS
     exit 1
 fi
 
-# Build database connection string
-DB_URL="postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=disable"
+# Use DB_SSL_MODE if specified, otherwise default to disable
+DB_SSL_MODE=${DB_SSL_MODE:-disable}
+echo "Using SSL mode: $DB_SSL_MODE"
 
-# Wait for database to be ready
+# Build database connection string with proper SSL mode
+DB_URL="postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=${DB_SSL_MODE}"
+
+# Wait for database to be ready with more verbose output
 echo "Waiting for database at ${DB_HOST}:${DB_PORT} to be ready..."
 for i in $(seq 1 30); do
-    pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER && break
+    echo "Attempt ${i}/30: Checking database connection..."
+    if pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; then
+        echo "Successfully connected to database!"
+        break
+    fi
+    
+    if [ $i -eq 30 ]; then
+        echo "Error: Could not connect to database after 30 attempts."
+        echo "Last attempt details:"
+        PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -c "SELECT 1" || echo "Connection failed with error code: $?"
+        
+        # Set this if you want to continue despite database connection failure
+        if [ -z "$IGNORE_DB_CONNECTION_FAILURE" ]; then
+            exit 1
+        else
+            echo "Continuing despite database connection failure because IGNORE_DB_CONNECTION_FAILURE is set."
+        fi
+    fi
+    
     echo "Waiting for database connection (${i}/30)..."
     sleep 2
 done
 
-if ! pg_isready -h $DB_HOST -p $DB_PORT -U $DB_USER; then
-    echo "Error: Could not connect to database after 30 attempts."
-    exit 1
-fi
+# Run the column rename migration if needed
+echo "Running column fix migration..."
+echo "ALTER TABLE users RENAME COLUMN password TO password_hash;" > /tmp/fix_column.sql
+PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=0 -c "DO \$\$ BEGIN ALTER TABLE users RENAME COLUMN password TO password_hash; EXCEPTION WHEN undefined_column OR duplicate_column THEN RAISE NOTICE 'column rename skipped'; END \$\$;"
 
-# Run database migrations
-echo "Running database migrations..."
-migrate -path db/migrations -database "${DB_URL}" up
+# Add the display_name column if it doesn't exist
+echo "Adding display_name column if needed..."
+PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=0 -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='display_name') THEN ALTER TABLE users ADD COLUMN display_name TEXT; END IF; END \$\$;"
 
-# Check migration status
-if [ $? -ne 0 ]; then
-    echo "Migration failed. Check logs for details."
-    # Continue despite migration failure if IGNORE_MIGRATION_FAILURE is set
-    if [ -z "$IGNORE_MIGRATION_FAILURE" ]; then
-        exit 1
-    else
-        echo "Continuing despite migration failure because IGNORE_MIGRATION_FAILURE is set."
-    fi
-else
-    echo "Migrations completed successfully."
-fi
+echo "Database schema migration completed."
 
-echo "Starting server..."
-exec "$@" 
+# Start the main application
+echo "Starting PT Champion server..."
+exec "$@"

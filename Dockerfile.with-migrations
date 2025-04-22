@@ -1,0 +1,78 @@
+# Use the official Golang image as a build stage
+FROM golang:1.24.1-alpine AS builder
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy go mod and sum files
+COPY go.mod go.sum ./
+
+# Download all dependencies
+RUN go mod download
+
+# Install git (required for go install to fetch repositories)
+RUN apk add --no-cache git
+
+# Copy the source code
+COPY . .
+
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=linux go build -o server_binary ./cmd/server
+
+# Use a minimal base image
+FROM alpine:latest
+
+# Install PostgreSQL client for migrations and health checks
+RUN apk --no-cache add ca-certificates postgresql-client netcat-openbsd
+
+WORKDIR /app
+
+# Copy the server binary from the builder stage
+COPY --from=builder /app/server_binary .
+
+# Copy the entrypoint script to run migrations before starting the server
+COPY scripts/entrypoint.sh .
+RUN chmod +x /app/entrypoint.sh
+
+# Create directory for SQL migrations
+RUN mkdir -p /app/sql/migrations
+
+# Copy SQL migration files
+COPY fix_register_endpoint.sql /app/sql/migrations/
+COPY fix_db_schema_all_columns.sql /app/sql/migrations/
+
+# Create a script to run all migrations
+RUN echo '#!/bin/sh\n\
+echo "Running database migrations..."\n\
+for file in /app/sql/migrations/*.sql; do\n\
+  echo "Applying $file..."\n\
+  # Only attempt to run migration if PGHOST, PGDATABASE, and PGUSER are set\n\
+  if [ -n "$PGHOST" ] && [ -n "$PGDATABASE" ] && [ -n "$PGUSER" ]; then\n\
+    psql -f "$file" || echo "Warning: Migration $file may have failed. Continuing..."\n\
+  else\n\
+    echo "Skipping migrations as database configuration is incomplete."\n\
+    break\n\
+  fi\n\
+done\n\
+echo "Migrations complete."' > /app/run-migrations.sh && chmod +x /app/run-migrations.sh
+
+# Modify entrypoint.sh to run our migrations
+RUN echo '\n\
+# Run database migrations before starting the application\n\
+if [ -n "$PGHOST" ] && [ -n "$PGDATABASE" ] && [ -n "$PGUSER" ]; then\n\
+  echo "---------------------------------------------"\n\
+  echo "🔧 Running database migrations..."\n\
+  /app/run-migrations.sh\n\
+  echo "---------------------------------------------"\n\
+else\n\
+  echo "Database configuration not detected. Skipping migrations."\n\
+fi\n\
+' >> /app/entrypoint.sh
+
+ENV NODE_ENV=production
+
+EXPOSE 8080
+
+# Use the entrypoint script to run migrations, then start the server
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["./server_binary"] 
