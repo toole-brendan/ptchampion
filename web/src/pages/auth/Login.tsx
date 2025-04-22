@@ -29,7 +29,9 @@ const LoginPage: React.FC = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
+    console.log('Login page redirect effect triggered', { isAuthenticated, returnUrl });
     if (isAuthenticated) {
+      console.log('User is authenticated, navigating to:', returnUrl);
       navigate(returnUrl, { replace: true });
     }
   }, [isAuthenticated, navigate, returnUrl]);
@@ -44,11 +46,15 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    console.log('Login form submitted', { email });
+    
     try {
+      console.log('Calling login function');
       await login({
         username: email,
         password,
       });
+      console.log('Login function completed');
       // Redirect handled by effect when isAuthenticated changes
     } catch (err) {
       // Error handling is done by the auth context

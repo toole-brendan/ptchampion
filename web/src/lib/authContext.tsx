@@ -41,11 +41,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [token, setToken] = useState<string | null>(getSyncToken());
   const [mutationError, setMutationError] = useState<string | null>(null);
 
-  // Effect to update isAuthenticated state when token changes
-  useEffect(() => {
-    // No need to manually store/clear token here - that's handled by the apiClient methods
-  }, [token]);
-
   // Query to fetch the current user data - enabled only if a token exists
   const { data: user, isLoading: isLoadingUser, error: userError } = useQuery<
     UserResponse,
@@ -59,6 +54,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     retry: 1, // Retry fetching user once on failure
   });
 
+  // Effect to update isAuthenticated state when token changes
+  useEffect(() => {
+    console.log('Auth context token effect triggered:', { hasToken: !!token, hasUser: !!user });
+    
+    // Check for token asynchronously on mount and token state changes
+    async function validateTokenAndUser() {
+      try {
+        if (token) {
+          console.log('Token exists, checking user data');
+          // If we have a token state, attempt to fetch user data if not already fetched
+          if (!user) {
+            console.log('No user data, prefetching');
+            await queryClient.prefetchQuery({
+              queryKey: userQueryKey,
+              queryFn: getCurrentUser
+            });
+            console.log('User data prefetch complete');
+          } else {
+            console.log('User data already exists');
+          }
+        }
+      } catch (error) {
+        console.error('Token validation error:', error);
+        // Clear token if validation fails
+        clearToken();
+        setToken(null);
+      }
+    }
+    
+    validateTokenAndUser();
+  }, [token, user, queryClient]);
+
   // --- Mutations --- //
 
   // Login Mutation
@@ -69,10 +96,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   >({
     mutationFn: loginUser, // mutationFn inside options
     onSuccess: (data: LoginResponse) => { // Explicitly type data
+      console.log('Login mutation success', { token: !!data.token, user: !!data.user });
+      // Make sure we log if a token actually exists
+      if (!data.token) {
+        console.error('Token missing in login response after normalization');
+      }
       setToken(data.token); // Update token state to trigger UI updates
       // Set user data directly in the cache for immediate UI update
       queryClient.setQueryData(userQueryKey, data.user);
       setMutationError(null);
+      console.log('Auth state after login success:', { token: !!data.token, user: !!data.user });
     },
     onError: (error: Error) => { // Explicitly type error
       clearToken(); // Ensure token is cleared on login failure
@@ -161,6 +194,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     logout,
     clearError,
   };
+
+  console.log('Auth context state:', { 
+    isAuthenticated: !!token && !!user,
+    hasToken: !!token,
+    hasUser: !!user,
+    isLoading
+  });
 
   return (
     <AuthContext.Provider value={contextValue}>
