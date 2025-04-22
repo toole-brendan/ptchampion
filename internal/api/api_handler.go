@@ -90,3 +90,8 @@ func (h *ApiHandler) HandleUpdateUserLocation(ctx echo.Context) error {
 	log.Println("HandleUpdateUserLocation called, but handler not implemented/connected yet.")
 	return ctx.JSON(http.StatusNotImplemented, "Update location not implemented")
 }
+
+// FeaturesHandler implements a fallback feature flags endpoint
+func (h *ApiHandler) FeaturesHandler(ctx echo.Context) error {
+	return h.Handler.FeaturesHandler(ctx)
+}

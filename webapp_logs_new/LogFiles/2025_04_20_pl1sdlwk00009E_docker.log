@@ -1,0 +1,145 @@
+2025-04-20T23:18:12.6644288Z Container start method called.
+2025-04-20T23:18:12.6647825Z Establishing network.
+2025-04-20T23:18:12.6649929Z Pulling image: ptchampionacr.azurecr.io/ptchampion-api:b440f4e6a80a8af8b0367fdb39007a8edafc82fd.
+2025-04-20T23:18:13.6675901Z Container is starting.
+2025-04-20T23:18:13.6693596Z Establishing user namespace if not established already.
+2025-04-20T23:18:13.6698982Z Establishing network if not established already.
+2025-04-20T23:18:13.6700233Z Mounting volumes.
+2025-04-20T23:18:13.6709447Z Nested mountpoint volatile/logs
+2025-04-20T23:18:13.6738959Z Nested mountpoint 
+2025-04-20T23:18:13.6864963Z Creating container.
+2025-04-20T23:18:13.6868689Z Creating pipes for streaming container io.
+2025-04-20T23:18:13.6872134Z Creating stdout named pipe at /podr/container/pipe/182d5ed6_ptchampion-api-westus/stdout_a9d8b1db61234010b1b930e6013bb920.
+2025-04-20T23:18:13.6876587Z Successfully created stdout named pipe at: /podr/container/pipe/182d5ed6_ptchampion-api-westus/stdout_a9d8b1db61234010b1b930e6013bb920.
+2025-04-20T23:18:13.6877758Z Opening named pipe /podr/container/pipe/182d5ed6_ptchampion-api-westus/stdout_a9d8b1db61234010b1b930e6013bb920 for reading in non-blocking mode.
+2025-04-20T23:18:13.6889141Z Successfully opened named pipe: /podr/container/pipe/182d5ed6_ptchampion-api-westus/stdout_a9d8b1db61234010b1b930e6013bb920.
+2025-04-20T23:18:13.6893261Z Successfully removed non-blocking flag from /podr/container/pipe/182d5ed6_ptchampion-api-westus/stdout_a9d8b1db61234010b1b930e6013bb920.
+2025-04-20T23:18:13.6898469Z Creating stderr named pipe at /podr/container/pipe/182d5ed6_ptchampion-api-westus/stderr_979b9184c0674a3883fada85050e9d2f.
+2025-04-20T23:18:13.6902733Z Successfully created stderr named pipe at: /podr/container/pipe/182d5ed6_ptchampion-api-westus/stderr_979b9184c0674a3883fada85050e9d2f.
+2025-04-20T23:18:13.6906615Z Opening named pipe /podr/container/pipe/182d5ed6_ptchampion-api-westus/stderr_979b9184c0674a3883fada85050e9d2f for reading in non-blocking mode.
+2025-04-20T23:18:13.6911532Z Successfully opened named pipe: /podr/container/pipe/182d5ed6_ptchampion-api-westus/stderr_979b9184c0674a3883fada85050e9d2f.
+2025-04-20T23:18:13.6915304Z Successfully removed non-blocking flag from /podr/container/pipe/182d5ed6_ptchampion-api-westus/stderr_979b9184c0674a3883fada85050e9d2f.
+2025-04-20T23:18:14.9700651Z Container image exposes ports: 80. Resolved main port to 80.
+2025-04-20T23:18:14.9701779Z Setting value of PORT variable to 80
+2025-04-20T23:18:14.9703303Z Creating container with image: ptchampionacr.azurecr.io/ptchampion-api:b440f4e6a80a8af8b0367fdb39007a8edafc82fd from registry: ptchampionacr.azurecr.io and fully qualified image name: ptchampionacr.azurecr.io/ptchampion-api:b440f4e6a80a8af8b0367fdb39007a8edafc82fd
+2025-04-20T23:18:15.6567442Z Starting container: 182d5ed6_ptchampion-api-westus.
+2025-04-20T23:18:15.6812971Z Starting watchers and probes.
+2025-04-20T23:18:15.6815019Z Starting metrics collection.
+2025-04-20T23:18:15.6816242Z Container is running.
+2025-04-20T23:18:15.7261131Z Container start method finished after 3060 ms.
+2025-04-20T23:18:16.7532996Z Site startup probe succeeded after 1.0216524 seconds.
+2025-04-20T23:18:17.4566341Z Site started.
+2025-04-20T23:18:37.4938695Z Container is terminating. Grace period: 5 seconds.
+2025-04-20T23:18:37.4984665Z Stop and delete container. Retry count = 0
+2025-04-20T23:18:37.4985694Z Stopping container: f8a55235_ptchampion-api-westus.
+2025-04-20T23:18:37.5854333Z Deleting container: f8a55235_ptchampion-api-westus. Retry count = 0
+2025-04-20T23:18:37.6338594Z Container spec TerminationMessagePolicy  path 
+2025-04-20T23:18:37.6340066Z Container is terminated. Total time elapsed: 140 ms.
+2025-04-20T23:50:21.9629388Z Container start method called.
+2025-04-20T23:50:21.9631461Z Establishing network.
+2025-04-20T23:50:21.9633679Z Pulling image: ptchampionacr.azurecr.io/ptchampion-api:latest.
+2025-04-20T23:50:25.4076625Z Image ptchampionacr.azurecr.io/ptchampion-api:latest is pulled from registry ptchampionacr.azurecr.io
+2025-04-20T23:50:25.4108821Z Container is starting.
+2025-04-20T23:50:25.4111614Z Establishing user namespace if not established already.
+2025-04-20T23:50:25.4113964Z Establishing network if not established already.
+2025-04-20T23:50:25.4116441Z Mounting volumes.
+2025-04-20T23:50:25.4119318Z Nested mountpoint volatile/logs
+2025-04-20T23:50:25.4170832Z Nested mountpoint 
+2025-04-20T23:50:25.4271931Z Creating container.
+2025-04-20T23:50:25.4277330Z Creating pipes for streaming container io.
+2025-04-20T23:50:25.4284245Z Creating stdout named pipe at /podr/container/pipe/373d60ee_ptchampion-api-westus/stdout_1f04a27169b04837bdd441da448c2953.
+2025-04-20T23:50:25.4295950Z Successfully created stdout named pipe at: /podr/container/pipe/373d60ee_ptchampion-api-westus/stdout_1f04a27169b04837bdd441da448c2953.
+2025-04-20T23:50:25.4302678Z Opening named pipe /podr/container/pipe/373d60ee_ptchampion-api-westus/stdout_1f04a27169b04837bdd441da448c2953 for reading in non-blocking mode.
+2025-04-20T23:50:25.4309687Z Successfully opened named pipe: /podr/container/pipe/373d60ee_ptchampion-api-westus/stdout_1f04a27169b04837bdd441da448c2953.
+2025-04-20T23:50:25.4316647Z Successfully removed non-blocking flag from /podr/container/pipe/373d60ee_ptchampion-api-westus/stdout_1f04a27169b04837bdd441da448c2953.
+2025-04-20T23:50:25.4325355Z Creating stderr named pipe at /podr/container/pipe/373d60ee_ptchampion-api-westus/stderr_070fbcb624d34e9981e9b5c8a5763cfe.
+2025-04-20T23:50:25.4333451Z Successfully created stderr named pipe at: /podr/container/pipe/373d60ee_ptchampion-api-westus/stderr_070fbcb624d34e9981e9b5c8a5763cfe.
+2025-04-20T23:50:25.4339169Z Opening named pipe /podr/container/pipe/373d60ee_ptchampion-api-westus/stderr_070fbcb624d34e9981e9b5c8a5763cfe for reading in non-blocking mode.
+2025-04-20T23:50:25.4351587Z Successfully opened named pipe: /podr/container/pipe/373d60ee_ptchampion-api-westus/stderr_070fbcb624d34e9981e9b5c8a5763cfe.
+2025-04-20T23:50:25.4359463Z Successfully removed non-blocking flag from /podr/container/pipe/373d60ee_ptchampion-api-westus/stderr_070fbcb624d34e9981e9b5c8a5763cfe.
+2025-04-20T23:50:25.4366010Z Creating container with image: ptchampionacr.azurecr.io/ptchampion-api:latest from registry: ptchampionacr.azurecr.io and fully qualified image name: ptchampionacr.azurecr.io/ptchampion-api:latest
+2025-04-20T23:50:27.1904270Z Starting container: 373d60ee_ptchampion-api-westus.
+2025-04-20T23:50:27.2143499Z Starting watchers and probes.
+2025-04-20T23:50:27.2145898Z Starting metrics collection.
+2025-04-20T23:50:27.2147712Z Container is running.
+2025-04-20T23:50:27.9787672Z Container start method finished after 6015 ms.
+2025-04-20T23:50:35.5371890Z Site startup probe failed after 7.5568294 seconds.
+2025-04-20T23:50:35.5651027Z Failed to start site. Revert by stopping site.
+2025-04-20T23:50:35.5662419Z Container is terminating. Grace period: 5 seconds.
+2025-04-20T23:50:35.5679856Z Stop and delete container. Retry count = 0
+2025-04-20T23:50:35.5683798Z Stopping container: 373d60ee_ptchampion-api-westus.
+2025-04-20T23:50:35.6305393Z Deleting container: 373d60ee_ptchampion-api-westus. Retry count = 0
+2025-04-20T23:50:35.6673810Z Container spec TerminationMessagePolicy  path 
+2025-04-20T23:50:35.6675130Z Container is terminated. Total time elapsed: 101 ms.
+2025-04-20T23:50:35.6682282Z Site container: ptchampion-api-westus terminated during site startup.
+2025-04-20T23:50:35.7776215Z Site: ptchampion-api-westus stopped.
+2025-04-20T23:50:55.7828801Z Container is terminating. Grace period: 5 seconds.
+2025-04-20T23:50:55.7845969Z Stop and delete container. Retry count = 0
+2025-04-20T23:50:55.7856523Z Stopping container: 182d5ed6_ptchampion-api-westus.
+2025-04-20T23:50:55.8767663Z Deleting container: 182d5ed6_ptchampion-api-westus. Retry count = 0
+2025-04-20T23:50:55.9955467Z Container spec TerminationMessagePolicy  path 
+2025-04-20T23:50:55.9960286Z Container is terminated. Total time elapsed: 212 ms.
+2025-04-20T23:51:16.6149755Z Container start method called.
+2025-04-20T23:51:16.6150868Z Establishing network.
+2025-04-20T23:51:16.6151997Z Pulling image: ptchampionacr.azurecr.io/ptchampion-api:latest.
+2025-04-20T23:51:17.0110642Z Container is starting.
+2025-04-20T23:51:17.0112732Z Establishing user namespace if not established already.
+2025-04-20T23:51:17.0114871Z Establishing network if not established already.
+2025-04-20T23:51:17.0116811Z Mounting volumes.
+2025-04-20T23:51:17.0119369Z Nested mountpoint volatile/logs
+2025-04-20T23:51:17.0137216Z Nested mountpoint 
+2025-04-20T23:51:17.0214360Z Creating container.
+2025-04-20T23:51:17.0218597Z Creating pipes for streaming container io.
+2025-04-20T23:51:17.0224582Z Creating stdout named pipe at /podr/container/pipe/f044d5e1_ptchampion-api-westus/stdout_ae0c3b1ebb3443d38424d1f7877e729f.
+2025-04-20T23:51:17.0230004Z Successfully created stdout named pipe at: /podr/container/pipe/f044d5e1_ptchampion-api-westus/stdout_ae0c3b1ebb3443d38424d1f7877e729f.
+2025-04-20T23:51:17.0232344Z Opening named pipe /podr/container/pipe/f044d5e1_ptchampion-api-westus/stdout_ae0c3b1ebb3443d38424d1f7877e729f for reading in non-blocking mode.
+2025-04-20T23:51:17.0239138Z Successfully opened named pipe: /podr/container/pipe/f044d5e1_ptchampion-api-westus/stdout_ae0c3b1ebb3443d38424d1f7877e729f.
+2025-04-20T23:51:17.0241141Z Successfully removed non-blocking flag from /podr/container/pipe/f044d5e1_ptchampion-api-westus/stdout_ae0c3b1ebb3443d38424d1f7877e729f.
+2025-04-20T23:51:17.0245312Z Creating stderr named pipe at /podr/container/pipe/f044d5e1_ptchampion-api-westus/stderr_2a0ad6d21f6a4aeb93c528fe9d8c6268.
+2025-04-20T23:51:17.0249243Z Successfully created stderr named pipe at: /podr/container/pipe/f044d5e1_ptchampion-api-westus/stderr_2a0ad6d21f6a4aeb93c528fe9d8c6268.
+2025-04-20T23:51:17.0252650Z Opening named pipe /podr/container/pipe/f044d5e1_ptchampion-api-westus/stderr_2a0ad6d21f6a4aeb93c528fe9d8c6268 for reading in non-blocking mode.
+2025-04-20T23:51:17.0256254Z Successfully opened named pipe: /podr/container/pipe/f044d5e1_ptchampion-api-westus/stderr_2a0ad6d21f6a4aeb93c528fe9d8c6268.
+2025-04-20T23:51:17.0259169Z Successfully removed non-blocking flag from /podr/container/pipe/f044d5e1_ptchampion-api-westus/stderr_2a0ad6d21f6a4aeb93c528fe9d8c6268.
+2025-04-20T23:51:17.0260757Z Creating container with image: ptchampionacr.azurecr.io/ptchampion-api:latest from registry: ptchampionacr.azurecr.io and fully qualified image name: ptchampionacr.azurecr.io/ptchampion-api:latest
+2025-04-20T23:51:17.8706090Z Starting container: f044d5e1_ptchampion-api-westus.
+2025-04-20T23:51:17.8888618Z Starting watchers and probes.
+2025-04-20T23:51:17.8890645Z Starting metrics collection.
+2025-04-20T23:51:17.8891961Z Container is running.
+2025-04-20T23:51:18.0555894Z Container start method finished after 1440 ms.
+2025-04-20T23:55:07.1168162Z Site startup probe failed after 229.0143233 seconds.
+2025-04-20T23:55:07.1182238Z Failed to start site. Revert by stopping site.
+2025-04-20T23:55:07.1184544Z Container is terminating. Grace period: 5 seconds.
+2025-04-20T23:55:07.1202448Z Stop and delete container. Retry count = 0
+2025-04-20T23:55:07.1211529Z Stopping container: f044d5e1_ptchampion-api-westus.
+2025-04-20T23:55:07.1799142Z Deleting container: f044d5e1_ptchampion-api-westus. Retry count = 0
+2025-04-20T23:55:07.2153691Z Container spec TerminationMessagePolicy  path 
+2025-04-20T23:55:07.2156900Z Container is terminated. Total time elapsed: 96 ms.
+2025-04-20T23:55:07.2159812Z Site container: ptchampion-api-westus terminated during site startup.
+2025-04-20T23:55:07.2956679Z Site: ptchampion-api-westus stopped.
+2025-04-20T23:57:44.1442042Z Container start method called.
+2025-04-20T23:57:44.1444539Z Establishing network.
+2025-04-20T23:57:44.1447659Z Pulling image: ptchampionacr.azurecr.io/ptchampion-api:latest.
+2025-04-20T23:57:44.7881142Z Container is starting.
+2025-04-20T23:57:44.7884910Z Establishing user namespace if not established already.
+2025-04-20T23:57:44.7887489Z Establishing network if not established already.
+2025-04-20T23:57:44.7890077Z Mounting volumes.
+2025-04-20T23:57:44.7893192Z Nested mountpoint volatile/logs
+2025-04-20T23:57:44.7916815Z Nested mountpoint 
+2025-04-20T23:57:44.7987550Z Creating container.
+2025-04-20T23:57:44.7989776Z Creating pipes for streaming container io.
+2025-04-20T23:57:44.7992064Z Creating stdout named pipe at /podr/container/pipe/1d806577_ptchampion-api-westus/stdout_d23b85029557421d9a06995e93812d1f.
+2025-04-20T23:57:44.7995060Z Successfully created stdout named pipe at: /podr/container/pipe/1d806577_ptchampion-api-westus/stdout_d23b85029557421d9a06995e93812d1f.
+2025-04-20T23:57:44.7998326Z Opening named pipe /podr/container/pipe/1d806577_ptchampion-api-westus/stdout_d23b85029557421d9a06995e93812d1f for reading in non-blocking mode.
+2025-04-20T23:57:44.8000814Z Successfully opened named pipe: /podr/container/pipe/1d806577_ptchampion-api-westus/stdout_d23b85029557421d9a06995e93812d1f.
+2025-04-20T23:57:44.8003204Z Successfully removed non-blocking flag from /podr/container/pipe/1d806577_ptchampion-api-westus/stdout_d23b85029557421d9a06995e93812d1f.
+2025-04-20T23:57:44.8005722Z Creating stderr named pipe at /podr/container/pipe/1d806577_ptchampion-api-westus/stderr_f9d5323f6ec6453aa8b4363042bab42a.
+2025-04-20T23:57:44.8009531Z Successfully created stderr named pipe at: /podr/container/pipe/1d806577_ptchampion-api-westus/stderr_f9d5323f6ec6453aa8b4363042bab42a.
+2025-04-20T23:57:44.8016532Z Opening named pipe /podr/container/pipe/1d806577_ptchampion-api-westus/stderr_f9d5323f6ec6453aa8b4363042bab42a for reading in non-blocking mode.
+2025-04-20T23:57:44.8020375Z Successfully opened named pipe: /podr/container/pipe/1d806577_ptchampion-api-westus/stderr_f9d5323f6ec6453aa8b4363042bab42a.
+2025-04-20T23:57:44.8022967Z Successfully removed non-blocking flag from /podr/container/pipe/1d806577_ptchampion-api-westus/stderr_f9d5323f6ec6453aa8b4363042bab42a.
+2025-04-20T23:57:44.8025531Z Creating container with image: ptchampionacr.azurecr.io/ptchampion-api:latest from registry: ptchampionacr.azurecr.io and fully qualified image name: ptchampionacr.azurecr.io/ptchampion-api:latest
+2025-04-20T23:57:44.9450428Z Starting container: 1d806577_ptchampion-api-westus.
+2025-04-20T23:57:44.9685691Z Starting watchers and probes.
+2025-04-20T23:57:44.9689392Z Starting metrics collection.
+2025-04-20T23:57:44.9692154Z Container is running.
+2025-04-20T23:57:45.0008431Z Container start method finished after 856 ms.

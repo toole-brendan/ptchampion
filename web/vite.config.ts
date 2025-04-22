@@ -15,7 +15,7 @@ export default defineConfig(async () => {
       globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
       runtimeCaching: [
         {
-          urlPattern: /^https:\/\/api\.ptchampion\.com\/api\/.*/i,
+          urlPattern: /^https:\/\/ptchampion-api-westus\.azurewebsites\.net\/api\/.*/i,
           handler: 'NetworkFirst',
           options: {
             cacheName: 'api-cache',
@@ -126,7 +126,7 @@ export default defineConfig(async () => {
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
-          manualChunks: (id) => {
+          manualChunks: (id: string) => {
             // More granular control with a function
             if (id.includes('node_modules/react/') || 
                 id.includes('node_modules/react-dom/') || 
@@ -164,4 +164,4 @@ export default defineConfig(async () => {
       port: 3000,
     },
   };
-}); 
+});

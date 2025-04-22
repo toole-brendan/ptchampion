@@ -74,9 +74,11 @@ const apiRequest = async <T>(
   }
 
   const apiUrl = `${getApiBaseUrl()}${endpoint}`; // Construct full URL
+  console.log(`Making ${method} request to ${apiUrl}`, { body, headers });
 
   try {
     const response = await fetch(apiUrl, requestConfig);
+    console.log(`Response status: ${response.status}`);
 
     // Check if the response is ok (status in the range 200-299)
     if (!response.ok) {
@@ -84,6 +86,7 @@ const apiRequest = async <T>(
       try {
         // Try to parse the error response body for a backend message
         const jsonError = await response.json();
+        console.error('Error response:', jsonError);
         // Use backend error message if available, otherwise keep default
         if (jsonError && jsonError.error) { // Match backend's likely error format
            errorData.message = jsonError.error;
@@ -127,6 +130,7 @@ const apiRequest = async <T>(
 // --- Auth Endpoints ---
 
 export const registerUser = (data: RegisterUserRequest): Promise<UserResponse> => {
+  console.log('Registration request data:', data);
   // Changed from '/users/register' to '/auth/register' to match backend endpoint
   return apiRequest<UserResponse>('/auth/register', 'POST', data, false);
 };

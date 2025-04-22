@@ -46,7 +46,7 @@ const LoginPage: React.FC = () => {
     
     try {
       await login({
-        email,
+        username: email,
         password,
       });
       // Redirect handled by effect when isAuthenticated changes

@@ -92,8 +92,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     mutationFn: registerUser, // mutationFn inside options
     onSuccess: async (_registeredUser: UserResponse, variables: RegisterUserRequest) => { // Explicitly type params
       // After successful registration, automatically log the user in
-      // Use email from registration variables for login
-      await performLogin({ email: variables.email, password: variables.password });
+      // Use username from registration variables for login
+      await performLogin({ username: variables.username, password: variables.password });
       // Error state will be handled by performLogin's onError
     },
     onError: (error: Error) => { // Explicitly type error

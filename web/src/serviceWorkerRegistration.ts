@@ -28,6 +28,15 @@ export const registerServiceWorker = async (): Promise<void> => {
       });
     }
 
+    // ADDED: First unregister any existing service workers to ensure users get the latest version
+    console.log('Checking for existing service workers to unregister first...');
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    for(let registration of registrations) {
+      console.log('Unregistering existing service worker to force update');
+      await registration.unregister();
+    }
+    console.log('Existing service workers cleared, registering new service worker');
+
     // Register the service worker
     const registration = await navigator.serviceWorker.register(SW_URL, {
       scope: '/',

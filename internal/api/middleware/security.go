@@ -34,7 +34,7 @@ func SecurityHeaders() echo.MiddlewareFunc {
 					"script-src 'self' 'nonce-"+nonce+"'; "+
 					"img-src 'self' data:; "+
 					"style-src 'self' 'nonce-"+nonce+"'; "+
-					"connect-src 'self'; "+
+					"connect-src 'self' https://ptchampion-api-westus.azurewebsites.net; "+
 					"frame-ancestors 'none'; "+
 					"form-action 'self'")
 
@@ -86,7 +86,7 @@ func SecureConfig() middleware.SecureConfig {
 // CORSConfig returns a CORS middleware configuration with secure defaults
 func CORSConfig() middleware.CORSConfig {
 	return middleware.CORSConfig{
-		AllowOrigins:     []string{"https://ptchampion.com", "https://staging.ptchampion.com", "http://localhost:5173"},
+		AllowOrigins:     []string{"https://ptchampion.com", "https://staging.ptchampion.com", "https://www.ptchampion.ai", "http://localhost:5173"},
 		AllowMethods:     []string{echo.GET, echo.PUT, echo.POST, echo.DELETE, echo.OPTIONS},
 		AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, echo.HeaderAuthorization},
 		ExposeHeaders:    []string{echo.HeaderContentLength},

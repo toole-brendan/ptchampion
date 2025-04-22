@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgis/postgis:16-3.4-alpine # Use PostGIS image instead of standard PostgreSQL
@@ -23,7 +21,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: ptchampion_redis
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-}
+    command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
     ports:
@@ -41,11 +39,13 @@ services:
       dockerfile: Dockerfile
     container_name: ptchampion_backend
     env_file:
-      - .env # Load environment variables from .env file
+      - .env.dev # Use the development-specific env file
     environment:
+      AZURE_KEY_VAULT_URL: "" # Disable Azure Key Vault for local development
       # Ensure the backend waits for the DB host (service name)
       # The DB_HOST env var in .env should match the service name 'db'
       DB_HOST: db # Override DB_HOST to use the service name within Docker network
+      DB_SSL_MODE: disable # Disable SSL for local development
       # Redis configuration for Docker Compose environment
       REDIS_HOST: redis
       REDIS_PORT: 6379

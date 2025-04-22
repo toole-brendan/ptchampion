@@ -24,8 +24,14 @@ web/
 
 # Log files and application logs
 webapp_logs/
+webapp_logs_extracted/
+ptlogs/
+debug_logs/
+LogFiles/
 *.log
+*.txt
 logs/
+*_logs_extracted/
 
 # Node.js dependencies (if applicable within backend context, unlikely but safe)
 node_modules/
@@ -38,4 +44,5 @@ Thumbs.db
 *.md
 docs/
 dist/
-terraform/ 
+deployments/
+terraform/
