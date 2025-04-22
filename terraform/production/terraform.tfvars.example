@@ -1,0 +1,29 @@
+# Resource Group and Location
+resource_group_name = "ptchampion-rg"
+location            = "eastus"
+
+# Container Registry
+acr_name = "ptchampionacr"
+
+# Database
+db_server_name     = "ptchampion-db"
+db_name            = "ptchampion"
+db_admin_username  = "ptadmin"
+db_admin_password  = "YourStrongPasswordHere123!" # Change this!
+
+# Redis
+redis_name = "ptchampion-redis"
+
+# Key Vault
+key_vault_name = "ptchampion-kv"
+
+# App Service
+app_service_plan_name = "ptchampion-plan-westus"
+app_service_name      = "ptchampion-api-westus"
+
+# Container Image
+container_image     = "ptchampion"
+container_image_tag = "latest"
+
+# JWT Secret
+jwt_secret = "YourSecureJwtSecretHere" # Change this! 

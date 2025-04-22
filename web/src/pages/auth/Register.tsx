@@ -16,6 +16,7 @@ const RegisterPage: React.FC = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -54,7 +55,7 @@ const RegisterPage: React.FC = () => {
     }
     
     // Check if all required fields are filled
-    if (!firstName || !lastName || !email || !password) {
+    if (!firstName || !lastName || !email || !username || !password) {
       setValidationError('All fields are required');
       return false;
     }
@@ -72,9 +73,10 @@ const RegisterPage: React.FC = () => {
     
     try {
       await register({
-        username: email,
+        username: username,
         password,
         displayName: `${firstName} ${lastName}`,
+        // We still collect email but don't send it to the API since it's not in the type
       });
       // Redirect handled by effect when isAuthenticated changes
     } catch (err) {
@@ -141,6 +143,21 @@ const RegisterPage: React.FC = () => {
               className="w-full rounded-md border border-army-tan/50 bg-white p-3"
               placeholder="you@example.com"
               autoComplete="email"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label htmlFor="username" className="block text-sm font-medium text-tactical-gray">
+              Username
+            </label>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="w-full rounded-md border border-army-tan/50 bg-white p-3"
+              placeholder="username"
+              autoComplete="username"
             />
           </div>
           

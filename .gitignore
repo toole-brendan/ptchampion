@@ -27,6 +27,7 @@ vite.config.ts.*
 
 # Binaries for programs and plugins
 bin/
+server_binary
 
 # Generated files
 openapi.yaml
@@ -44,3 +45,20 @@ PTChampion-Kotlin/build/
 
 # Android local configuration files
 PTChampion-Kotlin/local.properties
+
+# Terraform
+.terraform/
+*.tfplan
+.terraform.lock.hcl
+
+# iOS
+ios/*/build/
+*.xcuserstate
+UserInterfaceState.xcuserstate
+
+# Log files
+LogFiles/
+*_logs/
+debug_logs/
+ptlogs/
+webapp_logs/

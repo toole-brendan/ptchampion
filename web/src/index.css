@@ -4,6 +4,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
   src: url('https://fonts.gstatic.com/s/bebasneue/v9/JTUSjIg69CK48gW7PXoo9Wdhyzbi.woff2') format('woff2');
 }
 
@@ -12,6 +13,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
   src: url('https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2') format('woff2');
 }
 
@@ -20,6 +22,7 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
   src: url('https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCu173w5aXp-p7K4KLg.woff2') format('woff2');
 }
 
@@ -28,6 +31,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
   src: url('https://fonts.gstatic.com/s/robotomono/v22/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vq_ROW4AJi8SJQt.woff2') format('woff2');
 }
 
@@ -36,6 +40,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
+  src: url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap');
   src: url('https://fonts.gstatic.com/s/robotomono/v22/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_7Pq_ROW4AJi8SJQt.woff2') format('woff2');
 }
 
