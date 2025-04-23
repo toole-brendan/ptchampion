@@ -3,10 +3,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from '@/components/ui/button';
 import { MetricCard } from '@/components/ui/metric-card';
 import { 
-  Dumbbell, 
-  Activity, 
-  Zap, 
-  TrendingUp, 
   Clock, 
   Repeat, 
   Trophy, 
@@ -24,12 +20,18 @@ import { useApi } from '@/lib/apiClient';
 import { cn } from "@/lib/utils";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
+// Import the exercise PNG images
+import pushupImage from '@/assets/pushup.png';
+import pullupImage from '@/assets/pullup.png';
+import situpImage from '@/assets/situp.png';
+import runningImage from '@/assets/running.png';
+
 // Define exercise types for quick start
 const exerciseLinks = [
-  { name: "Push-ups", icon: Activity, path: '/exercises/pushups' },
-  { name: "Pull-ups", icon: Dumbbell, path: '/exercises/pullups' },
-  { name: "Sit-ups", icon: Zap, path: '/exercises/situps' },
-  { name: "Running", icon: TrendingUp, path: '/exercises/running' },
+  { name: "PUSH-UPS", image: pushupImage, path: '/exercises/pushups' },
+  { name: "PULL-UPS", image: pullupImage, path: '/exercises/pullups' },
+  { name: "SIT-UPS", image: situpImage, path: '/exercises/situps' },
+  { name: "RUNNING", image: runningImage, path: '/exercises/running' },
 ];
 
 const Dashboard: React.FC = () => {
@@ -143,63 +145,120 @@ const Dashboard: React.FC = () => {
   // Get user name (fallback to username if display name isn't set)
   const userName = user?.display_name || user?.username || 'User';
   
+  // Format display name properly
+  const formatDisplayName = () => {
+    if (!userName) return 'USER';
+    
+    if (userName.includes('@')) {
+      // If it's an email, extract the part before @
+      const namePart = userName.split('@')[0];
+      // Convert to title case if it's all lowercase or all uppercase
+      if (namePart === namePart.toLowerCase() || namePart === namePart.toUpperCase()) {
+        return namePart
+          .split(/[._-]/)
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+          .join(' ');
+      }
+      return namePart;
+    }
+    
+    // If it's a full name with spaces, check if it's in "Last, First" format
+    if (userName.includes(' ')) {
+      // Check if there's a comma in the name (Last, First)
+      if (userName.includes(',')) {
+        const parts = userName.split(',').map(part => part.trim());
+        // Swap order to "First Last"
+        return `${parts[1]} ${parts[0]}`;
+      }
+      
+      // Some names might be stored as "LASTNAME FIRSTNAME"
+      if (userName === userName.toUpperCase()) {
+        const parts = userName.toLowerCase().split(' ');
+        // Assume lastname firstname format if all uppercase and convert to "Firstname Lastname"
+        return parts.reverse()
+          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(' ');
+      }
+      
+      return userName;
+    }
+    
+    // Otherwise, convert to title case if needed
+    if (userName === userName.toLowerCase() || userName === userName.toUpperCase()) {
+      return userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase();
+    }
+    
+    return userName;
+  };
+  
   // Format the last workout date
   const formattedLastWorkoutDate = dashboardMetrics.lastWorkoutDate ? 
     dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Message */}
-      <h1 className="font-heading text-2xl tracking-wide text-command-black">
-        Welcome back, <span className="text-brass-gold">{userName}</span>!
-      </h1>
-
-      {/* Metrics Row */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          title="Total Workouts"
-          value={dashboardMetrics.totalWorkouts}
-          icon={Flame}
-          onClick={() => navigate('/history')}
-        />
-        
-        <MetricCard
-          title="Last Activity"
-          value={dashboardMetrics.lastWorkoutType ? 
-            dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Running' : 
-            dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
-            dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
-            dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :
-            dashboardMetrics.lastWorkoutType : 'None'
-          }
-          description={dashboardMetrics.lastWorkoutDate ? 
-            `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
-            'No workouts yet'
-          }
-          icon={CalendarClock}
-          onClick={() => dashboardMetrics.lastWorkoutDate && navigate('/history')}
-        />
-        
-        <MetricCard
-          title="Total Repetitions"
-          value={dashboardMetrics.totalReps}
-          icon={Repeat}
-          unit="reps"
-          onClick={() => navigate('/history')}
-        />
-        
-        <MetricCard
-          title="Total Distance"
-          value={(dashboardMetrics.totalDistance / 1000).toFixed(1)}
-          unit="km"
-          icon={TrendingUp}
-          onClick={() => navigate('/history')}
-        />
+    <div className="space-y-8">
+      {/* Enhanced Hero Section */}
+      <div className="rounded-panel bg-gradient-to-r from-deep-ops/5 to-olive-mist/20 p-6">
+        <h1 className="font-heading text-3xl tracking-wide text-command-black">
+          WELCOME BACK, <span className="text-brass-gold">{formatDisplayName()}</span>
+        </h1>
+        <div className="mt-1 h-1 w-24 bg-brass-gold/40"></div>
       </div>
 
-      {/* Quick Start Section */}
-      <Card className="bg-cream transition-shadow hover:shadow-md">
-        <CardHeader className="rounded-t-lg bg-deep-ops text-cream">
+      {/* Metrics Section - 2x2 Grid */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
+          <MetricCard
+            title="TOTAL WORKOUTS"
+            value={dashboardMetrics.totalWorkouts}
+            icon={Flame}
+            onClick={() => navigate('/history')}
+            className="bg-white transition-all hover:-translate-y-1 hover:shadow-md"
+          />
+          
+          <MetricCard
+            title="LAST ACTIVITY"
+            value={dashboardMetrics.lastWorkoutType ? 
+              dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Running' : 
+              dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
+              dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
+              dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :
+              dashboardMetrics.lastWorkoutType : 'None'
+            }
+            description={dashboardMetrics.lastWorkoutDate ? 
+              `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
+              'No workouts yet'
+            }
+            icon={CalendarClock}
+            onClick={() => dashboardMetrics.lastWorkoutDate && navigate('/history')}
+            className="bg-white transition-all hover:-translate-y-1 hover:shadow-md"
+          />
+        </div>
+        
+        <div className="grid gap-4 md:grid-cols-2">
+          <MetricCard
+            title="TOTAL REPETITIONS"
+            value={dashboardMetrics.totalReps}
+            icon={Repeat}
+            unit="reps"
+            onClick={() => navigate('/history')}
+            className="bg-white transition-all hover:-translate-y-1 hover:shadow-md"
+          />
+          
+          <MetricCard
+            title="TOTAL DISTANCE"
+            value={(dashboardMetrics.totalDistance / 1000).toFixed(1)}
+            unit="km"
+            icon={Flame}
+            onClick={() => navigate('/history')}
+            className="bg-white transition-all hover:-translate-y-1 hover:shadow-md"
+          />
+        </div>
+      </div>
+
+      {/* Enhanced Start Tracking Section */}
+      <Card className="rounded-panel bg-[#EDE9DB] shadow-sm transition-shadow hover:shadow-md">
+        <CardHeader className="rounded-t-panel bg-deep-ops pb-4 text-cream">
           <CardTitle className="font-heading text-xl">
             Start Tracking
           </CardTitle>
@@ -207,27 +266,25 @@ const Dashboard: React.FC = () => {
             Choose an exercise to begin a new session
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {exerciseLinks.map((exercise) => (
-              <Button
-                key={exercise.name}
-                variant="outline"
-                className="flex h-24 flex-col items-center justify-center border-brass-gold/30 p-4 
-                          transition-colors hover:border-brass-gold hover:bg-brass-gold/5"
-                onClick={() => navigate(exercise.path)}
-              >
-                <exercise.icon className="mb-2 size-6 text-brass-gold" />
-                <span className="text-sm font-medium">{exercise.name}</span>
-              </Button>
-            ))}
-          </div>
+        <CardContent className="grid grid-cols-2 gap-4 p-6 lg:grid-cols-4">
+          {exerciseLinks.map((exercise) => (
+            <div
+              key={exercise.name}
+              className="flex cursor-pointer flex-col items-center justify-center rounded-lg bg-white p-4 
+                        transition-all hover:-translate-y-1 hover:border-brass-gold hover:bg-white 
+                        hover:shadow-md active:bg-brass-gold/10"
+              onClick={() => navigate(exercise.path)}
+            >
+              <img src={exercise.image} alt={exercise.name} className="mb-3 h-16 w-auto object-contain" />
+              <span className="font-sans text-sm font-semibold text-tactical-gray">{exercise.name}</span>
+            </div>
+          ))}
         </CardContent>
       </Card>
 
       {/* Progress Section */}
-      <Card className="bg-cream transition-shadow hover:shadow-md">
-        <CardHeader className="rounded-t-lg bg-deep-ops text-cream">
+      <Card className="rounded-panel bg-white shadow-sm transition-shadow hover:shadow-md">
+        <CardHeader className="rounded-t-panel bg-deep-ops pb-4 text-cream">
           <CardTitle className="flex items-center font-heading text-xl">
             <AreaChart className="mr-2 size-5" />
             Progress Summary
@@ -236,7 +293,7 @@ const Dashboard: React.FC = () => {
             Your training overview at a glance
           </CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="p-6">
           {leaderboardError && (
             <Alert variant="default" className="mb-4">
               <AlertCircle className="h-4 w-4" />
@@ -248,25 +305,28 @@ const Dashboard: React.FC = () => {
           )}
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            <div className="flex flex-col items-center justify-center rounded-lg bg-white/50 p-4 text-center">
+            <div className="relative flex flex-col items-center justify-center rounded-lg border-l-4 border-brass-gold bg-cream/50 p-4 text-center shadow-sm">
+              <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
               <Clock className="mb-2 size-10 text-brass-gold" />
-              <span className="font-mono text-2xl text-brass-gold">
+              <span className="font-mono text-2xl font-medium text-command-black">
                 {Math.floor(dashboardMetrics.totalDuration / 3600)}h {Math.floor((dashboardMetrics.totalDuration % 3600) / 60)}m
               </span>
-              <span className="text-sm text-tactical-gray">Total Training Time</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-tactical-gray">Total Training Time</span>
             </div>
             
-            <div className="flex flex-col items-center justify-center rounded-lg bg-white/50 p-4 text-center">
+            <div className="relative flex flex-col items-center justify-center rounded-lg border-l-4 border-brass-gold bg-cream/50 p-4 text-center shadow-sm">
+              <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
               <Flame className="mb-2 size-10 text-brass-gold" />
-              <span className="font-mono text-2xl text-brass-gold">
+              <span className="font-mono text-2xl font-medium text-command-black">
                 {Math.floor(dashboardMetrics.totalDuration / 60 * 7)}
               </span>
-              <span className="text-sm text-tactical-gray">Est. Calories Burned</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-tactical-gray">Est. Calories Burned</span>
             </div>
             
-            <div className="flex flex-col items-center justify-center rounded-lg bg-white/50 p-4 text-center">
+            <div className="relative flex flex-col items-center justify-center rounded-lg border-l-4 border-brass-gold bg-cream/50 p-4 text-center shadow-sm">
+              <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
               <Trophy className="mb-2 size-10 text-brass-gold" />
-              <span className="font-mono text-2xl text-brass-gold">
+              <span className="font-mono text-2xl font-medium text-command-black">
                 {isLeaderboardLoading ? (
                   <Loader2 className="mx-auto size-6 animate-spin text-brass-gold/70" />
                 ) : dashboardMetrics.userRank > 0 ? (
@@ -275,13 +335,13 @@ const Dashboard: React.FC = () => {
                   'Unranked'
                 )}
               </span>
-              <span className="text-sm text-tactical-gray">Global Leaderboard Rank</span>
+              <span className="text-xs font-medium uppercase tracking-wide text-tactical-gray">Global Leaderboard Rank</span>
             </div>
           </div>
           
           <div className="mt-6 flex justify-center">
             <Button 
-              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
+              className="bg-brass-gold text-deep-ops transition-all hover:-translate-y-1 hover:bg-brass-gold/90 hover:shadow-md"
               onClick={() => navigate('/history')}
             >
               <ArrowRight className="mr-2 size-4" />

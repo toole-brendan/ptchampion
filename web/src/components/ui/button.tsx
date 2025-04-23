@@ -10,15 +10,15 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-brass-gold text-white shadow-sm shadow-black/20 text-shadow hover:bg-brass-gold/90 hover:underline",
+          "bg-brass-gold text-deep-ops shadow-sm hover:-translate-y-1 hover:bg-brass-gold/90 hover:shadow-md active:translate-y-0 active:shadow-sm",
         destructive:
-          "bg-red-600 text-white shadow-sm hover:bg-red-700",
+          "bg-red-600 text-white shadow-sm hover:-translate-y-1 hover:bg-red-700 hover:shadow-md active:translate-y-0 active:shadow-sm",
         outline:
-          "border border-brass-gold bg-transparent text-brass-gold shadow-sm hover:bg-brass-gold/10",
+          "border border-brass-gold bg-transparent text-brass-gold shadow-sm hover:-translate-y-1 hover:bg-brass-gold/10 hover:shadow-md active:translate-y-0 active:shadow-sm",
         secondary:
-          "bg-army-tan text-command-black shadow-sm hover:bg-army-tan/80",
+          "bg-army-tan text-command-black shadow-sm hover:-translate-y-1 hover:bg-army-tan/80 hover:shadow-md active:translate-y-0 active:shadow-sm",
         ghost:
-          "text-brass-gold hover:bg-brass-gold/10",
+          "text-brass-gold hover:bg-brass-gold/10 hover:shadow-sm",
         link: "text-brass-gold underline-offset-4 hover:underline",
       },
       size: {

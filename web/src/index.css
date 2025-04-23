@@ -1,3 +1,5 @@
+@import './components/ui/theme.css';
+
 /* Import fonts from Google Fonts */
 @font-face {
   font-family: 'Bebas Neue';
@@ -48,10 +50,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Import theme variables */
-@import './components/ui/theme.css';
-
 @layer base {
+  * {
+    @apply transition-colors duration-100;
+  }
+  
   body {
     @apply bg-background text-foreground;
     margin: 0;
@@ -59,36 +62,59 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading uppercase text-foreground;
+    @apply font-heading uppercase tracking-wide text-command-black;
   }
   
   .stat-number {
-    @apply font-mono text-xl md:text-2xl font-medium text-foreground;
+    @apply font-mono text-xl font-medium text-command-black md:text-2xl;
   }
   
   .label {
-    @apply font-sans text-sm text-muted-foreground;
+    @apply font-sans text-xs font-medium uppercase tracking-wide text-tactical-gray;
   }
 }
 
 @layer components {
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 h-[60px] bg-deep-ops flex items-center justify-around px-4;
+    @apply fixed bottom-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around border-t border-deep-ops/10 bg-deep-ops px-4 shadow-lg;
   }
   
   .bottom-nav-item {
-    @apply flex flex-col items-center text-olive-mist;
+    @apply flex flex-col items-center text-olive-mist transition-all hover:-translate-y-1;
   }
   
   .bottom-nav-item.active {
-    @apply text-brass-gold text-shadow-sm shadow-black;
+    @apply text-brass-gold;
   }
   
   .bottom-nav-label {
-    @apply text-[10px] uppercase font-sans mt-1;
+    @apply mt-1 font-sans text-[10px] uppercase tracking-wide;
   }
   
   .metric-card {
-    @apply bg-card rounded-card p-4 shadow-sm text-card-foreground;
+    @apply rounded-card bg-card p-4 shadow-sm text-card-foreground transition-all hover:-translate-y-1 hover:shadow-md;
+  }
+  
+  .card-panel {
+    @apply rounded-panel bg-cream p-6 shadow-sm transition-all hover:shadow-md;
+  }
+  
+  .count-up-animation {
+    @apply font-mono transition-all duration-1000;
+    counter-reset: count attr(data-count);
+    animation: count-up 2s ease-out forwards;
+  }
+  
+  @keyframes count-up {
+    from {
+      counter-increment: count 0;
+    }
+    to {
+      counter-increment: count attr(data-count number);
+    }
+  }
+  
+  .count-up-animation::after {
+    content: counter(count);
   }
 }
