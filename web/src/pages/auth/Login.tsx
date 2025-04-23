@@ -6,6 +6,11 @@ import { Input } from '../../components/ui/input';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import logoImage from '../../assets/pt_champion_logo_2.png';
+import config from '../../lib/config';
+import { clearAllTokens } from '../../lib/tokenCleaner';
+
+// Get token storage key from config to ensure consistency
+const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 
 // Real logo component
 const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
@@ -36,12 +41,18 @@ const LoginPage: React.FC = () => {
     }
   }, [isAuthenticated, navigate, returnUrl]);
 
-  // Clear error on unmount
+  // Clear error on unmount and check for stale tokens on mount
   useEffect(() => {
+    // Clear any potential stale token when login page is loaded
+    if (localStorage.getItem(TOKEN_STORAGE_KEY) && !isAuthenticated) {
+      console.log('Found potential stale token on login page, clearing all tokens');
+      clearAllTokens();
+    }
+    
     return () => {
       clearError();
     };
-  }, [clearError]);
+  }, [clearError, isAuthenticated]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

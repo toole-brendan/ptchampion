@@ -143,7 +143,51 @@ export async function secureGet(key: string): Promise<string | null> {
  * Remove a value from localStorage
  */
 export function secureRemove(key: string): void {
-  localStorage.removeItem(key);
+  try {
+    console.log(`Secure remove: Removing ${key} from localStorage`);
+    localStorage.removeItem(key);
+    
+    // Also try to remove any backup or alternate versions that might exist
+    const alternateKeys = [`${key}_backup`, `${key}_alt`, key.replace('auth', 'pt')];
+    alternateKeys.forEach(altKey => {
+      if (localStorage.getItem(altKey)) {
+        console.log(`Secure remove: Also removing ${altKey}`);
+        localStorage.removeItem(altKey);
+      }
+    });
+  } catch (error) {
+    console.error(`Error removing ${key}:`, error);
+  }
+}
+
+/**
+ * Clean all authentication-related data from storage
+ */
+export function cleanAuthStorage(): void {
+  try {
+    console.log('Cleaning all auth storage');
+    // List of keys that might contain auth data
+    const authKeys = [
+      'authToken', 'userData', 'pt_champion_session', 
+      'authTokenBackup', 'userSession', 'refreshToken',
+      'user'
+    ];
+    
+    // Remove all auth-related keys
+    authKeys.forEach(key => {
+      if (localStorage.getItem(key)) {
+        console.log(`Cleaning auth storage: removing ${key}`);
+        localStorage.removeItem(key);
+      }
+    });
+    
+    // Also clear sessionStorage
+    sessionStorage.clear();
+    
+    console.log('Auth storage cleaning complete');
+  } catch (error) {
+    console.error('Error cleaning auth storage:', error);
+  }
 }
 
 // Non-async versions that use the sync localStorage API directly

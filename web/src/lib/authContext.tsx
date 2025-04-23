@@ -66,11 +66,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // If we have a token state, attempt to fetch user data if not already fetched
           if (!user) {
             console.log('No user data, prefetching');
-            await queryClient.prefetchQuery({
-              queryKey: userQueryKey,
-              queryFn: getCurrentUser
-            });
-            console.log('User data prefetch complete');
+            try {
+              await queryClient.prefetchQuery({
+                queryKey: userQueryKey,
+                queryFn: getCurrentUser,
+                retry: 1,
+              });
+              console.log('User data prefetch complete');
+            } catch (error) {
+              console.error('Failed to fetch user data, clearing token:', error);
+              // If the token is invalid (401, 403, 404), clear it
+              clearToken();
+              setToken(null);
+              // Also clear user data cache
+              queryClient.removeQueries({ queryKey: userQueryKey });
+              throw error;
+            }
           } else {
             console.log('User data already exists');
           }

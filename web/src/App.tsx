@@ -23,18 +23,6 @@ const PullupTracker = lazy(() => import('./pages/exercises/PullupTracker'));
 const SitupTracker = lazy(() => import('./pages/exercises/SitupTracker'));
 const RunningTracker = lazy(() => import('./pages/exercises/RunningTracker'));
 
-// Create a QueryClient for React Query
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes (use gcTime instead of cacheTime)
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 // Loading component for suspense
 const Loading = () => (
   <div className="flex h-screen items-center justify-center bg-cream">
@@ -42,15 +30,49 @@ const Loading = () => (
   </div>
 );
 
-function App() {
+// Page not found component
+const NotFound = () => (
+  <div className="flex h-screen flex-col items-center justify-center bg-cream p-4">
+    <h1 className="mb-4 text-3xl font-bold text-brass-gold">404</h1>
+    <p className="mb-8 text-lg text-tactical-gray">Page not found</p>
+    <button 
+      onClick={() => window.location.href = '/'}
+      className="rounded-md bg-brass-gold px-4 py-2 font-medium text-white transition-colors hover:bg-brass-gold/90"
+    >
+      Go Home
+    </button>
+  </div>
+);
+
+// Define App props interface
+interface AppProps {
+  queryClient?: QueryClient;
+}
+
+function App({ queryClient }: AppProps) {
+  // Create a default QueryClient if none provided
+  const defaultQueryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 10 * 60 * 1000, // 10 minutes (use gcTime instead of cacheTime)
+        retry: 1,
+        refetchOnWindowFocus: false,
+      },
+    },
+  });
+
+  // Use provided queryClient or default
+  const clientToUse = queryClient || defaultQueryClient;
+
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={clientToUse}>
       <AuthProvider>
         <FeatureFlagProvider>
           <Router>
             <Suspense fallback={<Loading />}>
               <Routes>
-                {/* Auth routes */}
+                {/* Public routes - accessible without authentication */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 
@@ -71,8 +93,8 @@ function App() {
                   <Route path="exercises/running" element={<RunningTracker />} />
                 </Route>
                 
-                {/* Catch-all route */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Catch-all route - redirect to login instead of home to prevent auth loops */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           </Router>

@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
+import config from '../../lib/config';
+
+// Get token storage key from config to ensure consistency
+const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -20,8 +24,19 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   redirectPath = '/login'
 }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, token } = useAuth();
   const location = useLocation();
+
+  // Additional check to ensure we don't have partially loaded states
+  useEffect(() => {
+    // If we detect a stale token in localStorage but no auth in memory,
+    // refresh the page to trigger a clean auth check
+    const hasLocalToken = localStorage.getItem(TOKEN_STORAGE_KEY) !== null;
+    if (hasLocalToken && !token && !isLoading) {
+      console.log('Detected stale token state, refreshing page');
+      window.location.reload();
+    }
+  }, [isLoading, token]);
 
   // Show a loading state while checking authentication
   if (isLoading) {
@@ -37,6 +52,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If not authenticated, redirect to login with return URL
   if (!isAuthenticated) {
+    // Clean up any existing tokens to avoid stale state
+    if (localStorage.getItem(TOKEN_STORAGE_KEY)) {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+    }
+    
     // Save the attempted URL to redirect back after login
     const returnUrl = encodeURIComponent(location.pathname + location.search);
     return <Navigate to={`${redirectPath}?returnUrl=${returnUrl}`} replace />;
