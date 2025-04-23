@@ -29,23 +29,23 @@ export function MetricCard({
   return (
     <Card 
       className={cn(
-        "transition-shadow hover:shadow-md bg-cream", 
+        "h-full bg-white shadow-sm transition-all", 
         onClick && "cursor-pointer",
         className
       )}
       onClick={onClick}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-tactical-gray">{title}</CardTitle>
-        {Icon && <Icon className="size-4 text-tactical-gray" />}
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-4">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-tactical-gray">{title}</CardTitle>
+        {Icon && <Icon className="size-5 text-brass-gold" />}
       </CardHeader>
-      <CardContent className="p-6 pt-2">
+      <CardContent className="flex flex-col justify-center p-4">
         <div className="flex items-baseline">
-          <div className="font-mono text-2xl font-bold text-brass-gold">
+          <div className="font-mono text-2xl font-medium text-command-black">
             {value}
           </div>
           {unit && (
-            <span className="ml-1 text-sm text-tactical-gray">{unit}</span>
+            <span className="ml-1 text-xs font-medium text-tactical-gray">{unit}</span>
           )}
         </div>
         
@@ -57,7 +57,7 @@ export function MetricCard({
         
         {change !== undefined && (
           <div className={cn(
-            "flex items-center mt-2 text-xs",
+            "mt-2 flex items-center text-xs",
             trend === 'up' && "text-green-600",
             trend === 'down' && "text-red-600"
           )}>

@@ -96,7 +96,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   const sidebarContent = (
     <aside 
       className={cn(
-        "bg-gray-900 text-gray-200 transition-all duration-300 ease-in-out flex flex-col",
+        "bg-deep-ops text-cream transition-all duration-300 ease-in-out flex flex-col",
         "h-screen",
         "fixed inset-y-0 left-0 z-40",
         "md:static md:z-auto md:inset-auto md:translate-x-0",
@@ -110,8 +110,8 @@ const Sidebar: React.FC<SidebarProps> = ({
           <Button 
             variant="ghost" 
             size="icon" 
+            className="text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold"
             onClick={onMobileClose}
-            className="text-gray-400 hover:bg-gray-700 hover:text-white"
           >
             <XIcon className="size-5" />
           </Button>
@@ -119,15 +119,15 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       <div className={cn(
-        "flex items-center border-b border-gray-800 transition-all duration-300 h-16", 
+        "flex items-center border-b border-cream/10 transition-all duration-300 h-16", 
         isCollapsed ? 'px-2 justify-center' : 'px-4 justify-between'
       )}>
-        {!isCollapsed && <h2 className="text-xl font-bold text-white">PT Champion</h2>}
+        {!isCollapsed && <h2 className="text-xl font-bold text-brass-gold">PT Champion</h2>}
         <Tooltip>
           <TooltipTrigger asChild>
             <button 
               onClick={toggleSidebarCollapse}
-              className="rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+              className="rounded-md p-2 text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold focus:outline-none focus:ring-2 focus:ring-brass-gold/60 focus:ring-opacity-50"
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {isCollapsed ? <ChevronRightIcon size={20} /> : <ChevronLeftIcon size={20} />}
@@ -140,17 +140,17 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
       
       <div className={cn(
-        "border-b border-gray-800 transition-all duration-300",
+        "border-b border-cream/10 transition-all duration-300",
         isCollapsed ? 'py-4 px-2' : 'py-4 px-4'
       )}>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className={cn("flex items-center", isCollapsed ? 'justify-center' : '')}>
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-sm font-semibold text-white">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brass-gold text-sm font-semibold text-deep-ops">
                 {userInitial}
               </div>
               {!isCollapsed && (
-                <span className="ml-3 truncate text-sm font-medium text-white">
+                <span className="ml-3 truncate text-sm font-medium text-cream">
                   {username}
                 </span>
               )}
@@ -173,15 +173,15 @@ const Sidebar: React.FC<SidebarProps> = ({
                     <Link
                       to={item.path}
                       className={cn(
-                        "flex items-center h-11 rounded-md transition-colors duration-150 ease-in-out group",
+                        "group flex h-11 items-center rounded-md transition-colors duration-150 ease-in-out",
+                        isCollapsed ? 'justify-center px-0' : 'px-3',
                         isActive(item.path)
-                          ? 'bg-indigo-600 text-white font-medium'
-                          : 'text-gray-400 hover:bg-gray-800 hover:text-white',
-                        isCollapsed ? 'justify-center px-0' : 'px-3'
+                          ? 'bg-brass-gold/20 text-brass-gold font-medium'
+                          : 'text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold'
                       )}
                     >
-                      <item.icon className={cn("w-5 h-5 flex-shrink-0", isCollapsed ? '' : 'mr-3')} /> 
-                      {!isCollapsed && <span className="text-sm">{item.name}</span>}
+                      <item.icon className={cn("flex-shrink-0", isCollapsed ? 'size-5' : 'mr-3 size-5')} /> 
+                      {!isCollapsed && <span className="text-sm font-sans">{item.name}</span>}
                     </Link>
                  </TooltipTrigger>
                  {isCollapsed && (
@@ -196,7 +196,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </nav>
       
       <div className={cn(
-        "border-t border-gray-800 mt-auto transition-all duration-300",
+        "mt-auto border-t border-cream/10 transition-all duration-300",
         isCollapsed ? 'px-2 py-3' : 'px-4 py-3'
       )}>
         <Tooltip>
@@ -204,11 +204,11 @@ const Sidebar: React.FC<SidebarProps> = ({
             <button 
               onClick={onLogout}
               className={cn(
-                "flex items-center w-full h-11 rounded-md text-sm transition-colors duration-150 ease-in-out group text-gray-400 hover:bg-red-800/50 hover:text-red-300",
+                "group flex h-11 w-full items-center rounded-md text-sm transition-colors duration-150 ease-in-out text-army-tan hover:bg-red-800/50 hover:text-red-300",
                 isCollapsed ? 'justify-center px-0' : 'px-3'
               )}
             >
-              <LogOutIcon className={cn("w-5 h-5 flex-shrink-0", isCollapsed ? '' : 'mr-3')} />
+              <LogOutIcon className={cn("flex-shrink-0", isCollapsed ? 'size-5' : 'mr-3 size-5')} />
               {!isCollapsed && <span>Logout</span>}
             </button>
           </TooltipTrigger>
