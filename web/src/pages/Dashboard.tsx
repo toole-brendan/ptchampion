@@ -14,20 +14,22 @@ import {
   Loader2, 
   CalendarClock, 
   Flame,
-  AreaChart
+  AreaChart,
+  AlertCircle
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/lib/apiClient';
 import { cn } from "@/lib/utils";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 // Define exercise types for quick start
 const exerciseLinks = [
-  { name: "Push-ups", icon: Activity, path: '/trackers/pushups' },
-  { name: "Pull-ups", icon: Dumbbell, path: '/trackers/pullups' },
-  { name: "Sit-ups", icon: Zap, path: '/trackers/situps' },
-  { name: "Running", icon: TrendingUp, path: '/trackers/running' },
+  { name: "Push-ups", icon: Activity, path: '/exercises/pushups' },
+  { name: "Pull-ups", icon: Dumbbell, path: '/exercises/pullups' },
+  { name: "Sit-ups", icon: Zap, path: '/exercises/situps' },
+  { name: "Running", icon: TrendingUp, path: '/exercises/running' },
 ];
 
 const Dashboard: React.FC = () => {
@@ -50,19 +52,24 @@ const Dashboard: React.FC = () => {
   // Get leaderboard data for user ranking
   const { 
     data: leaderboardData, 
-    isLoading: isLeaderboardLoading 
+    isLoading: isLeaderboardLoading,
+    error: leaderboardError
   } = useQuery({
     queryKey: ['leaderboard', 'overall'],
     queryFn: () => api.leaderboard.getLeaderboard('overall'),
     staleTime: 1000 * 60 * 15, // 15 minutes
+    retry: 1, // Only retry once
+    refetchOnMount: false, // Don't refetch on every mount
+    refetchOnWindowFocus: false, // Don't refetch on window focus
   });
   
-  const isLoading = isAuthLoading || isHistoryLoading || isLeaderboardLoading;
+  // Base loading state only on auth and history, not leaderboard
+  const isLoading = isAuthLoading || isHistoryLoading;
   const error = authError || historyError;
   
   // Calculate dashboard metrics from history data
   const dashboardMetrics = React.useMemo(() => {
-    if (!exerciseHistory || !leaderboardData) {
+    if (!exerciseHistory) {
       return {
         totalWorkouts: 0,
         lastWorkoutDate: null,
@@ -94,9 +101,9 @@ const Dashboard: React.FC = () => {
       totalDuration += workout.time_in_seconds || 0;
     });
     
-    // Find user rank in leaderboard
+    // Find user rank in leaderboard - handle null leaderboard data gracefully
     let userRank = 0;
-    if (user) {
+    if (user && leaderboardData && Array.isArray(leaderboardData)) {
       const userIndex = leaderboardData.findIndex(entry => entry.user_id === user.id);
       userRank = userIndex !== -1 ? userIndex + 1 : 0;
     }
@@ -230,6 +237,16 @@ const Dashboard: React.FC = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
+          {leaderboardError && (
+            <Alert variant="default" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Leaderboard data unavailable</AlertTitle>
+              <AlertDescription>
+                We're unable to load the leaderboard rankings right now. Your personal stats are still available.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div className="flex flex-col items-center justify-center rounded-lg bg-white/50 p-4 text-center">
               <Clock className="mb-2 size-10 text-brass-gold" />
@@ -250,7 +267,13 @@ const Dashboard: React.FC = () => {
             <div className="flex flex-col items-center justify-center rounded-lg bg-white/50 p-4 text-center">
               <Trophy className="mb-2 size-10 text-brass-gold" />
               <span className="font-mono text-2xl text-brass-gold">
-                {dashboardMetrics.userRank > 0 ? `#${dashboardMetrics.userRank}` : 'Unranked'}
+                {isLeaderboardLoading ? (
+                  <Loader2 className="mx-auto size-6 animate-spin text-brass-gold/70" />
+                ) : dashboardMetrics.userRank > 0 ? (
+                  `#${dashboardMetrics.userRank}` 
+                ) : (
+                  'Unranked'
+                )}
               </span>
               <span className="text-sm text-tactical-gray">Global Leaderboard Rank</span>
             </div>

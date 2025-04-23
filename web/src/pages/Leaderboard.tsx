@@ -27,38 +27,29 @@ import {
 } from "@/components/ui/alert";
 import { useApi } from "@/lib/apiClient"; // Import API client hook
 import { Player } from '@lottiefiles/react-lottie-player'; // Import Lottie player
-import emptyLeaderboardAnimation from '@/assets/empty-leaderboard.json'; // Import animation JSON
+import emptyLeaderboardAnimation from '@/assets/empty-leaderboard.json';
+import { useQuery } from '@tanstack/react-query';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
-// Mock data for leaderboard
-const mockLeaderboard = [
-  { rank: 1, name: 'Alex Johnson', score: 1550, exercise: 'Overall', avatar: 'https://github.com/shadcn.png' },
-  { rank: 2, name: 'Maria Garcia', score: 1480, exercise: 'Overall', avatar: null },
-  { rank: 3, name: 'Brendan Toole', score: 1450, exercise: 'Overall', avatar: 'https://github.com/brendantoole.png' },
-  { rank: 4, name: 'Kenji Tanaka', score: 1390, exercise: 'Overall', avatar: null },
-  { rank: 5, name: 'Fatima Ahmed', score: 1350, exercise: 'Overall', avatar: null },
-  { rank: 1, name: 'Alex Johnson', score: 45, exercise: 'Push-ups', avatar: 'https://github.com/shadcn.png' },
-  { rank: 2, name: 'Brendan Toole', score: 42, exercise: 'Push-ups', avatar: 'https://github.com/brendantoole.png' },
-  { rank: 3, name: 'Maria Garcia', score: 40, exercise: 'Push-ups', avatar: null },
-  { rank: 1, name: 'Kenji Tanaka', score: 65, exercise: 'Sit-ups', avatar: null },
-  { rank: 2, name: 'Fatima Ahmed', score: 62, exercise: 'Sit-ups', avatar: null },
-  { rank: 3, name: 'Alex Johnson', score: 60, exercise: 'Sit-ups', avatar: 'https://github.com/shadcn.png' },
-  { rank: 1, name: 'Maria Garcia', score: 15, exercise: 'Pull-ups', avatar: null },
-  { rank: 2, name: 'Alex Johnson', score: 12, exercise: 'Pull-ups', avatar: 'https://github.com/shadcn.png' },
-  { rank: 1, name: 'Brendan Toole', score: 5.2, exercise: 'Running', avatar: 'https://github.com/brendantoole.png' }, // Score = km for running?
-  { rank: 2, name: 'Fatima Ahmed', score: 4.8, exercise: 'Running', avatar: null },
-];
-
-const exerciseOptions = ['Overall', 'Push-ups', 'Sit-ups', 'Pull-ups', 'Running'];
+const exerciseOptions = ['overall', 'pushup', 'situp', 'pullup', 'running'];
+const exerciseDisplayNames = {
+  'overall': 'Overall',
+  'pushup': 'Push-ups',
+  'situp': 'Sit-ups',
+  'pullup': 'Pull-ups',
+  'running': 'Running'
+};
 const scopeOptions = ['Global', 'Local (5 Miles)']; // Local needs implementation
 
 // Helper to get initials from name
 const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('');
-  };
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('');
+};
 
+// Geolocation state type
 interface GeolocationState {
   isLoading: boolean;
   isSupported: boolean;
@@ -69,10 +60,8 @@ interface GeolocationState {
 
 const Leaderboard: React.FC = () => {
   const api = useApi();
-  const [exerciseFilter, setExerciseFilter] = useState<string>(exerciseOptions[0]); // Default to Overall
+  const [exerciseFilter, setExerciseFilter] = useState<string>(exerciseOptions[0]); // Default to overall
   const [scopeFilter, setScopeFilter] = useState<string>(scopeOptions[0]); // Default to Global
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [leaderboardData, setLeaderboardData] = useState(mockLeaderboard);
   
   // Geolocation state
   const [geoState, setGeoState] = useState<GeolocationState>({
@@ -104,110 +93,95 @@ const Leaderboard: React.FC = () => {
           },
           error: null
         });
-        
-        // When we get location, if scope is local, fetch local leaderboard
-        if (scopeFilter === scopeOptions[1]) {
-          fetchLeaderboardData(exerciseFilter, true, position.coords.latitude, position.coords.longitude);
-        }
       },
       (error) => {
-        let errorMessage = "Unknown error occurred while accessing your location";
-        
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = "Location permission was denied. Please enable location services to use the local leaderboard.";
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = "Location information is unavailable.";
-            break;
-          case error.TIMEOUT:
-            errorMessage = "The request to get your location timed out.";
-            break;
-        }
-        
         setGeoState({
           isLoading: false,
           isSupported: true,
           isPermissionGranted: false,
           coordinates: null,
-          error: errorMessage
+          error: error.message
         });
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
     );
   };
 
-  // Fetch leaderboard data
-  const fetchLeaderboardData = async (exercise: string, isLocal: boolean, lat?: number, lng?: number) => {
-    setIsLoading(true);
-    try {
-      // In a real app, we would use the API client to fetch data
-      // For now, simulate API call with timeout and mock data filtering
+  // Use React Query to fetch leaderboard data
+  const { 
+    data: leaderboardData,
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['leaderboard', exerciseFilter, scopeFilter, geoState.coordinates],
+    queryFn: async () => {
+      const isLocalScope = scopeFilter === scopeOptions[1];
       
-      // Example of how the API call might look:
-      // const params = new URLSearchParams();
-      // if (exercise !== 'Overall') params.append('exercise', exercise.toLowerCase());
-      // if (isLocal && lat && lng) {
-      //   params.append('lat', lat.toString());
-      //   params.append('lng', lng.toString());
-      //   params.append('radius', '5'); // 5 miles
-      // }
-      // const response = await api.get(`/leaderboard?${params.toString()}`);
-      // setLeaderboardData(response.data);
-      
-      // Mock implementation - filter mockLeaderboard
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-      
-      // Just filter the mock data for demo purposes
-      const filtered = mockLeaderboard
-          .filter(user => user.exercise === exercise)
-          .sort((a, b) => a.rank - b.rank);
-      
-      setLeaderboardData(filtered);
-    } catch (error) {
-      console.error("Error fetching leaderboard data:", error);
-      // Could set an error state here
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      if (isLocalScope && !geoState.coordinates) {
+        // If local scope selected but no coordinates, throw error to trigger request
+        throw new Error('Location permission required');
+      }
+
+      if (isLocalScope) {
+        // Call local leaderboard API
+        return api.leaderboard.getLocalLeaderboard(
+          exerciseFilter,
+          geoState.coordinates!.latitude,
+          geoState.coordinates!.longitude,
+          8047 // ~5 miles in meters
+        );
+      } else {
+        // Call global leaderboard API
+        return api.leaderboard.getLeaderboard(exerciseFilter);
+      }
+    },
+    enabled: !(scopeFilter === scopeOptions[1] && !geoState.coordinates && !geoState.isLoading),
+    retry: 1,
+    retryDelay: 1000,
+  });
 
   // Effect to handle scope change
   useEffect(() => {
     const isLocalScope = scopeFilter === scopeOptions[1];
     
-    if (isLocalScope && !geoState.coordinates) {
+    if (isLocalScope && !geoState.coordinates && !geoState.error) {
       // If local scope selected but no coordinates, request them
       requestGeolocation();
-    } else {
-      // Otherwise fetch appropriate data
-      fetchLeaderboardData(
-        exerciseFilter,
-        isLocalScope,
-        geoState.coordinates?.latitude,
-        geoState.coordinates?.longitude
-      );
     }
-  }, [scopeFilter, exerciseFilter, geoState.coordinates]);
+  }, [scopeFilter]);
 
-  // Filter leaderboard data based on selections
-  const filteredLeaderboard = useMemo(() => {
-    if (isLoading) return [];
+  // Process the leaderboard data for display
+  const processedLeaderboard = useMemo(() => {
+    if (!leaderboardData || !Array.isArray(leaderboardData)) return [];
     
-    // Filter is now handled by the API/fetchLeaderboardData
-    return leaderboardData;
-  }, [leaderboardData, isLoading]);
+    // Convert API data to display format with ranks
+    return leaderboardData.map((entry, index) => ({
+      rank: index + 1,
+      name: entry.display_name || entry.username,
+      username: entry.username,
+      userId: entry.user_id,
+      score: entry.max_grade !== undefined ? entry.max_grade : 0,
+      avatar: null // API doesn't provide avatars yet
+    }));
+  }, [leaderboardData]);
 
   // Dynamically set the card title
-  const cardTitle = `Top Performers - ${exerciseFilter} (${scopeFilter})`;
+  const cardTitle = `Top Performers - ${exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} (${scopeFilter})`;
 
   return (
-    <div className="space-y-6"> {/* Reduced vertical spacing */}
-      <h1 className="text-2xl font-semibold text-foreground">Leaderboard</h1> {/* Standardized heading */}
+    <div className="space-y-6">
+      <h1 className="text-2xl font-semibold text-foreground">Leaderboard</h1>
       
       {/* Geolocation Alert - Show if needed */}
       {scopeFilter === scopeOptions[1] && geoState.error && (
         <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
           <AlertTitle>Location Error</AlertTitle>
           <AlertDescription>
             {geoState.error}
@@ -233,42 +207,58 @@ const Leaderboard: React.FC = () => {
         </Alert>
       )}
 
+      {/* API Error Alert */}
+      {isError && !geoState.isLoading && error instanceof Error && error.message !== 'Location permission required' && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error loading leaderboard</AlertTitle>
+          <AlertDescription>
+            {error.message}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2" 
+              onClick={() => refetch()}
+            >
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Leaderboard Table Card */}
-      <Card className="rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md"> {/* Added hover effect */}
+      <Card className="rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">{cardTitle}</CardTitle> {/* Standardized card title */}
-          <CardDescription className="text-muted-foreground">See how you stack up against the competition.</CardDescription> {/* Ensured muted color */}
+          <CardTitle className="text-lg font-semibold">{cardTitle}</CardTitle>
+          <CardDescription className="text-muted-foreground">See how you stack up against the competition.</CardDescription>
         </CardHeader>
         <CardContent>
-            {/* Filter Controls - Now here */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row"> {/* Increased bottom margin slightly */}
-              <div className="flex-1 space-y-1.5"> {/* Added space-y for label consistency */}
-                <Label htmlFor="exercise-filter" className="text-sm font-medium">Exercise</Label> {/* Ensured label style */}
+            {/* Filter Controls */}
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+              <div className="flex-1 space-y-1.5">
+                <Label htmlFor="exercise-filter" className="text-sm font-medium">Exercise</Label>
                 <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
                   <SelectTrigger id="exercise-filter">
                     <SelectValue placeholder="Select Exercise" />
                   </SelectTrigger>
                   <SelectContent>
                     {exerciseOptions.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
+                      <SelectItem key={option} value={option}>
+                        {exerciseDisplayNames[option as keyof typeof exerciseDisplayNames]}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex-1 space-y-1.5"> {/* Added space-y for label consistency */}
-                <Label htmlFor="scope-filter" className="text-sm font-medium">Scope</Label> {/* Ensured label style */}
+              <div className="flex-1 space-y-1.5">
+                <Label htmlFor="scope-filter" className="text-sm font-medium">Scope</Label>
                 <Select value={scopeFilter} onValueChange={setScopeFilter}>
                   <SelectTrigger id="scope-filter">
                     <SelectValue placeholder="Select Scope" />
                   </SelectTrigger>
                   <SelectContent>
                     {scopeOptions.map(option => (
-                      <SelectItem
-                        key={option}
-                        value={option}
-                      >
-                        {option}
-                      </SelectItem>
+                      <SelectItem key={option} value={option}>{option}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -276,38 +266,40 @@ const Leaderboard: React.FC = () => {
             </div>
 
             {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="size-12 animate-spin rounded-full border-y-2 border-brass-gold"></div>
+              <div className="flex flex-col items-center justify-center py-12">
+                <Loader2 className="h-12 w-12 animate-spin text-brass-gold" />
+                <p className="mt-4 text-center text-muted-foreground">
+                  Loading leaderboard data...
+                </p>
               </div>
-            ) : filteredLeaderboard.length > 0 ? (
+            ) : processedLeaderboard.length > 0 ? (
               <Table>
                 <TableCaption className="py-4 text-muted-foreground">
                   Leaderboard rankings based on selected criteria.
                 </TableCaption>
                 <TableHeader>
-                <TableRow className="border-b border-border hover:bg-transparent"> {/* Removed hover effect from header row */}
-                    <TableHead className="w-[80px] font-medium text-muted-foreground">Rank</TableHead> {/* Styled header */}
-                    <TableHead className="font-medium text-muted-foreground">User</TableHead> {/* Styled header */}
-                    <TableHead className="text-right font-medium text-muted-foreground">Score</TableHead> {/* Styled header */}
+                <TableRow className="border-b border-border hover:bg-transparent">
+                    <TableHead className="w-[80px] font-medium text-muted-foreground">Rank</TableHead>
+                    <TableHead className="font-medium text-muted-foreground">User</TableHead>
+                    <TableHead className="text-right font-medium text-muted-foreground">Score</TableHead>
                 </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredLeaderboard.map((user) => (
-                    // Added hover effect to body rows
-                    <TableRow key={`${user.exercise}-${user.rank}-${user.name}`} className="border-b border-border/50 transition-colors hover:bg-muted/50">
-                        <TableCell className="text-lg font-semibold text-primary">{user.rank}</TableCell> {/* Kept rank prominent */}
+                  {processedLeaderboard.map((user) => (
+                    <TableRow key={`${user.username}-${user.rank}`} className="border-b border-border/50 transition-colors hover:bg-muted/50">
+                        <TableCell className="text-lg font-semibold text-primary">{user.rank}</TableCell>
                         <TableCell>
                             <div className="flex items-center space-x-3">
-                                <Avatar className="size-8"> {/* Slightly smaller avatar */}
+                                <Avatar className="size-8">
                                     <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                                    <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground"> {/* Consistent fallback style */}
+                                    <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
                                         {getInitials(user.name)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <span className="font-medium text-foreground">{user.name}</span>
                             </div>
                         </TableCell>
-                        <TableCell className="text-right font-medium tabular-nums text-foreground">{user.score}</TableCell> {/* Ensured consistent font, added tabular-nums */}
+                        <TableCell className="text-right font-medium tabular-nums text-foreground">{user.score}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -322,7 +314,7 @@ const Leaderboard: React.FC = () => {
                   className="text-brass-gold"
                 />
                 <p className="mt-4 text-center text-muted-foreground">
-                  No rankings found for {exerciseFilter}.
+                  No rankings found for {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]}.
                 </p>
                 <p className="text-center text-sm text-muted-foreground">
                   {scopeFilter === scopeOptions[1]

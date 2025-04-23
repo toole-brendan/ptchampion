@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PT Champion Debug Tools Finder</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #F4F1E6;
+            color: #1E1E1E;
+            text-align: center;
+        }
+        h1 {
+            color: #1E241E;
+            margin-bottom: 30px;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .links {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        a.button {
+            display: inline-block;
+            background-color: #BFA24D;
+            color: #1E241E;
+            text-decoration: none;
+            padding: 15px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 5px;
+            font-size: 16px;
+        }
+        a.button:hover {
+            opacity: 0.9;
+        }
+        .storage-account {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .storage-account h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>PT Champion Debug Tools Finder</h1>
+    
+    <div class="container">
+        <p>This page will help you locate the debug tools, regardless of which storage account is hosting them.</p>
+        
+        <div class="storage-account">
+            <h2>Storage Account: ptchampionweb</h2>
+            <div class="links">
+                <a href="https://ptchampionweb.z13.web.core.windows.net/debug/tools.html" class="button">Try Debug Tools (ptchampionweb)</a>
+            </div>
+        </div>
+        
+        <div class="storage-account">
+            <h2>Storage Account: ptchampionwebstorage</h2>
+            <div class="links">
+                <a href="https://ptchampionwebstorage.z13.web.core.windows.net/debug/tools.html" class="button">Try Debug Tools (ptchampionwebstorage)</a>
+            </div>
+        </div>
+        
+        <div class="storage-account">
+            <h2>Custom Domain</h2>
+            <div class="links">
+                <a href="https://www.ptchampion.ai/debug/tools.html" class="button">Try Debug Tools (ptchampion.ai)</a>
+            </div>
+        </div>
+        
+        <p style="margin-top: 30px;">If none of these links work, please follow the manual upload instructions to deploy the debug tools to your Azure Storage account.</p>
+    </div>
+</body>
+</html>

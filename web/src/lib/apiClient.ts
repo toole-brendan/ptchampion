@@ -200,8 +200,14 @@ export const getExerciseById = (id: string): Promise<ExerciseResponse> => {
 
 // --- Leaderboard Endpoints ---
 
-export const getLeaderboard = (exerciseType: string): Promise<LeaderboardEntry[]> => {
-  return apiRequest<LeaderboardEntry[]>(`/leaderboard/${exerciseType}`, 'GET', null, false);
+export const getLeaderboard = async (exerciseType: string): Promise<LeaderboardEntry[]> => {
+  try {
+    return await apiRequest<LeaderboardEntry[]>(`/leaderboard/${exerciseType}`, 'GET', null, true);
+  } catch (error) {
+    console.error(`Failed to fetch leaderboard for ${exerciseType}:`, error);
+    // Return empty array instead of throwing to prevent UI breakage
+    return [];
+  }
 };
 
 // --- Helper functions for auth state ---
@@ -213,27 +219,33 @@ export const getLeaderboard = (exerciseType: string): Promise<LeaderboardEntry[]
 
 // Clear the token
 export const clearToken = (): void => {
+  console.log('Clearing token from storage');
+  // Remove from secure storage
   secureRemove(TOKEN_STORAGE_KEY);
+  // Also remove from regular localStorage to ensure all remnants are gone
+  localStorage.removeItem(TOKEN_STORAGE_KEY);
 };
 
 // For compatibility with existing code, make a synchronous token getter
-// that checks both encrypted and plain storage
 export const getSyncToken = (): string | null => {
-  // First check if there's any token in localStorage (encrypted or not)
-  const tokenValue = localStorage.getItem(TOKEN_STORAGE_KEY);
-  
-  console.log('getSyncToken called, raw value exists:', !!tokenValue);
-  
-  if (!tokenValue) {
-    console.log('getSyncToken: No token found in localStorage');
+  try {
+    // First check if there's any token in localStorage
+    const tokenValue = localStorage.getItem(TOKEN_STORAGE_KEY);
+    
+    console.log('getSyncToken called, raw value exists:', !!tokenValue);
+    
+    if (!tokenValue) {
+      console.log('getSyncToken: No token found in localStorage');
+      return null;
+    }
+    
+    // Return null instead of a sentinel value to avoid using invalid tokens
+    console.log('getSyncToken: Token found in localStorage, but returning null for safety');
+    return null;
+  } catch (error) {
+    console.error('Error in getSyncToken:', error);
     return null;
   }
-  
-  // If value exists, it might be encrypted - but we can't decrypt synchronously
-  // Just return a non-null value to indicate a token exists
-  // The actual token will be retrieved asynchronously when making API calls
-  console.log('getSyncToken: Token found in localStorage, returning sentinel value');
-  return "token-exists";
 };
 
 // React hook for API client
@@ -260,8 +272,33 @@ export const useApi = () => {
         );
       }
     },
+    system: {
+      checkHealth: checkServerHealth
+    }
   };
 };
 
 // Export for use in other files
-export { getToken, apiRequest }; 
+export { getToken, apiRequest };
+
+// --- Server Health Check ---
+
+export const checkServerHealth = async (): Promise<{ status: string, responseTime: number }> => {
+  const startTime = performance.now();
+  try {
+    // Use a simple endpoint that should be fast to respond
+    await apiRequest<any>('/health', 'GET', null, false);
+    const endTime = performance.now();
+    return { 
+      status: 'ok', 
+      responseTime: Math.round(endTime - startTime) 
+    };
+  } catch (error) {
+    const endTime = performance.now();
+    console.error('Server health check failed:', error);
+    return { 
+      status: 'error', 
+      responseTime: Math.round(endTime - startTime) 
+    };
+  }
+}; 
