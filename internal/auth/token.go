@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -140,37 +141,54 @@ func (s *TokenService) RefreshTokens(ctx context.Context, refreshToken string) (
 
 // ValidateAccessToken validates an access token and returns the claims
 func (s *TokenService) ValidateAccessToken(tokenString string) (*JWTClaims, error) {
+	log.Printf("DEBUG: ValidateAccessToken called with token starting with %s...", tokenString[:15])
+
 	// First basic parsing to extract claims without full validation
 	parser := &jwt.Parser{}
 	token, _, err := parser.ParseUnverified(tokenString, &JWTClaims{})
 	if err != nil {
+		log.Printf("ERROR: Failed to parse token (unverified): %v", err)
 		return nil, fmt.Errorf("failed to parse token: %w", err)
 	}
+	log.Printf("DEBUG: Initial token parsing (unverified) successful")
 
 	// Get claims for type checking
 	claims, ok := token.Claims.(*JWTClaims)
 	if !ok {
+		log.Printf("ERROR: Token claims not of type JWTClaims, got %T", token.Claims)
 		return nil, errors.New("invalid token claims")
 	}
+	log.Printf("DEBUG: Claims extracted: user_id=%s, token_type=%s, exp=%v", claims.UserID, claims.TokenType, claims.ExpiresAt)
 
 	// Check token type before validation (early rejection for wrong token types)
 	if claims.TokenType != AccessToken {
+		log.Printf("ERROR: Wrong token type: expected %s, got %s", AccessToken, claims.TokenType)
 		return nil, errors.New("wrong token type")
 	}
+	log.Printf("DEBUG: Token type validated as AccessToken")
 
 	// Now validate the token fully
 	token, err = jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
+		// Verify signing method (optional but recommended)
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			log.Printf("ERROR: Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return s.accessSecret, nil
 	})
 
 	if err != nil {
+		log.Printf("ERROR: Full token validation failed: %v", err)
 		return nil, fmt.Errorf("invalid access token: %w", err)
 	}
+	log.Printf("DEBUG: Full token validation successful")
 
 	claims, ok = token.Claims.(*JWTClaims)
 	if !ok || !token.Valid {
+		log.Printf("ERROR: Invalid token claims after full validation: valid=%v, ok=%v", token.Valid, ok)
 		return nil, errors.New("invalid token claims")
 	}
+	log.Printf("DEBUG: Token is valid and all checks passed for user_id=%s", claims.UserID)
 
 	return claims, nil
 }

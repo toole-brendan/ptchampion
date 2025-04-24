@@ -172,10 +172,25 @@ func (h *Handler) PostAuthLogin(c echo.Context) error {
 
 	// Generate token pair
 	userIDString := fmt.Sprintf("%d", user.ID)
+	log.Printf("DEBUG: Login - Generated user ID string: '%s' for user: %s (ID: %d)", userIDString, user.Username, user.ID)
+
 	tokenPair, err := tokenService.GenerateTokenPair(c.Request().Context(), userIDString)
 	if err != nil {
 		log.Printf("ERROR: Failed to generate token pair: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+
+	log.Printf("DEBUG: Login - Token pair generated successfully: access_token length=%d, refresh_token length=%d",
+		len(tokenPair.AccessToken), len(tokenPair.RefreshToken))
+	log.Printf("DEBUG: Login - Access token preview: %s...", tokenPair.AccessToken[:20])
+
+	// For debugging purposes, parse the token we just created
+	claims, err := tokenService.ValidateAccessToken(tokenPair.AccessToken)
+	if err != nil {
+		log.Printf("ERROR: Generated token failed self-validation: %v", err)
+	} else {
+		log.Printf("DEBUG: Generated token validation SUCCESS - claims: user_id=%s, token_type=%s",
+			claims.UserID, claims.TokenType)
 	}
 
 	// Convert dbStore.User to internal response payload

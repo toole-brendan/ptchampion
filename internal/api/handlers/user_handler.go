@@ -44,12 +44,18 @@ type UpdateLocationRequest struct {
 
 // GetCurrentUser handles requests to get the authenticated user's profile
 func (h *Handler) GetCurrentUser(c echo.Context) error {
+	log.Printf("DEBUG: GetCurrentUser handler called at %s", time.Now().Format(time.RFC3339))
+
+	// Dump context for debugging - use a simple approach
+	log.Printf("DEBUG: Context in GetCurrentUser: user_id=%v", c.Get("user_id"))
+
 	// 1. Get User ID from context
 	userID, ok := c.Get("user_id").(int32)
 	if !ok {
 		log.Printf("ERROR: Could not get user_id from context in GetCurrentUser")
 		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
 	}
+	log.Printf("DEBUG: Found user_id as int32: %d", userID)
 
 	// 2. Get user from database
 	user, err := h.Queries.GetUser(c.Request().Context(), userID)
@@ -61,6 +67,8 @@ func (h *Handler) GetCurrentUser(c echo.Context) error {
 		log.Printf("ERROR: Failed to get user by ID %d: %v", userID, err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve user")
 	}
+
+	log.Printf("DEBUG: Successfully retrieved user from database: id=%d, username=%s", user.ID, user.Username)
 
 	// 3. Convert to response format (excluding password/sensitive fields)
 	resp := UserResponse{
@@ -74,6 +82,7 @@ func (h *Handler) GetCurrentUser(c echo.Context) error {
 	}
 
 	// 4. Send response
+	log.Printf("DEBUG: Returning user data for ID %d", user.ID)
 	return c.JSON(http.StatusOK, resp)
 }
 

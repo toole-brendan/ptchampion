@@ -18,6 +18,12 @@ BEGIN
     END IF;
 END $$;
 
+-- Fix for missing display_name column error
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
+
+-- Fix for missing grade column error
+ALTER TABLE user_exercises ADD COLUMN IF NOT EXISTS grade INTEGER;
+
 -- Print success message
 DO $$
 BEGIN
