@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	"ptchampion/internal/api/handlers"
 	"ptchampion/internal/api/routes"
 	"ptchampion/internal/auth"
 	"ptchampion/internal/config"
@@ -66,8 +67,11 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.CORS())
 
+	// Create handler for routes
+	coreHandler := handlers.NewHandler(cfg, store.Queries)
+
 	// Register routes
-	routes.RegisterRoutes(e, cfg, store, tokenService, logger)
+	routes.RegisterRoutes(e, cfg, store, tokenService, logger, coreHandler)
 
 	// Start server in a goroutine
 	go func() {

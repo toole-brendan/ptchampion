@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"ptchampion/internal/api/handlers"
 	"ptchampion/internal/api/middleware"
 	"ptchampion/internal/auth"
 	"ptchampion/internal/config"
@@ -14,7 +15,7 @@ import (
 )
 
 // RegisterRoutes registers all routes for the application
-func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenService *auth.TokenService, logger logging.Logger) {
+func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenService *auth.TokenService, logger logging.Logger, handler *handlers.Handler) {
 	// Create refresh store
 	redisOptions := redis.DefaultOptions()
 	redisOptions.URL = cfg.RedisURL
@@ -27,27 +28,32 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	// Auth middleware with Redis refresh store
 	authMiddleware := middleware.JWTAuthMiddleware(cfg.JWTSecret, cfg.RefreshTokenSecret, refreshStore)
 
-	// Register auth routes
-	RegisterAuthRoutes(e, cfg, tokenService, logger)
-
-	// Protected routes (authentication required)
+	// Create API group
 	apiGroup := e.Group("/api/v1")
-	apiGroup.Use(authMiddleware)
 
-	// Register user routes
-	RegisterUserRoutes(apiGroup, store, logger)
+	// Register public auth routes BEFORE applying middleware
+	// These routes should be accessible without authentication
+	apiGroup.POST("/auth/login", handler.PostAuthLogin)
+	apiGroup.POST("/auth/register", handler.PostAuthRegister)
+	apiGroup.POST("/auth/refresh", handler.PostAuthRefresh)
 
-	// Register workout routes
-	RegisterWorkoutRoutes(apiGroup, store, logger)
+	// Create a separate group for protected routes
+	protectedGroup := apiGroup.Group("", authMiddleware)
 
-	// Register leaderboard routes
-	RegisterLeaderboardRoutes(apiGroup, store, logger)
+	// Register user routes (protected)
+	RegisterUserRoutes(protectedGroup, store, logger)
 
-	// Register exercise routes
-	RegisterExerciseRoutes(apiGroup, store, logger)
+	// Register workout routes (protected)
+	RegisterWorkoutRoutes(protectedGroup, store, logger)
+
+	// Register leaderboard routes (protected)
+	RegisterLeaderboardRoutes(protectedGroup, store, logger)
+
+	// Register exercise routes (protected)
+	RegisterExerciseRoutes(protectedGroup, store, logger)
 
 	// --- Public (non-authenticated) feature flags endpoint ---
-	e.GET("/api/v1/features", func(c echo.Context) error {
+	apiGroup.GET("/features", func(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]interface{}{"features": map[string]interface{}{}})
 	})
 
