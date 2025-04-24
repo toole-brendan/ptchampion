@@ -12,7 +12,7 @@ import (
 // TestHealthEndpoint verifies that /health returns 200 OK
 func TestHealthEndpoint(t *testing.T) {
 	cfg := &config.Config{}
-	logger, _ := logging.New("debug", true)
+	logger := logging.NewDefaultLogger()
 
 	// We don't hit any handler that needs DB, so pass nils safely.
 	router := NewRouter(nil, cfg, logger)
@@ -30,7 +30,7 @@ func TestHealthEndpoint(t *testing.T) {
 // TestPingEndpoint checks custom /ping heartbeat.
 func TestPingEndpoint(t *testing.T) {
 	cfg := &config.Config{}
-	logger, _ := logging.New("debug", true)
+	logger := logging.NewDefaultLogger()
 
 	router := NewRouter(nil, cfg, logger)
 
