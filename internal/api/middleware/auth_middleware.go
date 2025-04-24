@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"ptchampion/internal/auth"
+	"ptchampion/internal/store/redis"
 
 	"github.com/labstack/echo/v4"
 )
@@ -18,8 +20,8 @@ const (
 )
 
 // JWTAuthMiddleware creates a middleware for JWT token verification using Echo framework
-func JWTAuthMiddleware(accessSecret, refreshSecret string) echo.MiddlewareFunc {
-	tokenService := auth.NewTokenService(accessSecret, refreshSecret)
+func JWTAuthMiddleware(accessSecret, refreshSecret string, refreshStore redis.RefreshStore) echo.MiddlewareFunc {
+	tokenService := auth.NewTokenService(accessSecret, refreshSecret, refreshStore)
 
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -40,15 +42,20 @@ func JWTAuthMiddleware(accessSecret, refreshSecret string) echo.MiddlewareFunc {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Token is required")
 			}
 
-			// Verify the token
-			claims, err := tokenService.VerifyAccessToken(tokenString)
+			// Verify the token - first check token type before full validation
+			claims, err := tokenService.ValidateAccessToken(tokenString)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired token")
 			}
 
 			// Set user ID and username in context for handlers to access
 			c.Set(string(UserIDContextKey), claims.UserID)
-			c.Set(string(UsernameContextKey), claims.Username)
+			c.Set(string(UsernameContextKey), claims.Subject)
+
+			// ALSO set a numeric user_id key (int32) expected by some legacy handlers
+			if idInt64, convErr := strconv.ParseInt(claims.UserID, 10, 32); convErr == nil {
+				c.Set("user_id", int32(idInt64))
+			}
 
 			return next(c)
 		}
@@ -56,8 +63,8 @@ func JWTAuthMiddleware(accessSecret, refreshSecret string) echo.MiddlewareFunc {
 }
 
 // GetUserID extracts the user ID from the context
-func GetUserID(c echo.Context) (int64, bool) {
-	userID, ok := c.Get(string(UserIDContextKey)).(int64)
+func GetUserID(c echo.Context) (string, bool) {
+	userID, ok := c.Get(string(UserIDContextKey)).(string)
 	return userID, ok
 }
 

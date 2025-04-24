@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -8,16 +9,24 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+
+	"ptchampion/internal/store/redis"
 )
 
 // TokenType defines the type of token issued
 type TokenType string
 
 const (
-	// AccessToken is a short-lived token (15m) for API access
+	// AccessToken is a short-lived token for API access
 	AccessToken TokenType = "access"
-	// RefreshToken is a longer-lived token (7d) for getting new access tokens
+	// RefreshToken is a longer-lived token for getting new access tokens
 	RefreshToken TokenType = "refresh"
+
+	// Token durations
+	accessTokenDuration  = time.Minute * 15   // 15 minutes
+	refreshTokenDuration = time.Hour * 24 * 7 // 7 days
+	tokenIssuer          = "ptchampion"
 )
 
 // TokenPair represents a pair of access and refresh tokens
@@ -28,33 +37,35 @@ type TokenPair struct {
 	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
 }
 
-// CustomClaims extends jwt.RegisteredClaims to include custom data
-type CustomClaims struct {
+// JWTClaims contains JWT claims with user information
+type JWTClaims struct {
 	jwt.RegisteredClaims
 	UserID    string    `json:"user_id"`
 	TokenType TokenType `json:"token_type"`
 }
 
-// JWTService handles JWT token generation and validation
-type JWTService struct {
+// TokenService handles token operations and refresh token storage
+type TokenService struct {
 	accessSecret  []byte
 	refreshSecret []byte
+	RefreshStore  redis.RefreshStore
 	accessTTL     time.Duration
 	refreshTTL    time.Duration
 }
 
-// NewJWTService creates a new JWTService
-func NewJWTService(accessSecret, refreshSecret string, accessTTL, refreshTTL time.Duration) *JWTService {
-	return &JWTService{
+// NewTokenService creates a new TokenService with configured secrets and token store
+func NewTokenService(accessSecret, refreshSecret string, store redis.RefreshStore) *TokenService {
+	return &TokenService{
 		accessSecret:  []byte(accessSecret),
 		refreshSecret: []byte(refreshSecret),
-		accessTTL:     accessTTL,
-		refreshTTL:    refreshTTL,
+		RefreshStore:  store,
+		accessTTL:     accessTokenDuration,
+		refreshTTL:    refreshTokenDuration,
 	}
 }
 
 // GenerateTokenPair creates a new access and refresh token pair
-func (s *JWTService) GenerateTokenPair(userID string) (*TokenPair, error) {
+func (s *TokenService) GenerateTokenPair(ctx context.Context, userID string) (*TokenPair, error) {
 	// Generate access token
 	accessTokenExpiry := time.Now().Add(s.accessTTL)
 	accessToken, err := s.generateToken(userID, AccessToken, accessTokenExpiry)
@@ -63,10 +74,23 @@ func (s *JWTService) GenerateTokenPair(userID string) (*TokenPair, error) {
 	}
 
 	// Generate refresh token
+	refreshTokenID := uuid.New().String()
 	refreshTokenExpiry := time.Now().Add(s.refreshTTL)
 	refreshToken, err := s.generateToken(userID, RefreshToken, refreshTokenExpiry)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate refresh token: %w", err)
+	}
+
+	// Store refresh token in Redis
+	token := redis.RefreshToken{
+		ID:        refreshTokenID,
+		UserID:    userID,
+		IssuedAt:  time.Now(),
+		ExpiresAt: refreshTokenExpiry,
+	}
+
+	if err := s.RefreshStore.Save(ctx, token); err != nil {
+		return nil, fmt.Errorf("failed to save refresh token: %w", err)
 	}
 
 	return &TokenPair{
@@ -78,9 +102,9 @@ func (s *JWTService) GenerateTokenPair(userID string) (*TokenPair, error) {
 }
 
 // RefreshTokens validates a refresh token and issues a new token pair
-func (s *JWTService) RefreshTokens(refreshToken string) (*TokenPair, error) {
+func (s *TokenService) RefreshTokens(ctx context.Context, refreshToken string) (*TokenPair, error) {
 	// Parse and validate the refresh token
-	token, err := jwt.ParseWithClaims(refreshToken, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(refreshToken, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return s.refreshSecret, nil
 	})
 
@@ -88,7 +112,7 @@ func (s *JWTService) RefreshTokens(refreshToken string) (*TokenPair, error) {
 		return nil, fmt.Errorf("invalid refresh token: %w", err)
 	}
 
-	claims, ok := token.Claims.(*CustomClaims)
+	claims, ok := token.Claims.(*JWTClaims)
 	if !ok || !token.Valid {
 		return nil, errors.New("invalid token claims")
 	}
@@ -98,13 +122,44 @@ func (s *JWTService) RefreshTokens(refreshToken string) (*TokenPair, error) {
 		return nil, errors.New("token is not a refresh token")
 	}
 
+	// Verify the token exists in our store
+	tokenID := claims.ID
+	_, err = s.RefreshStore.Find(ctx, tokenID)
+	if err != nil {
+		return nil, fmt.Errorf("refresh token not found: %w", err)
+	}
+
+	// Revoke the used refresh token (one-time use)
+	if err := s.RefreshStore.Revoke(ctx, tokenID); err != nil {
+		return nil, fmt.Errorf("failed to revoke refresh token: %w", err)
+	}
+
 	// Generate a new token pair
-	return s.GenerateTokenPair(claims.UserID)
+	return s.GenerateTokenPair(ctx, claims.UserID)
 }
 
 // ValidateAccessToken validates an access token and returns the claims
-func (s *JWTService) ValidateAccessToken(tokenString string) (*CustomClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+func (s *TokenService) ValidateAccessToken(tokenString string) (*JWTClaims, error) {
+	// First basic parsing to extract claims without full validation
+	parser := &jwt.Parser{}
+	token, _, err := parser.ParseUnverified(tokenString, &JWTClaims{})
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token: %w", err)
+	}
+
+	// Get claims for type checking
+	claims, ok := token.Claims.(*JWTClaims)
+	if !ok {
+		return nil, errors.New("invalid token claims")
+	}
+
+	// Check token type before validation (early rejection for wrong token types)
+	if claims.TokenType != AccessToken {
+		return nil, errors.New("wrong token type")
+	}
+
+	// Now validate the token fully
+	token, err = jwt.ParseWithClaims(tokenString, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return s.accessSecret, nil
 	})
 
@@ -112,35 +167,32 @@ func (s *JWTService) ValidateAccessToken(tokenString string) (*CustomClaims, err
 		return nil, fmt.Errorf("invalid access token: %w", err)
 	}
 
-	claims, ok := token.Claims.(*CustomClaims)
+	claims, ok = token.Claims.(*JWTClaims)
 	if !ok || !token.Valid {
 		return nil, errors.New("invalid token claims")
-	}
-
-	// Verify this is an access token
-	if claims.TokenType != AccessToken {
-		return nil, errors.New("token is not an access token")
 	}
 
 	return claims, nil
 }
 
-// generateToken creates a signed JWT token
-func (s *JWTService) generateToken(userID string, tokenType TokenType, expiry time.Time) (string, error) {
-	// Add a unique jitter to the token ID to prevent token reuse
-	jitter, err := generateRandomString(16)
-	if err != nil {
-		return "", fmt.Errorf("failed to generate jitter: %w", err)
-	}
+// RevokeAllUserTokens revokes all refresh tokens for a user
+func (s *TokenService) RevokeAllUserTokens(ctx context.Context, userID string) error {
+	return s.RefreshStore.RevokeAllForUser(ctx, userID)
+}
 
-	claims := &CustomClaims{
+// generateToken creates a signed JWT token
+func (s *TokenService) generateToken(userID string, tokenType TokenType, expiry time.Time) (string, error) {
+	// Add a unique ID to the token
+	tokenID := uuid.New().String()
+
+	claims := &JWTClaims{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiry),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    "ptchampion",
+			Issuer:    tokenIssuer,
 			Subject:   userID,
-			ID:        jitter,
+			ID:        tokenID,
 		},
 		UserID:    userID,
 		TokenType: tokenType,
@@ -161,6 +213,11 @@ func (s *JWTService) generateToken(userID string, tokenType TokenType, expiry ti
 	}
 
 	return tokenString, nil
+}
+
+// GetAccessTokenDuration returns the access token duration
+func GetAccessTokenDuration() time.Duration {
+	return accessTokenDuration
 }
 
 // generateRandomString creates a random string for use in token IDs

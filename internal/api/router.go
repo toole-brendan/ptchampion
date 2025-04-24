@@ -198,6 +198,9 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 	apiGroup := e.Group("/api/v1")
 	RegisterHandlers(apiGroup, apiHandler)
 
+	// Add manual route for current user GET endpoint
+	apiGroup.GET("/users/me", apiHandler.GetUsersMe)
+
 	// Add feature flags endpoint if middleware is available
 	if featureFlagMiddleware != nil {
 		apiGroup.GET("/features", featureFlagMiddleware.FeaturesHandler())

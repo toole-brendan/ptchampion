@@ -50,6 +50,9 @@ type Config struct {
 	OTLPEndpoint string `envconfig:"OTLP_ENDPOINT"`
 	OTLPInsecure bool   `envconfig:"OTLP_INSECURE" default:"false"`
 
+	// Database operation timeout (default 3 seconds)
+	DBTimeout time.Duration `envconfig:"DB_TIMEOUT" default:"3s"`
+
 	// Add other config fields like SESSION_SECRET later
 	// SessionSecret string `envconfig:"SESSION_SECRET" required:"true"`
 }
@@ -97,6 +100,33 @@ func Load() (*Config, error) {
 	log.Printf("Client origin set to: %s", cfg.ClientOrigin)
 
 	return &cfg, nil
+}
+
+// Validate performs strict validation of configuration values
+// Returns a list of missing required configuration values
+// This should be called early in application startup and will exit the program if any required value is missing
+func (c *Config) Validate() {
+	var missingSecrets []string
+
+	// Check for required secrets and add to missing list if not present
+	if c.DatabaseURL == "" {
+		missingSecrets = append(missingSecrets, "DATABASE_URL")
+	}
+
+	if c.JWTSecret == "" {
+		missingSecrets = append(missingSecrets, "JWT_SECRET")
+	}
+
+	if c.RedisURL == "" {
+		missingSecrets = append(missingSecrets, "REDIS_URL")
+	}
+
+	// Add more required secrets as necessary
+
+	// If any required secrets are missing, log fatal error and exit
+	if len(missingSecrets) > 0 {
+		log.Fatalf("Fatal error: Missing required configuration values: %v", missingSecrets)
+	}
 }
 
 // fetchSecretsIfNeeded fetches secrets from Azure Key Vault if AZURE_KEY_VAULT_URL is set.

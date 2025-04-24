@@ -1,53 +1,92 @@
 package main
 
 import (
-	"log"
+	"context"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
-	"ptchampion/internal/api"
-	// "ptchampion/internal/api/handlers" // No longer needed directly here
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+
+	"ptchampion/internal/api/routes"
+	"ptchampion/internal/auth"
 	"ptchampion/internal/config"
 	"ptchampion/internal/logging"
-	dbStore "ptchampion/internal/store/postgres"
+	db "ptchampion/internal/store/postgres"
+	"ptchampion/internal/store/redis"
 )
 
 func main() {
-	// Initialize structured logging (Zap) early so that all stdlib log calls are captured.
-	// Use LOG_LEVEL to control verbosity and APP_ENV to toggle development mode.
-	logger, err := logging.New(os.Getenv("LOG_LEVEL"), os.Getenv("APP_ENV") == "development")
-	if err != nil {
-		log.Fatalf("Failed to initialize logger: %v", err)
-	}
+	// Initialize logger
+	logger := logging.NewDefaultLogger()
+	logger.Info("Starting PT Champion server")
 
-	// 1. Load Configuration
+	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Error loading configuration: %v", err)
+		logger.Fatal("Failed to load configuration", err)
 	}
 
-	// 2. Connect to Database
-	dbPool, err := dbStore.NewDB(cfg.DatabaseURL)
+	// Validate configuration - will exit if any required config is missing
+	cfg.Validate()
+
+	// Initialize database connection
+	dbConn, err := db.NewDB(cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
+		logger.Fatal("Failed to connect to database", err)
 	}
-	defer dbPool.Close() // Ensure connection is closed eventually
-	log.Println("Successfully connected to the database.")
+	defer dbConn.Close()
 
-	// Dependency Injection: Create DB Querier
-	queries := dbStore.New(dbPool)
+	// Initialize Redis connection
+	redisOptions := redis.DefaultOptions()
+	redisOptions.URL = cfg.RedisURL
+	redisClient, err := redis.CreateClient(redisOptions)
+	if err != nil {
+		logger.Fatal("Failed to connect to Redis", err)
+	}
+	defer redisClient.Close()
 
-	// Create the API Handler (which embeds the core handler)
-	apiHandler := api.NewApiHandler(cfg, queries)
+	// Create the refresh token store
+	refreshStore := redis.NewRedisRefreshStore(redisClient)
 
-	// 3. Setup Router (Pass the API Handler and logger)
-	router := api.NewRouter(apiHandler, cfg, logger)
+	// Initialize database store with timeout
+	store := db.NewStore(dbConn, cfg.DBTimeout)
 
-	// 4. Start Server
-	port := cfg.Port
-	log.Printf("Starting server on :%s", port)
-	serverAddr := ":" + port
-	if err := http.ListenAndServe(serverAddr, router); err != nil {
-		log.Fatalf("ListenAndServe on %s failed: %v", serverAddr, err)
+	// Initialize token service with Redis store
+	tokenService := auth.NewTokenService(cfg.JWTSecret, cfg.RefreshTokenSecret, refreshStore)
+
+	// Create Echo instance
+	e := echo.New()
+
+	// Add middleware
+	e.Use(middleware.Recover())
+	e.Use(middleware.Logger())
+	e.Use(middleware.CORS())
+
+	// Register routes
+	routes.RegisterRoutes(e, cfg, store, tokenService, logger)
+
+	// Start server in a goroutine
+	go func() {
+		if err := e.Start(":" + cfg.Port); err != nil && err != http.ErrServerClosed {
+			logger.Fatal("Failed to start server", err)
+		}
+	}()
+
+	// Wait for interrupt signal to gracefully shutdown the server
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	// Graceful shutdown with a timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		logger.Fatal("Failed to shutdown server gracefully", err)
+	} else {
+		logger.Info("Server shutdown gracefully")
 	}
 }

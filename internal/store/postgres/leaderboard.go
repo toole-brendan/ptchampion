@@ -47,10 +47,7 @@ type GlobalLeaderboardParams struct {
 // GetLocalLeaderboard returns a leaderboard of users within a specified radius
 // Uses PostGIS K-NN operator (<->) for spatial queries
 func (r *LeaderboardRepository) GetLocalLeaderboard(ctx context.Context, params LocalLeaderboardParams) ([]LeaderboardEntry, error) {
-	// Convert lat/long to a PostGIS Point
-	pointText := fmt.Sprintf("SRID=4326;POINT(%f %f)", params.Longitude, params.Latitude)
-
-	// Query using K-NN spatial operator for better performance on large datasets
+	// Use bind variables instead of string formatting for the point
 	query := `
 		WITH ranked_workouts AS (
 			SELECT 
@@ -71,19 +68,25 @@ func (r *LeaderboardRepository) GetLocalLeaderboard(ctx context.Context, params 
 			rw.best_score AS score,
 			rw.rank,
 			rw.exercise_type,
-			ST_Distance(u.last_location::geography, ST_GeographyFromText($2)::geography) AS distance_meters,
+			ST_Distance(u.last_location::geography, ST_MakePoint($2, $3)::geography) AS distance_meters,
 			MAX(w.completed_at) AS last_updated
 		FROM ranked_workouts rw
 		JOIN users u ON rw.user_id = u.id
 		JOIN workouts w ON rw.user_id = w.user_id AND rw.exercise_type = w.exercise_type
 		WHERE u.last_location IS NOT NULL
-		AND ST_DWithin(u.last_location::geography, ST_GeographyFromText($2)::geography, $3)
+		AND ST_DWithin(u.last_location::geography, ST_MakePoint($2, $3)::geography, $4)
 		GROUP BY u.id, u.username, u.display_name, u.profile_picture_url, rw.best_score, rw.rank, rw.exercise_type, u.last_location
-		ORDER BY ST_Distance(u.last_location::geography, ST_GeographyFromText($2)::geography) ASC
-		LIMIT $4
+		ORDER BY ST_Distance(u.last_location::geography, ST_MakePoint($2, $3)::geography) ASC
+		LIMIT $5
 	`
 
-	rows, err := r.db.QueryContext(ctx, query, params.ExerciseType, pointText, params.RadiusMeters, params.Limit)
+	rows, err := r.db.QueryContext(ctx, query,
+		params.ExerciseType,
+		params.Longitude, // Using ST_MakePoint(long, lat)
+		params.Latitude,
+		params.RadiusMeters,
+		params.Limit)
+
 	if err != nil {
 		return nil, fmt.Errorf("error querying local leaderboard: %w", err)
 	}
