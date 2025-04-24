@@ -1,132 +1,91 @@
 package logging
 
 import (
-	"context"
-
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
+	"fmt"
+	"log"
+	"os"
 )
 
-// Logger is a simplified interface for logging
+// Logger defines the interface for logging
 type Logger interface {
-	Debug(msg string, fields ...zapcore.Field)
-	Info(msg string, fields ...zapcore.Field)
-	Warn(msg string, fields ...zapcore.Field)
-	Error(msg string, fields ...zapcore.Field)
-	Fatal(msg string, fields ...zapcore.Field)
-	With(fields ...zapcore.Field) Logger
-	WithContext(ctx context.Context) Logger
+	Debug(message string, args ...interface{})
+	Info(message string, args ...interface{})
+	Warn(message string, args ...interface{})
+	Error(message string, args ...interface{})
+	Fatal(message string, err error, args ...interface{})
 }
 
-// zapLogger implements the Logger interface using zap
-type zapLogger struct {
-	logger *zap.Logger
+// SimpleLogger is a basic logger implementation using the standard library
+type SimpleLogger struct {
+	debugLogger *log.Logger
+	infoLogger  *log.Logger
+	warnLogger  *log.Logger
+	errorLogger *log.Logger
+	fatalLogger *log.Logger
 }
 
-// New creates a new Logger with the specified settings
-func New(level string, isDevelopment bool) (Logger, error) {
-	var zapConfig zap.Config
+// NewDefaultLogger creates a new SimpleLogger with default settings
+func NewDefaultLogger() Logger {
+	debugLogger := log.New(os.Stdout, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
+	infoLogger := log.New(os.Stdout, "[INFO] ", log.Ldate|log.Ltime)
+	warnLogger := log.New(os.Stdout, "[WARN] ", log.Ldate|log.Ltime)
+	errorLogger := log.New(os.Stderr, "[ERROR] ", log.Ldate|log.Ltime|log.Lshortfile)
+	fatalLogger := log.New(os.Stderr, "[FATAL] ", log.Ldate|log.Ltime|log.Lshortfile)
 
-	if isDevelopment {
-		zapConfig = zap.NewDevelopmentConfig()
-		// More readable timestamps in development
-		zapConfig.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	return &SimpleLogger{
+		debugLogger: debugLogger,
+		infoLogger:  infoLogger,
+		warnLogger:  warnLogger,
+		errorLogger: errorLogger,
+		fatalLogger: fatalLogger,
+	}
+}
+
+// Debug logs a debug message
+func (l *SimpleLogger) Debug(message string, args ...interface{}) {
+	if len(args) > 0 {
+		l.debugLogger.Printf("%s: %v", message, args)
 	} else {
-		zapConfig = zap.NewProductionConfig()
-		// JSON in production for better log aggregation
-		zapConfig.EncoderConfig.MessageKey = "message"
-		zapConfig.EncoderConfig.LevelKey = "severity"
-		zapConfig.EncoderConfig.TimeKey = "timestamp"
+		l.debugLogger.Println(message)
 	}
+}
 
-	// Set log level
-	var logLevel zapcore.Level
-	if err := logLevel.UnmarshalText([]byte(level)); err != nil {
-		logLevel = zapcore.InfoLevel
+// Info logs an info message
+func (l *SimpleLogger) Info(message string, args ...interface{}) {
+	if len(args) > 0 {
+		l.infoLogger.Printf("%s: %v", message, args)
+	} else {
+		l.infoLogger.Println(message)
 	}
-	zapConfig.Level = zap.NewAtomicLevelAt(logLevel)
+}
 
-	// Create the logger
-	logger, err := zapConfig.Build(zap.AddCallerSkip(1))
+// Warn logs a warning message
+func (l *SimpleLogger) Warn(message string, args ...interface{}) {
+	if len(args) > 0 {
+		l.warnLogger.Printf("%s: %v", message, args)
+	} else {
+		l.warnLogger.Println(message)
+	}
+}
+
+// Error logs an error message
+func (l *SimpleLogger) Error(message string, args ...interface{}) {
+	if len(args) > 0 {
+		l.errorLogger.Printf("%s: %v", message, args)
+	} else {
+		l.errorLogger.Println(message)
+	}
+}
+
+// Fatal logs a fatal error message and exits the program
+func (l *SimpleLogger) Fatal(message string, err error, args ...interface{}) {
 	if err != nil {
-		return nil, err
+		message = fmt.Sprintf("%s: %v", message, err)
 	}
 
-	// Replace the global logger
-	zap.ReplaceGlobals(logger)
-
-	// Redirect standard library log to zap
-	zap.RedirectStdLog(logger)
-
-	return &zapLogger{logger: logger}, nil
-}
-
-// Debug logs a message at debug level
-func (l *zapLogger) Debug(msg string, fields ...zapcore.Field) {
-	l.logger.Debug(msg, fields...)
-}
-
-// Info logs a message at info level
-func (l *zapLogger) Info(msg string, fields ...zapcore.Field) {
-	l.logger.Info(msg, fields...)
-}
-
-// Warn logs a message at warn level
-func (l *zapLogger) Warn(msg string, fields ...zapcore.Field) {
-	l.logger.Warn(msg, fields...)
-}
-
-// Error logs a message at error level
-func (l *zapLogger) Error(msg string, fields ...zapcore.Field) {
-	l.logger.Error(msg, fields...)
-}
-
-// Fatal logs a message at fatal level and then calls os.Exit(1)
-func (l *zapLogger) Fatal(msg string, fields ...zapcore.Field) {
-	l.logger.Fatal(msg, fields...)
-	// zap.Fatal calls os.Exit(1) after logging
-}
-
-// With creates a child logger with the given fields added to it
-func (l *zapLogger) With(fields ...zapcore.Field) Logger {
-	return &zapLogger{logger: l.logger.With(fields...)}
-}
-
-// contextKey is the key used to store/retrieve a request ID from context
-type contextKey string
-
-const (
-	requestIDKey contextKey = "requestID"
-	userIDKey    contextKey = "userID"
-)
-
-// WithContext adds context values like request ID and user ID to the logger
-func (l *zapLogger) WithContext(ctx context.Context) Logger {
-	if ctx == nil {
-		return l
+	if len(args) > 0 {
+		l.fatalLogger.Fatalf("%s: %v", message, args)
+	} else {
+		l.fatalLogger.Fatalln(message)
 	}
-
-	logger := l.logger
-
-	// Add request ID if present
-	if reqID, ok := ctx.Value(requestIDKey).(string); ok && reqID != "" {
-		logger = logger.With(zap.String("request_id", reqID))
-	}
-
-	// Add user ID if present
-	if userID, ok := ctx.Value(userIDKey).(string); ok && userID != "" {
-		logger = logger.With(zap.String("user_id", userID))
-	}
-
-	return &zapLogger{logger: logger}
-}
-
-// AddRequestID adds a request ID to the context
-func AddRequestID(ctx context.Context, requestID string) context.Context {
-	return context.WithValue(ctx, requestIDKey, requestID)
-}
-
-// AddUserID adds a user ID to the context
-func AddUserID(ctx context.Context, userID string) context.Context {
-	return context.WithValue(ctx, userIDKey, userID)
 }

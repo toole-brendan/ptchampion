@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
-	"go.uber.org/zap"
 )
 
 // RequestLoggingConfig holds configuration for the RequestLogging middleware
@@ -43,55 +42,58 @@ func RequestLogging(config RequestLoggingConfig) echo.MiddlewareFunc {
 				c.Response().Header().Set("X-Request-ID", requestID)
 			}
 
-			// Add request ID to context for logging
-			ctx := logging.AddRequestID(req.Context(), requestID)
-			c.SetRequest(req.WithContext(ctx))
+			// Store request ID in context
+			c.Set("requestID", requestID)
 
 			// Process the request
 			err := next(c)
 
 			// Log after the request is complete
 			latency := time.Since(start)
-			fields := []zap.Field{
-				zap.String("request_id", requestID),
-				zap.String("remote_ip", c.RealIP()),
-				zap.String("method", req.Method),
-				zap.String("uri", req.RequestURI),
-				zap.Int("status", res.Status),
-				zap.String("user_agent", req.UserAgent()),
-				zap.String("referer", req.Referer()),
-				zap.Duration("latency", latency),
-				zap.String("host", req.Host),
-				zap.String("route", c.Path()),
+
+			// Build log message with relevant request data
+			logMessage := "Request completed"
+			if err != nil {
+				logMessage = "Request error"
+			}
+
+			// Store request data to log
+			reqData := map[string]interface{}{
+				"request_id": requestID,
+				"remote_ip":  c.RealIP(),
+				"method":     req.Method,
+				"uri":        req.RequestURI,
+				"status":     res.Status,
+				"latency_ms": latency.Milliseconds(),
+				"host":       req.Host,
+				"route":      c.Path(),
+				"user_agent": req.UserAgent(),
 			}
 
 			// Conditionally log request headers
 			if !config.DisableHeader {
-				headerMap := make(map[string]string)
+				headers := make(map[string]string)
 				for k, v := range req.Header {
 					// Skip sensitive headers
 					if k == "Authorization" || k == "Cookie" {
 						continue
 					}
 					if len(v) > 0 {
-						headerMap[k] = v[0]
+						headers[k] = v[0]
 					}
 				}
-				fields = append(fields, zap.Any("headers", headerMap))
+				reqData["headers"] = headers
 			}
 
 			// Log at appropriate level based on status code
-			msg := "Request completed"
 			if err != nil {
-				msg = "Request error"
-				fields = append(fields, zap.Error(err))
-				config.Logger.Error(msg, fields...)
+				config.Logger.Error(logMessage, err, reqData)
 			} else if res.Status >= 500 {
-				config.Logger.Error(msg, fields...)
+				config.Logger.Error(logMessage, nil, reqData)
 			} else if res.Status >= 400 {
-				config.Logger.Warn(msg, fields...)
+				config.Logger.Warn(logMessage, reqData)
 			} else {
-				config.Logger.Info(msg, fields...)
+				config.Logger.Info(logMessage, reqData)
 			}
 
 			return err

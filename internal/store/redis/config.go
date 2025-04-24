@@ -1,11 +1,6 @@
 package redis
 
-import (
-	"fmt"
-	"time"
-
-	"github.com/go-redis/redis/v8"
-)
+import "fmt"
 
 // Config holds Redis connection configuration
 type Config struct {
@@ -27,17 +22,13 @@ func DefaultConfig() Config {
 	}
 }
 
-// NewClient creates a new Redis client using the provided configuration
-func NewClient(cfg Config) *redis.Client {
-	return redis.NewClient(&redis.Options{
-		Addr:         fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
-		Password:     cfg.Password,
-		DB:           cfg.DB,
-		PoolSize:     cfg.PoolSize,
-		MinIdleConns: 3,
-		DialTimeout:  5 * time.Second,
-		ReadTimeout:  3 * time.Second,
-		WriteTimeout: 3 * time.Second,
-		PoolTimeout:  4 * time.Second,
-	})
+// ToOptions converts a Config to an Options struct
+func (c Config) ToOptions() Options {
+	opts := DefaultOptions()
+	opts.URL = fmt.Sprintf("redis://%s:%d/%d", c.Host, c.Port, c.DB)
+	if c.Password != "" {
+		opts.URL = fmt.Sprintf("redis://:%s@%s:%d/%d", c.Password, c.Host, c.Port, c.DB)
+	}
+	opts.PoolSize = c.PoolSize
+	return opts
 }

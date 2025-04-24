@@ -2,105 +2,157 @@
 package routes
 
 import (
+	"context"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"go.uber.org/zap"
 
 	"ptchampion/internal/auth"
 	"ptchampion/internal/config"
 	"ptchampion/internal/logging"
 )
 
+// LoginRequest represents the login request structure
+type LoginRequest struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}
+
+// RegisterRequest represents the registration request structure
+type RegisterRequest struct {
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required,min=8"`
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
+}
+
 // RefreshTokenRequest represents the request structure for token refresh
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refresh_token" validate:"required"`
 }
 
-// TokenResponse represents the token refresh response
+// TokenResponse represents the token response structure
 type TokenResponse struct {
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	ExpiresAt    time.Time `json:"expires_at"`
-	TokenType    string    `json:"token_type"`
+	AccessToken           string    `json:"access_token"`
+	RefreshToken          string    `json:"refresh_token"`
+	AccessTokenExpiresAt  time.Time `json:"access_token_expires_at"`
+	RefreshTokenExpiresAt time.Time `json:"refresh_token_expires_at"`
+	TokenType             string    `json:"token_type"`
 }
 
 // AuthHandler manages authentication related endpoints
 type AuthHandler struct {
-	jwtService *auth.JWTService
-	config     *config.Config
-	logger     logging.Logger
+	config       *config.Config
+	logger       logging.Logger
+	tokenService *auth.TokenService
 }
 
 // NewAuthHandler creates a new auth handler
-func NewAuthHandler(cfg *config.Config, logger logging.Logger) *AuthHandler {
-	// Initialize JWTService with access and refresh token configuration
-	jwtService := auth.NewJWTService(
-		cfg.JWTSecret,
-		cfg.RefreshTokenSecret,
-		15*time.Minute, // Access token TTL (15 min)
-		7*24*time.Hour, // Refresh token TTL (7 days)
-	)
-
+func NewAuthHandler(cfg *config.Config, logger logging.Logger, tokenService *auth.TokenService) *AuthHandler {
 	return &AuthHandler{
-		jwtService: jwtService,
-		config:     cfg,
-		logger:     logger,
+		config:       cfg,
+		logger:       logger,
+		tokenService: tokenService,
 	}
 }
 
-// RefreshToken handles JWT token refresh requests
-// Validates a refresh token and issues a new pair of tokens
-func (h *AuthHandler) RefreshToken(c echo.Context) error {
-	// Bind and validate request
-	req := new(RefreshTokenRequest)
+// Login handles user login
+func (h *AuthHandler) Login(c echo.Context) error {
+	// Parse request
+	req := new(LoginRequest)
 	if err := c.Bind(req); err != nil {
-		h.logger.Error("Failed to bind refresh token request", zap.Error(err))
+		h.logger.Error("Failed to bind login request", err)
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request format")
 	}
 
-	if err := c.Validate(req); err != nil {
-		h.logger.Error("Invalid refresh token request", zap.Error(err))
-		return echo.NewHTTPError(http.StatusBadRequest, "Refresh token is required")
+	// TODO: Validate credentials against database
+	// For now, using a mock user ID since we're not connecting to the database yet
+	mockUserID := "user-123"
+
+	// Generate token pair
+	ctx := context.Background()
+	tokenPair, err := h.tokenService.GenerateTokenPair(ctx, mockUserID)
+	if err != nil {
+		h.logger.Error("Failed to generate token pair", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to generate authentication tokens")
 	}
 
-	// Validate and refresh tokens
-	tokenPair, err := h.jwtService.RefreshTokens(req.RefreshToken)
+	// Return tokens
+	return c.JSON(http.StatusOK, TokenResponse{
+		AccessToken:           tokenPair.AccessToken,
+		RefreshToken:          tokenPair.RefreshToken,
+		AccessTokenExpiresAt:  tokenPair.AccessTokenExpiresAt,
+		RefreshTokenExpiresAt: tokenPair.RefreshTokenExpiresAt,
+		TokenType:             "Bearer",
+	})
+}
+
+// Register handles user registration
+func (h *AuthHandler) Register(c echo.Context) error {
+	// Parse request
+	req := new(RegisterRequest)
+	if err := c.Bind(req); err != nil {
+		h.logger.Error("Failed to bind registration request", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request format")
+	}
+
+	// TODO: Create user in database
+	// For now, using a mock user ID since we're not connecting to the database yet
+	mockUserID := "user-123"
+
+	// Generate token pair
+	ctx := context.Background()
+	tokenPair, err := h.tokenService.GenerateTokenPair(ctx, mockUserID)
 	if err != nil {
-		h.logger.Warn("Refresh token validation failed",
-			zap.Error(err),
-			zap.String("remote_ip", c.RealIP()),
-		)
+		h.logger.Error("Failed to generate token pair", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to generate authentication tokens")
+	}
+
+	// Return tokens
+	return c.JSON(http.StatusOK, TokenResponse{
+		AccessToken:           tokenPair.AccessToken,
+		RefreshToken:          tokenPair.RefreshToken,
+		AccessTokenExpiresAt:  tokenPair.AccessTokenExpiresAt,
+		RefreshTokenExpiresAt: tokenPair.RefreshTokenExpiresAt,
+		TokenType:             "Bearer",
+	})
+}
+
+// RefreshToken handles token refresh
+func (h *AuthHandler) RefreshToken(c echo.Context) error {
+	// Parse request
+	req := new(RefreshTokenRequest)
+	if err := c.Bind(req); err != nil {
+		h.logger.Error("Failed to bind refresh token request", err)
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request format")
+	}
+
+	// Refresh tokens
+	ctx := context.Background()
+	tokenPair, err := h.tokenService.RefreshTokens(ctx, req.RefreshToken)
+	if err != nil {
+		h.logger.Error("Failed to refresh tokens", err)
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired refresh token")
 	}
 
-	// Log successful token refresh
-	h.logger.Info("Tokens refreshed successfully",
-		zap.String("subject", tokenPair.AccessToken),
-		zap.Time("expires_at", tokenPair.AccessTokenExpiresAt),
-	)
-
-	// Return new token pair
+	// Return new tokens
 	return c.JSON(http.StatusOK, TokenResponse{
-		AccessToken:  tokenPair.AccessToken,
-		RefreshToken: tokenPair.RefreshToken,
-		ExpiresAt:    tokenPair.AccessTokenExpiresAt,
-		TokenType:    "Bearer",
+		AccessToken:           tokenPair.AccessToken,
+		RefreshToken:          tokenPair.RefreshToken,
+		AccessTokenExpiresAt:  tokenPair.AccessTokenExpiresAt,
+		RefreshTokenExpiresAt: tokenPair.RefreshTokenExpiresAt,
+		TokenType:             "Bearer",
 	})
 }
 
 // RegisterAuthRoutes registers all authentication related routes
-func RegisterAuthRoutes(e *echo.Echo, cfg *config.Config, logger logging.Logger) {
-	handler := NewAuthHandler(cfg, logger)
+func RegisterAuthRoutes(e *echo.Echo, cfg *config.Config, tokenService *auth.TokenService, logger logging.Logger) {
+	handler := NewAuthHandler(cfg, logger, tokenService)
 
 	// Public auth endpoints (no auth required)
 	authGroup := e.Group("/api/v1/auth")
-
-	// Register the refresh token endpoint
+	authGroup.POST("/login", handler.Login)
+	authGroup.POST("/register", handler.Register)
 	authGroup.POST("/refresh", handler.RefreshToken)
-
-	// Other auth endpoints would also be registered here:
-	// authGroup.POST("/login", handler.Login)
-	// authGroup.POST("/register", handler.Register)
 }
