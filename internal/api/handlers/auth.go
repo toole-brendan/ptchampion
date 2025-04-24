@@ -1,33 +1,48 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
 	"net/http"
 	"time"
 
 	"ptchampion/internal/auth"
 	"ptchampion/internal/config"
 	"ptchampion/internal/store"
+	"ptchampion/internal/store/redis"
 
 	"github.com/labstack/echo/v4"
 )
 
 // AuthHandler handles authentication related requests
 type AuthHandler struct {
-	store      store.Store
-	jwtService *auth.JWTService
+	store        store.Store
+	tokenService *auth.TokenService
+	config       *config.Config
 }
 
 // NewAuthHandler creates a new AuthHandler
 func NewAuthHandler(store store.Store, cfg *config.Config) *AuthHandler {
-	// Access token TTL 15m, refresh token TTL 7d (adjust via config later)
-	accessTTL := 15 * time.Minute
-	refreshTTL := 7 * 24 * time.Hour
+	// Create token service with Redis store
+	redisOptions := redis.DefaultOptions()
+	redisOptions.URL = cfg.RedisURL
+	redisClient, err := redis.CreateClient(redisOptions)
+	if err != nil {
+		// Log but continue - token service will be initialized on demand if needed
+		fmt.Printf("WARNING: Redis connection failed: %v\n", err)
+	}
 
-	jwtSvc := auth.NewJWTService(cfg.JWTSecret, cfg.RefreshTokenSecret, accessTTL, refreshTTL)
+	var tokenService *auth.TokenService
+	if redisClient != nil {
+		refreshStore := redis.NewRedisRefreshStore(redisClient)
+		tokenService = auth.NewTokenService(cfg.JWTSecret, cfg.RefreshTokenSecret, refreshStore)
+	}
 
 	return &AuthHandler{
-		store:      store,
-		jwtService: jwtSvc,
+		store:        store,
+		tokenService: tokenService,
+		config:       cfg,
+		// tokenService will be initialized when needed
 	}
 }
 
@@ -74,7 +89,21 @@ func (h *AuthHandler) Login(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid credentials")
 	}
 
-	tokenPair, err := h.jwtService.GenerateTokenPair(user.ID)
+	// Initialize token service if not already done
+	if h.tokenService == nil {
+		redisOptions := redis.DefaultOptions()
+		redisOptions.URL = h.config.RedisURL
+		redisClient, err := redis.CreateClient(redisOptions)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to connect to token store")
+		}
+		refreshStore := redis.NewRedisRefreshStore(redisClient)
+		h.tokenService = auth.NewTokenService(h.config.JWTSecret, h.config.RefreshTokenSecret, refreshStore)
+	}
+
+	// Generate token pair
+	ctx := context.Background()
+	tokenPair, err := h.tokenService.GenerateTokenPair(ctx, user.ID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to generate token")
 	}
@@ -125,8 +154,21 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to create user")
 	}
 
-	// Generate tokens
-	tokenPair, err := h.jwtService.GenerateTokenPair(user.ID)
+	// Initialize token service if not already done
+	if h.tokenService == nil {
+		redisOptions := redis.DefaultOptions()
+		redisOptions.URL = h.config.RedisURL
+		redisClient, err := redis.CreateClient(redisOptions)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to connect to token store")
+		}
+		refreshStore := redis.NewRedisRefreshStore(redisClient)
+		h.tokenService = auth.NewTokenService(h.config.JWTSecret, h.config.RefreshTokenSecret, refreshStore)
+	}
+
+	// Generate token pair
+	ctx := context.Background()
+	tokenPair, err := h.tokenService.GenerateTokenPair(ctx, user.ID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to generate token")
 	}
@@ -150,14 +192,27 @@ func (h *AuthHandler) RefreshToken(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	// Initialize token service if not already done
+	if h.tokenService == nil {
+		redisOptions := redis.DefaultOptions()
+		redisOptions.URL = h.config.RedisURL
+		redisClient, err := redis.CreateClient(redisOptions)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to connect to token store")
+		}
+		refreshStore := redis.NewRedisRefreshStore(redisClient)
+		h.tokenService = auth.NewTokenService(h.config.JWTSecret, h.config.RefreshTokenSecret, refreshStore)
+	}
+
 	// Validate and refresh the token
-	tokenPair, err := h.jwtService.RefreshTokens(req.RefreshToken)
+	ctx := context.Background()
+	tokenPair, err := h.tokenService.RefreshTokens(ctx, req.RefreshToken)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid refresh token")
 	}
 
 	// Extract user ID from the validated token
-	claims, err := h.jwtService.ValidateAccessToken(tokenPair.AccessToken)
+	claims, err := h.tokenService.ValidateAccessToken(tokenPair.AccessToken)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to validate token")
 	}

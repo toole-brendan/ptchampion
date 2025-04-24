@@ -11,8 +11,8 @@ import (
 	db "ptchampion/internal/store/postgres"
 	redis_cache "ptchampion/internal/store/redis"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
+	"github.com/redis/go-redis/v9"
 )
 
 // LeaderboardService provides leaderboard-related functionality

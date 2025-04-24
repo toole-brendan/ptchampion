@@ -3,12 +3,15 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"ptchampion/internal/auth"
 	dbStore "ptchampion/internal/store/postgres"
+	"ptchampion/internal/store/redis"
 
 	"github.com/labstack/echo/v4"
 	"github.com/lib/pq"
@@ -156,11 +159,20 @@ func (h *Handler) PostAuthLogin(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid username or password")
 	}
 
-	// Create token service
-	tokenService := auth.NewTokenService(h.Config.JWTSecret, h.Config.RefreshTokenSecret)
+	// Create token service with Redis store
+	redisOptions := redis.DefaultOptions()
+	redisOptions.URL = h.Config.RedisURL
+	redisClient, err := redis.CreateClient(redisOptions)
+	if err != nil {
+		log.Printf("ERROR: Failed to connect to Redis: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+	refreshStore := redis.NewRedisRefreshStore(redisClient)
+	tokenService := auth.NewTokenService(h.Config.JWTSecret, h.Config.RefreshTokenSecret, refreshStore)
 
 	// Generate token pair
-	accessToken, refreshToken, err := tokenService.GenerateTokenPair(int64(user.ID), user.Username)
+	userIDString := fmt.Sprintf("%d", user.ID)
+	tokenPair, err := tokenService.GenerateTokenPair(c.Request().Context(), userIDString)
 	if err != nil {
 		log.Printf("ERROR: Failed to generate token pair: %v", err)
 		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
@@ -182,9 +194,9 @@ func (h *Handler) PostAuthLogin(c echo.Context) error {
 
 	// Use internal response payload
 	loginResp := LoginResponsePayload{
-		AccessToken:  accessToken,
-		RefreshToken: refreshToken,
-		ExpiresIn:    int(auth.AccessTokenDuration.Seconds()),
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		ExpiresIn:    int(tokenPair.AccessTokenExpiresAt.Sub(time.Now()).Seconds()),
 		User:         userResp,
 	}
 
@@ -205,11 +217,19 @@ func (h *Handler) PostAuthRefresh(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Refresh token is required")
 	}
 
-	// Create token service
-	tokenService := auth.NewTokenService(h.Config.JWTSecret, h.Config.RefreshTokenSecret)
+	// Create token service with Redis store
+	redisOptions := redis.DefaultOptions()
+	redisOptions.URL = h.Config.RedisURL
+	redisClient, err := redis.CreateClient(redisOptions)
+	if err != nil {
+		log.Printf("ERROR: Failed to connect to Redis: %v", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Internal server error")
+	}
+	refreshStore := redis.NewRedisRefreshStore(redisClient)
+	tokenService := auth.NewTokenService(h.Config.JWTSecret, h.Config.RefreshTokenSecret, refreshStore)
 
 	// Refresh the token
-	newAccessToken, newRefreshToken, err := tokenService.RefreshAccessToken(req.RefreshToken)
+	tokenPair, err := tokenService.RefreshTokens(c.Request().Context(), req.RefreshToken)
 	if err != nil {
 		log.Printf("ERROR: Failed to refresh token: %v", err)
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired refresh token")
@@ -221,9 +241,9 @@ func (h *Handler) PostAuthRefresh(c echo.Context) error {
 		RefreshToken string `json:"refresh_token"`
 		ExpiresIn    int    `json:"expires_in"`
 	}{
-		AccessToken:  newAccessToken,
-		RefreshToken: newRefreshToken,
-		ExpiresIn:    int(auth.AccessTokenDuration.Seconds()),
+		AccessToken:  tokenPair.AccessToken,
+		RefreshToken: tokenPair.RefreshToken,
+		ExpiresIn:    int(tokenPair.AccessTokenExpiresAt.Sub(time.Now()).Seconds()),
 	}
 
 	return c.JSON(http.StatusOK, refreshResp)

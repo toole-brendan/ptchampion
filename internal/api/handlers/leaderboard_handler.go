@@ -10,10 +10,10 @@ import (
 	"time"
 
 	db "ptchampion/internal/store/postgres"
-	redis_cache "ptchampion/internal/store/redis"
+	"ptchampion/internal/store/redis"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/labstack/echo/v4"
+	goredis "github.com/redis/go-redis/v9"
 )
 
 // Default radius in meters (approx 5 miles)
@@ -42,22 +42,35 @@ type LeaderboardEntry struct {
 }
 
 // GetCacheClient returns a Redis client or nil if Redis is not configured
-func (h *Handler) GetCacheClient() *redis.Client {
+func (h *Handler) GetCacheClient() *goredis.Client {
 	// Check if Redis is enabled via environment variables
 	// We're enabling Redis by default now
 	redisEnabled := true // Changed from false to true
 
-	// Get Redis config from environment or use defaults
-	redisCfg := redis_cache.Config{
-		Host:     getEnvOrDefault("REDIS_HOST", "localhost"),
-		Port:     getEnvIntOrDefault("REDIS_PORT", 6379),
-		Password: getEnvOrDefault("REDIS_PASSWORD", ""),
-		DB:       getEnvIntOrDefault("REDIS_DB", 0),
-		PoolSize: getEnvIntOrDefault("REDIS_POOL_SIZE", 10),
+	// Create options from environment
+	redisURL := fmt.Sprintf("redis://%s:%d",
+		getEnvOrDefault("REDIS_HOST", "localhost"),
+		getEnvIntOrDefault("REDIS_PORT", 6379))
+
+	if password := getEnvOrDefault("REDIS_PASSWORD", ""); password != "" {
+		redisURL = fmt.Sprintf("redis://:%s@%s:%d",
+			password,
+			getEnvOrDefault("REDIS_HOST", "localhost"),
+			getEnvIntOrDefault("REDIS_PORT", 6379))
 	}
 
+	// Use standard options with our URL
+	redisOpts := redis.DefaultOptions()
+	redisOpts.URL = redisURL
+	redisOpts.PoolSize = getEnvIntOrDefault("REDIS_POOL_SIZE", 10)
+
 	if redisEnabled {
-		return redis_cache.NewClient(redisCfg)
+		client, err := redis.CreateClient(redisOpts)
+		if err != nil {
+			log.Printf("Error creating Redis client: %v", err)
+			return nil
+		}
+		return client
 	}
 	return nil
 }
@@ -101,12 +114,13 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 	// Check if we can use the Redis cache
 	redisClient := h.GetCacheClient()
 	if redisClient != nil {
-		cache := redis_cache.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
-		cacheKey := redis_cache.GlobalLeaderboardKey(exerciseType, limit)
+		cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+		cacheKey := redis.GlobalLeaderboardKey(exerciseType, limit)
 
 		// Try to get from cache
 		var cachedEntries []LeaderboardEntry
-		err := cache.Get(c.Request().Context(), cacheKey, &cachedEntries)
+		ctx := c.Request().Context()
+		err := cache.Get(ctx, cacheKey, &cachedEntries)
 		if err == nil && len(cachedEntries) > 0 {
 			// Cache hit
 			return c.JSON(http.StatusOK, cachedEntries)
@@ -145,10 +159,11 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 
 	// Cache the result if Redis is available
 	if redisClient != nil && len(respEntries) > 0 {
-		cache := redis_cache.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
-		cacheKey := redis_cache.GlobalLeaderboardKey(exerciseType, limit)
+		cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+		cacheKey := redis.GlobalLeaderboardKey(exerciseType, limit)
 
-		if err := cache.Set(c.Request().Context(), cacheKey, respEntries); err != nil {
+		ctx := c.Request().Context()
+		if err := cache.Set(ctx, cacheKey, respEntries); err != nil {
 			// Just log the error, don't fail the request
 			log.Printf("Error caching global leaderboard: %v", err)
 		}
@@ -195,11 +210,12 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 	var respEntries []LocalLeaderboardEntry
 
 	if redisClient != nil {
-		cache := redis_cache.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
-		cacheKey := redis_cache.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit)
+		cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+		cacheKey := redis.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit)
 
 		// Try to get from cache
-		err := cache.Get(c.Request().Context(), cacheKey, &respEntries)
+		ctx := c.Request().Context()
+		err := cache.Get(ctx, cacheKey, &respEntries)
 		if err == nil && len(respEntries) > 0 {
 			// Cache hit
 			// Mark as from cache for debugging
@@ -308,8 +324,8 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 
 	// Cache the result if Redis is available
 	if redisClient != nil && len(respEntries) > 0 {
-		cache := redis_cache.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
-		cacheKey := redis_cache.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit)
+		cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+		cacheKey := redis.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit)
 
 		// Don't store the cachedResult flag in Redis
 		cacheCopy := make([]LocalLeaderboardEntry, len(respEntries))
@@ -318,7 +334,8 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 			cacheCopy[i].CachedResult = false
 		}
 
-		if err := cache.Set(c.Request().Context(), cacheKey, cacheCopy); err != nil {
+		ctx := c.Request().Context()
+		if err := cache.Set(ctx, cacheKey, cacheCopy); err != nil {
 			// Just log the error, don't fail the request
 			log.Printf("Error caching local leaderboard: %v", err)
 		}

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"ptchampion/internal/api/middleware"
 	"ptchampion/internal/config"
 	"ptchampion/internal/logging"
+	"ptchampion/internal/store/redis"
 	"ptchampion/internal/telemetry"
 
 	"github.com/go-chi/chi/v5"
@@ -196,10 +198,127 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 
 	// Register API endpoints
 	apiGroup := e.Group("/api/v1")
-	RegisterHandlers(apiGroup, apiHandler)
 
-	// Add manual route for current user GET endpoint
-	apiGroup.GET("/users/me", apiHandler.GetUsersMe)
+	// Set up authentication middleware for protected routes
+	var authMiddleware echo.MiddlewareFunc
+	{
+		redisOpts := redis.DefaultOptions()
+		redisOpts.URL = cfg.RedisURL
+		redisClient, err := redis.CreateClient(redisOpts)
+		if err != nil {
+			log.Printf("Warning: failed to create Redis client for auth middleware: %v", err)
+		} else {
+			refreshStore := redis.NewRedisRefreshStore(redisClient)
+			authMiddleware = middleware.JWTAuthMiddleware(cfg.JWTSecret, cfg.RefreshTokenSecret, refreshStore)
+		}
+	}
+
+	// --------------------------------------------------------------------
+	// PUBLIC ROUTES
+	// --------------------------------------------------------------------
+	apiGroup.POST("/auth/login", apiHandler.PostAuthLogin)
+	apiGroup.POST("/auth/register", apiHandler.PostAuthRegister)
+	// Global leaderboard (public)
+	apiGroup.GET("/leaderboard/:exerciseType", func(c echo.Context) error {
+		exType := GetLeaderboardExerciseTypeParamsExerciseType(c.Param("exerciseType"))
+		var params GetLeaderboardExerciseTypeParams
+		if limit := c.QueryParam("limit"); limit != "" {
+			if v, err := strconv.Atoi(limit); err == nil {
+				params.Limit = &v
+			}
+		}
+		return apiHandler.GetLeaderboardExerciseType(c, exType, params)
+	})
+
+	// Local leaderboard (public)
+	apiGroup.GET("/leaderboards/local", func(c echo.Context) error {
+		var params HandleGetLocalLeaderboardParams
+		// Required params
+		if exerciseID := c.QueryParam("exercise_id"); exerciseID != "" {
+			if v, err := strconv.Atoi(exerciseID); err == nil {
+				params.ExerciseId = v
+			} else {
+				return echo.NewHTTPError(http.StatusBadRequest, "invalid exercise_id")
+			}
+		} else {
+			return echo.NewHTTPError(http.StatusBadRequest, "exercise_id required")
+		}
+		if lat := c.QueryParam("latitude"); lat != "" {
+			if v, err := strconv.ParseFloat(lat, 64); err == nil {
+				params.Latitude = v
+			} else {
+				return echo.NewHTTPError(http.StatusBadRequest, "invalid latitude")
+			}
+		} else {
+			return echo.NewHTTPError(http.StatusBadRequest, "latitude required")
+		}
+		if lon := c.QueryParam("longitude"); lon != "" {
+			if v, err := strconv.ParseFloat(lon, 64); err == nil {
+				params.Longitude = v
+			} else {
+				return echo.NewHTTPError(http.StatusBadRequest, "invalid longitude")
+			}
+		} else {
+			return echo.NewHTTPError(http.StatusBadRequest, "longitude required")
+		}
+		// Optional radius
+		if radius := c.QueryParam("radius_meters"); radius != "" {
+			if v, err := strconv.ParseFloat(radius, 64); err == nil {
+				params.RadiusMeters = &v
+			}
+		}
+		return apiHandler.HandleGetLocalLeaderboard(c, params)
+	})
+
+	// --------------------------------------------------------------------
+	// PROTECTED ROUTES (require JWT)
+	// --------------------------------------------------------------------
+	if authMiddleware != nil {
+		authGroup := apiGroup.Group("", authMiddleware)
+
+		// Current user profile endpoints
+		authGroup.GET("/users/me", apiHandler.GetUsersMe)
+		authGroup.PATCH("/users/me", apiHandler.PatchUsersMe)
+
+		// Exercises
+		authGroup.GET("/exercises", func(c echo.Context) error {
+			var params GetExercisesParams
+			if page := c.QueryParam("page"); page != "" {
+				if v, err := strconv.Atoi(page); err == nil {
+					params.Page = &v
+				}
+			}
+			if size := c.QueryParam("pageSize"); size != "" {
+				if v, err := strconv.Atoi(size); err == nil {
+					params.PageSize = &v
+				}
+			}
+			return apiHandler.GetExercises(c, params)
+		})
+		authGroup.POST("/exercises", apiHandler.PostExercises)
+
+		// Workouts
+		authGroup.GET("/workouts", func(c echo.Context) error {
+			var params HandleGetWorkoutsParams
+			if page := c.QueryParam("page"); page != "" {
+				if v, err := strconv.Atoi(page); err == nil {
+					params.Page = &v
+				}
+			}
+			if size := c.QueryParam("pageSize"); size != "" {
+				if v, err := strconv.Atoi(size); err == nil {
+					params.PageSize = &v
+				}
+			}
+			return apiHandler.HandleGetWorkouts(c, params)
+		})
+
+		// Sync & Location
+		authGroup.POST("/sync", apiHandler.PostSync)
+		authGroup.PUT("/profile/location", apiHandler.HandleUpdateUserLocation)
+	} else {
+		log.Printf("WARNING: Auth middleware not initialized; protected routes unavailable")
+	}
 
 	// Add feature flags endpoint if middleware is available
 	if featureFlagMiddleware != nil {
