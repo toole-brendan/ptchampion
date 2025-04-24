@@ -15,6 +15,7 @@ import (
 	"ptchampion/internal/api/middleware"
 	"ptchampion/internal/config"
 	"ptchampion/internal/logging"
+	db "ptchampion/internal/store/postgres"
 	"ptchampion/internal/telemetry"
 
 	"github.com/go-chi/chi/v5"
@@ -194,15 +195,6 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 		return c.String(http.StatusOK, "")
 	})
 
-	// Register API endpoints
-	// We no longer register routes here - all routes are registered through routes.RegisterRoutes
-	// --------------------------------------------------------------------
-	// Previously we were registering routes in both places, which caused conflicts
-	// --------------------------------------------------------------------
-
-	// Feature flags will be handled by routes.RegisterRoutes
-	// We don't need to register them here
-
 	// --- Static File Serving for React App (Echo version) ---
 	staticFilesDir := "/app/static"
 	if _, err := os.Stat(staticFilesDir); os.IsNotExist(err) {
@@ -212,6 +204,29 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 			// Suppressing warning to keep logs cleaner - static files are optional for this API service
 			// log.Printf("Warning: Neither /app/static nor ./web/dist exist. Static file serving may not work correctly.")
 		}
+	}
+
+	// Create API handler if one wasn't provided
+	if apiHandler == nil {
+		// Try to connect to database
+		dbConn, dbErr := db.NewDB(cfg.DatabaseURL)
+		if dbErr != nil {
+			log.Printf("Warning: Failed to connect to database: %v", dbErr)
+		} else {
+			// Initialize store with simple timeout
+			store := db.NewStore(dbConn, cfg.DBTimeout)
+
+			// Create a new handler with the store
+			apiHandler = NewApiHandler(cfg, store.Queries)
+		}
+	}
+
+	// Register OpenAPI handlers if we have them
+	if apiHandler != nil {
+		log.Printf("Registering OpenAPI handlers")
+		RegisterHandlersWithBaseURL(e, apiHandler, "/api/v1")
+	} else {
+		log.Printf("Warning: apiHandler is nil, OpenAPI endpoints not registered")
 	}
 
 	// Serve static files from root and /assets

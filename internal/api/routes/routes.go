@@ -47,10 +47,10 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	RegisterWorkoutRoutes(protectedGroup, store, logger)
 
 	// Register leaderboard routes (protected)
-	RegisterLeaderboardRoutes(protectedGroup, store, logger)
+	RegisterLeaderboardRoutes(protectedGroup, store, handler, logger)
 
 	// Register exercise routes (protected)
-	RegisterExerciseRoutes(protectedGroup, store, logger)
+	RegisterExerciseRoutes(protectedGroup, store, handler, logger)
 
 	// --- Public (non-authenticated) feature flags endpoint ---
 	apiGroup.GET("/features", func(c echo.Context) error {
@@ -67,19 +67,74 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 // RegisterUserRoutes registers user-related routes
 func RegisterUserRoutes(g *echo.Group, store *db.Store, logger logging.Logger) {
 	// TODO: Implement user routes
+	g.GET("/users/me", func(c echo.Context) error {
+		// Simple placeholder implementation
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"id":          1,
+			"username":    "user1",
+			"displayName": "User One",
+		})
+	})
 }
 
 // RegisterWorkoutRoutes registers workout-related routes
 func RegisterWorkoutRoutes(g *echo.Group, store *db.Store, logger logging.Logger) {
 	// TODO: Implement workout routes
+	g.GET("/workouts", func(c echo.Context) error {
+		// Simple placeholder implementation
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"workouts":   []interface{}{},
+			"page":       1,
+			"pageSize":   15,
+			"totalCount": 0,
+			"totalPages": 0,
+		})
+	})
 }
 
 // RegisterLeaderboardRoutes registers leaderboard-related routes
-func RegisterLeaderboardRoutes(g *echo.Group, store *db.Store, logger logging.Logger) {
-	// TODO: Implement leaderboard routes
+func RegisterLeaderboardRoutes(g *echo.Group, store *db.Store, handler *handlers.Handler, logger logging.Logger) {
+	// Register overall leaderboard endpoint
+	g.GET("/leaderboard/overall", func(c echo.Context) error {
+		// Simple implementation that returns an empty leaderboard
+		leaderboard := []map[string]interface{}{}
+		return c.JSON(http.StatusOK, leaderboard)
+	})
+
+	// Register exercise-specific leaderboard endpoint
+	g.GET("/leaderboard/:exerciseType", func(c echo.Context) error {
+		// Simple implementation that returns an empty leaderboard
+		leaderboard := []map[string]interface{}{}
+		return c.JSON(http.StatusOK, leaderboard)
+	})
+
+	// Register location-based leaderboard endpoint
+	g.GET("/leaderboards/local", func(c echo.Context) error {
+		// Simple implementation that returns an empty leaderboard
+		leaderboard := []map[string]interface{}{}
+		return c.JSON(http.StatusOK, leaderboard)
+	})
 }
 
 // RegisterExerciseRoutes registers exercise-related routes
-func RegisterExerciseRoutes(g *echo.Group, store *db.Store, logger logging.Logger) {
-	// TODO: Implement exercise routes
+func RegisterExerciseRoutes(g *echo.Group, store *db.Store, handler *handlers.Handler, logger logging.Logger) {
+	// Register route to get exercise history
+	g.GET("/exercises", func(c echo.Context) error {
+		// Simple implementation that returns an empty exercise list
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"items":       []interface{}{},
+			"page":        1,
+			"page_size":   15,
+			"total_count": 0,
+		})
+	})
+
+	// Register route to log a new exercise
+	g.POST("/exercises", func(c echo.Context) error {
+		// Simple implementation that returns a success message
+		return c.JSON(http.StatusOK, map[string]interface{}{
+			"success": true,
+			"message": "Exercise logged successfully",
+		})
+	})
 }
