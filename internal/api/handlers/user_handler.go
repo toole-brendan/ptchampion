@@ -42,6 +42,41 @@ type UpdateLocationRequest struct {
 	Longitude float64 `json:"longitude" validate:"required,longitude"`
 }
 
+// GetCurrentUser handles requests to get the authenticated user's profile
+func (h *Handler) GetCurrentUser(c echo.Context) error {
+	// 1. Get User ID from context
+	userID, ok := c.Get("user_id").(int32)
+	if !ok {
+		log.Printf("ERROR: Could not get user_id from context in GetCurrentUser")
+		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
+	}
+
+	// 2. Get user from database
+	user, err := h.Queries.GetUser(c.Request().Context(), userID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			log.Printf("ERROR: User with ID %d not found", userID)
+			return echo.NewHTTPError(http.StatusNotFound, "User not found")
+		}
+		log.Printf("ERROR: Failed to get user by ID %d: %v", userID, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve user")
+	}
+
+	// 3. Convert to response format (excluding password/sensitive fields)
+	resp := UserResponse{
+		ID:                user.ID,
+		Username:          user.Username,
+		DisplayName:       GetNullString(user.DisplayName),
+		ProfilePictureURL: GetNullString(user.ProfilePictureUrl),
+		Location:          GetNullString(user.Location),
+		CreatedAt:         getNullTime(user.CreatedAt),
+		UpdatedAt:         getNullTime(user.UpdatedAt),
+	}
+
+	// 4. Send response
+	return c.JSON(http.StatusOK, resp)
+}
+
 // UpdateCurrentUser handles requests to update the authenticated user's profile
 func (h *Handler) UpdateCurrentUser(c echo.Context) error {
 	// 1. Get User ID from context

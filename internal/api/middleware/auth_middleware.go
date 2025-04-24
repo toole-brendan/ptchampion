@@ -15,7 +15,7 @@ import (
 type ContextKey string
 
 const (
-	UserIDContextKey   ContextKey = "userID"
+	// We're keeping UsernameContextKey but removing UserIDContextKey as we'll use "user_id" directly
 	UsernameContextKey ContextKey = "username"
 )
 
@@ -48,14 +48,17 @@ func JWTAuthMiddleware(accessSecret, refreshSecret string, refreshStore redis.Re
 				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid or expired token")
 			}
 
-			// Set user ID and username in context for handlers to access
-			c.Set(string(UserIDContextKey), claims.UserID)
-			c.Set(string(UsernameContextKey), claims.Subject)
-
-			// ALSO set a numeric user_id key (int32) expected by some legacy handlers
-			if idInt64, convErr := strconv.ParseInt(claims.UserID, 10, 32); convErr == nil {
-				c.Set("user_id", int32(idInt64))
+			// Parse the user ID string to int32 for compatibility with handlers
+			userIDInt, err := strconv.ParseInt(claims.UserID, 10, 32)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID in token")
 			}
+
+			// Set user_id as int32 with snake-case key for handlers
+			c.Set("user_id", int32(userIDInt))
+
+			// Set username in context for handlers to access
+			c.Set(string(UsernameContextKey), claims.Subject)
 
 			return next(c)
 		}
@@ -63,8 +66,9 @@ func JWTAuthMiddleware(accessSecret, refreshSecret string, refreshStore redis.Re
 }
 
 // GetUserID extracts the user ID from the context
-func GetUserID(c echo.Context) (string, bool) {
-	userID, ok := c.Get(string(UserIDContextKey)).(string)
+func GetUserID(c echo.Context) (int32, bool) {
+	// Updated to return int32 instead of string
+	userID, ok := c.Get("user_id").(int32)
 	return userID, ok
 }
 

@@ -98,33 +98,6 @@ func (h *ApiHandler) FeaturesHandler(ctx echo.Context) error {
 
 // GetUsersMe handler for retrieving the current authenticated user
 func (h *ApiHandler) GetUsersMe(ctx echo.Context) error {
-	// Get user_id from context (set by auth middleware)
-	userID, ok := ctx.Get("user_id").(int32)
-	if !ok {
-		log.Printf("ERROR: Could not get user_id from context in GetUsersMe")
-		return ctx.JSON(http.StatusUnauthorized, map[string]string{"error": "Authentication required"})
-	}
-
-	// Get user from database
-	user, err := h.Queries.GetUser(ctx.Request().Context(), userID)
-	if err != nil {
-		log.Printf("ERROR: Failed to get user by ID %d: %v", userID, err)
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to retrieve user"})
-	}
-
-	// Convert to response format (excluding password/sensitive fields)
-	userResp := handlers.UserResponsePayload{
-		Id:                int(user.ID),
-		Username:          user.Username,
-		DisplayName:       handlers.NullStringToStringPtr(user.DisplayName),
-		ProfilePictureUrl: handlers.NullStringToStringPtr(user.ProfilePictureUrl),
-		Location:          handlers.NullStringToStringPtr(user.Location),
-		Latitude:          handlers.NullStringToStringPtr(user.Latitude),
-		Longitude:         handlers.NullStringToStringPtr(user.Longitude),
-		LastSyncedAt:      handlers.NullTimeToRFC3339StringPtr(user.LastSyncedAt),
-		CreatedAt:         handlers.NullTimeToRFC3339StringPtr(user.CreatedAt),
-		UpdatedAt:         handlers.NullTimeToRFC3339StringPtr(user.UpdatedAt),
-	}
-
-	return ctx.JSON(http.StatusOK, userResp)
+	// Call the new handler method directly
+	return h.Handler.GetCurrentUser(ctx)
 }
