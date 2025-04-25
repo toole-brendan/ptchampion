@@ -1,13 +1,10 @@
-// Import the token cleaner first - this will execute its code immediately
-import './lib/tokenCleaner';
-
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
-import { unregisterServiceWorker } from './serviceWorkerRegistration'
-import { QueryClient } from '@tanstack/react-query'
-import config from './lib/config'
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from './App.tsx';
+import { unregisterServiceWorker } from './serviceWorkerRegistration';
+import { QueryClient } from '@tanstack/react-query';
+import config from './lib/config';
 
 // For now, we'll unregister any existing service workers to avoid caching issues
 // This will help ensure users get the latest version of the app

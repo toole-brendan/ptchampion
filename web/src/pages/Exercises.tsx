@@ -7,10 +7,10 @@ import { cn } from "@/lib/utils"; // Restored cn import
 
 // Define exercise types
 const exerciseTypes = [
-  { name: "Push-ups", icon: Activity, path: '/exercises/pushup' },
-  { name: "Sit-ups", icon: Zap, path: '/exercises/situp' }, // Using Zap for Sit-ups
-  { name: "Pull-ups", icon: PersonStanding, path: '/exercises/pullup' }, // Using PersonStanding for Pull-ups
-  { name: "Running", icon: TrendingUp, path: '/exercises/run' },
+  { name: "Push-ups", icon: Activity, path: '/exercises/pushups' },
+  { name: "Sit-ups", icon: Zap, path: '/exercises/situps' }, // Using Zap for Sit-ups
+  { name: "Pull-ups", icon: PersonStanding, path: '/exercises/pullups' }, // Using PersonStanding for Pull-ups
+  { name: "Running", icon: TrendingUp, path: '/exercises/running' },
 ];
 
 const Exercises: React.FC = () => {

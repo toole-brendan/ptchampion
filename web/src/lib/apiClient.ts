@@ -20,9 +20,33 @@ const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 // Helper function to get the JWT token from storage
 // This is now an async function that uses secure storage
 const getToken = async (): Promise<string | null> => {
-  const token = await secureGet(TOKEN_STORAGE_KEY);
-  console.log('getToken (async) called, token exists:', !!token);
-  return token;
+  try {
+    // First try to get token from secureGet
+    const token = await secureGet(TOKEN_STORAGE_KEY);
+    if (token) {
+      console.log('getToken (async) called, token exists from secureGet');
+      return token;
+    }
+    
+    // Fall back to regular localStorage if secure get failed
+    const plainToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (plainToken) {
+      console.log('getToken (async) called, token exists from localStorage');
+      return plainToken;
+    }
+    
+    console.log('getToken (async) called, no token found');
+    return null;
+  } catch (error) {
+    // If secure decryption fails, try regular localStorage
+    console.error('Error in secure token retrieval:', error);
+    const plainToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+    if (plainToken) {
+      console.log('getToken (async) falling back to localStorage token');
+      return plainToken;
+    }
+    return null;
+  }
 };
 
 // Add type for the paginated response
@@ -165,16 +189,25 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
   
   // Store the token securely upon successful login
   if (normalizedResponse.token) {
-    console.log('Token received from API (access_token), about to store securely');
-    // Store securely and also set a flag in regular localStorage to trigger auth state
-    await secureSet(TOKEN_STORAGE_KEY, normalizedResponse.token);
+    console.log('Token received from API (access_token), about to store');
     
-    // For debugging, check if token was stored properly
-    const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-    console.log('Token stored successfully:', !!storedToken);
-    
-    // Log success for debugging
-    console.log('Login successful, token stored securely');
+    try {
+      // First store in regular localStorage for immediate access
+      localStorage.setItem(TOKEN_STORAGE_KEY, normalizedResponse.token);
+      console.log('Token stored in localStorage successfully');
+      
+      // Then try to store securely as well (as a backup)
+      await secureSet(TOKEN_STORAGE_KEY, normalizedResponse.token).catch(err => {
+        console.warn('Secure token storage failed, using regular localStorage only:', err);
+      });
+      
+      // Log success for debugging
+      console.log('Login successful, token stored');
+    } catch (error) {
+      console.error('Error storing token:', error);
+      // Make sure at least the plain storage is attempted
+      localStorage.setItem(TOKEN_STORAGE_KEY, normalizedResponse.token);
+    }
   } else {
     console.warn('No token received in login response');
   }
@@ -248,9 +281,9 @@ export const getSyncToken = (): string | null => {
       return null;
     }
     
-    // Return null instead of a sentinel value to avoid using invalid tokens
-    console.log('getSyncToken: Token found in localStorage, but returning null for safety');
-    return null;
+    // Return the token value if it exists
+    console.log('getSyncToken: Token found in localStorage, returning it');
+    return tokenValue;
   } catch (error) {
     console.error('Error in getSyncToken:', error);
     return null;

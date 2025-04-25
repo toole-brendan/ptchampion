@@ -49,36 +49,6 @@
         100% { transform: rotate(360deg); }
       }
     </style>
-    <!-- Inline script to clean stale tokens before any React code loads -->
-    <script>
-      (function() {
-        // Clean localStorage items that could cause auth problems
-        console.log('[Pre-load cleaner] Running...');
-        try {
-          // Detect login page to clear tokens
-          const isLoginPage = window.location.pathname === '/login' || 
-                             window.location.href.includes('login') ||
-                             !window.location.pathname ||
-                             window.location.pathname === '/';
-          
-          if (isLoginPage) {
-            console.log('[Pre-load cleaner] On login page, cleaning tokens');
-            const keysToCheck = ['authToken', 'userData', 'pt_champion_session', 'user'];
-            keysToCheck.forEach(function(key) {
-              if (localStorage.getItem(key)) {
-                console.log('[Pre-load cleaner] Removing ' + key);
-                localStorage.removeItem(key);
-              }
-            });
-            // Clear session storage too
-            sessionStorage.clear();
-          }
-          console.log('[Pre-load cleaner] Complete');
-        } catch (e) {
-          console.error('[Pre-load cleaner] Error:', e);
-        }
-      })();
-    </script>
   </head>
   <body>
     <div id="root">

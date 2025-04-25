@@ -131,6 +131,15 @@ export async function secureGet(key: string): Promise<string | null> {
   if (!encryptedValue) return null;
   
   try {
+    // Check if the value is likely Base64 encoded (a basic check)
+    const isLikelyEncrypted = /^[A-Za-z0-9+/=]+$/.test(encryptedValue) && 
+                             encryptedValue.length % 4 === 0;
+    
+    if (!isLikelyEncrypted) {
+      console.log(`secureGet: Value for ${key} appears to be plaintext, returning as-is`);
+      return encryptedValue;
+    }
+    
     return await decrypt(encryptedValue);
   } catch (error) {
     console.error('Error retrieving encrypted data:', error);
