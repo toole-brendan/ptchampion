@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Home, BarChart2, Award, User, Dumbbell, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
 import { cn } from "@/lib/utils";
+import { useHeaderContext } from '@/dashboard-message-context';
 
 // Import the PT Champion logo (corrected file name)
 import ptChampionLogo from '@/assets/pt_champion_logo.png';
@@ -22,6 +23,7 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const currentPath = location.pathname;
   const { logout } = useAuth();
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+  const { userName } = useHeaderContext();
 
   const navItems = [
     { to: '/', label: 'Dashboard', icon: <Home size={20} /> },
@@ -43,21 +45,9 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         isCollapsed ? "w-20" : "w-64",
         "hidden md:flex"
       )}>
-        <div className="flex items-center justify-between mb-10">
-          <div className={cn(
-            "flex items-center",
-            isCollapsed ? "justify-center w-full" : "justify-start"
-          )}>
-            <LogoIcon className={cn("h-14 w-auto", isCollapsed && "mx-auto")} />
-          </div>
-          
-          <button 
-            onClick={toggleSidebar}
-            className="text-cream/70 hover:text-brass-gold p-1"
-            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-          </button>
+        {/* Logo section - centered */}
+        <div className="flex justify-center items-center mb-10">
+          <LogoIcon className={cn("h-14 w-auto")} />
         </div>
         
         <nav className="flex-1">
@@ -66,14 +56,19 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <li key={item.to}>
                 <Link
                   to={item.to}
-                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
+                  className={`flex items-center ${
+                    isCollapsed ? 'justify-center px-2 py-3' : 'px-4 py-3 gap-3'
+                  } rounded-lg transition-colors ${
                     currentPath === item.to 
                       ? 'bg-brass-gold/10 text-brass-gold' 
                       : 'text-cream/70 hover:bg-brass-gold/5 hover:text-brass-gold'
-                  } ${isCollapsed ? 'justify-center' : ''}`}
+                  }`}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  {item.icon}
+                  {/* Always show the icon, regardless of collapsed state */}
+                  <div className="flex-shrink-0">
+                    {item.icon}
+                  </div>
                   {!isCollapsed && <span className="font-sans font-medium">{item.label}</span>}
                 </Link>
               </li>
@@ -81,24 +76,50 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </ul>
         </nav>
         
-        <button 
-          onClick={logout}
-          className={`mt-auto flex items-center gap-3 px-4 py-3 text-cream/70 hover:text-brass-gold ${isCollapsed ? 'justify-center' : ''}`}
-          title={isCollapsed ? "Logout" : undefined}
-        >
-          <LogOut size={20} />
-          {!isCollapsed && <span>Logout</span>}
-        </button>
+        <div className="mt-auto space-y-3">
+          {/* Toggle button moved here */}
+          <button 
+            onClick={toggleSidebar}
+            className="flex w-full items-center justify-center rounded-md py-2.5 text-cream/70 hover:bg-brass-gold/5 hover:text-brass-gold border border-cream/10"
+            aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <div className="flex-shrink-0">
+              {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            </div>
+            {!isCollapsed && <span className="ml-2 font-sans text-sm">Collapse</span>}
+          </button>
+          
+          <button 
+            onClick={logout}
+            className={`flex items-center ${
+              isCollapsed ? 'justify-center px-2 py-3' : 'px-4 py-3 gap-3'
+            } rounded-md w-full text-cream/70 hover:bg-red-800/50 hover:text-red-300`}
+            title={isCollapsed ? "Logout" : undefined}
+          >
+            <div className="flex-shrink-0">
+              <LogOut size={20} />
+            </div>
+            {!isCollapsed && <span>Logout</span>}
+          </button>
+        </div>
       </aside>
       
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
-        <header className="flex h-16 items-center bg-cream px-6 shadow-sm md:border-b md:border-army-tan/20">
-          <div className="flex-1"></div>
+        <header className="flex h-16 items-center justify-between bg-gradient-to-r from-deep-ops/5 to-brass-gold/10 px-6 border-b border-brass-gold/20 shadow-sm">
+          <div className="flex-1">
+            {/* Use the welcome message from context */}
+            <div className="flex flex-col">
+              <h1 className="font-heading text-xl tracking-wide text-command-black">
+                {userName || "Welcome"}
+              </h1>
+              <div className="h-px w-0 animate-[expand_300ms_ease-out_forwards] bg-brass-gold motion-reduce:w-24 motion-reduce:animate-none"></div>
+            </div>
+          </div>
           <div className="md:block">
             {/* Profile Menu (Can be expanded later) */}
-            <div className="flex size-8 items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold">
-              <User size={18} />
+            <div className="flex size-10 items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold hover:bg-brass-gold/30 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-brass-gold focus:ring-opacity-50">
+              <User size={20} />
             </div>
           </div>
         </header>

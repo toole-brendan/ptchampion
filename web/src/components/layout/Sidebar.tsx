@@ -12,10 +12,21 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import ptChampionLogo from '@/assets/pt_champion_logo.png';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
 }
+
+// Logo component using the actual logo image
+const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <img 
+    src={ptChampionLogo} 
+    alt="PT Champion" 
+    className={`${className} object-contain`} 
+    style={{ filter: 'brightness(0) saturate(100%) invert(67%) sepia(30%) saturate(659%) hue-rotate(18deg) brightness(89%) contrast(88%)' }}
+  />
+);
 
 // Define custom icons
 const DumbbellIcon: React.FC<IconProps> = (props) => (
@@ -118,27 +129,12 @@ const Sidebar: React.FC<SidebarProps> = ({
         </div>
       )}
 
-      <div className={cn(
-        "flex items-center border-b border-cream/10 transition-all duration-300 h-16", 
-        isCollapsed ? 'px-2 justify-center' : 'px-4 justify-between'
-      )}>
-        {!isCollapsed && <h2 className="text-xl font-bold text-brass-gold">PT Champion</h2>}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button 
-              onClick={toggleSidebarCollapse}
-              className="rounded-md p-2 text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold focus:outline-none focus:ring-2 focus:ring-brass-gold/60 focus:ring-opacity-50"
-              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            >
-              {isCollapsed ? <ChevronRightIcon size={20} /> : <ChevronLeftIcon size={20} />}
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right">
-            {isCollapsed ? "Expand" : "Collapse"}
-          </TooltipContent>
-        </Tooltip>
+      {/* Logo section - properly centered */}
+      <div className="flex justify-center items-center p-4 py-6 border-b border-cream/10">
+        <LogoIcon className={isCollapsed ? "h-12 w-12" : "h-14 w-14"} />
       </div>
       
+      {/* User profile section */}
       <div className={cn(
         "border-b border-cream/10 transition-all duration-300",
         isCollapsed ? 'py-4 px-2' : 'py-4 px-4'
@@ -164,6 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </Tooltip>
       </div>
       
+      {/* Navigation items */}
       <nav className="mt-4 grow overflow-y-auto">
         <ul className={cn("space-y-1", isCollapsed ? 'px-2' : 'px-4')}>
           {navItems.map((item) => (
@@ -195,10 +192,34 @@ const Sidebar: React.FC<SidebarProps> = ({
         </ul>
       </nav>
       
+      {/* Bottom controls section */}
       <div className={cn(
-        "mt-auto border-t border-cream/10 transition-all duration-300",
+        "mt-auto border-t border-cream/10 transition-all duration-300 space-y-3",
         isCollapsed ? 'px-2 py-3' : 'px-4 py-3'
       )}>
+        {/* Toggle button moved here */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button 
+              onClick={toggleSidebarCollapse}
+              className={cn(
+                "flex w-full items-center rounded-md py-2.5 text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold border border-cream/10",
+                isCollapsed ? 'justify-center px-0' : 'px-3 justify-center'
+              )}
+              aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            >
+              {isCollapsed ? <ChevronRightIcon size={20} /> : <ChevronLeftIcon size={20} />}
+              {!isCollapsed && <span className="ml-2 text-sm">Collapse</span>}
+            </button>
+          </TooltipTrigger>
+          {isCollapsed && (
+            <TooltipContent side="right">
+              {isCollapsed ? "Expand" : "Collapse"}
+            </TooltipContent>
+          )}
+        </Tooltip>
+        
+        {/* Logout button */}
         <Tooltip>
           <TooltipTrigger asChild>
             <button 

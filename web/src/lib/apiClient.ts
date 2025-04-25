@@ -33,6 +33,21 @@ export interface PaginatedExercisesResponse {
   page_size: number;
 }
 
+// Add this function near the top of your file, before any API calls
+const handleApiError = (error: unknown) => {
+  console.error('API Error:', error);
+  
+  if (error instanceof Error) {
+    return error;
+  }
+  
+  if (typeof error === 'string') {
+    return new Error(error);
+  }
+  
+  return new Error('An unknown error occurred');
+};
+
 /**
  * Helper function for making API requests.
  * Handles adding base URL, Content-Type, and Authorization header.
@@ -118,14 +133,8 @@ const apiRequest = async <T>(
     return null as T;
 
   } catch (error) {
-    // Log the error and re-throw it for React Query or caller to handle
-    console.error(`API request failed: ${method} ${endpoint}`, error);
-    // Ensure we're throwing an actual Error object
-    if (error instanceof Error) {
-      throw error;
-    } else {
-      throw new Error(String(error));
-    }
+    // Use our centralized error handler
+    throw handleApiError(error);
   }
 };
 

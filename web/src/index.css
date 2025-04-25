@@ -117,4 +117,13 @@
   .count-up-animation::after {
     content: counter(count);
   }
+
+  @keyframes expand {
+    from {
+      width: 0;
+    }
+    to {
+      width: 6rem; /* w-24 = 6rem */
+    }
+  }
 }

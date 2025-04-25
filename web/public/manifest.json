@@ -4,6 +4,7 @@
   "description": "Military fitness tracker with computer vision form analysis",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay"],
   "background_color": "#F4F1E6",
   "theme_color": "#1E241E",
   "orientation": "portrait-primary",
