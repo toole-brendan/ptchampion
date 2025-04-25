@@ -5,6 +5,11 @@ import SwiftData
 struct PTChampionApp: App {
     // Instantiate AuthViewModel as a StateObject to keep it alive
     @StateObject private var authViewModel = AuthViewModel()
+    
+    // Initialize app appearance
+    init() {
+        configureAppAppearance()
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -31,11 +36,9 @@ struct PTChampionApp: App {
 struct MainTabView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var selectedTab: Tab = .dashboard // Keep track of selected tab
-
-    // Initialize Tab Bar appearance
-    init() {
-        configureTabBarAppearance()
-    }
+    
+    // Expose ComponentGallery in debug builds for design review
+    @State private var showingComponentGallery = false
 
     // Define Tabs Enum for clarity and type safety
     enum Tab {
@@ -72,50 +75,64 @@ struct MainTabView: View {
                 }
                 .tag(Tab.leaderboards)
 
-             SettingsView()
-                 .tabItem {
-                     Label("Settings", systemImage: "gearshape.fill")
-                 }
-                 .tag(Tab.settings)
+            #if DEBUG
+            ComponentGalleryView()
+                .tabItem {
+                    Label("Design System", systemImage: "square.grid.2x2.fill")
+                }
+            #else
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+                .tag(Tab.settings)
+            #endif
         }
-        // Accent color is handled by UITabBarAppearance below for better control
-    }
-
-    // Function to configure Tab Bar Appearance based on Style Guide
-    private func configureTabBarAppearance() {
-        let appearance = UITabBarAppearance()
-
-        // Background
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color.deepOpsGreen) // Use UIColor for appearance
-
-        // Define text attributes using AppFonts and Colors
-        let normalAttributes: [NSAttributedString.Key: Any] = [
-            .font: UIFont(name: AppFonts.bodyBold, size: 10) ?? UIFont.systemFont(ofSize: 10, weight: .bold),
-            .foregroundColor: UIColor(Color.inactiveGray)
-        ]
-        let selectedAttributes: [NSAttributedString.Key: Any] = [
-             .font: UIFont(name: AppFonts.bodyBold, size: 10) ?? UIFont.systemFont(ofSize: 10, weight: .bold),
-             .foregroundColor: UIColor(Color.brassGold)
-        ]
-
-        // Apply stacked layout appearance (icon and text)
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.inactiveGray)
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttributes
-
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.brassGold)
-        appearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttributes
-
-        // Apply the appearance to the standard and scroll edge appearances
-        UITabBar.appearance().standardAppearance = appearance
-        if #available(iOS 15.0, *) {
-            UITabBar.appearance().scrollEdgeAppearance = appearance
+        // Accent color is handled by UITabBarAppearance
+        .onShake {
+            #if DEBUG
+            showingComponentGallery.toggle()
+            #endif
         }
-
-        // Optional: Remove top separator line if desired
-        // appearance.shadowColor = .clear
+        .sheet(isPresented: $showingComponentGallery) {
+            ComponentGalleryView()
+        }
     }
 }
+
+// Add device shake detection for easier component gallery access in development
+#if DEBUG
+extension UIDevice {
+    static let deviceDidShakeNotification = Notification.Name(rawValue: "deviceDidShakeNotification")
+}
+
+extension UIWindow {
+    override open func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
+        if motion == .motionShake {
+            NotificationCenter.default.post(name: UIDevice.deviceDidShakeNotification, object: nil)
+        }
+        super.motionEnded(motion, with: event)
+    }
+}
+
+extension View {
+    func onShake(perform action: @escaping () -> Void) -> some View {
+        self.modifier(DeviceShakeViewModifier(action: action))
+    }
+}
+
+struct DeviceShakeViewModifier: ViewModifier {
+    let action: () -> Void
+    
+    func body(content: Content) -> some View {
+        content
+            .onAppear()
+            .onReceive(NotificationCenter.default.publisher(for: UIDevice.deviceDidShakeNotification)) { _ in
+                action()
+            }
+    }
+}
+#endif
 
 #Preview("MainTabView") {
     let mockAuth = AuthViewModel()
