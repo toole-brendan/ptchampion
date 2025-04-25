@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from '../../components/ui/alert';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import logoImage from '../../assets/pt_champion_logo_2.png';
 import config from '../../lib/config';
-import { clearAllTokens } from '../../lib/tokenCleaner';
+import { cleanAuthStorage } from '../../lib/secureStorage';
 
 // Get token storage key from config to ensure consistency
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
@@ -46,7 +46,7 @@ const LoginPage: React.FC = () => {
     // Clear any potential stale token when login page is loaded
     if (localStorage.getItem(TOKEN_STORAGE_KEY) && !isAuthenticated) {
       console.log('Found potential stale token on login page, clearing all tokens');
-      clearAllTokens();
+      cleanAuthStorage();
     }
     
     return () => {
