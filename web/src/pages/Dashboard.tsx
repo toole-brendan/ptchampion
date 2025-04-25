@@ -11,10 +11,12 @@ import {
   CalendarClock, 
   Flame,
   AreaChart,
-  AlertCircle
+  AlertCircle,
+  Play
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
+import { useHeaderContext } from '@/dashboard-message-context';
 import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/lib/apiClient';
 import { cn } from "@/lib/utils";
@@ -38,6 +40,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoading: isAuthLoading, error: authError } = useAuth();
   const api = useApi();
+  const { setUserName } = useHeaderContext();
   
   // Get user exercise history for dashboard stats
   const { 
@@ -126,6 +129,42 @@ const Dashboard: React.FC = () => {
     };
   }, [exerciseHistory, leaderboardData, user]);
   
+  // Set username in context when it changes
+  useEffect(() => {
+    if (user && setUserName) {
+      // Extract first name from display_name, username, or email
+      let firstName = '';
+      
+      if (user.display_name) {
+        // Use first part of display name
+        firstName = user.display_name.split(' ')[0];
+      } else if (user.username) {
+        // Check if it's an email address
+        if (user.username.includes('@')) {
+          // For email like "toole.brendan@gmail.com", extract "brendan"
+          const emailParts = user.username.split('@')[0];
+          
+          if (emailParts.includes('.')) {
+            // Assume format is "lastname.firstname@..."
+            firstName = emailParts.split('.')[1];
+          } else {
+            // Just use whatever is before the @ symbol
+            firstName = emailParts;
+          }
+        } else {
+          firstName = user.username;
+        }
+      } else {
+        firstName = 'User';
+      }
+      
+      // Properly capitalize the first name (e.g., "john" → "John")
+      firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+      
+      setUserName(`Welcome Back, ${firstName}`);
+    }
+  }, [user, setUserName]);
+  
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
@@ -142,53 +181,19 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // Get user name (fallback to username if display name isn't set)
-  const userName = user?.display_name || user?.username || 'User';
-  
   // Format display name properly
   const formatDisplayName = () => {
-    if (!userName) return 'USER';
+    if (!user) return 'USER';
     
-    if (userName.includes('@')) {
-      // If it's an email, extract the part before @
-      const namePart = userName.split('@')[0];
-      // Convert to title case if it's all lowercase or all uppercase
-      if (namePart === namePart.toLowerCase() || namePart === namePart.toUpperCase()) {
-        return namePart
-          .split(/[._-]/)
-          .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-          .join(' ');
-      }
-      return namePart;
+    if (user.display_name) {
+      return user.display_name;
     }
     
-    // If it's a full name with spaces, check if it's in "Last, First" format
-    if (userName.includes(' ')) {
-      // Check if there's a comma in the name (Last, First)
-      if (userName.includes(',')) {
-        const parts = userName.split(',').map(part => part.trim());
-        // Swap order to "First Last"
-        return `${parts[1]} ${parts[0]}`;
-      }
-      
-      // Some names might be stored as "LASTNAME FIRSTNAME"
-      if (userName === userName.toUpperCase()) {
-        const parts = userName.toLowerCase().split(' ');
-        // Assume lastname firstname format if all uppercase and convert to "Firstname Lastname"
-        return parts.reverse()
-          .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-          .join(' ');
-      }
-      
-      return userName;
+    if (user.username) {
+      return user.username;
     }
     
-    // Otherwise, convert to title case if needed
-    if (userName === userName.toLowerCase() || userName === userName.toUpperCase()) {
-      return userName.charAt(0).toUpperCase() + userName.slice(1).toLowerCase();
-    }
-    
-    return userName;
+    return 'USER';
   };
   
   // Format the last workout date
@@ -196,24 +201,16 @@ const Dashboard: React.FC = () => {
     dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
 
   return (
-    <div className="space-y-8">
-      {/* Enhanced Hero Section */}
-      <div className="rounded-panel bg-gradient-to-r from-deep-ops/5 to-olive-mist/20 p-6">
-        <h1 className="font-heading text-3xl tracking-wide text-command-black">
-          WELCOME BACK, <span className="text-brass-gold">{formatDisplayName()}</span>
-        </h1>
-        <div className="mt-1 h-1 w-24 bg-brass-gold/40"></div>
-      </div>
-
-      {/* Metrics Section - 2x2 Grid */}
-      <div className="grid gap-6 md:grid-cols-2">
+    <div className="space-y-6">
+      {/* Metrics Section - 2x2 Grid with reduced vertical padding */}
+      <div className="grid gap-4 py-4 md:grid-cols-2">
         <div className="grid gap-4 md:grid-cols-2">
           <MetricCard
             title="TOTAL WORKOUTS"
             value={dashboardMetrics.totalWorkouts}
             icon={Flame}
             onClick={() => navigate('/history')}
-            className="bg-white transition-all hover:-translate-y-1 hover:shadow-md"
+            className="bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
           />
           
           <MetricCard
@@ -231,7 +228,7 @@ const Dashboard: React.FC = () => {
             }
             icon={CalendarClock}
             onClick={() => dashboardMetrics.lastWorkoutDate && navigate('/history')}
-            className="bg-white transition-all hover:-translate-y-1 hover:shadow-md"
+            className="bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
           />
         </div>
         
@@ -242,7 +239,7 @@ const Dashboard: React.FC = () => {
             icon={Repeat}
             unit="reps"
             onClick={() => navigate('/history')}
-            className="bg-white transition-all hover:-translate-y-1 hover:shadow-md"
+            className="bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
           />
           
           <MetricCard
@@ -251,7 +248,7 @@ const Dashboard: React.FC = () => {
             unit="km"
             icon={Flame}
             onClick={() => navigate('/history')}
-            className="bg-white transition-all hover:-translate-y-1 hover:shadow-md"
+            className="bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
           />
         </div>
       </div>
@@ -259,12 +256,23 @@ const Dashboard: React.FC = () => {
       {/* Enhanced Start Tracking Section */}
       <Card className="rounded-panel bg-[#EDE9DB] shadow-sm transition-shadow hover:shadow-md">
         <CardHeader className="rounded-t-panel bg-deep-ops pb-4 text-cream">
-          <CardTitle className="font-heading text-xl">
-            Start Tracking
-          </CardTitle>
-          <CardDescription className="text-army-tan">
-            Choose an exercise to begin a new session
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="font-heading text-xl">
+                Start Tracking
+              </CardTitle>
+              <CardDescription className="text-army-tan">
+                Choose an exercise to begin a new session
+              </CardDescription>
+            </div>
+            <Button 
+              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
+              onClick={() => navigate('/exercises')}
+            >
+              <Play className="mr-2 size-4" />
+              Start Session
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="grid grid-cols-2 gap-4 p-6 lg:grid-cols-4">
           {exerciseLinks.map((exercise) => (
@@ -282,7 +290,7 @@ const Dashboard: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Progress Section */}
+      {/* Progress Section with less padding */}
       <Card className="rounded-panel bg-white shadow-sm transition-shadow hover:shadow-md">
         <CardHeader className="rounded-t-panel bg-deep-ops pb-4 text-cream">
           <CardTitle className="flex items-center font-heading text-xl">
@@ -293,7 +301,7 @@ const Dashboard: React.FC = () => {
             Your training overview at a glance
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent className="p-4">
           {leaderboardError && (
             <Alert variant="default" className="mb-4">
               <AlertCircle className="h-4 w-4" />
@@ -304,7 +312,7 @@ const Dashboard: React.FC = () => {
             </Alert>
           )}
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="relative flex flex-col items-center justify-center rounded-lg border-l-4 border-brass-gold bg-cream/50 p-4 text-center shadow-sm">
               <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
               <Clock className="mb-2 size-10 text-brass-gold" />
@@ -339,7 +347,7 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
           
-          <div className="mt-6 flex justify-center">
+          <div className="mt-4 flex justify-center">
             <Button 
               className="bg-brass-gold text-deep-ops transition-all hover:-translate-y-1 hover:bg-brass-gold/90 hover:shadow-md"
               onClick={() => navigate('/history')}

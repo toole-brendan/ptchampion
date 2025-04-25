@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './lib/authContext';
 import { FeatureFlagProvider } from './lib/featureFlags';
+import { HeaderProvider } from './dashboard-message-context';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 
@@ -69,35 +70,37 @@ function App({ queryClient }: AppProps) {
     <QueryClientProvider client={clientToUse}>
       <AuthProvider>
         <FeatureFlagProvider>
-          <Router>
-            <Suspense fallback={<Loading />}>
-              <Routes>
-                {/* Public routes - accessible without authentication */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                
-                {/* Protected routes - using nested route pattern */}
-                <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                  <Route index element={<Dashboard />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="exercises" element={<Exercises />} />
-                  <Route path="history" element={<History />} />
-                  <Route path="history/:id" element={<HistoryDetail />} />
-                  <Route path="leaderboard" element={<Leaderboard />} />
-                  <Route path="profile" element={<Profile />} />
+          <HeaderProvider>
+            <Router>
+              <Suspense fallback={<Loading />}>
+                <Routes>
+                  {/* Public routes - accessible without authentication */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
                   
-                  {/* Exercise tracking routes */}
-                  <Route path="exercises/pushups" element={<PushupTracker />} />
-                  <Route path="exercises/pullups" element={<PullupTracker />} />
-                  <Route path="exercises/situps" element={<SitupTracker />} />
-                  <Route path="exercises/running" element={<RunningTracker />} />
-                </Route>
-                
-                {/* Catch-all route - redirect to login instead of home to prevent auth loops */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </Router>
+                  {/* Protected routes - using nested route pattern */}
+                  <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                    <Route index element={<Dashboard />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="exercises" element={<Exercises />} />
+                    <Route path="history" element={<History />} />
+                    <Route path="history/:id" element={<HistoryDetail />} />
+                    <Route path="leaderboard" element={<Leaderboard />} />
+                    <Route path="profile" element={<Profile />} />
+                    
+                    {/* Exercise tracking routes */}
+                    <Route path="exercises/pushups" element={<PushupTracker />} />
+                    <Route path="exercises/pullups" element={<PullupTracker />} />
+                    <Route path="exercises/situps" element={<SitupTracker />} />
+                    <Route path="exercises/running" element={<RunningTracker />} />
+                  </Route>
+                  
+                  {/* Catch-all route - redirect to login instead of home to prevent auth loops */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            </Router>
+          </HeaderProvider>
         </FeatureFlagProvider>
       </AuthProvider>
     </QueryClientProvider>
