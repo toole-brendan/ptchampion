@@ -1,0 +1,515 @@
+{
+  "": {
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/ExerciseGraderProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseGraderProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseGraderProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseGraderProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseGraderProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PullupGrader.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PullupGrader.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PullupGrader.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PullupGrader~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PullupGrader.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PushupGrader.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PushupGrader.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PushupGrader.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PushupGrader~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PushupGrader.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/SitupGrader.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SitupGrader.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SitupGrader.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SitupGrader~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SitupGrader.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/AuthModels.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthModels.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthModels.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthModels.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/Enums.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Enums.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Enums.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Enums~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Enums.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/LeaderboardModels.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardModels.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardModels.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardModels.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/PoseModels.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseModels.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseModels.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseModels.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/User.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/User.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/User.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/User~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/User.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/UserProfileModels.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserProfileModels.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserProfileModels.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserProfileModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserProfileModels.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutModels.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutModels.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutModels.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutModels.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutResultSwiftData.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutResultSwiftData.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutResultSwiftData.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutResultSwiftData~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutResultSwiftData.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionApp.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionApp.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionApp.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionApp.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionCommon.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionCommon.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionCommon.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionCommon~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionCommon.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionImports.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionImports.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionImports.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionImports~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionImports.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionTests/UserModelTests.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserModelTests.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserModelTests.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserModelTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserModelTests.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionUITests/LoginUITests.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginUITests.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginUITests.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginUITests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginUITests.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/FeatureFlagService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/FeatureFlagService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/FeatureFlagService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/FeatureFlagService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/FeatureFlagService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/KeychainService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/NetworkService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthServiceProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthServiceProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthServiceProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthServiceProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothServiceProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothServiceProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothServiceProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothServiceProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraServiceProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraServiceProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraServiceProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraServiceProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainServiceProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainServiceProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainServiceProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainServiceProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardServiceProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardServiceProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardServiceProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardServiceProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationServiceProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationServiceProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationServiceProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationServiceProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/NetworkClient.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkClient.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkClient.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkClient.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorServiceProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorServiceProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorServiceProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorServiceProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/UnifiedNetworkService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UnifiedNetworkService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UnifiedNetworkService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UnifiedNetworkService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UnifiedNetworkService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutServiceProtocol.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutServiceProtocol.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutServiceProtocol.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutServiceProtocol.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WasmerGrading.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WasmerGrading.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WasmerGrading.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WasmerGrading~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WasmerGrading.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutPersistenceService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutPersistenceService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutPersistenceService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutPersistenceService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutPersistenceService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutService.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Tests/ComponentSnapshotTests.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentSnapshotTests.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentSnapshotTests.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentSnapshotTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentSnapshotTests.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppConstants.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppConstants.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppConstants.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppConstants~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppConstants.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppTheme.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppTheme.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppTheme.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppTheme~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppTheme.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/AppAppearance.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/GenerateTheme.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/GenerateTheme.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/GenerateTheme.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/GenerateTheme~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/GenerateTheme.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/AppAppearance.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/Theme.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/AuthViewModel.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthViewModel.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthViewModel.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthViewModel.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/DeviceScanningViewModel.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningViewModel.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningViewModel.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningViewModel.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/LeaderboardViewModel.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardViewModel.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardViewModel.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardViewModel.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/ProgressViewModel.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressViewModel.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressViewModel.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressViewModel.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/RunWorkoutViewModel.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutViewModel.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutViewModel.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutViewModel.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/WorkoutViewModel.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutViewModel.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutViewModel.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutViewModel.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/WorkoutHistoryViewModel.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryViewModel.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryViewModel.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryViewModel~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryViewModel.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ComponentGalleryView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentGalleryView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentGalleryView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentGalleryView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentGalleryView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ExerciseDetailView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseDetailView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseDetailView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseDetailView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseDetailView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Badge.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Badge.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Badge.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Badge~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Badge.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/DashboardHeader.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardHeader.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardHeader.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardHeader~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardHeader.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/MetricCard.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/MetricCard.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/MetricCard.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/MetricCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/MetricCard.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTButton.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTButton.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTButton.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTButton~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTButton.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTTextField.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTTextField.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTTextField.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTTextField~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTTextField.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/SettingsSheet.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsSheet.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsSheet.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsSheet~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsSheet.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Spinner.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Spinner.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Spinner.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Spinner~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Spinner.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/StatCard.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/StatCard.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/StatCard.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/StatCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/StatCard.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Toast.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Toast.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Toast.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Toast~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Toast.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutCard.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutCard.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutCard.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutCard.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutHistoryList.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryList.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryList.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryList~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryList.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutProgressChart.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutProgressChart.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutProgressChart.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutProgressChart~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutProgressChart.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/LoginView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/RegistrationView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RegistrationView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RegistrationView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RegistrationView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RegistrationView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/ContentView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ContentView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ContentView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ContentView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ContentView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Dashboard/DashboardView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/History/WorkoutHistoryView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Leaderboards/LeaderboardView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Progress/ProgressView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/SettingsView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/WorkoutHistoryRow.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryRow.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryRow.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryRow~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryRow.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/CameraPreviewView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraPreviewView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraPreviewView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraPreviewView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraPreviewView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/DeviceScanningView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/PoseOverlayView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseOverlayView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseOverlayView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseOverlayView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseOverlayView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/RunWorkoutView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSelectionView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSelectionView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSelectionView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSelectionView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSelectionView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSessionView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSessionView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSessionView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSessionView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSessionView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/.build/plugins/outputs/ptchampion/PTChampionUI/destination/DesignTokenGenPlugin/Generated/Theme.generated.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.generated.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.generated.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.generated~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.generated.swiftdeps"
+  }
+}

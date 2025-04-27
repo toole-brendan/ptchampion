@@ -13,8 +13,7 @@ enum ExerciseType: String, CaseIterable, Identifiable {
 }
 */
 
-// REMOVE DistanceUnit - Should be defined elsewhere (e.g. Theme.swift or Units.swift)
-/*
+// Uncomment DistanceUnit for RunWorkoutViewModel
 enum DistanceUnit: String, CaseIterable, Identifiable {
     case kilometers = "km"
     case miles = "mi"
@@ -28,7 +27,6 @@ enum DistanceUnit: String, CaseIterable, Identifiable {
         }
     }
 }
-*/
 
 // Potential future enums can go here
 // Example:

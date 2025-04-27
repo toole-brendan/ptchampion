@@ -17,6 +17,7 @@ let package = Package(
         .target(
             name: "PTChampionUI",
             dependencies: [],
+            path: "ios/ptchampion",
             plugins: [
                 .plugin(name: "DesignTokenGenPlugin")
             ]

@@ -39,10 +39,43 @@ class NetworkClient {
 
     // Read Base URL from Info.plist
     private static func getBaseURL() -> URL {
+        // Use a direct hardcoded URL instead of trying to read from Info.plist
+        // This avoids the repeated warnings when the key is missing from the built Info.plist
+        return URL(string: "https://ptchampion-api.vercel.app/api/v1")!
+        
+        /* Original Info.plist loading code - commented out
+        // Debug: Print bundle path and all keys
+        let bundle = Bundle.main
+        print("NetworkClient Debug: Bundle path = \(bundle.bundlePath)")
+        
+        if let infoPlistPath = bundle.path(forResource: "Info", ofType: "plist") {
+            print("NetworkClient Debug: Info.plist path = \(infoPlistPath)")
+            
+            // Try to load the plist file directly
+            if let plistDict = NSDictionary(contentsOfFile: infoPlistPath) as? [String: Any],
+               let apiBaseUrl = plistDict["ApiBaseUrl"] as? String,
+               !apiBaseUrl.isEmpty {
+                print("NetworkClient: Loaded ApiBaseUrl directly from plist file: \(apiBaseUrl)")
+                guard let url = URL(string: apiBaseUrl) else {
+                    fatalError("NetworkClient Fatal: Invalid URL string loaded directly from Info.plist: \(apiBaseUrl)")
+                }
+                return url
+            }
+        } else {
+            print("NetworkClient Debug: Info.plist not found in bundle path")
+        }
+        
+        // Print all keys in the main bundle's info dictionary
+        if let infoDict = bundle.infoDictionary {
+            print("NetworkClient Debug: All Info.plist keys: \(infoDict.keys.sorted())")
+        } else {
+            print("NetworkClient Debug: Could not access Info.plist dictionary")
+        }
+        
         guard let plistUrlString = Bundle.main.object(forInfoDictionaryKey: "ApiBaseUrl") as? String, !plistUrlString.isEmpty else {
-            print("NetworkClient Warning: ApiBaseUrl not found or empty in Info.plist. Falling back to default localhost.")
-            // Fallback URL (consider making this fatal in production or asserting)
-            return URL(string: "http://localhost:8080/api/v1")!
+            print("NetworkClient Warning: ApiBaseUrl not found or empty in Info.plist. Falling back to default Vercel API URL.")
+            // Use the same URL that's in Info.plist as fallback
+            return URL(string: "https://ptchampion-api.vercel.app/api/v1")!
         }
         
         guard let url = URL(string: plistUrlString) else {
@@ -50,6 +83,7 @@ class NetworkClient {
         }
         print("NetworkClient: Using Base URL: \(url.absoluteString)")
         return url
+        */
     }
 
     private let urlSession: URLSession

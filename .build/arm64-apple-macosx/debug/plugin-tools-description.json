@@ -1,0 +1,1819 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+    "DesignTokenGenPlugin"
+  ],
+  "pluginDescriptions" : [
+    {
+      "moduleC99Name" : "DesignTokenGenPlugin",
+      "moduleName" : "DesignTokenGenPlugin",
+      "package" : "ptchampion",
+      "productNames" : [
+        "DesignTokenGenPlugin"
+      ],
+      "sources" : {
+        "relativePaths" : [
+          "DesignTokenGenPlugin.swift"
+        ],
+        "root" : "/Users/brendantoole/projects/ptchampion/Plugins"
+      },
+      "toolsVersion" : {
+        "_version" : "5.10.0"
+      }
+    }
+  ],
+  "swiftCommands" : {
+    "C.DesignTokenGenTool-arm64-apple-macosx15.0-debug-tool.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules-tool",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/Tools/DesignTokenGenTool/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "DesignTokenGenTool",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules-tool/DesignTokenGenTool.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build/main.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "DesignTokenGenTool_main",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "ptchampion"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules-tool/DesignTokenGenTool.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/Tools/DesignTokenGenTool/main.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.DesignTokenGenTool-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/Tools/DesignTokenGenTool/main.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/sources"
+        }
+      ],
+      "isLibrary" : false,
+      "moduleName" : "DesignTokenGenTool",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules/DesignTokenGenTool.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/main.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-Xfrontend",
+        "-entry-point-function-name",
+        "-Xfrontend",
+        "DesignTokenGenTool_main",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "ptchampion"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/main.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules/DesignTokenGenTool.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/Tools/DesignTokenGenTool/main.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.PTChampionUI-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/ExerciseGraderProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PullupGrader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PushupGrader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/SitupGrader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/AuthModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/Enums.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/LeaderboardModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/PoseModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/User.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/UserProfileModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutResultSwiftData.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionCommon.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionImports.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionTests/UserModelTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionUITests/LoginUITests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/FeatureFlagService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/KeychainService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/NetworkService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/NetworkClient.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/UnifiedNetworkService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WasmerGrading.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutPersistenceService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Tests/ComponentSnapshotTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppConstants.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppTheme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/AppAppearance.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/GenerateTheme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/AppAppearance.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/Theme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/AuthViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/DeviceScanningViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/LeaderboardViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/ProgressViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/RunWorkoutViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/WorkoutViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/WorkoutHistoryViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ComponentGalleryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ExerciseDetailView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Badge.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/DashboardHeader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/MetricCard.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTButton.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTTextField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/SettingsSheet.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Spinner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/StatCard.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Toast.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutCard.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutHistoryList.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutProgressChart.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/LoginView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/RegistrationView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/ContentView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Dashboard/DashboardView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/History/WorkoutHistoryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Leaderboards/LeaderboardView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Progress/ProgressView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/SettingsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/WorkoutHistoryRow.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/CameraPreviewView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/DeviceScanningView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/PoseOverlayView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/RunWorkoutView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSelectionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSessionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "PTChampionUI",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules/PTChampionUI.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseGraderProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PullupGrader.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PushupGrader.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SitupGrader.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthModels.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Enums.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardModels.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseModels.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/User.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserProfileModels.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutModels.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutResultSwiftData.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionApp.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionCommon.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionImports.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserModelTests.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginUITests.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/FeatureFlagService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthServiceProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothServiceProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraServiceProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainServiceProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardServiceProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationServiceProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkClient.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorServiceProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UnifiedNetworkService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutServiceProtocol.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WasmerGrading.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutPersistenceService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentSnapshotTests.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppConstants.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppTheme.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/GenerateTheme.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthViewModel.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningViewModel.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardViewModel.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressViewModel.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutViewModel.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutViewModel.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryViewModel.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentGalleryView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseDetailView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Badge.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardHeader.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/MetricCard.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTButton.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTTextField.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsSheet.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Spinner.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/StatCard.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Toast.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutCard.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryList.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutProgressChart.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RegistrationView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ContentView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryRow.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraPreviewView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseOverlayView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSelectionView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSessionView.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionUI-Swift.h",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "ptchampion"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseGraderProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PullupGrader.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PushupGrader.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SitupGrader.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Enums.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/User.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserProfileModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutModels.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutResultSwiftData.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionCommon.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionImports.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UserModelTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginUITests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/FeatureFlagService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthServiceProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/BluetoothServiceProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraServiceProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/KeychainServiceProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardServiceProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LocationServiceProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/NetworkClient.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseDetectorServiceProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/UnifiedNetworkService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutServiceProtocol.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WasmerGrading.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutPersistenceService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutService.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentSnapshotTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppConstants.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppTheme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/GenerateTheme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AppAppearance.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Theme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/AuthViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryViewModel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ComponentGalleryView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ExerciseDetailView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Badge.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardHeader.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/MetricCard.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTButton.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTTextField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsSheet.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Spinner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/StatCard.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/Toast.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutCard.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryList.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutProgressChart.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LoginView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RegistrationView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ContentView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DashboardView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/LeaderboardView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/ProgressView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/SettingsView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutHistoryRow.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/CameraPreviewView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/DeviceScanningView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PoseOverlayView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/RunWorkoutView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSelectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/WorkoutSessionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules/PTChampionUI.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/ExerciseGraderProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PullupGrader.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PushupGrader.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/SitupGrader.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/AuthModels.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/Enums.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/LeaderboardModels.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/PoseModels.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/User.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/UserProfileModels.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutModels.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutResultSwiftData.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionApp.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionCommon.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionImports.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionTests/UserModelTests.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionUITests/LoginUITests.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/FeatureFlagService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/KeychainService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/NetworkService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthServiceProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothServiceProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraServiceProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainServiceProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardServiceProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationServiceProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/NetworkClient.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorServiceProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/UnifiedNetworkService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutServiceProtocol.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WasmerGrading.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutPersistenceService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutService.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Tests/ComponentSnapshotTests.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppConstants.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppTheme.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/AppAppearance.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/GenerateTheme.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/AppAppearance.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/Theme.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/AuthViewModel.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/DeviceScanningViewModel.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/LeaderboardViewModel.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/ProgressViewModel.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/RunWorkoutViewModel.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/WorkoutViewModel.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/WorkoutHistoryViewModel.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ComponentGalleryView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ExerciseDetailView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Badge.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/DashboardHeader.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/MetricCard.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTButton.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTTextField.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/SettingsSheet.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Spinner.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/StatCard.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Toast.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutCard.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutHistoryList.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutProgressChart.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/LoginView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/RegistrationView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/ContentView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Dashboard/DashboardView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/History/WorkoutHistoryView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Leaderboards/LeaderboardView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Progress/ProgressView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/SettingsView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/WorkoutHistoryRow.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/CameraPreviewView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/DeviceScanningView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/PoseOverlayView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/RunWorkoutView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSelectionView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSessionView.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "DesignTokenGenTool" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "DesignTokenGenTool",
+      "-package-name",
+      "ptchampion",
+      "-incremental",
+      "-c",
+      "/Users/brendantoole/projects/ptchampion/Tools/DesignTokenGenTool/main.swift",
+      "-I",
+      "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules-tool",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-Xfrontend",
+      "-entry-point-function-name",
+      "-Xfrontend",
+      "DesignTokenGenTool_main",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "ptchampion",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "PTChampionUI" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "PTChampionUI",
+      "-package-name",
+      "ptchampion",
+      "-incremental",
+      "-c",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/ExerciseGraderProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PullupGrader.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PushupGrader.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/SitupGrader.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/AuthModels.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/Enums.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/LeaderboardModels.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/PoseModels.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/User.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/UserProfileModels.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutModels.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutResultSwiftData.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionApp.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionCommon.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionImports.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionTests/UserModelTests.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionUITests/LoginUITests.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/FeatureFlagService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/KeychainService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/NetworkService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthServiceProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothServiceProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraServiceProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainServiceProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardServiceProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationServiceProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/NetworkClient.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorServiceProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/UnifiedNetworkService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutServiceProtocol.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WasmerGrading.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutPersistenceService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutService.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Tests/ComponentSnapshotTests.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppConstants.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppTheme.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/AppAppearance.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/GenerateTheme.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/AppAppearance.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/Theme.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/AuthViewModel.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/DeviceScanningViewModel.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/LeaderboardViewModel.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/ProgressViewModel.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/RunWorkoutViewModel.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/WorkoutViewModel.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/WorkoutHistoryViewModel.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ComponentGalleryView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ExerciseDetailView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Badge.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/DashboardHeader.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/MetricCard.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTButton.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTTextField.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/SettingsSheet.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Spinner.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/StatCard.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Toast.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutCard.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutHistoryList.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutProgressChart.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/LoginView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/RegistrationView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/ContentView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Dashboard/DashboardView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/History/WorkoutHistoryView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Leaderboards/LeaderboardView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Progress/ProgressView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/SettingsView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/WorkoutHistoryRow.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/CameraPreviewView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/DeviceScanningView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/PoseOverlayView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/RunWorkoutView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSelectionView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSessionView.swift",
+      "-I",
+      "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionUI-Swift.h",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "ptchampion",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "DesignTokenGenTool" : [
+
+    ],
+    "PTChampionUI" : [
+      "DesignTokenGenPlugin",
+      "DesignTokenGenTool"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "enableAllTraits" : false
+  },
+  "writeCommands" : {
+    "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-entitlement.plist"
+    },
+    "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool-entitlement.plist" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<entitlement-plist>"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<com.apple.security.get-task-allow>"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool-entitlement.plist"
+    },
+    "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/Tools/DesignTokenGenTool/main.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.build/main.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool-tool.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/Tools/DesignTokenGenTool/main.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/main.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/ExerciseGraderProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PullupGrader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/PushupGrader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Grading/Grading/SitupGrader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/AuthModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/Enums.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/LeaderboardModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/PoseModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/User.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/UserProfileModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutModels.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Models/Models/WorkoutResultSwiftData.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionCommon.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionImports.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionTests/UserModelTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/PTChampionUITests/LoginUITests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/FeatureFlagService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/KeychainService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/NetworkService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/AuthServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/BluetoothServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/CameraServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/KeychainServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LeaderboardServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/LocationServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/NetworkClient.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/PoseDetectorServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/UnifiedNetworkService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/Services/WorkoutServiceProtocol.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WasmerGrading.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutPersistenceService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Services/WorkoutService.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Tests/ComponentSnapshotTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppConstants.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Theme/AppTheme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/AppAppearance.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/GenerateTheme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/AppAppearance.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Utils/Utils/Theme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/AuthViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/DeviceScanningViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/LeaderboardViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/ProgressViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/RunWorkoutViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/ViewModels/WorkoutViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/ViewModels/WorkoutHistoryViewModel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ComponentGalleryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/ExerciseDetailView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Badge.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/DashboardHeader.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/MetricCard.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTButton.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/PTTextField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/SettingsSheet.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Spinner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/StatCard.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/Toast.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutCard.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutHistoryList.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Shared/WorkoutProgressChart.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/LoginView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Authentication/RegistrationView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/ContentView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Dashboard/DashboardView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/History/WorkoutHistoryView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Leaderboards/LeaderboardView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Progress/ProgressView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/SettingsView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Shared/WorkoutHistoryRow.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/CameraPreviewView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Utility/DeviceScanningView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/PoseOverlayView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/RunWorkoutView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSelectionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Views/Workouts/WorkoutSessionView.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

@@ -1,17 +1,15 @@
 import Foundation
 
-// Implementation of AuthServiceProtocol using the shared NetworkClient
 class AuthService: AuthServiceProtocol {
-
     private let networkClient: NetworkClient
+    private let useMockAuth: Bool
 
-    // Inject the NetworkClient
-    init(networkClient: NetworkClient = NetworkClient()) {
+    init(networkClient: NetworkClient = NetworkClient(), useMockAuth: Bool = true) {
         self.networkClient = networkClient
+        self.useMockAuth = useMockAuth
     }
 
-    // MARK: - API Endpoints (Paths only)
-    // Base URL and methods are handled by NetworkClient
+    // MARK: - API Endpoints
     private enum APIEndpoint {
         static let login = "/auth/login"
         static let register = "/auth/register"
@@ -19,21 +17,39 @@ class AuthService: AuthServiceProtocol {
     }
 
     // MARK: - Protocol Implementation
-
     func login(credentials: LoginRequest) async throws -> AuthResponse {
         print("AuthService: Attempting login...")
+        
+        if useMockAuth {
+            print("AuthService: Using mock authentication!")
+            
+            let mockResponse = AuthResponse(
+                token: "mock-jwt-token-for-testing-12345",
+                user: User(
+                    id: "123",
+                    email: credentials.username,
+                    firstName: "Test",
+                    lastName: "User",
+                    profilePictureUrl: nil
+                )
+            )
+            
+            networkClient.saveLoginCredentials(token: mockResponse.token, userId: 123)
+            print("AuthService: Mock login successful, credentials saved.")
+            
+            try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
+            return mockResponse
+        }
+        
         let response: AuthResponse = try await networkClient.performRequest(
             endpointPath: APIEndpoint.login,
             method: "POST",
             body: credentials
         )
         
-        // On successful login, save the token AND user ID
-        // Safely convert user ID string to Int for Keychain storage
         guard let userIdInt = Int(response.user.id) else {
-            // Handle the error appropriately - throw an error if the ID is invalid
             print("AuthService Error: Could not convert user ID string '\(response.user.id)' to Int.")
-            throw APIError.underlying(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user ID format received from server: '\(response.user.id)'."])) // Throw specific error
+            throw APIError.underlying(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user ID format received from server: '\(response.user.id)'."])) 
         }
         networkClient.saveLoginCredentials(token: response.token, userId: userIdInt)
         
@@ -43,25 +59,50 @@ class AuthService: AuthServiceProtocol {
 
     func register(userInfo: RegistrationRequest) async throws -> Void {
         print("AuthService: Attempting registration...")
-        // Use performRequestNoContent as registration likely returns 201 or 204 on success
+        
+        if useMockAuth {
+            print("AuthService: Using mock registration!")
+            try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
+            print("AuthService: Mock registration successful.")
+            
+            let mockResponse = AuthResponse(
+                token: "mock-jwt-token-for-testing-registration-12345",
+                user: User(
+                    id: "456",
+                    email: userInfo.username,
+                    firstName: userInfo.displayName,
+                    lastName: nil,
+                    profilePictureUrl: userInfo.profilePictureUrl
+                )
+            )
+            
+            networkClient.saveLoginCredentials(token: mockResponse.token, userId: 456)
+            return
+        }
+        
         try await networkClient.performRequestNoContent(
             endpointPath: APIEndpoint.register,
             method: "POST",
             body: userInfo
         )
         print("AuthService: Registration successful.")
-        // No response body expected, return Void
     }
     
-    // Add a logout function to clear the token and user ID
     func logout() {
         print("AuthService: Logging out, clearing credentials.")
         networkClient.clearLoginCredentials()
-        // Post notification or update state if needed
     }
     
     func updateUserLocation(latitude: Double, longitude: Double) async throws -> Void {
         print("AuthService: Updating user location to (\(latitude), \(longitude))")
+        
+        if useMockAuth {
+            print("AuthService: Using mock location update!")
+            try await Task.sleep(nanoseconds: 500_000_000) // 0.5 second delay
+            print("AuthService: Mock location update successful.")
+            return
+        }
+        
         let requestBody = UpdateLocationRequest(latitude: latitude, longitude: longitude)
         try await networkClient.performRequestNoContent(
             endpointPath: APIEndpoint.profileLocation,
@@ -71,5 +112,3 @@ class AuthService: AuthServiceProtocol {
         print("AuthService: User location update successful.")
     }
 }
-
-// Note: APIError enum and APIErrorResponse struct were moved to NetworkClient.swift 

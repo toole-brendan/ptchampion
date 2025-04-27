@@ -182,7 +182,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, 10)
             .background(Color.brassGold)
             .buttonTextStyle() // Applies font, case, color
-            .cornerRadius(AppConstants.Radius.md)
+            .cornerRadius(Theme.AppConstants.Radius.md)
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
@@ -195,7 +195,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .padding(.vertical, 10)
             .background(Color.armyTan)
             .buttonTextStyle() // Applies font, case, color
-            .cornerRadius(AppConstants.Radius.md)
+            .cornerRadius(Theme.AppConstants.Radius.md)
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
@@ -208,13 +208,13 @@ struct OutlineButtonStyle: ButtonStyle {
             .padding(.vertical, 10)
             .background(Color.white)
             .overlay(
-                RoundedRectangle(cornerRadius: AppConstants.Radius.md)
+                RoundedRectangle(cornerRadius: Theme.AppConstants.Radius.md)
                     .stroke(Color.brassGold, lineWidth: 1)
             )
             .foregroundColor(.brassGold)
             .font(.custom(AppFonts.bodyBold, size: 14))
             .textCase(.uppercase)
-            .cornerRadius(AppConstants.Radius.md)
+            .cornerRadius(Theme.AppConstants.Radius.md)
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeOut(duration: 0.1), value: configuration.isPressed)
     }
@@ -237,9 +237,9 @@ struct GhostButtonStyle: ButtonStyle {
 struct CardBackground: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .padding(AppConstants.Spacing.md) // Use the AppConstants.Spacing
+            .padding(Theme.AppConstants.Spacing.md) // Use the Theme.AppConstants.Spacing
             .background(Color.tacticalCream)
-            .cornerRadius(AppConstants.Radius.md)
+            .cornerRadius(Theme.AppConstants.Radius.md)
             .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1) // Soft shadow
     }
 }
@@ -271,67 +271,72 @@ extension View {
 // MARK: - App Constants (Single source of truth for spacing/sizing)
 // This replaces the duplicated AppConstants defined elsewhere
 
-struct AppConstants {
-    // Enum for distance units
-    enum DistanceUnit: String, Codable, CaseIterable {
-        case kilometers = "km"
-        case miles = "mi"
+enum Theme {
+    // MARK: - App Constants (Single source of truth for spacing/sizing)
+    // This replaces the duplicated AppConstants defined elsewhere
 
-        var id: String { self.rawValue }
+    enum AppConstants {
+        // Enum for distance units
+        enum DistanceUnit: String, Codable, CaseIterable {
+            case kilometers = "km"
+            case miles = "mi"
 
-        var displayName: String {
-            switch self {
-            case .kilometers: return "Kilometers"
-            case .miles: return "Miles"
+            var id: String { self.rawValue }
+
+            var displayName: String {
+                switch self {
+                case .kilometers: return "Kilometers"
+                case .miles: return "Miles"
+                }
+            }
+
+            // Conversion factor from meters
+            func convertFromMeters(_ meters: Double) -> Double {
+                switch self {
+                case .kilometers: return meters / 1000.0
+                case .miles: return meters / 1609.34
+                }
             }
         }
-
-        // Conversion factor from meters
-        func convertFromMeters(_ meters: Double) -> Double {
-            switch self {
-            case .kilometers: return meters / 1000.0
-            case .miles: return meters / 1609.34
-            }
+        
+        // Spacing (from design-tokens.json)
+        enum Spacing {
+            static let xs: CGFloat = 4
+            static let sm: CGFloat = 8
+            static let md: CGFloat = 16
+            static let lg: CGFloat = 24
+            static let xl: CGFloat = 32
+            static let xxl: CGFloat = 48
+            static let xxxl: CGFloat = 64
         }
-    }
-    
-    // Spacing (from design-tokens.json)
-    enum Spacing {
-        static let xs: CGFloat = 4
-        static let sm: CGFloat = 8
-        static let md: CGFloat = 16
-        static let lg: CGFloat = 24
-        static let xl: CGFloat = 32
-        static let xxl: CGFloat = 48
-        static let xxxl: CGFloat = 64
-    }
-    
-    // Radius (from design-tokens.json)
-    enum Radius {
-        static let none: CGFloat = 0
-        static let sm: CGFloat = 4
-        static let md: CGFloat = 8
-        static let lg: CGFloat = 12
-        static let xl: CGFloat = 16
-        static let full: CGFloat = 9999
-    }
-    
-    // Font Size (from design-tokens.json)
-    enum FontSize {
-        static let xs: CGFloat = 10
-        static let sm: CGFloat = 12
-        static let md: CGFloat = 14
-        static let lg: CGFloat = 16
-        static let xl: CGFloat = 20
-        static let xxl: CGFloat = 24
-        static let xxxl: CGFloat = 30
-        static let xxxxl: CGFloat = 36
-    }
-    
-    // Animation Durations
-    enum Animation {
-        static let standard = SwiftUI.Animation.easeInOut(duration: 0.2)
-        static let slow = SwiftUI.Animation.easeInOut(duration: 0.3)
+        
+        // Radius (from design-tokens.json)
+        enum Radius {
+            static let none: CGFloat = 0
+            static let sm: CGFloat = 4
+            static let md: CGFloat = 8
+            static let lg: CGFloat = 12
+            static let xl: CGFloat = 16
+            static let full: CGFloat = 9999
+        }
+        
+        // Font Size (from design-tokens.json)
+        enum FontSize {
+            static let xs: CGFloat = 10
+            static let sm: CGFloat = 12
+            static let md: CGFloat = 14
+            static let lg: CGFloat = 16
+            static let xl: CGFloat = 20
+            static let xxl: CGFloat = 24
+            static let xxxl: CGFloat = 30
+            static let xxxxl: CGFloat = 36
+        }
+        
+        // Animation Durations
+        enum Animation {
+            static let standard = SwiftUI.Animation.easeInOut(duration: 0.2)
+            static let slow = SwiftUI.Animation.easeInOut(duration: 0.3)
+        }
     }
 }
 
