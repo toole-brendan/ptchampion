@@ -1,35 +1,47 @@
 import SwiftUI
 
 struct DashboardView: View {
+    // Keep track of the constants we need
+    private static let cardGap: CGFloat = 12
+    private static let globalPadding: CGFloat = 16
+    
+    @EnvironmentObject var authViewModel: AuthViewModel
+    
     var body: some View {
         NavigationView { // Each tab can have its own navigation stack
             ScrollView {
-                VStack(alignment: .leading, spacing: AppConstants.cardGap) {
+                VStack(alignment: .leading, spacing: Self.cardGap) {
                     Text("Dashboard")
-                        .headingStyle()
+                        .font(.title)
+                        .fontWeight(.bold)
                         .padding(.bottom)
 
                     // Placeholder content - replace with actual dashboard components
                     Text("Quick Stats")
-                        .subheadingStyle()
+                        .font(.headline)
                     HStack {
                         MetricCard(label: "Recent Pushups", value: "45")
                         MetricCard(label: "Avg Run Pace", value: "8:15/mi")
                     }
 
                     Text("Start Workout")
-                        .subheadingStyle()
+                        .font(.headline)
                         .padding(.top)
                     Button("Begin New Session") {
                         // TODO: Navigate to workout selection
                     }
-                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .font(.headline)
+                    .cornerRadius(8)
 
                     Spacer()
                 }
-                .padding(AppConstants.globalPadding)
+                .padding(Self.globalPadding)
             }
-            .background(Color.tacticalCream.ignoresSafeArea())
+            .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea())
             .navigationTitle("Dashboard") // Use large title or inline
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -44,13 +56,17 @@ struct MetricCard: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(label)
-                .labelStyle()
+                .font(.caption)
+                .foregroundColor(.secondary)
             Text(value)
-                .statsNumberStyle()
+                .font(.title3)
+                .fontWeight(.medium)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle() // Use the card background modifier
+        .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+        .cornerRadius(8)
+        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
     }
 }
 

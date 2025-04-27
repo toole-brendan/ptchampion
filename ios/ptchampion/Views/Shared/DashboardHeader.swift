@@ -22,6 +22,19 @@ struct DashboardHeader: View {
         self.rightAccessory = rightAccessory
     }
     
+    // Convenience initializer for User objects
+    init(title: String, subtitle: String? = nil, user: User?, onProfileTap: (() -> Void)? = nil) {
+        // Get profile picture URL if available from user
+        let profilePictureUrl: URL? = user?.profilePictureUrl != nil ? URL(string: user!.profilePictureUrl!) : nil
+        
+        self.init(
+            title: title,
+            subtitle: subtitle,
+            userImageURL: profilePictureUrl,
+            onProfileTap: onProfileTap
+        )
+    }
+    
     init<RightContent: View>(
         title: String,
         subtitle: String? = nil,

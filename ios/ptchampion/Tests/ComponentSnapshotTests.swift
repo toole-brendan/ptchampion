@@ -1,6 +1,6 @@
 import XCTest
 import SwiftUI
-@testable import ptchampion
+@testable import PTChampion
 
 /// Snapshot tests for UI components
 /// This ensures visual consistency across code changes

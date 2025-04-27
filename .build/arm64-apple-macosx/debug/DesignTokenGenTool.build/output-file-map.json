@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/Tools/DesignTokenGenTool/main.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/main.d",
+    "object": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/main.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/DesignTokenGenTool.build/main.swiftdeps"
+  }
+}

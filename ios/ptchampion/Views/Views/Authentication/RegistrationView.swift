@@ -100,7 +100,7 @@ struct RegistrationView: View {
 
             Spacer()
         }
-        .padding(AppConstants.globalPadding)
+        .padding(16)
         .background(Color.tacticalCream.ignoresSafeArea())
         // Set navigation title if needed, e.g., .navigationTitle("Register")
         // .navigationBarTitleDisplayMode(.inline)
@@ -117,7 +117,6 @@ struct RegistrationView: View {
         }, message: {
             Text(viewModel.errorMessage ?? "An unknown error occurred.")
         })
-
     }
 
     private func validatePasswords() -> Bool {

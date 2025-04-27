@@ -6,6 +6,7 @@ struct LoginView: View {
 
     @State private var email = ""
     @State private var password = ""
+    @State private var showDevOptions = false
 
     var body: some View {
         // NavigationStack needed for NavigationLink to RegistrationView
@@ -18,11 +19,16 @@ struct LoginView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(height: 48) // Style guide suggests 32-48px height max
-                    .foregroundColor(.brassGold)
+                    .foregroundColor(Color(red: 0.749, green: 0.635, blue: 0.302)) // brassGold
                     .padding(.bottom)
+                    // Allow opening dev options by tapping logo 5 times
+                    .onTapGesture(count: 5) {
+                        showDevOptions = true
+                    }
 
                 Text("Welcome Back")
-                    .headingStyle()
+                    .font(.title)
+                    .fontWeight(.bold)
 
                 VStack(spacing: 15) {
                     TextField("Email", text: $email)
@@ -51,8 +57,28 @@ struct LoginView: View {
                     Button("Log In") {
                         viewModel.login(email: email, password: password)
                     }
-                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .font(.headline)
+                    .cornerRadius(8)
                     .disabled(email.isEmpty || password.isEmpty) // Basic validation
+                    
+                    // Add dev bypass button
+                    if showDevOptions {
+                        Button("DEV: Bypass Login") {
+                            // Use the direct developer bypass instead of mock credentials
+                            viewModel.loginAsDeveloper()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(Color.green)
+                        .foregroundColor(.white)
+                        .font(.footnote)
+                        .cornerRadius(8)
+                        .padding(.top, 8)
+                    }
                 }
 
                 NavigationLink("Don't have an account? Register") {
@@ -62,13 +88,13 @@ struct LoginView: View {
                 }
                 .padding(.top)
                 .font(.footnote)
-                .foregroundColor(Color.tacticalGray)
+                .foregroundColor(Color.gray)
 
                 Spacer()
                 Spacer()
             }
-            .padding(AppConstants.globalPadding)
-            .background(Color.tacticalCream.ignoresSafeArea())
+            .padding(16)
+            .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea()) // tacticalCream
             // Dismiss keyboard on tap outside
             .onTapGesture {
                  hideKeyboard()

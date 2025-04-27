@@ -37,7 +37,7 @@ class AuthViewModel: ObservableObject {
                     // TODO: Fetch user profile using the token
                     // self.currentUser = try await userService.getCurrentUserProfile()
                     // Mock user for now if profile fetch not implemented
-                    self.currentUser = User(id: "loaded-user-id", email: "user@example.com", firstName: "Loaded", lastName: "User")
+                    self.currentUser = User(id: "loaded-user-id", email: "user@example.com", firstName: "Loaded", lastName: "User", profilePictureUrl: nil)
                     print("AuthViewModel: User authenticated from stored token.")
                 } else {
                     print("AuthViewModel: No token found in keychain.")
@@ -70,7 +70,7 @@ class AuthViewModel: ObservableObject {
                 // TODO: Fetch user profile after login
                 // self.currentUser = try await userService.getCurrentUserProfile(token: authResponse.token)
                 // Mock user for now
-                self.currentUser = User(id: "logged-in-id", email: email, firstName: "Logged", lastName: "In")
+                self.currentUser = User(id: "logged-in-id", email: email, firstName: "Logged", lastName: "In", profilePictureUrl: nil)
                 print("AuthViewModel: User logged in and token saved.")
 
             } catch let error as APIErrorResponse { // Catch specific backend error
@@ -145,6 +145,23 @@ class AuthViewModel: ObservableObject {
                 self.errorMessage = "Could not fully log out. Please try again."
             }
         }
+    }
+
+    // MARK: - Developer Mode Functions
+    
+    /// Bypasses the normal authentication flow for development purposes
+    func loginAsDeveloper() {
+        print("AuthViewModel: Bypassing authentication flow for development")
+        self.isAuthenticated = true
+        self.currentUser = User(
+            id: "dev-123",
+            email: "dev@example.com",
+            firstName: "Developer",
+            lastName: "User",
+            profilePictureUrl: nil
+        )
+        self.errorMessage = nil
+        print("AuthViewModel: Developer login successful without token")
     }
 }
 

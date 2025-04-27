@@ -1,12 +1,30 @@
 import Foundation
 import Combine
 import CoreLocation
+// Import from the view module that contains the LeaderboardCategory enum
+@_implementationOnly import SwiftUI // Add if needed for view imports
 
 // Define the LeaderboardType within the ViewModel or globally if used elsewhere
 enum LeaderboardType: String, CaseIterable, Identifiable {
     case global = "Global"
     case local = "Local (5mi)" // Example distance, adjust as needed
     var id: String { self.rawValue }
+}
+
+// Import the LeaderboardCategory enum
+// For now, we're referencing the one from the LeaderboardView file
+// In a final implementation, this should be moved to a shared models file
+enum LeaderboardCategory: String, CaseIterable, Identifiable {
+    case daily = "Daily"
+    case weekly = "Weekly"
+    case monthly = "Monthly"
+    case allTime = "All Time"
+    
+    var id: String { self.rawValue }
+    
+    var displayName: String {
+        return self.rawValue
+    }
 }
 
 @MainActor
@@ -21,6 +39,11 @@ class LeaderboardViewModel: ObservableObject {
     @Published var selectedBoard: LeaderboardType = .global {
         didSet { fetchLeaderboardData() } // Refetch when type changes
     }
+    
+    @Published var selectedCategory: LeaderboardCategory = .weekly {
+        didSet { fetchLeaderboardData() } // Refetch when category changes
+    }
+    
     @Published var leaderboardEntries: [LeaderboardEntry] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil

@@ -1,5 +1,9 @@
 import SwiftUI
 import SwiftData
+import UIKit
+
+// Add import for AppAppearance
+import Foundation
 
 @main
 struct PTChampionApp: App {
@@ -8,7 +12,27 @@ struct PTChampionApp: App {
     
     // Initialize app appearance
     init() {
-        configureAppAppearance()
+        // Configure appearance manually without relying on external class
+        configureUIAppearance()
+    }
+    
+    // Configure UI appearance manually
+    private func configureUIAppearance() {
+        // Configure TabBar appearance
+        let tabBarAppearance = UITabBarAppearance()
+        tabBarAppearance.configureWithOpaqueBackground()
+        UITabBar.appearance().standardAppearance = tabBarAppearance
+        if #available(iOS 15.0, *) {
+            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        }
+        
+        // Configure NavigationBar appearance
+        let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.configureWithOpaqueBackground()
+        UINavigationBar.appearance().standardAppearance = navBarAppearance
+        if #available(iOS 15.0, *) {
+            UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
+        }
     }
 
     var body: some Scene {
@@ -76,7 +100,9 @@ struct MainTabView: View {
                 .tag(Tab.leaderboards)
 
             #if DEBUG
-            ComponentGalleryView()
+            // Temporarily comment out ComponentGalleryView reference
+            // Replace with SettingsView to match production
+            SettingsView()
                 .tabItem {
                     Label("Design System", systemImage: "square.grid.2x2.fill")
                 }
@@ -91,11 +117,13 @@ struct MainTabView: View {
         // Accent color is handled by UITabBarAppearance
         .onShake {
             #if DEBUG
-            showingComponentGallery.toggle()
+            // Don't show component gallery since it's not available
+            // showingComponentGallery.toggle()
             #endif
         }
         .sheet(isPresented: $showingComponentGallery) {
-            ComponentGalleryView()
+            // Temporarily comment out ComponentGalleryView and replace with a placeholder
+            Text("Component Gallery View")
         }
     }
 }
@@ -135,10 +163,14 @@ struct DeviceShakeViewModifier: ViewModifier {
 #endif
 
 #Preview("MainTabView") {
-    let mockAuth = AuthViewModel()
-    mockAuth.isAuthenticated = true
-    mockAuth.currentUser = User(id: "preview-id", email: "preview@user.com", firstName: "Preview", lastName: "User")
-
-    return MainTabView()
-        .environmentObject(mockAuth)
+    let view = {
+        let mockAuth = AuthViewModel()
+        mockAuth.isAuthenticated = true
+        mockAuth.currentUser = User(id: "preview-id", email: "preview@user.com", firstName: "Preview", lastName: "User", profilePictureUrl: nil)
+        
+        return MainTabView()
+            .environmentObject(mockAuth)
+    }()
+    
+    return view
 } 

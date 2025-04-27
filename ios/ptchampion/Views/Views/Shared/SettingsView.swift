@@ -1,4 +1,6 @@
 import SwiftUI
+import Foundation
+import CoreLocation
 
 struct SettingsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -10,7 +12,7 @@ struct SettingsView: View {
                 if let user = authViewModel.currentUser {
                     Text("Account")
                         .subheadingStyle()
-                        .padding(.horizontal, AppConstants.globalPadding)
+                        .padding(.horizontal, 16)
 
                     VStack(alignment: .leading) {
                         Text("\(user.firstName ?? "") \(user.lastName ?? "")")
@@ -21,11 +23,11 @@ struct SettingsView: View {
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .cardStyle()
-                    .padding(.horizontal, AppConstants.globalPadding)
+                    .padding(.horizontal, 16)
 
                 } else {
                     Text("Loading user info...")
-                        .padding(AppConstants.globalPadding)
+                        .padding(16)
                 }
 
                 // Add other settings options here (e.g., profile edit, notifications)
@@ -61,11 +63,15 @@ struct SettingsView: View {
 }
 
 #Preview {
-    // Create a mock view model with a logged-in user for preview
-    let mockAuth = AuthViewModel()
-    mockAuth.isAuthenticated = true
-    mockAuth.currentUser = User(id: "preview-id", email: "preview@user.com", firstName: "Preview", lastName: "User")
-
-    return SettingsView()
-        .environmentObject(mockAuth)
+    let view = {
+        // Create a mock view model with a logged-in user for preview
+        let mockAuth = AuthViewModel()
+        mockAuth.isAuthenticated = true
+        mockAuth.currentUser = User(id: "preview-id", email: "preview@user.com", firstName: "Preview", lastName: "User", profilePictureUrl: nil)
+        
+        return SettingsView()
+            .environmentObject(mockAuth)
+    }()
+    
+    return view
 } 

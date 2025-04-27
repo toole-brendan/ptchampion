@@ -4,6 +4,13 @@ import SwiftData // Import SwiftData
 import CoreBluetooth // For CBManagerState
 
 struct RunWorkoutView: View {
+    // Define constants directly within the view
+    private struct Constants {
+        static let globalPadding: CGFloat = 16
+        static let cardGap: CGFloat = 12
+        static let panelCornerRadius: CGFloat = 8
+    }
+    
     @StateObject private var viewModel: RunWorkoutViewModel // Use @StateObject
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext // Access ModelContext
@@ -42,7 +49,7 @@ struct RunWorkoutView: View {
             // Bottom Controls
             runControls()
         }
-        .background(Color.tacticalCream.ignoresSafeArea())
+        .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea()) // Use RGB for tacticalCream
         .navigationTitle("Run Tracking")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -54,7 +61,7 @@ struct RunWorkoutView: View {
                     }
                     dismiss()
                 }
-                .foregroundColor(.brassGold)
+                .foregroundColor(Color(red: 0.749, green: 0.635, blue: 0.302)) // RGB for brassGold
             }
         }
         // Inject the actual modelContext when the view appears and context is available
@@ -132,7 +139,7 @@ struct RunWorkoutView: View {
              }
         }
         .padding()
-        .background(Color.deepOpsGreen) // Use dark background for contrast
+        .background(Color(red: 0.12, green: 0.14, blue: 0.12)) // RGB for deepOpsGreen
     }
 
     // Helper for single metric display
@@ -142,10 +149,10 @@ struct RunWorkoutView: View {
         var body: some View {
             VStack {
                 Text(label)
-                    .labelStyle(size: 12, color: .inactiveGray) // Smaller label
+                    .labelStyle(size: 12, color: Color(red: 0.64, green: 0.64, blue: 0.56)) // RGB for inactiveGray
                     .padding(.bottom, 1)
                 Text(value)
-                    .statsNumberStyle(size: 24, color: .tacticalCream) // Cream text on dark bg
+                    .statsNumberStyle(size: 24, color: Color(red: 0.957, green: 0.945, blue: 0.902)) // RGB for tacticalCream
             }
              .frame(maxWidth: .infinity) // Distribute horizontally
         }
@@ -173,7 +180,7 @@ struct RunWorkoutView: View {
                  }
              case .finished, .error:
                  Button { dismiss() }
-                 label: { controlButtonLabel(systemName: "checkmark.circle.fill", color: .brassGold) }
+                 label: { controlButtonLabel(systemName: "checkmark.circle.fill", color: Color(red: 0.749, green: 0.635, blue: 0.302)) } // RGB for brassGold
              default: // requestingPermission, permissionDenied
                  EmptyView()
              }
@@ -202,14 +209,14 @@ struct RunWorkoutView: View {
                  .resizable()
                  .scaledToFit()
                  .frame(width: 50, height: 50)
-                 .foregroundColor(viewModel.runState == .permissionDenied ? .tacticalGray : .orange)
+                 .foregroundColor(viewModel.runState == .permissionDenied ? Color(red: 0.306, green: 0.353, blue: 0.282) : .orange) // RGB for tacticalGray
 
              Text(viewModel.runState == .permissionDenied ? "Location Access Denied" : "Error")
                  .font(.title2).bold()
 
              Text(viewModel.errorMessage ?? "An error occurred.")
                  .multilineTextAlignment(.center)
-                 .foregroundColor(.tacticalGray)
+                 .foregroundColor(Color(red: 0.306, green: 0.353, blue: 0.282)) // RGB for tacticalGray
                  .padding(.horizontal)
 
              if viewModel.runState == .permissionDenied {
@@ -218,22 +225,32 @@ struct RunWorkoutView: View {
                          UIApplication.shared.open(url)
                      }
                  }
-                 .buttonStyle(PrimaryButtonStyle())
+                 .padding(.horizontal, 16)
+                 .padding(.vertical, 10)
+                 .background(Color.blue)
+                 .foregroundColor(.white)
+                 .font(.headline)
+                 .cornerRadius(8)
                  .padding(.top)
              } else if case .error = viewModel.runState {
                  Button("Dismiss") {
                      viewModel.errorMessage = nil // Clear error message
                      viewModel.runState = .ready // Go back to ready state?
                  }
-                  .buttonStyle(PrimaryButtonStyle())
-                  .padding(.top)
+                 .padding(.horizontal, 16)
+                 .padding(.vertical, 10)
+                 .background(Color.blue)
+                 .foregroundColor(.white)
+                 .font(.headline)
+                 .cornerRadius(8)
+                 .padding(.top)
              }
          }
          .padding(30)
          .background(.thinMaterial) // Use material background for overlay
-         .cornerRadius(AppConstants.panelCornerRadius)
+         .cornerRadius(Constants.panelCornerRadius)
          .shadow(radius: 5)
-         .padding(AppConstants.globalPadding) // Padding around the overlay box
+         .padding(Constants.globalPadding) // Padding around the overlay box
      }
 }
 
@@ -243,7 +260,7 @@ struct MapViewPlaceholder: View {
         ZStack {
             Color.gray.opacity(0.2)
             Text("Map Area (Optional)")
-                .foregroundColor(.tacticalGray)
+                .foregroundColor(Color(red: 0.306, green: 0.353, blue: 0.282)) // RGB for tacticalGray
         }
     }
 }
