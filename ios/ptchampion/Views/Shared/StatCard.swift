@@ -15,19 +15,19 @@ struct StatCard: View {
     let isHighlighted: Bool
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppConstants.Spacing.sm) {
+        VStack(alignment: .leading, spacing: AppTheme.Spacing.itemSpacing) {
             HStack {
                 Image(systemName: icon)
                     .font(.system(size: 16))
                     .foregroundColor(color)
                 
                 Text(title)
-                    .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                    .foregroundColor(.tacticalGray)
+                    .font(AppTheme.Typography.body(size: 13))
+                    .foregroundColor(AppTheme.Colors.textTertiary)
             }
             
             Text(value)
-                .font(.custom(AppFonts.heading, size: AppConstants.FontSize.xl))
+                .font(AppTheme.Typography.heading3())
                 .foregroundColor(color)
             
             // Trend indicator if available
@@ -35,38 +35,38 @@ struct StatCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.up")
                         .font(.system(size: 12))
-                        .foregroundColor(.deepOpsGreen)
+                        .foregroundColor(AppTheme.Colors.success)
                     
                     Text("+\(percentage)%")
-                        .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                        .foregroundColor(.deepOpsGreen)
+                        .font(AppTheme.Typography.body(size: 12))
+                        .foregroundColor(AppTheme.Colors.success)
                 }
             } else if case .down(let percentage) = trend {
                 HStack(spacing: 4) {
                     Image(systemName: "arrow.down")
                         .font(.system(size: 12))
-                        .foregroundColor(.tomahawkRed)
+                        .foregroundColor(AppTheme.Colors.error)
                     
                     Text("-\(percentage)%")
-                        .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                        .foregroundColor(.tomahawkRed)
+                        .font(AppTheme.Typography.body(size: 12))
+                        .foregroundColor(AppTheme.Colors.error)
                 }
             } else {
                 Text("No change")
-                    .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                    .foregroundColor(.tacticalGray)
+                    .font(AppTheme.Typography.body(size: 12))
+                    .foregroundColor(AppTheme.Colors.textTertiary)
                     .opacity(0.8)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AppConstants.Spacing.md)
+        .padding(AppTheme.Spacing.contentPadding)
         .background(
-            RoundedRectangle(cornerRadius: AppConstants.Radius.md)
-                .fill(isHighlighted ? color.opacity(0.1) : Color.white)
-                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+            RoundedRectangle(cornerRadius: AppTheme.Radius.card)
+                .fill(isHighlighted ? color.opacity(0.1) : AppTheme.Colors.cardBackground)
+                .withShadow(AppTheme.Shadows.card)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: AppConstants.Radius.md)
+            RoundedRectangle(cornerRadius: AppTheme.Radius.card)
                 .stroke(isHighlighted ? color : Color.clear, lineWidth: 1)
         )
     }
@@ -82,22 +82,22 @@ struct LeaderboardRow: View {
     let isCurrentUser: Bool
     
     var body: some View {
-        HStack(spacing: AppConstants.Spacing.md) {
+        HStack(spacing: AppTheme.Spacing.contentPadding) {
             // Rank with medal for top 3
             if rank <= 3 {
                 ZStack {
                     Circle()
-                        .fill(Color.brassGold.opacity(0.1))
+                        .fill(AppTheme.Colors.brassGold.opacity(0.1))
                         .frame(width: 36, height: 36)
                     
                     Image(systemName: "medal.fill")
-                        .foregroundColor(Color.brassGold)
+                        .foregroundColor(AppTheme.Colors.brassGold)
                         .font(.system(size: 18))
                 }
             } else {
                 Text("\(rank)")
-                    .font(.custom(AppFonts.mono, size: AppConstants.FontSize.lg))
-                    .foregroundColor(.tacticalGray)
+                    .font(AppTheme.Typography.mono(size: 16))
+                    .foregroundColor(AppTheme.Colors.textTertiary)
                     .frame(width: 36)
             }
             
@@ -112,11 +112,11 @@ struct LeaderboardRow: View {
                     case .failure(_), .empty:
                         Image(systemName: "person.circle.fill")
                             .resizable()
-                            .foregroundColor(Color.tacticalGray.opacity(0.5))
+                            .foregroundColor(AppTheme.Colors.textTertiary.opacity(0.5))
                     @unknown default:
                         Image(systemName: "person.circle.fill")
                             .resizable()
-                            .foregroundColor(Color.tacticalGray.opacity(0.5))
+                            .foregroundColor(AppTheme.Colors.textTertiary.opacity(0.5))
                     }
                 }
                 .frame(width: 40, height: 40)
@@ -126,29 +126,28 @@ struct LeaderboardRow: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 40, height: 40)
-                    .foregroundColor(Color.tacticalGray.opacity(0.5))
+                    .foregroundColor(AppTheme.Colors.textTertiary.opacity(0.5))
             }
             
             // Name
             Text(name)
-                .font(.custom(AppFonts.body, size: AppConstants.FontSize.md))
-                .foregroundColor(isCurrentUser ? .brassGold : .commandBlack)
-                .fontWeight(isCurrentUser ? .bold : .regular)
+                .font(isCurrentUser ? AppTheme.Typography.bodyBold() : AppTheme.Typography.body())
+                .foregroundColor(isCurrentUser ? AppTheme.Colors.brassGold : AppTheme.Colors.textPrimary)
             
             Spacer()
             
             // Score
             Text(score)
-                .font(.custom(AppFonts.mono, size: AppConstants.FontSize.md))
-                .foregroundColor(.commandBlack)
+                .font(AppTheme.Typography.mono())
+                .foregroundColor(AppTheme.Colors.textPrimary)
                 .fontWeight(.medium)
         }
-        .padding(AppConstants.Spacing.md)
-        .background(isCurrentUser ? Color.brassGold.opacity(0.05) : Color.white)
-        .cornerRadius(AppConstants.Radius.md)
+        .padding(AppTheme.Spacing.contentPadding)
+        .background(isCurrentUser ? AppTheme.Colors.brassGold.opacity(0.05) : AppTheme.Colors.cardBackground)
+        .cornerRadius(AppTheme.Radius.card)
         .overlay(
-            RoundedRectangle(cornerRadius: AppConstants.Radius.md)
-                .stroke(isCurrentUser ? Color.brassGold.opacity(0.5) : Color.clear, lineWidth: 1)
+            RoundedRectangle(cornerRadius: AppTheme.Radius.card)
+                .stroke(isCurrentUser ? AppTheme.Colors.brassGold.opacity(0.5) : Color.clear, lineWidth: 1)
         )
     }
 }
@@ -156,13 +155,13 @@ struct LeaderboardRow: View {
 // MARK: - Preview
 struct StatCard_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: AppTheme.Spacing.cardGap) {
             StatCard(
                 title: "Best Session",
                 value: "45",
                 icon: "trophy.fill",
                 trend: .none,
-                color: .brassGold,
+                color: AppTheme.Colors.brassGold,
                 isHighlighted: false
             )
             
@@ -171,7 +170,7 @@ struct StatCard_Previews: PreviewProvider {
                 value: "120",
                 icon: "calendar",
                 trend: .up(percentage: 15),
-                color: .deepOpsGreen,
+                color: AppTheme.Colors.deepOps,
                 isHighlighted: true
             )
             
@@ -180,12 +179,12 @@ struct StatCard_Previews: PreviewProvider {
                 value: "430",
                 icon: "chart.bar.fill",
                 trend: .down(percentage: 5),
-                color: .tacticalGray,
+                color: AppTheme.Colors.tacticalGray,
                 isHighlighted: false
             )
         }
         .padding()
-        .background(Color.tacticalCream.opacity(0.3))
+        .background(AppTheme.Colors.background.opacity(0.3))
         .previewLayout(.sizeThatFits)
     }
 } 

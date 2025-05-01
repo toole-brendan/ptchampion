@@ -55,7 +55,8 @@ struct LoginView: View {
                         .padding(.vertical, 10)
                 } else {
                     Button("Log In") {
-                        viewModel.login(email: email, password: password)
+                        // viewModel.login(email: email, password: password)
+                        viewModel.testLoginDirect(email: email, password: password)
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
@@ -89,6 +90,13 @@ struct LoginView: View {
                 .padding(.top)
                 .font(.footnote)
                 .foregroundColor(Color.gray)
+
+                // Add debug info display
+                Text("Auth state: \(viewModel.isAuthenticated ? "Authenticated" : "Not authenticated")")
+                    .padding(.top)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                    .opacity(0.7)
 
                 Spacer()
                 Spacer()

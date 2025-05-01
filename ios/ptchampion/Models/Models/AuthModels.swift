@@ -29,6 +29,40 @@ struct RegistrationRequest: Codable {
 struct AuthResponse: Codable {
     let token: String
     let user: User
+    
+    enum CodingKeys: String, CodingKey {
+        case token, user
+        // Alternative keys that might be used by Azure backend
+        case accessToken = "access_token"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Try to decode token with different possible keys
+        if let accessToken = try? container.decode(String.self, forKey: .accessToken) {
+            token = accessToken
+            print("AuthResponse: Using access_token field from response")
+        } else {
+            token = try container.decode(String.self, forKey: .token)
+            print("AuthResponse: Using token field from response")
+        }
+        
+        user = try container.decode(User.self, forKey: .user)
+    }
+    
+    // Add encode method to complete Codable conformance
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(token, forKey: .token)
+        try container.encode(user, forKey: .user)
+    }
+    
+    // Custom init for creating mock responses
+    init(token: String, user: User) {
+        self.token = token
+        self.user = user
+    }
 }
 
 // Generic API Response wrapper (Optional - Use if your API consistently wraps responses)

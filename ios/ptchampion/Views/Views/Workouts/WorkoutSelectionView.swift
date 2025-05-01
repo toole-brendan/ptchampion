@@ -38,7 +38,7 @@ struct WorkoutSelectionView: View {
                 }
             }
             .listStyle(PlainListStyle()) // Use PlainListStyle for flatter look closer to Android?
-            .background(Color.tacticalCream.ignoresSafeArea())
+            .background(Color.cream.ignoresSafeArea())
             .navigationTitle("Start Workout")
             .navigationBarTitleDisplayMode(.inline)
         }

@@ -33,23 +33,23 @@ struct WorkoutCard: View {
     
     var body: some View {
         Button(action: { onTap?() }) {
-            VStack(alignment: .leading, spacing: AppConstants.Spacing.md) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.contentPadding) {
                 // Header with title and date
                 HStack {
-                    VStack(alignment: .leading, spacing: AppConstants.Spacing.xs) {
+                    VStack(alignment: .leading, spacing: 4) {
                         Text(title)
-                            .font(.custom(AppFonts.subheading, size: AppConstants.FontSize.lg))
-                            .foregroundColor(.commandBlack)
+                            .font(AppTheme.Typography.bodySemiBold(size: 16))
+                            .foregroundColor(AppTheme.Colors.textPrimary)
                         
                         if let subtitle = subtitle {
                             Text(subtitle)
-                                .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                                .foregroundColor(.tacticalGray)
+                                .font(AppTheme.Typography.body(size: 14))
+                                .foregroundColor(AppTheme.Colors.textTertiary)
                         }
                         
                         Text(formattedDate)
-                            .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                            .foregroundColor(.tacticalGray.opacity(0.8))
+                            .font(AppTheme.Typography.body(size: 12))
+                            .foregroundColor(AppTheme.Colors.textTertiary.opacity(0.8))
                     }
                     
                     Spacer()
@@ -67,46 +67,46 @@ struct WorkoutCard: View {
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible())
-                    ], spacing: AppConstants.Spacing.md) {
+                    ], spacing: AppTheme.Spacing.contentPadding) {
                         ForEach(metrics) { metric in
                             metricView(metric)
                         }
                     }
-                    .padding(.top, AppConstants.Spacing.xs)
+                    .padding(.top, 4)
                 }
             }
-            .padding(AppConstants.Spacing.lg)
+            .padding(AppTheme.Spacing.contentPadding)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.white)
-            .cornerRadius(AppConstants.Radius.lg)
-            .shadow(color: Color.black.opacity(0.06), radius: 3, x: 0, y: 2)
+            .background(AppTheme.Colors.cardBackground)
+            .cornerRadius(AppTheme.Radius.card)
+            .withShadow(AppTheme.Shadows.cardMd)
         }
         .buttonStyle(PlainButtonStyle())
     }
     
     private func metricView(_ metric: WorkoutMetric) -> some View {
-        HStack(spacing: AppConstants.Spacing.sm) {
+        HStack(spacing: AppTheme.Spacing.itemSpacing) {
             if let systemName = metric.iconSystemName {
                 Image(systemName: systemName)
-                    .foregroundColor(.brassGold)
+                    .foregroundColor(AppTheme.Colors.brassGold)
                     .frame(width: 18, height: 18)
             }
             
             VStack(alignment: .leading, spacing: 2) {
                 Text(metric.title)
-                    .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                    .foregroundColor(.tacticalGray)
+                    .font(AppTheme.Typography.body(size: 12))
+                    .foregroundColor(AppTheme.Colors.textTertiary)
                     .textCase(.uppercase)
                 
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text(metric.value)
-                        .font(.custom(AppFonts.mono, size: AppConstants.FontSize.md))
-                        .foregroundColor(.commandBlack)
+                        .font(AppTheme.Typography.mono(size: 14))
+                        .foregroundColor(AppTheme.Colors.textPrimary)
                     
                     if let unit = metric.unit {
                         Text(unit)
-                            .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                            .foregroundColor(.tacticalGray)
+                            .font(AppTheme.Typography.body(size: 12))
+                            .foregroundColor(AppTheme.Colors.textTertiary)
                     }
                 }
             }
@@ -138,7 +138,7 @@ struct WorkoutMetric: Identifiable {
 // Preview provider
 struct WorkoutCard_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppConstants.Spacing.md) {
+        VStack(spacing: AppTheme.Spacing.cardGap) {
             WorkoutCard(
                 title: "Push-ups Workout",
                 subtitle: "Morning Routine",
@@ -160,7 +160,7 @@ struct WorkoutCard_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(Color.tacticalCream.opacity(0.5))
+        .background(AppTheme.Colors.background.opacity(0.5))
         .previewLayout(.sizeThatFits)
     }
 } 

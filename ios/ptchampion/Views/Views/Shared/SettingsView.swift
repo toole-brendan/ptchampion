@@ -22,7 +22,9 @@ struct SettingsView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .cardStyle()
+                    .background(Color.white.opacity(0.9))
+                    .cornerRadius(8)
+                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
                     .padding(.horizontal, 16)
 
                 } else {
@@ -53,9 +55,9 @@ struct SettingsView: View {
                 }
                 .listStyle(InsetGroupedListStyle())
                 .frame(maxHeight: .infinity) // Allow list to take space
-                .background(Color.tacticalCream)
+                .background(Color.cream) // Use standard color extension
             }
-            .background(Color.tacticalCream.ignoresSafeArea())
+            .background(Color.cream.ignoresSafeArea()) // Use standard color extension
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
         }

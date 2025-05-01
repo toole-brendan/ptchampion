@@ -1,17 +1,18 @@
 import SwiftUI
 
 // Main app constants
-enum AppConstants {
+public enum AppConstants {
     // Global padding used throughout the app
-    static let globalPadding: CGFloat = 16
+    public static let globalPadding: CGFloat = 16
     
     // Spacing between cards in stack views
-    static let cardGap: CGFloat = 12
+    public static let cardGap: CGFloat = 12
     
-    // Re-export the constants from Theme.swift to avoid duplication
-    typealias Spacing = Theme.AppConstants.Spacing
-    typealias Radius = Theme.AppConstants.Radius
-    typealias FontSize = Theme.AppConstants.FontSize
-    typealias Animation = Theme.AppConstants.Animation
-    typealias DistanceUnit = Theme.AppConstants.DistanceUnit
+    // These constants are now defined directly in AppTheme
+    // Reference AppTheme for spacing, radius, font size, and animation constants
+    public typealias Spacing = AppTheme.Spacing
+    public typealias Radius = AppTheme.Radius
+    public typealias FontSize = AppTheme.Typography
+    public typealias Animation = AppTheme.Animation
+    public typealias DistanceUnit = AppTheme.DistanceUnit
 } 

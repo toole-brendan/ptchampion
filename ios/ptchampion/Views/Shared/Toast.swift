@@ -18,19 +18,19 @@ enum ToastType {
     
     var bgColor: Color {
         switch self {
-        case .success: return Color(hex: "#10B981").opacity(0.15) // emerald-500
-        case .error: return Color(hex: "#DC2626").opacity(0.15) // red-600
-        case .warning: return Color(hex: "#F59E0B").opacity(0.15) // amber-500
-        case .info: return Color(hex: "#3B82F6").opacity(0.15) // blue-500
+        case .success: return LegacyColor.fromHex("#10B981").opacity(0.15) // emerald-500
+        case .error: return LegacyColor.fromHex("#DC2626").opacity(0.15) // red-600
+        case .warning: return LegacyColor.fromHex("#F59E0B").opacity(0.15) // amber-500
+        case .info: return LegacyColor.fromHex("#3B82F6").opacity(0.15) // blue-500
         }
     }
     
     var iconColor: Color {
         switch self {
-        case .success: return Color(hex: "#10B981") // emerald-500
-        case .error: return Color(hex: "#DC2626") // red-600
-        case .warning: return Color(hex: "#F59E0B") // amber-500
-        case .info: return Color(hex: "#3B82F6") // blue-500
+        case .success: return LegacyColor.fromHex("#10B981") // emerald-500
+        case .error: return LegacyColor.fromHex("#DC2626") // red-600
+        case .warning: return LegacyColor.fromHex("#F59E0B") // amber-500
+        case .info: return LegacyColor.fromHex("#3B82F6") // blue-500
         }
     }
     
