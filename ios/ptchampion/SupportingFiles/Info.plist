@@ -48,12 +48,12 @@
 	</array>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Resources/Fonts/BebasNeue-Bold.ttf</string>
-		<string>Resources/Fonts/Montserrat-Regular.ttf</string>
-		<string>Resources/Fonts/Montserrat-Bold.ttf</string>
-		<string>Resources/Fonts/Montserrat-SemiBold.ttf</string>
-		<string>Resources/Fonts/RobotoMono-Medium.ttf</string>
-		<string>Resources/Fonts/RobotoMono-Bold.ttf</string>
+		<string>BebasNeue-Bold.ttf</string>
+		<string>Montserrat-Regular.ttf</string>
+		<string>Montserrat-Bold.ttf</string>
+		<string>Montserrat-SemiBold.ttf</string>
+		<string>RobotoMono-Bold.ttf</string>
+		<string>RobotoMono-Medium.ttf</string>
 	</array>
 </dict>
 </plist> 

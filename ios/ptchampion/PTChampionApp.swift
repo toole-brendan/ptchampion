@@ -6,6 +6,100 @@ import Foundation
 // Define necessary types in this file
 // StyleGuideView will be referenced by the correct relative path
 
+// FontManager class to handle font registration
+class FontManager {
+    static let shared = FontManager()
+    
+    // Font registration status
+    private var fontsRegistered = false
+    
+    // Register all required fonts
+    func registerFonts() {
+        guard !fontsRegistered else { return }
+        
+        // Define all the fonts we need to register
+        let fontNames = [
+            "BebasNeue-Bold",
+            "Montserrat-Regular",
+            "Montserrat-Bold",
+            "Montserrat-SemiBold",
+            "RobotoMono-Bold",
+            "RobotoMono-Medium"
+        ]
+        
+        // Try alternate paths where fonts might be
+        let possibleFontPaths = [
+            Bundle.main.bundlePath + "/Fonts/", // Custom Fonts folder
+            Bundle.main.bundlePath + "/", // Root bundle
+            Bundle.main.resourcePath! + "/Fonts/", // Resources/Fonts directory
+            Bundle.main.resourcePath! + "/" // Resources directory
+        ]
+        
+        var registeredCount = 0
+        
+        for fontName in fontNames {
+            var fontRegistered = false
+            
+            // Try each path with each extension
+            for path in possibleFontPaths {
+                for ext in ["ttf", "otf"] {
+                    let fullPath = path + fontName + "." + ext
+                    
+                    if let fontURL = URL(string: "file://" + fullPath),
+                       let fontDataProvider = CGDataProvider(url: fontURL as CFURL),
+                       let font = CGFont(fontDataProvider) {
+                        
+                        var error: Unmanaged<CFError>?
+                        if CTFontManagerRegisterGraphicsFont(font, &error) {
+                            print("Successfully registered font: \(fontName)")
+                            fontRegistered = true
+                            registeredCount += 1
+                            break
+                        } else {
+                            if let unwrappedError = error?.takeRetainedValue() {
+                                print("Failed to register font: \(fontName) with error: \(unwrappedError)")
+                            }
+                        }
+                    }
+                }
+                
+                if fontRegistered {
+                    break
+                }
+            }
+            
+            if !fontRegistered {
+                print("⚠️ Could not register font: \(fontName)")
+                // Fallback - try direct registration with the font file name
+                if let fontURL = Bundle.main.url(forResource: fontName, withExtension: "ttf") {
+                    var error: Unmanaged<CFError>?
+                    if let fontDataProvider = CGDataProvider(url: fontURL as CFURL),
+                       let font = CGFont(fontDataProvider),
+                       CTFontManagerRegisterGraphicsFont(font, &error) {
+                        print("Successfully registered font through fallback: \(fontName)")
+                        registeredCount += 1
+                    } else {
+                        print("⚠️ Fallback also failed for font: \(fontName)")
+                    }
+                }
+            }
+        }
+        
+        print("Font registration complete. Registered \(registeredCount)/\(fontNames.count) fonts.")
+        fontsRegistered = true
+    }
+    
+    // Helper to list all available fonts - useful for debugging
+    func printAvailableFonts() {
+        for family in UIFont.familyNames.sorted() {
+            print("Font Family: \(family)")
+            for name in UIFont.fontNames(forFamilyName: family) {
+                print("   Font: \(name)")
+            }
+        }
+    }
+}
+
 @main
 struct PTChampionApp: App {
     // Instantiate AuthViewModel as a StateObject to keep it alive
@@ -13,7 +107,16 @@ struct PTChampionApp: App {
     
     // Initialize app appearance
     init() {
-        registerFonts()
+        // Use the new FontManager to register fonts
+        FontManager.shared.registerFonts()
+        
+        #if DEBUG
+        // Print available fonts for debugging
+        print("--- DEBUG: Available Fonts ---")
+        FontManager.shared.printAvailableFonts()
+        print("-----------------------------")
+        #endif
+        
         configureAppearance()
     }
     
@@ -66,42 +169,6 @@ struct PTChampionApp: App {
             // Add the SwiftData model container
             .modelContainer(for: WorkoutResultSwiftData.self)
             // Apply preferred color scheme if needed, e.g., .preferredColorScheme(.light)
-        }
-    }
-    
-    private func registerFonts() {
-        let fontPaths = [
-            "Resources/Fonts/BebasNeue-Bold.ttf",
-            "Resources/Fonts/Montserrat-Regular.ttf",
-            "Resources/Fonts/Montserrat-Bold.ttf",
-            "Resources/Fonts/Montserrat-SemiBold.ttf", 
-            "Resources/Fonts/RobotoMono-Bold.ttf",
-            "Resources/Fonts/RobotoMono-Medium.ttf"
-        ]
-        
-        for fontPath in fontPaths {
-            // Split the path to get the filename without extension for logging
-            let fontName = fontPath.components(separatedBy: "/").last?.components(separatedBy: ".").first ?? fontPath
-            
-            // Use URL directly with bundle resource lookup
-            guard let url = Bundle.main.url(forResource: fontPath.components(separatedBy: ".").first, 
-                                           withExtension: "ttf"),
-                  let fontDataProvider = CGDataProvider(url: url as CFURL),
-                  let font = CGFont(fontDataProvider) else {
-                print("⚠️ Failed to register font: \(fontName)")
-                print("   Attempted path: \(fontPath)")
-                continue
-            }
-            
-            var error: Unmanaged<CFError>?
-            if !CTFontManagerRegisterGraphicsFont(font, &error) {
-                print("⚠️ Error registering font: \(fontName)")
-                if let error = error?.takeRetainedValue() {
-                    print("   Error description: \(CFErrorCopyDescription(error))")
-                }
-            } else {
-                print("✅ Successfully registered font: \(fontName)")
-            }
         }
     }
 }

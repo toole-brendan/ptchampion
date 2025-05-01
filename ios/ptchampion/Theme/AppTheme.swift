@@ -121,6 +121,33 @@ public enum AppTheme {
     }
 }
 
+// Extension for Font to provide direct access to custom fonts
+public extension Font {
+    static func bebasNeueBold(size: CGFloat) -> Font {
+        return Font.custom("BebasNeue-Bold", size: size)
+    }
+    
+    static func montserratRegular(size: CGFloat) -> Font {
+        return Font.custom("Montserrat-Regular", size: size)
+    }
+    
+    static func montserratBold(size: CGFloat) -> Font {
+        return Font.custom("Montserrat-Bold", size: size)
+    }
+    
+    static func montserratSemiBold(size: CGFloat) -> Font {
+        return Font.custom("Montserrat-SemiBold", size: size)
+    }
+    
+    static func robotoMonoBold(size: CGFloat) -> Font {
+        return Font.custom("RobotoMono-Bold", size: size)
+    }
+    
+    static func robotoMonoMedium(size: CGFloat) -> Font {
+        return Font.custom("RobotoMono-Medium", size: size)
+    }
+}
+
 public struct Shadow {
     let color: Color
     let radius: CGFloat
