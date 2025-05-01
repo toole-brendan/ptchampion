@@ -4,7 +4,7 @@ class AuthService: AuthServiceProtocol {
     private let networkClient: NetworkClient
     private let useMockAuth: Bool
 
-    init(networkClient: NetworkClient = NetworkClient(), useMockAuth: Bool = true) {
+    init(networkClient: NetworkClient = NetworkClient(), useMockAuth: Bool = false) {
         self.networkClient = networkClient
         self.useMockAuth = useMockAuth
     }
@@ -18,7 +18,8 @@ class AuthService: AuthServiceProtocol {
 
     // MARK: - Protocol Implementation
     func login(credentials: LoginRequest) async throws -> AuthResponse {
-        print("AuthService: Attempting login...")
+        print("AuthService: Attempting login with username: \(credentials.username)...")
+        print("AuthService: Mock auth is disabled, will make real network request")
         
         if useMockAuth {
             print("AuthService: Using mock authentication!")
@@ -41,24 +42,46 @@ class AuthService: AuthServiceProtocol {
             return mockResponse
         }
         
-        let response: AuthResponse = try await networkClient.performRequest(
-            endpointPath: APIEndpoint.login,
-            method: "POST",
-            body: credentials
-        )
+        print("AuthService: Sending real login request to: \(APIEndpoint.login)...")
         
-        guard let userIdInt = Int(response.user.id) else {
-            print("AuthService Error: Could not convert user ID string '\(response.user.id)' to Int.")
-            throw APIError.underlying(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user ID format received from server: '\(response.user.id)'."])) 
+        do {
+            let response: AuthResponse = try await networkClient.performRequest(
+                endpointPath: APIEndpoint.login,
+                method: "POST",
+                body: credentials
+            )
+            
+            print("AuthService: Login response received successfully!")
+            print("AuthService: Token received: \(response.token.prefix(10))...")
+            print("AuthService: User ID: \(response.user.id)")
+            
+            guard let userIdInt = Int(response.user.id) else {
+                print("AuthService Error: Could not convert user ID string '\(response.user.id)' to Int.")
+                throw APIError.underlying(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user ID format received from server: '\(response.user.id)'."])) 
+            }
+            networkClient.saveLoginCredentials(token: response.token, userId: userIdInt)
+            
+            print("AuthService: Login successful, credentials saved.")
+            return response
+        } catch {
+            print("AuthService: Login request failed with error: \(error)")
+            if let apiError = error as? APIError {
+                print("AuthService: API Error details: \(apiError.localizedDescription)")
+                switch apiError {
+                case .requestFailed(let statusCode, let message):
+                    print("AuthService: Request failed with status code: \(statusCode), message: \(message ?? "None")")
+                default:
+                    break
+                }
+            }
+            throw error
         }
-        networkClient.saveLoginCredentials(token: response.token, userId: userIdInt)
-        
-        print("AuthService: Login successful, credentials saved.")
-        return response
     }
 
     func register(userInfo: RegistrationRequest) async throws -> Void {
-        print("AuthService: Attempting registration...")
+        print("AuthService: Attempting registration with username: \(userInfo.username)...")
+        print("AuthService: Registration request details: display name: \(userInfo.displayName ?? "nil")")
+        print("AuthService: Mock auth is disabled, will make real network request")
         
         if useMockAuth {
             print("AuthService: Using mock registration!")
@@ -80,12 +103,28 @@ class AuthService: AuthServiceProtocol {
             return
         }
         
-        try await networkClient.performRequestNoContent(
-            endpointPath: APIEndpoint.register,
-            method: "POST",
-            body: userInfo
-        )
-        print("AuthService: Registration successful.")
+        print("AuthService: Sending real registration request to: \(APIEndpoint.register)...")
+        
+        do {
+            try await networkClient.performRequestNoContent(
+                endpointPath: APIEndpoint.register,
+                method: "POST",
+                body: userInfo
+            )
+            print("AuthService: Registration successful.")
+        } catch {
+            print("AuthService: Registration request failed with error: \(error)")
+            if let apiError = error as? APIError {
+                print("AuthService: API Error details: \(apiError.localizedDescription)")
+                switch apiError {
+                case .requestFailed(let statusCode, let message):
+                    print("AuthService: Request failed with status code: \(statusCode), message: \(message ?? "None")")
+                default:
+                    break
+                }
+            }
+            throw error
+        }
     }
     
     func logout() {

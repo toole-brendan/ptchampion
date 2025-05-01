@@ -42,12 +42,15 @@ struct WorkoutSessionView: View {
                 // Top Bar (Exercise Name, Timer - TODO)
                 HStack {
                     Text(exerciseName)
-                        .headingStyle(size: 20, color: .white)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
                         .shadow(radius: 2)
                     Spacer()
                     // TODO: Add Timer view
                     Text("Time: \(viewModel.elapsedTimeFormatted)")
-                         .statsNumberStyle(size: 18, color: .white)
+                         .font(.system(size: 18, weight: .bold, design: .monospaced))
+                         .foregroundColor(.white)
                          .shadow(radius: 2)
                 }
                 .padding()
@@ -69,9 +72,11 @@ struct WorkoutSessionView: View {
                 HStack {
                      VStack {
                          Text("REPS")
-                            .labelStyle(color: .white)
+                            .font(.caption)
+                            .foregroundColor(.white)
                          Text("\(viewModel.repCount)")
-                            .statsNumberStyle(size: 36, color: .white)
+                            .font(.system(size: 36, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white)
                      }
                      .shadow(radius: 2)
 
@@ -103,7 +108,7 @@ struct WorkoutSessionView: View {
                     viewModel.stopWorkout() // Use stop to ensure cleanup
                     dismiss()
                 }
-                .foregroundColor(.brassGold)
+                .foregroundColor(Color("BrassGold"))
             }
         }
         .onAppear {
@@ -164,7 +169,7 @@ struct WorkoutSessionView: View {
                  Label("Done", systemImage: "checkmark.circle.fill")
                     .font(.title)
              }
-             .foregroundColor(.brassGold)
+             .foregroundColor(Color("BrassGold"))
         default:
             EmptyView() // Handle initializing, requestingPermission states
         }
@@ -186,11 +191,15 @@ struct WorkoutSessionView: View {
                         UIApplication.shared.open(url)
                     }
                  }
-                 .buttonStyle(PrimaryButtonStyle())
+                 .padding(.horizontal, 16)
+                 .padding(.vertical, 10)
+                 .background(Color("BrassGold"))
+                 .foregroundColor(.white)
+                 .cornerRadius(8)
              }
              .padding()
              .frame(maxWidth: .infinity, maxHeight: .infinity)
-             .background(Color.tacticalCream.opacity(0.95))
+             .background(Color("Cream").opacity(0.95))
         }
          else if case .error(let message) = viewModel.workoutState {
              VStack {
@@ -202,11 +211,15 @@ struct WorkoutSessionView: View {
                  Button("Done") {
                      dismiss()
                  }
-                 .buttonStyle(PrimaryButtonStyle())
+                 .padding(.horizontal, 16)
+                 .padding(.vertical, 10)
+                 .background(Color("BrassGold"))
+                 .foregroundColor(.white)
+                 .cornerRadius(8)
              }
              .padding()
              .frame(maxWidth: .infinity, maxHeight: .infinity)
-             .background(Color.tacticalCream.opacity(0.95))
+             .background(Color("Cream").opacity(0.95))
          }
     }
 }

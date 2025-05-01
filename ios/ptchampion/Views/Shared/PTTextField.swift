@@ -16,8 +16,8 @@ struct PTTextField: View {
         
         var iconColor: Color {
             switch self {
-            case .valid: return Color(hex: "#10B981") // emerald-500 (success green)
-            case .invalid: return Color(hex: "#DC2626") // red-600 (error red)
+            case .valid: return LegacyColor.fromHex("#10B981") // emerald-500 (success green)
+            case .invalid: return LegacyColor.fromHex("#DC2626") // red-600 (error red)
             default: return .clear
             }
         }
@@ -138,7 +138,7 @@ struct PTTextField: View {
             if case .invalid(let message) = validationState {
                 Text(message)
                     .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                    .foregroundColor(Color(hex: "#DC2626")) // red-600
+                    .foregroundColor(LegacyColor.fromHex("#DC2626")) // red-600
                     .padding(.horizontal, AppConstants.Spacing.xs)
                     .padding(.top, 2)
             }
@@ -153,9 +153,9 @@ struct PTTextField: View {
         
         switch validationState {
         case .valid:
-            return Color(hex: "#10B981").opacity(0.5) // emerald-500
+            return LegacyColor.fromHex("#10B981").opacity(0.5) // emerald-500
         case .invalid:
-            return Color(hex: "#DC2626").opacity(0.5) // red-600
+            return LegacyColor.fromHex("#DC2626").opacity(0.5) // red-600
         case .none:
             return .gridlineGray
         }
@@ -211,5 +211,26 @@ struct PTTextField_Previews: PreviewProvider {
         .padding()
         .background(Color.tacticalCream.opacity(0.5))
         .previewLayout(.sizeThatFits)
+    }
+}
+
+private extension ValidationState {
+    var color: Color {
+        switch self {
+        case .neutral: return AppTheme.Colors.tacticalGray
+        case .valid: return LegacyColor.fromHex("#10B981") // emerald-500 (success green)
+        case .invalid: return LegacyColor.fromHex("#DC2626") // red-600 (error red)
+        }
+    }
+}
+
+private extension ValidationType {
+    var color: Color {
+        switch self {
+        case .email:
+            return LegacyColor.fromHex("#10B981").opacity(0.5) // emerald-500
+        case .password:
+            return LegacyColor.fromHex("#DC2626").opacity(0.5) // red-600
+        }
     }
 } 

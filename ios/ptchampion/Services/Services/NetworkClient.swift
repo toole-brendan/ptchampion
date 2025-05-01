@@ -41,7 +41,7 @@ class NetworkClient {
     private static func getBaseURL() -> URL {
         // Use a direct hardcoded URL instead of trying to read from Info.plist
         // This avoids the repeated warnings when the key is missing from the built Info.plist
-        return URL(string: "https://ptchampion-api.vercel.app/api/v1")!
+        return URL(string: "https://ptchampion-api-westus.azurewebsites.net/api/v1")!
         
         /* Original Info.plist loading code - commented out
         // Debug: Print bundle path and all keys
@@ -203,7 +203,11 @@ class NetworkClient {
         // Encode body if provided
         if let body = body {
             do {
-                request.httpBody = try jsonEncoder.encode(body)
+                let bodyData = try jsonEncoder.encode(body)
+                request.httpBody = bodyData
+                if let bodyString = String(data: bodyData, encoding: .utf8) {
+                    print("NetworkClient: Request body: \(bodyString)")
+                }
             } catch {
                 print("NetworkClient: Failed to encode request body: \(error)")
                 throw APIError.encodingError(error)
@@ -218,6 +222,15 @@ class NetworkClient {
         }
 
         print("NetworkClient: Received status code \(httpResponse.statusCode) for \(url)")
+        
+        // Print response headers for debugging
+        print("NetworkClient: Response headers: \(httpResponse.allHeaderFields)")
+        
+        // DEBUG: Print response body as string
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("NetworkClient: Response body: \(responseString)")
+        }
+        
         guard (200...299).contains(httpResponse.statusCode) else {
             // Try to decode a specific error message from the response body
             let errorMessage = try? jsonDecoder.decode(APIErrorResponse.self, from: data).message
@@ -232,12 +245,25 @@ class NetworkClient {
 
         do {
             let decodedData = try jsonDecoder.decode(Response.self, from: data)
+            print("NetworkClient: Successfully decoded response of type \(Response.self)")
             return decodedData
         } catch {
             print("NetworkClient: Failed to decode response for \(url): \(error)")
             // Provide more context on decoding errors
             if let decodingError = error as? DecodingError {
                  print("NetworkClient: Decoding error details: \(decodingError)")
+                 switch decodingError {
+                 case .keyNotFound(let key, let context):
+                     print("NetworkClient: Missing key: \(key.stringValue) in \(context.codingPath)")
+                 case .typeMismatch(let type, let context):
+                     print("NetworkClient: Type mismatch: expected \(type) at \(context.codingPath)")
+                 case .valueNotFound(let type, let context):
+                     print("NetworkClient: Value not found: expected \(type) at \(context.codingPath)")
+                 case .dataCorrupted(let context):
+                     print("NetworkClient: Data corrupted at \(context.codingPath)")
+                 @unknown default:
+                     print("NetworkClient: Unknown decoding error")
+                 }
             }
             throw APIError.decodingError(error)
         }

@@ -1,9 +1,10 @@
 import SwiftUI
 import SwiftData
 import UIKit
-
-// Add import for AppAppearance
 import Foundation
+
+// Define necessary types in this file
+// StyleGuideView will be referenced by the correct relative path
 
 @main
 struct PTChampionApp: App {
@@ -12,12 +13,12 @@ struct PTChampionApp: App {
     
     // Initialize app appearance
     init() {
-        // Configure appearance manually without relying on external class
-        configureUIAppearance()
+        registerFonts()
+        configureAppearance()
     }
     
     // Configure UI appearance manually
-    private func configureUIAppearance() {
+    private func configureAppearance() {
         // Configure TabBar appearance
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
@@ -33,6 +34,13 @@ struct PTChampionApp: App {
         if #available(iOS 15.0, *) {
             UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
         }
+        
+        // Convert SwiftUI Color to UIColor
+        UINavigationBar.appearance().tintColor = UIColor(Color("DeepOps"))
+        UINavigationBar.appearance().titleTextAttributes = [
+            .foregroundColor: UIColor(Color("DeepOps")),
+            .font: UIFont(name: "BebasNeue-Bold", size: 22) ?? UIFont.systemFont(ofSize: 22, weight: .bold)
+        ]
     }
 
     var body: some Scene {
@@ -42,9 +50,15 @@ struct PTChampionApp: App {
                 if authViewModel.isAuthenticated {
                     // Show the main app view (e.g., TabView) when authenticated
                     MainTabView() // Placeholder for the main authenticated view
+                        .onAppear {
+                            print("PTChampionApp: User is authenticated, showing MainTabView")
+                        }
                 } else {
                     // Show the LoginView when not authenticated
                     LoginView()
+                        .onAppear {
+                            print("PTChampionApp: User is NOT authenticated, showing LoginView")
+                        }
                 }
             }
             // Provide the AuthViewModel to the entire view hierarchy
@@ -52,6 +66,42 @@ struct PTChampionApp: App {
             // Add the SwiftData model container
             .modelContainer(for: WorkoutResultSwiftData.self)
             // Apply preferred color scheme if needed, e.g., .preferredColorScheme(.light)
+        }
+    }
+    
+    private func registerFonts() {
+        let fontPaths = [
+            "Resources/Fonts/BebasNeue-Bold.ttf",
+            "Resources/Fonts/Montserrat-Regular.ttf",
+            "Resources/Fonts/Montserrat-Bold.ttf",
+            "Resources/Fonts/Montserrat-SemiBold.ttf", 
+            "Resources/Fonts/RobotoMono-Bold.ttf",
+            "Resources/Fonts/RobotoMono-Medium.ttf"
+        ]
+        
+        for fontPath in fontPaths {
+            // Split the path to get the filename without extension for logging
+            let fontName = fontPath.components(separatedBy: "/").last?.components(separatedBy: ".").first ?? fontPath
+            
+            // Use URL directly with bundle resource lookup
+            guard let url = Bundle.main.url(forResource: fontPath.components(separatedBy: ".").first, 
+                                           withExtension: "ttf"),
+                  let fontDataProvider = CGDataProvider(url: url as CFURL),
+                  let font = CGFont(fontDataProvider) else {
+                print("⚠️ Failed to register font: \(fontName)")
+                print("   Attempted path: \(fontPath)")
+                continue
+            }
+            
+            var error: Unmanaged<CFError>?
+            if !CTFontManagerRegisterGraphicsFont(font, &error) {
+                print("⚠️ Error registering font: \(fontName)")
+                if let error = error?.takeRetainedValue() {
+                    print("   Error description: \(CFErrorCopyDescription(error))")
+                }
+            } else {
+                print("✅ Successfully registered font: \(fontName)")
+            }
         }
     }
 }
@@ -100,11 +150,10 @@ struct MainTabView: View {
                 .tag(Tab.leaderboards)
 
             #if DEBUG
-            // Temporarily comment out ComponentGalleryView reference
-            // Replace with SettingsView to match production
-            SettingsView()
+            // Remove or replace StyleGuideView with a placeholder
+            Text("Style Guide")
                 .tabItem {
-                    Label("Design System", systemImage: "square.grid.2x2.fill")
+                    Label("Style Guide", systemImage: "paintpalette.fill")
                 }
             #else
             SettingsView()

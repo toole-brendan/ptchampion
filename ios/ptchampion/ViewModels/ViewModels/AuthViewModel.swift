@@ -53,11 +53,13 @@ class AuthViewModel: ObservableObject {
     }
 
     func login(email: String, password: String) {
+        print("AuthViewModel: login() called with email=\(email)") // DEBUG
         isLoading = true
         errorMessage = nil
         successMessage = nil
 
         Task {
+            print("AuthViewModel: Starting network login task") // DEBUG
             do {
                 // Use 'username' label as expected by LoginRequest initializer
                 let loginRequest = LoginRequest(username: email, password: password)
@@ -162,6 +164,167 @@ class AuthViewModel: ObservableObject {
         )
         self.errorMessage = nil
         print("AuthViewModel: Developer login successful without token")
+    }
+
+    // Add this new function after the loginAsDeveloper function
+    func testLoginDirect(email: String, password: String) {
+        print("TEST DIRECT LOGIN: Starting with \(email)")
+        isLoading = true
+        errorMessage = nil
+        
+        // Create the request object - same as in the async version
+        let loginRequest = LoginRequest(username: email, password: password)
+        
+        // Dispatch to avoid blocking UI
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            print("TEST DIRECT LOGIN: Background thread started")
+            
+            guard let self = self else {
+                print("TEST DIRECT LOGIN: Self was deallocated")
+                return
+            }
+            
+            // Force direct network request using URLSession
+            let url = URL(string: "https://ptchampion-api-westus.azurewebsites.net/api/v1/auth/login")!
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+            
+            do {
+                // Encode request
+                let jsonData = try JSONEncoder().encode(loginRequest)
+                request.httpBody = jsonData
+                print("TEST DIRECT LOGIN: Request body: \(String(data: jsonData, encoding: .utf8) ?? "nil")")
+                
+                // Send request synchronously (still in background thread)
+                let semaphore = DispatchSemaphore(value: 0)
+                var responseData: Data?
+                var responseError: Error?
+                
+                let task = URLSession.shared.dataTask(with: request) { data, response, error in
+                    responseData = data
+                    responseError = error
+                    print("TEST DIRECT LOGIN: Network callback received")
+                    if let httpResponse = response as? HTTPURLResponse {
+                        print("TEST DIRECT LOGIN: Status code: \(httpResponse.statusCode)")
+                    }
+                    semaphore.signal()
+                }
+                
+                print("TEST DIRECT LOGIN: Starting network request")
+                task.resume()
+                
+                // Wait for response with timeout
+                let timeoutResult = semaphore.wait(timeout: .now() + 10.0)
+                
+                if timeoutResult == .timedOut {
+                    print("TEST DIRECT LOGIN: Network request timed out after 10 seconds")
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Login request timed out"
+                        self.isLoading = false
+                    }
+                    return
+                }
+                
+                if let error = responseError {
+                    print("TEST DIRECT LOGIN: Network error: \(error)")
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Network error: \(error.localizedDescription)"
+                        self.isLoading = false
+                    }
+                    return
+                }
+                
+                guard let data = responseData else {
+                    print("TEST DIRECT LOGIN: No data received")
+                    DispatchQueue.main.async {
+                        self.errorMessage = "No data received from server"
+                        self.isLoading = false
+                    }
+                    return
+                }
+                
+                print("TEST DIRECT LOGIN: Response data: \(String(data: data, encoding: .utf8) ?? "nil")")
+                
+                // Parse the JSON response
+                do {
+                    // Try to decode the response as a dictionary first
+                    if let jsonDict = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                        print("TEST DIRECT LOGIN: Raw JSON: \(jsonDict)")
+                        
+                        // Extract the token
+                        if let accessToken = jsonDict["access_token"] as? String {
+                            print("TEST DIRECT LOGIN: Successfully extracted access_token")
+                            
+                            // Get user ID from the user dictionary
+                            if let userDict = jsonDict["user"] as? [String: Any],
+                               let userId = userDict["id"] as? Int {
+                                
+                                print("TEST DIRECT LOGIN: Extracted user ID: \(userId)")
+                                
+                                // Update UI and save token on main thread
+                                DispatchQueue.main.async { [weak self] in
+                                    guard let self = self else { return }
+                                    
+                                    // First update isAuthenticated state - do this first!
+                                    self.isAuthenticated = true
+                                    print("TEST DIRECT LOGIN: Set isAuthenticated = true")
+                                    
+                                    // Save token to keychain
+                                    do {
+                                        try self.keychainService.saveToken(accessToken)
+                                        print("TEST DIRECT LOGIN: Token saved to keychain")
+                                        
+                                        // Create a User object
+                                        let displayName = userDict["displayName"] as? String
+                                        let username = userDict["username"] as? String
+                                        
+                                        // Create a User model object
+                                        let user = User(
+                                            id: String(userId), // Convert Int to String
+                                            email: username ?? "unknown",
+                                            firstName: displayName,
+                                            lastName: nil,
+                                            profilePictureUrl: userDict["profilePictureUrl"] as? String
+                                        )
+                                        
+                                        // Update view model state
+                                        self.currentUser = user
+                                        self.isLoading = false
+                                        self.errorMessage = nil
+                                        print("TEST DIRECT LOGIN: Authentication state updated, isAuthenticated = true")
+                                    } catch {
+                                        print("TEST DIRECT LOGIN: Failed to save token: \(error)")
+                                        self.errorMessage = "Failed to save login credentials: \(error.localizedDescription)"
+                                        self.isLoading = false
+                                    }
+                                }
+                                return
+                            }
+                        }
+                    }
+                    
+                    // If we get here, we couldn't parse the token or user properly
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Could not process login response properly"
+                        self.isLoading = false
+                    }
+                } catch {
+                    print("TEST DIRECT LOGIN: JSON parsing error: \(error)")
+                    DispatchQueue.main.async {
+                        self.errorMessage = "Response parsing error: \(error.localizedDescription)"
+                        self.isLoading = false
+                    }
+                }
+                
+            } catch {
+                print("TEST DIRECT LOGIN: JSON encoding error: \(error)")
+                DispatchQueue.main.async {
+                    self.errorMessage = "Request encoding error: \(error.localizedDescription)"
+                    self.isLoading = false
+                }
+            }
+        }
     }
 }
 

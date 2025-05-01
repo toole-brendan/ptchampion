@@ -13,8 +13,8 @@ struct Badge: View {
             case .primary: return .brassGold
             case .secondary: return .armyTan
             case .outline: return .clear
-            case .destructive: return Color(hex: "#DC2626") // red-600 from Tailwind
-            case .success: return Color(hex: "#10B981") // emerald-500 from Tailwind
+            case .destructive: return LegacyColor.fromHex("#DC2626") // red-600 from Tailwind
+            case .success: return LegacyColor.fromHex("#10B981") // emerald-500 from Tailwind
             }
         }
         
@@ -111,5 +111,17 @@ struct Badge_Previews: PreviewProvider {
         .padding()
         .background(Color.tacticalCream.opacity(0.5))
         .previewLayout(.sizeThatFits)
+    }
+}
+
+private extension BadgeType {
+    var color: Color {
+        switch self {
+        case .primary: return AppTheme.Colors.brassGold
+        case .secondary: return AppTheme.Colors.armyTan
+        case .outline: return .clear
+        case .destructive: return LegacyColor.fromHex("#DC2626") // red-600 from Tailwind
+        case .success: return LegacyColor.fromHex("#10B981") // emerald-500 from Tailwind
+        }
     }
 } 

@@ -26,12 +26,12 @@ struct MetricCard: View {
     
     var body: some View {
         Button(action: { self.action?() }) {
-            VStack(alignment: .leading, spacing: AppConstants.Spacing.sm) {
+            VStack(alignment: .leading, spacing: AppTheme.Spacing.itemSpacing) {
                 // Title row with optional icon
-                HStack(spacing: AppConstants.Spacing.xs) {
+                HStack(spacing: 4) {
                     Text(title)
-                        .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.sm))
-                        .foregroundColor(.tacticalGray)
+                        .font(AppTheme.Typography.bodySemiBold(size: 13))
+                        .foregroundColor(AppTheme.Colors.textTertiary)
                         .textCase(.uppercase)
                     
                     Spacer()
@@ -41,37 +41,37 @@ struct MetricCard: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 16, height: 16)
-                            .foregroundColor(.brassGold)
+                            .foregroundColor(AppTheme.Colors.brassGold)
                     }
                 }
                 
                 // Value with optional unit
-                HStack(alignment: .firstTextBaseline, spacing: AppConstants.Spacing.xs) {
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(value)
-                        .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.xl))
-                        .foregroundColor(.commandBlack)
+                        .font(AppTheme.Typography.bodyBold(size: 20))
+                        .foregroundColor(AppTheme.Colors.textPrimary)
                     
                     if let unit = unit {
                         Text(unit)
-                            .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                            .foregroundColor(.tacticalGray)
-                            .padding(.leading, -AppConstants.Spacing.xs / 2)
+                            .font(AppTheme.Typography.body(size: 14))
+                            .foregroundColor(AppTheme.Colors.textTertiary)
+                            .padding(.leading, -2)
                     }
                 }
                 
                 // Optional description
                 if let description = description {
                     Text(description)
-                        .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                        .foregroundColor(.tacticalGray)
+                        .font(AppTheme.Typography.body(size: 13))
+                        .foregroundColor(AppTheme.Colors.textTertiary)
                         .lineLimit(1)
                 }
             }
-            .padding(AppConstants.Spacing.md)
+            .padding(AppTheme.Spacing.contentPadding)
             .frame(maxWidth: .infinity, minHeight: 100, alignment: .leading)
-            .background(Color.white)
-            .cornerRadius(AppConstants.Radius.md)
-            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+            .background(AppTheme.Colors.cardBackground)
+            .cornerRadius(AppTheme.Radius.card)
+            .withShadow(AppTheme.Shadows.card)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -99,8 +99,8 @@ struct MetricCard: View {
 // Preview provider
 struct MetricCard_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppConstants.Spacing.md) {
-            HStack(spacing: AppConstants.Spacing.md) {
+        VStack(spacing: AppTheme.Spacing.cardGap) {
+            HStack(spacing: AppTheme.Spacing.cardGap) {
                 MetricCard(
                     title: "TOTAL WORKOUTS",
                     value: 42,
@@ -125,7 +125,7 @@ struct MetricCard_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(Color.tacticalCream.opacity(0.5))
+        .background(AppTheme.Colors.background.opacity(0.5))
         .previewLayout(.sizeThatFits)
     }
 } 
