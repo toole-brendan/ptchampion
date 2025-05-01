@@ -61,6 +61,12 @@
 		BF63E4742DB2937C0037CD02 /* PTChampionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */; };
 		BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4752DB453140037CD02 /* pt_champion_logo.png */; };
 		BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4772DB454230037CD02 /* Assets.xcassets */; };
+		BF90A0082DBAF50000000008 /* BebasNeue-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */; };
+		BF90A0092DBAF50000000009 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
+		BF90A00A2DBAF5000000000A /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */; };
+		BF90A00B2DBAF5000000000B /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */; };
+		BF90A00C2DBAF5000000000C /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
+		BF90A00D2DBAF5000000000D /* RobotoMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -138,6 +144,26 @@
 		BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTChampionApp.swift; sourceTree = "<group>"; };
 		BF63E4752DB453140037CD02 /* pt_champion_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pt_champion_logo.png; sourceTree = "<group>"; };
 		BF63E4772DB454230037CD02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF90A0062DBAF50000000007 /* Copy Fonts */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000007 /* Copy Fonts */; };
+		BF90A0002DBAF50000000000 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */,
+				BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */,
+				BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */,
+				BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */,
+				BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */,
+				BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "BebasNeue-Bold.ttf"; path = "Resources/Fonts/BebasNeue-Bold.ttf"; sourceTree = "<group>"; };
+		BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Montserrat-Regular.ttf"; path = "Resources/Fonts/Montserrat-Regular.ttf"; sourceTree = "<group>"; };
+		BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Montserrat-Bold.ttf"; path = "Resources/Fonts/Montserrat-Bold.ttf"; sourceTree = "<group>"; };
+		BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Montserrat-SemiBold.ttf"; path = "Resources/Fonts/Montserrat-SemiBold.ttf"; sourceTree = "<group>"; };
+		BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "RobotoMono-Bold.ttf"; path = "Resources/Fonts/RobotoMono-Bold.ttf"; sourceTree = "<group>"; };
+		BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "RobotoMono-Medium.ttf"; path = "Resources/Fonts/RobotoMono-Medium.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -168,16 +194,10 @@
 		BF63E3B02DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
-				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
-				BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */,
-				BF63E4772DB454230037CD02 /* Assets.xcassets */,
-				BF63E3EA2DB1C9F80037CD02 /* Grading */,
-				BF63E3E92DB1C9E70037CD02 /* Utils */,
-				BF63E3E82DB1C9AC0037CD02 /* Services */,
-				BF63E3E72DB1C9910037CD02 /* ViewModels */,
-				BF63E3E62DB1C8B90037CD02 /* Views */,
-				BF63E3E52DB1C89D0037CD02 /* Models */,
+				BF63E3BB2DB1C84E0037CD02 /* ptchampion */,
 				BF63E3BA2DB1C84E0037CD02 /* Products */,
+				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
+				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
 			);
 			sourceTree = "<group>";
 		};
@@ -191,20 +211,36 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		BF63E3BB2DB1C84E0037CD02 /* ptchampion */ = {
+			isa = PBXGroup;
+			children = (
+				BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */,
+				BF63E4492DB1EB980037CD02 /* ContentView.swift */,
+				BF63E3E52DB1C89D0037CD02 /* Models */,
+				BF63E3E82DB1C9AC0037CD02 /* Services */,
+				BF63E46A2DB1EBB00037CD02 /* Theme */,
+				BF63E3E62DB1C8B90037CD02 /* Views */,
+				BF63E3E72DB1C9910037CD02 /* ViewModels */,
+				BF63E3EA2DB1C9F80037CD02 /* Grading */,
+				BF63E3E92DB1C9E70037CD02 /* Utils */,
+				BF63E4772DB454230037CD02 /* Assets.xcassets */,
+			);
+			sourceTree = "<group>";
+		};
 		BF63E3E52DB1C89D0037CD02 /* Models */ = {
 			isa = PBXGroup;
 			children = (
 				BF63E4042DB1CF5A0037CD02 /* Models */,
 			);
-			path = Models;
+			name = Models;
 			sourceTree = "<group>";
 		};
 		BF63E3E62DB1C8B90037CD02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				BF63E44A2DB1EB980037CD02 /* Views */,
+				 BF63E44A2DB1EB980037CD02 /* Views */,
 			);
-			path = Views;
+			name = Views;
 			sourceTree = "<group>";
 		};
 		BF63E3E72DB1C9910037CD02 /* ViewModels */ = {
@@ -212,7 +248,7 @@
 			children = (
 				BF63E45F2DB1EBA40037CD02 /* ViewModels */,
 			);
-			path = ViewModels;
+			name = ViewModels;
 			sourceTree = "<group>";
 		};
 		BF63E3E82DB1C9AC0037CD02 /* Services */ = {
@@ -220,23 +256,23 @@
 			children = (
 				BF63E4212DB1EB830037CD02 /* Services */,
 			);
-			path = Services;
+			name = Services;
 			sourceTree = "<group>";
 		};
 		BF63E3E92DB1C9E70037CD02 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				BF63E40E2DB1EB650037CD02 /* Utils */,
+				 BF63E40E2DB1EB650037CD02 /* Utils */,
 			);
-			path = Utils;
+			name = Utils;
 			sourceTree = "<group>";
 		};
 		BF63E3EA2DB1C9F80037CD02 /* Grading */ = {
 			isa = PBXGroup;
 			children = (
-				BF63E46A2DB1EBAF0037CD02 /* Grading */,
+				 BF63E46A2DB1EBAF0037CD02 /* Grading */,
 			);
-			path = Grading;
+			name = Grading;
 			sourceTree = "<group>";
 		};
 		BF63E4042DB1CF5A0037CD02 /* Models */ = {
@@ -404,16 +440,39 @@
 			path = Grading;
 			sourceTree = "<group>";
 		};
+		BF90A0002DBAF50000000000 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */,
+				BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */,
+				BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */,
+				BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */,
+				BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */,
+				BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */,
+			);
+			path = Fonts;
+			sourceTree = "<group>";
+		};
+		BF63E46A2DB1EBB00037CD02 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				BF63E40D2DB1EB650037CD02 /* Theme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		BF63E3B82DB1C84E0037CD02 /* ptchampion */ = {
 			isa = PBXNativeTarget;
+			
 			buildConfigurationList = BF63E3DC2DB1C84F0037CD02 /* Build configuration list for PBXNativeTarget "ptchampion" */;
 			buildPhases = (
 				BF63E3B52DB1C84E0037CD02 /* Sources */,
 				BF63E3B62DB1C84E0037CD02 /* Frameworks */,
 				BF63E3B72DB1C84E0037CD02 /* Resources */,
+				BF90A0072DBAF50000000007 /* Copy Fonts */,
 			);
 			buildRules = (
 			);
@@ -517,6 +576,13 @@
 			files = (
 				BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */,
 				BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */,
+				/* Font Resources using new build file IDs */
+				BF90A0082DBAF50000000008 /* BebasNeue-Bold.ttf in Resources */,
+				BF90A0092DBAF50000000009 /* Montserrat-Regular.ttf in Resources */,
+				BF90A00A2DBAF5000000000A /* Montserrat-Bold.ttf in Resources */,
+				BF90A00B2DBAF5000000000B /* Montserrat-SemiBold.ttf in Resources */,
+				BF90A00C2DBAF5000000000C /* RobotoMono-Bold.ttf in Resources */,
+				BF90A00D2DBAF5000000000D /* RobotoMono-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -933,6 +999,52 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BF90A0072DBAF50000000007 /* Copy Fonts */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				// Maybe add "$(SRCROOT)/ios/ptchampion/Resources/Fonts" as input path? Optional.
+			);
+			name = "Copy Fonts";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				// Define output paths to help Xcode understand dependencies
+                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/BebasNeue-Bold.ttf",
+                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Montserrat-Regular.ttf",
+                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Montserrat-Bold.ttf",
+                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Montserrat-SemiBold.ttf",
+                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/RobotoMono-Bold.ttf",
+                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/RobotoMono-Medium.ttf",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			// Ensure SRCROOT is relative to the project file location (ios/ptchampion)
+			shellScript = "# Ensure SRCROOT is correct. If script is in ios/ptchampion, SRCROOT should be ios/ptchampion
+# If running from workspace root, adjust path.
+SCRIPT_DIR=$(dirname \"$0\")
+FONTS_DIR=\"${SRCROOT}/Resources/Fonts\"
+DEST_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"
+
+echo \"Copying fonts from ${FONTS_DIR} to ${DEST_DIR}\"
+mkdir -p \"${DEST_DIR}\"
+
+# Check if source dir exists
+if [ -d \"${FONTS_DIR}\" ]; then
+  /bin/cp -f \"${FONTS_DIR}\"/*.ttf \"${DEST_DIR}/\"
+  /bin/cp -f \"${FONTS_DIR}\"/*.otf \"${DEST_DIR}/\" 2>/dev/null || :
+else 
+  echo \"warning: Font source directory not found: ${FONTS_DIR}\"
+fi
+";
+		};
+/* End PBXShellScriptBuildPhase section */
 	};
 	rootObject = BF63E3B12DB1C84E0037CD02 /* Project object */;
 }
