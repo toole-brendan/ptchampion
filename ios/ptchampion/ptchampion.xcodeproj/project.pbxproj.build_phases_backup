@@ -7,11 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BF50A27A2DC5870000534542 /* BebasNeue-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */; };
+		BF50A27B2DC5870000534542 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
 		BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */; };
 		BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */; };
 		BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
 		BF50A27F2DC5870000534542 /* RobotoMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */; };
-		BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
 		BF63E4052DB1CF5A0037CD02 /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E3FD2DB1CF5A0037CD02 /* Enums.swift */; };
 		BF63E4062DB1CF5A0037CD02 /* UserProfileModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4012DB1CF5A0037CD02 /* UserProfileModels.swift */; };
 		BF63E4072DB1CF5A0037CD02 /* LeaderboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E3FE2DB1CF5A0037CD02 /* LeaderboardModels.swift */; };
@@ -637,9 +638,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */,
 				BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */,
 				BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */,
+				BF50A27A2DC5870000534542 /* BebasNeue-Bold.ttf in Resources */,
+				BF50A27B2DC5870000534542 /* Montserrat-Regular.ttf in Resources */,
 				BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */,
 				BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */,
 				BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */,
