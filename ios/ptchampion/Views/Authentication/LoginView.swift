@@ -89,17 +89,30 @@ struct LoginView: View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 24) {
-                    // Logo - Simplified loading
-                    Image("pt_champion_logo") // Directly use the asset name
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 120)
-                        .foregroundColor(AppTheme.Colors.brassGold)
-                        .padding(.top, 60)
-                        // Allow opening dev options by tapping logo 5 times
-                        .onTapGesture(count: 5) {
-                            showDevOptions = true
+                    // Logo with fallback
+                    Group {
+                        if UIImage(named: "pt_champion_logo") != nil {
+                            Image("pt_champion_logo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 120, height: 120)
+                                .foregroundColor(AppTheme.Colors.brassGold)
+                        } else {
+                            // Fallback to text if image is missing
+                            Text("PT CHAMPION")
+                                .font(Font.bebasNeueBold(size: 32))
+                                .foregroundColor(AppTheme.Colors.brassGold)
+                                .frame(width: 120, height: 120)
+                                .onAppear {
+                                    print("WARNING: Logo file not found in asset catalog. Please ensure pt_champion_logo.png is added to Assets.xcassets.")
+                                }
                         }
+                    }
+                    .padding(.top, 60)
+                    // Allow opening dev options by tapping logo 5 times
+                    .onTapGesture(count: 5) {
+                        showDevOptions = true
+                    }
                     
                     // Welcome Text
                     Text("Welcome Back")
@@ -124,8 +137,15 @@ struct LoginView: View {
                         // Login Button
                         Button(action: {
                             authViewModel.errorMessage = nil // Clear error before login
-                            authViewModel.login()
-                            // Remove fallback logic - handled by improved AuthViewModel
+                            
+                            // Call the login method with explicit parameters
+                            authViewModel.login(email: authViewModel.username, password: authViewModel.password)
+                            
+                            // Fallback direct call if needed
+                            if authViewModel.username.isEmpty == false && authViewModel.password.isEmpty == false {
+                                print("FALLBACK: Direct login() method call")
+                                authViewModel.login()
+                            }
                         }) {
                             Text("Log In")
                                 .font(Font.montserratBold(size: 16))

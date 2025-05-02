@@ -184,59 +184,70 @@ struct PTChampionApp: App {
         print("DEBUG: PTChampionApp body recomputed")
     }
 
-    // MARK: - RootContentView (no longer needs to manage its own navState)
+    // MARK: - RootContentView
     struct RootContentView: View {
-        // Remove internal navState, rely solely on environment object
-        // @State private var navState: AppScreen = .loading // Removed
+        @EnvironmentObject var navigationState: NavigationState
         @EnvironmentObject var authViewModel: AuthViewModel
-        @EnvironmentObject var navigationState: NavigationState // Use the shared state
 
         var body: some View {
             let _ = { print("DEBUG: RootContentView body recomputed, navState=\(navigationState.currentScreen)") }()
-            NavigationView { // Keep the NavigationView here
-                Group {
-                    // Use navigationState.currentScreen for routing
-                    switch navigationState.currentScreen {
-                    case .loading:
-                        ProgressView()
-                            .onAppear {
-                                print("DEBUG: Loading screen appeared (RootContentView)")
-                                determineInitialScreen() // Call helper on appear
-                            }
-                    case .login:
-                        LoginView()
-                            .onAppear { print("PTChampionApp: Showing LoginView (RootContentView)") }
-                    case .register:
-                        RegistrationView()
-                            .onAppear { print("PTChampionApp: Showing RegisterView (RootContentView)") }
-                    case .main:
-                        MainTabView()
-                            .onAppear { print("PTChampionApp: Showing MainTabView (RootContentView)") }
+            
+            Group {
+                if navigationState.currentScreen == .loading {
+                    ProgressView()
+                    .onAppear {
+                        print("DEBUG: Loading screen appeared (RootContentView)")
+                        determineInitialScreen()
                     }
+                } else if navigationState.currentScreen == .login {
+                    LoginView()
+                    .onAppear { print("PTChampionApp: Showing LoginView (RootContentView)") }
+                } else {
+                    MainTabView()
+                    .onAppear { print("PTChampionApp: Showing MainTabView (RootContentView)") }
                 }
-                .onChange(of: authViewModel.isAuthenticated) { oldVal, newVal in
-                    print("DEBUG: RootContentView onChange detected auth change: \(oldVal) -> \(newVal)")
-                    updateNavigationState() // Update state on auth change
-                }
+            }
+            // Add explicit onChange handler to detect authentication changes
+            .onChange(of: authViewModel.isAuthenticated) { oldVal, newVal in
+                print("DEBUG: RootContentView onChange detected auth change: \(oldVal) -> \(newVal)")
+                // Force immediate navigation state update
+                updateNavigationState()
+            }
+            // Listen for notification as backup mechanism
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("PTChampionAuthStateChanged"))) { _ in
+                print("DEBUG: RootContentView onReceive detected notification")
+                updateNavigationState()
             }
         }
 
-        // MARK: - Helpers (Simplified)
+        // MARK: - Helpers
         private func determineInitialScreen() {
-            // Determine state based on authViewModel and update shared navigationState
-            let target: AppScreen = authViewModel.isAuthenticated ? .main : .login
-            print("DEBUG: Root determineInitialScreen setting target to \(target)")
-            if navigationState.currentScreen != target {
-                 navigationState.navigateTo(target)
+            print("DEBUG: Root determineInitialScreen setting target to login")
+            // DIRECTLY navigate to login instead of keeping loading state
+            navigationState.navigateTo(.login)
+            
+            // Check authentication status
+            authViewModel.checkAuthentication()
+            
+            // The auth check might update navigation state again
+            DispatchQueue.main.async {
+                updateNavigationState()
             }
         }
 
         private func updateNavigationState() {
-            // Update shared navigationState based on auth status
+            print("DEBUG: RootContentView updateNavigationState called. Auth=\(authViewModel.isAuthenticated)")
             let target: AppScreen = authViewModel.isAuthenticated ? .main : .login
-            print("DEBUG: Root updateNavigationState setting target to \(target)")
-            if navigationState.currentScreen != target {
-                navigationState.navigateTo(target)
+            
+            // Force UI update on main thread
+            DispatchQueue.main.async {
+                if navigationState.currentScreen != target {
+                    print("DEBUG: RootContentView changing navigation from \(navigationState.currentScreen) to \(target)")
+                    navigationState.navigateTo(target)
+                    print("DEBUG: RootContentView state updated to \(navigationState.currentScreen)")
+                } else {
+                    print("DEBUG: RootContentView navigation already at \(target)")
+                }
             }
         }
     }
