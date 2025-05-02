@@ -1,215 +1,141 @@
 import Foundation
 import Security
 
-/// Protocol for KeychainService to allow for easy mocking in tests
-protocol KeychainServiceProtocol {
-    func saveToken(_ token: String) throws
-    func getToken() throws -> String?
-    func deleteToken() throws
-    
-    func saveRefreshToken(_ token: String) throws
-    func getRefreshToken() throws -> String?
-    func deleteRefreshToken() throws
-}
+// Concrete implementation using the NetworkClient's Keychain accessors
+class KeychainService: KeychainServiceProtocol {
 
-/// Service for securely storing authentication tokens in the keychain
-class KeychainService {
+    // Shared singleton instance
     static let shared = KeychainService()
-    
-    private init() {}
-    
-    // Keys for storing different tokens
-    private let accessTokenKey = "com.ptchampion.accessToken"
-    private let refreshTokenKey = "com.ptchampion.refreshToken"
-    private let userIdKey = "com.ptchampion.userId"
-    
-    // Store token in the keychain
-    func saveToken(_ token: String, forKey key: String) -> Bool {
-        deleteToken(forKey: key) // Remove existing token if any
-        
-        guard let tokenData = token.data(using: .utf8) else {
-            print("KeychainService: Failed to convert token to data")
-            return false
-        }
-        
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecValueData as String: tokenData,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
-        ]
-        
-        let status = SecItemAdd(query as CFDictionary, nil)
-        if status != errSecSuccess {
-            print("KeychainService: Failed to save token with status: \(status)")
-            return false
-        }
-        
-        return true
+
+    // Share a single NetworkClient instance or inject it
+    // Using a shared instance for simplicity here
+    private let networkClient: NetworkClient
+
+    // Define unique identifiers for the keychain item
+    private let serviceIdentifier: String
+    private let accountIdentifier: String
+
+    // Error type for Keychain operations
+    enum KeychainError: Error {
+        case saveFailed(OSStatus)
+        case loadFailed(OSStatus)
+        case deleteFailed(OSStatus)
+        case dataConversionError
+        case unexpectedData
     }
-    
-    // Retrieve token from the keychain
-    func getToken(forKey key: String) -> String? {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-        
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        
-        guard status == errSecSuccess else {
-            if status == errSecItemNotFound {
-                print("KeychainService: Token not found for key: \(key)")
-            } else {
-                print("KeychainService: Failed to get token with status: \(status)")
-            }
-            return nil
-        }
-        
-        guard let tokenData = result as? Data,
-              let token = String(data: tokenData, encoding: .utf8) else {
-            print("KeychainService: Failed to convert data to token")
-            return nil
-        }
-        
-        return token
+
+    // Initialize with unique service and account identifiers
+    init(service: String = "com.ptchampion.auth", account: String = "jwtToken", networkClient: NetworkClient = NetworkClient()) {
+        self.serviceIdentifier = service
+        self.accountIdentifier = account
+        self.networkClient = networkClient
     }
-    
-    // Delete token from the keychain
-    func deleteToken(forKey key: String) -> Bool {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrAccount as String: key
-        ]
-        
-        let status = SecItemDelete(query as CFDictionary)
-        if status != errSecSuccess && status != errSecItemNotFound {
-            print("KeychainService: Failed to delete token with status: \(status)")
-            return false
-        }
-        
-        return true
-    }
-    
-    // Convenience methods for specific tokens
-    func saveAccessToken(_ token: String) -> Bool {
-        return saveToken(token, forKey: accessTokenKey)
-    }
-    
+
+    // Additional methods for AuthViewModel compatibility
     func getAccessToken() -> String? {
-        return getToken(forKey: accessTokenKey)
+        do {
+            return try loadToken()
+        } catch {
+            print("Error loading access token: \(error)")
+            return nil
+        }
     }
     
-    func saveRefreshToken(_ token: String) -> Bool {
-        return saveToken(token, forKey: refreshTokenKey)
+    func saveAccessToken(_ token: String) {
+        do {
+            try saveToken(token)
+        } catch {
+            print("Error saving access token: \(error)")
+        }
     }
     
-    func getRefreshToken() -> String? {
-        return getToken(forKey: refreshTokenKey)
+    func saveRefreshToken(_ token: String) {
+        // Could be implemented similarly to saveToken but with a different key
+        print("Saving refresh token - not implemented")
     }
     
-    func saveUserId(_ userId: String) -> Bool {
-        return saveToken(userId, forKey: userIdKey)
+    func saveUserId(_ userId: String) {
+        // Store user ID in UserDefaults for now as a quick solution
+        UserDefaults.standard.set(userId, forKey: "com.ptchampion.userId")
     }
     
     func getUserId() -> String? {
-        return getToken(forKey: userIdKey)
+        // Get user ID from UserDefaults for now
+        return UserDefaults.standard.string(forKey: "com.ptchampion.userId")
     }
     
     func clearAllTokens() {
-        _ = deleteToken(forKey: accessTokenKey)
-        _ = deleteToken(forKey: refreshTokenKey)
-        _ = deleteToken(forKey: userIdKey)
-    }
-}
-
-// Extension to make KeychainService compatible with the KeychainServiceProtocol
-extension KeychainService: KeychainServiceProtocol {
-    func saveToken(_ token: String) throws {
-        if !saveAccessToken(token) {
-            throw NSError(domain: "KeychainService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to save token"])
+        do {
+            try deleteToken()
+            UserDefaults.standard.removeObject(forKey: "com.ptchampion.userId")
+        } catch {
+            print("Error clearing tokens: \(error)")
         }
     }
-    
+
+    // Common query dictionary
+    private var keychainQuery: [String: Any] {
+        return [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: serviceIdentifier,
+            kSecAttrAccount as String: accountIdentifier
+        ]
+    }
+
+    func saveToken(_ token: String) throws {
+        guard let tokenData = token.data(using: .utf8) else {
+            throw KeychainError.dataConversionError
+        }
+
+        var query = keychainQuery
+        query[kSecValueData as String] = tokenData
+        // kSecAttrAccessibleWhenUnlockedThisDeviceOnly is a good default level of security
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+
+        // Delete existing item before saving, to ensure update works
+        SecItemDelete(query as CFDictionary)
+
+        // Add the new item
+        let status = SecItemAdd(query as CFDictionary, nil)
+        guard status == errSecSuccess else {
+            throw KeychainError.saveFailed(status)
+        }
+        print("KeychainService: Token saved successfully.")
+    }
+
     func loadToken() throws -> String? {
-        return getAccessToken()
+        var query = keychainQuery
+        query[kSecReturnData as String] = kCFBooleanTrue
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+
+        switch status {
+        case errSecSuccess:
+            guard let tokenData = item as? Data else {
+                throw KeychainError.unexpectedData
+            }
+            guard let token = String(data: tokenData, encoding: .utf8) else {
+                throw KeychainError.dataConversionError
+            }
+            print("KeychainService: Token loaded successfully.")
+            return token
+        case errSecItemNotFound:
+            print("KeychainService: Token not found.")
+            return nil // No token found is not an error in this context
+        default:
+            throw KeychainError.loadFailed(status)
+        }
     }
-    
+
     func deleteToken() throws {
-        if !deleteToken(forKey: accessTokenKey) {
-            throw NSError(domain: "KeychainService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to delete token"])
-        }
-    }
-    
-    func getUserId() -> Int? {
-        if let userIdString = getUserId() {
-            return Int(userIdString)
-        }
-        return nil
-    }
-}
+        let query = keychainQuery
+        let status = SecItemDelete(query as CFDictionary)
 
-/// Errors related to keychain operations
-enum KeychainError: Error {
-    case saveError(status: OSStatus)
-    case readError(status: OSStatus)
-    case deleteError(status: OSStatus)
-    case encodingError
-    
-    var description: String {
-        switch self {
-        case .saveError(let status):
-            return "Failed to save to keychain. Status: \(status)"
-        case .readError(let status):
-            return "Failed to read from keychain. Status: \(status)"
-        case .deleteError(let status):
-            return "Failed to delete from keychain. Status: \(status)"
-        case .encodingError:
-            return "Failed to encode/decode data"
+        guard status == errSecSuccess || status == errSecItemNotFound else {
+            throw KeychainError.deleteFailed(status)
         }
-    }
-}
-
-// MARK: - Extension for App Groups Support
-extension KeychainService {
-    /// Configure keychain for sharing with app group (useful for Watch extensions)
-    /// - Parameter accessGroup: The app group identifier
-    /// - Returns: Self for chaining
-    func configureForSharing(accessGroup: String) -> KeychainService {
-        // This would modify the keychain query to include kSecAttrAccessGroup
-        // For now, just returning self without modification
-        return self
-    }
-}
-
-// MARK: - Mock for Testing/Preview
-class MockKeychainService: KeychainServiceProtocol {
-    private var mockStorage: [String: String] = [:]
-    
-    func saveToken(_ token: String) throws {
-        mockStorage["accessToken"] = token
-    }
-    
-    func getToken() throws -> String? {
-        return mockStorage["accessToken"]
-    }
-    
-    func deleteToken() throws {
-        mockStorage.removeValue(forKey: "accessToken")
-    }
-    
-    func saveRefreshToken(_ token: String) throws {
-        mockStorage["refreshToken"] = token
-    }
-    
-    func getRefreshToken() throws -> String? {
-        return mockStorage["refreshToken"]
-    }
-    
-    func deleteRefreshToken() throws {
-        mockStorage.removeValue(forKey: "refreshToken")
+        print("KeychainService: Token deleted (or was not found).")
     }
 } 

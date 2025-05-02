@@ -81,6 +81,33 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		036C301D3C4BD31536A5DB38 /* Theme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Theme.swift; path = ios/ptchampion/Utils/Theme.swift; sourceTree = "<group>"; };
+		0896D3CC58652E7F3AA81F16 /* LegacyTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LegacyTheme.swift; path = ios/ptchampion/Utils/LegacyTheme.swift; sourceTree = "<group>"; };
+		0931B3D8E17BCDA5E86FB60B /* KeychainServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeychainServiceProtocol.swift; path = ios/ptchampion/Services/KeychainServiceProtocol.swift; sourceTree = "<group>"; };
+		0C55FB537CD89464510351CB /* PullupGrader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PullupGrader.swift; path = ios/ptchampion/Grading/PullupGrader.swift; sourceTree = "<group>"; };
+		2153C095FAAA265FDBF8CDEC /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ContentView.swift; path = ios/ptchampion/ContentView.swift; sourceTree = "<group>"; };
+		24FB2E497639E1A7F1D77176 /* LocationServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LocationServiceProtocol.swift; path = ios/ptchampion/Services/LocationServiceProtocol.swift; sourceTree = "<group>"; };
+		2892D038E7220B6B914E5449 /* LeaderboardServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LeaderboardServiceProtocol.swift; path = ios/ptchampion/Services/LeaderboardServiceProtocol.swift; sourceTree = "<group>"; };
+		35A005289377D4049DA0DF00 /* CameraService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CameraService.swift; path = ios/ptchampion/Services/CameraService.swift; sourceTree = "<group>"; };
+		42546A0696E9D9D72AA6F94C /* BluetoothService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BluetoothService.swift; path = ios/ptchampion/Services/BluetoothService.swift; sourceTree = "<group>"; };
+		45F367CF04108482CCF8067F /* SitupGrader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SitupGrader.swift; path = ios/ptchampion/Grading/SitupGrader.swift; sourceTree = "<group>"; };
+		47E791AAD27FF5E9CD527931 /* WorkoutPersistenceService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutPersistenceService.swift; path = ios/ptchampion/Services/WorkoutPersistenceService.swift; sourceTree = "<group>"; };
+		4BA93D32497CBA59AEA6DD7E /* NetworkClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NetworkClient.swift; path = ios/ptchampion/Services/NetworkClient.swift; sourceTree = "<group>"; };
+		4FE6C18A4E7099CC59BDF024 /* KeychainService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeychainService.swift; path = ios/ptchampion/Services/KeychainService.swift; sourceTree = "<group>"; };
+		506BE50BFFF776BF3B515836 /* WasmerGrading.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WasmerGrading.swift; path = ios/ptchampion/Services/WasmerGrading.swift; sourceTree = "<group>"; };
+		5669DF15B95848DCBF8C3B8B /* PushupGrader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PushupGrader.swift; path = ios/ptchampion/Grading/PushupGrader.swift; sourceTree = "<group>"; };
+		576CD382EDBCE68AE3CE3FFE /* CameraServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CameraServiceProtocol.swift; path = ios/ptchampion/Services/CameraServiceProtocol.swift; sourceTree = "<group>"; };
+		63ABC1301135C01D9FCD4C1F /* AuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthService.swift; path = ios/ptchampion/Services/AuthService.swift; sourceTree = "<group>"; };
+		6B71640BD2C0681E8B410A74 /* PoseDetectorServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PoseDetectorServiceProtocol.swift; path = ios/ptchampion/Services/PoseDetectorServiceProtocol.swift; sourceTree = "<group>"; };
+		7224ABE6FD3C4B1AF08BEF4C /* WorkoutService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutService.swift; path = ios/ptchampion/Services/WorkoutService.swift; sourceTree = "<group>"; };
+		785A722752BAB8CBE5590B95 /* AppAppearance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppAppearance.swift; path = ios/ptchampion/Utils/AppAppearance.swift; sourceTree = "<group>"; };
+		7984617CB69B0B85EB98794C /* BluetoothServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BluetoothServiceProtocol.swift; path = ios/ptchampion/Services/BluetoothServiceProtocol.swift; sourceTree = "<group>"; };
+		7CA3A9250CB63108641ECBA6 /* LocationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LocationService.swift; path = ios/ptchampion/Services/LocationService.swift; sourceTree = "<group>"; };
+		803C3086CF3A2DFCB0CAEBC4 /* LeaderboardService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LeaderboardService.swift; path = ios/ptchampion/Services/LeaderboardService.swift; sourceTree = "<group>"; };
+		86608D344A69A2B932E485FA /* ExerciseGraderProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExerciseGraderProtocol.swift; path = ios/ptchampion/Grading/ExerciseGraderProtocol.swift; sourceTree = "<group>"; };
+		87F0A5ADF205DABF8706837C /* AuthServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthServiceProtocol.swift; path = ios/ptchampion/Services/AuthServiceProtocol.swift; sourceTree = "<group>"; };
+		98E464CC399C2027AF828FE8 /* GenerateTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerateTheme.swift; path = ios/ptchampion/Utils/GenerateTheme.swift; sourceTree = "<group>"; };
+		A01373843A894F7AAEB9A189 /* UnifiedNetworkService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnifiedNetworkService.swift; path = ios/ptchampion/Services/UnifiedNetworkService.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -145,6 +172,10 @@
 		BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "RobotoMono-Bold.ttf"; path = "Resources/Fonts/RobotoMono-Bold.ttf"; sourceTree = "<group>"; };
 		BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "RobotoMono-Medium.ttf"; path = "Resources/Fonts/RobotoMono-Medium.ttf"; sourceTree = "<group>"; };
 		BF90A0072DBAF50000000007 /* CopyFonts.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = CopyFonts.sh; sourceTree = "<group>"; };
+		CC02D28246778EA84A7EA007 /* FeatureFlagService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FeatureFlagService.swift; path = ios/ptchampion/Services/FeatureFlagService.swift; sourceTree = "<group>"; };
+		DFD8D5F1F6FD8E3D8DC90F3D /* PoseDetectorService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PoseDetectorService.swift; path = ios/ptchampion/Services/PoseDetectorService.swift; sourceTree = "<group>"; };
+		E871D2279CBAB7869854BB97 /* NetworkService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NetworkService.swift; path = ios/ptchampion/Services/NetworkService.swift; sourceTree = "<group>"; };
+		FFD8FBF2DF9DDBDE70D654C4 /* WorkoutServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutServiceProtocol.swift; path = ios/ptchampion/Services/WorkoutServiceProtocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -172,14 +203,72 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		79A16A0C7CBBEF900E0FC41F /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				4BA93D32497CBA59AEA6DD7E /* NetworkClient.swift */,
+				6B71640BD2C0681E8B410A74 /* PoseDetectorServiceProtocol.swift */,
+				7224ABE6FD3C4B1AF08BEF4C /* WorkoutService.swift */,
+				42546A0696E9D9D72AA6F94C /* BluetoothService.swift */,
+				87F0A5ADF205DABF8706837C /* AuthServiceProtocol.swift */,
+				FFD8FBF2DF9DDBDE70D654C4 /* WorkoutServiceProtocol.swift */,
+				7984617CB69B0B85EB98794C /* BluetoothServiceProtocol.swift */,
+				4FE6C18A4E7099CC59BDF024 /* KeychainService.swift */,
+				E871D2279CBAB7869854BB97 /* NetworkService.swift */,
+				DFD8D5F1F6FD8E3D8DC90F3D /* PoseDetectorService.swift */,
+				803C3086CF3A2DFCB0CAEBC4 /* LeaderboardService.swift */,
+				24FB2E497639E1A7F1D77176 /* LocationServiceProtocol.swift */,
+				63ABC1301135C01D9FCD4C1F /* AuthService.swift */,
+				2892D038E7220B6B914E5449 /* LeaderboardServiceProtocol.swift */,
+				47E791AAD27FF5E9CD527931 /* WorkoutPersistenceService.swift */,
+				0931B3D8E17BCDA5E86FB60B /* KeychainServiceProtocol.swift */,
+				506BE50BFFF776BF3B515836 /* WasmerGrading.swift */,
+				576CD382EDBCE68AE3CE3FFE /* CameraServiceProtocol.swift */,
+				CC02D28246778EA84A7EA007 /* FeatureFlagService.swift */,
+				35A005289377D4049DA0DF00 /* CameraService.swift */,
+				7CA3A9250CB63108641ECBA6 /* LocationService.swift */,
+				A01373843A894F7AAEB9A189 /* UnifiedNetworkService.swift */,
+			);
+			name = Services;
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B4DE1DA81E8CC8310758592E /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				0896D3CC58652E7F3AA81F16 /* LegacyTheme.swift */,
+				785A722752BAB8CBE5590B95 /* AppAppearance.swift */,
+				98E464CC399C2027AF828FE8 /* GenerateTheme.swift */,
+				036C301D3C4BD31536A5DB38 /* Theme.swift */,
+			);
+			name = Utils;
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		BD199A079A1F7FE4C7B497AD /* Grading */ = {
+			isa = PBXGroup;
+			children = (
+				5669DF15B95848DCBF8C3B8B /* PushupGrader.swift */,
+				45F367CF04108482CCF8067F /* SitupGrader.swift */,
+				0C55FB537CD89464510351CB /* PullupGrader.swift */,
+				86608D344A69A2B932E485FA /* ExerciseGraderProtocol.swift */,
+			);
+			name = Grading;
+			path = Grading;
+			sourceTree = "<group>";
+		};
 		BF63E3B02DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
-				BF63E3BB2DB1C84E0037CD02,
+				BF63E3BB2DB1C84E0037CD02 /*  */,
 				BF63E3BA2DB1C84E0037CD02 /* Products */,
 				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
 				BF71D10F2DC444F9003E1F33 /* Recovered References */,
+				79A16A0C7CBBEF900E0FC41F /* Services */,
+				BD199A079A1F7FE4C7B497AD /* Grading */,
+				B4DE1DA81E8CC8310758592E /* Utils */,
+				2153C095FAAA265FDBF8CDEC /* ContentView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -193,7 +282,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BF63E3BB2DB1C84E0037CD02 = {
+		BF63E3BB2DB1C84E0037CD02 /*  */ = {
 			isa = PBXGroup;
 			children = (
 				BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */,
@@ -458,8 +547,6 @@
 			dependencies = (
 			);
 			name = ptchampion;
-			packageProductDependencies = (
-			);
 			productName = ptchampion;
 			productReference = BF63E3B92DB1C84E0037CD02 /* ptchampion.app */;
 			productType = "com.apple.product-type.application";
@@ -478,8 +565,6 @@
 				BF63E3CA2DB1C84F0037CD02 /* PBXTargetDependency */,
 			);
 			name = ptchampionTests;
-			packageProductDependencies = (
-			);
 			productName = ptchampionTests;
 			productReference = BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -498,8 +583,6 @@
 				BF63E3D42DB1C84F0037CD02 /* PBXTargetDependency */,
 			);
 			name = ptchampionUITests;
-			packageProductDependencies = (
-			);
 			productName = ptchampionUITests;
 			productReference = BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
