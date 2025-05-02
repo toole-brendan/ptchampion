@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 // Concrete implementation using the NetworkClient's Keychain accessors
-class KeychainService: PTChampion.KeychainServiceProtocol {
+class KeychainService: KeychainServiceProtocol {
 
     // Shared singleton instance - wrap in dispatch_once pattern
     private static var _shared: KeychainService?
@@ -127,7 +127,7 @@ class KeychainService: PTChampion.KeychainServiceProtocol {
         print("KeychainService: User ID saved to UserDefaults: \(userId)")
     }
     
-    func getUserId() -> String? {
+    func getUserID() -> String? {
         // Get user ID from UserDefaults for now
         let userId = UserDefaults.standard.string(forKey: "com.ptchampion.userId")
         print("KeychainService: Retrieved User ID from UserDefaults: \(String(describing: userId))")
