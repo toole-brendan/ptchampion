@@ -285,28 +285,6 @@ struct MapViewPlaceholder: View {
     .modelContainer(for: WorkoutResultSwiftData.self, inMemory: true) // Use in-memory store for preview
 }
 
-/* MOCK/DUPLICATE - Remove or ensure only one definition exists
-// Assume KeychainService and its getUserId() method exist
-protocol KeychainServiceProtocol { func getUserId() -> Int? }
-class KeychainService: KeychainServiceProtocol { func getUserId() -> Int? { return 123 } } // Mock
-*/
+// Remove duplicate protocol definitions - use the shared protocols from the Services folder instead
 
-/* MOCK/DUPLICATE - Remove or ensure only one definition exists
-// Assume LocationService and its publishers exist
-protocol LocationServiceProtocol {
-    var authorizationStatusPublisher: AnyPublisher<CLAuthorizationStatus, Never> { get }
-    var locationPublisher: AnyPublisher<CLLocation?, Never> { get }
-    var errorPublisher: AnyPublisher<Error, Never> { get }
-    func requestLocationPermission()
-    func startUpdatingLocation()
-    func stopUpdatingLocation()
-}
-class LocationService: LocationServiceProtocol { // Mock
-    var authorizationStatusPublisher: AnyPublisher<CLAuthorizationStatus, Never> = Just(.authorizedWhenInUse).eraseToAnyPublisher()
-    var locationPublisher: AnyPublisher<CLLocation?, Never> = Just(nil).eraseToAnyPublisher()
-    var errorPublisher: AnyPublisher<Error, Never> = Empty().eraseToAnyPublisher()
-    func requestLocationPermission() {}
-    func startUpdatingLocation() {}
-    func stopUpdatingLocation() {}
-}
-*/ 
+// No more duplicate protocol definitions here 

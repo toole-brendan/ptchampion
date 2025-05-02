@@ -2,7 +2,7 @@ import Foundation
 import Security
 
 // Concrete implementation using the NetworkClient's Keychain accessors
-class KeychainService: KeychainServiceProtocol {
+class KeychainService: PTChampion.KeychainServiceProtocol {
 
     // Shared singleton instance - wrap in dispatch_once pattern
     private static var _shared: KeychainService?
