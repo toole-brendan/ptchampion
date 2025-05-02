@@ -1,103 +1,109 @@
 import Foundation
 
-/// Protocol defining workout service operations
-protocol WorkoutServiceProtocol {
-    func fetchWorkoutHistory() async throws -> [WorkoutHistory]
-    func saveWorkout(_ workout: WorkoutHistory) async throws
-    func deleteWorkout(id: String) async throws
-    func fetchLeaderboard() async throws -> [LeaderboardEntry]
-}
-
-/// Implementation of WorkoutServiceProtocol using NetworkService
+// Implementation of WorkoutServiceProtocol using the shared NetworkClient
 class WorkoutService: WorkoutServiceProtocol {
-    private let networkService: NetworkService
-    
-    init(networkService: NetworkService = NetworkService.shared) {
-        self.networkService = networkService
+
+    private let networkClient: NetworkClient
+
+    // Inject the NetworkClient
+    init(networkClient: NetworkClient = NetworkClient()) {
+        self.networkClient = networkClient
     }
-    
-    /// Fetch workout history from remote API
-    /// - Returns: Array of workout history items
-    func fetchWorkoutHistory() async throws -> [WorkoutHistory] {
-        let response: WorkoutHistoryResponse = try await networkService.request(
-            "/workouts/history",
-            requiresAuth: true
-        )
-        return response.workouts
+
+    // MARK: - API Endpoints (Paths only)
+    private enum APIEndpoint {
+        static let workouts = "/workouts"
+        static let exercises = "/exercises"
+        static func workoutDetail(id: String) -> String { return "/workouts/\(id)" }
+        // static let updateUserLocation = "/profile/location" // Placeholder
     }
-    
-    /// Save a workout to remote API
-    /// - Parameter workout: Workout to save
-    func saveWorkout(_ workout: WorkoutHistory) async throws {
-        let request = SaveWorkoutRequest(
-            exerciseType: workout.exerciseType,
-            reps: workout.reps,
-            distance: workout.distance,
-            duration: workout.duration,
-            date: workout.date
+
+    // MARK: - Protocol Implementation
+
+    // Save a workout, expect the saved record back
+    func saveWorkout(workoutData: InsertUserExerciseRequest) async throws -> UserExerciseRecord {
+        print("WorkoutService: Saving workout...")
+        let savedRecord: UserExerciseRecord = try await networkClient.performRequest(
+            endpointPath: APIEndpoint.workouts,
+            method: "POST",
+            body: workoutData
         )
-        
-        let _: EmptyResponse = try await networkService.request(
-            "/workouts/save",
-            method: .post,
-            body: request,
-            requiresAuth: true
-        )
+        print("WorkoutService: Save workout successful. ID: \(savedRecord.id)")
+        return savedRecord
     }
-    
-    /// Delete a workout by ID
-    /// - Parameter id: ID of workout to delete
-    func deleteWorkout(id: String) async throws {
-        let _: EmptyResponse = try await networkService.request(
-            "/workouts/\(id)",
-            method: .delete,
-            requiresAuth: true
+
+    // Fetch workout history with pagination
+    func fetchWorkoutHistory(page: Int, pageSize: Int) async throws -> PaginatedUserExerciseResponse {
+        print("WorkoutService: Fetching workout history (page: \(page), size: \(pageSize))...")
+        let queryParams = [
+            "page": String(page),
+            "pageSize": String(pageSize)
+        ]
+        let response: PaginatedUserExerciseResponse = try await networkClient.performRequest(
+            endpointPath: APIEndpoint.workouts,
+            method: "GET",
+            queryParams: queryParams
         )
+        print("WorkoutService: Fetched \(response.items.count) history items for page \(response.currentPage)")
+        return response
     }
-    
-    /// Fetch leaderboard data
-    /// - Returns: Array of leaderboard entries
-    func fetchLeaderboard() async throws -> [LeaderboardEntry] {
-        let response: LeaderboardResponse = try await networkService.request(
-            "/leaderboard",
-            requiresAuth: true
+
+    // Fetch list of available exercises
+    func getExercises() async throws -> [Exercise] {
+        print("WorkoutService: Fetching exercises...")
+        let response: [Exercise] = try await networkClient.performRequest(
+            endpointPath: APIEndpoint.exercises,
+            method: "GET"
         )
-        return response.entries
+        print("WorkoutService: Fetched \(response.count) exercises.")
+        return response
+    }
+
+    // Fetch a single workout by its ID
+    func getWorkoutById(id: String) async throws -> UserExerciseRecord {
+        print("WorkoutService: Fetching workout with ID: \(id)")
+        let endpointPath = APIEndpoint.workoutDetail(id: id)
+        let response: UserExerciseRecord = try await networkClient.performRequest(
+            endpointPath: endpointPath,
+            method: "GET"
+        )
+        print("WorkoutService: Fetched workout ID \(response.id)")
+        return response
+    }
+
+    // TODO: Implement other methods from Android WorkoutApiService
+    // func updateUserLocation(location: LocationUpdateRequest) async throws -> Void
+
+    // MARK: - Protocol Stubs (Implement Logic)
+
+    func saveWorkout(result: InsertUserExerciseRequest, authToken: String) async throws -> Void {
+        // TODO: Implement actual API call using networkClient
+        print("WorkoutService: Saving workout...")
+        // Example: Replace with actual network call
+        // Note: Auth token is added automatically by performRequestNoContent if needed
+        // try await networkClient.performRequestNoContent(
+        //     endpointPath: "/workouts", // Adjust endpoint
+        //     method: "POST",
+        //     body: result
+        // )
+        // For now, do nothing
+        print("WorkoutService: Placeholder - Workout save skipped.")
+    }
+
+    func fetchWorkoutHistory(authToken: String) async throws -> [UserExerciseRecord] {
+        // TODO: Implement actual API call using networkClient
+        print("WorkoutService: Fetching workout history...")
+        // Example: Replace with actual network call
+        // Note: Auth token is added automatically by performRequest if needed
+        // let history: [UserExerciseRecord] = try await networkClient.performRequest(
+        //     endpointPath: "/workouts/history", // Adjust endpoint
+        //     method: "GET"
+        // )
+        // return history
+        return [] // Placeholder
     }
 }
 
-// MARK: - Request/Response Models
-
-/// Request model for saving a workout
-struct SaveWorkoutRequest: Encodable {
-    let exerciseType: String
-    let reps: Int?
-    let distance: Double?
-    let duration: TimeInterval
-    let date: Date
-}
-
-/// Response model for workout history
-struct WorkoutHistoryResponse: Decodable {
-    let workouts: [WorkoutHistory]
-}
-
-/// Response model for leaderboard
-struct LeaderboardResponse: Decodable {
-    let entries: [LeaderboardEntry]
-}
-
-// MARK: - Domain Models (if not already defined elsewhere)
-
-/// Workout history item
-struct LeaderboardEntry: Identifiable, Decodable {
-    let id: String
-    let userId: String
-    let userName: String
-    let avatarUrl: String?
-    let score: Int
-    let rank: Int
-    let isCurrentUser: Bool
-}
-
-// Workout history model is already defined in WorkoutHistoryViewModel.swift 
+// Note: Relies on aligned models: InsertUserExerciseRequest, UserExerciseRecord,
+// PaginatedUserExerciseResponse, Exercise.
+// APIError moved to NetworkClient.swift 
