@@ -65,15 +65,12 @@ struct SettingsView: View {
 }
 
 #Preview {
-    let view = {
-        // Create a mock view model with a logged-in user for preview
-        let mockAuth = AuthViewModel()
-        mockAuth.isAuthenticated = true
-        mockAuth.currentUser = User(id: "preview-id", email: "preview@user.com", firstName: "Preview", lastName: "User", profilePictureUrl: nil)
-        
-        return SettingsView()
-            .environmentObject(mockAuth)
-    }()
-    
-    return view
+    // Directly create and configure the view within the preview
+    SettingsView()
+        .environmentObject({ // Use a closure to configure the mock object inline
+            let mockAuth = AuthViewModel()
+            mockAuth._isAuthenticatedInternal = true // Set internal state for preview
+            mockAuth.currentUser = User(id: "test", email: "test@example.com", firstName: "Test", lastName: "User", profilePictureUrl: nil)
+            return mockAuth
+        }())
 } 

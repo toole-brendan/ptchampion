@@ -11,16 +11,33 @@ struct RegistrationRequest: Codable {
     let username: String
     let password: String
     let displayName: String?
+    let email: String
     let profilePictureUrl: String?
     let location: String?
-    // Latitude/Longitude could be added if needed for registration
-
+    let latitude: Double?
+    let longitude: Double?
+    
     enum CodingKeys: String, CodingKey {
         case username
         case password
         case displayName = "display_name"
+        case email
         case profilePictureUrl = "profile_picture_url"
         case location
+        case latitude
+        case longitude
+    }
+    
+    // Initializer to create registration request from different inputs
+    init(username: String, password: String, displayName: String? = nil, email: String? = nil, profilePictureUrl: String? = nil, location: String? = nil, latitude: Double? = nil, longitude: Double? = nil) {
+        self.username = username
+        self.password = password
+        self.displayName = displayName
+        self.email = email ?? username // Fallback to username if email not provided
+        self.profilePictureUrl = profilePictureUrl
+        self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
     }
 }
 

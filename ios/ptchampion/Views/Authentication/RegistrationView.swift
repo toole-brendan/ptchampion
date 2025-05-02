@@ -2,129 +2,188 @@ import SwiftUI
 import Foundation
 
 struct RegistrationView: View {
-    @EnvironmentObject var viewModel: AuthViewModel
-    @Environment(\.dismiss) var dismiss // To dismiss the view if needed
-
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var navigationState: NavigationState
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.presentationMode) var presentationMode
+    
+    // Form fields
     @State private var email = ""
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var firstName = ""
     @State private var lastName = ""
-
-    // Form validation state
+    
+    // UI state
+    @State private var isLoading = false
     @State private var passwordMismatch = false
-
+    @State private var keyboardHeight: CGFloat = 0
+    
     private var isFormValid: Bool {
         !email.isEmpty && !password.isEmpty && !confirmPassword.isEmpty &&
         !firstName.isEmpty && !lastName.isEmpty && password == confirmPassword
     }
-
+    
     var body: some View {
-        VStack(spacing: 15) {
-            Text("Create Account")
-                .font(.title)
-                .fontWeight(.bold)
-                .padding(.bottom, 20)
-
-            TextField("First Name", text: $firstName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .textContentType(.givenName)
-                .submitLabel(.next)
-
-            TextField("Last Name", text: $lastName)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .textContentType(.familyName)
-                .submitLabel(.next)
-
-            TextField("Email", text: $email)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .keyboardType(.emailAddress)
-                .autocapitalization(.none)
-                .textContentType(.emailAddress)
-                .submitLabel(.next)
-
-            SecureField("Password", text: $password)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .textContentType(.newPassword)
-                .submitLabel(.next)
-                .onChange(of: password) { _ in validatePasswords() }
-
-            SecureField("Confirm Password", text: $confirmPassword)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .textContentType(.newPassword)
-                .submitLabel(.done)
-                .onChange(of: confirmPassword) { _ in validatePasswords() }
-
-            if passwordMismatch {
-                Text("Passwords do not match.")
-                    .foregroundColor(.red)
-                    .font(.caption)
-            }
-
-            if let errorMessage = viewModel.errorMessage {
-                Text(errorMessage)
-                    .foregroundColor(.red)
-                    .font(.caption)
-                    .padding(.top, 5)
-            }
-
-            if let successMessage = viewModel.successMessage {
-                 Text(successMessage)
-                     .foregroundColor(.green)
-                     .font(.caption)
-                     .padding(.top, 5)
-            }
-
-            if viewModel.isLoading {
-                 ProgressView()
-                     .padding(.vertical, 10)
-            } else {
-                Button("Register") {
-                    if validatePasswords() {
-                        viewModel.register(username: email,
-                                           password: password,
-                                           displayName: "\(firstName) \(lastName)")
+        ScrollView {
+            VStack(spacing: 24) {
+                // Logo
+                Image(uiImage: UIImage(named: "pt_champion_logo") ?? 
+                      (Bundle.main.path(forResource: "pt_champion_logo", ofType: "png").flatMap { UIImage(contentsOfFile: $0) }) ?? 
+                      UIImage(systemName: "shield.lefthalf.filled")!)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+                    .foregroundColor(Color("BrassGold"))
+                    .padding(.top, 40)
+                
+                Text("Create Account")
+                    .font(.custom("BebasNeue-Bold", size: 36))
+                    .foregroundColor(Color("CommandBlack"))
+                    .padding(.bottom, 10)
+                
+                // Form fields with consistent styling
+                VStack(spacing: 16) {
+                    PTTextField(
+                        placeholder: "First Name",
+                        text: $firstName
+                    )
+                    
+                    PTTextField(
+                        placeholder: "Last Name",
+                        text: $lastName
+                    )
+                    
+                    PTTextField(
+                        placeholder: "Email",
+                        text: $email,
+                        keyboardType: .emailAddress
+                    )
+                    
+                    PTTextField(
+                        placeholder: "Password",
+                        text: $password,
+                        isSecure: true
+                    )
+                    .onChange(of: password) { _, _ in validatePasswords() }
+                    
+                    PTTextField(
+                        placeholder: "Confirm Password",
+                        text: $confirmPassword,
+                        isSecure: true
+                    )
+                    .onChange(of: confirmPassword) { _, _ in validatePasswords() }
+                    
+                    if passwordMismatch {
+                        Text("Passwords do not match.")
+                            .foregroundColor(.red)
+                            .font(.caption)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
                     }
+                    
+                    if let errorMessage = authViewModel.errorMessage {
+                        Text(errorMessage)
+                            .foregroundColor(.red)
+                            .font(.caption)
+                            .padding(.top, 5)
+                    }
+                    
+                    if let successMessage = authViewModel.successMessage {
+                         Text(successMessage)
+                             .foregroundColor(.green)
+                             .font(.caption)
+                             .padding(.top, 5)
+                    }
+                    
+                    // Register button
+                    Button(action: {
+                        authViewModel.errorMessage = nil
+                        isLoading = true
+                        
+                        // Create display name from first and last name
+                        let displayName = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespacesAndNewlines)
+                        
+                        if validatePasswords() {
+                            authViewModel.register(username: email,
+                                                  password: password,
+                                                  displayName: displayName)
+                        }
+                        
+                        // Add haptic feedback
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.success)
+                    }) {
+                        if authViewModel.isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: Color("Cream")))
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        } else {
+                            Text("CREATE ACCOUNT")
+                                .font(.custom("Montserrat-Bold", size: 16))
+                                .foregroundColor(Color("Cream"))
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                        }
+                    }
+                    .background(isFormValid ? Color("BrassGold") : Color.gray.opacity(0.5))
+                    .cornerRadius(8)
+                    .disabled(!isFormValid || authViewModel.isLoading)
+                    .padding(.top, 10)
+                    
+                    // Back to login button
+                    Button(action: {
+                        // Use the injected environment object directly
+                        navigationState.navigateTo(.login)
+                    }) {
+                        HStack {
+                            Image(systemName: "arrow.left")
+                                .font(.caption)
+                            Text("Back to Login")
+                                .font(.custom("Montserrat-Medium", size: 14))
+                        }
+                        .foregroundColor(Color("BrassGold"))
+                    }
+                    .padding(.top, 8)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
-                .background(Color("BrassGold"))
-                .foregroundColor(.white)
-                .cornerRadius(8)
-                .disabled(!isFormValid)
-                .padding(.top)
+                .padding(.horizontal, 24)
+                
+                Spacer()
             }
-
-            // Button to go back (useful if presented modally or for clarity)
-            // If using NavigationStack, the back button is usually automatic
-            // Button("Already have an account? Log In") {
-            //     dismiss()
-            // }
-            // .padding(.top)
-            // .font(.footnote)
-            // .foregroundColor(Color.gray)
-
-            Spacer()
+            .frame(minHeight: UIScreen.main.bounds.height - keyboardHeight)
+            .padding(.bottom, keyboardHeight)
         }
-        .padding(16)
         .background(Color("Cream").ignoresSafeArea())
-        // Set navigation title if needed, e.g., .navigationTitle("Register")
-        // .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.inline)
         .onTapGesture {
-             hideKeyboard()
+            hideKeyboard()
         }
-        // Clear messages when view appears or fields change significantly
-        .onAppear { clearMessages() }
-        .onChange(of: email) { _ in clearMessages() }
-        .onChange(of: password) { _ in clearMessages() }
-        // Add alert for registration errors
-        .alert("Registration Error", isPresented: .constant(viewModel.errorMessage != nil), actions: {
-            Button("OK", role: .cancel) { viewModel.errorMessage = nil } // Clear error on dismiss
-        }, message: {
-            Text(viewModel.errorMessage ?? "An unknown error occurred.")
-        })
+        .onAppear {
+            // Set up keyboard notifications
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
+                if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+                    keyboardHeight = keyboardSize.height
+                }
+            }
+            NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
+                keyboardHeight = 0
+            }
+            
+            // Clear any previous messages
+            clearMessages()
+        }
+        .onChange(of: authViewModel.successMessage) { _, newValue in
+            if let success = newValue, !success.isEmpty {
+                // If registration was successful, navigate back to login after a delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    // Use the injected environment object directly
+                    navigationState.navigateTo(.login)
+                }
+            }
+        }
     }
-
+    
     private func validatePasswords() -> Bool {
         if !password.isEmpty && !confirmPassword.isEmpty && password != confirmPassword {
             passwordMismatch = true
@@ -134,22 +193,21 @@ struct RegistrationView: View {
             return true
         }
     }
-
+    
     private func clearMessages() {
-         viewModel.errorMessage = nil
-         viewModel.successMessage = nil
+         authViewModel.errorMessage = nil
+         authViewModel.successMessage = nil
     }
     
-    // Add hideKeyboard helper
     private func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 
 #Preview {
-    // Needs NavigationStack for preview if using NavigationLink navigation
-    NavigationStack {
+    NavigationView {
         RegistrationView()
             .environmentObject(AuthViewModel())
+            .environmentObject(NavigationState())
     }
 } 
