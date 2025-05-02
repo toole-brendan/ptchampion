@@ -37,19 +37,19 @@ class DeviceScanningViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: \.discoveredPeripherals, on: self)
             .store(in: &cancellables)
-            
+        
         // Subscribe to connection state changes
         bluetoothService.connectionStatePublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 self?.connectionState = state
-                // Handle UI changes based on state (e.g., stop showing loading indicator)
+                // Handle UI changes based on state
             }
             .store(in: &cancellables)
-            
+        
         // Subscribe to connected peripheral changes
         bluetoothService.connectedPeripheralPublisher
-             .receive(on: DispatchQueue.main)
+            .receive(on: DispatchQueue.main)
             .assign(to: \.connectedPeripheral, on: self)
             .store(in: &cancellables)
     }
@@ -57,7 +57,6 @@ class DeviceScanningViewModel: ObservableObject {
     func startScan() {
         guard bluetoothState == .poweredOn else {
             print("ViewModel: Cannot scan, Bluetooth not powered on.")
-            // TODO: Show alert to user?
             return
         }
         isScanning = true
@@ -72,7 +71,7 @@ class DeviceScanningViewModel: ObservableObject {
     
     func connect(peripheral: DiscoveredPeripheral) {
         guard bluetoothState == .poweredOn else {
-             print("ViewModel: Cannot connect, Bluetooth not powered on.")
+            print("ViewModel: Cannot connect, Bluetooth not powered on.")
             return
         }
         // Ask the service to connect

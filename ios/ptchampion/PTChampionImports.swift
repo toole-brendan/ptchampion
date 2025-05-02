@@ -23,7 +23,7 @@ the actual model files to ensure there's only one definition of each type.
 // No duplicate views
 
 // Re-export the AppTheme and AppConstants for convenient access
-// @_exported import struct AppTheme
+// @_exported import enum Theme.AppTheme
 // @_exported import struct AppConstants
 
 // Prevent SwiftUI Color extensions to avoid color redeclarations

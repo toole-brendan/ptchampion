@@ -84,14 +84,13 @@ class RunWorkoutViewModel: ObservableObject {
         self.keychainService = keychainService
         self.bluetoothService = bluetoothService
         self.modelContext = modelContext
-
+        
         print("RunWorkoutViewModel: Initializing...")
         subscribeToLocationStatus()
         subscribeToBluetoothStatus()
         checkInitialLocationPermission()
-        // Set initial display based on preference
         updateDistanceDisplay()
-        updatePaceDisplay(elapsedSeconds: 0) // Also update pace labels initially
+        updatePaceDisplay(elapsedSeconds: 0)
         updateCurrentPaceDisplay(speed: 0)
     }
 
@@ -301,27 +300,27 @@ class RunWorkoutViewModel: ObservableObject {
 
         // Decide source based on preference and connection state
         if useWatchGPS {
-            print("RunWorkoutViewModel: Attempting to use WATCH for location updates.")
-            // No need to explicitly subscribe here, handled by bluetoothService.locationPublisher subscription
-            // We just set the source state
+            print("RunWorkoutViewModel: Using WATCH for location updates.")
             locationSource = .watch
-            // Ensure phone GPS is stopped
             locationService.stopUpdatingLocation()
         } else {
             print("RunWorkoutViewModel: Using PHONE for location updates.")
             locationSource = .phone
-            // Start phone GPS and subscribe to its publisher
             locationService.startUpdatingLocation()
             locationSubscription = locationService.locationPublisher
                 .receive(on: DispatchQueue.main)
                 .compactMap { $0 } // Ensure non-nil location
                 .filter { $0.horizontalAccuracy >= 0 && $0.horizontalAccuracy < 100 } // Basic accuracy filter
                 .sink { [weak self] location in
-                    guard let self = self, self.locationSource == .phone else { return } // Only process if phone is the source
-                     print("RunWorkoutViewModel: Received location from PHONE")
+                    guard let self = self, self.locationSource == .phone else { return }
+                    print("RunWorkoutViewModel: Received location from PHONE")
                     self.processLocationUpdate(location)
                 }
-            locationSubscription?.store(in: &cancellables) // Store the new cancellable
+            
+            // Store the subscription correctly
+            if let subscription = locationSubscription {
+                cancellables.insert(subscription)
+            }
         }
         print("RunWorkoutViewModel: Location source set to: \(locationSource)")
     }
@@ -489,7 +488,7 @@ class RunWorkoutViewModel: ObservableObject {
                                      .base64EncodedString()
 
          let workoutData = InsertUserExerciseRequest(
-             userId: userId,
+             userId: Int(userId) ?? 0,
              exerciseId: runExerciseId,
              repetitions: nil,
              formScore: nil,
@@ -531,12 +530,13 @@ class RunWorkoutViewModel: ObservableObject {
             exerciseType: "run",
             startTime: Date().addingTimeInterval(-Double(workoutData.timeInSeconds ?? 0)), // Approximate start time
             endTime: Date(), // Current time as end time
-            durationSeconds: workoutData.timeInSeconds ?? 0,
+            durationSeconds: Int(String(workoutData.timeInSeconds ?? 0)) ?? 0,
             repCount: workoutData.repetitions,
             score: workoutData.grade != nil ? Double(workoutData.grade!) : nil,
             distanceMeters: Double(totalDistanceMeters)
         )
         
+        // Insert and save
         context.insert(localRecord)
         
         do {
@@ -597,7 +597,7 @@ class RunWorkoutViewModel: ObservableObject {
         // Ensure timer and location updates are stopped asynchronously on the main actor
         Task { @MainActor in
             stopTimer()
-            unsubscribeFromLocationUpdates() // Move the call here
+            unsubscribeFromLocationUpdates()
         }
         cancellables.forEach { $0.cancel() }
     }

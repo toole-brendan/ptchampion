@@ -30,11 +30,36 @@ class LeaderboardService: LeaderboardServiceProtocol {
 
     // MARK: - Protocol Implementation
 
+    func fetchGlobalLeaderboard(authToken: String) async throws -> [LeaderboardEntry] {
+        print("LeaderboardService: Fetching global leaderboard...")
+        // Implementation using networkClient
+        // For now returning empty array, will be implemented soon
+        return []
+    }
+
+    func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String) async throws -> [LeaderboardEntry] {
+        print("LeaderboardService: Fetching local leaderboard (lat: \(latitude), lon: \(longitude), radius: \(radiusMiles))...")
+        let queryParams = [
+            "latitude": String(latitude),
+            "longitude": String(longitude),
+            "radiusMiles": String(radiusMiles)
+        ]
+        
+        // Implementation using networkClient
+        // For now returning empty array, will be implemented soon
+        return []
+    }
+    
+    // MARK: - Additional Helper Methods (Not part of protocol)
+    
+    // These are helper methods that will be used by the protocol methods above
+    // Future implementation for more specific leaderboard functionality
+    
     func getLocalLeaderboard(
         exerciseId: Int,
         latitude: Double,
         longitude: Double,
-        radiusMeters: Double? // Optional radius
+        radiusMeters: Double?
     ) async throws -> [LocalLeaderboardEntry] {
         
         print("LeaderboardService: Fetching local leaderboard for exercise \(exerciseId)")
@@ -58,8 +83,8 @@ class LeaderboardService: LeaderboardServiceProtocol {
     }
 
     func getGlobalLeaderboard(
-        exerciseType: String, // e.g., "pushup"
-        limit: Int? // Optional limit
+        exerciseType: String,
+        limit: Int?
     ) async throws -> [GlobalLeaderboardEntry] {
         
         print("LeaderboardService: Fetching global leaderboard for \(exerciseType)")
@@ -77,39 +102,6 @@ class LeaderboardService: LeaderboardServiceProtocol {
         )
         print("LeaderboardService: Fetched \(response.count) global leaderboard entries.")
         return response
-    }
-
-    // MARK: - Protocol Stubs (Implement Logic)
-
-    func fetchGlobalLeaderboard(authToken: String) async throws -> [LeaderboardEntry] {
-        // TODO: Implement actual API call using networkClient
-        print("LeaderboardService: Fetching global leaderboard...")
-        // Example: Replace with actual network call
-        // let entries: [LeaderboardEntry] = try await networkClient.performRequest(
-        //     endpointPath: "/leaderboards/global", // Adjust endpoint
-        //     method: "GET"
-        //     // No body needed for GET typically
-        // )
-        // return entries
-        return [] // Placeholder
-    }
-
-    func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String) async throws -> [LeaderboardEntry] {
-        // TODO: Implement actual API call using networkClient
-        print("LeaderboardService: Fetching local leaderboard (lat: \(latitude), lon: \(longitude), radius: \(radiusMiles))...")
-        let queryParams = [
-            "latitude": String(latitude),
-            "longitude": String(longitude),
-            "radiusMiles": String(radiusMiles) // Ensure API expects String or convert
-        ]
-        // Example: Replace with actual network call
-        // let entries: [LeaderboardEntry] = try await networkClient.performRequest(
-        //     endpointPath: "/leaderboards/local", // Adjust endpoint
-        //     method: "GET",
-        //     queryParams: queryParams
-        // )
-        // return entries
-        return [] // Placeholder
     }
 }
 

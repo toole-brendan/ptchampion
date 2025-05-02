@@ -1,4 +1,41 @@
 import SwiftUI
+import UIKit
+
+// Font extensions
+extension Font {
+    static func bebasNeueBold(size: CGFloat) -> Font {
+        return Font.custom("BebasNeue-Bold", size: size)
+    }
+    
+    static func montserratBold(size: CGFloat) -> Font {
+        return Font.custom("Montserrat-Bold", size: size)
+    }
+    
+    static func montserratSemiBold(size: CGFloat) -> Font {
+        return Font.custom("Montserrat-SemiBold", size: size)
+    }
+    
+    static func montserratRegular(size: CGFloat) -> Font {
+        return Font.custom("Montserrat-Regular", size: size)
+    }
+}
+
+// Import AppTheme symbols directly in file scope for LoginView
+extension LoginView {
+    enum AppTheme {
+        enum Colors {
+            static let brassGold = Color("BrassGold")
+            static let cream = Color("Cream")
+            static let commandBlack = Color("CommandBlack")
+            static let tacticalGray = Color("TacticalGray")
+        }
+    }
+}
+
+// Use the same AppTheme extension for PTTextField
+extension PTTextField {
+    typealias AppTheme = LoginView.AppTheme
+}
 
 // Custom SwiftUI TextField that properly handles keyboard
 struct PTTextField: View {
@@ -152,7 +189,10 @@ struct LoginView: View {
                 .frame(minHeight: geometry.size.height)
                 .padding(.bottom, keyboardHeight)
             }
-            .background(AppTheme.Colors.cream.edgesIgnoringSafeArea(.all))
+            .background(
+                LoginView.AppTheme.Colors.cream
+                    .ignoresSafeArea(.all)
+            )
             .onTapGesture {
                 hideKeyboard()
             }
