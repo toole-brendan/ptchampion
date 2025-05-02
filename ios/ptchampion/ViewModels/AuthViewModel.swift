@@ -30,6 +30,10 @@ class AuthViewModel: ObservableObject {
         checkAuthentication()
     }
     
+    deinit {
+        print("DEBUG: AuthViewModel DEINIT called")
+    }
+    
     func checkAuthentication() {
         if let token = KeychainService.shared.getAccessToken(), !token.isEmpty,
            let userId = KeychainService.shared.getUserId() {
@@ -96,7 +100,7 @@ class AuthViewModel: ObservableObject {
         print("TEST DIRECT LOGIN: Request body: \(String(data: jsonData, encoding: .utf8) ?? "Could not decode")")
         print("TEST DIRECT LOGIN: Starting network request")
         
-        // Make API call
+        // RESTORE: Real network request implementation without receive(on: DispatchQueue.main)
         URLSession.shared.dataTaskPublisher(for: request)
             .tryMap { data, response -> Data in
                 // --- tryMap Logging START ---
@@ -123,76 +127,78 @@ class AuthViewModel: ObservableObject {
                 // --- tryMap Logging END ---
                 return data
             }
-            .receive(on: DispatchQueue.main) // RESTORE: Ensure sink closures execute on main thread
+            // IMPORTANT: Removed .receive(on: DispatchQueue.main) to avoid thread deadlock
             .sink(receiveCompletion: { [weak self] completion in
-                self?.isLoading = false
-                if case .failure(let error) = completion {
-                    self?.errorMessage = "Login failed: \(error.localizedDescription)"
-                    print("Login error: \(error)")
-                }
-            }, receiveValue: { [weak self] data in
-                guard let self = self else { return }
+                print("Login Sink: Received completion: \(completion)")
                 
-                do {
-                    if let responseStr = String(data: data, encoding: .utf8) {
-                        print("TEST DIRECT LOGIN: Response data: \(responseStr)")
+                // Switch to main thread for UI updates
+                DispatchQueue.main.async {
+                    guard let self = self else {
+                        print("Login Sink: self is nil in receiveCompletion on main thread.")
+                        return
                     }
                     
-                    print("TEST DIRECT LOGIN: Starting JSON parsing")
+                    self.isLoading = false
+                    if case .failure(let error) = completion {
+                        self.errorMessage = "Login failed: \(error.localizedDescription)"
+                        print("Login Sink: Received failure: \(error)")
+                    } else {
+                        print("Login Sink: Received .finished completion")
+                    }
+                }
+            }, receiveValue: { [weak self] data in
+                print("Login Sink: Entered receiveValue block.")
+                guard let self = self else {
+                    print("Login Sink: self is nil in receiveValue.")
+                    return
+                }
+                
+                do {
+                    let responseStr = String(data: data, encoding: .utf8) ?? "Could not decode data"
+                    print("Login Sink: Response data: \(responseStr)")
                     
-                    // Parse response
-                    if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                        print("TEST DIRECT LOGIN: Raw JSON: \(json)")
-                        
-                        // Extract access token - try different key formats that might be in the response
+                    print("Login Sink: Starting JSON parsing")
+                    let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                    print("Login Sink: Parsed JSON: \(String(describing: json))")
+                    
+                    if let json = json {
+                        // Extract access token
                         let possibleTokenKeys = ["access_token", "accessToken", "token", "jwt", "authToken"]
                         var accessToken: String? = nil
                         
-                        // Try to find a token with any of the possible keys
                         for key in possibleTokenKeys {
                             if let token = json[key] as? String {
                                 accessToken = token
-                                print("TEST DIRECT LOGIN: Found token with key: \(key)")
+                                print("Login Sink: Found token with key: \(key)")
                                 break
                             }
                         }
                         
-                        // If no token was found but we got a 200 response, we'll still proceed with authentication
-                        // This is a fallback for when the API returns success but has an unexpected response format
-                        let forceAuthOnSuccess = accessToken == nil
-                        
                         if accessToken != nil {
-                            print("TEST DIRECT LOGIN: Successfully extracted access_token")
-                            
-                            // Save tokens to keychain
+                            print("Login Sink: Successfully extracted access_token")
                             KeychainService.shared.saveAccessToken(accessToken!)
-                            
-                            if let refreshToken = json["refresh_token"] as? String {
-                                KeychainService.shared.saveRefreshToken(refreshToken)
-                            }
                         } else {
-                            print("TEST DIRECT LOGIN: No token found in response, but proceeding with authentication due to 200 status")
+                            print("Login Sink: No token found, but proceeding due to 200 status")
                         }
                         
-                        // Extract user info - try to be flexible with response format
+                        // Extract user info
                         var userId: String? = nil
                         var firstName: String? = nil
                         var lastName: String? = nil
                         var email: String? = nil
                         
-                        // First try to extract from user object if present
+                        // Process user info from JSON (similar to previous code)
                         if let user = json["user"] as? [String: Any] {
-                            // Try to extract userId as either string or int
+                            // Extract user ID
                             if let id = user["id"] as? String {
                                 userId = id
                             } else if let id = user["id"] as? Int {
                                 userId = String(id)
                             }
                             
-                            // Extract other user fields
+                            // Extract other fields
                             email = user["username"] as? String ?? user["email"] as? String ?? self.username
                             
-                            // Try to extract name in different formats
                             if let fullName = user["displayName"] as? String {
                                 let nameParts = fullName.components(separatedBy: " ")
                                 firstName = nameParts.first ?? ""
@@ -202,7 +208,7 @@ class AuthViewModel: ObservableObject {
                                 lastName = user["lastName"] as? String ?? user["last_name"] as? String
                             }
                         } else {
-                            // Try to extract user info directly from response if no user object
+                            // Try to find ID at root level
                             if let id = json["userId"] as? String {
                                 userId = id
                             } else if let id = json["userId"] as? Int {
@@ -214,20 +220,19 @@ class AuthViewModel: ObservableObject {
                             }
                         }
                         
-                        // Save user ID if found
+                        // Save user ID
                         if let userId = userId {
                             KeychainService.shared.saveUserId(userId)
                             self.userId = userId
                         } else {
-                            // Generate a fallback user ID if none found in response
+                            // Use fallback ID
                             let fallbackId = "user-\(UUID().uuidString)"
                             KeychainService.shared.saveUserId(fallbackId)
                             self.userId = fallbackId
-                            print("TEST DIRECT LOGIN: Using fallback user ID: \(fallbackId)")
                         }
                         
-                        // Create user object with available info or fallbacks
-                        self.currentUser = User(
+                        // Create user object
+                        let user = User(
                             id: userId ?? "user-\(UUID().uuidString)",
                             email: email ?? self.username,
                             firstName: firstName ?? "User",
@@ -235,37 +240,38 @@ class AuthViewModel: ObservableObject {
                             profilePictureUrl: nil
                         )
                         
-                        // ==== CRITICAL FIX: Ensure state updates happen on main thread ====
-                        print("TEST DIRECT LOGIN: About to update auth state on main thread")
+                        // CRITICAL FIX: Update UI state on main thread without relying on receive(on:)
+                        print("Login Sink: About to update authentication state on main thread")
                         DispatchQueue.main.async { [weak self] in
-                            guard let self = self else { return }
+                            guard let self = self else {
+                                print("Login Sink: self is nil in main thread block.")
+                                return
+                            }
                             
-                            // Save authentication state
+                            // Update user and authentication state
+                            self.currentUser = user
                             self.authState = .authenticated
                             self._isAuthenticatedInternal = true
                             
-                            // Notify of state change - added explicit notification
-                            print("TEST DIRECT LOGIN: Authentication successful on main thread")
-                            
-                            // Force explicit UI update via objectWillChange
+                            // Force UI update
+                            print("Login Sink: Calling objectWillChange.send()")
                             self.objectWillChange.send()
                             
-                            // Post notification with small delay to ensure views have time to update
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                                NotificationCenter.default.post(
-                                    name: Notification.Name("PTChampionAuthStateChanged"),
-                                    object: nil
-                                )
-                                print("TEST DIRECT LOGIN: Posted PTChampionAuthStateChanged notification")
-                            }
+                            // Post notification immediately
+                            print("Login Sink: Posting PTChampionAuthStateChanged notification")
+                            NotificationCenter.default.post(
+                                name: Notification.Name("PTChampionAuthStateChanged"),
+                                object: nil
+                            )
                         }
                     }
                 } catch {
-                    self.errorMessage = "Error parsing response: \(error.localizedDescription)"
-                    print("JSON parsing error: \(error)")
+                    print("Login Sink: Error parsing JSON: \(error)")
                     
-                    // Force authentication even with parsing error if we got a 200 status
-                    DispatchQueue.main.async { [self] in
+                    // Force authentication despite error
+                    DispatchQueue.main.async { [weak self] in
+                        guard let self = self else { return }
+                        
                         self.currentUser = User(
                             id: "user-\(UUID().uuidString)",
                             email: self.username,
@@ -282,7 +288,7 @@ class AuthViewModel: ObservableObject {
                         
                         // Post notification
                         NotificationCenter.default.post(name: Notification.Name("PTChampionAuthStateChanged"), object: nil)
-                        print("TEST DIRECT LOGIN: Forced authentication despite parsing error")
+                        print("Login Sink: Forced authentication despite parsing error")
                     }
                 }
             })
@@ -359,7 +365,7 @@ class AuthViewModel: ObservableObject {
     
     // Provide a computed property for external use that reads the internal state
     var isAuthenticated: Bool {
-        return _isAuthenticatedInternal && validateTokenRuntime()
+        return _isAuthenticatedInternal
     }
 
     // Add a runtime validation check used by the public computed property

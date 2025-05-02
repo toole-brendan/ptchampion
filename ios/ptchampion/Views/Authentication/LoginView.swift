@@ -140,12 +140,6 @@ struct LoginView: View {
                             
                             // Call the login method with explicit parameters
                             authViewModel.login(email: authViewModel.username, password: authViewModel.password)
-                            
-                            // Fallback direct call if needed
-                            if authViewModel.username.isEmpty == false && authViewModel.password.isEmpty == false {
-                                print("FALLBACK: Direct login() method call")
-                                authViewModel.login()
-                            }
                         }) {
                             Text("Log In")
                                 .font(Font.montserratBold(size: 16))
