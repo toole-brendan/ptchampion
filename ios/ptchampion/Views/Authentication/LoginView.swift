@@ -90,7 +90,9 @@ struct LoginView: View {
             ScrollView {
                 VStack(spacing: 24) {
                     // Logo
-                    Image(systemName: "shield.lefthalf.filled") // Replace with actual logo/icon
+                    Image(uiImage: UIImage(named: "pt_champion_logo") ?? 
+                          (Bundle.main.path(forResource: "pt_champion_logo", ofType: "png").flatMap { UIImage(contentsOfFile: $0) }) ?? 
+                          UIImage(systemName: "shield.lefthalf.filled")!)
                         .resizable()
                         .scaledToFit()
                         .frame(width: 120, height: 120)
