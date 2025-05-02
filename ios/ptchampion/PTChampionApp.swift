@@ -147,27 +147,38 @@ struct PTChampionApp: App {
 
     var body: some Scene {
         WindowGroup {
-            // Use a Group to switch between views based on auth state
-            Group {
+            // Use a simpler direct approach without NavigationStack
+            ZStack {
+                // Debug view to monitor state
+                VStack {
+                    Text("")
+                        .onAppear {
+                            print("PTChampionApp body evaluating: isAuthenticated=\(authViewModel.isAuthenticated)")
+                        }
+                        .hidden()
+                }
+                
                 if authViewModel.isAuthenticated {
-                    // Show the main app view (e.g., TabView) when authenticated
-                    MainTabView() // Placeholder for the main authenticated view
+                    MainTabView()
+                        .transition(.opacity)
                         .onAppear {
                             print("PTChampionApp: User is authenticated, showing MainTabView")
                         }
                 } else {
-                    // Show the LoginView when not authenticated
                     LoginView()
+                        .transition(.opacity)
                         .onAppear {
                             print("PTChampionApp: User is NOT authenticated, showing LoginView")
                         }
                 }
             }
-            // Provide the AuthViewModel to the entire view hierarchy
+            .animation(.default, value: authViewModel.isAuthenticated)
             .environmentObject(authViewModel)
-            // Add the SwiftData model container
             .modelContainer(for: WorkoutResultSwiftData.self)
-            // Apply preferred color scheme if needed, e.g., .preferredColorScheme(.light)
+            // Add explicit onChange handler at the root level
+            .onChange(of: authViewModel.isAuthenticated) { oldValue, newValue in
+                print("PTChampionApp: Root level detected auth change: \(oldValue) -> \(newValue)")
+            }
         }
     }
 }
