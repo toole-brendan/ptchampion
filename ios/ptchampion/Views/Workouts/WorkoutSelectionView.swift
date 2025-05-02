@@ -14,14 +14,20 @@ struct WorkoutSelectionView: View {
     let exercises = [
         Exercise(name: "Push-ups", description: "Upper body strength", iconName: "figure.strengthtraining.traditional"),
         Exercise(name: "Sit-ups", description: "Core strength", iconName: "figure.core.training"),
-        Exercise(name: "Pull-ups", description: "Back and bicep strength", iconName: "figure.pullups"), // Might need custom icon
+        Exercise(name: "Pull-ups", description: "Back and bicep strength", iconName: "figure.arms.open"), // Use valid system icon
         Exercise(name: "Run", description: "Cardiovascular endurance", iconName: "figure.run")
     ]
+    
+    // Helper function to apply styling directly
+    private func subheadingStyle(text: Text) -> some View {
+        text.font(.headline)
+            .foregroundColor(Color.gray)
+    }
 
     var body: some View {
         NavigationView {
             List {
-                Section(header: Text("Choose Your Exercise").subheadingStyle()) {
+                Section(header: subheadingStyle(text: Text("Choose Your Exercise"))) {
                     ForEach(exercises) { exercise in
                         // Conditional Navigation
                         if exercise.name == "Run" {
@@ -48,6 +54,12 @@ struct WorkoutSelectionView: View {
 // Extracted Row View for reusability
 struct ExerciseRow: View {
     let exercise: WorkoutSelectionView.Exercise
+    
+    // Helper function to apply styling directly
+    private func applyLabelStyle(to text: Text) -> some View {
+        text.font(.subheadline)
+            .foregroundColor(Color.gray)
+    }
 
     var body: some View {
         HStack {
@@ -61,8 +73,7 @@ struct ExerciseRow: View {
                 Text(exercise.name)
                     .font(.headline)
                     .foregroundColor(.commandBlack)
-                Text(exercise.description)
-                    .labelStyle()
+                applyLabelStyle(to: Text(exercise.description))
             }
         }
         .padding(.vertical, 8)

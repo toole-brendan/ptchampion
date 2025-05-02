@@ -77,7 +77,7 @@ class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDeleg
     }
 
 
-    func getLastKnownLocation() -> CLLocation? {
+    func getLastKnownLocation() async -> CLLocation? {
         // Note: locationManager.location might be stale or nil if updates haven't run recently
         let lastLocation = locationManager.location
         print("LocationService: Providing last known location: \(lastLocation?.coordinate.latitude ?? 0), \(lastLocation?.coordinate.longitude ?? 0)")

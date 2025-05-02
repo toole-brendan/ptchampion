@@ -1,299 +1,206 @@
 import Foundation
-import Combine
 import SwiftUI
 
-// Define authentication states
-enum AuthState {
-    case authenticated
-    case unauthenticated
+// Error extension for nicer user-facing messages
+private extension Error {
+    var userFacingMessage: String {
+        (self as? URLError)?.failureURLString ?? localizedDescription
+    }
 }
 
-@MainActor // Ensure UI updates happen on the main thread
+// Define authentication states with associated user data
+enum AuthState: Equatable {
+    case authenticated(User)
+    case unauthenticated
+    
+    static func == (lhs: AuthState, rhs: AuthState) -> Bool {
+        switch (lhs, rhs) {
+        case (.unauthenticated, .unauthenticated):
+            return true
+        case (.authenticated(let lhsUser), .authenticated(let rhsUser)):
+            return lhsUser.id == rhsUser.id
+        default:
+            return false
+        }
+    }
+}
+
+// String extension for name parsing
+extension String {
+    func splitDisplayName() -> (firstName: String, lastName: String) {
+        let components = self.split(separator: " ")
+        let firstName = components.first.map(String.init) ?? "User"
+        let lastName = components.count > 1 ? 
+            components.dropFirst().joined(separator: " ") : ""
+        return (firstName, lastName)
+    }
+}
+
+// API helper
+enum API {
+    enum APIError: Error {
+        case invalidURL
+        case requestFailed(Error)
+        case invalidResponse
+    }
+    
+    static func login(_ email: String, _ password: String) async throws -> (token: String, user: User) {
+        print("⚙️ Starting login for email: \(email)")
+        let request = LoginRequest(username: email, password: password)
+        let url = URL(string: "https://ptchampion-api-westus.azurewebsites.net/api/v1/auth/login")!
+        
+        print("⚙️ About to send login request")
+        let response: AuthResponse = try await post(request, to: url)
+        print("⚙️ Received login response with token: \(response.token.prefix(10))... and user: \(response.user.id)")
+        
+        return (response.token, response.user)
+    }
+    
+    static func post<R: Encodable, T: Decodable>(_ request: R, to url: URL) async throws -> T {
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.addValue("application/json", forHTTPHeaderField: "Accept")
+        urlRequest.httpBody = try JSONEncoder().encode(request)
+        
+        do {
+            print("⚙️ Sending HTTP request to \(url.absoluteString)")
+            let (data, response) = try await URLSession.shared.data(for: urlRequest)
+            
+            // Validate response
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200..<300).contains(httpResponse.statusCode) else {
+                print("❌ HTTP error: \(response)")
+                throw APIError.invalidResponse
+            }
+            
+            print("✅ HTTP response: \(httpResponse.statusCode)")
+            
+            // Print raw response for debugging
+            #if DEBUG
+            if let responseStr = String(data: data, encoding: .utf8) {
+                print("🔍 Raw JSON response: \(responseStr)")
+            }
+            #endif
+            
+            print("⚙️ Attempting to decode response")
+            do {
+                let result = try JSONDecoder().decode(T.self, from: data)
+                print("✅ Successfully decoded response")
+                return result
+            } catch {
+                print("🛑 Decoding failed - DETAILED ERROR: \(error)")
+                print("🛑 Decoding error localized description: \(error.localizedDescription)")
+                if let decodingError = error as? DecodingError {
+                    switch decodingError {
+                    case .typeMismatch(let type, let context):
+                        print("🛑 Type mismatch: expected \(type), context: \(context)")
+                    case .valueNotFound(let type, let context):
+                        print("🛑 Value not found: expected \(type), context: \(context)")
+                    case .keyNotFound(let key, let context):
+                        print("🛑 Key not found: \(key), context: \(context)")
+                    case .dataCorrupted(let context):
+                        print("🛑 Data corrupted: context: \(context)")
+                    @unknown default:
+                        print("🛑 Unknown decoding error")
+                    }
+                }
+                throw APIError.requestFailed(error)
+            }
+        } catch {
+            print("🛑 Network or decoding error: \(error)")
+            throw APIError.requestFailed(error)
+        }
+    }
+}
+
+@MainActor
 class AuthViewModel: ObservableObject {
-    @Published var authState: AuthState = .unauthenticated
-    @Published var _isAuthenticatedInternal: Bool = false
-    @Published var isLoading: Bool = false
-    @Published var errorMessage: String? = nil
-    @Published var successMessage: String? = nil // For registration success
-    @Published var currentUser: User? = nil // Populated after successful login
+    @Published private(set) var authState: AuthState = .unauthenticated
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    @Published var successMessage: String? = nil
     
-    // User fields
-    @Published var username: String = ""
-    @Published var password: String = ""
-    @Published var userId: String? = nil
-    
-    private var cancellables = Set<AnyCancellable>()
-    
-    init() {
-        print("DEBUG: AuthViewModel init() called") // Add debug print
-        // Check for existing token on startup
-        checkAuthentication()
+    // Add a unique identifier for debugging
+    private let instanceId = UUID().uuidString.prefix(8)
+
+    init() { 
+        print("⚙️ AuthViewModel init – ID: \(instanceId)", ObjectIdentifier(self))
+        checkAuthentication() 
     }
-    
-    deinit {
-        print("DEBUG: AuthViewModel DEINIT called")
-    }
-    
-    func checkAuthentication() {
-        if let token = KeychainService.shared.getAccessToken(), !token.isEmpty,
-           let userId = KeychainService.shared.getUserId() {
-            self.userId = userId
-            self.authState = .authenticated
-            self._isAuthenticatedInternal = true
-            print("AuthViewModel: User is authenticated with ID: \(userId)")
-        } else {
-            if KeychainService.shared.getAccessToken() != nil {
-                KeychainService.shared.clearAllTokens()
+
+    // MARK: – Public API -----------------------------------------------------
+
+    func login(email: String, password: String) async {
+        print("⚙️ LOGIN START with email: \(email) - AuthViewModel ID: \(instanceId)")
+        
+        // Update loading state on main thread
+        await MainActor.run { withAnimation { isLoading = true } }
+
+        // Create a SINGLE strong task reference that won't be cancelled when view disappears
+        do {
+            print("A. Starting API.login call - AuthViewModel ID: \(self.instanceId)")
+            let (token, user) = try await API.login(email, password)
+            print("B. API.login SUCCESS - token: \(token.prefix(10))... user: \(user.id) - AuthViewModel ID: \(self.instanceId)")
+            
+            // Using a local variable to ensure this sequence completes
+            print("C. Saving token - AuthViewModel ID: \(self.instanceId)")
+            KeychainService.shared.saveAccessToken(token)
+            
+            print("D. Saving user ID - AuthViewModel ID: \(self.instanceId)")
+            KeychainService.shared.saveUserId(user.id)
+            
+            print("E. Updating authState - AuthViewModel ID: \(self.instanceId)")
+            await MainActor.run {
+                print("E. On MainActor, setting authState - AuthViewModel ID: \(self.instanceId)")
+                print("BEFORE state change: \(self.authState)")
+                
+                // Force state change on the main actor with animation
+                withAnimation {
+                    self.authState = .authenticated(user)
+                }
+                
+                // Verify state change happened
+                print("AFTER state change: \(self.authState)")
+                print("Auth state is now: \(self.authState.isAuthenticated ? "AUTHENTICATED" : "UNAUTHENTICATED")")
             }
-            self.authState = .unauthenticated
-            self._isAuthenticatedInternal = false
-            print("AuthViewModel: No valid token found in keychain.")
-        }
-    }
-    
-    func login(email: String, password: String) {
-        isLoading = true
-        errorMessage = nil
-        successMessage = nil
-        
-        // Set username and password properties
-        self.username = email
-        self.password = password
-        
-        // Call the direct login method
-        login()
-    }
-    
-    func login() {
-        print("AuthViewModel: Starting login process for \(username)")
-        isLoading = true
-        errorMessage = nil
-        
-        // Create request body
-        let loginBody = [
-            "username": username,
-            "password": password
-        ]
-        
-        // Convert to JSON data
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: loginBody) else {
-            self.errorMessage = "Error creating request"
-            self.isLoading = false
-            return
-        }
-        
-        // API URL
-        guard let url = URL(string: "https://ptchampion-api-westus.azurewebsites.net/api/v1/auth/login") else {
-            self.errorMessage = "Invalid URL"
-            self.isLoading = false
-            return
-        }
-        
-        // Create request
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.httpBody = jsonData
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        print("TEST DIRECT LOGIN: Starting with \(username)")
-        print("TEST DIRECT LOGIN: Background thread started")
-        print("TEST DIRECT LOGIN: Request body: \(String(data: jsonData, encoding: .utf8) ?? "Could not decode")")
-        print("TEST DIRECT LOGIN: Starting network request")
-        
-        // RESTORE: Real network request implementation without receive(on: DispatchQueue.main)
-        URLSession.shared.dataTaskPublisher(for: request)
-            .tryMap { data, response -> Data in
-                // --- tryMap Logging START ---
-                print("Login tryMap: Entered tryMap block.")
-                
-                print("Login tryMap: Checking response type...")
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    print("Login tryMap: Failed to cast response to HTTPURLResponse. Response: \(response)")
-                    throw URLError(.badServerResponse)
+            
+            print("🟢 F. Login sequence COMPLETED for \(user.id) - AuthViewModel ID: \(self.instanceId)")
+        } catch {
+            print("🔴 API call failed - \(error) - AuthViewModel ID: \(self.instanceId)")
+            await MainActor.run {
+                self.errorMessage = "Login failed: \(error.localizedDescription)"
+                withAnimation {
+                    self.authState = .unauthenticated
                 }
-                print("Login tryMap: Successfully cast response to HTTPURLResponse.")
-                
-                print("Login tryMap: Checking status code (\(httpResponse.statusCode))...")
-                guard (200...299).contains(httpResponse.statusCode) else {
-                    print("Login tryMap: Status code \(httpResponse.statusCode) is not OK.")
-                    if let errorStr = String(data: data, encoding: .utf8) {
-                        print("Login tryMap: Server error response body: \(errorStr)")
-                    }
-                    throw URLError(.badServerResponse)
-                }
-                print("Login tryMap: Status code is OK (\(httpResponse.statusCode)).")
-                
-                print("Login tryMap: Successfully processed, returning data.")
-                // --- tryMap Logging END ---
-                return data
             }
-            // IMPORTANT: Removed .receive(on: DispatchQueue.main) to avoid thread deadlock
-            .sink(receiveCompletion: { [weak self] completion in
-                print("Login Sink: Received completion: \(completion)")
-                
-                // Switch to main thread for UI updates
-                DispatchQueue.main.async {
-                    guard let self = self else {
-                        print("Login Sink: self is nil in receiveCompletion on main thread.")
-                        return
-                    }
-                    
-                    self.isLoading = false
-                    if case .failure(let error) = completion {
-                        self.errorMessage = "Login failed: \(error.localizedDescription)"
-                        print("Login Sink: Received failure: \(error)")
-                    } else {
-                        print("Login Sink: Received .finished completion")
-                    }
-                }
-            }, receiveValue: { [weak self] data in
-                print("Login Sink: Entered receiveValue block.")
-                guard let self = self else {
-                    print("Login Sink: self is nil in receiveValue.")
-                    return
-                }
-                
-                do {
-                    let responseStr = String(data: data, encoding: .utf8) ?? "Could not decode data"
-                    print("Login Sink: Response data: \(responseStr)")
-                    
-                    print("Login Sink: Starting JSON parsing")
-                    let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
-                    print("Login Sink: Parsed JSON: \(String(describing: json))")
-                    
-                    if let json = json {
-                        // Extract access token
-                        let possibleTokenKeys = ["access_token", "accessToken", "token", "jwt", "authToken"]
-                        var accessToken: String? = nil
-                        
-                        for key in possibleTokenKeys {
-                            if let token = json[key] as? String {
-                                accessToken = token
-                                print("Login Sink: Found token with key: \(key)")
-                                break
-                            }
-                        }
-                        
-                        if accessToken != nil {
-                            print("Login Sink: Successfully extracted access_token")
-                            KeychainService.shared.saveAccessToken(accessToken!)
-                        } else {
-                            print("Login Sink: No token found, but proceeding due to 200 status")
-                        }
-                        
-                        // Extract user info
-                        var userId: String? = nil
-                        var firstName: String? = nil
-                        var lastName: String? = nil
-                        var email: String? = nil
-                        
-                        // Process user info from JSON (similar to previous code)
-                        if let user = json["user"] as? [String: Any] {
-                            // Extract user ID
-                            if let id = user["id"] as? String {
-                                userId = id
-                            } else if let id = user["id"] as? Int {
-                                userId = String(id)
-                            }
-                            
-                            // Extract other fields
-                            email = user["username"] as? String ?? user["email"] as? String ?? self.username
-                            
-                            if let fullName = user["displayName"] as? String {
-                                let nameParts = fullName.components(separatedBy: " ")
-                                firstName = nameParts.first ?? ""
-                                lastName = nameParts.count > 1 ? nameParts.dropFirst().joined(separator: " ") : nil
-                            } else {
-                                firstName = user["firstName"] as? String ?? user["first_name"] as? String ?? "User"
-                                lastName = user["lastName"] as? String ?? user["last_name"] as? String
-                            }
-                        } else {
-                            // Try to find ID at root level
-                            if let id = json["userId"] as? String {
-                                userId = id
-                            } else if let id = json["userId"] as? Int {
-                                userId = String(id)
-                            } else if let id = json["id"] as? String {
-                                userId = id
-                            } else if let id = json["id"] as? Int {
-                                userId = String(id)
-                            }
-                        }
-                        
-                        // Save user ID
-                        if let userId = userId {
-                            KeychainService.shared.saveUserId(userId)
-                            self.userId = userId
-                        } else {
-                            // Use fallback ID
-                            let fallbackId = "user-\(UUID().uuidString)"
-                            KeychainService.shared.saveUserId(fallbackId)
-                            self.userId = fallbackId
-                        }
-                        
-                        // Create user object
-                        let user = User(
-                            id: userId ?? "user-\(UUID().uuidString)",
-                            email: email ?? self.username,
-                            firstName: firstName ?? "User",
-                            lastName: lastName ?? "",
-                            profilePictureUrl: nil
-                        )
-                        
-                        // CRITICAL FIX: Update UI state on main thread without relying on receive(on:)
-                        print("Login Sink: About to update authentication state on main thread")
-                        DispatchQueue.main.async { [weak self] in
-                            guard let self = self else {
-                                print("Login Sink: self is nil in main thread block.")
-                                return
-                            }
-                            
-                            // Update user and authentication state
-                            self.currentUser = user
-                            self.authState = .authenticated
-                            self._isAuthenticatedInternal = true
-                            
-                            // Force UI update
-                            print("Login Sink: Calling objectWillChange.send()")
-                            self.objectWillChange.send()
-                            
-                            // Post notification immediately
-                            print("Login Sink: Posting PTChampionAuthStateChanged notification")
-                            NotificationCenter.default.post(
-                                name: Notification.Name("PTChampionAuthStateChanged"),
-                                object: nil
-                            )
-                        }
-                    }
-                } catch {
-                    print("Login Sink: Error parsing JSON: \(error)")
-                    
-                    // Force authentication despite error
-                    DispatchQueue.main.async { [weak self] in
-                        guard let self = self else { return }
-                        
-                        self.currentUser = User(
-                            id: "user-\(UUID().uuidString)",
-                            email: self.username,
-                            firstName: "User",
-                            lastName: "",
-                            profilePictureUrl: nil
-                        )
-                        
-                        self.authState = .authenticated
-                        self._isAuthenticatedInternal = true
-                        
-                        // Force UI update
-                        self.objectWillChange.send()
-                        
-                        // Post notification
-                        NotificationCenter.default.post(name: Notification.Name("PTChampionAuthStateChanged"), object: nil)
-                        print("Login Sink: Forced authentication despite parsing error")
-                    }
-                }
-            })
-            .store(in: &cancellables)
+        }
+        
+        // Always reset loading state
+        await MainActor.run { withAnimation { isLoading = false } }
+        print("⚙️ LOGIN SEQUENCE FINISHED - AuthViewModel ID: \(self.instanceId)")
     }
+
+    func logout() {
+        print("⚙️ LOGOUT - AuthViewModel ID: \(instanceId)")
+        
+        // Create a Task to handle logout asynchronously
+        Task { @MainActor in
+            // First update UI state
+            withAnimation {
+                // Set state to unauthenticated first
+                self.authState = .unauthenticated
+            }
+            
+            // Then clear storage - do this after UI update to prevent freezes
+            print("Clearing keychain tokens")
+            KeychainService.shared.clearAllTokens()
+            
+            print("🟢 Logout complete - AuthViewModel ID: \(instanceId)")
+        }
+    }
+    
+    // MARK: - Registration
     
     func register(username: String, password: String, displayName: String) {
         isLoading = true
@@ -328,70 +235,22 @@ class AuthViewModel: ObservableObject {
         request.httpBody = jsonData
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        // Make API call
-        URLSession.shared.dataTaskPublisher(for: request)
-            .tryMap { data, response -> Data in
-                guard let httpResponse = response as? HTTPURLResponse else {
+        // Use straightforward Task with await pattern
+        Task {
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                
+                guard let http = response as? HTTPURLResponse,
+                      (200...299).contains(http.statusCode) else {
                     throw URLError(.badServerResponse)
                 }
                 
-                guard (200...299).contains(httpResponse.statusCode) else {
-                    if let errorStr = String(data: data, encoding: .utf8) {
-                        print("Server error response: \(errorStr)")
-                    }
-                    throw URLError(.badServerResponse)
-                }
-                
-                return data
-            }
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [self] completion in
                 self.isLoading = false
-                
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    self.errorMessage = "Registration failed: \(error.localizedDescription)"
-                    print("Registration error: \(error)")
-                }
-            }, receiveValue: { [self] _ in
-                // Registration success
                 self.successMessage = "Registration successful! Please log in."
-                print("Registration successful")
-            })
-            .store(in: &cancellables)
-    }
-    
-    // Provide a computed property for external use that reads the internal state
-    var isAuthenticated: Bool {
-        return _isAuthenticatedInternal
-    }
-
-    // Add a runtime validation check used by the public computed property
-    private func validateTokenRuntime() -> Bool {
-        guard let token = KeychainService.shared.getAccessToken() else {
-            return false 
-        }
-        // Add more checks here if needed (e.g., expiration)
-        return !token.isEmpty
-    }
-    
-    func logout() {
-        // Clear tokens from keychain
-        KeychainService.shared.clearAllTokens()
-        
-        // Reset user data
-        self.userId = nil
-        self.currentUser = nil
-        
-        // Update auth state on the main thread to ensure SwiftUI updates properly
-        DispatchQueue.main.async { [self] in
-            self.authState = .unauthenticated
-            self._isAuthenticatedInternal = false
-            // Force UI update with objectWillChange
-            self.objectWillChange.send()
-            print("AuthViewModel: User logged out successfully")
+            } catch {
+                self.isLoading = false
+                self.errorMessage = "Registration failed: \(error.localizedDescription)"
+            }
         }
     }
     
@@ -399,48 +258,56 @@ class AuthViewModel: ObservableObject {
     
     /// Bypasses the normal authentication flow for development purposes
     func loginAsDeveloper() {
-        print("AuthViewModel: Bypassing authentication flow for development")
+        let devUser = User(
+            id: "dev-123",
+            email: "dev@example.com",
+            firstName: "Developer", 
+            lastName: "User",
+            profilePictureUrl: nil
+        )
         
-        // Update state on the main thread to ensure SwiftUI updates properly
-        DispatchQueue.main.async { [self] in
-            self.authState = .authenticated
-            self._isAuthenticatedInternal = true
-            self.currentUser = User(
-                id: "dev-123",
-                email: "dev@example.com",
-                firstName: "Developer",
-                lastName: "User",
-                profilePictureUrl: nil
-            )
-            self.errorMessage = nil
-            // Force UI update with objectWillChange
-            self.objectWillChange.send()
-            print("AuthViewModel: Developer login successful without token")
-        }
+        self.authState = .authenticated(devUser)
     }
     
     // Debug method for directly forcing authentication state
     func debugForceAuthenticated() {
-        print("DEBUG: Starting force authentication")
-        DispatchQueue.main.async {
-            self.authState = .authenticated
-            self._isAuthenticatedInternal = true
+        let debugUser = User(
+            id: "debug-123",
+            email: "debug@example.com",
+            firstName: "Debug",
+            lastName: "User",
+            profilePictureUrl: nil
+        )
+        
+        self.authState = .authenticated(debugUser)
+        print("🟢 DEBUG: Force set authState to authenticated with user ID: \(debugUser.id)")
+    }
+
+    // MARK: – Startup --------------------------------------------------------
+
+    func checkAuthentication() {
+        // Move keychain operations to a background task to prevent main thread blocking
+        Task {
+            // Get token and user ID from keychain
+            let token = KeychainService.shared.getAccessToken()
+            let uid = KeychainService.shared.getUserId()
             
-            // Create a dummy user if needed
-            if self.currentUser == nil {
-                self.currentUser = User(
-                    id: "debug-123",
-                    email: "debug@example.com",
-                    firstName: "Debug",
-                    lastName: "User",
-                    profilePictureUrl: nil
-                )
+            // Update UI state on main thread
+            await MainActor.run {
+                if let token = token, !token.isEmpty, let uid = uid {
+                    print("⚙️ Found token and user ID in keychain, setting state to authenticated with user ID: \(uid)")
+                    authState = .authenticated(User(id: uid, email: "", firstName: "User", lastName: "", profilePictureUrl: nil))
+                } else {
+                    print("⚙️ No valid token or user ID found in keychain, setting state to unauthenticated")
+                    authState = .unauthenticated
+                }
             }
-            
-            // Force UI update with objectWillChange
-            self.objectWillChange.send()
-            print("DEBUG: Forced authentication state to true, isAuthenticated=\(self.isAuthenticated)")
         }
+    }
+
+    // MARK: - Cleanup
+    deinit {
+        print("⚙️ AuthViewModel deinit - ID: \(instanceId)")
     }
 }
 

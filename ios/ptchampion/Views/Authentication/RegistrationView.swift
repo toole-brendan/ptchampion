@@ -2,8 +2,7 @@ import SwiftUI
 import Foundation
 
 struct RegistrationView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel
-    @EnvironmentObject var navigationState: NavigationState
+    @EnvironmentObject private var auth: AuthViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.presentationMode) var presentationMode
     
@@ -82,14 +81,14 @@ struct RegistrationView: View {
                             .padding(.horizontal, 4)
                     }
                     
-                    if let errorMessage = authViewModel.errorMessage {
+                    if let errorMessage = auth.errorMessage {
                         Text(errorMessage)
                             .foregroundColor(.red)
                             .font(.caption)
                             .padding(.top, 5)
                     }
                     
-                    if let successMessage = authViewModel.successMessage {
+                    if let successMessage = auth.successMessage {
                          Text(successMessage)
                              .foregroundColor(.green)
                              .font(.caption)
@@ -98,14 +97,14 @@ struct RegistrationView: View {
                     
                     // Register button
                     Button(action: {
-                        authViewModel.errorMessage = nil
+                        auth.errorMessage = nil
                         isLoading = true
                         
                         // Create display name from first and last name
                         let displayName = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespacesAndNewlines)
                         
                         if validatePasswords() {
-                            authViewModel.register(username: email,
+                            auth.register(username: email,
                                                   password: password,
                                                   displayName: displayName)
                         }
@@ -114,7 +113,7 @@ struct RegistrationView: View {
                         let generator = UINotificationFeedbackGenerator()
                         generator.notificationOccurred(.success)
                     }) {
-                        if authViewModel.isLoading {
+                        if auth.isLoading {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: Color("Cream")))
                                 .frame(maxWidth: .infinity)
@@ -129,13 +128,13 @@ struct RegistrationView: View {
                     }
                     .background(isFormValid ? Color("BrassGold") : Color.gray.opacity(0.5))
                     .cornerRadius(8)
-                    .disabled(!isFormValid || authViewModel.isLoading)
+                    .disabled(!isFormValid || auth.isLoading)
                     .padding(.top, 10)
                     
                     // Back to login button
                     Button(action: {
-                        // Use the injected environment object directly
-                        navigationState.navigateTo(.login)
+                        // Use dismiss instead of navigationState
+                        dismiss()
                     }) {
                         HStack {
                             Image(systemName: "arrow.left")
@@ -173,12 +172,12 @@ struct RegistrationView: View {
             // Clear any previous messages
             clearMessages()
         }
-        .onChange(of: authViewModel.successMessage) { _, newValue in
+        .onChange(of: auth.successMessage) { _, newValue in
             if let success = newValue, !success.isEmpty {
                 // If registration was successful, navigate back to login after a delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    // Use the injected environment object directly
-                    navigationState.navigateTo(.login)
+                    // Just dismiss this view to go back to login
+                    dismiss()
                 }
             }
         }
@@ -195,8 +194,8 @@ struct RegistrationView: View {
     }
     
     private func clearMessages() {
-         authViewModel.errorMessage = nil
-         authViewModel.successMessage = nil
+         auth.errorMessage = nil
+         auth.successMessage = nil
     }
     
     private func hideKeyboard() {
@@ -208,6 +207,5 @@ struct RegistrationView: View {
     NavigationView {
         RegistrationView()
             .environmentObject(AuthViewModel())
-            .environmentObject(NavigationState())
     }
 } 

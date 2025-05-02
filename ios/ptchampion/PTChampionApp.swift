@@ -16,6 +16,8 @@ class FontManager {
     func registerFonts() {
         guard !fontsRegistered else { return }
         
+        print("FONT REGISTRATION: Starting font registration process")
+        
         // Define all the fonts we need to register
         let fontNames = [
             "BebasNeue-Bold",
@@ -34,62 +36,110 @@ class FontManager {
             Bundle.main.resourcePath! + "/" // Resources directory
         ]
         
+        print("FONT REGISTRATION: Checking paths:")
+        for path in possibleFontPaths {
+            print("FONT REGISTRATION: - \(path)")
+        }
+        
+        // Print the contents of the bundle to help debug font locations
+        print("FONT REGISTRATION: Bundle contents:")
+        if let resourcePath = Bundle.main.resourcePath {
+            do {
+                let fileManager = FileManager.default
+                let files = try fileManager.contentsOfDirectory(atPath: resourcePath)
+                for file in files {
+                    print("FONT REGISTRATION: - \(file)")
+                }
+                
+                // Check specifically for Fonts directory
+                let fontsPath = resourcePath + "/Fonts"
+                if fileManager.fileExists(atPath: fontsPath) {
+                    print("FONT REGISTRATION: Fonts directory exists, contents:")
+                    let fontFiles = try fileManager.contentsOfDirectory(atPath: fontsPath)
+                    for fontFile in fontFiles {
+                        print("FONT REGISTRATION: - \(fontFile)")
+                    }
+                } else {
+                    print("FONT REGISTRATION: Fonts directory doesn't exist")
+                }
+            } catch {
+                print("FONT REGISTRATION: Error reading bundle contents: \(error)")
+            }
+        }
+        
         var registeredCount = 0
         
         for fontName in fontNames {
             var fontRegistered = false
             
-            // Try each path with each extension
-            for path in possibleFontPaths {
-                for ext in ["ttf", "otf"] {
-                    let fullPath = path + fontName + "." + ext
-                    
-                    if let fontURL = URL(string: "file://" + fullPath),
-                       let fontDataProvider = CGDataProvider(url: fontURL as CFURL),
-                       let font = CGFont(fontDataProvider) {
+            // Try with both bundle resource and direct file path methods
+            if let fontURL = Bundle.main.url(forResource: fontName, withExtension: "ttf") {
+                print("FONT REGISTRATION: Found \(fontName).ttf via bundle resource")
+                fontRegistered = registerFontWith(url: fontURL, fontName: fontName)
+                if fontRegistered { registeredCount += 1 }
+            } else if let fontURL = Bundle.main.url(forResource: fontName, withExtension: "otf") {
+                print("FONT REGISTRATION: Found \(fontName).otf via bundle resource")
+                fontRegistered = registerFontWith(url: fontURL, fontName: fontName)
+                if fontRegistered { registeredCount += 1 }
+            } else {
+                print("FONT REGISTRATION: Trying to find \(fontName) in possible paths...")
+                // Try each path with each extension (original approach)
+                for path in possibleFontPaths {
+                    for ext in ["ttf", "otf"] {
+                        let fullPath = path + fontName + "." + ext
                         
-                        var error: Unmanaged<CFError>?
-                        if CTFontManagerRegisterGraphicsFont(font, &error) {
-                            print("Successfully registered font: \(fontName)")
-                            fontRegistered = true
-                            registeredCount += 1
-                            break
-                        } else {
-                            if let unwrappedError = error?.takeRetainedValue() {
-                                print("Failed to register font: \(fontName) with error: \(unwrappedError)")
+                        if let fontURL = URL(string: "file://" + fullPath),
+                           FileManager.default.fileExists(atPath: fontURL.path) {
+                            print("FONT REGISTRATION: Found \(fontName).\(ext) at \(fullPath)")
+                            fontRegistered = registerFontWith(url: fontURL, fontName: fontName)
+                            if fontRegistered { 
+                                registeredCount += 1
+                                break
                             }
                         }
                     }
-                }
-                
-                if fontRegistered {
-                    break
+                    
+                    if fontRegistered {
+                        break
+                    }
                 }
             }
             
             if !fontRegistered {
-                print("⚠️ Could not register font: \(fontName)")
-                // Fallback - try direct registration with the font file name
-                if let fontURL = Bundle.main.url(forResource: fontName, withExtension: "ttf") {
-                    var error: Unmanaged<CFError>?
-                    if let fontDataProvider = CGDataProvider(url: fontURL as CFURL),
-                       let font = CGFont(fontDataProvider),
-                       CTFontManagerRegisterGraphicsFont(font, &error) {
-                        print("Successfully registered font through fallback: \(fontName)")
-                        registeredCount += 1
-                    } else {
-                        print("⚠️ Fallback also failed for font: \(fontName)")
-                    }
-                }
+                print("⚠️ FONT REGISTRATION: Could not register font: \(fontName) - falling back to system fonts")
             }
         }
         
-        print("Font registration complete. Registered \(registeredCount)/\(fontNames.count) fonts.")
+        print("FONT REGISTRATION: Complete. Registered \(registeredCount)/\(fontNames.count) fonts.")
         fontsRegistered = true
+    }
+    
+    // Helper to register a font from a URL
+    private func registerFontWith(url: URL, fontName: String) -> Bool {
+        do {
+            // Try loading the font data directly first
+            let fontData = try Data(contentsOf: url)
+            if let provider = CGDataProvider(data: fontData as CFData),
+               let font = CGFont(provider) {
+                var error: Unmanaged<CFError>?
+                if CTFontManagerRegisterGraphicsFont(font, &error) {
+                    print("✅ FONT REGISTRATION: Successfully registered font: \(fontName)")
+                    return true
+                } else if let err = error?.takeRetainedValue() {
+                    print("❌ FONT REGISTRATION: Failed to register font: \(fontName) with error: \(err)")
+                }
+            } else {
+                print("❌ FONT REGISTRATION: Failed to create font from data: \(fontName)")
+            }
+        } catch {
+            print("❌ FONT REGISTRATION: Error loading font data for \(fontName): \(error)")
+        }
+        return false
     }
     
     // Helper to list all available fonts - useful for debugging
     func printAvailableFonts() {
+        print("FONT REGISTRATION: Available system fonts:")
         for family in UIFont.familyNames.sorted() {
             print("Font Family: \(family)")
             for name in UIFont.fontNames(forFamilyName: family) {
@@ -121,21 +171,22 @@ enum AppScreen {
 
 @main
 struct PTChampionApp: App {
-    @StateObject private var authViewModel = AuthViewModel()
-    
-    // Create a state object for the navigation state (defined outside now)
-    @StateObject private var navigationState = NavigationState()
+    // Create a SINGLE source of truth for authentication
+    @StateObject private var auth = AuthViewModel()
     
     // Initialize app appearance
     init() {
         print("DEBUG: PTChampionApp init() called")
-        // Restore init contents
+        // Register fonts first, before accessing auth state
         FontManager.shared.registerFonts()
         
         #if DEBUG
         print("--- DEBUG: Available Fonts ---")
         FontManager.shared.printAvailableFonts()
         print("-----------------------------")
+        print("--- DEBUG APP INITIALIZATION ---")
+        // Don't access StateObject here - defer to body
+        print("-------------------------------")
         #endif
         
         configureAppearance()
@@ -170,12 +221,17 @@ struct PTChampionApp: App {
 
     var body: some Scene {
         WindowGroup {
-            let _ = Self.logBody()
-            // Pass the shared navigationState down
-            RootContentView()
-                .environmentObject(authViewModel)
-                .environmentObject(navigationState) // Pass the state object
+            // Pass the shared auth view model to all views
+            RootSwitcher()
+                .environmentObject(auth)
                 .modelContainer(for: WorkoutResultSwiftData.self)
+                .onAppear {
+                    Self.logBody() // Debug log function
+                    #if DEBUG
+                    print("AuthViewModel instance being passed to views: \(ObjectIdentifier(auth))")
+                    #endif
+                    print("🚀 App Root view appeared with AuthViewModel instance: \(ObjectIdentifier(auth))")
+                }
         }
     }
     
@@ -183,79 +239,156 @@ struct PTChampionApp: App {
     private static func logBody() {
         print("DEBUG: PTChampionApp body recomputed")
     }
+}
 
-    // MARK: - RootContentView
-    struct RootContentView: View {
-        @EnvironmentObject var navigationState: NavigationState
-        @EnvironmentObject var authViewModel: AuthViewModel
+// MARK: - Root Content Switcher that directly depends on auth.authState
+struct RootSwitcher: View {
+    @EnvironmentObject private var auth: AuthViewModel
+    @State private var showDebugInfo = false
+    @State private var currentAuthState: Bool = false
 
-        var body: some View {
-            let _ = { print("DEBUG: RootContentView body recomputed, navState=\(navigationState.currentScreen)") }()
-            
+    var body: some View {
+        ZStack {
+            // Main content based on authentication state
             Group {
-                if navigationState.currentScreen == .loading {
-                    ProgressView()
-                    .onAppear {
-                        print("DEBUG: Loading screen appeared (RootContentView)")
-                        determineInitialScreen()
-                    }
-                } else if navigationState.currentScreen == .login {
-                    LoginView()
-                    .onAppear { print("PTChampionApp: Showing LoginView (RootContentView)") }
-                } else {
+                if currentAuthState {
+                    // Authenticated content
                     MainTabView()
-                    .onAppear { print("PTChampionApp: Showing MainTabView (RootContentView)") }
-                }
-            }
-            // Add explicit onChange handler to detect authentication changes
-            .onChange(of: authViewModel.isAuthenticated) { oldVal, newVal in
-                print("DEBUG: RootContentView onChange detected auth change: \(oldVal) -> \(newVal)")
-                // Force immediate navigation state update
-                updateNavigationState()
-            }
-            // Listen for notification as backup mechanism
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("PTChampionAuthStateChanged"))) { _ in
-                print("DEBUG: RootContentView onReceive detected notification")
-                updateNavigationState()
-            }
-        }
-
-        // MARK: - Helpers
-        private func determineInitialScreen() {
-            print("DEBUG: Root determineInitialScreen setting target to login")
-            // DIRECTLY navigate to login instead of keeping loading state
-            navigationState.navigateTo(.login)
-            
-            // Check authentication status
-            authViewModel.checkAuthentication()
-            
-            // The auth check might update navigation state again
-            DispatchQueue.main.async {
-                updateNavigationState()
-            }
-        }
-
-        private func updateNavigationState() {
-            print("DEBUG: RootContentView updateNavigationState called. Auth=\(authViewModel.isAuthenticated)")
-            let target: AppScreen = authViewModel.isAuthenticated ? .main : .login
-            
-            // Force UI update on main thread
-            DispatchQueue.main.async {
-                if navigationState.currentScreen != target {
-                    print("DEBUG: RootContentView changing navigation from \(navigationState.currentScreen) to \(target)")
-                    navigationState.navigateTo(target)
-                    print("DEBUG: RootContentView state updated to \(navigationState.currentScreen)")
+                        .transition(.opacity)
+                        .onAppear {
+                            if let user = auth.authState.user {
+                                print("DEBUG: MainTabView appeared with user ID: \(user.id)")
+                            } else {
+                                print("DEBUG: MainTabView appeared with no user")
+                            }
+                        }
                 } else {
-                    print("DEBUG: RootContentView navigation already at \(target)")
+                    // Login view when not authenticated
+                    LoginView()
+                        .transition(.opacity)
                 }
+            }
+            
+            // Debug overlay
+            if showDebugInfo {
+                DebugOverlayView(
+                    authState: auth.authState,
+                    currentAuthState: $currentAuthState,
+                    showDebugInfo: $showDebugInfo,
+                    authenticateAction: { auth.debugForceAuthenticated() },
+                    logoutAction: { auth.logout() }
+                )
+            }
+            
+            // Debug button
+            VStack {
+                Spacer()
+                HStack {
+                    Spacer()
+                    Button(action: { showDebugInfo.toggle() }) {
+                        Image(systemName: "ladybug.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                            .padding(12)
+                            .background(Circle().fill(Color.gray.opacity(0.8)))
+                    }
+                    .padding()
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.3), value: currentAuthState)
+        .onChange(of: auth.authState.isAuthenticated) { _, newValue in
+            print("📱 Auth state changed to: \(newValue ? "AUTHENTICATED" : "UNAUTHENTICATED")")
+            // Use Task to ensure UI updates happen properly and don't block main thread
+            Task { @MainActor in
+                currentAuthState = newValue
+                print("📱 Updated local UI state to: \(currentAuthState ? "AUTHENTICATED" : "UNAUTHENTICATED")")
+            }
+        }
+        .onAppear {
+            // Initialize our local state on appear
+            Task { @MainActor in
+                currentAuthState = auth.authState.isAuthenticated
+                print("📱 RootSwitcher appeared, initializing local state to: \(currentAuthState ? "authenticated" : "unauthenticated")")
             }
         }
     }
 }
 
+// Move debug overlay to its own view
+struct DebugOverlayView: View {
+    let authState: AuthState
+    @Binding var currentAuthState: Bool
+    @Binding var showDebugInfo: Bool
+    let authenticateAction: () -> Void
+    let logoutAction: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("DEBUG INFO")
+                .font(.headline)
+                .foregroundColor(.white)
+            
+            Text("Auth State: \(authState.isAuthenticated ? "authenticated" : "unauthenticated")")
+                .foregroundColor(.white)
+            
+            Text("Local State: \(currentAuthState ? "authenticated" : "unauthenticated")")
+                .foregroundColor(.white)
+            
+            if let user = authState.user {
+                Text("User ID: \(user.id)")
+                    .foregroundColor(.white)
+                Text("User Email: \(user.email)")
+                    .foregroundColor(.white)
+            }
+            
+            Button("Force Authenticated") {
+                print("DEBUG: Force authenticated requested")
+                authenticateAction()
+            }
+            .padding(8)
+            .background(Color.green)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            
+            Button("Force Unauthenticated") {
+                print("DEBUG: Manual logout requested")
+                logoutAction()
+            }
+            .padding(8)
+            .background(Color.red)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            
+            Button("Manual View Switch") {
+                withAnimation {
+                    currentAuthState.toggle()
+                    print("DEBUG: Manual view toggle, now: \(currentAuthState ? "authenticated" : "unauthenticated")")
+                }
+            }
+            .padding(8)
+            .background(Color.orange)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            
+            Button("Hide Debug") {
+                showDebugInfo = false
+            }
+            .padding(8)
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+        }
+        .padding()
+        .background(Color.black.opacity(0.8))
+        .cornerRadius(12)
+        .padding()
+    }
+}
+
 // Placeholder for the main authenticated view (replace with your actual implementation)
 struct MainTabView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject private var auth: AuthViewModel
     @State private var selectedTab: Tab = .dashboard // Keep track of selected tab
     
     // Expose ComponentGallery in debug builds for design review
@@ -359,11 +492,24 @@ struct DeviceShakeViewModifier: ViewModifier {
 
 #Preview("MainTabView") {
     // Directly return the view, configuring the environment object inline
-    MainTabView()
-        .environmentObject({ // Use a closure to configure the mock object inline
-            let mockAuth = AuthViewModel()
-            mockAuth._isAuthenticatedInternal = true 
-            mockAuth.currentUser = User(id: "preview-id", email: "preview@user.com", firstName: "Preview", lastName: "User", profilePictureUrl: nil)
-            return mockAuth
-        }())
+    let previewAuth = AuthViewModel()
+    return MainTabView()
+        .environmentObject(previewAuth)
+}
+
+// Add a convenience extension to check auth state
+extension AuthState {
+    var isAuthenticated: Bool {
+        if case .authenticated = self {
+            return true
+        }
+        return false
+    }
+    
+    var user: User? {
+        if case .authenticated(let user) = self {
+            return user
+        }
+        return nil
+    }
 } 

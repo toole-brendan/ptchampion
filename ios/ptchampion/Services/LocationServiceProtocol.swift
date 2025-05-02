@@ -9,7 +9,7 @@ protocol LocationServiceProtocol {
     var errorPublisher: AnyPublisher<Error, Never> { get }
 
     func requestLocationPermission()
-    func getLastKnownLocation() -> CLLocation?
+    func getLastKnownLocation() async -> CLLocation?
     func requestLocationUpdate() // One-time location request
     // Add these methods for continuous updates
     func startUpdatingLocation()

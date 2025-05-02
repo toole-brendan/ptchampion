@@ -24,6 +24,12 @@ struct WorkoutHistoryRow: View {
             return String(format: "%d:%02d", minutes, seconds)
         }
     }
+    
+    // Simple style for labels - inline instead of extension
+    private func applyLabelStyle(to text: Text) -> some View {
+        text.font(.subheadline)
+            .foregroundColor(Color.gray)
+    }
 
     var body: some View {
         HStack {
@@ -40,8 +46,7 @@ struct WorkoutHistoryRow: View {
                 Text(result.exerciseType.capitalized) // Show exercise type
                     .font(.headline)
                     .foregroundColor(.commandBlack)
-                Text("\(result.startTime, formatter: Self.dateFormatter)")
-                    .labelStyle()
+                applyLabelStyle(to: Text("\(result.startTime, formatter: Self.dateFormatter)"))
             }
 
             Spacer()
@@ -53,15 +58,12 @@ struct WorkoutHistoryRow: View {
                      .foregroundColor(.commandBlack)
                 // Display reps/score or distance based on type
                 if let reps = result.repCount {
-                    Text("\(reps) reps")
-                        .labelStyle()
+                    applyLabelStyle(to: Text("\(reps) reps"))
                 } else if let distance = result.distanceMeters, distance > 0 {
                      let distanceMiles = distance * 0.000621371
-                     Text(String(format: "%.2f mi", distanceMiles))
-                         .labelStyle()
+                     applyLabelStyle(to: Text(String(format: "%.2f mi", distanceMiles)))
                  } else if let score = result.score {
-                     Text("Score: \(Int(score))%")
-                        .labelStyle()
+                     applyLabelStyle(to: Text("Score: \(Int(score))%"))
                  }
             }
         }

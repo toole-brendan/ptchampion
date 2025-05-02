@@ -1,23 +1,81 @@
 import Foundation
 
 struct User: Identifiable, Codable, Equatable {
-    let id: String // Assuming String ID based on mock, adjust if Int from backend
+    let id: String
     let email: String
     let firstName: String?
     let lastName: String?
     let profilePictureUrl: String?
-    // Add other user fields as needed from your API spec (e.g., registration date, roles)
     
-    // Helper computed property to get full name
-    var fullName: String {
-        if let first = firstName, let last = lastName {
-            return "\(first) \(last)"
-        } else if let first = firstName {
-            return first
-        } else if let last = lastName {
-            return last
+    // Keys that correspond 1-to-1 with stored properties
+    private enum CodingKeys: String, CodingKey {
+        case id, email, firstName, lastName, profilePictureUrl
+    }
+    
+    // Extra keys the backend may send
+    private enum APIKeys: String, CodingKey {
+        case username, displayName
+    }
+    
+    // MARK: – Decodable
+    init(from decoder: Decoder) throws {
+        let c   = try decoder.container(keyedBy: CodingKeys.self)
+        let api = try decoder.container(keyedBy: APIKeys.self)
+        
+        // id may be Int or String
+        if let intId = try? c.decode(Int.self, forKey: .id) {
+            id = String(intId)
         } else {
-            return email
+            id = try c.decode(String.self, forKey: .id)
+        }
+        
+        // email: prefer `email`, fall back to legacy `username`
+        email = try c.decodeIfPresent(String.self, forKey: .email)
+              ?? api.decode(String.self, forKey: .username)
+        
+        // name can arrive as `displayName` or split fields
+        if let display = try? api.decode(String.self, forKey: .displayName) {
+            let parts = display.splitDisplayName()
+            firstName = parts.firstName
+            lastName  = parts.lastName
+        } else {
+            firstName = try? c.decode(String.self, forKey: .firstName)
+            lastName  = try? c.decode(String.self, forKey: .lastName)
+        }
+        
+        profilePictureUrl = try? c.decode(String.self, forKey: .profilePictureUrl)
+    }
+    
+    // MARK: – Encodable
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id,                forKey: .id)
+        try c.encode(email,             forKey: .email)
+        try c.encodeIfPresent(firstName,forKey: .firstName)
+        try c.encodeIfPresent(lastName, forKey: .lastName)
+        try c.encodeIfPresent(profilePictureUrl, forKey: .profilePictureUrl)
+        // We deliberately **don't** encode `username` / `displayName`
+    }
+    
+    // Convenience init you already had
+    init(id: String,
+         email: String,
+         firstName: String?,
+         lastName: String?,
+         profilePictureUrl: String?) {
+        self.id = id
+        self.email = email
+        self.firstName = firstName
+        self.lastName = lastName
+        self.profilePictureUrl = profilePictureUrl
+    }
+    
+    var fullName: String {
+        switch (firstName, lastName) {
+        case let (f?, l?): return "\(f) \(l)"
+        case let (f?, nil): return f
+        case let (nil, l?): return l
+        default: return email
         }
     }
 } 
