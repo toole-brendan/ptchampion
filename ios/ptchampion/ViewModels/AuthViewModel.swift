@@ -57,6 +57,7 @@ class AuthViewModel: ObservableObject {
     }
     
     func login() {
+        print("AuthViewModel: Starting login process for \(username)")
         isLoading = true
         errorMessage = nil
         
@@ -111,24 +112,23 @@ class AuthViewModel: ObservableObject {
                 return data
             }
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                self?.isLoading = false
+            .sink(receiveCompletion: { [self] completion in
+                self.isLoading = false
                 
                 switch completion {
                 case .finished:
                     break
                 case .failure(let error):
-                    self?.errorMessage = "Login failed: \(error.localizedDescription)"
+                    self.errorMessage = "Login failed: \(error.localizedDescription)"
                     print("Login error: \(error)")
                 }
-            }, receiveValue: { [weak self] data in
-                guard let self = self else { return }
-                
+            }, receiveValue: { [self] data in
                 do {
                     if let responseStr = String(data: data, encoding: .utf8) {
                         print("TEST DIRECT LOGIN: Response data: \(responseStr)")
                     }
                     
+                    print("TEST DIRECT LOGIN: Starting JSON parsing")
                     // Parse response
                     if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
                         print("TEST DIRECT LOGIN: Raw JSON: \(json)")
@@ -166,10 +166,19 @@ class AuthViewModel: ObservableObject {
                                 )
                             }
                             
-                            // Update auth state - these should happen at the same time
-                            self.authState = .authenticated
-                            self.isAuthenticated = true
-                            print("AuthViewModel: Authentication state updated successfully")
+                            print("TEST DIRECT LOGIN: About to update auth state on main thread")
+                            // Update auth state on the main thread to ensure SwiftUI updates properly
+                            DispatchQueue.main.async { [self] in
+                                print("TEST DIRECT LOGIN: Inside main thread update block")
+                                self.currentUser = self.currentUser // Make sure user is set
+                                self.authState = .authenticated
+                                self.isAuthenticated = true
+                                print("TEST DIRECT LOGIN: State variables updated, isAuthenticated=\(self.isAuthenticated)")
+                                // Force UI update with objectWillChange
+                                self.objectWillChange.send()
+                                print("TEST DIRECT LOGIN: objectWillChange sent")
+                                print("AuthViewModel: Authentication state updated successfully")
+                            }
                         } else {
                             self.errorMessage = "Invalid response format"
                         }
@@ -233,19 +242,17 @@ class AuthViewModel: ObservableObject {
                 return data
             }
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] completion in
-                self?.isLoading = false
+            .sink(receiveCompletion: { [self] completion in
+                self.isLoading = false
                 
                 switch completion {
                 case .finished:
                     break
                 case .failure(let error):
-                    self?.errorMessage = "Registration failed: \(error.localizedDescription)"
+                    self.errorMessage = "Registration failed: \(error.localizedDescription)"
                     print("Registration error: \(error)")
                 }
-            }, receiveValue: { [weak self] _ in
-                guard let self = self else { return }
-                
+            }, receiveValue: { [self] _ in
                 // Registration success
                 self.successMessage = "Registration successful! Please log in."
                 print("Registration successful")
@@ -261,10 +268,14 @@ class AuthViewModel: ObservableObject {
         self.userId = nil
         self.currentUser = nil
         
-        // Update auth state - these should happen at the same time
-        self.authState = .unauthenticated
-        self.isAuthenticated = false
-        print("AuthViewModel: User logged out successfully")
+        // Update auth state on the main thread to ensure SwiftUI updates properly
+        DispatchQueue.main.async { [self] in
+            self.authState = .unauthenticated
+            self.isAuthenticated = false
+            // Force UI update with objectWillChange
+            self.objectWillChange.send()
+            print("AuthViewModel: User logged out successfully")
+        }
     }
     
     // MARK: - Developer Mode Functions
@@ -272,17 +283,47 @@ class AuthViewModel: ObservableObject {
     /// Bypasses the normal authentication flow for development purposes
     func loginAsDeveloper() {
         print("AuthViewModel: Bypassing authentication flow for development")
-        self.authState = .authenticated
-        self.isAuthenticated = true
-        self.currentUser = User(
-            id: "dev-123",
-            email: "dev@example.com",
-            firstName: "Developer",
-            lastName: "User",
-            profilePictureUrl: nil
-        )
-        self.errorMessage = nil
-        print("AuthViewModel: Developer login successful without token")
+        
+        // Update state on the main thread to ensure SwiftUI updates properly
+        DispatchQueue.main.async { [self] in
+            self.authState = .authenticated
+            self.isAuthenticated = true
+            self.currentUser = User(
+                id: "dev-123",
+                email: "dev@example.com",
+                firstName: "Developer",
+                lastName: "User",
+                profilePictureUrl: nil
+            )
+            self.errorMessage = nil
+            // Force UI update with objectWillChange
+            self.objectWillChange.send()
+            print("AuthViewModel: Developer login successful without token")
+        }
+    }
+    
+    // Debug method for directly forcing authentication state
+    func debugForceAuthenticated() {
+        print("DEBUG: Starting force authentication")
+        DispatchQueue.main.async {
+            self.authState = .authenticated
+            self.isAuthenticated = true
+            
+            // Create a dummy user if needed
+            if self.currentUser == nil {
+                self.currentUser = User(
+                    id: "debug-123",
+                    email: "debug@example.com",
+                    firstName: "Debug",
+                    lastName: "User",
+                    profilePictureUrl: nil
+                )
+            }
+            
+            // Force UI update with objectWillChange
+            self.objectWillChange.send()
+            print("DEBUG: Forced authentication state to true, isAuthenticated=\(self.isAuthenticated)")
+        }
     }
 }
 

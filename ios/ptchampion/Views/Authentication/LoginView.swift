@@ -150,6 +150,20 @@ struct LoginView: View {
                                     .cornerRadius(8)
                             }
                             .padding(.top, 8)
+                            
+                            // Add direct debug force auth button
+                            Button(action: {
+                                authViewModel.debugForceAuthenticated()
+                            }) {
+                                Text("DEBUG: Force Auth State")
+                                    .font(Font.montserratSemiBold(size: 14))
+                                    .foregroundColor(AppTheme.Colors.cream)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.purple)
+                                    .cornerRadius(8)
+                            }
+                            .padding(.top, 8)
                         }
                         
                         // Register Link
@@ -195,6 +209,12 @@ struct LoginView: View {
             )
             .onTapGesture {
                 hideKeyboard()
+            }
+            .onChange(of: authViewModel.isAuthenticated) { oldValue, newValue in
+                if newValue {
+                    // This will execute when authentication state changes to true
+                    print("LoginView detected authentication state change: \(newValue)")
+                }
             }
             .onAppear {
                 // Set up keyboard notifications
