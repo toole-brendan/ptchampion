@@ -75,16 +75,24 @@ struct PTTextField: View {
 
 // Login View with keyboard avoidance
 struct LoginView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel // Restore EnvironmentObject
+    // Make sure we're using the shared AuthViewModel
+    @EnvironmentObject private var auth: AuthViewModel
     @State private var keyboardHeight: CGFloat = 0
     @State private var showDevOptions = false
     
     // Add explicit navigation feedback from Comprehensive Solution
     @State private var isTransitioning = false
     
+    // Diagnostic state
+    @State private var authDebugText: String = "No auth state change detected yet"
+    
+    // Local form fields
+    @State private var email: String = ""
+    @State private var password: String = ""
+    
     var body: some View {
-        // DEBUG: Check if LoginView body is executing
-        let _ = print("DEBUG: LoginView body executing.")
+        // Print LoginView's auth instance ID to verify it's the same one
+        let _ = print("DEBUG: LoginView body with AuthViewModel instance: \(ObjectIdentifier(auth))")
         
         GeometryReader { geometry in
             ScrollView {
@@ -124,43 +132,70 @@ struct LoginView: View {
                     VStack(spacing: 16) {
                         PTTextField(
                             placeholder: "Email",
-                            text: $authViewModel.username,
+                            text: $email,
                             keyboardType: .emailAddress
                         )
                         
                         PTTextField(
                             placeholder: "Password",
-                            text: $authViewModel.password,
+                            text: $password,
                             isSecure: true
                         )
                         
                         // Login Button
                         Button(action: {
-                            authViewModel.errorMessage = nil // Clear error before login
+                            auth.errorMessage = nil // Clear error before login
+                            print("DEBUG: Login button tapped for email: \(email)")
                             
-                            // Call the login method with explicit parameters
-                            authViewModel.login(email: authViewModel.username, password: authViewModel.password)
+                            // Ensure we're using the async Task correctly
+                            Task {
+                                do {
+                                    await auth.login(email: email, password: password)
+                                } catch {
+                                    print("Login error caught in view: \(error)")
+                                }
+                            }
                         }) {
-                            Text("Log In")
-                                .font(Font.montserratBold(size: 16))
-                                .foregroundColor(AppTheme.Colors.cream)
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(AppTheme.Colors.brassGold)
-                                .cornerRadius(8)
+                            if auth.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.cream))
+                            } else {
+                                Text("Log In")
+                                    .font(Font.montserratBold(size: 16))
+                                    .foregroundColor(AppTheme.Colors.cream)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                            }
                         }
-                        .disabled(authViewModel.isLoading)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(auth.isLoading ? Color.gray : AppTheme.Colors.brassGold)
+                        .cornerRadius(8)
+                        .disabled(auth.isLoading || email.isEmpty || password.isEmpty)
                         
-                        // Progress view during loading
-                        if authViewModel.isLoading {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.brassGold))
-                                .padding(.top, 8)
-                        }
-                        
-                        // Dev bypass button
+                        // Debug buttons only in dev mode
                         if showDevOptions {
-                            Button(action: { authViewModel.loginAsDeveloper() }) {
+                            Button(action: { 
+                                authDebugText = "Current auth state: \(auth.authState.isAuthenticated ? "authenticated" : "unauthenticated")"
+                                print("DEBUG: Current auth state from LoginView diagnostic button: \(auth.authState)")
+                            }) {
+                                Text("Check Auth State")
+                                    .font(Font.montserratSemiBold(size: 14))
+                                    .foregroundColor(AppTheme.Colors.cream)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.blue)
+                                    .cornerRadius(8)
+                            }
+                            .padding(.top, 8)
+                            
+                            Text(authDebugText)
+                                .font(Font.montserratRegular(size: 14))
+                                .foregroundColor(Color.black)
+                                .padding(.top, 8)
+                        
+                            // Dev bypass buttons
+                            Button(action: { auth.loginAsDeveloper() }) {
                                 Text("DEV: Bypass Login")
                                     .font(Font.montserratSemiBold(size: 14))
                                     .foregroundColor(AppTheme.Colors.cream)
@@ -171,7 +206,7 @@ struct LoginView: View {
                             }
                             .padding(.top, 8)
                             
-                            Button(action: { authViewModel.debugForceAuthenticated() }) {
+                            Button(action: { auth.debugForceAuthenticated() }) {
                                 Text("DEBUG: Force Auth State")
                                     .font(Font.montserratSemiBold(size: 14))
                                     .foregroundColor(AppTheme.Colors.cream)
@@ -199,18 +234,12 @@ struct LoginView: View {
                     .padding(.horizontal, 24)
                     
                     // Error message
-                    if let errorMessage = authViewModel.errorMessage {
+                    if let errorMessage = auth.errorMessage {
                         Text(errorMessage)
                             .font(Font.montserratRegular(size: 14))
                             .foregroundColor(Color.red)
                             .padding(.top, 16)
                     }
-                    
-                    // Debug info (Optional)
-                    // Text("Auth state: \\(authViewModel.authState == .authenticated ? \"Authenticated\" : \"Not authenticated\")")
-                    //     .font(Font.montserratRegular(size: 12))
-                    //     .foregroundColor(AppTheme.Colors.tacticalGray)
-                    //     .padding(.top, 24)
                     
                     Spacer()
                 }
@@ -224,25 +253,21 @@ struct LoginView: View {
             .onTapGesture {
                 hideKeyboard()
             }
-            // --- Add onChange handler from Comprehensive Solution ---
-            .onChange(of: authViewModel.isAuthenticated) { oldValue, newValue in
-                if newValue && !isTransitioning { // Check isTransitioning flag
+            .onChange(of: auth.authState.isAuthenticated) { _, isAuthenticated in
+                if isAuthenticated && !isTransitioning {
                     isTransitioning = true
-                    print("LoginView detected authentication state change: \(newValue)")
-                    
-                    // Explicitly post notification as backup
-                    NotificationCenter.default.post(
-                        name: Notification.Name("PTChampionAuthStateChanged"),
-                        object: nil
-                    )
+                    authDebugText = "Authentication state changed to: \(isAuthenticated)"
+                    print("DEBUG: LoginView detected authentication state change to isAuthenticated=true")
                 }
             }
-             // --- Add onAppear handler from Comprehensive Solution ---
             .onAppear {
-                 print("DEBUG: LoginView onAppear called.") // Add debug print
-                 isTransitioning = false // Reset transitioning state
-                // Force auth check on appear
-                authViewModel.checkAuthentication()
+                print("DEBUG: LoginView onAppear called with AuthViewModel instance: \(ObjectIdentifier(auth))")
+                isTransitioning = false // Reset transitioning state
+                
+                // For debugging, verify if auth is already authenticated on appear
+                if auth.authState.isAuthenticated {
+                    print("⚠️ WARNING: LoginView appeared but auth is already authenticated!")
+                }
                 
                 // Set up keyboard notifications
                 NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in

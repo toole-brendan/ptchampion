@@ -3,6 +3,17 @@ import CoreLocation // For CLAuthorizationStatus
 import SwiftData // Import SwiftData
 import CoreBluetooth // For CBManagerState
 
+// Run-specific text style extensions
+extension Text {
+    func runLabelStyle(size: CGFloat = 14, color: Color = .gray) -> some View { 
+        self.font(.system(size: size)).foregroundColor(color) 
+    }
+    
+    func statsNumberStyle(size: CGFloat = 32, color: Color = .primary) -> some View { 
+        self.font(.system(size: size, weight: .bold)).foregroundColor(color) 
+    }
+}
+
 struct RunWorkoutView: View {
     // Define constants directly within the view
     private struct Constants {
@@ -149,7 +160,7 @@ struct RunWorkoutView: View {
         var body: some View {
             VStack {
                 Text(label)
-                    .labelStyle(size: 12, color: Color(red: 0.64, green: 0.64, blue: 0.56)) // RGB for inactiveGray
+                    .runLabelStyle(size: 12, color: Color(red: 0.64, green: 0.64, blue: 0.56)) // RGB for inactiveGray
                     .padding(.bottom, 1)
                 Text(value)
                     .statsNumberStyle(size: 24, color: Color(red: 0.957, green: 0.945, blue: 0.902)) // RGB for tacticalCream
@@ -272,13 +283,6 @@ struct MapViewPlaceholder: View {
         RunWorkoutView()
     }
     .modelContainer(for: WorkoutResultSwiftData.self, inMemory: true) // Use in-memory store for preview
-}
-
-// Helpers for View Styles (Ensure these exist)
-extension Text {
-    func subheadingStyle() -> some View { self.font(.title3).bold() }
-    func labelStyle(size: CGFloat = 14, color: Color = .gray) -> some View { self.font(.system(size: size)).foregroundColor(color) }
-    func statsNumberStyle(size: CGFloat = 32, color: Color = .primary) -> some View { self.font(.system(size: size, weight: .bold)).foregroundColor(color) }
 }
 
 /* MOCK/DUPLICATE - Remove or ensure only one definition exists

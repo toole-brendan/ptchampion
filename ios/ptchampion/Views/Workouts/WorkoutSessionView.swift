@@ -6,36 +6,33 @@ struct WorkoutSessionView: View {
     let exerciseName: String
     // Use @StateObject to create and keep the ViewModel alive for the view's lifecycle
     @StateObject private var viewModel: WorkoutViewModel
-
-    // Access CameraService instance through ViewModel (if needed directly, e.g., for preview layer)
-    // This assumes CameraService is reference type and accessible. May need refactoring.
-    private let cameraService: CameraService // Assuming default init for now
-
+    
+    // Use Environment to dismiss the view when done
+    @Environment(\.dismiss) var dismiss
+    
     // Access ModelContext
     @Environment(\.modelContext) private var modelContext
 
-    // Use Environment to dismiss the view when done
-    @Environment(\.dismiss) var dismiss
-
     init(exerciseName: String) {
         self.exerciseName = exerciseName
-        let camService = CameraService() // Create instance
-        self.cameraService = camService
-        // Initialize StateObject here, passing the service instances
-        self._viewModel = StateObject(wrappedValue: WorkoutViewModel(exerciseName: exerciseName,
-                                                                  cameraService: camService,
-                                                                  poseDetectorService: PoseDetectorService(),
-                                                                  modelContext: nil))
+        
+        // Initialize StateObject here
+        self._viewModel = StateObject(wrappedValue: WorkoutViewModel(
+            exerciseName: exerciseName,
+            poseDetectorService: PoseDetectorService(),
+            modelContext: nil
+        ))
     }
 
     var body: some View {
         ZStack {
             // Camera Preview Layer (using UIViewRepresentable)
-            // Pass the AVCaptureSession from the CameraService instance
-            CameraPreviewView(session: cameraService.session)
-                .ignoresSafeArea()
-                .onAppear(perform: viewModel.startCamera) // Start camera when view appears
-                .onDisappear(perform: viewModel.stopCamera) // Stop camera when view disappears
+            if let cameraService = viewModel.cameraService {
+                CameraPreviewView(session: cameraService.session)
+                    .ignoresSafeArea()
+            } else {
+                Color.black.ignoresSafeArea() // Fallback if camera not available
+            }
 
             // UI Overlay on top of the camera feed
             VStack {
@@ -91,9 +88,11 @@ struct WorkoutSessionView: View {
             }
             .edgesIgnoringSafeArea(.bottom) // Allow bottom bar to touch edge
 
-            // Pose Overlay Layer
-            PoseOverlayView(detectedBody: viewModel.detectedBody)
-                .ignoresSafeArea()
+            // Pose Overlay Layer if pose is detected
+            if viewModel.detectedBody != nil {
+                PoseOverlayView(detectedBody: viewModel.detectedBody)
+                    .ignoresSafeArea()
+            }
 
             // Display error messages or permission prompts
             permissionOrErrorOverlay()
@@ -112,15 +111,20 @@ struct WorkoutSessionView: View {
             }
         }
         .onAppear {
-             // Inject model context when view appears
-             // This ensures the context from the environment is correctly passed.
-             if viewModel.modelContext == nil {
-                 viewModel.modelContext = modelContext
-             }
-            viewModel.startCamera() // Start camera when view appears
+            // Inject model context when view appears
+            if viewModel.modelContext == nil {
+                viewModel.modelContext = modelContext
+            }
+            
+            // Initialize camera only when view appears to avoid multiple initializations
+            viewModel.initializeCamera()
+            viewModel.startCamera()
         }
         .onDisappear {
+            print("WorkoutSessionView disappeared - stopping workout")
             viewModel.stopWorkout() // Ensure cleanup when view disappears
+            viewModel.stopCamera()
+            viewModel.releaseCamera() // Release camera resources
         }
         .background(Color.black) // Background for the whole view
     }

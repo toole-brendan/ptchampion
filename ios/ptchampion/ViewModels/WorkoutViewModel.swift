@@ -4,10 +4,28 @@ import AVFoundation // For AVAuthorizationStatus
 import SwiftData // Import SwiftData
 import SwiftUI // Import SwiftUI for potential @AppStorage use later if needed
 
+// Define exercise type enum within the file scope to avoid ambiguity
+enum WorkoutExerciseType: String {
+    case pushup = "Push-ups"
+    case situp = "Sit-ups" 
+    case pullup = "Pull-ups"
+    case run = "Run"
+    case unknown = "Unknown"
+
+    init(key: String) {
+        self = WorkoutExerciseType(rawValue: key) ?? .unknown
+    }
+}
+
 @MainActor
 class WorkoutViewModel: ObservableObject {
 
-    private let cameraService: CameraServiceProtocol
+    // Make cameraService optional and lazily initialized
+    private var _cameraService: CameraServiceProtocol?
+    var cameraService: CameraServiceProtocol? {
+        return _cameraService
+    }
+    
     private let poseDetectorService: PoseDetectorServiceProtocol
     private let exerciseGrader: ExerciseGraderProtocol
     private let workoutService: WorkoutServiceProtocol
@@ -18,7 +36,7 @@ class WorkoutViewModel: ObservableObject {
 
     // Input
     let exerciseName: String
-    private var exerciseType: ExerciseType { ExerciseType(key: exerciseName) }
+    private var exerciseType: WorkoutExerciseType { WorkoutExerciseType(key: exerciseName) }
 
     // Published State for UI
     @Published var cameraAuthorizationStatus: AVAuthorizationStatus = .notDetermined
@@ -66,7 +84,6 @@ class WorkoutViewModel: ObservableObject {
     }
 
     init(exerciseName: String,
-         cameraService: CameraServiceProtocol = CameraService(),
          poseDetectorService: PoseDetectorServiceProtocol = PoseDetectorService(),
          exerciseGrader: ExerciseGraderProtocol? = nil,
          workoutService: WorkoutServiceProtocol = WorkoutService(),
@@ -74,7 +91,6 @@ class WorkoutViewModel: ObservableObject {
          modelContext: ModelContext? = nil // Add modelContext parameter
     ) {
         self.exerciseName = exerciseName
-        self.cameraService = cameraService
         self.poseDetectorService = poseDetectorService
         self.workoutService = workoutService
         self.keychainService = keychainService
@@ -84,7 +100,7 @@ class WorkoutViewModel: ObservableObject {
         if let providedGrader = exerciseGrader {
             self.exerciseGrader = providedGrader
         } else {
-             switch ExerciseType(key: exerciseName) { // Use enum for switch
+             switch WorkoutExerciseType(key: exerciseName) { // Use enum for switch
              case .pushup:
                  self.exerciseGrader = PushupGrader()
              case .situp:
@@ -99,11 +115,34 @@ class WorkoutViewModel: ObservableObject {
         }
 
         print("WorkoutViewModel initialized for \(exerciseName) using \(type(of: self.exerciseGrader))")
-        subscribeToServices()
         checkInitialCameraPermission()
+    }
+    
+    // Initialize the camera service on demand
+    func initializeCamera() {
+        guard _cameraService == nil else {
+            print("CameraService already initialized")
+            return
+        }
+        
+        print("Initializing new CameraService")
+        _cameraService = CameraService()
+        subscribeToServices()
+    }
+    
+    // Release camera resources
+    func releaseCamera() {
+        print("Releasing CameraService resources")
+        _cameraService = nil
+        cancellables.removeAll()
     }
 
     private func subscribeToServices() {
+        guard let cameraService = _cameraService else {
+            print("Cannot subscribe to services - CameraService not initialized")
+            return
+        }
+        
         // Subscribe to Camera Authorization Status
         cameraService.authorizationStatusPublisher
             .receive(on: DispatchQueue.main)
@@ -115,8 +154,6 @@ class WorkoutViewModel: ObservableObject {
 
         // Subscribe to Camera Frames -> Process with Pose Detector
         cameraService.framePublisher
-            // Debounce or throttle if necessary to manage processing load
-            // .debounce(for: .milliseconds(100), scheduler: DispatchQueue.global(qos: .userInitiated)) // Example debounce
             .sink { [weak self] frameBuffer in
                  guard self?.workoutState == .counting else { return } // Only process if counting
                  self?.poseDetectorService.processFrame(frameBuffer)
@@ -171,10 +208,10 @@ class WorkoutViewModel: ObservableObject {
          switch status {
          case .authorized:
              workoutState = .ready
-             startCamera()
+             // Don't start camera here - wait for explicit call
          case .notDetermined:
              workoutState = .requestingPermission
-             cameraService.requestCameraPermission()
+             _cameraService?.requestCameraPermission()
          case .denied, .restricted:
              workoutState = .permissionDenied
              errorMessage = "Camera access is required. Please enable it in Settings."
@@ -186,12 +223,12 @@ class WorkoutViewModel: ObservableObject {
 
     func startCamera() {
         guard cameraAuthorizationStatus == .authorized else { return }
-        cameraService.startSession()
+        _cameraService?.startSession()
         print("WorkoutViewModel: Camera session started.")
     }
 
     func stopCamera() {
-        cameraService.stopSession()
+        _cameraService?.stopSession()
         print("WorkoutViewModel: Camera session stopped.")
     }
 
@@ -219,13 +256,8 @@ class WorkoutViewModel: ObservableObject {
         guard isTimerRunning else { return }
         isTimerRunning = false
         // Calculate time elapsed since last resume and add to accumulated time
-        // Requires tracking the last resume date, let's simplify for now:
-        // We assume the pause happens right after the last tick. More accurate would be Date() - lastResumeDate
         timerSubscription?.cancel()
         timerSubscription = nil
-        // For accurate pause/resume, need to store last start/resume time
-        // For simplicity now, we just stop the publisher and restart
-        // A more robust implementation would calculate interval since last fire and add to accumulatedTime
     }
 
     private func stopTimer() {
@@ -233,7 +265,6 @@ class WorkoutViewModel: ObservableObject {
         timerSubscription?.cancel()
         timerSubscription = nil
         // Calculate final accumulated time
-        // Final calculation happens in stopWorkout based on start/end dates
         accumulatedTime = 0 // Reset for next workout
         workoutStartDate = nil
         updateTimerDisplay(0)
@@ -316,8 +347,6 @@ class WorkoutViewModel: ObservableObject {
         case .repCompleted:
             repCount += 1
             feedbackMessage = "Good Rep! (\(repCount))"
-            // Haptic feedback for rep completion
-            // playHapticFeedback(.success)
         case .inProgress(let phase):
             // Use phase info if provided by grader, otherwise default message
             feedbackMessage = phase ?? "Keep going..."
@@ -325,11 +354,8 @@ class WorkoutViewModel: ObservableObject {
             feedbackMessage = "Adjust: \(reason)"
         case .incorrectForm(let feedback):
             feedbackMessage = "Form: \(feedback)"
-            // Haptic feedback for form correction
-            // playHapticFeedback(.warning)
         case .noChange:
             // Keep previous feedback or provide generic message
-            // feedbackMessage = "Tracking..."
             break // Don't necessarily update feedback message every frame
         }
     }
@@ -345,7 +371,6 @@ class WorkoutViewModel: ObservableObject {
         guard let context = modelContext else {
             print("WorkoutViewModel: ModelContext not available. Cannot save workout locally.")
             errorMessage = "Internal error: Could not save workout data."
-            // Consider setting workoutState back to error or ready?
             return
         }
 
@@ -367,37 +392,12 @@ class WorkoutViewModel: ObservableObject {
         } catch {
             print("WorkoutViewModel: Failed to save workout locally: \(error.localizedDescription)")
             errorMessage = "Failed to save workout data locally."
-            // Handle error appropriately
         }
-
-        // --- Optional: Add backend saving logic here later if needed ---
-        // Requires uncommenting/keeping workoutService/keychainService
-        /*
-        Task {
-             do {
-                 guard let token = try keychainService.loadToken() else { return }
-                 let payload = WorkoutResultPayload(
-                     exerciseType: exerciseType.rawValue,
-                     startTime: startTime,
-                     endTime: endTime,
-                     durationSeconds: duration,
-                     repCount: reps,
-                     score: score
-                 )
-                 try await workoutService.saveWorkout(result: payload, authToken: token)
-                 print("WorkoutViewModel: Workout saved to backend successfully!")
-             } catch {
-                 print("WorkoutViewModel: Failed to save workout to backend: \(error.localizedDescription)")
-                 // Update errorMessage specifically for backend failure?
-             }
-        }
-        */
     }
 
     // MARK: - Cleanup
     deinit {
         // Ensure resources are released
-        // Use Task to call the main actor isolated method
         Task { @MainActor in
             stopCamera()
         }

@@ -71,6 +71,7 @@ struct MetricCard: View {
 }
 
 #Preview {
-    DashboardView()
-        .environmentObject(AuthViewModel()) // Add if needed for user info
+    let previewAuth = AuthViewModel()
+    return DashboardView()
+        .environmentObject(previewAuth)
 } 
