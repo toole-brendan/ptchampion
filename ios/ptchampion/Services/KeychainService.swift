@@ -34,7 +34,19 @@ class KeychainService: KeychainServiceProtocol {
     // Additional methods for AuthViewModel compatibility
     func getAccessToken() -> String? {
         do {
-            return try loadToken()
+            guard let token = try loadToken() else {
+                print("KeychainService: Token not found.")
+                return nil
+            }
+            
+            // Validate token isn't empty or malformed
+            if token.isEmpty || token == "null" || token == "(null)" {
+                print("KeychainService: Invalid token found - clearing.")
+                clearAllTokens()
+                return nil
+            }
+            
+            return token
         } catch {
             print("Error loading access token: \(error)")
             return nil
