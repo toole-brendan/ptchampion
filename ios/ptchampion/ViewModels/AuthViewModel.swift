@@ -25,6 +25,7 @@ class AuthViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     init() {
+        print("DEBUG: AuthViewModel init() called") // Add debug print
         // Check for existing token on startup
         checkAuthentication()
     }
@@ -112,17 +113,15 @@ class AuthViewModel: ObservableObject {
                 return data
             }
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [self] completion in
-                self.isLoading = false
-                
-                switch completion {
-                case .finished:
-                    break
-                case .failure(let error):
-                    self.errorMessage = "Login failed: \(error.localizedDescription)"
+            .sink(receiveCompletion: { [weak self] completion in
+                self?.isLoading = false
+                if case .failure(let error) = completion {
+                    self?.errorMessage = "Login failed: \(error.localizedDescription)"
                     print("Login error: \(error)")
                 }
-            }, receiveValue: { [self] data in
+            }, receiveValue: { [weak self] data in
+                guard let self = self else { return }
+                
                 do {
                     if let responseStr = String(data: data, encoding: .utf8) {
                         print("TEST DIRECT LOGIN: Response data: \(responseStr)")
@@ -226,34 +225,37 @@ class AuthViewModel: ObservableObject {
                         
                         print("TEST DIRECT LOGIN: About to update auth state on main thread")
                         // Update auth state on the main thread to ensure SwiftUI updates properly
-                        DispatchQueue.main.async { [self] in
-                            print("TEST DIRECT LOGIN: Inside main thread update block")
+                        DispatchQueue.main.async { [weak self] in
+                            guard let self = self else { return }
                             
-                            // Update authentication state with maximum force
+                            // First, set user data
+                            self.currentUser = self.currentUser // Make sure user is set
+                            
+                            // Critical: Force UI update BEFORE changing auth state
                             self.objectWillChange.send()
+                            
+                            // Now set authentication state
                             self.authState = .authenticated
                             self.isAuthenticated = true
-                            print("TEST DIRECT LOGIN: State variables updated, isAuthenticated=\(self.isAuthenticated)")
+                            
+                            // Force immediate UI update
                             self.objectWillChange.send()
                             
-                            // Post direct notification to force UI update
-                            NotificationCenter.default.post(name: Notification.Name("AuthenticationStateChanged"), object: nil)
-                            print("TEST DIRECT LOGIN: Posted direct notification")
+                            print("AuthViewModel: Authentication successful, isAuthenticated=\(self.isAuthenticated)")
                             
-                            // Add multiple delayed updates to ensure SwiftUI catches the change
+                            // Add a delayed second update for SwiftUI's next render cycle
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                // This forces a refresh on the next render cycle
                                 self.objectWillChange.send()
-                                print("TEST DIRECT LOGIN: Sent delayed objectWillChange at +0.1s")
                                 
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                                    // Force another update a bit later
-                                    self.objectWillChange.send()
-                                    print("TEST DIRECT LOGIN: Sent delayed objectWillChange at +0.3s")
-                                    NotificationCenter.default.post(name: Notification.Name("AuthenticationStateChanged"), object: nil)
-                                }
+                                // Post a notification for views that might not be directly observing
+                                NotificationCenter.default.post(
+                                    name: Notification.Name("PTChampionAuthStateChanged"),
+                                    object: nil
+                                )
+                                
+                                print("AuthViewModel: Sent delayed auth state update")
                             }
-                            
-                            print("AuthViewModel: Authentication state updated successfully")
                         }
                     } else {
                         // Even if parsing fails but we got a 200 response, attempt to authenticate anyway
