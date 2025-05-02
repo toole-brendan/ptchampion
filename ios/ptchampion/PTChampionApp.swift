@@ -99,16 +99,32 @@ class FontManager {
     }
 }
 
+// --- Define NavigationState and AppScreen outside the App struct ---
+
+// Navigation State Class
+class NavigationState: ObservableObject {
+    @Published var currentScreen: AppScreen = .loading
+    
+    func navigateTo(_ screen: AppScreen) {
+        withAnimation(nil) {
+            self.currentScreen = screen
+        }
+    }
+}
+
+// App Screen Enum
+enum AppScreen {
+    case loading, login, register, main
+}
+
+// --- Main App Structure ---
+
 @main
 struct PTChampionApp: App {
     @StateObject private var authViewModel = AuthViewModel()
     
-    // --- Restore initial state to LOADING ---
-    @State private var appNavigationState: AppScreen = .loading // Restore loading state
-    
-    enum AppScreen {
-        case loading, login, main
-    }
+    // Create a state object for the navigation state (defined outside now)
+    @StateObject private var navigationState = NavigationState()
     
     // Initialize app appearance
     init() {
@@ -155,100 +171,72 @@ struct PTChampionApp: App {
     var body: some Scene {
         WindowGroup {
             let _ = Self.logBody()
+            // Pass the shared navigationState down
             RootContentView()
                 .environmentObject(authViewModel)
+                .environmentObject(navigationState) // Pass the state object
                 .modelContainer(for: WorkoutResultSwiftData.self)
         }
     }
     
-    // Helper to determine initial screen
-    private func determineInitialScreen() {
-        print("DEBUG: determineInitialScreen called")
-        // --- Call updateNavigationState DIRECTLY --- 
-        print("DEBUG: Calling updateNavigationState directly from determineInitialScreen")
-        updateNavigationState()
-        
-        /* // Original delay logic commented out
-        // Short delay to allow auth state to initialize
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            print("DEBUG: determineInitialScreen timer fired - calling updateNavigationState")
-            updateNavigationState()
-        }
-        */
-    }
-    
-    // Centralized navigation state update
-    private func updateNavigationState() {
-        print("DEBUG: updateNavigationState called. Auth=\(authViewModel.isAuthenticated)")
-        let targetState = authViewModel.isAuthenticated ? AppScreen.main : AppScreen.login
-        print("DEBUG: Target navigation state is: \(targetState)")
-        
-        // Only update if the state needs to change
-        if appNavigationState != targetState {
-            print("DEBUG: State needs update from \(appNavigationState) to \(targetState) — applying now on main thread")
-            // Directly update the @State property (we are already on the main thread in typical UI callbacks)
-            withAnimation(nil) { // No animation by default; change to .default if desired later
-                appNavigationState = targetState
-            }
-            print("DEBUG: State updated to: \(appNavigationState)")
-        } else {
-            print("DEBUG: State \(appNavigationState) already matches target \(targetState), no update needed.")
-        }
-    }
-
     // MARK: - Debug Helpers
     private static func logBody() {
         print("DEBUG: PTChampionApp body recomputed")
     }
 
-    // MARK: - RootContentView (inlined to avoid target-membership issues)
+    // MARK: - RootContentView (no longer needs to manage its own navState)
     struct RootContentView: View {
-        @State private var navState: AppScreen = .loading
+        // Remove internal navState, rely solely on environment object
+        // @State private var navState: AppScreen = .loading // Removed
         @EnvironmentObject var authViewModel: AuthViewModel
+        @EnvironmentObject var navigationState: NavigationState // Use the shared state
 
         var body: some View {
-            let _ = { print("DEBUG: RootContentView body recomputed, state=\(navState)") }()
-            Group {
-                if navState == .loading {
-                    ProgressView()
-                        .onAppear {
-                            print("DEBUG: Loading screen appeared (RootContentView)")
-                            determineInitialScreen()
-                        }
-                } else if navState == .login {
-                    LoginView()
-                        .onAppear { print("PTChampionApp: Showing LoginView (RootContentView)") }
-                } else {
-                    MainTabView()
-                        .onAppear { print("PTChampionApp: Showing MainTabView (RootContentView)") }
+            let _ = { print("DEBUG: RootContentView body recomputed, navState=\(navigationState.currentScreen)") }()
+            NavigationView { // Keep the NavigationView here
+                Group {
+                    // Use navigationState.currentScreen for routing
+                    switch navigationState.currentScreen {
+                    case .loading:
+                        ProgressView()
+                            .onAppear {
+                                print("DEBUG: Loading screen appeared (RootContentView)")
+                                determineInitialScreen() // Call helper on appear
+                            }
+                    case .login:
+                        LoginView()
+                            .onAppear { print("PTChampionApp: Showing LoginView (RootContentView)") }
+                    case .register:
+                        RegistrationView()
+                            .onAppear { print("PTChampionApp: Showing RegisterView (RootContentView)") }
+                    case .main:
+                        MainTabView()
+                            .onAppear { print("PTChampionApp: Showing MainTabView (RootContentView)") }
+                    }
                 }
-            }
-            .onChange(of: authViewModel.isAuthenticated) { oldVal, newVal in
-                print("DEBUG: RootContentView onChange detected auth change: \(oldVal) -> \(newVal)")
-                updateNavigationState()
-            }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("PTChampionAuthStateChanged"))) { _ in
-                print("DEBUG: RootContentView onReceive detected notification")
-                updateNavigationState()
+                .onChange(of: authViewModel.isAuthenticated) { oldVal, newVal in
+                    print("DEBUG: RootContentView onChange detected auth change: \(oldVal) -> \(newVal)")
+                    updateNavigationState() // Update state on auth change
+                }
             }
         }
 
-        // MARK: - Helpers
+        // MARK: - Helpers (Simplified)
         private func determineInitialScreen() {
-            updateNavigationState()
+            // Determine state based on authViewModel and update shared navigationState
+            let target: AppScreen = authViewModel.isAuthenticated ? .main : .login
+            print("DEBUG: Root determineInitialScreen setting target to \(target)")
+            if navigationState.currentScreen != target {
+                 navigationState.navigateTo(target)
+            }
         }
 
         private func updateNavigationState() {
-            print("DEBUG: RootContentView updateNavigationState called. Auth=\(authViewModel.isAuthenticated)")
+            // Update shared navigationState based on auth status
             let target: AppScreen = authViewModel.isAuthenticated ? .main : .login
-            if navState != target {
-                print("DEBUG: RootContentView changing navigation from \(navState) to \(target) (direct update)")
-                withAnimation(nil) {
-                    navState = target
-                    print("DEBUG: RootContentView state updated to \(navState) synchronously")
-                }
-            } else {
-                print("DEBUG: RootContentView navigation already at \(target)")
+            print("DEBUG: Root updateNavigationState setting target to \(target)")
+            if navigationState.currentScreen != target {
+                navigationState.navigateTo(target)
             }
         }
     }
@@ -359,14 +347,12 @@ struct DeviceShakeViewModifier: ViewModifier {
 #endif
 
 #Preview("MainTabView") {
-    let view = {
-        let mockAuth = AuthViewModel()
-        mockAuth.isAuthenticated = true
-        mockAuth.currentUser = User(id: "preview-id", email: "preview@user.com", firstName: "Preview", lastName: "User", profilePictureUrl: nil)
-        
-        return MainTabView()
-            .environmentObject(mockAuth)
-    }()
-    
-    return view
+    // Directly return the view, configuring the environment object inline
+    MainTabView()
+        .environmentObject({ // Use a closure to configure the mock object inline
+            let mockAuth = AuthViewModel()
+            mockAuth._isAuthenticatedInternal = true 
+            mockAuth.currentUser = User(id: "preview-id", email: "preview@user.com", firstName: "Preview", lastName: "User", profilePictureUrl: nil)
+            return mockAuth
+        }())
 } 

@@ -89,10 +89,8 @@ struct LoginView: View {
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 24) {
-                    // Logo
-                    Image(uiImage: UIImage(named: "pt_champion_logo") ?? 
-                          (Bundle.main.path(forResource: "pt_champion_logo", ofType: "png").flatMap { UIImage(contentsOfFile: $0) }) ?? 
-                          UIImage(systemName: "shield.lefthalf.filled")!)
+                    // Logo - Simplified loading
+                    Image("pt_champion_logo") // Directly use the asset name
                         .resizable()
                         .scaledToFit()
                         .frame(width: 120, height: 120)
@@ -176,7 +174,7 @@ struct LoginView: View {
                             Text("Don't have an account?")
                                 .font(Font.montserratRegular(size: 14))
                                 .foregroundColor(AppTheme.Colors.tacticalGray)
-                            Button(action: { /* Navigate to registration */ }) {
+                            NavigationLink(destination: RegistrationView()) {
                                 Text("Register")
                                     .font(Font.montserratSemiBold(size: 14))
                                     .foregroundColor(AppTheme.Colors.brassGold)
