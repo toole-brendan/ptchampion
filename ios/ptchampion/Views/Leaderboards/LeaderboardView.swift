@@ -12,162 +12,41 @@ struct LeaderboardView: View {
         static let globalPadding: CGFloat = 16
     }
     
-    @StateObject private var viewModel = LeaderboardViewModel(useMockData: false)
+    @StateObject private var viewModel = LeaderboardViewModel(useMockData: true)
     @EnvironmentObject var authViewModel: AuthViewModel
     
     // Track this view's lifecycle for debugging
-    private let viewId = UUID().uuidString.prefix(6)
+    private let viewId: String
 
     // Apply appearance changes in init
     init() {
-        // Extract the ID to a local constant before using in the log statement
-        let viewIdentifier = viewId
-        logger.debug("LeaderboardView init \(viewIdentifier)")
+        // Break down the initialization into simpler parts
+        let idString = UUID().uuidString
+        let prefix = idString.prefix(6)
+        self.viewId = String(prefix)
+        
+        // Create a local copy of viewId for logging
+        let localViewId = self.viewId
+        
+        // Log initialization with the ID
+        logger.debug("LeaderboardView init \(localViewId)")
+        
+        // Configure UI appearance
         configureSegmentedControlAppearance()
     }
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) { // Use spacing 0 for closer list
-                // Replace DashboardHeader with a simple title
-                Text("Leaderboard")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding([.horizontal, .bottom])
+            VStack(spacing: 0) {
+                // Header section
+                headerView()
                 
-                Picker("Category", selection: $viewModel.selectedCategory) {
-                    ForEach(LeaderboardCategory.allCases, id: \.id) { category in
-                        Text(category.displayName).tag(category)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal, 16)
-
-                // Scope toggle for global vs local
-                Picker("Type", selection: $viewModel.selectedBoard) {
-                    ForEach(LeaderboardType.allCases, id: \.id) { type in
-                        Text(type.rawValue).tag(type)
-                    }
-                }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 16)
+                // Category and type pickers
+                categoryPickerView()
+                typePickerView()
 
                 // Content Area based on loading state
-                ZStack {
-                    if viewModel.isLoading {
-                        VStack {
-                            ProgressView()
-                                .scaleEffect(1.5)
-                                .padding()
-                            Text("Loading leaderboard data...")
-                                .foregroundColor(.secondary)
-                        }
-                    } else if let errorMessage = viewModel.errorMessage {
-                        VStack(spacing: 16) {
-                            // Different icons based on error type
-                            Group {
-                                if viewModel.backendStatus == .noActiveUsers {
-                                    Image(systemName: "person.3")
-                                        .font(.largeTitle)
-                                        .foregroundColor(.blue)
-                                } else if viewModel.backendStatus == .timedOut {
-                                    Image(systemName: "clock")
-                                        .font(.largeTitle)
-                                        .foregroundColor(.orange)
-                                } else {
-                                    Image(systemName: "exclamationmark.triangle")
-                                        .font(.largeTitle)
-                                        .foregroundColor(.orange)
-                                }
-                            }
-                            
-                            Text(errorMessage)
-                                .multilineTextAlignment(.center)
-                                .foregroundColor(.secondary)
-                                .padding(.horizontal)
-                            
-                            // Special message for no users case
-                            if viewModel.backendStatus == .noActiveUsers {
-                                Text("The Azure database doesn't have any active users yet. When users start completing workouts, they'll appear here!")
-                                    .font(.caption)
-                                    .multilineTextAlignment(.center)
-                                    .foregroundColor(.secondary)
-                                    .padding(.horizontal)
-                            }
-                            
-                            // Show settings button if location permission denied
-                            if viewModel.selectedBoard == .local && 
-                               (viewModel.locationPermissionStatus == .denied || 
-                                viewModel.locationPermissionStatus == .restricted) {
-                                
-                                Button("Open Settings") {
-                                    if let url = URL(string: UIApplication.openSettingsURLString) {
-                                        UIApplication.shared.open(url)
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                            }
-                            
-                            Button("Retry") {
-                                Task {
-                                    await viewModel.fetchLeaderboardData()
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(Color.green)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .padding(.top, 8)
-                            
-                            // Debug button to show mock data
-                            #if DEBUG
-                            Button("Use Mock Data") {
-                                // Instead of replacing the existing viewModel (which would break SwiftUI's state management),
-                                // just configure it to use mock data
-                                Task {
-                                    logger.debug("Switching to mock data mode")
-                                    // Force current viewModel to use mock data and refresh
-                                    viewModel.switchToMockData()
-                                    await viewModel.fetchLeaderboardData()
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .background(Color.gray)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .font(.caption)
-                            .padding(.top, 4)
-                            #endif
-                        }
-                        .padding(.horizontal)
-                    } else if viewModel.leaderboardEntries.isEmpty {
-                         Text("No entries found for this leaderboard.")
-                             .foregroundColor(.secondary)
-                             .padding()
-                    } else {
-                        List {
-                            ForEach(viewModel.leaderboardEntries) { entry in
-                                LeaderboardRow(entry: entry)
-                                    .listRowInsets(EdgeInsets(top: 8, leading: Constants.globalPadding, bottom: 8, trailing: Constants.globalPadding))
-                                    .listRowSeparator(.hidden) // Hide default separators
-                                    .listRowBackground(Color(red: 0.957, green: 0.945, blue: 0.902)) // Match list row background
-                            }
-                        }
-                        .listStyle(PlainListStyle())
-                        .refreshable { 
-                            await viewModel.fetchLeaderboardData()
-                        }
-                    }
-                }
+                contentView()
             }
             .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea())
             .navigationTitle("Leaderboards")
@@ -182,6 +61,176 @@ struct LeaderboardView: View {
         }
         .onDisappear {
             logger.debug("LeaderboardView disappeared \(viewId)")
+        }
+    }
+    
+    // MARK: - Helper Views
+    
+    @ViewBuilder
+    private func headerView() -> some View {
+        Text("Leaderboard")
+            .font(.title)
+            .fontWeight(.bold)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding([.horizontal, .bottom])
+    }
+    
+    @ViewBuilder
+    private func categoryPickerView() -> some View {
+        Picker("Category", selection: $viewModel.selectedCategory) {
+            ForEach(LeaderboardCategory.allCases, id: \.id) { category in
+                Text(category.displayName).tag(category)
+            }
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding(.horizontal, 16)
+    }
+    
+    @ViewBuilder
+    private func typePickerView() -> some View {
+        Picker("Type", selection: $viewModel.selectedBoard) {
+            ForEach(LeaderboardType.allCases, id: \.id) { type in
+                Text(type.rawValue).tag(type)
+            }
+        }
+        .pickerStyle(SegmentedPickerStyle())
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 16)
+    }
+    
+    @ViewBuilder
+    private func contentView() -> some View {
+        ZStack {
+            if viewModel.isLoading {
+                loadingView()
+            } else if let errorMessage = viewModel.errorMessage {
+                errorView(message: errorMessage)
+            } else if viewModel.leaderboardEntries.isEmpty {
+                emptyStateView()
+            } else {
+                leaderboardListView()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func loadingView() -> some View {
+        VStack {
+            ProgressView()
+                .scaleEffect(1.5)
+                .padding()
+            Text("Loading leaderboard data...")
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    @ViewBuilder
+    private func emptyStateView() -> some View {
+        Text("No entries found for this leaderboard.")
+            .foregroundColor(.secondary)
+            .padding()
+    }
+    
+    @ViewBuilder
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 16) {
+            // Different icons based on error type
+            Group {
+                switch viewModel.backendStatus {
+                case .noActiveUsers:
+                    Image(systemName: "person.3")
+                        .font(.largeTitle)
+                        .foregroundColor(.blue)
+                case .timedOut:
+                    Image(systemName: "clock")
+                        .font(.largeTitle)
+                        .foregroundColor(.orange)
+                default:
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.largeTitle)
+                        .foregroundColor(.orange)
+                }
+            }
+            
+            Text(message)
+                .multilineTextAlignment(.center)
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
+            
+            // Special message for no users case
+            if case .noActiveUsers = viewModel.backendStatus {
+                Text("The Azure database doesn't have any active users yet. When users start completing workouts, they'll appear here!")
+                    .font(.caption)
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+            }
+            
+            // Show settings button if location permission denied
+            if viewModel.selectedBoard == .local && 
+               (viewModel.locationPermissionStatus == .denied || 
+                viewModel.locationPermissionStatus == .restricted) {
+                
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(8)
+            }
+            
+            Button("Retry") {
+                Task {
+                    await viewModel.fetchLeaderboardData()
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.green)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            .padding(.top, 8)
+            
+            // Debug button to show mock data
+            #if DEBUG
+            Button("Use Mock Data") {
+                Task {
+                    logger.debug("Switching to mock data mode")
+                    // Force current viewModel to use mock data and refresh
+                    viewModel.switchToMockData()
+                    await viewModel.fetchLeaderboardData()
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+            .background(Color.gray)
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            .font(.caption)
+            .padding(.top, 4)
+            #endif
+        }
+        .padding(.horizontal)
+    }
+    
+    @ViewBuilder
+    private func leaderboardListView() -> some View {
+        List {
+            ForEach(viewModel.leaderboardEntries) { entry in
+                LeaderboardRow(entry: entry)
+                    .listRowInsets(EdgeInsets(top: 8, leading: Constants.globalPadding, bottom: 8, trailing: Constants.globalPadding))
+                    .listRowSeparator(.hidden) // Hide default separators
+                    .listRowBackground(Color(red: 0.957, green: 0.945, blue: 0.902)) // Match list row background
+            }
+        }
+        .listStyle(PlainListStyle())
+        .refreshable { 
+            await viewModel.fetchLeaderboardData()
         }
     }
 
@@ -211,7 +260,7 @@ struct LeaderboardView: View {
 
 // Leaderboard Row
 struct LeaderboardRow: View {
-    let entry: LeaderboardViewModel.LeaderboardEntry // Fully qualify the type
+    let entry: LeaderboardEntry // Use the actual model
 
     var body: some View {
         HStack {

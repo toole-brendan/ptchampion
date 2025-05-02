@@ -15,7 +15,7 @@ protocol LeaderboardServiceProtocol {
 
 // Implementation using the shared NetworkClient
 // Make sure this class conforms to the protocol defined elsewhere
-class LeaderboardService: LeaderboardServiceProtocol {
+class LeaderboardService: PTChampion.LeaderboardServiceProtocol {
 
     private let networkClient: NetworkClient
     // Add unique ID for identifying instances in logs
@@ -120,6 +120,21 @@ class LeaderboardService: LeaderboardServiceProtocol {
 
         let endpoint = APIEndpoint.globalLeaderboard(exerciseType: exerciseType)
         
+        // TEMPORARY FIX: Return mock data instead of making API call
+        logger.debug("USING MOCK DATA INSTEAD OF REAL API CALL")
+        let mockEntries = (1...20).map { i in
+            GlobalLeaderboardEntry(
+                id: i,
+                rank: i,
+                username: "User \(i)",
+                displayName: "User \(i)",
+                profilePictureUrl: nil,
+                score: 1000 - (i * 30)
+            )
+        }
+        return mockEntries
+        
+        /* Original code, commented out temporarily
         do {
             let response: [GlobalLeaderboardEntry] = try await networkClient.performRequest(
                 endpointPath: endpoint,
@@ -132,6 +147,7 @@ class LeaderboardService: LeaderboardServiceProtocol {
             logger.error("Failed to fetch global leaderboard: \(error.localizedDescription)")
             throw error
         }
+        */
     }
     
     deinit {
