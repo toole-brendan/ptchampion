@@ -17,7 +17,7 @@ protocol LocationServiceProtocol {
 */
 
 // MARK: - Location Service Implementation
-class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
+class LocationService: NSObject, PTChampion.LocationServiceProtocol, CLLocationManagerDelegate {
 
     private let locationManager = CLLocationManager()
     // Continuations are used for async/await wrappers if needed, but Combine publishers are primary here
