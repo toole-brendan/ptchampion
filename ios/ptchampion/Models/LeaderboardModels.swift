@@ -1,7 +1,7 @@
 import Foundation
 
 // Represents a single entry in a leaderboard
-struct LeaderboardEntry: Codable, Identifiable {
+struct LeaderboardEntryModel: Codable, Identifiable {
     let id: String // Unique ID for the entry or user ID if unique per user per board
     let rank: Int
     let userId: String? // Optional: If we need to link back to a user profile
