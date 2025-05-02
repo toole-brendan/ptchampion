@@ -101,28 +101,29 @@ class FontManager {
 
 @main
 struct PTChampionApp: App {
-    // Instantiate AuthViewModel as a StateObject to keep it alive
     @StateObject private var authViewModel = AuthViewModel()
     
-    // Add explicit navigation state
-    @State private var appNavigationState: String = "login"
+    // --- Restore initial state to LOADING ---
+    @State private var appNavigationState: AppScreen = .loading // Restore loading state
     
-    // Timer for authentication state checks
-    @State private var authCheckTimer: Timer? = nil
+    enum AppScreen {
+        case loading, login, main
+    }
     
     // Initialize app appearance
     init() {
-        // Use the new FontManager to register fonts
+        print("DEBUG: PTChampionApp init() called")
+        // Restore init contents
         FontManager.shared.registerFonts()
         
         #if DEBUG
-        // Print available fonts for debugging
         print("--- DEBUG: Available Fonts ---")
         FontManager.shared.printAvailableFonts()
         print("-----------------------------")
         #endif
         
         configureAppearance()
+        print("DEBUG: PTChampionApp init() finished")
     }
     
     // Configure UI appearance manually
@@ -153,91 +154,101 @@ struct PTChampionApp: App {
 
     var body: some Scene {
         WindowGroup {
-            // Use a simpler direct approach without NavigationStack
-            ZStack {
-                // Debug view to monitor state
-                VStack {
-                    Text("")
+            let _ = Self.logBody()
+            RootContentView()
+                .environmentObject(authViewModel)
+                .modelContainer(for: WorkoutResultSwiftData.self)
+        }
+    }
+    
+    // Helper to determine initial screen
+    private func determineInitialScreen() {
+        print("DEBUG: determineInitialScreen called")
+        // --- Call updateNavigationState DIRECTLY --- 
+        print("DEBUG: Calling updateNavigationState directly from determineInitialScreen")
+        updateNavigationState()
+        
+        /* // Original delay logic commented out
+        // Short delay to allow auth state to initialize
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            print("DEBUG: determineInitialScreen timer fired - calling updateNavigationState")
+            updateNavigationState()
+        }
+        */
+    }
+    
+    // Centralized navigation state update
+    private func updateNavigationState() {
+        print("DEBUG: updateNavigationState called. Auth=\(authViewModel.isAuthenticated)")
+        let targetState = authViewModel.isAuthenticated ? AppScreen.main : AppScreen.login
+        print("DEBUG: Target navigation state is: \(targetState)")
+        
+        // Only update if the state needs to change
+        if appNavigationState != targetState {
+            print("DEBUG: State needs update from \(appNavigationState) to \(targetState) — applying now on main thread")
+            // Directly update the @State property (we are already on the main thread in typical UI callbacks)
+            withAnimation(nil) { // No animation by default; change to .default if desired later
+                appNavigationState = targetState
+            }
+            print("DEBUG: State updated to: \(appNavigationState)")
+        } else {
+            print("DEBUG: State \(appNavigationState) already matches target \(targetState), no update needed.")
+        }
+    }
+
+    // MARK: - Debug Helpers
+    private static func logBody() {
+        print("DEBUG: PTChampionApp body recomputed")
+    }
+
+    // MARK: - RootContentView (inlined to avoid target-membership issues)
+    struct RootContentView: View {
+        @State private var navState: AppScreen = .loading
+        @EnvironmentObject var authViewModel: AuthViewModel
+
+        var body: some View {
+            let _ = { print("DEBUG: RootContentView body recomputed, state=\(navState)") }()
+            Group {
+                if navState == .loading {
+                    ProgressView()
                         .onAppear {
-                            print("PTChampionApp body evaluating: isAuthenticated=\(authViewModel.isAuthenticated)")
-                            
-                            // Set up a timer to check auth state every second for the first few seconds
-                            if authCheckTimer == nil {
-                                authCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
-                                    // If we detect authenticated state, update our navigation
-                                    if authViewModel.isAuthenticated && appNavigationState != "main" {
-                                        print("AUTH CHECK TIMER: Found authenticated state, updating navigation")
-                                        withAnimation {
-                                            appNavigationState = "main"
-                                        }
-                                    }
-                                    
-                                    // Stop the timer after 5 seconds
-                                    if timer.timeInterval * Double(timer.userInfo as? Int ?? 0) > 5.0 {
-                                        timer.invalidate()
-                                        authCheckTimer = nil
-                                        print("AUTH CHECK TIMER: Stopping timer")
-                                    }
-                                }
-                            }
+                            print("DEBUG: Loading screen appeared (RootContentView)")
+                            determineInitialScreen()
                         }
-                        .hidden()
-                }
-                
-                if appNavigationState == "main" {
-                    MainTabView()
-                        .transition(.opacity)
-                        .onAppear {
-                            print("PTChampionApp: User is authenticated, showing MainTabView")
-                        }
-                } else {
+                } else if navState == .login {
                     LoginView()
-                        .transition(.opacity)
-                        .onAppear {
-                            print("PTChampionApp: User is NOT authenticated, showing LoginView")
-                        }
-                }
-            }
-            .animation(.default, value: appNavigationState)
-            .environmentObject(authViewModel)
-            .modelContainer(for: WorkoutResultSwiftData.self)
-            // Add explicit onChange handler with more debug output
-            .onChange(of: authViewModel.isAuthenticated) { oldValue, newValue in
-                print("PTChampionApp: Root level detected auth change: \(oldValue) -> \(newValue)")
-                if newValue {
-                    withAnimation {
-                        print("PTChampionApp: Setting navigation state to main")
-                        appNavigationState = "main"
-                    }
+                        .onAppear { print("PTChampionApp: Showing LoginView (RootContentView)") }
                 } else {
-                    withAnimation {
-                        print("PTChampionApp: Setting navigation state to login")
-                        appNavigationState = "login"
-                    }
+                    MainTabView()
+                        .onAppear { print("PTChampionApp: Showing MainTabView (RootContentView)") }
                 }
             }
-            // Listen for notification from LoginView
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("AuthenticationStateChanged"))) { _ in
-                print("PTChampionApp: Received auth state change notification")
-                if authViewModel.isAuthenticated {
-                    withAnimation {
-                        print("PTChampionApp: Setting navigation state to main via notification")
-                        appNavigationState = "main"
-                    }
-                }
+            .onChange(of: authViewModel.isAuthenticated) { oldVal, newVal in
+                print("DEBUG: RootContentView onChange detected auth change: \(oldVal) -> \(newVal)")
+                updateNavigationState()
             }
-            // Force view recreation on auth state change
-            .id(authViewModel.isAuthenticated)
-            // Add timer-based check for auth state changes
-            .onAppear {
-                // Check auth state immediately on appear
-                print("PTChampionApp: Checking auth state on appear")
-                if authViewModel.isAuthenticated && appNavigationState != "main" {
-                    withAnimation {
-                        print("PTChampionApp: Forcing navigation to main based on current auth state")
-                        appNavigationState = "main"
-                    }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("PTChampionAuthStateChanged"))) { _ in
+                print("DEBUG: RootContentView onReceive detected notification")
+                updateNavigationState()
+            }
+        }
+
+        // MARK: - Helpers
+        private func determineInitialScreen() {
+            updateNavigationState()
+        }
+
+        private func updateNavigationState() {
+            print("DEBUG: RootContentView updateNavigationState called. Auth=\(authViewModel.isAuthenticated)")
+            let target: AppScreen = authViewModel.isAuthenticated ? .main : .login
+            if navState != target {
+                print("DEBUG: RootContentView changing navigation from \(navState) to \(target) (direct update)")
+                withAnimation(nil) {
+                    navState = target
+                    print("DEBUG: RootContentView state updated to \(navState) synchronously")
                 }
+            } else {
+                print("DEBUG: RootContentView navigation already at \(target)")
             }
         }
     }
@@ -303,13 +314,12 @@ struct MainTabView: View {
         // Accent color is handled by UITabBarAppearance
         .onShake {
             #if DEBUG
-            // Don't show component gallery since it's not available
-            // showingComponentGallery.toggle()
+            // showingComponentGallery.toggle() // Uncomment if ComponentGalleryView exists
             #endif
         }
         .sheet(isPresented: $showingComponentGallery) {
-            // Temporarily comment out ComponentGalleryView and replace with a placeholder
-            Text("Component Gallery View")
+            // Replace with actual ComponentGalleryView if it exists
+            Text("Component Gallery View Placeholder")
         }
     }
 }

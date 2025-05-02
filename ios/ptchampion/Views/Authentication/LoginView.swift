@@ -75,11 +75,17 @@ struct PTTextField: View {
 
 // Login View with keyboard avoidance
 struct LoginView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel // Restore EnvironmentObject
     @State private var keyboardHeight: CGFloat = 0
     @State private var showDevOptions = false
     
+    // Add explicit navigation feedback from Comprehensive Solution
+    @State private var isTransitioning = false
+    
     var body: some View {
+        // DEBUG: Check if LoginView body is executing
+        let _ = print("DEBUG: LoginView body executing.")
+        
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 24) {
@@ -117,27 +123,9 @@ struct LoginView: View {
                         
                         // Login Button
                         Button(action: {
-                            // First clear any previous error
-                            authViewModel.errorMessage = nil
-                            
-                            // Start login process
+                            authViewModel.errorMessage = nil // Clear error before login
                             authViewModel.login()
-                            
-                            // Add a fallback authentication check after a delay
-                            // This helps in case the response is successful but state doesn't update
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                                if !authViewModel.isAuthenticated && !authViewModel.isLoading {
-                                    print("LOGIN BUTTON: Fallback check - login seems stuck, trying to force authentication")
-                                    // Check if we should force auth (no actual error shown to user)
-                                    if authViewModel.errorMessage == nil {
-                                        print("LOGIN BUTTON: No error message but not authenticated, forcing authentication")
-                                        authViewModel.debugForceAuthenticated()
-                                        
-                                        // Post notifications
-                                        NotificationCenter.default.post(name: Notification.Name("AuthenticationStateChanged"), object: nil)
-                                    }
-                                }
-                            }
+                            // Remove fallback logic - handled by improved AuthViewModel
                         }) {
                             Text("Log In")
                                 .font(Font.montserratBold(size: 16))
@@ -158,9 +146,7 @@ struct LoginView: View {
                         
                         // Dev bypass button
                         if showDevOptions {
-                            Button(action: {
-                                authViewModel.loginAsDeveloper()
-                            }) {
+                            Button(action: { authViewModel.loginAsDeveloper() }) {
                                 Text("DEV: Bypass Login")
                                     .font(Font.montserratSemiBold(size: 14))
                                     .foregroundColor(AppTheme.Colors.cream)
@@ -171,10 +157,7 @@ struct LoginView: View {
                             }
                             .padding(.top, 8)
                             
-                            // Add direct debug force auth button
-                            Button(action: {
-                                authViewModel.debugForceAuthenticated()
-                            }) {
+                            Button(action: { authViewModel.debugForceAuthenticated() }) {
                                 Text("DEBUG: Force Auth State")
                                     .font(Font.montserratSemiBold(size: 14))
                                     .foregroundColor(AppTheme.Colors.cream)
@@ -186,15 +169,12 @@ struct LoginView: View {
                             .padding(.top, 8)
                         }
                         
-                        // Register Link
+                        // Register Link (Add NavigationLink later if needed)
                         HStack {
                             Text("Don't have an account?")
                                 .font(Font.montserratRegular(size: 14))
                                 .foregroundColor(AppTheme.Colors.tacticalGray)
-                            
-                            Button(action: {
-                                // Navigate to registration
-                            }) {
+                            Button(action: { /* Navigate to registration */ }) {
                                 Text("Register")
                                     .font(Font.montserratSemiBold(size: 14))
                                     .foregroundColor(AppTheme.Colors.brassGold)
@@ -212,11 +192,11 @@ struct LoginView: View {
                             .padding(.top, 16)
                     }
                     
-                    // Debug info
-                    Text("Auth state: \(authViewModel.authState == .authenticated ? "Authenticated" : "Not authenticated")")
-                        .font(Font.montserratRegular(size: 12))
-                        .foregroundColor(AppTheme.Colors.tacticalGray)
-                        .padding(.top, 24)
+                    // Debug info (Optional)
+                    // Text("Auth state: \\(authViewModel.authState == .authenticated ? \"Authenticated\" : \"Not authenticated\")")
+                    //     .font(Font.montserratRegular(size: 12))
+                    //     .foregroundColor(AppTheme.Colors.tacticalGray)
+                    //     .padding(.top, 24)
                     
                     Spacer()
                 }
@@ -224,37 +204,31 @@ struct LoginView: View {
                 .padding(.bottom, keyboardHeight)
             }
             .background(
-                LoginView.AppTheme.Colors.cream
+                LoginView.AppTheme.Colors.cream // Use defined theme color
                     .ignoresSafeArea(.all)
             )
             .onTapGesture {
                 hideKeyboard()
             }
+            // --- Add onChange handler from Comprehensive Solution ---
             .onChange(of: authViewModel.isAuthenticated) { oldValue, newValue in
-                if newValue {
-                    // This will execute when authentication state changes to true
+                if newValue && !isTransitioning { // Check isTransitioning flag
+                    isTransitioning = true
                     print("LoginView detected authentication state change: \(newValue)")
                     
-                    // Force UI update with explicit notification
-                    DispatchQueue.main.async {
-                        // Post notification to ensure parent views refresh
-                        NotificationCenter.default.post(name: Notification.Name("AuthenticationStateChanged"), object: nil)
-                        print("LoginView: Posted AuthenticationStateChanged notification")
-                        
-                        // Force a second notification after a brief delay
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                            NotificationCenter.default.post(name: Notification.Name("AuthenticationStateChanged"), object: nil)
-                            print("LoginView: Posted delayed AuthenticationStateChanged notification")
-                        }
-                    }
+                    // Explicitly post notification as backup
+                    NotificationCenter.default.post(
+                        name: Notification.Name("PTChampionAuthStateChanged"),
+                        object: nil
+                    )
                 }
             }
+             // --- Add onAppear handler from Comprehensive Solution ---
             .onAppear {
-                // Check if we're already authenticated when the view appears
-                if authViewModel.isAuthenticated {
-                    print("LoginView appeared but user is already authenticated, posting notification")
-                    NotificationCenter.default.post(name: Notification.Name("AuthenticationStateChanged"), object: nil)
-                }
+                 print("DEBUG: LoginView onAppear called.") // Add debug print
+                 isTransitioning = false // Reset transitioning state
+                // Force auth check on appear
+                authViewModel.checkAuthentication()
                 
                 // Set up keyboard notifications
                 NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
@@ -262,7 +236,6 @@ struct LoginView: View {
                         keyboardHeight = keyboardSize.height
                     }
                 }
-                
                 NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
                     keyboardHeight = 0
                 }

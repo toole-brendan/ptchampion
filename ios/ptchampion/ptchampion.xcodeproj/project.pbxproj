@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B0ACFD3113E841F0AFCC2A73E4F41C51 /* RootContentView.swift in PTChampion */ = {isa = PBXBuildFile; fileRef = 6E9AA20069DF473ABCD5DB9CF4916175 /* RootContentView.swift */; };
 		BF63E4052DB1CF5A0037CD02 /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E3FD2DB1CF5A0037CD02 /* Enums.swift */; };
 		BF63E4062DB1CF5A0037CD02 /* UserProfileModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4012DB1CF5A0037CD02 /* UserProfileModels.swift */; };
 		BF63E4072DB1CF5A0037CD02 /* LeaderboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E3FE2DB1CF5A0037CD02 /* LeaderboardModels.swift */; };
@@ -81,6 +82,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		6E9AA20069DF473ABCD5DB9CF4916175 /* RootContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RootContentView.swift; path = RootContentView.swift; sourceTree = "<group>"; };
 		036C301D3C4BD31536A5DB38 /* Theme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Theme.swift; path = ios/ptchampion/Utils/Theme.swift; sourceTree = "<group>"; };
 		0896D3CC58652E7F3AA81F16 /* LegacyTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LegacyTheme.swift; path = ios/ptchampion/Utils/LegacyTheme.swift; sourceTree = "<group>"; };
 		0931B3D8E17BCDA5E86FB60B /* KeychainServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeychainServiceProtocol.swift; path = ios/ptchampion/Services/KeychainServiceProtocol.swift; sourceTree = "<group>"; };
