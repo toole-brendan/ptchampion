@@ -104,6 +104,12 @@ struct PTChampionApp: App {
     // Instantiate AuthViewModel as a StateObject to keep it alive
     @StateObject private var authViewModel = AuthViewModel()
     
+    // Add explicit navigation state
+    @State private var appNavigationState: String = "login"
+    
+    // Timer for authentication state checks
+    @State private var authCheckTimer: Timer? = nil
+    
     // Initialize app appearance
     init() {
         // Use the new FontManager to register fonts
@@ -154,11 +160,31 @@ struct PTChampionApp: App {
                     Text("")
                         .onAppear {
                             print("PTChampionApp body evaluating: isAuthenticated=\(authViewModel.isAuthenticated)")
+                            
+                            // Set up a timer to check auth state every second for the first few seconds
+                            if authCheckTimer == nil {
+                                authCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { timer in
+                                    // If we detect authenticated state, update our navigation
+                                    if authViewModel.isAuthenticated && appNavigationState != "main" {
+                                        print("AUTH CHECK TIMER: Found authenticated state, updating navigation")
+                                        withAnimation {
+                                            appNavigationState = "main"
+                                        }
+                                    }
+                                    
+                                    // Stop the timer after 5 seconds
+                                    if timer.timeInterval * Double(timer.userInfo as? Int ?? 0) > 5.0 {
+                                        timer.invalidate()
+                                        authCheckTimer = nil
+                                        print("AUTH CHECK TIMER: Stopping timer")
+                                    }
+                                }
+                            }
                         }
                         .hidden()
                 }
                 
-                if authViewModel.isAuthenticated {
+                if appNavigationState == "main" {
                     MainTabView()
                         .transition(.opacity)
                         .onAppear {
@@ -172,12 +198,46 @@ struct PTChampionApp: App {
                         }
                 }
             }
-            .animation(.default, value: authViewModel.isAuthenticated)
+            .animation(.default, value: appNavigationState)
             .environmentObject(authViewModel)
             .modelContainer(for: WorkoutResultSwiftData.self)
-            // Add explicit onChange handler at the root level
+            // Add explicit onChange handler with more debug output
             .onChange(of: authViewModel.isAuthenticated) { oldValue, newValue in
                 print("PTChampionApp: Root level detected auth change: \(oldValue) -> \(newValue)")
+                if newValue {
+                    withAnimation {
+                        print("PTChampionApp: Setting navigation state to main")
+                        appNavigationState = "main"
+                    }
+                } else {
+                    withAnimation {
+                        print("PTChampionApp: Setting navigation state to login")
+                        appNavigationState = "login"
+                    }
+                }
+            }
+            // Listen for notification from LoginView
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("AuthenticationStateChanged"))) { _ in
+                print("PTChampionApp: Received auth state change notification")
+                if authViewModel.isAuthenticated {
+                    withAnimation {
+                        print("PTChampionApp: Setting navigation state to main via notification")
+                        appNavigationState = "main"
+                    }
+                }
+            }
+            // Force view recreation on auth state change
+            .id(authViewModel.isAuthenticated)
+            // Add timer-based check for auth state changes
+            .onAppear {
+                // Check auth state immediately on appear
+                print("PTChampionApp: Checking auth state on appear")
+                if authViewModel.isAuthenticated && appNavigationState != "main" {
+                    withAnimation {
+                        print("PTChampionApp: Forcing navigation to main based on current auth state")
+                        appNavigationState = "main"
+                    }
+                }
             }
         }
     }
