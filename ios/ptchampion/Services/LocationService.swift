@@ -17,7 +17,7 @@ protocol LocationServiceProtocol {
 */
 
 // MARK: - Location Service Implementation
-class LocationService: NSObject, PTChampion.LocationServiceProtocol, CLLocationManagerDelegate {
+class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
 
     private let locationManager = CLLocationManager()
     // Continuations are used for async/await wrappers if needed, but Combine publishers are primary here
@@ -201,4 +201,11 @@ class LocationService: NSObject, PTChampion.LocationServiceProtocol, CLLocationM
         // No need to stop location updates if using requestLocation(), but good practice if using startUpdatingLocation()
         // locationManager.stopUpdatingLocation()
     }
+}
+
+// Custom error type for Location Service
+enum LocationError: Error {
+    case permissionDenied
+    case locationUnavailable
+    case unknownError(Error)
 } 

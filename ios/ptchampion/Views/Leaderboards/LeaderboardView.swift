@@ -12,6 +12,7 @@ struct LeaderboardView: View {
         static let globalPadding: CGFloat = 16
     }
     
+    // Use a StateObject with minimal initialization
     @StateObject private var viewModel = LeaderboardViewModel(useMockData: true)
     @EnvironmentObject var authViewModel: AuthViewModel
     
@@ -54,7 +55,7 @@ struct LeaderboardView: View {
         }
         .onAppear {
             logger.debug("LeaderboardView appeared \(viewId)")
-            // Ensure we fetch data when view appears
+            // Ensure we fetch data when view appears - use a Task for better concurrency
             Task {
                 await viewModel.fetchLeaderboardData()
             }
@@ -220,15 +221,17 @@ struct LeaderboardView: View {
     
     @ViewBuilder
     private func leaderboardListView() -> some View {
-        List {
-            ForEach(viewModel.leaderboardEntries) { entry in
-                LeaderboardRow(entry: entry)
-                    .listRowInsets(EdgeInsets(top: 8, leading: Constants.globalPadding, bottom: 8, trailing: Constants.globalPadding))
-                    .listRowSeparator(.hidden) // Hide default separators
-                    .listRowBackground(Color(red: 0.957, green: 0.945, blue: 0.902)) // Match list row background
+        // Use a ScrollView instead of List for better performance in this case
+        ScrollView {
+            LazyVStack(spacing: 0) {
+                ForEach(viewModel.leaderboardEntries) { entry in
+                    LeaderboardRow(entry: entry)
+                        .padding(.horizontal, Constants.globalPadding)
+                        .padding(.vertical, 8)
+                        .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+                }
             }
         }
-        .listStyle(PlainListStyle())
         .refreshable { 
             await viewModel.fetchLeaderboardData()
         }

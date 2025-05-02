@@ -14,14 +14,13 @@ protocol LeaderboardServiceProtocol {
 */
 
 // Implementation using the shared NetworkClient
-// Make sure this class conforms to the protocol defined elsewhere
-class LeaderboardService: PTChampion.LeaderboardServiceProtocol {
+class LeaderboardService: LeaderboardServiceProtocol {
 
-    private let networkClient: NetworkClient
+    private let networkClient: NetworkClient?
     // Add unique ID for identifying instances in logs
     private let instanceId = UUID().uuidString.prefix(6)
 
-    init(networkClient: NetworkClient = NetworkClient()) {
+    init(networkClient: NetworkClient? = nil) {
         self.networkClient = networkClient
         logger.debug("LeaderboardService initialized \(self.instanceId)")
     }
@@ -41,18 +40,14 @@ class LeaderboardService: PTChampion.LeaderboardServiceProtocol {
         logger.debug("Fetching global leaderboard...")
         
         // For initial testing, return mock data to prevent freezes
-        // This will be replaced with actual API implementation
-        
-        return generateMockLeaderboardEntries(count: 20, isLocal: false)
+        return generateMockLeaderboardEntries(count: 10, isLocal: false)
     }
 
     func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String) async throws -> [LeaderboardEntry] {
         logger.debug("Fetching local leaderboard near \(latitude), \(longitude) with radius \(radiusMiles) miles")
        
         // For initial testing, return mock data to prevent freezes
-        // This will be replaced with actual API implementation
-        
-        return generateMockLeaderboardEntries(count: 15, isLocal: true)
+        return generateMockLeaderboardEntries(count: 10, isLocal: true)
     }
     
     // MARK: - Mock Data Helpers
@@ -94,11 +89,11 @@ class LeaderboardService: PTChampion.LeaderboardServiceProtocol {
         }
 
         do {
-            let response: [LocalLeaderboardEntry] = try await networkClient.performRequest(
+            let response: [LocalLeaderboardEntry] = try await networkClient?.performRequest(
                 endpointPath: APIEndpoint.localLeaderboard,
                 method: "GET",
                 queryParams: queryParams
-            )
+            ) ?? []
             logger.debug("Fetched \(response.count) local leaderboard entries")
             return response
         } catch {
@@ -136,11 +131,11 @@ class LeaderboardService: PTChampion.LeaderboardServiceProtocol {
         
         /* Original code, commented out temporarily
         do {
-            let response: [GlobalLeaderboardEntry] = try await networkClient.performRequest(
+            let response: [GlobalLeaderboardEntry] = try await networkClient?.performRequest(
                 endpointPath: endpoint,
                 method: "GET",
                 queryParams: queryParams
-            )
+            ) ?? []
             logger.debug("Fetched \(response.count) global leaderboard entries")
             return response
         } catch {
