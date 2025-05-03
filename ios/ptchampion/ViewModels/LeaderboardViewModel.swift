@@ -154,14 +154,15 @@ class LeaderboardViewModel: ObservableObject {
          keychainService: KeychainServiceProtocol? = nil,
          useMockData: Bool = false,
          autoLoadData: Bool = true) {
-        logMessage("Initializing LeaderboardViewModel instance \(self.instanceId)")
-        
-        // Use provided services or create default ones
+        // Initialize all stored properties first
         self.leaderboardService = leaderboardService ?? LeaderboardService()
         self.locationService = locationService ?? LocationService()
         self.keychainService = keychainService ?? KeychainService()
         self.useMockData = useMockData
         self.autoLoadData = autoLoadData
+        
+        // Now that all stored properties are initialized, we can use 'self'
+        logMessage("Initializing LeaderboardViewModel instance \(self.instanceId)")
         
         subscribeToLocationStatus()
         

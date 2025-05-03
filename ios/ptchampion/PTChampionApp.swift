@@ -463,12 +463,8 @@ struct MainTabView: View {
                  }
                  .tag(Tab.workout)
 
-            // Use debug version of leaderboard view in DEBUG builds
-            #if DEBUG
-            LeaderboardViewDebug()
-            #else
+            // Standard leaderboard view for all builds
             LeaderboardView()
-            #endif
                 .tabItem {
                     Label("Leaders", systemImage: "list.star")
                 }
