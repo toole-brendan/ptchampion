@@ -2,8 +2,8 @@ import SwiftUI
 
 struct DashboardView: View {
     // Keep track of the constants we need
-    private static let cardGap: CGFloat = 12
-    private static let globalPadding: CGFloat = 16
+    private static let cardGap: CGFloat = AppTheme.GeneratedSpacing.itemSpacing
+    private static let globalPadding: CGFloat = AppTheme.GeneratedSpacing.contentPadding
     
     @EnvironmentObject var authViewModel: AuthViewModel
     
@@ -12,36 +12,36 @@ struct DashboardView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Self.cardGap) {
                     Text("Dashboard")
-                        .font(.title)
+                        .font(AppTheme.GeneratedTypography.heading())
                         .fontWeight(.bold)
                         .padding(.bottom)
 
                     // Placeholder content - replace with actual dashboard components
                     Text("Quick Stats")
-                        .font(.headline)
+                        .font(AppTheme.GeneratedTypography.subheading())
                     HStack {
                         MetricCard(label: "Recent Pushups", value: "45")
                         MetricCard(label: "Avg Run Pace", value: "8:15/mi")
                     }
 
                     Text("Start Workout")
-                        .font(.headline)
+                        .font(AppTheme.GeneratedTypography.subheading())
                         .padding(.top)
                     Button("Begin New Session") {
                         // TODO: Navigate to workout selection
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .font(.headline)
-                    .cornerRadius(8)
+                    .background(AppTheme.GeneratedColors.primary)
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .font(AppTheme.GeneratedTypography.buttonText())
+                    .cornerRadius(AppTheme.GeneratedRadius.button)
 
                     Spacer()
                 }
                 .padding(Self.globalPadding)
             }
-            .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea())
+            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
             .navigationTitle("Dashboard") // Use large title or inline
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -56,16 +56,16 @@ struct MetricCard: View {
     var body: some View {
         VStack(alignment: .leading) {
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(AppTheme.GeneratedTypography.caption())
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
             Text(value)
-                .font(.title3)
+                .font(AppTheme.GeneratedTypography.title())
                 .fontWeight(.medium)
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(red: 0.957, green: 0.945, blue: 0.902))
-        .cornerRadius(8)
+        .background(AppTheme.GeneratedColors.cardBackground)
+        .cornerRadius(AppTheme.GeneratedRadius.card)
         .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
     }
 }
@@ -74,4 +74,5 @@ struct MetricCard: View {
     let previewAuth = AuthViewModel()
     return DashboardView()
         .environmentObject(previewAuth)
+        .environment(\.colorScheme, .light)
 } 

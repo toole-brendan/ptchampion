@@ -24,9 +24,9 @@ struct Spinner: View {
         
         var color: Color {
             switch self {
-            case .primary: return .brassGold
-            case .secondary: return .tacticalGray
-            case .light: return .white
+            case .primary: return AppTheme.GeneratedColors.brassGold
+            case .secondary: return AppTheme.GeneratedColors.tacticalGray
+            case .light: return AppTheme.GeneratedColors.cream
             }
         }
     }
@@ -35,6 +35,7 @@ struct Spinner: View {
     let variant: Variant
     let speed: Double
     @State private var isAnimating = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     
     init(size: Size = .medium, variant: Variant = .primary, speed: Double = 0.75) {
         self.size = size
@@ -57,9 +58,9 @@ struct Spinner: View {
                     lineCap: .round
                 ))
                 .frame(width: size.rawValue, height: size.rawValue)
-                .rotationEffect(Angle(degrees: isAnimating ? 360 : 0))
+                .rotationEffect(Angle(degrees: isAnimating && !reduceMotion ? 360 : 0))
                 .animation(
-                    Animation.linear(duration: speed)
+                    reduceMotion ? nil : Animation.linear(duration: speed)
                         .repeatForever(autoreverses: false),
                     value: isAnimating
                 )
@@ -84,16 +85,16 @@ extension Spinner {
         ZStack {
             Color.black.opacity(0.4)
             
-            VStack(spacing: AppConstants.Spacing.md) {
+            VStack(spacing: AppTheme.GeneratedSpacing.contentPadding) {
                 Spinner(size: .large)
                 
                 Text("Loading...")
-                    .font(.custom(AppFonts.body, size: AppConstants.FontSize.md))
-                    .foregroundColor(.white)
+                    .font(AppTheme.GeneratedTypography.body())
+                    .foregroundColor(AppTheme.GeneratedColors.cream)
             }
-            .padding(AppConstants.Spacing.xl)
-            .background(Color.deepOpsGreen.opacity(0.85))
-            .cornerRadius(AppConstants.Radius.lg)
+            .padding(AppTheme.GeneratedSpacing.sectionSpacing)
+            .background(AppTheme.GeneratedColors.deepOps.opacity(0.85))
+            .cornerRadius(AppTheme.GeneratedRadius.large)
         }
         .ignoresSafeArea()
     }
@@ -129,9 +130,9 @@ struct WithLoading<Content: View>: View {
 // Preview Provider
 struct Spinner_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppConstants.Spacing.xl) {
+        VStack(spacing: AppTheme.GeneratedSpacing.sectionSpacing) {
             // Size variants
-            HStack(spacing: AppConstants.Spacing.xl) {
+            HStack(spacing: AppTheme.GeneratedSpacing.contentSpacing) {
                 Spinner(size: .tiny)
                 Spinner(size: .small)
                 Spinner(size: .medium)
@@ -139,14 +140,14 @@ struct Spinner_Previews: PreviewProvider {
             }
             
             // Color variants
-            HStack(spacing: AppConstants.Spacing.xl) {
+            HStack(spacing: AppTheme.GeneratedSpacing.contentSpacing) {
                 Spinner(variant: .primary)
                 Spinner(variant: .secondary)
                 
                 ZStack {
-                    Color.deepOpsGreen
+                    AppTheme.GeneratedColors.deepOps
                         .frame(width: 80, height: 80)
-                        .cornerRadius(AppConstants.Radius.md)
+                        .cornerRadius(AppTheme.GeneratedRadius.medium)
                     Spinner(variant: .light)
                 }
             }
@@ -156,8 +157,8 @@ struct Spinner_Previews: PreviewProvider {
                 VStack {
                     Text("This content is loading")
                         .padding()
-                        .background(Color.white)
-                        .cornerRadius(AppConstants.Radius.md)
+                        .background(AppTheme.GeneratedColors.cardBackground)
+                        .cornerRadius(AppTheme.GeneratedRadius.medium)
                 }
                 .frame(width: 200, height: 100)
             }
@@ -167,7 +168,7 @@ struct Spinner_Previews: PreviewProvider {
             //   .frame(width: 300, height: 300)
         }
         .padding()
-        .background(Color.tacticalCream.opacity(0.5))
+        .background(AppTheme.GeneratedColors.background.opacity(0.5))
         .previewLayout(.sizeThatFits)
     }
 } 
