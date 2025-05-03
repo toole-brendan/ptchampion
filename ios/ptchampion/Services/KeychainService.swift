@@ -121,7 +121,7 @@ class KeychainService: KeychainServiceProtocol {
         print("Saving refresh token - not implemented")
     }
     
-    func saveUserId(_ userId: String) {
+    func saveUserID(_ userId: String) {
         // Store user ID in UserDefaults for now as a quick solution
         UserDefaults.standard.set(userId, forKey: "com.ptchampion.userId")
         print("KeychainService: User ID saved to UserDefaults: \(userId)")

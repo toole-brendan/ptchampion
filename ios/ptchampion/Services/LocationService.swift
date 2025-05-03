@@ -2,20 +2,6 @@ import Foundation
 import CoreLocation
 import Combine
 
-// MARK: - Protocol (REMOVE - Defined in LocationServiceProtocol.swift)
-/*
-protocol LocationServiceProtocol {
-    var authorizationStatusPublisher: AnyPublisher<CLAuthorizationStatus, Never> { get }
-    var locationPublisher: AnyPublisher<CLLocation?, Never> { get }
-    var errorPublisher: AnyPublisher<Error, Never> { get }
-
-    func requestLocationPermission()
-    func startUpdatingLocation()
-    func stopUpdatingLocation()
-    func isLocationAuthorized() -> Bool
-}
-*/
-
 // MARK: - Location Service Implementation
 class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDelegate {
 
@@ -201,11 +187,4 @@ class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDeleg
         // No need to stop location updates if using requestLocation(), but good practice if using startUpdatingLocation()
         // locationManager.stopUpdatingLocation()
     }
-}
-
-// Custom error type for Location Service
-enum LocationError: Error {
-    case permissionDenied
-    case locationUnavailable
-    case unknownError(Error)
 } 

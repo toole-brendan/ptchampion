@@ -12,8 +12,9 @@ struct LeaderboardView: View {
         static let globalPadding: CGFloat = 16
     }
     
-    // Use a StateObject with minimal initialization
-    @StateObject private var viewModel = LeaderboardViewModel(useMockData: true)
+    // Use a StateObject with conditional initialization - IMPORTANT: This was causing freezes!
+    // Instead of creating a new StateObject directly in the property, create it in init()
+    @StateObject private var viewModel: LeaderboardViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     
     // Track this view's lifecycle for debugging
@@ -21,19 +22,20 @@ struct LeaderboardView: View {
 
     // Apply appearance changes in init
     init() {
-        // Break down the initialization into simpler parts
-        let idString = UUID().uuidString
-        let prefix = idString.prefix(6)
-        self.viewId = String(prefix)
+        // Create a simpler ID for tracking
+        let tempId = String(UUID().uuidString.prefix(6))
+        self.viewId = tempId
         
-        // Create a local copy of viewId for logging
-        let localViewId = self.viewId
+        // Log initialization with the ID - use local copy to avoid capturing self
+        print("🏆 LeaderboardView: init \(tempId)")
+        logger.debug("LeaderboardView init \(tempId)")
         
-        // Log initialization with the ID
-        logger.debug("LeaderboardView init \(localViewId)")
+        // Create the StateObject
+        let model = LeaderboardViewModel(useMockData: true)
+        self._viewModel = StateObject(wrappedValue: model)
         
-        // Configure UI appearance
-        configureSegmentedControlAppearance()
+        // Configure UI appearance - move out of init to reduce complexity
+        LeaderboardView.configureSegmentedControlAppearance()
     }
 
     var body: some View {
@@ -54,13 +56,15 @@ struct LeaderboardView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
+            print("🏆 LeaderboardView: appeared \(viewId)")
             logger.debug("LeaderboardView appeared \(viewId)")
-            // Ensure we fetch data when view appears - use a Task for better concurrency
-            Task {
-                await viewModel.fetchLeaderboardData()
-            }
+            
+            // Start data load BUT don't use Task.sleep or other blocking operations here
+            // instead, the ViewModel handles its own delays safely
+            viewModel.refreshData()
         }
         .onDisappear {
+            print("🏆 LeaderboardView: disappeared \(viewId)")
             logger.debug("LeaderboardView disappeared \(viewId)")
         }
     }
@@ -186,9 +190,8 @@ struct LeaderboardView: View {
             }
             
             Button("Retry") {
-                Task {
-                    await viewModel.fetchLeaderboardData()
-                }
+                // Just use refreshData to reload
+                viewModel.refreshData()
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -200,12 +203,9 @@ struct LeaderboardView: View {
             // Debug button to show mock data
             #if DEBUG
             Button("Use Mock Data") {
-                Task {
-                    logger.debug("Switching to mock data mode")
-                    // Force current viewModel to use mock data and refresh
-                    viewModel.switchToMockData()
-                    await viewModel.fetchLeaderboardData()
-                }
+                print("🏆 LeaderboardView: Switching to mock data")
+                logger.debug("LeaderboardView: Switching to mock data mode")
+                viewModel.switchToMockData()
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
@@ -233,12 +233,15 @@ struct LeaderboardView: View {
             }
         }
         .refreshable { 
-            await viewModel.fetchLeaderboardData()
+            print("🏆 LeaderboardView: Pull-to-refresh triggered")
+            viewModel.refreshData()
         }
     }
 
-    // Function to configure Segmented Control Appearance
-    private func configureSegmentedControlAppearance() {
+    // MARK: - Static Configuration Methods
+    
+    // Function to configure Segmented Control Appearance - static to avoid recreating on each view
+    private static func configureSegmentedControlAppearance() {
         // Background color (using opaque colors)
         UISegmentedControl.appearance().backgroundColor = UIColor(red: 0.12, green: 0.14, blue: 0.12, alpha: 0.1)
         UISegmentedControl.appearance().setDividerImage(UIImage(), forLeftSegmentState: .normal, rightSegmentState: .normal, barMetrics: .default)
@@ -301,6 +304,6 @@ struct LeaderboardRow: View {
 }
 
 #Preview {
-    let mockViewModel = LeaderboardViewModel(useMockData: true)
-    LeaderboardView()
+    let mockViewModel = LeaderboardViewModel(useMockData: true) 
+    return LeaderboardView()
 } 

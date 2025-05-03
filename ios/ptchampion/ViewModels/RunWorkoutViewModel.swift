@@ -472,7 +472,7 @@ class RunWorkoutViewModel: ObservableObject {
 
     private func saveWorkoutToServerAndLocal(elapsedTime: TimeInterval) async {
          print("RunWorkoutViewModel: Preparing to save workout...")
-         guard let userId = keychainService.getUserId() else {
+         guard let userId = keychainService.getUserID() else {
               print("RunWorkoutViewModel: Error - User ID not found. Cannot save workout.")
               errorMessage = "Could not save run: User not logged in."
               runState = .error("Save failed: Missing User ID")

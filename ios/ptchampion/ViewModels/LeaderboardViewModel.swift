@@ -39,26 +39,7 @@ enum LeaderboardCategory: String, CaseIterable, Identifiable {
     }
 }
 
-// Define protocols directly to avoid import issues
-protocol LeaderboardServiceProtocol {
-    func fetchGlobalLeaderboard(authToken: String) async throws -> [LeaderboardEntry]
-    func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String) async throws -> [LeaderboardEntry]
-}
-
-protocol LocationServiceProtocol {
-    var authorizationStatusPublisher: AnyPublisher<CLAuthorizationStatus, Never> { get }
-    var locationPublisher: AnyPublisher<CLLocation?, Never> { get }
-    var errorPublisher: AnyPublisher<Error, Never> { get }
-    func requestLocationPermission()
-    func getLastKnownLocation() async -> CLLocation?
-    func requestLocationUpdate()
-}
-
-protocol KeychainServiceProtocol {
-    func getAccessToken() -> String?
-    func getUserID() -> String?
-    // Other methods as needed
-}
+// Protocol definitions moved to their respective files
 
 @MainActor
 class LeaderboardViewModel: ObservableObject {
@@ -176,56 +157,65 @@ class LeaderboardViewModel: ObservableObject {
             return
         }
         
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Starting data fetch, setting isDataFetchInProgress=true")
         isDataFetchInProgress = true
-        isLoading = true
-        errorMessage = nil
         
-        logger.debug("Starting leaderboard data fetch for \(self.selectedBoard.rawValue), \(self.selectedCategory.rawValue)")
+        // Update loading state - ensure on MainActor
+        await MainActor.run {
+            self.isLoading = true
+            self.errorMessage = nil
+            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Updated UI state: isLoading=true, errorMessage=nil")
+        }
+        
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Starting leaderboard data fetch for \(self.selectedBoard.rawValue), \(self.selectedCategory.rawValue)")
 
-        // Create a new task with timeout
-        currentFetchTask = Task {
-            // Use async/await with proper error handling and timeout
+        // Create a new task with timeout but don't wait for it to complete
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Creating fetch task")
+        currentFetchTask = Task { @MainActor in
+            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch task started")
+            
             do {
-                defer {
-                    logger.debug("Fetch completed - cleaning up state")
-                    isDataFetchInProgress = false
-                    isLoading = false
-                }
-                
                 // Always use mock data for now to prevent crashes
-                logger.debug("Using mock data instead of backend")
+                logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Using mock data instead of backend")
                 await generateAndDisplayMockData()
                 backendStatus = .connected
-                
+                logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Mock data generation completed, backendStatus=.connected")
             } catch {
-                logger.error("Unexpected error in fetch task: \(error.localizedDescription)")
+                logger.error("❌ LeaderboardViewModel[\(self.instanceId)]: Error in fetch task: \(error.localizedDescription)")
                 errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
                 leaderboardEntries = []
             }
+            
+            // IMPORTANT: Always clean up state at the end
+            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch completed - cleaning up state")
+            isDataFetchInProgress = false
+            isLoading = false
         }
         
-        // Wait for task to complete
-        logger.debug("fetchLeaderboardData awaiting task completion")
-        await currentFetchTask?.value
-        logger.debug("fetchLeaderboardData completed")
+        // Don't wait for task to complete - just start it and return
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch task dispatched (not awaiting)")
     }
     
     private func generateAndDisplayMockData() async {
-        logger.debug("Generating mock data")
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Generating mock data")
         
         // In case we're already showing mock entries, avoid regenerating them
         if !leaderboardEntries.isEmpty && useMockData {
-            logger.debug("Already displaying mock entries, not regenerating")
-            isLoading = false
+            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Already displaying mock entries, not regenerating")
+            await MainActor.run {
+                self.isLoading = false
+            }
             return
         }
         
         // Create mock data for the UI to display
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Creating new mock entries")
         var mockEntries: [LeaderboardEntry] = []
         
         // Generate a smaller set of mock entries to avoid performance issues
         let entryCount = 10
         
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Generating \(entryCount) mock entries")
         for i in 1...entryCount {
             let entry = LeaderboardEntry(
                 id: "entry-\(i)",
@@ -235,20 +225,25 @@ class LeaderboardViewModel: ObservableObject {
                 score: 1000 - (i * 30)
             )
             mockEntries.append(entry)
+            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Generated entry \(i)")
         }
+        
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Mock entries generation complete, adding artificial delay")
         
         // Use a shorter delay for responsive UX
         do {
-            try await Task.sleep(nanoseconds: 200_000_000) // 0.2 second - reduced from 0.5s
+            try await Task.sleep(nanoseconds: 100_000_000) // 0.1 second - reduced from 0.2s
+            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Artificial delay complete")
         } catch {
-            logger.debug("Sleep interrupted")
+            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Sleep interrupted: \(error.localizedDescription)")
         }
         
-        // Update UI - do this on the main thread just to be safe
+        // Update UI - do this on the main thread
+        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Updating UI with mock entries")
         await MainActor.run {
             self.leaderboardEntries = mockEntries
             self.isLoading = false
-            logger.debug("Loaded \(mockEntries.count) mock entries")
+            logger.debug("✅ LeaderboardViewModel[\(self.instanceId)]: UI updated with \(mockEntries.count) mock entries")
         }
     }
 
