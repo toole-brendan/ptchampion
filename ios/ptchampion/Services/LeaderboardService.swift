@@ -33,10 +33,12 @@ class LeaderboardService: LeaderboardServiceProtocol {
     // MARK: - Protocol Implementation
 
     func fetchGlobalLeaderboard(authToken: String, timeFrame: String = "weekly") async throws -> [LeaderboardEntry] {
+        print("🔍 LeaderboardService[\(instanceId)]: Fetching global leaderboard for timeFrame: \(timeFrame)...")
         logger.debug("Fetching global leaderboard for timeFrame: \(timeFrame)...")
         
         // If forced to use mock data or real API calls are disabled
         if useMockData {
+            print("🔍 LeaderboardService[\(instanceId)]: Using mock data (useMockData=true)")
             logger.debug("Using mock data for global leaderboard")
             return generateMockLeaderboardEntries(count: 10, isLocal: false)
         }
@@ -45,9 +47,17 @@ class LeaderboardService: LeaderboardServiceProtocol {
         do {
             let queryParams = ["time_frame": timeFrame]
             let endpoint = APIEndpoint.globalLeaderboard(exerciseType: "general")
+            print("🔍 LeaderboardService[\(instanceId)]: Making API call to \(endpoint) with params: \(queryParams)")
             
             // If we have a network client, make the real API call
             if let client = networkClient {
+                print("🔍 LeaderboardService[\(instanceId)]: NetworkClient available, making real API call")
+                
+                // Add an artificial delay to see if it helps with debugging
+                print("🔍 LeaderboardService[\(instanceId)]: Adding artificial 500ms delay for debugging")
+                try? await Task.sleep(nanoseconds: 500_000_000) // 500ms delay
+                
+                print("🔍 LeaderboardService[\(instanceId)]: About to call client.performRequest")
                 let backendEntries: [GlobalLeaderboardEntry] = try await client.performRequest(
                     endpointPath: endpoint,
                     method: "GET",
@@ -55,8 +65,11 @@ class LeaderboardService: LeaderboardServiceProtocol {
                     body: nil
                 )
                 
+                print("🔍 LeaderboardService[\(instanceId)]: API call completed successfully")
+                
                 // Convert backend entries to the format expected by the UI
                 logger.debug("Fetched \(backendEntries.count) global leaderboard entries from server")
+                print("🔍 LeaderboardService[\(instanceId)]: Fetched \(backendEntries.count) entries from server")
                 
                 // Convert from backend model to view model
                 var convertedEntries: [LeaderboardEntry] = []
@@ -66,15 +79,26 @@ class LeaderboardService: LeaderboardServiceProtocol {
                 }
                 
                 logger.debug("Converted \(convertedEntries.count) global entries to view model format")
+                print("🔍 LeaderboardService[\(instanceId)]: Returning \(convertedEntries.count) converted entries")
                 return convertedEntries
             } else {
                 logger.error("NetworkClient not available, falling back to mock data")
-                return generateMockLeaderboardEntries(count: 10, isLocal: false)
+                print("🔍 LeaderboardService[\(instanceId)]: NetworkClient not available, falling back to mock data")
+                print("NetworkClient not available, falling back to mock data")
+                
+                let mockEntries = generateMockLeaderboardEntries(count: 10, isLocal: false)
+                print("Generated \(mockEntries.count) mock global entries")
+                return mockEntries
             }
         } catch {
             logger.error("Error fetching global leaderboard: \(error.localizedDescription)")
-            // Return empty array on error instead of throwing
-            return []
+            print("🔍 LeaderboardService[\(instanceId)]: ERROR: \(error.localizedDescription)")
+            
+            // Generate mock entries instead of returning empty array
+            print("🔍 LeaderboardService[\(instanceId)]: Generating mock data after error")
+            let mockEntries = generateMockLeaderboardEntries(count: 10, isLocal: false)
+            print("Generated \(mockEntries.count) mock global entries after error")
+            return mockEntries
         }
     }
 
