@@ -11,7 +11,7 @@ protocol KeychainServiceProtocol {
     func getAccessToken() -> String?
     func saveAccessToken(_ token: String)
     func saveRefreshToken(_ token: String)
-    func saveUserId(_ userId: String)
+    func saveUserID(_ userId: String)
     func getUserID() -> String?
     func clearAllTokens()
 } 

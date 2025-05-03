@@ -148,7 +148,7 @@ class AuthViewModel: ObservableObject {
             KeychainService.shared.saveAccessToken(token)
             
             print("D. Saving user ID - AuthViewModel ID: \(self.instanceId)")
-            KeychainService.shared.saveUserId(user.id)
+            KeychainService.shared.saveUserID(user.id)
             
             print("E. Updating authState - AuthViewModel ID: \(self.instanceId)")
             await MainActor.run {
@@ -290,7 +290,7 @@ class AuthViewModel: ObservableObject {
         Task {
             // Get token and user ID from keychain
             let token = KeychainService.shared.getAccessToken()
-            let uid = KeychainService.shared.getUserId()
+            let uid = KeychainService.shared.getUserID()
             
             // Update UI state on main thread
             await MainActor.run {

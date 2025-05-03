@@ -5,15 +5,7 @@ import os.log
 // Setup logger
 private let logger = Logger(subsystem: "com.ptchampion", category: "LeaderboardService")
 
-// Protocol defining the leaderboard service operations
-/* REMOVED: This protocol should be defined in its own file (e.g., LeaderboardServiceProtocol.swift)
-protocol LeaderboardServiceProtocol {
-    func getLocalLeaderboard(exerciseId: Int, latitude: Double, longitude: Double, radiusMeters: Double?) async throws -> [LocalLeaderboardEntry]
-    func getGlobalLeaderboard(exerciseType: String, limit: Int?) async throws -> [GlobalLeaderboardEntry]
-}
-*/
-
-// Implementation using the shared NetworkClient
+// MARK: - Leaderboard Service Implementation
 class LeaderboardService: LeaderboardServiceProtocol {
 
     private let networkClient: NetworkClient?
