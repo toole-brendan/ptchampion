@@ -1,0 +1,15 @@
+# Node dependencies
+node_modules/
+
+# Generated build files
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# macOS
+.DS_Store
+
+# VSCode
+.vscode/ 

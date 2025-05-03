@@ -9,8 +9,9 @@ This file provides a common way to import shared types across the app.
 Import this file in any Swift file that needs access to shared constants,
 styles, or other common definitions.
 
-IMPORTANT: DO NOT define duplicate models here. Instead, import and re-export
-the actual model files to ensure there's only one definition of each type.
+IMPORTANT: The design system has been updated to use the generated theme from the design-tokens pipeline.
+Please use AppTheme.GeneratedColors, AppTheme.GeneratedTypography, etc. instead of the deprecated
+AppTheme.Colors, AppTheme.Typography, etc.
 */
 
 // Re-export all the model types to make them available
@@ -22,12 +23,20 @@ the actual model files to ensure there's only one definition of each type.
 // No duplicate AuthViewModel
 // No duplicate views
 
+// Import the generated theme
+@_exported import SwiftUI
+@_exported import enum AppTheme.GeneratedColors
+@_exported import enum AppTheme.GeneratedTypography
+@_exported import enum AppTheme.GeneratedRadius
+@_exported import enum AppTheme.GeneratedSpacing
+@_exported import enum AppTheme.GeneratedShadows
+
 // Re-export the AppTheme and AppConstants for convenient access
 // @_exported import enum Theme.AppTheme
 // @_exported import struct AppConstants
 
 // Prevent SwiftUI Color extensions to avoid color redeclarations
-// Colors should only be accessed through AppTheme.Colors
+// Colors should only be accessed through AppTheme.GeneratedColors
 
 // Removed conflicting Color hex helper - use the one in AppTheme or LegacyTheme if needed
 

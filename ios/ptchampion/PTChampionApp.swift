@@ -3,6 +3,9 @@ import SwiftData
 import UIKit
 import Foundation
 
+// Direct reference to Colors.deepOps and other colors since AppTheme isn't in scope
+// This is a temporary workaround until the proper module structure is established
+
 // Import any necessary files directly since PTChampionImports module is causing issues
 
 // FontManager class to handle font registration
@@ -246,9 +249,10 @@ struct PTChampionApp: App {
         let navTitleFont = UIFont.systemFont(ofSize: 22, weight: .bold) ?? UIFont.systemFont(ofSize: 22, weight: .bold)
         
         // Convert SwiftUI Color to UIColor
-        UINavigationBar.appearance().tintColor = UIColor(Color("DeepOps"))
+        // Use direct color reference - temporary solution until proper imports work
+        UINavigationBar.appearance().tintColor = UIColor(Color("GeneratedColors/DeepOps"))
         UINavigationBar.appearance().titleTextAttributes = [
-            .foregroundColor: UIColor(Color("DeepOps")),
+            .foregroundColor: UIColor(Color("GeneratedColors/DeepOps")),
             .font: navTitleFont
         ]
     }
