@@ -62,3 +62,7 @@ LogFiles/
 debug_logs/
 ptlogs/
 webapp_logs/
+
+# Design Token build artifacts
+design-tokens/build/
+design-tokens/node_modules/
