@@ -448,20 +448,23 @@ class LeaderboardViewModel: ObservableObject {
     }
     
     deinit {
-        logMessage("Deinitializing")
+        // Use the non-isolated version since deinit might not always run on the MainActor
+        logMessageNonIsolated("Deinitializing")
         
-        // Since we're on the MainActor already for deinit (the whole class is @MainActor),
-        // we can safely cancel the task directly here
-        if let task = currentFetchTask {
-            task.cancel()
-            logMessage("Tasks cancelled directly in deinit")
+        // Run clean-up code on the MainActor to be safe
+        Task { @MainActor in
+            // Since we're on the MainActor here, we can safely cancel the task
+            if let task = self.currentFetchTask {
+                task.cancel()
+                logMessage("Tasks cancelled directly in deinit")
+            }
+            
+            // Explicitly clear the reference to help with memory management
+            self.currentFetchTask = nil
+            
+            // Clear all cancellables
+            self.cancellables.removeAll()
         }
-        
-        // Explicitly clear the reference to help with memory management
-        currentFetchTask = nil
-        
-        // Clear all cancellables
-        cancellables.removeAll()
     }
 
     // Handle location permission for local board
