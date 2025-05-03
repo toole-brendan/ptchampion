@@ -116,6 +116,62 @@ class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDeleg
         locationManager.stopUpdatingLocation()
     }
 
+    // Implement the new getCurrentLocation method with async/await support
+    func getCurrentLocation() async -> CLLocation? {
+        let currentStatus = locationManager.authorizationStatus
+        
+        // If we already have a recent location, return it immediately
+        if let lastLocation = locationManager.location,
+           abs(lastLocation.timestamp.timeIntervalSinceNow) < 30 { // Consider locations within 30 seconds as fresh
+            print("LocationService: Returning recent location from cache")
+            return lastLocation
+        }
+        
+        // Check if we have permission to access location
+        guard currentStatus == .authorizedWhenInUse || currentStatus == .authorizedAlways else {
+            print("LocationService: Cannot get current location, not authorized. Status: \(currentStatus.rawValue)")
+            
+            // If permission status is not determined, request it first
+            if currentStatus == .notDetermined {
+                // Request permission and wait for status update
+                let newStatus = await withCheckedContinuation { continuation in
+                    self.statusContinuation = continuation
+                    requestLocationPermission()
+                }
+                
+                // If we got permission, try again
+                if newStatus == .authorizedWhenInUse || newStatus == .authorizedAlways {
+                    do {
+                        return try await getCurrentLocation()
+                    } catch {
+                        print("LocationService: Error getting location after permission granted: \(error.localizedDescription)")
+                        errorSubject.send(LocationError.locationUnavailable)
+                        return nil
+                    }
+                } else {
+                    return nil
+                }
+            }
+            
+            // Permission denied or restricted
+            errorSubject.send(LocationError.permissionDenied)
+            return nil
+        }
+        
+        do {
+            // Request a fresh location update and wait for it
+            return try await withCheckedThrowingContinuation { continuation in
+                self.locationContinuation = continuation
+                print("LocationService: Requesting location update for getCurrentLocation()")
+                locationManager.requestLocation()
+            }
+        } catch {
+            print("LocationService: Error getting current location: \(error.localizedDescription)")
+            errorSubject.send(LocationError.locationUnavailable)
+            return nil
+        }
+    }
+
     // MARK: - CLLocationManagerDelegate
 
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {

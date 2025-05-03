@@ -14,6 +14,9 @@ protocol LocationServiceProtocol {
     // Add these methods for continuous updates
     func startUpdatingLocation()
     func stopUpdatingLocation()
+    
+    // New method to get current location with error handling
+    func getCurrentLocation() async -> CLLocation?
 }
 
 // Custom errors

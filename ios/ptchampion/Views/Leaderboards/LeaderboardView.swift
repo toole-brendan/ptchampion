@@ -2,6 +2,7 @@ import SwiftUI
 import CoreLocation // For CLAuthorizationStatus
 import UIKit // For UIApplication
 import os.log
+import Combine
 
 // Setup logger for this view
 private let logger = Logger(subsystem: "com.ptchampion", category: "LeaderboardView")
@@ -10,10 +11,11 @@ struct LeaderboardView: View {
     // Define constants directly
     private struct Constants {
         static let globalPadding: CGFloat = 16
+        static let appearDelay: TimeInterval = 0.5 // Increased delay before loading data
+        static let debounceInterval: TimeInterval = 0.3 // Debounce interval for selections
     }
     
-    // Use a StateObject with conditional initialization - IMPORTANT: This was causing freezes!
-    // Instead of creating a new StateObject directly in the property, create it in init()
+    // Use a StateObject with conditional initialization
     @StateObject private var viewModel: LeaderboardViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     
@@ -27,6 +29,9 @@ struct LeaderboardView: View {
     @State private var viewAppearTime: Date? = nil
     @State private var viewLifetimeSeconds: TimeInterval = 0
     @State private var viewAnalyticsTimer: Timer? = nil
+    
+    // Track pending data load to prevent multiple loads
+    @State private var pendingDataLoad: DispatchWorkItem? = nil
 
     // Apply appearance changes in init
     init() {
@@ -39,12 +44,11 @@ struct LeaderboardView: View {
         logger.debug("LeaderboardView init \(tempId)")
         
         // Create the StateObject with explicit non-blocking configuration
-        // IMPORTANT: Always use mock data to avoid backend freezing issues
-        #if DEBUG
-        let model = LeaderboardViewModel(useMockData: true, autoLoadData: false)
-        #else
-        let model = LeaderboardViewModel(useMockData: true, autoLoadData: false)
-        #endif
+        // Always use mock data initially to prevent backend freezing issues
+        let model = LeaderboardViewModel(
+            useMockData: true,  // Start with mock data for immediate feedback
+            autoLoadData: false // Disable auto-load to prevent freezes
+        )
         self._viewModel = StateObject(wrappedValue: model)
         
         // Configure UI appearance - move out of init to reduce complexity
@@ -83,73 +87,115 @@ struct LeaderboardView: View {
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
-            print("🏆 LeaderboardView: appeared \(viewId)")
-            logger.debug("LeaderboardView appeared \(viewId)")
-            
-            // Record appearance time for analytics
-            viewAppearTime = Date()
-            
-            // Start timer to track view lifetime
-            viewAnalyticsTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                if let appearTime = viewAppearTime {
-                    viewLifetimeSeconds = Date().timeIntervalSince(appearTime)
-                }
-            }
-            
-            // Only load data if view wasn't already active
-            if !isViewActive {
-                isViewActive = true
-                
-                // ADDED: More detailed diagnostics
-                print("🔍 LeaderboardView[\(viewId)]: onAppear - current Thread: \(Thread.current.description)")
-                print("🔍 LeaderboardView[\(viewId)]: onAppear - viewModel.isLoading: \(viewModel.isLoading)")
-                print("🔍 LeaderboardView[\(viewId)]: onAppear - entries count: \(viewModel.leaderboardEntries.count)")
-                
-                // Use a small delay to ensure UI is ready before starting data load
-                // This helps prevent freezes when rapidly switching tabs
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak viewModel] in
-                    // Check both that the view is still active and that we still have a valid viewModel
-                    if isViewActive, let viewModel = viewModel {
-                        print("🔍 LeaderboardView[\(viewId)]: Starting data load after short delay")
-                        viewModel.refreshData()
-                    } else {
-                        print("🔍 LeaderboardView[\(viewId)]: View inactive or viewModel released after delay, skipping refresh")
-                    }
-                }
-            } else {
-                print("🔍 LeaderboardView[\(viewId)]: onAppear - view was already active, not reloading data")
-            }
+            startViewAppearance()
         }
         .onDisappear {
-            print("🏆 LeaderboardView: disappeared \(viewId)")
-            logger.debug("LeaderboardView disappeared \(viewId)")
+            handleViewDisappearance()
+        }
+        .onChange(of: viewModel.selectedBoard) { newValue in
+            // Cancel any pending data load
+            pendingDataLoad?.cancel()
             
-            // Save analytics data
+            // Schedule a new debounced data load
+            scheduleDataLoad(after: Constants.debounceInterval)
+        }
+        .onChange(of: viewModel.selectedCategory) { newValue in
+            // Cancel any pending data load
+            pendingDataLoad?.cancel()
+            
+            // Schedule a new debounced data load
+            scheduleDataLoad(after: Constants.debounceInterval)
+        }
+    }
+    
+    // MARK: - Lifecycle Management
+    
+    private func startViewAppearance() {
+        print("🏆 LeaderboardView: appeared \(viewId)")
+        logger.debug("LeaderboardView appeared \(viewId)")
+        
+        // Record appearance time for analytics
+        viewAppearTime = Date()
+        
+        // Start timer to track view lifetime
+        viewAnalyticsTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             if let appearTime = viewAppearTime {
-                let totalTime = Date().timeIntervalSince(appearTime)
-                print("🔍 LeaderboardView[\(viewId)]: View was visible for \(totalTime) seconds")
-            }
-            
-            // Clean up timer
-            viewAnalyticsTimer?.invalidate()
-            viewAnalyticsTimer = nil
-            viewAppearTime = nil
-            
-            // ADDED: Track when view disappears
-            print("🔍 LeaderboardView[\(viewId)]: onDisappear - current Thread: \(Thread.current.description)")
-            print("🔍 LeaderboardView[\(viewId)]: onDisappear - viewModel.isLoading: \(viewModel.isLoading)")
-            
-            // Mark view as inactive first to prevent new operations from starting
-            isViewActive = false
-            
-            // Cancel tasks and clean up viewModel state - be defensive about these calls
-            // so we don't freeze the UI
-            DispatchQueue.main.async { [weak viewModel] in
-                viewModel?.cancelTasksFromMainActor()
-                viewModel?.cleanupAfterCancellation()
-                viewModel?.resetState()
+                viewLifetimeSeconds = Date().timeIntervalSince(appearTime)
             }
         }
+        
+        // Only load data if view wasn't already active
+        if !isViewActive {
+            isViewActive = true
+            
+            // Add analytics logging
+            print("🔍 LeaderboardView[\(viewId)]: onAppear - current Thread: \(Thread.current.description)")
+            print("🔍 LeaderboardView[\(viewId)]: onAppear - viewModel.isLoading: \(viewModel.isLoading)")
+            print("🔍 LeaderboardView[\(viewId)]: onAppear - entries count: \(viewModel.leaderboardEntries.count)")
+            
+            // Schedule a data load with a delay to ensure UI is ready
+            scheduleDataLoad(after: Constants.appearDelay)
+        } else {
+            print("🔍 LeaderboardView[\(viewId)]: onAppear - view was already active, not reloading data")
+        }
+    }
+    
+    private func handleViewDisappearance() {
+        print("🏆 LeaderboardView: disappeared \(viewId)")
+        logger.debug("LeaderboardView disappeared \(viewId)")
+        
+        // Save analytics data
+        if let appearTime = viewAppearTime {
+            let totalTime = Date().timeIntervalSince(appearTime)
+            print("🔍 LeaderboardView[\(viewId)]: View was visible for \(totalTime) seconds")
+        }
+        
+        // Clean up timer
+        viewAnalyticsTimer?.invalidate()
+        viewAnalyticsTimer = nil
+        viewAppearTime = nil
+        
+        // Cancel any pending data load
+        pendingDataLoad?.cancel()
+        pendingDataLoad = nil
+        
+        // Track view disappearance
+        print("🔍 LeaderboardView[\(viewId)]: onDisappear - current Thread: \(Thread.current.description)")
+        print("🔍 LeaderboardView[\(viewId)]: onDisappear - viewModel.isLoading: \(viewModel.isLoading)")
+        
+        // Mark view as inactive first to prevent new operations from starting
+        isViewActive = false
+        
+        // Cancel tasks and clean up viewModel state
+        // Use multiple dispatch blocks to stagger cleanup and reduce freezes
+        DispatchQueue.main.async { [weak viewModel] in
+            // First just cancel tasks
+            viewModel?.cancelTasksFromMainActor()
+        }
+        
+        // Then cleanup state in separate blocks
+        DispatchQueue.main.async { [weak viewModel] in
+            viewModel?.cleanupAfterCancellation()
+        }
+        
+        DispatchQueue.main.async { [weak viewModel] in 
+            viewModel?.resetState()
+        }
+    }
+    
+    // Schedule data loading with a delay
+    private func scheduleDataLoad(after delay: TimeInterval) {
+        pendingDataLoad?.cancel()
+        
+        let workItem = DispatchWorkItem { [weak viewModel] in
+            guard let viewModel = viewModel, isViewActive else { return }
+            
+            print("🔍 LeaderboardView[\(viewId)]: Starting data load after \(delay)s delay")
+            viewModel.refreshData()
+        }
+        
+        pendingDataLoad = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
     }
     
     // MARK: - Helper Views
