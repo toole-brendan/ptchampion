@@ -253,7 +253,7 @@ class LeaderboardViewModel: ObservableObject {
         let instanceIdCopy = self.instanceId
         
         currentFetchTask = Task { 
-            // FIXED: Use the nonisolated logging function
+            // Use the nonisolated logging function from a non-actor-isolated context
             logMessageNonIsolated("Fetch task started on thread: \(Thread.current.description)")
             
             // Check for cancellation immediately
