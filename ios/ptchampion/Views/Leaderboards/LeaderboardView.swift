@@ -15,12 +15,12 @@ struct LeaderboardView: View {
         static let debounceInterval: TimeInterval = 0.3 // Debounce interval for selections
     }
     
-    // Use a StateObject with conditional initialization
-    @StateObject private var viewModel: LeaderboardViewModel
+    // Use ObservedObject as the ViewModel is now injected from the parent (MainTabView)
+    @ObservedObject var viewModel: LeaderboardViewModel 
     @EnvironmentObject var authViewModel: AuthViewModel
     
-    // Track this view's lifecycle for debugging
-    private let viewId: String
+    // Make viewId internal so the initializer is accessible
+    let viewId: String
     
     // Track if view is active to prevent unnecessary updates
     @State private var isViewActive = false
@@ -33,6 +33,8 @@ struct LeaderboardView: View {
     // Track pending data load to prevent multiple loads
     @State private var pendingDataLoad: DispatchWorkItem? = nil
 
+    // Remove the init() method as the ViewModel is injected
+    /*
     // Apply appearance changes in init
     init() {
         // Create a simpler ID for tracking
@@ -55,6 +57,7 @@ struct LeaderboardView: View {
         // Configure UI appearance - moved out of init to reduce complexity
         LeaderboardView.configureSegmentedControlAppearance()
     }
+    */
 
     var body: some View {
         NavigationView {
@@ -125,19 +128,18 @@ struct LeaderboardView: View {
             }
         }
         
-        // Only load data if view wasn't already active
+        // Only update active state if needed
         if !isViewActive {
             isViewActive = true
-            
             // Add analytics logging
             print("🔍 LeaderboardView[\(viewId)]: onAppear - current Thread: \(Thread.current.description)")
             print("🔍 LeaderboardView[\(viewId)]: onAppear - viewModel.isLoading: \(viewModel.isLoading)")
             print("🔍 LeaderboardView[\(viewId)]: onAppear - entries count: \(viewModel.leaderboardEntries.count)")
             
-            // Schedule a data load with a delay to ensure UI is ready
-            scheduleDataLoad(after: Constants.appearDelay)
+            // REMOVED: Data load is now handled by the persistent ViewModel
+            // scheduleDataLoad(after: Constants.appearDelay)
         } else {
-            print("🔍 LeaderboardView[\(viewId)]: onAppear - view was already active, not reloading data")
+            print("🔍 LeaderboardView[\(viewId)]: onAppear - view was already active, state should be current")
         }
     }
     
@@ -176,6 +178,8 @@ struct LeaderboardView: View {
     
     // Schedule data loading with a delay
     private func scheduleDataLoad(after delay: TimeInterval) {
+        // This function is no longer called by onAppear, 
+        // but kept for potential use by filter pickers
         pendingDataLoad?.cancel()
         
         let workItem = DispatchWorkItem { [weak viewModel] in
@@ -260,9 +264,22 @@ struct LeaderboardView: View {
     
     @ViewBuilder
     private func emptyStateView() -> some View {
-        Text("No entries found for this leaderboard.")
-            .foregroundColor(.secondary)
-            .padding()
+        VStack(spacing: 16) {
+            Image(systemName: "trophy")
+                .font(.system(size: 60))
+                .foregroundColor(.secondary.opacity(0.5))
+
+            Text("No rankings found for this leaderboard.")
+                .font(.headline)
+                .foregroundColor(.secondary)
+
+            Text("Try selecting a different category or complete your first workout to get on the board.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+        }
+        .padding()
     }
     
     @ViewBuilder
@@ -359,11 +376,42 @@ struct LeaderboardView: View {
                 // Use ListView placeholder during loading state
                 if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
                     ForEach(0..<8) { i in
-                        LeaderboardRowPlaceholder()
-                            .padding(.horizontal, Constants.globalPadding)
-                            .padding(.vertical, 8)
-                            .background(Color(red: 0.957, green: 0.945, blue: 0.902))
-                            .id("placeholder-\(i)")
+                        // Create a placeholder row inline to avoid importing external files
+                        HStack {
+                            // Rank
+                            Text("#")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(.clear)
+                                .frame(width: 32)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .fill(Color.gray.opacity(0.2))
+                                        .frame(width: 28, height: 28)
+                                )
+                            
+                            // Avatar
+                            Circle()
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(width: 40, height: 40)
+                                .padding(.leading, 4)
+                            
+                            // Name
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(width: 120, height: 16)
+                                .padding(.leading, 8)
+                            
+                            Spacer()
+                            
+                            // Score
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(width: 50, height: 16)
+                        }
+                        .padding([.horizontal], Constants.globalPadding)
+                        .padding([.vertical], 8)
+                        .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+                        .id("placeholder-\(i)")
                     }
                 } else {
                     ForEach(viewModel.leaderboardEntries) { entry in
@@ -429,6 +477,53 @@ struct LeaderboardView: View {
     }
 }
 
+// Placeholder row for the loading state
+struct LeaderboardRowPlaceholder: View {
+    @State private var isAnimating = false
+    
+    var body: some View {
+        HStack {
+            // Rank placeholder
+            Text("#")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.clear)
+                .frame(width: 32, alignment: .center)
+                .background(
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.gray.opacity(isAnimating ? 0.3 : 0.2))
+                        .frame(width: 28, height: 28)
+                )
+            
+            // Avatar placeholder
+            Circle()
+                .fill(Color.gray.opacity(isAnimating ? 0.3 : 0.2))
+                .frame(width: 40, height: 40)
+                .padding(.leading, 4)
+            
+            // Username placeholder
+            VStack(alignment: .leading, spacing: 4) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.gray.opacity(isAnimating ? 0.3 : 0.2))
+                    .frame(width: 120, height: 16)
+            }
+            .padding(.leading, 8)
+            
+            Spacer()
+            
+            // Score placeholder
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.gray.opacity(isAnimating ? 0.3 : 0.2))
+                .frame(width: 50, height: 16)
+        }
+        .frame(height: 60)
+        .onAppear {
+            withAnimation(Animation.easeInOut(duration: 1.0).repeatForever()) {
+                isAnimating = true
+            }
+        }
+    }
+}
+
 // Leaderboard Row
 struct LeaderboardRow: View {
     let entry: LeaderboardEntry // Use the actual model
@@ -470,6 +565,8 @@ struct LeaderboardRow: View {
 
 // Always use mock data in previews
 #Preview {
+    // Create a temporary ViewModel just for the preview
     let mockViewModel = LeaderboardViewModel(useMockData: true, autoLoadData: false) 
-    return LeaderboardView()
+    // Provide a dummy viewId for the preview
+    LeaderboardView(viewModel: mockViewModel, viewId: "PREVIEW")
 } 

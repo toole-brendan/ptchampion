@@ -17,6 +17,9 @@ protocol LocationServiceProtocol {
     
     // New method to get current location with error handling
     func getCurrentLocation() async -> CLLocation?
+    
+    // Get the current authorization status without waiting for a publisher
+    func getCurrentAuthorizationStatus() -> CLAuthorizationStatus
 }
 
 // Custom errors
