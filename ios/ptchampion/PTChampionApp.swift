@@ -435,7 +435,9 @@ struct MainTabView: View {
     @State private var showingComponentGallery = false
 
     // StateObject for the leaderboard view model - keeps it alive
-    @StateObject private var leaderboardViewModel = LeaderboardViewModel()
+    @StateObject private var leaderboardViewModel = LeaderboardViewModel(
+        useMockData: false,           // start in "real" mode
+        autoLoadData: false)          // disable auto-loading to prevent freezing
 
     // Define Tabs Enum for clarity and type safety
     enum Tab {

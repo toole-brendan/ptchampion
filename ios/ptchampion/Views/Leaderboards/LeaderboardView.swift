@@ -100,15 +100,15 @@ struct LeaderboardView: View {
             // Cancel any pending data load
             pendingDataLoad?.cancel()
             
-            // Schedule a new debounced data load
-            scheduleDataLoad(after: Constants.debounceInterval)
+            // Use the new helper method
+            triggerDataLoadIfNeeded()
         }
         .onChange(of: viewModel.selectedCategory) { newValue in
             // Cancel any pending data load
             pendingDataLoad?.cancel()
             
-            // Schedule a new debounced data load
-            scheduleDataLoad(after: Constants.debounceInterval)
+            // Use the new helper method
+            triggerDataLoadIfNeeded()
         }
     }
     
@@ -136,8 +136,15 @@ struct LeaderboardView: View {
             print("🔍 LeaderboardView[\(viewId)]: onAppear - viewModel.isLoading: \(viewModel.isLoading)")
             print("🔍 LeaderboardView[\(viewId)]: onAppear - entries count: \(viewModel.leaderboardEntries.count)")
             
-            // REMOVED: Data load is now handled by the persistent ViewModel
-            // scheduleDataLoad(after: Constants.appearDelay)
+            // Trigger data load with a slight delay to ensure view is fully rendered
+            let isViewActiveCapture = isViewActive
+            let viewIdCapture = viewId
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                // Since LeaderboardView is a struct, we can't use weak self
+                // We need to capture what we need explicitly
+                guard isViewActiveCapture else { return }
+                triggerDataLoadIfNeeded()
+            }
         } else {
             print("🔍 LeaderboardView[\(viewId)]: onAppear - view was already active, state should be current")
         }
@@ -171,8 +178,10 @@ struct LeaderboardView: View {
         
         // Using the new comprehensive cleanup method instead of multiple steps
         // This is more reliable and prevents UI freezes during cleanup
-        DispatchQueue.main.async { [weak viewModel] in
-            viewModel?.performCompleteCleanup()
+        let viewModelCapture = viewModel
+        DispatchQueue.main.async {
+            // viewModel is a class so it's safe to capture directly
+            viewModelCapture.performCompleteCleanup()
         }
     }
     
@@ -182,17 +191,38 @@ struct LeaderboardView: View {
         // but kept for potential use by filter pickers
         pendingDataLoad?.cancel()
         
-        let workItem = DispatchWorkItem { [weak viewModel] in
-            guard let viewModel = viewModel, isViewActive else { return }
+        let viewModelCapture = viewModel
+        let viewIdCapture = viewId
+        let isViewActiveCapture = isViewActive
+        
+        let workItem = DispatchWorkItem {
+            guard isViewActiveCapture else { return }
             
-            print("🔍 LeaderboardView[\(viewId)]: Starting data load after \(delay)s delay")
-            viewModel.refreshData()
+            print("🔍 LeaderboardView[\(viewIdCapture)]: Starting data load after \(delay)s delay")
+            viewModelCapture.refreshData()
         }
         
         pendingDataLoad = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: workItem)
     }
     
+    // Replace scheduleDataLoad with a single helper method
+    /// Call once the view is on screen and whenever user changes a filter
+    private func triggerDataLoadIfNeeded() {
+        // Don't hammer the backend – 300 ms debounce
+        pendingDataLoad?.cancel()
+        
+        // Capture viewModel directly without using weak self
+        let viewModelCapture = viewModel
+        pendingDataLoad = DispatchWorkItem { 
+            viewModelCapture.refreshData() 
+        }
+        
+        DispatchQueue.main.asyncAfter(
+            deadline: .now() + 0.3,
+            execute: pendingDataLoad!)
+    }
+
     // MARK: - Helper Views
     
     @ViewBuilder
@@ -264,19 +294,22 @@ struct LeaderboardView: View {
     
     @ViewBuilder
     private func emptyStateView() -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             Image(systemName: "trophy")
                 .font(.system(size: 60))
                 .foregroundColor(.secondary.opacity(0.5))
+                .frame(width: 200, height: 200)
 
             Text("No rankings found for this leaderboard.")
                 .font(.headline)
-                .foregroundColor(.secondary)
+                .foregroundStyle(.secondary)
 
-            Text("Try selecting a different category or complete your first workout to get on the board.")
+            Text(viewModel.selectedBoard == .local
+                 ? "Try changing to Global scope or completing an exercise nearby."
+                 : "Complete your first workout to get on the board.")
                 .font(.subheadline)
-                .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .foregroundStyle(.secondary)
                 .padding(.horizontal)
         }
         .padding()
@@ -346,24 +379,6 @@ struct LeaderboardView: View {
             .foregroundColor(.white)
             .cornerRadius(8)
             .padding(.top, 8)
-            
-            // Debug button to show mock data
-            #if DEBUG
-            Button("Use Mock Data") {
-                print("🏆 LeaderboardView: Switching to mock data")
-                logger.debug("LeaderboardView: Switching to mock data mode")
-                if isViewActive { // Only switch if view is active
-                    viewModel.switchToMockData()
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-            .background(Color.gray)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            .font(.caption)
-            .padding(.top, 4)
-            #endif
         }
         .padding(.horizontal)
     }
@@ -429,24 +444,6 @@ struct LeaderboardView: View {
             print("🏆 LeaderboardView: Pull-to-refresh triggered")
             if isViewActive { // Only refresh if view is active
                 viewModel.refreshData()
-            }
-        }
-        // Single onAppear handler with a proper sequence:
-        // 1. Show mock data immediately
-        // 2. After a very short delay, try real data if available
-        .onAppear {
-            if isViewActive {
-                // First, make sure we have mock data displaying
-                if viewModel.leaderboardEntries.isEmpty && !viewModel.isLoading {
-                    viewModel.switchToMockData() // Force mock data if empty
-                }
-                
-                // Then after a short delay, attempt to load real data
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak viewModel] in
-                    guard isViewActive, let viewModel = viewModel else { return }
-                    print("🏆 LeaderboardView: Attempting to load real data after mock data render")
-                    viewModel.tryRealDataIfNeeded()
-                }
             }
         }
     }
@@ -563,10 +560,10 @@ struct LeaderboardRow: View {
     }
 }
 
-// Always use mock data in previews
+// Preview with real data configuration
 #Preview {
     // Create a temporary ViewModel just for the preview
-    let mockViewModel = LeaderboardViewModel(useMockData: true, autoLoadData: false) 
+    let previewViewModel = LeaderboardViewModel(autoLoadData: false) 
     // Provide a dummy viewId for the preview
-    LeaderboardView(viewModel: mockViewModel, viewId: "PREVIEW")
+    LeaderboardView(viewModel: previewViewModel, viewId: "PREVIEW")
 } 

@@ -217,6 +217,7 @@ class LeaderboardViewModel: ObservableObject {
         // Now that all stored properties are initialized, we can use 'self'
         logMessage("Initializing LeaderboardViewModel instance \(self.instanceId)", level: .debug)
         
+        // Still subscribe to location updates but don't request permission until needed
         subscribeToLocationStatus()
         
         // Only start initial load if autoLoadData is true
@@ -299,184 +300,289 @@ class LeaderboardViewModel: ObservableObject {
         
         // Prevent concurrent fetches
         guard !isDataFetchInProgress else {
-            logMessage("Fetch already in progress, skipping new request", level: .debug)
+            logMessage("⚠️ BLOCKED: Fetch already in progress, skipping new request", level: .debug)
             return
         }
         
         // Check if we're in the process of deinitializing
         guard !isBeingDeallocated else {
-            logMessage("View model is being deallocated, aborting fetch", level: .debug)
+            logMessage("⚠️ BLOCKED: View model is being deallocated, aborting fetch", level: .debug)
             return
         }
         
+        logMessage("✅ PRE-CHECKS PASSED: Beginning fetch operation", level: .debug)
+        
+        // Check if location permission is needed for Local scope
+        if selectedBoard == .local {
+            logMessage("🔍 LOCATION CHECK: Selected board is local, checking permissions", level: .debug)
+            if locationPermissionStatus == .notDetermined {
+                logMessage("⚠️ LOCATION NEEDED: Requesting location permission", level: .debug)
+                locationService.requestLocationPermission()
+                // bail out for now – user will retry after allowing permission
+                self.isLoading = false
+                logMessage("⚠️ EXITING: Location permission not determined", level: .debug)
+                return
+            }
+            logMessage("✅ LOCATION CHECK PASSED: Continuing with local board fetch", level: .debug)
+        } else {
+            logMessage("✅ LOCATION SKIPPED: Selected board is global", level: .debug)
+        }
+        
         // Update state flags
+        logMessage("🔄 UPDATING STATE: Setting loading flags", level: .debug)
         isDataFetchInProgress = true
         isLoading = true
         errorMessage = nil
+        logMessage("✅ STATE UPDATED: Ready to begin network operations", level: .debug)
         
         // Store a local copy of current selections to prevent race conditions
         let boardType = selectedBoard
         let categoryType = selectedCategory
+        logMessage("📊 REQUEST PARAMS: Board=\(boardType.rawValue), Category=\(categoryType.rawValue)", level: .debug)
         
         // Create a timeout task that will complete after networkTimeoutSeconds
+        logMessage("⏱️ CREATING TIMEOUT: Setting \(networkTimeoutSeconds)s timeout", level: .debug)
         let timeoutTask = Task { 
             do {
+                logMessage("⏱️ TIMEOUT TASK: Starting sleep", level: .debug)
                 try await Task.sleep(nanoseconds: UInt64(networkTimeoutSeconds * 1_000_000_000))
+                logMessage("⚠️ TIMEOUT TASK: Timeout occurred!", level: .debug)
                 return true // Timeout occurred
             } catch {
+                logMessage("🛑 TIMEOUT TASK: Sleep interrupted", level: .debug)
                 return false // Sleep was interrupted (task cancelled)
             }
         }
         
         // Create the actual data fetch task with a task priority of .userInitiated
         // Using explicit priority to ensure task receives appropriate system resources
+        logMessage("🚀 CREATING FETCH TASK: About to start network task", level: .debug)
         currentFetchTask = Task(priority: .userInitiated) { 
             do {
+                logMessage("🚀 FETCH TASK: Task started", level: .debug)
                 // Use a different approach based on whether we're using mock data or real data
                 var entries: [LeaderboardEntry] = []
                 
-                if useMockData {
-                    // Generate mock data with a tiny delay for better UI experience
-                    try await Task.sleep(nanoseconds: 50_000_000) // 50ms delay - reduced from 100ms
+                // Only try real data if view isn't being deallocated
+                if isBeingDeallocated {
+                    logMessage("⚠️ FETCH TASK: View is closing during fetch", level: .debug)
+                    throw NSError(domain: "LeaderboardViewModel", code: 500,
+                                 userInfo: [NSLocalizedDescriptionKey: "View is closing, aborting API call"])
+                }
+                
+                // Mark that we've attempted to use real data
+                hasAttemptedRealDataLoad = true
+                
+                // Get auth token from keychain service
+                logMessage("🔑 FETCH TASK: Getting auth token from keychain", level: .debug)
+                guard let token = keychainService.getAccessToken() else {
+                    logMessage("❌ FETCH TASK: No auth token found", level: .error)
+                    throw NSError(domain: "LeaderboardViewModel", code: 401, 
+                                 userInfo: [NSLocalizedDescriptionKey: "Authentication token not found"])
+                }
+                logMessage("✅ FETCH TASK: Got auth token", level: .debug)
+                
+                // Choose which API call to make based on the board type
+                if boardType == .global {
+                    logMessage("🌎 FETCH TASK: Fetching GLOBAL leaderboard for timeFrame: \(categoryType.apiParameter)...", level: .debug)
+                    print("Fetching global leaderboard for timeFrame: \(categoryType.apiParameter)...")
                     
-                    // Generate 10 mock entries
-                    for i in 1...10 {
-                        if Task.isCancelled { break }
-                        
-                        entries.append(LeaderboardEntry(
-                            id: "entry-\(i)",
-                            rank: i,
-                            userId: "user-\(i)",
-                            name: boardType == .local ? "Local User \(i)" : "User \(i)",
-                            score: 1000 - (i * 30)
-                        ))
-                    }
-                } else {
-                    // Only try real data if view isn't being deallocated
-                    if isBeingDeallocated {
-                        throw NSError(domain: "LeaderboardViewModel", code: 500,
-                                     userInfo: [NSLocalizedDescriptionKey: "View is closing, aborting API call"])
-                    }
-                    
-                    // Mark that we've attempted to use real data
-                    hasAttemptedRealDataLoad = true
-                    
-                    // Get auth token from keychain service
-                    guard let token = keychainService.getAccessToken() else {
-                        throw NSError(domain: "LeaderboardViewModel", code: 401, 
-                                     userInfo: [NSLocalizedDescriptionKey: "Authentication token not found"])
-                    }
-                    
-                    // Choose which API call to make based on the board type
-                    if boardType == .global {
-                        // Fetch global leaderboard
+                    do {
+                        logMessage("🌎 FETCH TASK: About to call leaderboardService.fetchGlobalLeaderboard", level: .debug)
                         let globalEntries = try await leaderboardService.fetchGlobalLeaderboard(
                             authToken: token,
                             timeFrame: categoryType.apiParameter
                         )
+                        logMessage("✅ FETCH TASK: Successfully fetched \(globalEntries.count) global entries", level: .debug)
                         entries = globalEntries
-                    } else {
-                        // Check location permission first to avoid API calls when permissions are denied
-                        let locationStatus = locationService.getCurrentAuthorizationStatus()
-                        if locationStatus == .denied || locationStatus == .restricted {
-                            // No point in trying to get location - will fail
-                            handleLocalLocationPermission()
-                            throw NSError(domain: "LeaderboardViewModel", code: 403,
-                                        userInfo: [NSLocalizedDescriptionKey: "Location permission denied"])
+                    } catch {
+                        logMessage("❌ FETCH TASK: Global leaderboard fetch failed: \(error.localizedDescription)", level: .error)
+                        print("Network error fetching global leaderboard: \(error)")
+                        if let networkClient = self.leaderboardService as? LeaderboardService {
+                            logMessage("⚠️ FETCH TASK: Network client state: \(String(describing: networkClient))", level: .debug)
+                            print("NetworkClient not available, falling back to mock data")
+                            
+                            // Generate 10 mock global entries for testing
+                            for i in 1...10 {
+                                entries.append(LeaderboardEntry(
+                                    id: "mock-global-\(i)",
+                                    rank: i,
+                                    userId: "user-\(i)",
+                                    name: "Mock User \(i)",
+                                    score: 1000 - (i * 50)
+                                ))
+                            }
+                            logMessage("✅ FETCH TASK: Generated \(entries.count) mock global entries", level: .debug)
+                            print("Generated \(entries.count) mock global entries")
+                        } else {
+                            throw error
+                        }
+                    }
+                } else {
+                    logMessage("📍 FETCH TASK: Fetching LOCAL leaderboard", level: .debug)
+                    // Check location permission first to avoid API calls when permissions are denied
+                    let locationStatus = locationService.getCurrentAuthorizationStatus()
+                    logMessage("📍 FETCH TASK: Current location status: \(locationStatus.rawValue)", level: .debug)
+                    
+                    if locationStatus == .denied || locationStatus == .restricted {
+                        // No point in trying to get location - will fail
+                        logMessage("❌ FETCH TASK: Location permission denied/restricted", level: .error)
+                        handleLocalLocationPermission()
+                        throw NSError(domain: "LeaderboardViewModel", code: 403,
+                                    userInfo: [NSLocalizedDescriptionKey: "Location permission denied"])
+                    }
+                    
+                    // Fetch local leaderboard - need location first
+                    logMessage("📍 FETCH TASK: Requesting current location", level: .debug)
+                    let locationResult: CLLocation?
+                    do {
+                        // Use a timeout to prevent waiting indefinitely for location
+                        let locationTask = Task<CLLocation?, Error> { 
+                            do {
+                                logMessage("📍 LOCATION TASK: Getting location", level: .debug)
+                                return try await self.locationService.getCurrentLocation()
+                            } catch {
+                                logMessage("❌ LOCATION TASK: Failed to get location: \(error)", level: .error)
+                                throw error
+                            }
                         }
                         
-                        // Fetch local leaderboard - need location first
-                        let locationResult: CLLocation?
+                        // Create a timeout task
+                        logMessage("⏱️ LOCATION TIMEOUT: Creating 2 second timeout for location", level: .debug)
+                        let timeoutTask = Task {
+                            try await Task.sleep(nanoseconds: UInt64(2 * 1_000_000_000)) // 2 second timeout
+                            logMessage("⚠️ LOCATION TIMEOUT: Location request timed out", level: .debug)
+                            return true
+                        }
+                        
+                        // Race the tasks
                         do {
-                            // Use a timeout to prevent waiting indefinitely for location
-                            let locationTask = Task<CLLocation?, Error> { 
-                                do {
-                                    return try await self.locationService.getCurrentLocation()
-                                } catch {
-                                    throw error
-                                }
-                            }
-                            
-                            // Create a timeout task
-                            let timeoutTask = Task {
-                                try await Task.sleep(nanoseconds: UInt64(2 * 1_000_000_000)) // 2 second timeout
-                                return true
-                            }
-                            
-                            // Race the tasks
-                            do {
-                                let timeoutResult = try await timeoutTask.value
-                                if timeoutResult {
-                                    // Timeout occurred
-                                    locationResult = nil
-                                } else {
-                                    locationResult = try await locationTask.value
-                                }
-                            } catch {
-                                // Handle error from locationTask or timeoutTask
+                            logMessage("🏁 LOCATION RACE: Waiting for either location or timeout", level: .debug)
+                            let timeoutResult = try await timeoutTask.value
+                            if timeoutResult {
+                                // Timeout occurred
+                                logMessage("⚠️ LOCATION RACE: Location request timed out", level: .debug)
                                 locationResult = nil
-                                self.logMessage("Error getting location: \(error.localizedDescription)", level: .error)
+                            } else {
+                                logMessage("✅ LOCATION RACE: Got location before timeout", level: .debug)
+                                locationResult = try await locationTask.value
                             }
                         } catch {
+                            // Handle error from locationTask or timeoutTask
+                            logMessage("❌ LOCATION RACE: Error in location race: \(error)", level: .error)
                             locationResult = nil
+                            self.logMessage("Error getting location: \(error.localizedDescription)", level: .error)
                         }
-                        
-                        guard let location = locationResult else {
-                            throw NSError(domain: "LeaderboardViewModel", code: 400, 
-                                         userInfo: [NSLocalizedDescriptionKey: "Location not available or timeout"])
-                        }
-                        
+                    } catch {
+                        logMessage("❌ FETCH TASK: Location catch-all error: \(error)", level: .error)
+                        locationResult = nil
+                    }
+                    
+                    guard let location = locationResult else {
+                        logMessage("❌ FETCH TASK: No location available", level: .error)
+                        throw NSError(domain: "LeaderboardViewModel", code: 400, 
+                                     userInfo: [NSLocalizedDescriptionKey: "Location not available or timeout"])
+                    }
+                    
+                    logMessage("📍 FETCH TASK: Got location, fetching local leaderboard", level: .debug)
+                    do {
+                        logMessage("📍 FETCH TASK: About to call leaderboardService.fetchLocalLeaderboard", level: .debug)
                         let localEntries = try await leaderboardService.fetchLocalLeaderboard(
                             latitude: location.coordinate.latitude,
                             longitude: location.coordinate.longitude,
                             radiusMiles: localRadiusMiles,
                             authToken: token
                         )
+                        logMessage("✅ FETCH TASK: Successfully fetched \(localEntries.count) local entries", level: .debug)
                         entries = localEntries
+                    } catch {
+                        logMessage("❌ FETCH TASK: Local leaderboard fetch failed: \(error.localizedDescription)", level: .error)
+                        print("Network error fetching local leaderboard: \(error)")
+                        
+                        if let networkClient = self.leaderboardService as? LeaderboardService {
+                            logMessage("⚠️ FETCH TASK: Network client state: \(String(describing: networkClient))", level: .debug)
+                            print("NetworkClient not available, falling back to mock data")
+                            
+                            // Generate 10 mock local entries for testing
+                            for i in 1...10 {
+                                entries.append(LeaderboardEntry(
+                                    id: "mock-local-\(i)",
+                                    rank: i,
+                                    userId: "user-\(i)",
+                                    name: "Local User \(i)",
+                                    score: 800 - (i * 50)
+                                ))
+                            }
+                            logMessage("✅ FETCH TASK: Generated \(entries.count) mock local entries", level: .debug)
+                            print("Generated \(entries.count) mock local entries")
+                        } else {
+                            throw error
+                        }
                     }
                 }
                 
                 // Check if the task was cancelled or if timeout occurred
+                logMessage("⏱️ FETCH TASK: Checking for timeout", level: .debug)
                 let timeoutOccurred = await timeoutTask.value
                 if Task.isCancelled || timeoutOccurred {
+                    logMessage("⚠️ FETCH TASK: Task was cancelled or timed out", level: .debug)
                     if timeoutOccurred {
+                        logMessage("⚠️ FETCH TASK: Request timed out", level: .debug)
                         await MainActor.run {
                             self.errorMessage = "Request timed out. Please try again."
                             self.backendStatus = .timedOut
                             self.isLoading = false
                             self.isDataFetchInProgress = false
+                            logMessage("✅ FETCH TASK: Updated UI with timeout state", level: .debug)
                         }
                     }
                     return
                 }
                 
                 // Update the UI on the main thread with the results
+                logMessage("✅ FETCH TASK: Fetch completed successfully, updating UI", level: .debug)
                 await MainActor.run {
                     if !self.isBeingDeallocated {
+                        logMessage("✅ FETCH TASK: Updating UI on MainActor", level: .debug)
                         self.leaderboardEntries = entries
-                        self.backendStatus = entries.isEmpty ? .noActiveUsers : .connected
+                        self.errorMessage = nil               // do NOT set an error
+                        self.backendStatus = entries.isEmpty
+                            ? .noActiveUsers   // used by the empty-state UI
+                            : .connected
                         self.isLoading = false
                         self.isDataFetchInProgress = false
                         self.logMessage("Updated UI with \(entries.count) entries", level: .debug)
+                        logMessage("✅ FETCH TASK: UI update complete", level: .debug)
+                    } else {
+                        logMessage("⚠️ FETCH TASK: View model deallocated during UI update", level: .debug)
                     }
                 }
             } catch {
                 // Only update UI if not cancelled and not being deallocated
+                logMessage("❌ FETCH TASK: Error: \(error.localizedDescription)", level: .error)
                 if !Task.isCancelled && !self.isBeingDeallocated {
+                    logMessage("❌ FETCH TASK: Updating UI with error", level: .debug)
                     await MainActor.run {
                         self.errorMessage = "Error: \(error.localizedDescription)"
                         self.backendStatus = .connectionFailed(error.localizedDescription)
                         self.leaderboardEntries = []
                         self.isLoading = false
                         self.isDataFetchInProgress = false
+                        logMessage("✅ FETCH TASK: Updated UI with error state", level: .debug)
                     }
                     self.logMessage("Error loading leaderboard: \(error.localizedDescription)", level: .error)
+                } else {
+                    logMessage("⚠️ FETCH TASK: Task cancelled or view deallocated during error handling", level: .debug)
                 }
             }
             
             // Always cancel the timeout task when we finish
+            logMessage("🧹 FETCH TASK: Cleaning up timeout task", level: .debug)
             timeoutTask.cancel()
+            logMessage("✅ FETCH TASK: Fetch operation complete", level: .debug)
         }
+        
+        logMessage("✅ FETCH SETUP COMPLETE: Task created and started", level: .debug)
     }
     
     // MARK: - Added methods to fix freezing issues
@@ -643,24 +749,6 @@ class LeaderboardViewModel: ObservableObject {
         } else if locationPermissionStatus == .denied || locationPermissionStatus == .restricted {
             logMessage("⚠️ Location permission denied/restricted", level: .debug)
             errorMessage = "Location access denied. Please enable it in Settings to use local leaderboards."
-        }
-    }
-    
-    // Function to switch to mock data mode for debugging
-    func switchToMockData() {
-        logMessage("⚠️ Switching to mock data mode", level: .debug)
-        useMockData = true
-        // Reset the real data attempt flag since we're explicitly using mock data now
-        hasAttemptedRealDataLoad = false
-        refreshData()
-    }
-    
-    // New method to try real data if mock data was previously used
-    func tryRealDataIfNeeded() {
-        if useMockData && !hasAttemptedRealDataLoad {
-            logMessage("⚠️ Switching to real data mode after successful mock data load", level: .debug)
-            useMockData = false
-            refreshData()
         }
     }
 }
