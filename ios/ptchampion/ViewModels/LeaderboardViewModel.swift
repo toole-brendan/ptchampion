@@ -400,10 +400,8 @@ class LeaderboardViewModel: ObservableObject {
     /// Cancel any active tasks to prevent background processing when view disappears
     nonisolated func cancelActiveTasks() {
         // This can be called from any thread
-        // FIXED: Don't call MainActor-isolated methods from nonisolated context
-        // Instead, log directly to console
-        let instanceIdCopy = self.instanceId
-        print("🔍 LeaderboardViewModel[\(instanceIdCopy)]: Cancelling active tasks (nonisolated)")
+        // Use the nonisolated logging function instead of the isolated one
+        logMessageNonIsolated("Cancelling active tasks (nonisolated)")
         
         // We can't access currentFetchTask directly here since it's MainActor-isolated
         // The actual cancellation needs to happen on the MainActor in cancelTasksFromMainActor()
@@ -484,4 +482,4 @@ class LeaderboardViewModel: ObservableObject {
         useMockData = true
         refreshData()
     }
-} 
+}
