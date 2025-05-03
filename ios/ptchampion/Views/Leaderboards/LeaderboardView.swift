@@ -19,6 +19,9 @@ struct LeaderboardView: View {
     
     // Track this view's lifecycle for debugging
     private let viewId: String
+    
+    // Track if view is active to prevent unnecessary updates
+    @State private var isViewActive = false
 
     // Apply appearance changes in init
     init() {
@@ -30,8 +33,8 @@ struct LeaderboardView: View {
         print("🏆 LeaderboardView: init \(tempId)")
         logger.debug("LeaderboardView init \(tempId)")
         
-        // Create the StateObject
-        let model = LeaderboardViewModel(useMockData: true)
+        // Create the StateObject with explicit non-blocking configuration
+        let model = LeaderboardViewModel(useMockData: true, autoLoadData: false)
         self._viewModel = StateObject(wrappedValue: model)
         
         // Configure UI appearance - move out of init to reduce complexity
@@ -59,13 +62,46 @@ struct LeaderboardView: View {
             print("🏆 LeaderboardView: appeared \(viewId)")
             logger.debug("LeaderboardView appeared \(viewId)")
             
-            // Start data load BUT don't use Task.sleep or other blocking operations here
-            // instead, the ViewModel handles its own delays safely
-            viewModel.refreshData()
+            // Only load data if view wasn't already active
+            if !isViewActive {
+                isViewActive = true
+                
+                // ADDED: More detailed diagnostics
+                print("🔍 LeaderboardView[\(viewId)]: onAppear - current Thread: \(Thread.current.description)")
+                print("🔍 LeaderboardView[\(viewId)]: onAppear - viewModel.isLoading: \(viewModel.isLoading)")
+                print("🔍 LeaderboardView[\(viewId)]: onAppear - entries count: \(viewModel.leaderboardEntries.count)")
+                
+                // Use a small delay to ensure UI is ready before starting data load
+                // This helps prevent freezes when rapidly switching tabs
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    if isViewActive { // Check if still active after delay
+                        print("🔍 LeaderboardView[\(viewId)]: Starting data load after short delay")
+                        viewModel.refreshData()
+                    }
+                }
+            } else {
+                print("🔍 LeaderboardView[\(viewId)]: onAppear - view was already active, not reloading data")
+            }
         }
         .onDisappear {
             print("🏆 LeaderboardView: disappeared \(viewId)")
             logger.debug("LeaderboardView disappeared \(viewId)")
+            
+            // ADDED: Track when view disappears
+            print("🔍 LeaderboardView[\(viewId)]: onDisappear - current Thread: \(Thread.current.description)")
+            print("🔍 LeaderboardView[\(viewId)]: onDisappear - viewModel.isLoading: \(viewModel.isLoading)")
+            
+            // Mark view as inactive first to prevent new operations from starting
+            isViewActive = false
+            
+            // ADDED: First cancel any active tasks with the nonisolated method
+            viewModel.cancelActiveTasks()
+            
+            // Then clean up state with the isolated method
+            viewModel.cleanupAfterCancellation()
+            
+            // ADDED: Also reset UI state to default to avoid state inconsistency
+            viewModel.resetState()
         }
     }
     
@@ -89,6 +125,8 @@ struct LeaderboardView: View {
         }
         .pickerStyle(SegmentedPickerStyle())
         .padding(.horizontal, 16)
+        // Disable picker interactions when loading to prevent state issues
+        .disabled(viewModel.isLoading)
     }
     
     @ViewBuilder
@@ -102,6 +140,8 @@ struct LeaderboardView: View {
         .padding(.horizontal, 16)
         .padding(.top, 8)
         .padding(.bottom, 16)
+        // Disable picker interactions when loading to prevent state issues
+        .disabled(viewModel.isLoading)
     }
     
     @ViewBuilder
@@ -191,7 +231,9 @@ struct LeaderboardView: View {
             
             Button("Retry") {
                 // Just use refreshData to reload
-                viewModel.refreshData()
+                if isViewActive { // Only refresh if view is active
+                    viewModel.refreshData()
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -205,7 +247,9 @@ struct LeaderboardView: View {
             Button("Use Mock Data") {
                 print("🏆 LeaderboardView: Switching to mock data")
                 logger.debug("LeaderboardView: Switching to mock data mode")
-                viewModel.switchToMockData()
+                if isViewActive { // Only switch if view is active
+                    viewModel.switchToMockData()
+                }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 6)
@@ -234,7 +278,9 @@ struct LeaderboardView: View {
         }
         .refreshable { 
             print("🏆 LeaderboardView: Pull-to-refresh triggered")
-            viewModel.refreshData()
+            if isViewActive { // Only refresh if view is active
+                viewModel.refreshData()
+            }
         }
     }
 
@@ -304,6 +350,6 @@ struct LeaderboardRow: View {
 }
 
 #Preview {
-    let mockViewModel = LeaderboardViewModel(useMockData: true) 
+    let mockViewModel = LeaderboardViewModel(useMockData: true, autoLoadData: false) 
     return LeaderboardView()
 } 

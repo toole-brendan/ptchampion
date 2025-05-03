@@ -425,6 +425,12 @@ struct MainTabView: View {
     @EnvironmentObject private var auth: AuthViewModel
     @State private var selectedTab: Tab = .dashboard // Keep track of selected tab
     
+    // Add tab tracking for debugging
+    @State private var previousTab: Tab? = nil
+    
+    // Add a flag to prevent rapid tab switching
+    @State private var isTabSwitchInProgress = false
+    
     // Expose ComponentGallery in debug builds for design review
     @State private var showingComponentGallery = false
 
@@ -486,6 +492,48 @@ struct MainTabView: View {
         .sheet(isPresented: $showingComponentGallery) {
             // Replace with actual ComponentGalleryView if it exists
             Text("Component Gallery View Placeholder")
+        }
+        .onChange(of: selectedTab) { _, newTab in
+            // Prevent rapid tab switching which can cause UI freezes
+            guard !isTabSwitchInProgress else {
+                print("📱 MainTabView: Tab change blocked during switch transition")
+                return
+            }
+            
+            let previousTabString = previousTab?.description ?? "nil"
+            print("📱 MainTabView: Tab changed from \(previousTabString) to \(newTab)")
+            
+            // Set switch in progress flag
+            isTabSwitchInProgress = true
+            
+            // Add a small delay before allowing another tab switch
+            // This helps prevent rapid tab switching which can cause UI issues
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                isTabSwitchInProgress = false
+                print("📱 MainTabView: Tab switch completed, now ready for next tab change")
+            }
+            
+            // Keep track of previous tab for debugging
+            previousTab = newTab
+        }
+        .onAppear {
+            print("📱 MainTabView: onAppear")
+        }
+        .onDisappear {
+            print("📱 MainTabView: onDisappear")
+        }
+    }
+}
+
+// Add extension to help with debugging
+extension MainTabView.Tab: CustomStringConvertible {
+    var description: String {
+        switch self {
+        case .dashboard: return "dashboard"
+        case .progress: return "progress"
+        case .workout: return "workout"
+        case .leaderboards: return "leaderboards"
+        case .settings: return "settings"
         }
     }
 }
