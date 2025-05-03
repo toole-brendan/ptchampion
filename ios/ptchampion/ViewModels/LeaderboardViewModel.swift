@@ -273,26 +273,22 @@ class LeaderboardViewModel: ObservableObject {
     /// Cancel any active tasks to prevent background processing when view disappears
     nonisolated func cancelActiveTasks() {
         print("🔍 LeaderboardViewModel[\(self.instanceId)]: Cancelling active tasks")
-        currentFetchTask?.cancel()
         
-        // We can't update state variables directly in a nonisolated method
-        // We'll just cancel the task and leave state cleanup to happen elsewhere
+        // Nothing to actually cancel here in the nonisolated context
+        // The currentFetchTask can only be accessed on the MainActor 
+        // and we shouldn't create a strong reference to self by creating a new Task
         
-        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Tasks cancelled (nonisolated method)")
+        // Instead, we'll just notify that cancellation was requested
+        // The task will check Task.isCancelled periodically
+        
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Cancellation requested (nonisolated method)")
     }
     
-    /// Clean up the UI state after cancellation (must be called on main actor)
-    func cleanupAfterCancellation() {
-        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Cleaning up state after cancellation")
-        currentFetchTask = nil // Ensure task is fully released
-        
-        // Perform immediate cleanup
-        isDataFetchInProgress = false
-        
-        // Don't immediately set isLoading = false here as it would cause a UI update
-        // while the view is in the process of disappearing, which could cause a freeze
-        
-        print("🔍 LeaderboardViewModel[\(self.instanceId)]: State cleanup completed")
+    /// MainActor-isolated method that safely cancels tasks
+    func cancelTasksFromMainActor() {
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Cancelling tasks from MainActor")
+        currentFetchTask?.cancel()
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Tasks cancelled on MainActor")
     }
     
     // MARK: - Mock data generation
@@ -423,14 +419,28 @@ class LeaderboardViewModel: ObservableObject {
         Task { await fetchLeaderboardData() }
     }
     
+    /// Clean up the UI state after cancellation (must be called on main actor)
+    func cleanupAfterCancellation() {
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Cleaning up state after cancellation")
+        currentFetchTask = nil // Ensure task is fully released
+        
+        // Perform immediate cleanup
+        isDataFetchInProgress = false
+        
+        // Don't immediately set isLoading = false here as it would cause a UI update
+        // while the view is in the process of disappearing, which could cause a freeze
+        
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: State cleanup completed")
+    }
+    
     deinit {
         logger.debug("LeaderboardViewModel \(self.instanceId) deinitializing")
         print("🔍 LeaderboardViewModel[\(self.instanceId)]: Deinitializing")
-        // Cancel all ongoing operations (nonisolated method is safe to call here)
-        cancelActiveTasks()
         
-        // Can't update state directly from deinit since it's not on the main actor
-        // State cleanup would happen naturally as part of deinitialization
+        // Since we're on the MainActor already for deinit (the whole class is @MainActor),
+        // we can safely cancel the task directly here
+        currentFetchTask?.cancel()
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Tasks cancelled directly in deinit")
         
         cancellables.removeAll()
     }

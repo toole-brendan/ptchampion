@@ -94,8 +94,8 @@ struct LeaderboardView: View {
             // Mark view as inactive first to prevent new operations from starting
             isViewActive = false
             
-            // ADDED: First cancel any active tasks with the nonisolated method
-            viewModel.cancelActiveTasks()
+            // ADDED: Cancel any active tasks with the MainActor method
+            viewModel.cancelTasksFromMainActor()
             
             // Then clean up state with the isolated method
             viewModel.cleanupAfterCancellation()
