@@ -14,6 +14,7 @@ class LeaderboardService: LeaderboardServiceProtocol {
     
     // Flag to control whether real API calls are made or mock data is used
     private let useMockData: Bool
+    private let treatNoDataAsEmpty = true    // NEW
 
     init(networkClient: NetworkClient? = nil, useMockData: Bool = false) {
         self.networkClient = networkClient
@@ -32,7 +33,7 @@ class LeaderboardService: LeaderboardServiceProtocol {
 
     // MARK: - Protocol Implementation
 
-    func fetchGlobalLeaderboard(authToken: String, timeFrame: String = "weekly") async throws -> [LeaderboardEntry] {
+    func fetchGlobalLeaderboard(authToken: String, timeFrame: String = "weekly") async throws -> [LeaderboardEntryView] {
         print("🔍 LeaderboardService[\(instanceId)]: Fetching global leaderboard for timeFrame: \(timeFrame)...")
         logger.debug("Fetching global leaderboard for timeFrame: \(timeFrame)...")
         
@@ -40,7 +41,7 @@ class LeaderboardService: LeaderboardServiceProtocol {
         if useMockData {
             print("🔍 LeaderboardService[\(instanceId)]: Using mock data (useMockData=true)")
             logger.debug("Using mock data for global leaderboard")
-            return generateMockLeaderboardEntries(count: 10, isLocal: false)
+            return []              // WEB CONTRACT: empty array when mock-mode on
         }
         
         // Make the real API call
@@ -49,66 +50,63 @@ class LeaderboardService: LeaderboardServiceProtocol {
             let endpoint = APIEndpoint.globalLeaderboard(exerciseType: "general")
             print("🔍 LeaderboardService[\(instanceId)]: Making API call to \(endpoint) with params: \(queryParams)")
             
-            // If we have a network client, make the real API call
-            if let client = networkClient {
-                print("🔍 LeaderboardService[\(instanceId)]: NetworkClient available, making real API call")
-                
-                // Add an artificial delay to see if it helps with debugging
-                print("🔍 LeaderboardService[\(instanceId)]: Adding artificial 500ms delay for debugging")
-                try? await Task.sleep(nanoseconds: 500_000_000) // 500ms delay
-                
-                print("🔍 LeaderboardService[\(instanceId)]: About to call client.performRequest")
-                let backendEntries: [GlobalLeaderboardEntry] = try await client.performRequest(
-                    endpointPath: endpoint,
-                    method: "GET",
-                    queryParams: queryParams,
-                    body: nil
-                )
-                
-                print("🔍 LeaderboardService[\(instanceId)]: API call completed successfully")
-                
-                // Convert backend entries to the format expected by the UI
-                logger.debug("Fetched \(backendEntries.count) global leaderboard entries from server")
-                print("🔍 LeaderboardService[\(instanceId)]: Fetched \(backendEntries.count) entries from server")
-                
-                // Convert from backend model to view model
-                var convertedEntries: [LeaderboardEntry] = []
-                for (index, entry) in backendEntries.enumerated() {
-                    let rank = entry.rank ?? (index + 1) // Use provided rank or index+1
-                    convertedEntries.append(LeaderboardEntry.fromGlobalEntry(entry, rank: rank))
-                }
-                
-                logger.debug("Converted \(convertedEntries.count) global entries to view model format")
-                print("🔍 LeaderboardService[\(instanceId)]: Returning \(convertedEntries.count) converted entries")
-                return convertedEntries
-            } else {
-                logger.error("NetworkClient not available, falling back to mock data")
-                print("🔍 LeaderboardService[\(instanceId)]: NetworkClient not available, falling back to mock data")
-                print("NetworkClient not available, falling back to mock data")
-                
-                let mockEntries = generateMockLeaderboardEntries(count: 10, isLocal: false)
-                print("Generated \(mockEntries.count) mock global entries")
-                return mockEntries
+            // Check for NetworkClient using guard instead of if/else
+            guard let client = networkClient else {
+                logger.info("No NetworkClient – returning empty array")
+                return []              // ← KEY CHANGE
             }
+            
+            print("🔍 LeaderboardService[\(instanceId)]: NetworkClient available, making real API call")
+            print("🔍 LeaderboardService[\(instanceId)]: About to call client.performRequest")
+            let backendEntries: [GlobalLeaderboardEntry] = try await client.performRequest(
+                endpointPath: endpoint,
+                method: "GET",
+                queryParams: queryParams,
+                body: nil
+            )
+            
+            print("🔍 LeaderboardService[\(instanceId)]: API call completed successfully")
+            
+            // Convert backend entries to the format expected by the UI
+            logger.debug("Fetched \(backendEntries.count) global leaderboard entries from server")
+            print("🔍 LeaderboardService[\(instanceId)]: Fetched \(backendEntries.count) entries from server")
+            
+            // Convert from backend model to view model
+            var convertedEntries: [LeaderboardEntryView] = []
+            for (index, entry) in backendEntries.enumerated() {
+                let rank = entry.rank ?? (index + 1) // Use provided rank or index+1
+                convertedEntries.append(LeaderboardEntryView(
+                    id: "global-\(entry.id)",
+                    rank: rank,
+                    userId: "\(entry.id)",
+                    name: entry.displayName ?? entry.username,
+                    score: entry.score
+                ))
+            }
+            
+            logger.debug("Converted \(convertedEntries.count) global entries to view model format")
+            print("🔍 LeaderboardService[\(instanceId)]: Returning \(convertedEntries.count) converted entries")
+            return convertedEntries
         } catch {
             logger.error("Error fetching global leaderboard: \(error.localizedDescription)")
             print("🔍 LeaderboardService[\(instanceId)]: ERROR: \(error.localizedDescription)")
             
-            // Generate mock entries instead of returning empty array
-            print("🔍 LeaderboardService[\(instanceId)]: Generating mock data after error")
-            let mockEntries = generateMockLeaderboardEntries(count: 10, isLocal: false)
-            print("Generated \(mockEntries.count) mock global entries after error")
-            return mockEntries
+            if treatNoDataAsEmpty {
+                logger.info("No leaderboard rows currently – propagating empty array")
+                return []
+            } else {
+                throw error                          // let VM decide
+            }
         }
     }
 
-    func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String) async throws -> [LeaderboardEntry] {
+    func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String) async throws -> [LeaderboardEntryView] {
         logger.debug("Fetching local leaderboard near \(latitude), \(longitude) with radius \(radiusMiles) miles")
         
         // If forced to use mock data or real API calls are disabled
         if useMockData {
             logger.debug("Using mock data for local leaderboard")
-            return generateMockLeaderboardEntries(count: 10, isLocal: true)
+            return []              // WEB CONTRACT: empty array when mock-mode on
         }
         
         // Make the real API call
@@ -122,45 +120,55 @@ class LeaderboardService: LeaderboardServiceProtocol {
                 "radius_meters": String(radiusMeters)
             ]
             
-            // If we have a network client, make the real API call
-            if let client = networkClient {
-                let backendEntries: [LocalLeaderboardEntry] = try await client.performRequest(
-                    endpointPath: APIEndpoint.localLeaderboard,
-                    method: "GET",
-                    queryParams: queryParams,
-                    body: nil
-                )
-                
-                // Convert backend entries to the format expected by the UI
-                logger.debug("Fetched \(backendEntries.count) local leaderboard entries from server")
-                
-                // Convert from backend model to view model
-                var convertedEntries: [LeaderboardEntry] = []
-                for (index, entry) in backendEntries.enumerated() {
-                    let rank = entry.rank ?? (index + 1) // Use provided rank or index+1
-                    convertedEntries.append(LeaderboardEntry.fromLocalEntry(entry, rank: rank))
-                }
-                
-                logger.debug("Converted \(convertedEntries.count) local entries to view model format")
-                return convertedEntries
-            } else {
-                logger.error("NetworkClient not available, falling back to mock data")
-                return generateMockLeaderboardEntries(count: 10, isLocal: true)
+            // Check for NetworkClient using guard instead of if/else
+            guard let client = networkClient else {
+                logger.info("No NetworkClient – returning empty array")
+                return []              // ← KEY CHANGE
             }
+            
+            let backendEntries: [LocalLeaderboardEntry] = try await client.performRequest(
+                endpointPath: APIEndpoint.localLeaderboard,
+                method: "GET",
+                queryParams: queryParams,
+                body: nil
+            )
+            
+            // Convert backend entries to the format expected by the UI
+            logger.debug("Fetched \(backendEntries.count) local leaderboard entries from server")
+            
+            // Convert from backend model to view model
+            var convertedEntries: [LeaderboardEntryView] = []
+            for (index, entry) in backendEntries.enumerated() {
+                let rank = entry.rank ?? (index + 1) // Use provided rank or index+1
+                convertedEntries.append(LeaderboardEntryView(
+                    id: "local-\(entry.id)",
+                    rank: rank,
+                    userId: "\(entry.id)",
+                    name: entry.displayName ?? entry.username, 
+                    score: entry.score
+                ))
+            }
+            
+            logger.debug("Converted \(convertedEntries.count) local entries to view model format")
+            return convertedEntries
         } catch {
             logger.error("Error fetching local leaderboard: \(error.localizedDescription)")
-            // Return empty array on error instead of throwing
-            return []
+            if treatNoDataAsEmpty {
+                logger.info("No leaderboard rows currently – propagating empty array")
+                return []
+            } else {
+                throw error                          // let VM decide
+            }
         }
     }
     
     // MARK: - Mock Data Helpers
     
-    private func generateMockLeaderboardEntries(count: Int, isLocal: Bool) -> [LeaderboardEntry] {
-        var entries: [LeaderboardEntry] = []
+    private func generateMockLeaderboardEntries(count: Int, isLocal: Bool) -> [LeaderboardEntryView] {
+        var entries: [LeaderboardEntryView] = []
         
         for i in 1...count {
-            let entry = LeaderboardEntry(
+            let entry = LeaderboardEntryView(
                 id: "entry-\(i)",
                 rank: i,
                 userId: "user-\(i)",
