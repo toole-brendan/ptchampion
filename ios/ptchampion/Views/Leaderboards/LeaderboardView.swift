@@ -22,6 +22,11 @@ struct LeaderboardView: View {
     
     // Track if view is active to prevent unnecessary updates
     @State private var isViewActive = false
+    
+    // Track time spent in this view for analytics
+    @State private var viewAppearTime: Date? = nil
+    @State private var viewLifetimeSeconds: TimeInterval = 0
+    @State private var viewAnalyticsTimer: Timer? = nil
 
     // Apply appearance changes in init
     init() {
@@ -34,7 +39,12 @@ struct LeaderboardView: View {
         logger.debug("LeaderboardView init \(tempId)")
         
         // Create the StateObject with explicit non-blocking configuration
+        // IMPORTANT: Always use mock data to avoid backend freezing issues
+        #if DEBUG
         let model = LeaderboardViewModel(useMockData: true, autoLoadData: false)
+        #else
+        let model = LeaderboardViewModel(useMockData: true, autoLoadData: false)
+        #endif
         self._viewModel = StateObject(wrappedValue: model)
         
         // Configure UI appearance - move out of init to reduce complexity
@@ -50,6 +60,20 @@ struct LeaderboardView: View {
                 // Category and type pickers
                 categoryPickerView()
                 typePickerView()
+                
+                // Debug information in DEBUG builds
+                #if DEBUG
+                HStack {
+                    Text("View ID: \(viewId)")
+                        .font(.caption2)
+                    Spacer()
+                    Text("Time: \(Int(viewLifetimeSeconds))s")
+                        .font(.caption2)
+                }
+                .padding(.horizontal)
+                .font(.caption2)
+                .foregroundColor(.gray)
+                #endif
 
                 // Content Area based on loading state
                 contentView()
@@ -61,6 +85,16 @@ struct LeaderboardView: View {
         .onAppear {
             print("🏆 LeaderboardView: appeared \(viewId)")
             logger.debug("LeaderboardView appeared \(viewId)")
+            
+            // Record appearance time for analytics
+            viewAppearTime = Date()
+            
+            // Start timer to track view lifetime
+            viewAnalyticsTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                if let appearTime = viewAppearTime {
+                    viewLifetimeSeconds = Date().timeIntervalSince(appearTime)
+                }
+            }
             
             // Only load data if view wasn't already active
             if !isViewActive {
@@ -77,10 +111,7 @@ struct LeaderboardView: View {
                     // Check both that the view is still active and that we still have a valid viewModel
                     if isViewActive, let viewModel = viewModel {
                         print("🔍 LeaderboardView[\(viewId)]: Starting data load after short delay")
-                        Task {
-                            // Refresh inside a task to avoid blocking the main thread
-                            viewModel.refreshData()
-                        }
+                        viewModel.refreshData()
                     } else {
                         print("🔍 LeaderboardView[\(viewId)]: View inactive or viewModel released after delay, skipping refresh")
                     }
@@ -92,6 +123,17 @@ struct LeaderboardView: View {
         .onDisappear {
             print("🏆 LeaderboardView: disappeared \(viewId)")
             logger.debug("LeaderboardView disappeared \(viewId)")
+            
+            // Save analytics data
+            if let appearTime = viewAppearTime {
+                let totalTime = Date().timeIntervalSince(appearTime)
+                print("🔍 LeaderboardView[\(viewId)]: View was visible for \(totalTime) seconds")
+            }
+            
+            // Clean up timer
+            viewAnalyticsTimer?.invalidate()
+            viewAnalyticsTimer = nil
+            viewAppearTime = nil
             
             // ADDED: Track when view disappears
             print("🔍 LeaderboardView[\(viewId)]: onDisappear - current Thread: \(Thread.current.description)")
@@ -151,16 +193,20 @@ struct LeaderboardView: View {
     
     @ViewBuilder
     private func contentView() -> some View {
-        ZStack {
-            if viewModel.isLoading {
-                loadingView()
-            } else if let errorMessage = viewModel.errorMessage {
-                errorView(message: errorMessage)
-            } else if viewModel.leaderboardEntries.isEmpty {
-                emptyStateView()
-            } else {
-                leaderboardListView()
+        // Wrap the entire content view in a GeometryReader to ensure proper sizing
+        GeometryReader { geometry in
+            ZStack {
+                if viewModel.isLoading {
+                    loadingView()
+                } else if let errorMessage = viewModel.errorMessage {
+                    errorView(message: errorMessage)
+                } else if viewModel.leaderboardEntries.isEmpty {
+                    emptyStateView()
+                } else {
+                    leaderboardListView()
+                }
             }
+            .frame(width: geometry.size.width, height: geometry.size.height)
         }
     }
     
@@ -270,7 +316,7 @@ struct LeaderboardView: View {
     
     @ViewBuilder
     private func leaderboardListView() -> some View {
-        // Use a ScrollView instead of List for better performance in this case
+        // Use a LazyVStack inside a ScrollView for better performance
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.leaderboardEntries) { entry in
@@ -278,6 +324,8 @@ struct LeaderboardView: View {
                         .padding(.horizontal, Constants.globalPadding)
                         .padding(.vertical, 8)
                         .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+                        // Add an ID to help SwiftUI with diffing
+                        .id(entry.id)
                 }
             }
         }
@@ -354,6 +402,7 @@ struct LeaderboardRow: View {
     }
 }
 
+// Always use mock data in previews
 #Preview {
     let mockViewModel = LeaderboardViewModel(useMockData: true, autoLoadData: false) 
     return LeaderboardView()

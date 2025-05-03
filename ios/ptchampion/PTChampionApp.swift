@@ -463,7 +463,12 @@ struct MainTabView: View {
                  }
                  .tag(Tab.workout)
 
+            // Use debug version of leaderboard view in DEBUG builds
+            #if DEBUG
+            LeaderboardViewDebug()
+            #else
             LeaderboardView()
+            #endif
                 .tabItem {
                     Label("Leaders", systemImage: "list.star")
                 }
@@ -516,10 +521,18 @@ struct MainTabView: View {
             // Important: If switching to leaderboards tab, give extra time
             // for the view to initialize to prevent freezing
             if newTab == .leaderboards {
-                // Use a slightly longer delay for leaderboards
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                // Use a significantly longer delay for leaderboards
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     // This delay gives the leaderboards view time to set up before loading data
                     print("📱 MainTabView: Leaderboard tab delay completed")
+                }
+                
+                // IMPORTANT: Disable quick switching from leaderboards tab
+                // This prevents a common crash scenario where users rapidly switch away
+                isTabSwitchInProgress = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    isTabSwitchInProgress = false
+                    print("📱 MainTabView: Allowing tab changes after leaderboard stabilization period")
                 }
             }
             
