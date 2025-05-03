@@ -97,14 +97,17 @@ class LeaderboardViewModel: ObservableObject {
     // Flag to track if we're in the process of deinitializing
     private var isBeingDeallocated = false
     
-    // Default to having mock data available for preview/testing
+    // Always default to mock data initially to prevent freezing
     private var useMockData = true
     
-    // Whether to automatically load data on init
+    // Whether to automatically load data on init - disabled by default for performance
     private var autoLoadData = false
     
-    // Set a reasonable timeout for network operations
-    private let networkTimeoutSeconds: TimeInterval = 10.0
+    // Add a flag to track if we've switched to real data mode
+    private var hasAttemptedRealDataLoad = false
+    
+    // Set a shorter timeout for network operations to prevent long freezes
+    private let networkTimeoutSeconds: TimeInterval = 5.0
     
     // Add a dedicated log function with severity levels
     private func logMessage(_ message: String, level: OSLogType = .debug) {
@@ -325,15 +328,16 @@ class LeaderboardViewModel: ObservableObject {
             }
         }
         
-        // Create the actual data fetch task
-        currentFetchTask = Task { 
+        // Create the actual data fetch task with a task priority of .userInitiated
+        // Using explicit priority to ensure task receives appropriate system resources
+        currentFetchTask = Task(priority: .userInitiated) { 
             do {
                 // Use a different approach based on whether we're using mock data or real data
                 var entries: [LeaderboardEntry] = []
                 
                 if useMockData {
-                    // Generate mock data with a small delay to prevent UI freezes
-                    try await Task.sleep(nanoseconds: 100_000_000) // 100ms delay
+                    // Generate mock data with a tiny delay for better UI experience
+                    try await Task.sleep(nanoseconds: 50_000_000) // 50ms delay - reduced from 100ms
                     
                     // Generate 10 mock entries
                     for i in 1...10 {
@@ -348,6 +352,15 @@ class LeaderboardViewModel: ObservableObject {
                         ))
                     }
                 } else {
+                    // Only try real data if view isn't being deallocated
+                    if isBeingDeallocated {
+                        throw NSError(domain: "LeaderboardViewModel", code: 500,
+                                     userInfo: [NSLocalizedDescriptionKey: "View is closing, aborting API call"])
+                    }
+                    
+                    // Mark that we've attempted to use real data
+                    hasAttemptedRealDataLoad = true
+                    
                     // Get auth token from keychain service
                     guard let token = keychainService.getAccessToken() else {
                         throw NSError(domain: "LeaderboardViewModel", code: 401, 
@@ -363,17 +376,43 @@ class LeaderboardViewModel: ObservableObject {
                         )
                         entries = globalEntries
                     } else {
+                        // Check location permission first to avoid API calls when permissions are denied
+                        let locationStatus = locationService.getCurrentAuthorizationStatus()
+                        if locationStatus == .denied || locationStatus == .restricted {
+                            // No point in trying to get location - will fail
+                            handleLocalLocationPermission()
+                            throw NSError(domain: "LeaderboardViewModel", code: 403,
+                                        userInfo: [NSLocalizedDescriptionKey: "Location permission denied"])
+                        }
+                        
                         // Fetch local leaderboard - need location first
                         let locationResult: CLLocation?
                         do {
-                            locationResult = try await locationService.getCurrentLocation()
+                            // Use a timeout to prevent waiting indefinitely for location
+                            let locationTask = Task { 
+                                try await locationService.getCurrentLocation() 
+                            }
+                            
+                            // Create a timeout task
+                            let timeoutTask = Task {
+                                try await Task.sleep(nanoseconds: UInt64(2 * 1_000_000_000)) // 2 second timeout
+                                return true
+                            }
+                            
+                            // Race the tasks
+                            if await timeoutTask.value {
+                                // Timeout occurred
+                                locationResult = nil
+                            } else {
+                                locationResult = try await locationTask.value
+                            }
                         } catch {
                             locationResult = nil
                         }
                         
                         guard let location = locationResult else {
                             throw NSError(domain: "LeaderboardViewModel", code: 400, 
-                                         userInfo: [NSLocalizedDescriptionKey: "Location not available"])
+                                         userInfo: [NSLocalizedDescriptionKey: "Location not available or timeout"])
                         }
                         
                         let localEntries = try await leaderboardService.fetchLocalLeaderboard(
@@ -485,19 +524,34 @@ class LeaderboardViewModel: ObservableObject {
         logMessage("⚠️ State cleanup completed", level: .debug)
     }
     
-    /// Update method to make refreshing data more controlled
+    /// Update method to make refreshing data more controlled with better
+    /// handling of task cancellation and deallocation
     func refreshData() {
         logMessage("⚠️ Manual refresh requested", level: .debug)
         
+        // Cancel any existing tasks first
+        if let task = currentFetchTask {
+            logMessage("⚠️ Cancelling existing task before refresh", level: .debug)
+            task.cancel()
+            currentFetchTask = nil
+        }
+        
+        // Check deallocation state immediately before starting a new task
+        guard !isBeingDeallocated else {
+            logMessage("⚠️ View model is being deallocated, skipping refresh", level: .debug)
+            return
+        }
+        
         // FIXED: Use weak self to prevent retain cycle
-        Task { [weak self] in 
+        Task(priority: .userInitiated) { [weak self] in 
             guard let self = self else {
                 print("⚠️ Self is nil in refreshData Task")
                 return
             }
             
+            // Double-check deallocation again after task starts
             guard !self.isBeingDeallocated else {
-                self.logMessage("⚠️ View model is being deallocated, skipping refresh", level: .debug)
+                self.logMessage("⚠️ View model is being deallocated (in task), skipping refresh", level: .debug)
                 return
             }
             
@@ -507,8 +561,41 @@ class LeaderboardViewModel: ObservableObject {
         }
     }
     
-    deinit {
+    // More comprehensive cleanup method that can be called explicitly
+    func performCompleteCleanup() {
+        if isBeingDeallocated {
+            logMessage("⚠️ Already in deallocation process, skipping cleanup", level: .debug)
+            return
+        }
+        
         // Set flag to prevent new operations from starting
+        isBeingDeallocated = true
+        logMessage("⚠️ Beginning complete cleanup process", level: .debug)
+        
+        // Cancel any running task immediately
+        if let task = currentFetchTask {
+            logMessage("⚠️ Found active task, cancelling", level: .debug)
+            task.cancel()
+            currentFetchTask = nil
+            logMessage("⚠️ Task cancelled", level: .debug)
+        } else {
+            logMessage("⚠️ No active task to cancel", level: .debug)
+        }
+        
+        // Reset state flags
+        isDataFetchInProgress = false
+        isLoading = false
+        
+        // Explicitly clear all cancellables to break potential reference cycles
+        let cancellablesCount = cancellables.count
+        cancellables.removeAll()
+        logMessage("⚠️ Cleared \(cancellablesCount) cancellables", level: .debug)
+        
+        logMessage("⚠️ Complete cleanup finished", level: .debug)
+    }
+    
+    deinit {
+        // Set flag to prevent new operations from starting (redundant if performCompleteCleanup was called)
         isBeingDeallocated = true
         
         // Use the non-isolated version since deinit might not always run on the MainActor
@@ -552,6 +639,17 @@ class LeaderboardViewModel: ObservableObject {
     func switchToMockData() {
         logMessage("⚠️ Switching to mock data mode", level: .debug)
         useMockData = true
+        // Reset the real data attempt flag since we're explicitly using mock data now
+        hasAttemptedRealDataLoad = false
         refreshData()
+    }
+    
+    // New method to try real data if mock data was previously used
+    func tryRealDataIfNeeded() {
+        if useMockData && !hasAttemptedRealDataLoad {
+            logMessage("⚠️ Switching to real data mode after successful mock data load", level: .debug)
+            useMockData = false
+            refreshData()
+        }
     }
 }

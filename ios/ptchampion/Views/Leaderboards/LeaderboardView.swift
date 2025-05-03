@@ -43,15 +43,16 @@ struct LeaderboardView: View {
         print("🏆 LeaderboardView: init \(tempId)")
         logger.debug("LeaderboardView init \(tempId)")
         
-        // Create the StateObject with explicit non-blocking configuration
-        // Always use mock data initially to prevent backend freezing issues
+        // Create the StateObject with fully safe configuration
+        // ALWAYS use mock data initially to prevent freezing issues
+        // We'll switch to real data later after the UI has rendered
         let model = LeaderboardViewModel(
-            useMockData: true,  // Start with mock data for immediate feedback
-            autoLoadData: false // Disable auto-load to prevent freezes
+            useMockData: true,      // Always start with mock data for immediate feedback
+            autoLoadData: false     // Always disable auto-load to prevent freezes
         )
         self._viewModel = StateObject(wrappedValue: model)
         
-        // Configure UI appearance - move out of init to reduce complexity
+        // Configure UI appearance - moved out of init to reduce complexity
         LeaderboardView.configureSegmentedControlAppearance()
     }
 
@@ -166,20 +167,10 @@ struct LeaderboardView: View {
         // Mark view as inactive first to prevent new operations from starting
         isViewActive = false
         
-        // Cancel tasks and clean up viewModel state
-        // Use multiple dispatch blocks to stagger cleanup and reduce freezes
+        // Using the new comprehensive cleanup method instead of multiple steps
+        // This is more reliable and prevents UI freezes during cleanup
         DispatchQueue.main.async { [weak viewModel] in
-            // First just cancel tasks
-            viewModel?.cancelTasksFromMainActor()
-        }
-        
-        // Then cleanup state in separate blocks
-        DispatchQueue.main.async { [weak viewModel] in
-            viewModel?.cleanupAfterCancellation()
-        }
-        
-        DispatchQueue.main.async { [weak viewModel] in 
-            viewModel?.resetState()
+            viewModel?.performCompleteCleanup()
         }
     }
     
@@ -365,13 +356,24 @@ struct LeaderboardView: View {
         // Use a LazyVStack inside a ScrollView for better performance
         ScrollView {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.leaderboardEntries) { entry in
-                    LeaderboardRow(entry: entry)
-                        .padding(.horizontal, Constants.globalPadding)
-                        .padding(.vertical, 8)
-                        .background(Color(red: 0.957, green: 0.945, blue: 0.902))
-                        // Add an ID to help SwiftUI with diffing
-                        .id(entry.id)
+                // Use ListView placeholder during loading state
+                if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
+                    ForEach(0..<8) { i in
+                        LeaderboardRowPlaceholder()
+                            .padding(.horizontal, Constants.globalPadding)
+                            .padding(.vertical, 8)
+                            .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+                            .id("placeholder-\(i)")
+                    }
+                } else {
+                    ForEach(viewModel.leaderboardEntries) { entry in
+                        LeaderboardRow(entry: entry)
+                            .padding(.horizontal, Constants.globalPadding)
+                            .padding(.vertical, 8)
+                            .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+                            // Add an ID to help SwiftUI with diffing
+                            .id(entry.id)
+                    }
                 }
             }
         }
@@ -379,6 +381,24 @@ struct LeaderboardView: View {
             print("🏆 LeaderboardView: Pull-to-refresh triggered")
             if isViewActive { // Only refresh if view is active
                 viewModel.refreshData()
+            }
+        }
+        // Single onAppear handler with a proper sequence:
+        // 1. Show mock data immediately
+        // 2. After a very short delay, try real data if available
+        .onAppear {
+            if isViewActive {
+                // First, make sure we have mock data displaying
+                if viewModel.leaderboardEntries.isEmpty && !viewModel.isLoading {
+                    viewModel.switchToMockData() // Force mock data if empty
+                }
+                
+                // Then after a short delay, attempt to load real data
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak viewModel] in
+                    guard isViewActive, let viewModel = viewModel else { return }
+                    print("🏆 LeaderboardView: Attempting to load real data after mock data render")
+                    viewModel.tryRealDataIfNeeded()
+                }
             }
         }
     }
