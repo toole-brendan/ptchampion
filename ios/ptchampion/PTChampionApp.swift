@@ -202,6 +202,8 @@ enum AppScreen {
 struct PTChampionApp: App {
     // Create a SINGLE source of truth for authentication
     @StateObject private var auth = AuthViewModel()
+    // Add ThemeManager for styling
+    @StateObject private var themeManager = ThemeManager.shared
     
     // Initialize app appearance
     init() {
@@ -250,9 +252,9 @@ struct PTChampionApp: App {
         
         // Convert SwiftUI Color to UIColor
         // Use direct color reference - temporary solution until proper imports work
-        UINavigationBar.appearance().tintColor = UIColor(Color("GeneratedColors/DeepOps"))
+        UINavigationBar.appearance().tintColor = UIColor(AppTheme.GeneratedColors.deepOps)
         UINavigationBar.appearance().titleTextAttributes = [
-            .foregroundColor: UIColor(Color("GeneratedColors/DeepOps")),
+            .foregroundColor: UIColor(AppTheme.GeneratedColors.deepOps),
             .font: navTitleFont
         ]
     }
@@ -262,6 +264,8 @@ struct PTChampionApp: App {
             // Pass the shared auth view model to all views
             RootSwitcher()
                 .environmentObject(auth)
+                .environmentObject(themeManager)
+                .preferredColorScheme(themeManager.currentColorScheme)
                 .modelContainer(for: WorkoutResultSwiftData.self)
                 .onAppear {
                     Self.logBody() // Debug log function
@@ -385,7 +389,7 @@ struct DebugOverlayView: View {
                 authenticateAction()
             }
             .padding(8)
-            .background(Color.green)
+            .background(AppTheme.GeneratedColors.success)
             .foregroundColor(.white)
             .cornerRadius(8)
             
@@ -394,7 +398,7 @@ struct DebugOverlayView: View {
                 logoutAction()
             }
             .padding(8)
-            .background(Color.red)
+            .background(AppTheme.GeneratedColors.error)
             .foregroundColor(.white)
             .cornerRadius(8)
             
@@ -405,7 +409,7 @@ struct DebugOverlayView: View {
                 }
             }
             .padding(8)
-            .background(Color.orange)
+            .background(AppTheme.GeneratedColors.warning)
             .foregroundColor(.white)
             .cornerRadius(8)
             
@@ -413,12 +417,12 @@ struct DebugOverlayView: View {
                 showDebugInfo = false
             }
             .padding(8)
-            .background(Color.blue)
+            .background(AppTheme.GeneratedColors.info)
             .foregroundColor(.white)
             .cornerRadius(8)
         }
         .padding()
-        .background(Color.black.opacity(0.8))
+        .background(AppTheme.GeneratedColors.deepOps.opacity(0.8))
         .cornerRadius(12)
         .padding()
     }

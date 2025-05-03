@@ -1,27 +1,29 @@
 import SwiftUI
 
 struct CardStyle: ViewModifier {
-    var padding: CGFloat = AppTheme.Spacing.contentPadding
+    var padding: CGFloat = AppTheme.GeneratedSpacing.contentPadding
     var shadowDepth: CardShadowDepth = .small
+    
+    @Environment(\.colorScheme) private var colorScheme
     
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(AppTheme.Colors.cardBackground)
-            .cornerRadius(AppTheme.Radius.card)
+            .background(AppTheme.GeneratedColors.cardBackground)
+            .cornerRadius(AppTheme.GeneratedRadius.card)
             .withShadow(shadowDepth.shadow)
     }
 }
 
 struct PanelStyle: ViewModifier {
-    var padding: CGFloat = AppTheme.Spacing.contentPadding
+    var padding: CGFloat = AppTheme.GeneratedSpacing.contentPadding
     
     func body(content: Content) -> some View {
         content
             .padding(padding)
-            .background(AppTheme.Colors.background)
-            .cornerRadius(AppTheme.Radius.panel)
-            .withShadow(AppTheme.Shadows.medium)
+            .background(AppTheme.GeneratedColors.background)
+            .cornerRadius(AppTheme.GeneratedRadius.panel)
+            .withShadow(AppTheme.GeneratedShadows.medium)
     }
 }
 
@@ -32,29 +34,29 @@ enum CardShadowDepth {
     
     var shadow: Shadow {
         switch self {
-        case .small: return AppTheme.Shadows.card
-        case .medium: return AppTheme.Shadows.cardMd
-        case .large: return AppTheme.Shadows.cardLg
+        case .small: return AppTheme.GeneratedShadows.small
+        case .medium: return AppTheme.GeneratedShadows.medium
+        case .large: return AppTheme.GeneratedShadows.large
         }
     }
 }
 
 extension View {
     func cardStyle(
-        padding: CGFloat = AppTheme.Spacing.contentPadding,
+        padding: CGFloat = AppTheme.GeneratedSpacing.contentPadding,
         shadowDepth: CardShadowDepth = .small
     ) -> some View {
         self.modifier(CardStyle(padding: padding, shadowDepth: shadowDepth))
     }
     
-    func panelStyle(padding: CGFloat = AppTheme.Spacing.contentPadding) -> some View {
+    func panelStyle(padding: CGFloat = AppTheme.GeneratedSpacing.contentPadding) -> some View {
         self.modifier(PanelStyle(padding: padding))
     }
     
     func headerBackground() -> some View {
-        self.background(AppTheme.Colors.deepOps)
-            .foregroundColor(AppTheme.Colors.cream)
-            .cornerRadius(AppTheme.Radius.card, corners: [.topLeft, .topRight])
+        self.background(AppTheme.GeneratedColors.deepOps)
+            .foregroundColor(AppTheme.GeneratedColors.cream)
+            .cornerRadius(AppTheme.GeneratedRadius.card, corners: [.topLeft, .topRight])
     }
 }
 

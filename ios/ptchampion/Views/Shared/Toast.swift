@@ -18,24 +18,24 @@ enum ToastType {
     
     var bgColor: Color {
         switch self {
-        case .success: return LegacyColor.fromHex("#10B981").opacity(0.15) // emerald-500
-        case .error: return LegacyColor.fromHex("#DC2626").opacity(0.15) // red-600
-        case .warning: return LegacyColor.fromHex("#F59E0B").opacity(0.15) // amber-500
-        case .info: return LegacyColor.fromHex("#3B82F6").opacity(0.15) // blue-500
+        case .success: return AppTheme.GeneratedColors.success.opacity(0.15)
+        case .error: return AppTheme.GeneratedColors.error.opacity(0.15)
+        case .warning: return AppTheme.GeneratedColors.warning.opacity(0.15)
+        case .info: return AppTheme.GeneratedColors.info.opacity(0.15)
         }
     }
     
     var iconColor: Color {
         switch self {
-        case .success: return LegacyColor.fromHex("#10B981") // emerald-500
-        case .error: return LegacyColor.fromHex("#DC2626") // red-600
-        case .warning: return LegacyColor.fromHex("#F59E0B") // amber-500
-        case .info: return LegacyColor.fromHex("#3B82F6") // blue-500
+        case .success: return AppTheme.GeneratedColors.success
+        case .error: return AppTheme.GeneratedColors.error
+        case .warning: return AppTheme.GeneratedColors.warning
+        case .info: return AppTheme.GeneratedColors.info
         }
     }
     
     var textColor: Color {
-        return .commandBlack
+        return AppTheme.GeneratedColors.textPrimary
     }
 }
 
@@ -47,7 +47,7 @@ struct Toast: View {
     var onDismiss: (() -> Void)?
     
     var body: some View {
-        HStack(alignment: .top, spacing: AppConstants.Spacing.sm) {
+        HStack(alignment: .top, spacing: AppTheme.GeneratedSpacing.itemSpacing) {
             // Icon
             Image(systemName: type.icon)
                 .resizable()
@@ -56,14 +56,14 @@ struct Toast: View {
                 .foregroundColor(type.iconColor)
             
             // Content
-            VStack(alignment: .leading, spacing: AppConstants.Spacing.xs) {
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.innerSpacing) {
                 Text(title)
-                    .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.md))
+                    .font(AppTheme.GeneratedTypography.bodyBold())
                     .foregroundColor(type.textColor)
                 
                 if let message = message {
                     Text(message)
-                        .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
+                        .font(AppTheme.GeneratedTypography.body(size: 14))
                         .foregroundColor(type.textColor.opacity(0.7))
                         .lineLimit(3)
                 }
@@ -78,14 +78,14 @@ struct Toast: View {
                         .foregroundColor(type.textColor.opacity(0.6))
                         .font(.system(size: 14, weight: .medium))
                 }
-                .padding(AppConstants.Spacing.xs)
+                .padding(AppTheme.GeneratedSpacing.innerSpacing)
             }
         }
-        .padding(AppConstants.Spacing.md)
+        .padding(AppTheme.GeneratedSpacing.contentPadding)
         .background(type.bgColor)
-        .cornerRadius(AppConstants.Radius.md)
+        .cornerRadius(AppTheme.GeneratedRadius.medium)
         .overlay(
-            RoundedRectangle(cornerRadius: AppConstants.Radius.md)
+            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.medium)
                 .stroke(type.iconColor.opacity(0.1), lineWidth: 1)
         )
     }
@@ -96,7 +96,7 @@ struct ToastContainer: View {
     @Binding var toasts: [ToastItem]
     
     var body: some View {
-        VStack(spacing: AppConstants.Spacing.sm) {
+        VStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
             ForEach(toasts) { toast in
                 Toast(
                     type: toast.type,
@@ -121,7 +121,7 @@ struct ToastContainer: View {
                 }
             }
         }
-        .padding(AppConstants.Spacing.md)
+        .padding(AppTheme.GeneratedSpacing.contentPadding)
         .frame(maxWidth: .infinity)
     }
 }
@@ -188,7 +188,7 @@ extension View {
 // Preview Provider
 struct Toast_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppConstants.Spacing.xl) {
+        VStack(spacing: AppTheme.GeneratedSpacing.sectionSpacing) {
             // Individual toasts
             Toast(type: .success, title: "Success", message: "Your action was completed successfully.")
             Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
@@ -202,7 +202,7 @@ struct Toast_Previews: PreviewProvider {
             ToastExample()
         }
         .padding()
-        .background(Color.tacticalCream.opacity(0.5))
+        .background(AppTheme.GeneratedColors.background.opacity(0.5))
         .previewLayout(.sizeThatFits)
     }
     
@@ -210,20 +210,20 @@ struct Toast_Previews: PreviewProvider {
         @State private var toasts: [ToastItem] = []
         
         var body: some View {
-            VStack(spacing: AppConstants.Spacing.lg) {
+            VStack(spacing: AppTheme.GeneratedSpacing.contentSpacing) {
                 Button("Show Success Toast") {
                     toasts.append(ToastItem(type: .success, title: "Success", message: "Operation completed"))
                 }
-                .primaryButtonStyle()
+                .ptButtonStyle(variant: .primary)
                 
                 Button("Show Error Toast") {
                     toasts.append(ToastItem(type: .error, title: "Error", message: "Something went wrong"))
                 }
-                .secondaryButtonStyle()
+                .ptButtonStyle(variant: .secondary)
             }
             .padding()
-            .background(Color.white)
-            .cornerRadius(AppConstants.Radius.md)
+            .background(AppTheme.GeneratedColors.cardBackground)
+            .cornerRadius(AppTheme.GeneratedRadius.medium)
             .toasts($toasts)
         }
     }

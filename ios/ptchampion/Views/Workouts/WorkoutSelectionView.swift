@@ -20,8 +20,8 @@ struct WorkoutSelectionView: View {
     
     // Helper function to apply styling directly
     private func subheadingStyle(text: Text) -> some View {
-        text.font(.headline)
-            .foregroundColor(Color.gray)
+        text.font(AppTheme.GeneratedTypography.subheading())
+            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
     }
 
     var body: some View {
@@ -44,7 +44,7 @@ struct WorkoutSelectionView: View {
                 }
             }
             .listStyle(PlainListStyle()) // Use PlainListStyle for flatter look closer to Android?
-            .background(Color.cream.ignoresSafeArea())
+            .background(AppTheme.GeneratedColors.cream.ignoresSafeArea())
             .navigationTitle("Start Workout")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -57,8 +57,8 @@ struct ExerciseRow: View {
     
     // Helper function to apply styling directly
     private func applyLabelStyle(to text: Text) -> some View {
-        text.font(.subheadline)
-            .foregroundColor(Color.gray)
+        text.font(AppTheme.GeneratedTypography.caption())
+            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
     }
 
     var body: some View {
@@ -67,16 +67,16 @@ struct ExerciseRow: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 30, height: 30)
-                .foregroundColor(.brassGold)
-                .padding(.trailing, 8)
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .padding(.trailing, AppTheme.GeneratedSpacing.itemSpacing)
             VStack(alignment: .leading) {
                 Text(exercise.name)
-                    .font(.headline)
-                    .foregroundColor(.commandBlack)
+                    .font(AppTheme.GeneratedTypography.subheading())
+                    .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                 applyLabelStyle(to: Text(exercise.description))
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing)
     }
 }
 
@@ -92,4 +92,12 @@ struct ExerciseRow: View {
 
 #Preview {
     WorkoutSelectionView()
+        .environment(\.colorScheme, .light) // Preview in light mode
+        .previewDisplayName("Light Mode")
+}
+
+#Preview {
+    WorkoutSelectionView()
+        .environment(\.colorScheme, .dark) // Preview in dark mode
+        .previewDisplayName("Dark Mode")
 } 

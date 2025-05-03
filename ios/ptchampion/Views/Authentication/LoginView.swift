@@ -20,23 +20,6 @@ extension Font {
     }
 }
 
-// Import AppTheme symbols directly in file scope for LoginView
-extension LoginView {
-    enum AppTheme {
-        enum Colors {
-            static let brassGold = Color("BrassGold")
-            static let cream = Color("Cream")
-            static let commandBlack = Color("CommandBlack")
-            static let tacticalGray = Color("TacticalGray")
-        }
-    }
-}
-
-// Use the same AppTheme extension for PTTextField
-extension PTTextField {
-    typealias AppTheme = LoginView.AppTheme
-}
-
 // Custom SwiftUI TextField that properly handles keyboard
 struct PTTextField: View {
     let placeholder: String
@@ -52,10 +35,10 @@ struct PTTextField: View {
                     .autocapitalization(.none)
                     .padding()
                     .background(Color(UIColor.systemBackground))
-                    .cornerRadius(8)
+                    .cornerRadius(AppTheme.GeneratedRadius.input)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(AppTheme.Colors.brassGold, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
+                            .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
                     )
             } else {
                 TextField(placeholder, text: $text)
@@ -63,10 +46,10 @@ struct PTTextField: View {
                     .autocapitalization(.none)
                     .padding()
                     .background(Color(UIColor.systemBackground))
-                    .cornerRadius(8)
+                    .cornerRadius(AppTheme.GeneratedRadius.input)
                     .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(AppTheme.Colors.brassGold, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
+                            .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
                     )
             }
         }
@@ -104,12 +87,12 @@ struct LoginView: View {
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 120, height: 120)
-                                .foregroundColor(AppTheme.Colors.brassGold)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         } else {
                             // Fallback to text if image is missing
                             Text("PT CHAMPION")
-                                .font(Font.bebasNeueBold(size: 32))
-                                .foregroundColor(AppTheme.Colors.brassGold)
+                                .font(AppTheme.GeneratedTypography.heading())
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                 .frame(width: 120, height: 120)
                                 .onAppear {
                                     print("WARNING: Logo file not found in asset catalog. Please ensure pt_champion_logo.png is added to Assets.xcassets.")
@@ -124,8 +107,8 @@ struct LoginView: View {
                     
                     // Welcome Text
                     Text("Welcome Back")
-                        .font(Font.bebasNeueBold(size: 36))
-                        .foregroundColor(AppTheme.Colors.commandBlack)
+                        .font(AppTheme.GeneratedTypography.heading())
+                        .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                         .padding(.top, 10)
                     
                     // Form Fields
@@ -158,19 +141,19 @@ struct LoginView: View {
                         }) {
                             if auth.isLoading {
                                 ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.Colors.cream))
+                                    .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.cream))
                             } else {
                                 Text("Log In")
-                                    .font(Font.montserratBold(size: 16))
-                                    .foregroundColor(AppTheme.Colors.cream)
+                                    .font(AppTheme.GeneratedTypography.buttonText())
+                                    .foregroundColor(AppTheme.GeneratedColors.cream)
                                     .frame(maxWidth: .infinity)
                                     .padding()
                             }
                         }
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(auth.isLoading ? Color.gray : AppTheme.Colors.brassGold)
-                        .cornerRadius(8)
+                        .background(auth.isLoading ? Color.gray : AppTheme.GeneratedColors.brassGold)
+                        .cornerRadius(AppTheme.GeneratedRadius.button)
                         .disabled(auth.isLoading || email.isEmpty || password.isEmpty)
                         
                         // Debug buttons only in dev mode
@@ -180,40 +163,40 @@ struct LoginView: View {
                                 print("DEBUG: Current auth state from LoginView diagnostic button: \(auth.authState)")
                             }) {
                                 Text("Check Auth State")
-                                    .font(Font.montserratSemiBold(size: 14))
-                                    .foregroundColor(AppTheme.Colors.cream)
+                                    .font(AppTheme.GeneratedTypography.buttonText())
+                                    .foregroundColor(AppTheme.GeneratedColors.cream)
                                     .frame(maxWidth: .infinity)
                                     .padding()
-                                    .background(Color.blue)
-                                    .cornerRadius(8)
+                                    .background(AppTheme.GeneratedColors.info)
+                                    .cornerRadius(AppTheme.GeneratedRadius.button)
                             }
                             .padding(.top, 8)
                             
                             Text(authDebugText)
-                                .font(Font.montserratRegular(size: 14))
-                                .foregroundColor(Color.black)
+                                .font(AppTheme.GeneratedTypography.body())
+                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                                 .padding(.top, 8)
                         
                             // Dev bypass buttons
                             Button(action: { auth.loginAsDeveloper() }) {
                                 Text("DEV: Bypass Login")
-                                    .font(Font.montserratSemiBold(size: 14))
-                                    .foregroundColor(AppTheme.Colors.cream)
+                                    .font(AppTheme.GeneratedTypography.buttonText())
+                                    .foregroundColor(AppTheme.GeneratedColors.cream)
                                     .frame(maxWidth: .infinity)
                                     .padding()
-                                    .background(Color.green)
-                                    .cornerRadius(8)
+                                    .background(AppTheme.GeneratedColors.success)
+                                    .cornerRadius(AppTheme.GeneratedRadius.button)
                             }
                             .padding(.top, 8)
                             
                             Button(action: { auth.debugForceAuthenticated() }) {
                                 Text("DEBUG: Force Auth State")
-                                    .font(Font.montserratSemiBold(size: 14))
-                                    .foregroundColor(AppTheme.Colors.cream)
+                                    .font(AppTheme.GeneratedTypography.buttonText())
+                                    .foregroundColor(AppTheme.GeneratedColors.cream)
                                     .frame(maxWidth: .infinity)
                                     .padding()
-                                    .background(Color.purple)
-                                    .cornerRadius(8)
+                                    .background(AppTheme.GeneratedColors.primary)
+                                    .cornerRadius(AppTheme.GeneratedRadius.button)
                             }
                             .padding(.top, 8)
                         }
@@ -221,12 +204,12 @@ struct LoginView: View {
                         // Register Link (Add NavigationLink later if needed)
                         HStack {
                             Text("Don't have an account?")
-                                .font(Font.montserratRegular(size: 14))
-                                .foregroundColor(AppTheme.Colors.tacticalGray)
+                                .font(AppTheme.GeneratedTypography.caption())
+                                .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
                             NavigationLink(destination: RegistrationView()) {
                                 Text("Register")
-                                    .font(Font.montserratSemiBold(size: 14))
-                                    .foregroundColor(AppTheme.Colors.brassGold)
+                                    .font(AppTheme.GeneratedTypography.caption())
+                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             }
                         }
                         .padding(.top, 8)
@@ -236,8 +219,8 @@ struct LoginView: View {
                     // Error message
                     if let errorMessage = auth.errorMessage {
                         Text(errorMessage)
-                            .font(Font.montserratRegular(size: 14))
-                            .foregroundColor(Color.red)
+                            .font(AppTheme.GeneratedTypography.caption())
+                            .foregroundColor(AppTheme.GeneratedColors.error)
                             .padding(.top, 16)
                     }
                     
@@ -247,7 +230,7 @@ struct LoginView: View {
                 .padding(.bottom, keyboardHeight)
             }
             .background(
-                LoginView.AppTheme.Colors.cream // Use defined theme color
+                AppTheme.GeneratedColors.cream
                     .ignoresSafeArea(.all)
             )
             .onTapGesture {
@@ -295,4 +278,5 @@ extension View {
 #Preview {
     LoginView()
         .environmentObject(AuthViewModel())
+        .environment(\.colorScheme, .light)
 } 

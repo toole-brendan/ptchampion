@@ -23,10 +23,13 @@ Design tokens are accessible via generated code:
 let primary = AppTheme.GeneratedColors.deepOps
 
 // Typography
-let heading = AppTheme.GeneratedTypography.heading(size: 24)
+let heading = AppTheme.GeneratedTypography.heading()
 
 // Spacing
 let padding = AppTheme.GeneratedSpacing.contentPadding
+
+// Radius
+let cornerRadius = AppTheme.GeneratedRadius.button
 ```
 
 ### In Web
@@ -89,4 +92,36 @@ The token pipeline works as follows:
 3. Auto-generated code is created for all platforms
 4. Import the generated code into your app
 
-The CI system automatically validates token changes to prevent drift between platforms. 
+The CI system automatically validates token changes to prevent drift between platforms.
+
+## Migration from Legacy System
+
+PT Champion originally used direct color references and hardcoded values. We've migrated to a generated token system for better consistency and maintainability:
+
+### Old Approach (Deprecated)
+
+```swift
+// DEPRECATED - Don't use these anymore!
+Text("Hello")
+    .foregroundColor(AppTheme.Colors.deepOps)
+    .font(.custom("BebasNeue-Bold", size: 24))
+    .padding(16)
+    .cornerRadius(8)
+```
+
+### New Approach (Current)
+
+```swift
+// RECOMMENDED - Use generated tokens
+Text("Hello")
+    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+    .font(AppTheme.GeneratedTypography.heading())
+    .padding(AppTheme.GeneratedSpacing.contentPadding)
+    .cornerRadius(AppTheme.GeneratedRadius.button)
+```
+
+This gives us several key benefits:
+- Dark mode support via adaptive color assets
+- Accessibility through dynamic type sizing
+- Consistent spacing and radii
+- Single source of truth with the web application 
