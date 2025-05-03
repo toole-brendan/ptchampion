@@ -73,7 +73,8 @@ class LeaderboardService: LeaderboardServiceProtocol {
             }
         } catch {
             logger.error("Error fetching global leaderboard: \(error.localizedDescription)")
-            throw error
+            // Return empty array on error instead of throwing
+            return []
         }
     }
 
@@ -124,7 +125,8 @@ class LeaderboardService: LeaderboardServiceProtocol {
             }
         } catch {
             logger.error("Error fetching local leaderboard: \(error.localizedDescription)")
-            throw error
+            // Return empty array on error instead of throwing
+            return []
         }
     }
     

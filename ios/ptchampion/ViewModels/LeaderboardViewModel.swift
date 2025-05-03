@@ -389,8 +389,12 @@ class LeaderboardViewModel: ObservableObject {
                         let locationResult: CLLocation?
                         do {
                             // Use a timeout to prevent waiting indefinitely for location
-                            let locationTask = Task { 
-                                try await locationService.getCurrentLocation() 
+                            let locationTask = Task<CLLocation?, Error> { 
+                                do {
+                                    return try await self.locationService.getCurrentLocation()
+                                } catch {
+                                    throw error
+                                }
                             }
                             
                             // Create a timeout task
@@ -400,11 +404,18 @@ class LeaderboardViewModel: ObservableObject {
                             }
                             
                             // Race the tasks
-                            if await timeoutTask.value {
-                                // Timeout occurred
+                            do {
+                                let timeoutResult = try await timeoutTask.value
+                                if timeoutResult {
+                                    // Timeout occurred
+                                    locationResult = nil
+                                } else {
+                                    locationResult = try await locationTask.value
+                                }
+                            } catch {
+                                // Handle error from locationTask or timeoutTask
                                 locationResult = nil
-                            } else {
-                                locationResult = try await locationTask.value
+                                self.logMessage("Error getting location: \(error.localizedDescription)", level: .error)
                             }
                         } catch {
                             locationResult = nil

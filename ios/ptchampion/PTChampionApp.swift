@@ -434,6 +434,9 @@ struct MainTabView: View {
     // Expose ComponentGallery in debug builds for design review
     @State private var showingComponentGallery = false
 
+    // StateObject for the leaderboard view model - keeps it alive
+    @StateObject private var leaderboardViewModel = LeaderboardViewModel()
+
     // Define Tabs Enum for clarity and type safety
     enum Tab {
         case dashboard
@@ -464,7 +467,7 @@ struct MainTabView: View {
                  .tag(Tab.workout)
 
             // Standard leaderboard view for all builds
-            LeaderboardView()
+            LeaderboardView(viewModel: leaderboardViewModel, viewId: UUID().uuidString.prefix(6).uppercased())
                 .tabItem {
                     Label("Leaders", systemImage: "list.star")
                 }
