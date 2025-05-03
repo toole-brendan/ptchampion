@@ -73,10 +73,16 @@ struct LeaderboardView: View {
                 
                 // Use a small delay to ensure UI is ready before starting data load
                 // This helps prevent freezes when rapidly switching tabs
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    if isViewActive { // Check if still active after delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak viewModel] in
+                    // Check both that the view is still active and that we still have a valid viewModel
+                    if isViewActive, let viewModel = viewModel {
                         print("🔍 LeaderboardView[\(viewId)]: Starting data load after short delay")
-                        viewModel.refreshData()
+                        Task {
+                            // Refresh inside a task to avoid blocking the main thread
+                            viewModel.refreshData()
+                        }
+                    } else {
+                        print("🔍 LeaderboardView[\(viewId)]: View inactive or viewModel released after delay, skipping refresh")
                     }
                 }
             } else {
@@ -94,14 +100,13 @@ struct LeaderboardView: View {
             // Mark view as inactive first to prevent new operations from starting
             isViewActive = false
             
-            // ADDED: Cancel any active tasks with the MainActor method
-            viewModel.cancelTasksFromMainActor()
-            
-            // Then clean up state with the isolated method
-            viewModel.cleanupAfterCancellation()
-            
-            // ADDED: Also reset UI state to default to avoid state inconsistency
-            viewModel.resetState()
+            // Cancel tasks and clean up viewModel state - be defensive about these calls
+            // so we don't freeze the UI
+            DispatchQueue.main.async { [weak viewModel] in
+                viewModel?.cancelTasksFromMainActor()
+                viewModel?.cleanupAfterCancellation()
+                viewModel?.resetState()
+            }
         }
     }
     

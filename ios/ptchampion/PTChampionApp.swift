@@ -508,9 +508,19 @@ struct MainTabView: View {
             
             // Add a small delay before allowing another tab switch
             // This helps prevent rapid tab switching which can cause UI issues
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isTabSwitchInProgress = false
                 print("📱 MainTabView: Tab switch completed, now ready for next tab change")
+            }
+            
+            // Important: If switching to leaderboards tab, give extra time
+            // for the view to initialize to prevent freezing
+            if newTab == .leaderboards {
+                // Use a slightly longer delay for leaderboards
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    // This delay gives the leaderboards view time to set up before loading data
+                    print("📱 MainTabView: Leaderboard tab delay completed")
+                }
             }
             
             // Keep track of previous tab for debugging

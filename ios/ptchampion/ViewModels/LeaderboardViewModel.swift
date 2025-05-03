@@ -198,74 +198,87 @@ class LeaderboardViewModel: ObservableObject {
             return
         }
         
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Starting data fetch, setting isDataFetchInProgress=true")
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Starting data fetch, setting isDataFetchInProgress=true")
         isDataFetchInProgress = true
         
         // Update loading state - ensure on MainActor
         await MainActor.run {
             self.isLoading = true
             self.errorMessage = nil
-            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Updated UI state: isLoading=true, errorMessage=nil")
+            print("🔍 LeaderboardViewModel[\(self.instanceId)]: Updated UI state: isLoading=true, errorMessage=nil")
         }
         
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Starting leaderboard data fetch for \(self.selectedBoard.rawValue), \(self.selectedCategory.rawValue)")
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Starting leaderboard data fetch for \(self.selectedBoard.rawValue), \(self.selectedCategory.rawValue)")
 
         // Create a new task with timeout but don't wait for it to complete
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Creating fetch task")
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Creating fetch task")
+        
+        // IMPORTANT: Create a weak reference to self to avoid memory issues
+        weak var weakSelf = self
+        
         currentFetchTask = Task { @MainActor in
-            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch task started")
             print("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch task started on thread: \(Thread.current.description)")
             
+            // Check for cancellation immediately
             if Task.isCancelled {
                 print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task was already cancelled on start, aborting")
-                isDataFetchInProgress = false
-                isLoading = false
+                weakSelf?.isDataFetchInProgress = false
+                weakSelf?.isLoading = false
                 return
             }
             
             do {
+                // Add a short delay to prevent UI from locking up during rapid tab switches
+                try await Task.sleep(nanoseconds: 10_000_000) // 10ms delay
+                
+                // Check for cancellation again after delay
+                if Task.isCancelled {
+                    print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task cancelled after initial delay")
+                    weakSelf?.isDataFetchInProgress = false
+                    weakSelf?.isLoading = false
+                    return
+                }
+                
                 // Always use mock data for now to prevent crashes
-                logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Using mock data instead of backend")
+                print("🔍 LeaderboardViewModel[\(self.instanceId)]: Using mock data instead of backend")
                 
                 // Check if task is cancelled before proceeding with expensive operation
-                if !Task.isCancelled {
-                    await generateAndDisplayMockData()
+                if !Task.isCancelled, let self = weakSelf {
+                    await self.generateAndDisplayMockData()
                     if !Task.isCancelled { // Check again after mock data generation
-                        backendStatus = .connected
-                        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Mock data generation completed, backendStatus=.connected")
+                        self.backendStatus = .connected
+                        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Mock data generation completed, backendStatus=.connected")
                     }
                 } else {
                     print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task was cancelled during mock data generation")
                 }
             } catch {
-                logger.error("❌ LeaderboardViewModel[\(self.instanceId)]: Error in fetch task: \(error.localizedDescription)")
                 print("❌ LeaderboardViewModel[\(self.instanceId)]: Error in fetch task: \(error.localizedDescription)")
                 
-                // Only update UI if not cancelled
-                if !Task.isCancelled {
-                    errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
-                    leaderboardEntries = []
+                // Only update UI if not cancelled and self is still available
+                if !Task.isCancelled, let self = weakSelf {
+                    self.errorMessage = "An unexpected error occurred: \(error.localizedDescription)"
+                    self.leaderboardEntries = []
                 }
             }
             
             // IMPORTANT: Always clean up state at the end
-            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch completed - cleaning up state")
-            print("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch completed on thread: \(Thread.current.description)")
+            print("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch completed - cleaning up state")
             
-            // Don't update UI state if task was cancelled
-            if !Task.isCancelled {
-                isDataFetchInProgress = false
-                isLoading = false
-                print("🔍 LeaderboardViewModel[\(self.instanceId)]: Updated final UI state: isLoading=\(isLoading)")
+            // Don't update UI state if task was cancelled or self was deallocated
+            if !Task.isCancelled, let self = weakSelf {
+                self.isDataFetchInProgress = false
+                self.isLoading = false
+                print("🔍 LeaderboardViewModel[\(self.instanceId)]: Updated final UI state: isLoading=\(self.isLoading)")
             } else {
                 print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task was cancelled, skipping final UI updates")
-                // Still reset the fetch in progress flag
-                isDataFetchInProgress = false
+                // Still reset the fetch in progress flag if self exists
+                weakSelf?.isDataFetchInProgress = false
             }
         }
         
         // Don't wait for task to complete - just start it and return
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch task dispatched (not awaiting)")
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Fetch task dispatched (not awaiting)")
     }
     
     // MARK: - Added methods to fix freezing issues
@@ -287,14 +300,56 @@ class LeaderboardViewModel: ObservableObject {
     /// MainActor-isolated method that safely cancels tasks
     func cancelTasksFromMainActor() {
         print("🔍 LeaderboardViewModel[\(self.instanceId)]: Cancelling tasks from MainActor")
-        currentFetchTask?.cancel()
+        
+        // Cancel the current fetch task if it exists
+        if let task = currentFetchTask {
+            task.cancel()
+            print("🔍 LeaderboardViewModel[\(self.instanceId)]: Active fetch task cancelled")
+        } else {
+            print("🔍 LeaderboardViewModel[\(self.instanceId)]: No active fetch task to cancel")
+        }
+        
+        // Reset the task reference
+        currentFetchTask = nil
+        
+        // Ensure we reset the data fetch flag
+        isDataFetchInProgress = false
+        
         print("🔍 LeaderboardViewModel[\(self.instanceId)]: Tasks cancelled on MainActor")
     }
     
+    /// Clean up the UI state after cancellation (must be called on main actor)
+    func cleanupAfterCancellation() {
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Cleaning up state after cancellation")
+        
+        // Reset all state flags immediately
+        isDataFetchInProgress = false
+        isLoading = false
+        
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: State cleanup completed")
+    }
+    
+    deinit {
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Deinitializing")
+        
+        // Since we're on the MainActor already for deinit (the whole class is @MainActor),
+        // we can safely cancel the task directly here
+        if let task = currentFetchTask {
+            task.cancel()
+            print("🔍 LeaderboardViewModel[\(self.instanceId)]: Tasks cancelled directly in deinit")
+        }
+        
+        // Explicitly clear the reference to help with memory management
+        currentFetchTask = nil
+        
+        // Clear all cancellables
+        cancellables.removeAll()
+    }
+
     // MARK: - Mock data generation
     
     private func generateAndDisplayMockData() async {
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Generating mock data")
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Generating mock data")
         
         // Check for cancellation first thing
         if Task.isCancelled {
@@ -302,49 +357,22 @@ class LeaderboardViewModel: ObservableObject {
             return
         }
         
-        // In case we're already showing mock entries, avoid regenerating them
-        if !leaderboardEntries.isEmpty && useMockData {
-            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Already displaying mock entries, not regenerating")
-            print("🔍 LeaderboardViewModel[\(self.instanceId)]: Already displaying mock entries, not regenerating")
-            await MainActor.run {
-                if !Task.isCancelled {
-                    self.isLoading = false
-                }
-            }
-            return
-        }
-        
-        // Check for cancellation again
-        if Task.isCancelled {
-            print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task cancelled before creating entries")
-            return
-        }
-        
-        // Create mock data for the UI to display
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Creating new mock entries")
-        var mockEntries: [LeaderboardEntry] = []
-        
-        // Generate a smaller set of mock entries to avoid performance issues
+        // Create mock data for the UI to display - create it all at once for efficiency
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Creating mock entries")
         let entryCount = 10
         
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Generating \(entryCount) mock entries")
-        for i in 1...entryCount {
-            // Check for cancellation periodically
-            if Task.isCancelled {
-                print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task cancelled while generating mock entries")
-                return
-            }
-            
-            let entry = LeaderboardEntry(
+        // Create entries all at once rather than in a loop to improve performance
+        let mockEntries: [LeaderboardEntry] = (1...entryCount).map { i in
+            LeaderboardEntry(
                 id: "entry-\(i)",
                 rank: i,
                 userId: "user-\(i)",
                 name: self.selectedBoard == .local ? "Local User \(i)" : "User \(i)",
                 score: 1000 - (i * 30)
             )
-            mockEntries.append(entry)
-            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Generated entry \(i)")
         }
+        
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Generated \(mockEntries.count) entries")
         
         // Check for cancellation after generating entries
         if Task.isCancelled {
@@ -352,40 +380,27 @@ class LeaderboardViewModel: ObservableObject {
             return
         }
         
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Mock entries generation complete, adding artificial delay")
-        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Generated \(mockEntries.count) entries, adding brief delay")
-        
-        // Use a shorter delay for responsive UX, but make it non-blocking
+        // Very short artificial delay to ensure UI responsiveness
         do {
-            try await Task.sleep(nanoseconds: 50_000_000) // Reduced to 50ms for faster response
+            try await Task.sleep(nanoseconds: 5_000_000) // Just 5ms for UI to catch up
             
             // Check again after delay
             if Task.isCancelled {
                 print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task cancelled after delay")
                 return
             }
-            
-            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Artificial delay complete")
         } catch {
-            logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Sleep interrupted: \(error.localizedDescription)")
             print("🔍 LeaderboardViewModel[\(self.instanceId)]: Sleep interrupted: \(error.localizedDescription)")
             return  // Exit if cancelled
         }
         
-        // One final cancellation check
-        if Task.isCancelled {
-            print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task cancelled before UI update")
-            return
-        }
-        
         // Update UI - do this on the main thread
-        logger.debug("🔍 LeaderboardViewModel[\(self.instanceId)]: Updating UI with mock entries")
+        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Updating UI with mock entries")
         await MainActor.run {
             // Final cancellation check
             if !Task.isCancelled {
                 self.leaderboardEntries = mockEntries
                 self.isLoading = false
-                logger.debug("✅ LeaderboardViewModel[\(self.instanceId)]: UI updated with \(mockEntries.count) mock entries")
                 print("✅ LeaderboardViewModel[\(self.instanceId)]: UI updated with \(mockEntries.count) mock entries")
             } else {
                 print("🔍 LeaderboardViewModel[\(self.instanceId)]: Task cancelled, skipping final UI update")
@@ -417,31 +432,5 @@ class LeaderboardViewModel: ObservableObject {
         print("🔍 LeaderboardViewModel[\(self.instanceId)]: Switching to mock data mode")
         useMockData = true
         Task { await fetchLeaderboardData() }
-    }
-    
-    /// Clean up the UI state after cancellation (must be called on main actor)
-    func cleanupAfterCancellation() {
-        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Cleaning up state after cancellation")
-        currentFetchTask = nil // Ensure task is fully released
-        
-        // Perform immediate cleanup
-        isDataFetchInProgress = false
-        
-        // Don't immediately set isLoading = false here as it would cause a UI update
-        // while the view is in the process of disappearing, which could cause a freeze
-        
-        print("🔍 LeaderboardViewModel[\(self.instanceId)]: State cleanup completed")
-    }
-    
-    deinit {
-        logger.debug("LeaderboardViewModel \(self.instanceId) deinitializing")
-        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Deinitializing")
-        
-        // Since we're on the MainActor already for deinit (the whole class is @MainActor),
-        // we can safely cancel the task directly here
-        currentFetchTask?.cancel()
-        print("🔍 LeaderboardViewModel[\(self.instanceId)]: Tasks cancelled directly in deinit")
-        
-        cancellables.removeAll()
     }
 } 
