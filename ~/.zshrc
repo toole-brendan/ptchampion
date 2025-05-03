@@ -14,3 +14,6 @@ gitsave() {
   
   echo "\n✅ Done!"
 } 
+
+# Short alias for running gitsave.sh
+alias gsv="/Users/brendantoole/projects/ptchampion/gitsave.sh" 
