@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 struct DashboardView: View {
     // Keep track of the constants we need
@@ -11,32 +12,23 @@ struct DashboardView: View {
         NavigationView { // Each tab can have its own navigation stack
             ScrollView {
                 VStack(alignment: .leading, spacing: Self.cardGap) {
-                    Text("Dashboard")
-                        .font(AppTheme.GeneratedTypography.heading())
-                        .fontWeight(.bold)
+                    PTLabel("Dashboard", style: .heading)
                         .padding(.bottom)
 
                     // Placeholder content - replace with actual dashboard components
-                    Text("Quick Stats")
-                        .font(AppTheme.GeneratedTypography.subheading())
+                    PTLabel("Quick Stats", style: .subheading)
                     HStack {
                         MetricCard(label: "Recent Pushups", value: "45")
                         MetricCard(label: "Avg Run Pace", value: "8:15/mi")
                     }
 
-                    Text("Start Workout")
-                        .font(AppTheme.GeneratedTypography.subheading())
+                    PTLabel("Start Workout", style: .subheading)
                         .padding(.top)
-                    Button("Begin New Session") {
+                    
+                    PTButton("Begin New Session") {
                         // TODO: Navigate to workout selection
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(AppTheme.GeneratedColors.primary)
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .font(AppTheme.GeneratedTypography.buttonText())
-                    .cornerRadius(AppTheme.GeneratedRadius.button)
-
+                    
                     Spacer()
                 }
                 .padding(Self.globalPadding)
@@ -54,19 +46,15 @@ struct MetricCard: View {
     let value: String
 
     var body: some View {
-        VStack(alignment: .leading) {
-            Text(label)
-                .font(AppTheme.GeneratedTypography.caption())
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-            Text(value)
-                .font(AppTheme.GeneratedTypography.title())
-                .fontWeight(.medium)
+        PTCard {
+            VStack(alignment: .leading) {
+                PTLabel(label, style: .caption)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                
+                PTLabel(value, style: .heading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
-        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
     }
 }
 

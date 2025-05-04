@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 struct Badge: View {
     enum Variant {
@@ -10,25 +11,25 @@ struct Badge: View {
         
         var backgroundColor: Color {
             switch self {
-            case .primary: return .brassGold
-            case .secondary: return .armyTan
+            case .primary: return AppTheme.GeneratedColors.primary
+            case .secondary: return AppTheme.GeneratedColors.secondary
             case .outline: return .clear
-            case .destructive: return LegacyColor.fromHex("#DC2626") // red-600 from Tailwind
-            case .success: return LegacyColor.fromHex("#10B981") // emerald-500 from Tailwind
+            case .destructive: return AppTheme.GeneratedColors.error
+            case .success: return AppTheme.GeneratedColors.success
             }
         }
         
         var textColor: Color {
             switch self {
-            case .primary, .destructive, .success: return .white
-            case .secondary: return .commandBlack
-            case .outline: return .brassGold
+            case .primary, .destructive, .success: return AppTheme.GeneratedColors.textOnPrimary
+            case .secondary: return AppTheme.GeneratedColors.textPrimary
+            case .outline: return AppTheme.GeneratedColors.primary
             }
         }
         
         var borderColor: Color? {
             switch self {
-            case .outline: return .brassGold
+            case .outline: return AppTheme.GeneratedColors.primary
             default: return nil
             }
         }
@@ -45,7 +46,7 @@ struct Badge: View {
     }
     
     var body: some View {
-        HStack(spacing: AppConstants.Spacing.xs) {
+        HStack(spacing: AppTheme.GeneratedSpacing.extraSmall) {
             if let icon = icon {
                 icon
                     .resizable()
@@ -53,17 +54,16 @@ struct Badge: View {
                     .frame(width: 12, height: 12)
             }
             
-            Text(text)
-                .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.xs))
+            PTLabel(text, style: .bodyBold, size: .small)
                 .lineLimit(1)
         }
-        .padding(.horizontal, AppConstants.Spacing.sm)
-        .padding(.vertical, AppConstants.Spacing.xs)
+        .padding(.horizontal, AppTheme.GeneratedSpacing.small)
+        .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
         .background(variant.backgroundColor)
         .foregroundColor(variant.textColor)
-        .cornerRadius(AppConstants.Radius.full)
+        .cornerRadius(AppTheme.GeneratedRadius.full)
         .overlay(
-            RoundedRectangle(cornerRadius: AppConstants.Radius.full)
+            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.full)
                 .stroke(variant.borderColor ?? Color.clear, lineWidth: variant.borderColor != nil ? 1 : 0)
         )
     }
@@ -89,28 +89,44 @@ extension Badge {
 // Preview
 struct Badge_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(alignment: .leading, spacing: AppConstants.Spacing.md) {
-            HStack(spacing: AppConstants.Spacing.lg) {
-                Badge(text: "Primary")
-                Badge(text: "Secondary", variant: .secondary)
-                Badge(text: "Outline", variant: .outline)
+        Group {
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                    Badge(text: "Primary")
+                    Badge(text: "Secondary", variant: .secondary)
+                    Badge(text: "Outline", variant: .outline)
+                }
+                
+                HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                    Badge(text: "Destructive", variant: .destructive)
+                    Badge(text: "Success", variant: .success)
+                }
+                
+                HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                    Badge(text: "With Icon", icon: Image(systemName: "checkmark.circle.fill"))
+                    Badge.status("Active", isActive: true)
+                    Badge.status("Inactive", isActive: false)
+                    Badge.count(5)
+                }
             }
+            .padding()
+            .background(AppTheme.GeneratedColors.background.opacity(0.5))
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Light Mode")
             
-            HStack(spacing: AppConstants.Spacing.lg) {
-                Badge(text: "Destructive", variant: .destructive)
-                Badge(text: "Success", variant: .success)
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                    Badge(text: "Primary")
+                    Badge(text: "Secondary", variant: .secondary)
+                    Badge(text: "Outline", variant: .outline)
+                }
             }
-            
-            HStack(spacing: AppConstants.Spacing.lg) {
-                Badge(text: "With Icon", icon: Image(systemName: "checkmark.circle.fill"))
-                Badge.status("Active", isActive: true)
-                Badge.status("Inactive", isActive: false)
-                Badge.count(5)
-            }
+            .padding()
+            .background(AppTheme.GeneratedColors.background.opacity(0.5))
+            .previewLayout(.sizeThatFits)
+            .environment(\.colorScheme, .dark)
+            .previewDisplayName("Dark Mode")
         }
-        .padding()
-        .background(Color.tacticalCream.opacity(0.5))
-        .previewLayout(.sizeThatFits)
     }
 }
 

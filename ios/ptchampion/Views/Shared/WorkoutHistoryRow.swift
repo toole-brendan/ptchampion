@@ -27,8 +27,8 @@ struct WorkoutHistoryRow: View {
     
     // Simple style for labels - inline instead of extension
     private func applyLabelStyle(to text: Text) -> some View {
-        text.font(.subheadline)
-            .foregroundColor(Color.gray)
+        text.font(AppTheme.GeneratedTypography.caption())
+            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
     }
 
     var body: some View {
@@ -38,14 +38,14 @@ struct WorkoutHistoryRow: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 35, height: 35)
-                .foregroundColor(.brassGold)
-                .padding(.trailing, 8)
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .padding(.trailing, AppTheme.GeneratedSpacing.itemSpacing)
 
             VStack(alignment: .leading) {
                  // TODO: Display actual exercise name
                 Text(result.exerciseType.capitalized) // Show exercise type
-                    .font(.headline)
-                    .foregroundColor(.commandBlack)
+                    .font(AppTheme.GeneratedTypography.subheading())
+                    .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                 applyLabelStyle(to: Text("\(result.startTime, formatter: Self.dateFormatter)"))
             }
 
@@ -54,8 +54,8 @@ struct WorkoutHistoryRow: View {
             VStack(alignment: .trailing) {
                  // TODO: Format duration based on timeInSeconds from SwiftData model
                  Text(formatDuration(result.durationSeconds))
-                     .font(.headline)
-                     .foregroundColor(.commandBlack)
+                     .font(AppTheme.GeneratedTypography.subheading())
+                     .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                 // Display reps/score or distance based on type
                 if let reps = result.repCount {
                     applyLabelStyle(to: Text("\(reps) reps"))
@@ -67,7 +67,9 @@ struct WorkoutHistoryRow: View {
                  }
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing / 2)
+        .background(AppTheme.GeneratedColors.cardBackground)
+        .cornerRadius(AppTheme.GeneratedRadius.card)
     }
 }
 
@@ -86,7 +88,7 @@ extension String {
 
 
 // Preview requires a ModelContainer setup
-#Preview {
+#Preview("Light Mode") {
     // Create an in-memory container and sample data
     let previewContainer: ModelContainer = {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
@@ -110,4 +112,26 @@ extension String {
         WorkoutHistoryRow(result: try! previewContainer.mainContext.fetch(FetchDescriptor<WorkoutResultSwiftData>()).first ?? WorkoutResultSwiftData(exerciseType: "fallback", startTime: Date(), endTime: Date(), durationSeconds: 0))
     }
     .modelContainer(previewContainer)
+    .environment(\.colorScheme, .light)
+}
+
+#Preview("Dark Mode") {
+    // Create an in-memory container and sample data
+    let previewContainer: ModelContainer = {
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(for: WorkoutResultSwiftData.self, configurations: config)
+
+        // Add sample data
+        let samplePushups = WorkoutResultSwiftData(exerciseType: "pushup", startTime: Date().addingTimeInterval(-86400), endTime: Date().addingTimeInterval(-86300), durationSeconds: 100, repCount: 25, score: 85)
+        container.mainContext.insert(samplePushups)
+        
+        return container
+    }()
+    
+    // Return the preview view
+    return List {
+        WorkoutHistoryRow(result: try! previewContainer.mainContext.fetch(FetchDescriptor<WorkoutResultSwiftData>()).first ?? WorkoutResultSwiftData(exerciseType: "fallback", startTime: Date(), endTime: Date(), durationSeconds: 0))
+    }
+    .modelContainer(previewContainer)
+    .environment(\.colorScheme, .dark)
 } 

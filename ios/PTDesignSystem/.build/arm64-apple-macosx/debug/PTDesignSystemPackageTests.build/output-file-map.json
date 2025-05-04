@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.build/runner.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.build/runner.swiftdeps"
+  }
+}

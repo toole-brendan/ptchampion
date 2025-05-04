@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import PTDesignSystem
 
 struct WorkoutHistoryView: View {
     @Environment(\.modelContext) private var modelContext
@@ -9,24 +10,34 @@ struct WorkoutHistoryView: View {
 
     var body: some View {
         NavigationView {
-            List {
-                if workoutResults.isEmpty {
-                    ContentUnavailableView(
-                        "No Workouts Yet",
-                        systemImage: "figure.run.circle",
-                        description: Text("Complete a workout to see your history here.")
-                    )
-                } else {
-                    ForEach(workoutResults) { result in
-                        WorkoutHistoryRow(result: result)
+            ZStack {
+                AppTheme.GeneratedColors.background.ignoresSafeArea()
+                
+                List {
+                    if workoutResults.isEmpty {
+                        ContentUnavailableView(
+                            "No Workouts Yet",
+                            systemImage: "figure.run.circle",
+                            description: PTLabel("Complete a workout to see your history here.", style: .body)
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        )
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    } else {
+                        ForEach(workoutResults) { result in
+                            WorkoutHistoryRow(result: result)
+                        }
+                        .onDelete(perform: deleteWorkout)
                     }
-                    .onDelete(perform: deleteWorkout)
                 }
+                .listStyle(PlainListStyle())
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Workout History")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                  // Add EditButton to enable swipe-to-delete
                  EditButton()
+                    .tint(AppTheme.GeneratedColors.brassGold)
             }
         }
     }
@@ -69,14 +80,23 @@ private func createSampleDataContainer() -> ModelContainer {
 }
 
 // Preview using the helper function
-#Preview {
+#Preview("Light Mode") {
     WorkoutHistoryView()
         .modelContainer(createSampleDataContainer())
+        .environment(\.colorScheme, .light)
+}
+
+#Preview("Dark Mode") {
+    WorkoutHistoryView()
+        .modelContainer(createSampleDataContainer())
+        .environment(\.colorScheme, .dark)
 }
 
 // Example Row Preview (Doesn't need a container)
 #Preview("Workout Row") {
      let sampleRun = WorkoutResultSwiftData(exerciseType: "run", startTime: Date().addingTimeInterval(-3600), endTime: Date().addingTimeInterval(-100), durationSeconds: 2600, distanceMeters: 5012.5)
     WorkoutHistoryRow(result: sampleRun)
-        .padding()
+        .padding(AppTheme.GeneratedSpacing.contentPadding)
+        .background(AppTheme.GeneratedColors.cardBackground)
+        .cornerRadius(AppTheme.GeneratedRadius.card)
 } 

@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import PTDesignSystem
 
 struct RegistrationView: View {
     @EnvironmentObject private var auth: AuthViewModel
@@ -25,7 +26,7 @@ struct RegistrationView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
+            VStack(spacing: AppTheme.GeneratedSpacing.contentGap) {
                 // Logo
                 Image(uiImage: UIImage(named: "pt_champion_logo") ?? 
                       (Bundle.main.path(forResource: "pt_champion_logo", ofType: "png").flatMap { UIImage(contentsOfFile: $0) }) ?? 
@@ -33,103 +34,99 @@ struct RegistrationView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
-                    .foregroundColor(Color("BrassGold"))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     .padding(.top, 40)
                 
-                Text("Create Account")
-                    .font(.custom("BebasNeue-Bold", size: 36))
-                    .foregroundColor(Color("CommandBlack"))
+                PTLabel("Create Account", style: .heading)
+                    .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                     .padding(.bottom, 10)
                 
                 // Form fields with consistent styling
-                VStack(spacing: 16) {
+                VStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
                     PTTextField(
-                        placeholder: "First Name",
+                        "First Name",
                         text: $firstName
                     )
                     
                     PTTextField(
-                        placeholder: "Last Name",
+                        "Last Name",
                         text: $lastName
                     )
                     
                     PTTextField(
-                        placeholder: "Email",
-                        text: $email,
-                        keyboardType: .emailAddress
+                        "Email",
+                        text: $email
                     )
+                    .keyboardType(.emailAddress)
+                    .autocapitalization(.none)
                     
                     PTTextField(
-                        placeholder: "Password",
+                        "Password",
                         text: $password,
                         isSecure: true
                     )
                     .onChange(of: password) { _, _ in validatePasswords() }
                     
                     PTTextField(
-                        placeholder: "Confirm Password",
+                        "Confirm Password",
                         text: $confirmPassword,
                         isSecure: true
                     )
                     .onChange(of: confirmPassword) { _, _ in validatePasswords() }
                     
                     if passwordMismatch {
-                        Text("Passwords do not match.")
-                            .foregroundColor(.red)
-                            .font(.caption)
+                        PTLabel("Passwords do not match.", style: .caption)
+                            .foregroundColor(AppTheme.GeneratedColors.error)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                     }
                     
                     if let errorMessage = auth.errorMessage {
-                        Text(errorMessage)
-                            .foregroundColor(.red)
-                            .font(.caption)
+                        PTLabel(errorMessage, style: .caption)
+                            .foregroundColor(AppTheme.GeneratedColors.error)
                             .padding(.top, 5)
                     }
                     
                     if let successMessage = auth.successMessage {
-                         Text(successMessage)
-                             .foregroundColor(.green)
-                             .font(.caption)
-                             .padding(.top, 5)
+                        PTLabel(successMessage, style: .caption)
+                            .foregroundColor(AppTheme.GeneratedColors.success)
+                            .padding(.top, 5)
                     }
                     
                     // Register button
-                    Button(action: {
-                        auth.errorMessage = nil
-                        isLoading = true
-                        
-                        // Create display name from first and last name
-                        let displayName = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespacesAndNewlines)
-                        
-                        if validatePasswords() {
-                            auth.register(username: email,
-                                                  password: password,
-                                                  displayName: displayName)
-                        }
-                        
-                        // Add haptic feedback
-                        let generator = UINotificationFeedbackGenerator()
-                        generator.notificationOccurred(.success)
-                    }) {
-                        if auth.isLoading {
+                    if auth.isLoading {
+                        Button(action: {}) {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: Color("Cream")))
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                        } else {
-                            Text("CREATE ACCOUNT")
-                                .font(.custom("Montserrat-Bold", size: 16))
-                                .foregroundColor(Color("Cream"))
+                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.cream))
                                 .frame(maxWidth: .infinity)
                                 .padding()
                         }
+                        .frame(maxWidth: .infinity)
+                        .background(Color.gray)
+                        .cornerRadius(AppTheme.GeneratedRadius.button)
+                        .disabled(true)
+                    } else {
+                        PTButton("CREATE ACCOUNT") {
+                            auth.errorMessage = nil
+                            isLoading = true
+                            
+                            // Create display name from first and last name
+                            let displayName = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespacesAndNewlines)
+                            
+                            if validatePasswords() {
+                                auth.register(username: email,
+                                           password: password,
+                                           displayName: displayName)
+                            }
+                            
+                            // Add haptic feedback
+                            let generator = UINotificationFeedbackGenerator()
+                            generator.notificationOccurred(.success)
+                        }
+                        .disabled(!isFormValid)
+                        .opacity(isFormValid ? 1.0 : 0.5)
+                        .padding(.top, 10)
                     }
-                    .background(isFormValid ? Color("BrassGold") : Color.gray.opacity(0.5))
-                    .cornerRadius(8)
-                    .disabled(!isFormValid || auth.isLoading)
-                    .padding(.top, 10)
                     
                     // Back to login button
                     Button(action: {
@@ -139,21 +136,20 @@ struct RegistrationView: View {
                         HStack {
                             Image(systemName: "arrow.left")
                                 .font(.caption)
-                            Text("Back to Login")
-                                .font(.custom("Montserrat-Medium", size: 14))
+                            PTLabel("Back to Login", style: .caption)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         }
-                        .foregroundColor(Color("BrassGold"))
                     }
                     .padding(.top, 8)
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                 
                 Spacer()
             }
             .frame(minHeight: UIScreen.main.bounds.height - keyboardHeight)
             .padding(.bottom, keyboardHeight)
         }
-        .background(Color("Cream").ignoresSafeArea())
+        .background(AppTheme.GeneratedColors.cream.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .onTapGesture {
             hideKeyboard()
@@ -207,5 +203,14 @@ struct RegistrationView: View {
     NavigationView {
         RegistrationView()
             .environmentObject(AuthViewModel())
+            .environment(\.colorScheme, .light)
+    }
+}
+
+#Preview("Dark Mode") {
+    NavigationView {
+        RegistrationView()
+            .environmentObject(AuthViewModel())
+            .environment(\.colorScheme, .dark)
     }
 } 

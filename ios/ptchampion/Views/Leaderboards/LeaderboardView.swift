@@ -3,6 +3,7 @@ import CoreLocation // For CLAuthorizationStatus
 import UIKit // For UIApplication
 import os.log
 import Combine
+import PTDesignSystem
 // Import shared views directly since they are not in separate modules
 // import LeaderboardRow
 // import LeaderboardRowPlaceholder
@@ -43,32 +44,6 @@ struct LeaderboardView: View {
     @State private var viewLifetimeSeconds: TimeInterval = 0
     @State private var viewAnalyticsTimer: Timer? = nil
 
-    // Remove the init() method as the ViewModel is injected
-    /*
-    // Apply appearance changes in init
-    init() {
-        // Create a simpler ID for tracking
-        let tempId = String(UUID().uuidString.prefix(6))
-        self.viewId = tempId
-        
-        // Log initialization with the ID - use local copy to avoid capturing self
-        print("🏆 LeaderboardView: init \(tempId)")
-        logger.debug("LeaderboardView init \(tempId)")
-        
-        // Create the StateObject with fully safe configuration
-        // ALWAYS use mock data initially to prevent freezing issues
-        // We'll switch to real data later after the UI has rendered
-        let model = LeaderboardViewModel(
-            useMockData: true,      // Always start with mock data for immediate feedback
-            autoLoadData: false     // Always disable auto-load to prevent freezes
-        )
-        self._viewModel = StateObject(wrappedValue: model)
-        
-        // Configure UI appearance - moved out of init to reduce complexity
-        LeaderboardView.configureSegmentedControlAppearance()
-    }
-    */
-
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
@@ -102,15 +77,12 @@ struct LeaderboardView: View {
                 // Debug information in DEBUG builds
                 #if DEBUG
                 HStack {
-                    Text("View ID: \(viewId)")
-                        .font(.caption2)
+                    PTLabel("View ID: \(viewId)", style: .caption)
                     Spacer()
-                    Text("Time: \(Int(viewLifetimeSeconds))s")
-                        .font(.caption2)
+                    PTLabel("Time: \(Int(viewLifetimeSeconds))s", style: .caption)
                 }
                 .padding(.horizontal)
-                .font(.caption2)
-                .foregroundColor(.gray)
+                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                 #endif
 
                 // Use a simple switch statement with fixed height containers
@@ -129,7 +101,7 @@ struct LeaderboardView: View {
                     leaderboardListView()
                 }
             }
-            .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea())
+            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
             .navigationTitle("Leaderboards")
             .navigationBarTitleDisplayMode(.inline)
             // Use onAppear for initial data load instead of task
@@ -230,45 +202,41 @@ struct LeaderboardView: View {
     
     @ViewBuilder
     private func headerView() -> some View {
-        Text("Leaderboard")
-            .font(.title)
-            .fontWeight(.bold)
+        PTLabel("Leaderboard", style: .heading)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding([.horizontal, .bottom])
     }
     
     @ViewBuilder
     private func loadingView() -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppTheme.GeneratedSpacing.large) {
             // Use a simple activity indicator instead of ProgressView
             Text("⏳")
                 .font(.system(size: 70))
-                .padding(.bottom, 10)
+                .padding(.bottom, AppTheme.GeneratedSpacing.small)
                 
-            Text("Loading leaderboard data...")
-                .foregroundColor(.secondary)
+            PTLabel("Loading leaderboard data...", style: .body)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
         }
         .padding()
     }
     
     @ViewBuilder
     private func emptyStateView() -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
             // Use text instead of image to avoid image loading issues
             Text("🏆")
                 .font(.system(size: 70))
-                .padding(.bottom, 10)
+                .padding(.bottom, AppTheme.GeneratedSpacing.small)
 
-            Text("No rankings found for this leaderboard.")
-                .font(.headline)
-                .foregroundStyle(.secondary)
+            PTLabel("No rankings found for this leaderboard.", style: .subheading)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
 
-            Text(viewModel.selectedBoard == .local
+            PTLabel(viewModel.selectedBoard == .local
                  ? "Try changing to Global scope or completing an exercise nearby."
-                 : "Complete your first workout to get on the board.")
-                .font(.subheadline)
+                 : "Complete your first workout to get on the board.", style: .body)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                 .padding(.horizontal)
         }
         .padding()
@@ -276,23 +244,22 @@ struct LeaderboardView: View {
     
     @ViewBuilder
     private func errorView(message: String) -> some View {
-        VStack(spacing: 20) {
+        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
             // Use text instead of system image to avoid issues
             Text(viewModel.backendStatus == .noActiveUsers ? "👥" : "⚠️")
                 .font(.system(size: 70))
-                .padding(.bottom, 10)
+                .padding(.bottom, AppTheme.GeneratedSpacing.small)
             
-            Text(message)
+            PTLabel(message, style: .body)
                 .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                 .padding(.horizontal)
             
             // Special message for no users case
             if case .noActiveUsers = viewModel.backendStatus {
-                Text("The Azure database doesn't have any active users yet. When users start completing workouts, they'll appear here!")
-                    .font(.caption)
+                PTLabel("The Azure database doesn't have any active users yet. When users start completing workouts, they'll appear here!", style: .caption)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     .padding(.horizontal)
             }
             
@@ -301,19 +268,14 @@ struct LeaderboardView: View {
                (locationPermissionStatus == .denied || 
                 locationPermissionStatus == .restricted) {
                 
-                Button("Open Settings") {
+                PTButton("Open Settings") {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(Color.blue)
-                .foregroundColor(.white)
-                .cornerRadius(8)
             }
             
-            Button("Retry") {
+            PTButton("Retry", style: .secondary) {
                 // Just use fetch to reload
                 if isViewActive { // Only refresh if view is active
                     Task {
@@ -321,12 +283,7 @@ struct LeaderboardView: View {
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color.green)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            .padding(.top, 8)
+            .padding(.top, AppTheme.GeneratedSpacing.small)
         }
         .padding(.horizontal)
     }
@@ -342,51 +299,47 @@ struct LeaderboardView: View {
                         // Create a placeholder row inline
                         HStack {
                             // Rank - simplified to avoid image loading issues
-                            Text("\(i+1)")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.gray.opacity(0.5))
+                            PTLabel("\(i+1)", style: .bodyBold)
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary.opacity(0.5))
                                 .frame(width: 36)
                             
                             // Name
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.gray.opacity(0.2))
+                            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
+                                .fill(AppTheme.GeneratedColors.textSecondary.opacity(0.2))
                                 .frame(width: 120, height: 16)
                                 .padding(.leading, 8)
                             
                             Spacer()
                             
                             // Score
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.gray.opacity(0.2))
+                            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
+                                .fill(AppTheme.GeneratedColors.textSecondary.opacity(0.2))
                                 .frame(width: 50, height: 16)
                         }
                         .padding(.horizontal, Constants.globalPadding)
                         .padding(.vertical, 8)
-                        .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+                        .background(AppTheme.GeneratedColors.background)
                         .id("placeholder-\(i)")
                     }
                 } else {
                     ForEach(viewModel.leaderboardEntries) { entry in
-                        HStack {
-                            // Rank - simplified to avoid image loading issues
-                            Text(entry.rank <= 3 ? "🥇" : "\(entry.rank)")
-                                .font(.system(size: 16, weight: .bold))
-                                .frame(width: 36)
-                            
-                            Text(entry.name)
-                                .font(.body)
-                                .foregroundColor(.primary)
-                            
-                            Spacer()
-                            
-                            Text("\(entry.score) pts")
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundColor(.primary)
-                                .fontWeight(.bold)
+                        PTCard {
+                            HStack {
+                                // Rank - simplified to avoid image loading issues
+                                PTLabel(entry.rank <= 3 ? "🥇" : "\(entry.rank)", style: .bodyBold)
+                                    .frame(width: 36)
+                                
+                                PTLabel(entry.name, style: .body)
+                                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                                
+                                Spacer()
+                                
+                                PTLabel("\(entry.score) pts", style: .bodyBold, font: .monospaced)
+                                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            }
                         }
-                        .padding(.horizontal, Constants.globalPadding)
-                        .padding(.vertical, 8)
-                        .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+                        .padding(.horizontal, AppTheme.GeneratedSpacing.small)
+                        .padding(.vertical, 4)
                         .id(entry.id)
                     }
                 }
@@ -437,4 +390,15 @@ struct LeaderboardView: View {
     let previewViewModel = LeaderboardViewModel() 
     // Provide a dummy viewId for the preview
     LeaderboardView(viewModel: previewViewModel, viewId: "PREVIEW")
+        .environment(\.colorScheme, .light)
+        .previewDisplayName("Light Mode")
+}
+
+#Preview {
+    // Create a temporary ViewModel just for the preview
+    let previewViewModel = LeaderboardViewModel() 
+    // Provide a dummy viewId for the preview
+    LeaderboardView(viewModel: previewViewModel, viewId: "PREVIEW")
+        .environment(\.colorScheme, .dark)
+        .previewDisplayName("Dark Mode")
 } 

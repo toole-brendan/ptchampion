@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import PTDesignSystem
 
 // Font extensions
 extension Font {
@@ -90,8 +91,7 @@ struct LoginView: View {
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         } else {
                             // Fallback to text if image is missing
-                            Text("PT CHAMPION")
-                                .font(AppTheme.GeneratedTypography.heading())
+                            PTLabel("PT CHAMPION", style: .heading)
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                 .frame(width: 120, height: 120)
                                 .onAppear {
@@ -106,109 +106,86 @@ struct LoginView: View {
                     }
                     
                     // Welcome Text
-                    Text("Welcome Back")
-                        .font(AppTheme.GeneratedTypography.heading())
+                    PTLabel("Welcome Back", style: .heading)
                         .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                         .padding(.top, 10)
                     
                     // Form Fields
                     VStack(spacing: 16) {
                         PTTextField(
-                            placeholder: "Email",
-                            text: $email,
-                            keyboardType: .emailAddress
+                            "Email",
+                            text: $email
                         )
+                        .keyboardType(.emailAddress)
+                        .autocapitalization(.none)
                         
                         PTTextField(
-                            placeholder: "Password",
+                            "Password",
                             text: $password,
                             isSecure: true
                         )
+                        .autocapitalization(.none)
                         
                         // Login Button
-                        Button(action: {
-                            auth.errorMessage = nil // Clear error before login
-                            print("DEBUG: Login button tapped for email: \(email)")
-                            
-                            // Ensure we're using the async Task correctly
-                            Task {
-                                do {
-                                    await auth.login(email: email, password: password)
-                                } catch {
-                                    print("Login error caught in view: \(error)")
-                                }
-                            }
-                        }) {
-                            if auth.isLoading {
+                        if auth.isLoading {
+                            Button(action: {}) {
                                 ProgressView()
                                     .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.cream))
-                            } else {
-                                Text("Log In")
-                                    .font(AppTheme.GeneratedTypography.buttonText())
-                                    .foregroundColor(AppTheme.GeneratedColors.cream)
                                     .frame(maxWidth: .infinity)
                                     .padding()
                             }
+                            .frame(maxWidth: .infinity)
+                            .background(Color.gray)
+                            .cornerRadius(AppTheme.GeneratedRadius.button)
+                            .disabled(true)
+                        } else {
+                            PTButton("Log In") {
+                                auth.errorMessage = nil // Clear error before login
+                                print("DEBUG: Login button tapped for email: \(email)")
+                                
+                                // Ensure we're using the async Task correctly
+                                Task {
+                                    do {
+                                        await auth.login(email: email, password: password)
+                                    } catch {
+                                        print("Login error caught in view: \(error)")
+                                    }
+                                }
+                            }
+                            .disabled(email.isEmpty || password.isEmpty)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(auth.isLoading ? Color.gray : AppTheme.GeneratedColors.brassGold)
-                        .cornerRadius(AppTheme.GeneratedRadius.button)
-                        .disabled(auth.isLoading || email.isEmpty || password.isEmpty)
                         
                         // Debug buttons only in dev mode
                         if showDevOptions {
-                            Button(action: { 
+                            PTButton("Check Auth State", style: .secondary) {
                                 authDebugText = "Current auth state: \(auth.authState.isAuthenticated ? "authenticated" : "unauthenticated")"
                                 print("DEBUG: Current auth state from LoginView diagnostic button: \(auth.authState)")
-                            }) {
-                                Text("Check Auth State")
-                                    .font(AppTheme.GeneratedTypography.buttonText())
-                                    .foregroundColor(AppTheme.GeneratedColors.cream)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(AppTheme.GeneratedColors.info)
-                                    .cornerRadius(AppTheme.GeneratedRadius.button)
                             }
                             .padding(.top, 8)
                             
-                            Text(authDebugText)
-                                .font(AppTheme.GeneratedTypography.body())
+                            PTLabel(authDebugText, style: .body)
                                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                                 .padding(.top, 8)
                         
                             // Dev bypass buttons
-                            Button(action: { auth.loginAsDeveloper() }) {
-                                Text("DEV: Bypass Login")
-                                    .font(AppTheme.GeneratedTypography.buttonText())
-                                    .foregroundColor(AppTheme.GeneratedColors.cream)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(AppTheme.GeneratedColors.success)
-                                    .cornerRadius(AppTheme.GeneratedRadius.button)
+                            PTButton("DEV: Bypass Login", style: .secondary) {
+                                auth.loginAsDeveloper()
                             }
                             .padding(.top, 8)
                             
-                            Button(action: { auth.debugForceAuthenticated() }) {
-                                Text("DEBUG: Force Auth State")
-                                    .font(AppTheme.GeneratedTypography.buttonText())
-                                    .foregroundColor(AppTheme.GeneratedColors.cream)
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
-                                    .background(AppTheme.GeneratedColors.primary)
-                                    .cornerRadius(AppTheme.GeneratedRadius.button)
+                            PTButton("DEBUG: Force Auth State", style: .primary) {
+                                auth.debugForceAuthenticated()
                             }
                             .padding(.top, 8)
                         }
                         
                         // Register Link (Add NavigationLink later if needed)
                         HStack {
-                            Text("Don't have an account?")
-                                .font(AppTheme.GeneratedTypography.caption())
+                            PTLabel("Don't have an account?", style: .caption)
                                 .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                            
                             NavigationLink(destination: RegistrationView()) {
-                                Text("Register")
-                                    .font(AppTheme.GeneratedTypography.caption())
+                                PTLabel("Register", style: .caption)
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             }
                         }
@@ -218,8 +195,7 @@ struct LoginView: View {
                     
                     // Error message
                     if let errorMessage = auth.errorMessage {
-                        Text(errorMessage)
-                            .font(AppTheme.GeneratedTypography.caption())
+                        PTLabel(errorMessage, style: .caption)
                             .foregroundColor(AppTheme.GeneratedColors.error)
                             .padding(.top, 16)
                     }

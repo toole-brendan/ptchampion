@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 /// Toast notification types
 enum ToastType {
@@ -47,7 +48,7 @@ struct Toast: View {
     var onDismiss: (() -> Void)?
     
     var body: some View {
-        HStack(alignment: .top, spacing: AppTheme.GeneratedSpacing.itemSpacing) {
+        HStack(alignment: .top, spacing: AppTheme.GeneratedSpacing.small) {
             // Icon
             Image(systemName: type.icon)
                 .resizable()
@@ -56,14 +57,12 @@ struct Toast: View {
                 .foregroundColor(type.iconColor)
             
             // Content
-            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.innerSpacing) {
-                Text(title)
-                    .font(AppTheme.GeneratedTypography.bodyBold())
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.extraSmall) {
+                PTLabel(title, style: .bodyBold)
                     .foregroundColor(type.textColor)
                 
                 if let message = message {
-                    Text(message)
-                        .font(AppTheme.GeneratedTypography.body(size: 14))
+                    PTLabel(message, style: .body, size: .small)
                         .foregroundColor(type.textColor.opacity(0.7))
                         .lineLimit(3)
                 }
@@ -78,10 +77,10 @@ struct Toast: View {
                         .foregroundColor(type.textColor.opacity(0.6))
                         .font(.system(size: 14, weight: .medium))
                 }
-                .padding(AppTheme.GeneratedSpacing.innerSpacing)
+                .padding(AppTheme.GeneratedSpacing.extraSmall)
             }
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
+        .padding(AppTheme.GeneratedSpacing.medium)
         .background(type.bgColor)
         .cornerRadius(AppTheme.GeneratedRadius.medium)
         .overlay(
@@ -96,7 +95,7 @@ struct ToastContainer: View {
     @Binding var toasts: [ToastItem]
     
     var body: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
+        VStack(spacing: AppTheme.GeneratedSpacing.small) {
             ForEach(toasts) { toast in
                 Toast(
                     type: toast.type,
@@ -121,7 +120,7 @@ struct ToastContainer: View {
                 }
             }
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
+        .padding(AppTheme.GeneratedSpacing.medium)
         .frame(maxWidth: .infinity)
     }
 }
@@ -188,42 +187,54 @@ extension View {
 // Preview Provider
 struct Toast_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.sectionSpacing) {
-            // Individual toasts
-            Toast(type: .success, title: "Success", message: "Your action was completed successfully.")
-            Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
-            Toast(type: .warning, title: "Warning", message: "This action might have consequences.")
-            Toast(type: .info, title: "Information", message: "Here is some helpful information for you.")
+        Group {
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                // Individual toasts
+                Toast(type: .success, title: "Success", message: "Your action was completed successfully.")
+                Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
+                Toast(type: .warning, title: "Warning", message: "This action might have consequences.")
+                Toast(type: .info, title: "Information", message: "Here is some helpful information for you.")
+                
+                // Toast without message
+                Toast(type: .success, title: "Operation complete")
+                
+                // Toast container example
+                ToastExample()
+            }
+            .padding()
+            .background(AppTheme.GeneratedColors.background.opacity(0.5))
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Light Mode")
             
-            // Toast without message
-            Toast(type: .success, title: "Operation complete")
-            
-            // Toast container example
-            ToastExample()
+            // Dark mode preview
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                Toast(type: .success, title: "Success", message: "Your action was completed successfully.")
+                Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
+            }
+            .padding()
+            .background(AppTheme.GeneratedColors.background.opacity(0.5))
+            .environment(\.colorScheme, .dark)
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Dark Mode")
         }
-        .padding()
-        .background(AppTheme.GeneratedColors.background.opacity(0.5))
-        .previewLayout(.sizeThatFits)
     }
     
     struct ToastExample: View {
         @State private var toasts: [ToastItem] = []
         
         var body: some View {
-            VStack(spacing: AppTheme.GeneratedSpacing.contentSpacing) {
-                Button("Show Success Toast") {
-                    toasts.append(ToastItem(type: .success, title: "Success", message: "Operation completed"))
+            PTCard {
+                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                    PTButton("Show Success Toast") {
+                        toasts.append(ToastItem(type: .success, title: "Success", message: "Operation completed"))
+                    }
+                    
+                    PTButton("Show Error Toast", style: .destructive) {
+                        toasts.append(ToastItem(type: .error, title: "Error", message: "Something went wrong"))
+                    }
                 }
-                .ptButtonStyle(variant: .primary)
-                
-                Button("Show Error Toast") {
-                    toasts.append(ToastItem(type: .error, title: "Error", message: "Something went wrong"))
-                }
-                .ptButtonStyle(variant: .secondary)
+                .padding()
             }
-            .padding()
-            .background(AppTheme.GeneratedColors.cardBackground)
-            .cornerRadius(AppTheme.GeneratedRadius.medium)
             .toasts($toasts)
         }
     }

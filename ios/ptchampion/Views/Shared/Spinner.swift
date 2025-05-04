@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 struct Spinner: View {
     enum Size: CGFloat {
@@ -24,9 +25,9 @@ struct Spinner: View {
         
         var color: Color {
             switch self {
-            case .primary: return AppTheme.GeneratedColors.brassGold
-            case .secondary: return AppTheme.GeneratedColors.tacticalGray
-            case .light: return AppTheme.GeneratedColors.cream
+            case .primary: return AppTheme.GeneratedColors.primary
+            case .secondary: return AppTheme.GeneratedColors.textSecondary
+            case .light: return AppTheme.GeneratedColors.background
             }
         }
     }
@@ -85,15 +86,14 @@ extension Spinner {
         ZStack {
             Color.black.opacity(0.4)
             
-            VStack(spacing: AppTheme.GeneratedSpacing.contentPadding) {
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 Spinner(size: .large)
                 
-                Text("Loading...")
-                    .font(AppTheme.GeneratedTypography.body())
-                    .foregroundColor(AppTheme.GeneratedColors.cream)
+                PTLabel("Loading...", style: .body)
+                    .foregroundColor(AppTheme.GeneratedColors.background)
             }
-            .padding(AppTheme.GeneratedSpacing.sectionSpacing)
-            .background(AppTheme.GeneratedColors.deepOps.opacity(0.85))
+            .padding(AppTheme.GeneratedSpacing.large)
+            .background(AppTheme.GeneratedColors.primary.opacity(0.85))
             .cornerRadius(AppTheme.GeneratedRadius.large)
         }
         .ignoresSafeArea()
@@ -130,45 +130,52 @@ struct WithLoading<Content: View>: View {
 // Preview Provider
 struct Spinner_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.sectionSpacing) {
-            // Size variants
-            HStack(spacing: AppTheme.GeneratedSpacing.contentSpacing) {
-                Spinner(size: .tiny)
-                Spinner(size: .small)
-                Spinner(size: .medium)
-                Spinner(size: .large)
-            }
-            
-            // Color variants
-            HStack(spacing: AppTheme.GeneratedSpacing.contentSpacing) {
-                Spinner(variant: .primary)
-                Spinner(variant: .secondary)
+        Group {
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                // Size variants
+                HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                    Spinner(size: .tiny)
+                    Spinner(size: .small)
+                    Spinner(size: .medium)
+                    Spinner(size: .large)
+                }
                 
-                ZStack {
-                    AppTheme.GeneratedColors.deepOps
-                        .frame(width: 80, height: 80)
-                        .cornerRadius(AppTheme.GeneratedRadius.medium)
-                    Spinner(variant: .light)
+                // Color variants
+                HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                    Spinner(variant: .primary)
+                    Spinner(variant: .secondary)
+                    
+                    ZStack {
+                        AppTheme.GeneratedColors.primary
+                            .frame(width: 80, height: 80)
+                            .cornerRadius(AppTheme.GeneratedRadius.medium)
+                        Spinner(variant: .light)
+                    }
+                }
+                
+                // WithLoading example
+                WithLoading(isLoading: true) {
+                    VStack {
+                        PTLabel("This content is loading", style: .body)
+                            .padding()
+                            .background(AppTheme.GeneratedColors.cardBackground)
+                            .cornerRadius(AppTheme.GeneratedRadius.medium)
+                    }
+                    .frame(width: 200, height: 100)
                 }
             }
+            .padding()
+            .background(AppTheme.GeneratedColors.background.opacity(0.5))
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("Light Mode")
             
-            // WithLoading example
-            WithLoading(isLoading: true) {
-                VStack {
-                    Text("This content is loading")
-                        .padding()
-                        .background(AppTheme.GeneratedColors.cardBackground)
-                        .cornerRadius(AppTheme.GeneratedRadius.medium)
-                }
-                .frame(width: 200, height: 100)
-            }
-            
-            // Full screen overlay (commented out for preview)
-            // Spinner.overlay()
-            //   .frame(width: 300, height: 300)
+            // Dark mode preview
+            Spinner()
+                .padding()
+                .background(Color.black)
+                .environment(\.colorScheme, .dark)
+                .previewLayout(.sizeThatFits)
+                .previewDisplayName("Dark Mode")
         }
-        .padding()
-        .background(AppTheme.GeneratedColors.background.opacity(0.5))
-        .previewLayout(.sizeThatFits)
     }
 } 

@@ -1,39 +1,33 @@
 #!/bin/bash
 
-# This script extracts design tokens from Tailwind config and generates iOS Swift code
+# This script syncs design tokens from project root to iOS PTDesignSystem package
 
-echo "🎨 Syncing design tokens from web to iOS..."
+echo "🎨 Syncing design tokens to iOS Design System Package..."
 
 # Path variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
-WEB_DIR="$PROJECT_ROOT/web"
-IOS_DIR="$PROJECT_ROOT/ios/ptchampion"
-TOKENS_JSON="$IOS_DIR/design-tokens.json"
+ROOT_TOKENS_JSON="$PROJECT_ROOT/design-tokens.json"
+DESIGN_SYSTEM_DIR="$PROJECT_ROOT/ios/PTDesignSystem"
+GEN_DIR="$DESIGN_SYSTEM_DIR/Sources/DesignTokens/Generated"
+RESOURCES_DIR="$DESIGN_SYSTEM_DIR/Sources/DesignTokens/Resources"
+COLORS_DIR="$RESOURCES_DIR/Colors.xcassets"
 
-# Check if the web directory exists
-if [ ! -d "$WEB_DIR" ]; then
-  echo "❌ Error: Web directory not found at $WEB_DIR"
+# Verify root tokens file exists
+if [ ! -f "$ROOT_TOKENS_JSON" ]; then
+  echo "❌ Error: Root design tokens file not found at $ROOT_TOKENS_JSON"
   exit 1
 fi
 
-# Extract colors from Tailwind config
-echo "📌 Extracting design tokens from Tailwind config..."
-cd "$WEB_DIR" || exit 1
+# Create directories if they don't exist
+mkdir -p "$GEN_DIR"
+mkdir -p "$COLORS_DIR"
 
-# If you have npx installed, uncomment this to extract tokens directly
-# npx tailwindcss --config ./tailwind.config.js --list-config | jq '.theme.colors' > "$TOKENS_JSON"
-
-# If you can't extract directly from Tailwind, the tokens.json in ios/ptchampion is a fallback
-
-# Run the iOS token generation script
+# Convert design tokens to Swift
 echo "📱 Generating Swift code from design tokens..."
-cd "$IOS_DIR" || exit 1
 
-# Make sure the generator script is executable
-chmod +x "$IOS_DIR/Utils/GenerateTheme.swift"
+# Using Style Dictionary
+cd "$PROJECT_ROOT/design-tokens" || exit 1
+npx style-dictionary build --config style-dictionary.config.js
 
-# Run the generator
-"$IOS_DIR/Utils/GenerateTheme.swift"
-
-echo "✅ Design token sync complete!" 
+echo "✅ Design tokens synced to PTDesignSystem package successfully!" 

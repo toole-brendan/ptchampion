@@ -1,40 +1,104 @@
 {
-  "colors": [
-    { "name": "tactical-cream", "value": "#F4F1E6" },
-    { "name": "deep-ops-green", "value": "#1E241E" },
-    { "name": "brass-gold", "value": "#BFA24D" },
-    { "name": "army-tan", "value": "#E0D4A6" },
-    { "name": "olive-mist", "value": "#C9CCA6" },
-    { "name": "command-black", "value": "#1E1E1E" },
-    { "name": "tactical-gray", "value": "#4E5A48" },
-    { "name": "gridline-gray", "value": "#E3E0D5" },
-    { "name": "inactive-gray", "value": "#A3A390" }
-  ],
-  "spacing": [
-    { "name": "xs", "value": "4" },
-    { "name": "sm", "value": "8" },
-    { "name": "md", "value": "16" },
-    { "name": "lg", "value": "24" },
-    { "name": "xl", "value": "32" },
-    { "name": "2xl", "value": "48" },
-    { "name": "3xl", "value": "64" }
-  ],
-  "radius": [
-    { "name": "none", "value": "0" },
-    { "name": "sm", "value": "4" },
-    { "name": "md", "value": "8" },
-    { "name": "lg", "value": "12" },
-    { "name": "xl", "value": "16" },
-    { "name": "full", "value": "9999" }
-  ],
-  "fontSize": [
-    { "name": "xs", "value": "10" },
-    { "name": "sm", "value": "12" },
-    { "name": "md", "value": "14" },
-    { "name": "lg", "value": "16" },
-    { "name": "xl", "value": "20" },
-    { "name": "2xl", "value": "24" },
-    { "name": "3xl", "value": "30" },
-    { "name": "4xl", "value": "36" }
-  ]
+  "colors": {
+    "base": {
+      "tactical-cream": { "value": "#F4F1E6" },
+      "cream-dark": { "value": "#E5E2D7" },
+      "deep-ops-green": { "value": "#1E241E" },
+      "brass-gold": { "value": "#BFA24D" },
+      "army-tan": { "value": "#E0D4A6" },
+      "olive-mist": { "value": "#C9CCA6" },
+      "command-black": { "value": "#1E1E1E" },
+      "tactical-gray": { "value": "#4E5A48" },
+      "gridline-gray": { "value": "#E3E0D5" },
+      "inactive-gray": { "value": "#A3A390" },
+      "success": { "value": "#10B981" },
+      "warning": { "value": "#FBBF24" },
+      "error": { "value": "#DC2626" },
+      "info": { "value": "#0EA5E9" }
+    },
+    "semantic": {
+      "background": { "value": "{colors.base.tactical-cream.value}" },
+      "card-background": { "value": "{colors.base.tactical-cream.value}" },
+      "primary": { "value": "{colors.base.brass-gold.value}" },
+      "primary-light": { "value": "{colors.base.brass-gold.value}", "alpha": 0.15 },
+      "secondary": { "value": "{colors.base.army-tan.value}" },
+      "accent": { "value": "{colors.base.deep-ops-green.value}" },
+      "text": {
+        "primary": { "value": "{colors.base.command-black.value}" },
+        "secondary": { "value": "{colors.base.tactical-gray.value}" },
+        "tertiary": { "value": "{colors.base.tactical-gray.value}", "alpha": 0.6 },
+        "on-primary": { "value": "#FFFFFF" }
+      }
+    },
+    "dark": {
+      "background": { "value": "{colors.base.deep-ops-green.value}" },
+      "card-background": { "value": "#262C26" }
+    }
+  },
+  "typography": {
+    "size": {
+      "heading1": { "value": "40" },
+      "heading2": { "value": "32" },
+      "heading3": { "value": "26" },
+      "heading4": { "value": "22" },
+      "body": { "value": "16" },
+      "small": { "value": "14" },
+      "tiny": { "value": "12" }
+    },
+    "family": {
+      "heading": { "value": "BebasNeue-Bold" },
+      "body": { "value": "Montserrat-Regular" },
+      "body-bold": { "value": "Montserrat-Bold" },
+      "body-semibold": { "value": "Montserrat-SemiBold" },
+      "mono": { "value": "RobotoMono-Medium" },
+      "subheading": { "value": "Montserrat-SemiBold" },
+      "caption": { "value": "Montserrat-Regular" }
+    }
+  },
+  "spacing": {
+    "small": { "value": "8" },
+    "medium": { "value": "16" },
+    "large": { "value": "24" },
+    "extra-small": { "value": "4" },
+    "extra-large": { "value": "32" },
+    "section": { "value": "32" },
+    "card-gap": { "value": "16" },
+    "content-padding": { "value": "16" },
+    "item-spacing": { "value": "8" },
+    "inner-spacing": { "value": "4" }
+  },
+  "radius": {
+    "small": { "value": "4" },
+    "medium": { "value": "8" },
+    "large": { "value": "16" },
+    "card": { "value": "12" },
+    "panel": { "value": "16" },
+    "button": { "value": "8" },
+    "input": { "value": "8" },
+    "full": { "value": "9999" }
+  },
+  "shadow": {
+    "small": {
+      "color": { "value": "rgba(0, 0, 0, 0.1)" },
+      "radius": { "value": "4" },
+      "x": { "value": "0" },
+      "y": { "value": "2" }
+    },
+    "medium": {
+      "color": { "value": "rgba(0, 0, 0, 0.15)" },
+      "radius": { "value": "8" },
+      "x": { "value": "0" },
+      "y": { "value": "4" }
+    },
+    "large": {
+      "color": { "value": "rgba(0, 0, 0, 0.2)" },
+      "radius": { "value": "16" },
+      "x": { "value": "0" },
+      "y": { "value": "8" }
+    }
+  },
+  "border-width": {
+    "thin": { "value": "1" },
+    "regular": { "value": "2" }
+  }
 } 
