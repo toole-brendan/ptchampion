@@ -1,4 +1,4 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.9
 import PackageDescription
 
 let package = Package(
@@ -7,23 +7,31 @@ let package = Package(
     products: [
         .library(
             name: "PTDesignSystem",
-            targets: ["DesignTokens", "Components"]),
+            targets: ["PTDesignSystem"]
+        ),
     ],
     dependencies: [],
     targets: [
         .target(
             name: "DesignTokens",
             dependencies: [],
-            resources: [.process("Resources/Colors.xcassets")]),
+            resources: [.process("Resources/Colors.xcassets")]
+        ),
         .target(
             name: "Components",
-            dependencies: ["DesignTokens"],
-            resources: []),
+            dependencies: ["DesignTokens"]
+        ),
+        .target(
+            name: "PTDesignSystem",
+            dependencies: ["Components", "DesignTokens"]
+        ),
         .testTarget(
             name: "DesignTokensTests",
-            dependencies: ["DesignTokens"]),
+            dependencies: ["DesignTokens"]
+        ),
         .testTarget(
             name: "ComponentsTests",
-            dependencies: ["Components"]),
+            dependencies: ["Components"]
+        ),
     ]
 ) 

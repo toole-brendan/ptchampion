@@ -1,0 +1,6 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme ptchampion -destination "generic/platform=iOS Simulator"
+
+2025-05-04 12:17:39.886 xcodebuild[73387:7898108] Writing error result bundle to /var/folders/zx/9qmdb_fj48g5tgx_n8lp2f5c0000gn/T/ResultBundle_2025-04-05_12-17-0039.xcresult
+xcodebuild: error: The directory /Users/brendantoole/projects/ptchampion/ios does not contain an Xcode project, workspace or package.
+

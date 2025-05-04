@@ -1,0 +1,11 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -scheme ptchampion -destination "generic/platform=iOS Simulator"
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  PTDesignSystem: /Users/brendantoole/projects/ptchampion/ios/PTDesignSystem
+
+2025-05-04 12:24:57.186 xcodebuild[73949:7908279] Writing error result bundle to /var/folders/zx/9qmdb_fj48g5tgx_n8lp2f5c0000gn/T/ResultBundle_2025-04-05_12-24-0057.xcresult
+xcodebuild: error: The workspace named "PTDesignSystem" does not contain a scheme named "ptchampion". The "-list" option can be used to find the names of the schemes in the workspace.
