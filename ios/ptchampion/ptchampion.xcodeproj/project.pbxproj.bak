@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BF1E08682DC79B740094C5AB /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF1E08672DC79B740094C5AB /* PTDesignSystem */; };
+		BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */; };
+		BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */; };
+		BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
+		BF50A27F2DC5870000534542 /* RobotoMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */; };
+		BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
 		BF63E4052DB1CF5A0037CD02 /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E3FD2DB1CF5A0037CD02 /* Enums.swift */; };
 		BF63E4062DB1CF5A0037CD02 /* UserProfileModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4012DB1CF5A0037CD02 /* UserProfileModels.swift */; };
 		BF63E4072DB1CF5A0037CD02 /* LeaderboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E3FE2DB1CF5A0037CD02 /* LeaderboardModels.swift */; };
@@ -61,12 +67,6 @@
 		BF63E4742DB2937C0037CD02 /* PTChampionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */; };
 		BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4752DB453140037CD02 /* pt_champion_logo.png */; };
 		BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4772DB454230037CD02 /* Assets.xcassets */; };
-		BF90A0082DBAF50000000008 /* BebasNeue-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */; };
-		BF90A0092DBAF50000000009 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
-		BF90A00A2DBAF5000000000A /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */; };
-		BF90A00B2DBAF5000000000B /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */; };
-		BF90A00C2DBAF5000000000C /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
-		BF90A00D2DBAF5000000000D /* RobotoMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -87,6 +87,32 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		036C301D3C4BD31536A5DB38 /* Theme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Theme.swift; path = ios/ptchampion/Utils/Theme.swift; sourceTree = "<group>"; };
+		0896D3CC58652E7F3AA81F16 /* LegacyTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LegacyTheme.swift; path = ios/ptchampion/Utils/LegacyTheme.swift; sourceTree = "<group>"; };
+		0931B3D8E17BCDA5E86FB60B /* KeychainServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeychainServiceProtocol.swift; path = ios/ptchampion/Services/KeychainServiceProtocol.swift; sourceTree = "<group>"; };
+		0C55FB537CD89464510351CB /* PullupGrader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PullupGrader.swift; path = ios/ptchampion/Grading/PullupGrader.swift; sourceTree = "<group>"; };
+		24FB2E497639E1A7F1D77176 /* LocationServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LocationServiceProtocol.swift; path = ios/ptchampion/Services/LocationServiceProtocol.swift; sourceTree = "<group>"; };
+		2892D038E7220B6B914E5449 /* LeaderboardServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LeaderboardServiceProtocol.swift; path = ios/ptchampion/Services/LeaderboardServiceProtocol.swift; sourceTree = "<group>"; };
+		35A005289377D4049DA0DF00 /* CameraService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CameraService.swift; path = ios/ptchampion/Services/CameraService.swift; sourceTree = "<group>"; };
+		42546A0696E9D9D72AA6F94C /* BluetoothService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BluetoothService.swift; path = ios/ptchampion/Services/BluetoothService.swift; sourceTree = "<group>"; };
+		45F367CF04108482CCF8067F /* SitupGrader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SitupGrader.swift; path = ios/ptchampion/Grading/SitupGrader.swift; sourceTree = "<group>"; };
+		47E791AAD27FF5E9CD527931 /* WorkoutPersistenceService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutPersistenceService.swift; path = ios/ptchampion/Services/WorkoutPersistenceService.swift; sourceTree = "<group>"; };
+		4BA93D32497CBA59AEA6DD7E /* NetworkClient.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NetworkClient.swift; path = ios/ptchampion/Services/NetworkClient.swift; sourceTree = "<group>"; };
+		4FE6C18A4E7099CC59BDF024 /* KeychainService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeychainService.swift; path = ios/ptchampion/Services/KeychainService.swift; sourceTree = "<group>"; };
+		506BE50BFFF776BF3B515836 /* WasmerGrading.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WasmerGrading.swift; path = ios/ptchampion/Services/WasmerGrading.swift; sourceTree = "<group>"; };
+		5669DF15B95848DCBF8C3B8B /* PushupGrader.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PushupGrader.swift; path = ios/ptchampion/Grading/PushupGrader.swift; sourceTree = "<group>"; };
+		576CD382EDBCE68AE3CE3FFE /* CameraServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CameraServiceProtocol.swift; path = ios/ptchampion/Services/CameraServiceProtocol.swift; sourceTree = "<group>"; };
+		63ABC1301135C01D9FCD4C1F /* AuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthService.swift; path = ios/ptchampion/Services/AuthService.swift; sourceTree = "<group>"; };
+		6B71640BD2C0681E8B410A74 /* PoseDetectorServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PoseDetectorServiceProtocol.swift; path = ios/ptchampion/Services/PoseDetectorServiceProtocol.swift; sourceTree = "<group>"; };
+		7224ABE6FD3C4B1AF08BEF4C /* WorkoutService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutService.swift; path = ios/ptchampion/Services/WorkoutService.swift; sourceTree = "<group>"; };
+		785A722752BAB8CBE5590B95 /* AppAppearance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppAppearance.swift; path = ios/ptchampion/Utils/AppAppearance.swift; sourceTree = "<group>"; };
+		7984617CB69B0B85EB98794C /* BluetoothServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BluetoothServiceProtocol.swift; path = ios/ptchampion/Services/BluetoothServiceProtocol.swift; sourceTree = "<group>"; };
+		7CA3A9250CB63108641ECBA6 /* LocationService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LocationService.swift; path = ios/ptchampion/Services/LocationService.swift; sourceTree = "<group>"; };
+		803C3086CF3A2DFCB0CAEBC4 /* LeaderboardService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LeaderboardService.swift; path = ios/ptchampion/Services/LeaderboardService.swift; sourceTree = "<group>"; };
+		86608D344A69A2B932E485FA /* ExerciseGraderProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExerciseGraderProtocol.swift; path = ios/ptchampion/Grading/ExerciseGraderProtocol.swift; sourceTree = "<group>"; };
+		87F0A5ADF205DABF8706837C /* AuthServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AuthServiceProtocol.swift; path = ios/ptchampion/Services/AuthServiceProtocol.swift; sourceTree = "<group>"; };
+		98E464CC399C2027AF828FE8 /* GenerateTheme.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GenerateTheme.swift; path = ios/ptchampion/Utils/GenerateTheme.swift; sourceTree = "<group>"; };
+		A01373843A894F7AAEB9A189 /* UnifiedNetworkService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UnifiedNetworkService.swift; path = ios/ptchampion/Services/UnifiedNetworkService.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -144,26 +170,17 @@
 		BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTChampionApp.swift; sourceTree = "<group>"; };
 		BF63E4752DB453140037CD02 /* pt_champion_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pt_champion_logo.png; sourceTree = "<group>"; };
 		BF63E4772DB454230037CD02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		BF90A0062DBAF50000000007 /* Copy Fonts */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000007 /* Copy Fonts */; };
-		BF90A0002DBAF50000000000 /* Fonts */ = {
-			isa = PBXGroup;
-			children = (
-				BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */,
-				BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */,
-				BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */,
-				BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */,
-				BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */,
-				BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */,
-			);
-			path = Fonts;
-			sourceTree = "<group>";
-		};
-		BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "BebasNeue-Bold.ttf"; path = "Resources/Fonts/BebasNeue-Bold.ttf"; sourceTree = "<group>"; };
+		BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "BebasNeue-Bold.ttf"; path = "Resources/Fonts/BebasNeue-Bold.ttf"; sourceTree = "<group>"; };
 		BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Montserrat-Regular.ttf"; path = "Resources/Fonts/Montserrat-Regular.ttf"; sourceTree = "<group>"; };
-		BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Montserrat-Bold.ttf"; path = "Resources/Fonts/Montserrat-Bold.ttf"; sourceTree = "<group>"; };
-		BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Montserrat-SemiBold.ttf"; path = "Resources/Fonts/Montserrat-SemiBold.ttf"; sourceTree = "<group>"; };
-		BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "RobotoMono-Bold.ttf"; path = "Resources/Fonts/RobotoMono-Bold.ttf"; sourceTree = "<group>"; };
-		BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "RobotoMono-Medium.ttf"; path = "Resources/Fonts/RobotoMono-Medium.ttf"; sourceTree = "<group>"; };
+		BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Montserrat-Bold.ttf"; path = "Resources/Fonts/Montserrat-Bold.ttf"; sourceTree = "<group>"; };
+		BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Montserrat-SemiBold.ttf"; path = "Resources/Fonts/Montserrat-SemiBold.ttf"; sourceTree = "<group>"; };
+		BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "RobotoMono-Bold.ttf"; path = "Resources/Fonts/RobotoMono-Bold.ttf"; sourceTree = "<group>"; };
+		BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "RobotoMono-Medium.ttf"; path = "Resources/Fonts/RobotoMono-Medium.ttf"; sourceTree = "<group>"; };
+		BF90A0072DBAF50000000007 /* CopyFonts.sh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.sh; path = CopyFonts.sh; sourceTree = "<group>"; };
+		CC02D28246778EA84A7EA007 /* FeatureFlagService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = FeatureFlagService.swift; path = ios/ptchampion/Services/FeatureFlagService.swift; sourceTree = "<group>"; };
+		DFD8D5F1F6FD8E3D8DC90F3D /* PoseDetectorService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PoseDetectorService.swift; path = ios/ptchampion/Services/PoseDetectorService.swift; sourceTree = "<group>"; };
+		E871D2279CBAB7869854BB97 /* NetworkService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NetworkService.swift; path = ios/ptchampion/Services/NetworkService.swift; sourceTree = "<group>"; };
+		FFD8FBF2DF9DDBDE70D654C4 /* WorkoutServiceProtocol.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WorkoutServiceProtocol.swift; path = ios/ptchampion/Services/WorkoutServiceProtocol.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -171,6 +188,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF1E08682DC79B740094C5AB /* PTDesignSystem in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -191,13 +209,68 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		79A16A0C7CBBEF900E0FC41F /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				4BA93D32497CBA59AEA6DD7E /* NetworkClient.swift */,
+				6B71640BD2C0681E8B410A74 /* PoseDetectorServiceProtocol.swift */,
+				7224ABE6FD3C4B1AF08BEF4C /* WorkoutService.swift */,
+				42546A0696E9D9D72AA6F94C /* BluetoothService.swift */,
+				87F0A5ADF205DABF8706837C /* AuthServiceProtocol.swift */,
+				FFD8FBF2DF9DDBDE70D654C4 /* WorkoutServiceProtocol.swift */,
+				7984617CB69B0B85EB98794C /* BluetoothServiceProtocol.swift */,
+				4FE6C18A4E7099CC59BDF024 /* KeychainService.swift */,
+				E871D2279CBAB7869854BB97 /* NetworkService.swift */,
+				DFD8D5F1F6FD8E3D8DC90F3D /* PoseDetectorService.swift */,
+				803C3086CF3A2DFCB0CAEBC4 /* LeaderboardService.swift */,
+				24FB2E497639E1A7F1D77176 /* LocationServiceProtocol.swift */,
+				63ABC1301135C01D9FCD4C1F /* AuthService.swift */,
+				2892D038E7220B6B914E5449 /* LeaderboardServiceProtocol.swift */,
+				47E791AAD27FF5E9CD527931 /* WorkoutPersistenceService.swift */,
+				0931B3D8E17BCDA5E86FB60B /* KeychainServiceProtocol.swift */,
+				506BE50BFFF776BF3B515836 /* WasmerGrading.swift */,
+				576CD382EDBCE68AE3CE3FFE /* CameraServiceProtocol.swift */,
+				CC02D28246778EA84A7EA007 /* FeatureFlagService.swift */,
+				35A005289377D4049DA0DF00 /* CameraService.swift */,
+				7CA3A9250CB63108641ECBA6 /* LocationService.swift */,
+				A01373843A894F7AAEB9A189 /* UnifiedNetworkService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B4DE1DA81E8CC8310758592E /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				0896D3CC58652E7F3AA81F16 /* LegacyTheme.swift */,
+				785A722752BAB8CBE5590B95 /* AppAppearance.swift */,
+				98E464CC399C2027AF828FE8 /* GenerateTheme.swift */,
+				036C301D3C4BD31536A5DB38 /* Theme.swift */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		BD199A079A1F7FE4C7B497AD /* Grading */ = {
+			isa = PBXGroup;
+			children = (
+				5669DF15B95848DCBF8C3B8B /* PushupGrader.swift */,
+				45F367CF04108482CCF8067F /* SitupGrader.swift */,
+				0C55FB537CD89464510351CB /* PullupGrader.swift */,
+				86608D344A69A2B932E485FA /* ExerciseGraderProtocol.swift */,
+			);
+			path = Grading;
+			sourceTree = "<group>";
+		};
 		BF63E3B02DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
-				BF63E3BB2DB1C84E0037CD02 /* ptchampion */,
+				BF63E3BB2DB1C84E0037CD02,
 				BF63E3BA2DB1C84E0037CD02 /* Products */,
 				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
+				BF71D10F2DC444F9003E1F33 /* Recovered References */,
+				79A16A0C7CBBEF900E0FC41F /* Services */,
+				BD199A079A1F7FE4C7B497AD /* Grading */,
+				B4DE1DA81E8CC8310758592E /* Utils */,
 			);
 			sourceTree = "<group>";
 		};
@@ -211,14 +284,13 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BF63E3BB2DB1C84E0037CD02 /* ptchampion */ = {
+		BF63E3BB2DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
 				BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */,
 				BF63E4492DB1EB980037CD02 /* ContentView.swift */,
 				BF63E3E52DB1C89D0037CD02 /* Models */,
 				BF63E3E82DB1C9AC0037CD02 /* Services */,
-				BF63E46A2DB1EBB00037CD02 /* Theme */,
 				BF63E3E62DB1C8B90037CD02 /* Views */,
 				BF63E3E72DB1C9910037CD02 /* ViewModels */,
 				BF63E3EA2DB1C9F80037CD02 /* Grading */,
@@ -238,7 +310,7 @@
 		BF63E3E62DB1C8B90037CD02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				 BF63E44A2DB1EB980037CD02 /* Views */,
+				BF63E44A2DB1EB980037CD02 /* Views */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -262,7 +334,7 @@
 		BF63E3E92DB1C9E70037CD02 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				 BF63E40E2DB1EB650037CD02 /* Utils */,
+				BF63E40E2DB1EB650037CD02 /* Utils */,
 			);
 			name = Utils;
 			sourceTree = "<group>";
@@ -270,7 +342,7 @@
 		BF63E3EA2DB1C9F80037CD02 /* Grading */ = {
 			isa = PBXGroup;
 			children = (
-				 BF63E46A2DB1EBAF0037CD02 /* Grading */,
+				BF63E46A2DB1EBAF0037CD02 /* Grading */,
 			);
 			name = Grading;
 			sourceTree = "<group>";
@@ -411,7 +483,6 @@
 				BF63E4402DB1EB980037CD02 /* Shared */,
 				BF63E4432DB1EB980037CD02 /* Utility */,
 				BF63E4482DB1EB980037CD02 /* Workouts */,
-				BF63E4492DB1EB980037CD02 /* ContentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -440,7 +511,7 @@
 			path = Grading;
 			sourceTree = "<group>";
 		};
-		BF90A0002DBAF50000000000 /* Fonts */ = {
+		BF71D10F2DC444F9003E1F33 /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
 				BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */,
@@ -450,15 +521,7 @@
 				BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */,
 				BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */,
 			);
-			path = Fonts;
-			sourceTree = "<group>";
-		};
-		BF63E46A2DB1EBB00037CD02 /* Theme */ = {
-			isa = PBXGroup;
-			children = (
-				BF63E40D2DB1EB650037CD02 /* Theme.swift */,
-			);
-			path = Theme;
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -466,21 +529,18 @@
 /* Begin PBXNativeTarget section */
 		BF63E3B82DB1C84E0037CD02 /* ptchampion */ = {
 			isa = PBXNativeTarget;
-			
 			buildConfigurationList = BF63E3DC2DB1C84F0037CD02 /* Build configuration list for PBXNativeTarget "ptchampion" */;
 			buildPhases = (
+				BF1E08652DC6D2590094C5AB /* Generate Design Tokens */,
 				BF63E3B52DB1C84E0037CD02 /* Sources */,
 				BF63E3B62DB1C84E0037CD02 /* Frameworks */,
 				BF63E3B72DB1C84E0037CD02 /* Resources */,
-				BF90A0072DBAF50000000007 /* Copy Fonts */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = ptchampion;
-			packageProductDependencies = (
-			);
 			productName = ptchampion;
 			productReference = BF63E3B92DB1C84E0037CD02 /* ptchampion.app */;
 			productType = "com.apple.product-type.application";
@@ -499,8 +559,6 @@
 				BF63E3CA2DB1C84F0037CD02 /* PBXTargetDependency */,
 			);
 			name = ptchampionTests;
-			packageProductDependencies = (
-			);
 			productName = ptchampionTests;
 			productReference = BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -519,8 +577,6 @@
 				BF63E3D42DB1C84F0037CD02 /* PBXTargetDependency */,
 			);
 			name = ptchampionUITests;
-			packageProductDependencies = (
-			);
 			productName = ptchampionUITests;
 			productReference = BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -557,6 +613,9 @@
 			);
 			mainGroup = BF63E3B02DB1C84E0037CD02;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BF1E08662DC79B740094C5AB /* XCLocalSwiftPackageReference "../PTDesignSystem" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BF63E3BA2DB1C84E0037CD02 /* Products */;
 			projectDirPath = "";
@@ -574,15 +633,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */,
 				BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */,
 				BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */,
-				/* Font Resources using new build file IDs */
-				BF90A0082DBAF50000000008 /* BebasNeue-Bold.ttf in Resources */,
-				BF90A0092DBAF50000000009 /* Montserrat-Regular.ttf in Resources */,
-				BF90A00A2DBAF5000000000A /* Montserrat-Bold.ttf in Resources */,
-				BF90A00B2DBAF5000000000B /* Montserrat-SemiBold.ttf in Resources */,
-				BF90A00C2DBAF5000000000C /* RobotoMono-Bold.ttf in Resources */,
-				BF90A00D2DBAF5000000000D /* RobotoMono-Medium.ttf in Resources */,
+				BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */,
+				BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */,
+				BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */,
+				BF50A27F2DC5870000534542 /* RobotoMono-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -601,6 +658,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		BF1E08652DC6D2590094C5AB /* Generate Design Tokens */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"$(SRCROOT)/ptchampion/Generated/GeneratedTheme.swift",
+			);
+			inputPaths = (
+				"$(SRCROOT)/../design-tokens.json",
+			);
+			name = "Generate Design Tokens";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "   # Run the design tokens generation script\n   cd \"${SRCROOT}/../\"\n   ./scripts/sync-design-tokens.sh\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		BF63E3B52DB1C84E0037CD02 /* Sources */ = {
@@ -840,8 +920,8 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ptchampion.app;
+				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-                                PRODUCT_MODULE_NAME = PTChampion;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -875,8 +955,8 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ptchampion.app;
+				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-                                PRODUCT_MODULE_NAME = PTChampion;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -894,8 +974,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.ptchampionTests;
+				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-                                PRODUCT_MODULE_NAME = PTChampion;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -914,8 +994,8 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.ptchampionTests;
+				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-                                PRODUCT_MODULE_NAME = PTChampion;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -932,8 +1012,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.ptchampionUITests;
+				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-                                PRODUCT_MODULE_NAME = PTChampion;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -950,8 +1030,8 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.ptchampionUITests;
+				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-                                PRODUCT_MODULE_NAME = PTChampion;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -1000,51 +1080,19 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin PBXShellScriptBuildPhase section */
-		BF90A0072DBAF50000000007 /* Copy Fonts */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				// Maybe add "$(SRCROOT)/ios/ptchampion/Resources/Fonts" as input path? Optional.
-			);
-			name = "Copy Fonts";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				// Define output paths to help Xcode understand dependencies
-                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/BebasNeue-Bold.ttf",
-                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Montserrat-Regular.ttf",
-                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Montserrat-Bold.ttf",
-                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/Montserrat-SemiBold.ttf",
-                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/RobotoMono-Bold.ttf",
-                "$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/RobotoMono-Medium.ttf",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			// Ensure SRCROOT is relative to the project file location (ios/ptchampion)
-			shellScript = "# Ensure SRCROOT is correct. If script is in ios/ptchampion, SRCROOT should be ios/ptchampion
-# If running from workspace root, adjust path.
-SCRIPT_DIR=$(dirname \"$0\")
-FONTS_DIR=\"${SRCROOT}/Resources/Fonts\"
-DEST_DIR=\"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}\"
-
-echo \"Copying fonts from ${FONTS_DIR} to ${DEST_DIR}\"
-mkdir -p \"${DEST_DIR}\"
-
-# Check if source dir exists
-if [ -d \"${FONTS_DIR}\" ]; then
-  /bin/cp -f \"${FONTS_DIR}\"/*.ttf \"${DEST_DIR}/\"
-  /bin/cp -f \"${FONTS_DIR}\"/*.otf \"${DEST_DIR}/\" 2>/dev/null || :
-else 
-  echo \"warning: Font source directory not found: ${FONTS_DIR}\"
-fi
-";
+/* Begin XCLocalSwiftPackageReference section */
+		BF1E08662DC79B740094C5AB /* XCLocalSwiftPackageReference "../PTDesignSystem" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../PTDesignSystem;
 		};
-/* End PBXShellScriptBuildPhase section */
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BF1E08672DC79B740094C5AB /* PTDesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PTDesignSystem;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BF63E3B12DB1C84E0037CD02 /* Project object */;
 }

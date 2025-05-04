@@ -2,11 +2,25 @@ import SwiftUI
 import SwiftData
 import UIKit
 import Foundation
+import PTDesignSystem // Import the design system package
 
-// Direct reference to Colors.deepOps and other colors since AppTheme isn't in scope
-// This is a temporary workaround until the proper module structure is established
+// --- Define NavigationState and AppScreen outside the App struct ---
 
-// Import any necessary files directly since PTChampionImports module is causing issues
+// Navigation State Class
+class NavigationState: ObservableObject {
+    @Published var currentScreen: AppScreen = .loading
+    
+    func navigateTo(_ screen: AppScreen) {
+        withAnimation(nil) {
+            self.currentScreen = screen
+        }
+    }
+}
+
+// App Screen Enum
+enum AppScreen {
+    case loading, login, register, main
+}
 
 // FontManager class to handle font registration
 class FontManager {
@@ -178,24 +192,6 @@ class FontManager {
     }
 }
 
-// --- Define NavigationState and AppScreen outside the App struct ---
-
-// Navigation State Class
-class NavigationState: ObservableObject {
-    @Published var currentScreen: AppScreen = .loading
-    
-    func navigateTo(_ screen: AppScreen) {
-        withAnimation(nil) {
-            self.currentScreen = screen
-        }
-    }
-}
-
-// App Screen Enum
-enum AppScreen {
-    case loading, login, register, main
-}
-
 // --- Main App Structure ---
 
 @main
@@ -251,7 +247,7 @@ struct PTChampionApp: App {
         let navTitleFont = UIFont.systemFont(ofSize: 22, weight: .bold) ?? UIFont.systemFont(ofSize: 22, weight: .bold)
         
         // Convert SwiftUI Color to UIColor
-        // Use direct color reference - temporary solution until proper imports work
+        // Use proper import from design system
         UINavigationBar.appearance().tintColor = UIColor(AppTheme.GeneratedColors.deepOps)
         UINavigationBar.appearance().titleTextAttributes = [
             .foregroundColor: UIColor(AppTheme.GeneratedColors.deepOps),
@@ -351,7 +347,6 @@ struct RootSwitcher: View {
             // Initialize our local state on appear
             Task { @MainActor in
                 currentAuthState = auth.authState.isAuthenticated
-                print("📱 RootSwitcher appeared, initializing local state to: \(currentAuthState ? "authenticated" : "unauthenticated")")
             }
         }
     }

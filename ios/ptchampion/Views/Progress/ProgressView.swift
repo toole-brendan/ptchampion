@@ -2,11 +2,11 @@ import SwiftUI
 import Charts // Assuming iOS 16+ for Swift Charts
 
 struct ProgressView: View {
-    // Define constants directly within the view
+    // Replace hardcoded constants with generated values
     fileprivate struct Constants {
-        static let globalPadding: CGFloat = 16
-        static let cardGap: CGFloat = 12
-        static let cardCornerRadius: CGFloat = 8
+        static let globalPadding: CGFloat = AppTheme.GeneratedSpacing.contentPadding
+        static let cardGap: CGFloat = AppTheme.GeneratedSpacing.itemSpacing
+        static let cardCornerRadius: CGFloat = AppTheme.GeneratedRadius.card
     }
     
     @StateObject private var viewModel = ProgressViewModel()
@@ -16,7 +16,7 @@ struct ProgressView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.cardGap) {
                     Text("Your Progress")
-                        .font(.title)
+                        .font(AppTheme.GeneratedTypography.heading())
                         .fontWeight(.bold)
                         .padding([.horizontal, .bottom], Constants.globalPadding)
 
@@ -24,19 +24,19 @@ struct ProgressView: View {
                     // TODO: Replace with actual chart implementation using viewModel.workoutHistory data
                     VStack(alignment: .leading) {
                         Text("Workout Trends") // Example Title
-                            .font(.headline)
+                            .font(AppTheme.GeneratedTypography.subheading())
                         PlaceholderChartView()
                             .frame(height: 200)
                     }
                     .padding()
-                    .background(Color(red: 0.957, green: 0.945, blue: 0.902))
+                    .background(AppTheme.GeneratedColors.cardBackground)
                     .cornerRadius(Constants.cardCornerRadius)
                     .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
                     .padding(.horizontal, Constants.globalPadding)
 
                     // History List Section
                     Text("Workout History")
-                        .font(.headline)
+                        .font(AppTheme.GeneratedTypography.subheading())
                         .padding(.top)
                         .padding(.horizontal, Constants.globalPadding)
 
@@ -46,12 +46,14 @@ struct ProgressView: View {
                             .padding()
                     } else if let errorMessage = viewModel.errorMessage {
                         Text(errorMessage)
-                            .foregroundColor(.red)
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .font(AppTheme.GeneratedTypography.body())
                             .padding(Constants.globalPadding)
                             .frame(maxWidth: .infinity)
                     } else if viewModel.workoutHistory.isEmpty {
                         Text("No workout history found. Complete a workout to see your progress!")
-                            .foregroundColor(.secondary)
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .font(AppTheme.GeneratedTypography.body())
                             .multilineTextAlignment(.center)
                             .padding(Constants.globalPadding)
                             .frame(maxWidth: .infinity)
@@ -70,6 +72,7 @@ struct ProgressView: View {
                                     distanceMeters: nil // Extract from metadata if needed
                                 )
                                 WorkoutHistoryRow(result: swiftDataRecord)
+                                    .padding(.horizontal, 2) // Small horizontal padding
                             }
                         }
                         .padding(.horizontal, Constants.globalPadding)
@@ -79,7 +82,7 @@ struct ProgressView: View {
                 }
                 .padding(.bottom) // Add padding at the very bottom
             }
-            .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea())
+            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
             .navigationTitle("Progress")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -90,7 +93,7 @@ struct ProgressView: View {
                         Image(systemName: "arrow.clockwise")
                     }
                     .disabled(viewModel.isLoading)
-                    .foregroundColor(Color(red: 0.749, green: 0.635, blue: 0.302)) // Approximation of brassGold
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                 }
             }
             // Use .task for initial fetch if preferred over init
@@ -104,14 +107,21 @@ struct PlaceholderChartView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: ProgressView.Constants.cardCornerRadius)
-                .fill(Color.gray.opacity(0.1))
+                .fill(AppTheme.GeneratedColors.deepOps.opacity(0.1))
             Text("Chart Area")
-                .foregroundColor(.secondary)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .font(AppTheme.GeneratedTypography.body())
         }
         // Apply chart styling from Theme.swift when implementing
     }
 }
 
-#Preview {
+#Preview("Light Mode") {
     ProgressView()
+        .environment(\.colorScheme, .light)
+}
+
+#Preview("Dark Mode") {
+    ProgressView()
+        .environment(\.colorScheme, .dark)
 } 

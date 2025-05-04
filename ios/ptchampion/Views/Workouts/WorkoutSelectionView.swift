@@ -18,16 +18,11 @@ struct WorkoutSelectionView: View {
         Exercise(name: "Run", description: "Cardiovascular endurance", iconName: "figure.run")
     ]
     
-    // Helper function to apply styling directly
-    private func subheadingStyle(text: Text) -> some View {
-        text.font(AppTheme.GeneratedTypography.subheading())
-            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-    }
-
     var body: some View {
         NavigationView {
             List {
-                Section(header: subheadingStyle(text: Text("Choose Your Exercise"))) {
+                Section(header: PTLabel("Choose Your Exercise", style: .subheading)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)) {
                     ForEach(exercises) { exercise in
                         // Conditional Navigation
                         if exercise.name == "Run" {
@@ -44,7 +39,7 @@ struct WorkoutSelectionView: View {
                 }
             }
             .listStyle(PlainListStyle()) // Use PlainListStyle for flatter look closer to Android?
-            .background(AppTheme.GeneratedColors.cream.ignoresSafeArea())
+            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
             .navigationTitle("Start Workout")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -54,12 +49,6 @@ struct WorkoutSelectionView: View {
 // Extracted Row View for reusability
 struct ExerciseRow: View {
     let exercise: WorkoutSelectionView.Exercise
-    
-    // Helper function to apply styling directly
-    private func applyLabelStyle(to text: Text) -> some View {
-        text.font(AppTheme.GeneratedTypography.caption())
-            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-    }
 
     var body: some View {
         HStack {
@@ -67,16 +56,16 @@ struct ExerciseRow: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 30, height: 30)
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                .padding(.trailing, AppTheme.GeneratedSpacing.itemSpacing)
+                .foregroundColor(AppTheme.GeneratedColors.primary)
+                .padding(.trailing, AppTheme.GeneratedSpacing.small)
             VStack(alignment: .leading) {
-                Text(exercise.name)
-                    .font(AppTheme.GeneratedTypography.subheading())
-                    .foregroundColor(AppTheme.GeneratedColors.commandBlack)
-                applyLabelStyle(to: Text(exercise.description))
+                PTLabel(exercise.name, style: .subheading)
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                PTLabel(exercise.description, style: .caption)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
             }
         }
-        .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing)
+        .padding(.vertical, AppTheme.GeneratedSpacing.small)
     }
 }
 

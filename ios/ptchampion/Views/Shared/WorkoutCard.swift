@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 struct WorkoutCard: View {
     let title: String
@@ -33,80 +34,72 @@ struct WorkoutCard: View {
     
     var body: some View {
         Button(action: { onTap?() }) {
-            VStack(alignment: .leading, spacing: AppTheme.Spacing.contentPadding) {
-                // Header with title and date
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(title)
-                            .font(AppTheme.Typography.bodySemiBold(size: 16))
-                            .foregroundColor(AppTheme.Colors.textPrimary)
-                        
-                        if let subtitle = subtitle {
-                            Text(subtitle)
-                                .font(AppTheme.Typography.body(size: 14))
-                                .foregroundColor(AppTheme.Colors.textTertiary)
+            PTCard {
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.contentPadding) {
+                    // Header with title and date
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            PTLabel(title, style: .subheading)
+                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            
+                            if let subtitle = subtitle {
+                                PTLabel(subtitle, style: .body)
+                                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                            }
+                            
+                            PTLabel(formattedDate, style: .caption)
+                                .foregroundColor(AppTheme.GeneratedColors.textTertiary.opacity(0.8))
                         }
                         
-                        Text(formattedDate)
-                            .font(AppTheme.Typography.body(size: 12))
-                            .foregroundColor(AppTheme.Colors.textTertiary.opacity(0.8))
-                    }
-                    
-                    Spacer()
-                    
-                    if let imageName = imageName {
-                        Image(imageName)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 40, height: 40)
-                    }
-                }
-                
-                // Metrics grid
-                if !metrics.isEmpty {
-                    LazyVGrid(columns: [
-                        GridItem(.flexible()),
-                        GridItem(.flexible())
-                    ], spacing: AppTheme.Spacing.contentPadding) {
-                        ForEach(metrics) { metric in
-                            metricView(metric)
+                        Spacer()
+                        
+                        if let imageName = imageName {
+                            Image(imageName)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 40, height: 40)
                         }
                     }
-                    .padding(.top, 4)
+                    
+                    // Metrics grid
+                    if !metrics.isEmpty {
+                        LazyVGrid(columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ], spacing: AppTheme.GeneratedSpacing.contentPadding) {
+                            ForEach(metrics) { metric in
+                                metricView(metric)
+                            }
+                        }
+                        .padding(.top, 4)
+                    }
                 }
             }
-            .padding(AppTheme.Spacing.contentPadding)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.Colors.cardBackground)
-            .cornerRadius(AppTheme.Radius.card)
-            .withShadow(AppTheme.Shadows.cardMd)
         }
         .buttonStyle(PlainButtonStyle())
     }
     
     private func metricView(_ metric: WorkoutMetric) -> some View {
-        HStack(spacing: AppTheme.Spacing.itemSpacing) {
+        HStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
             if let systemName = metric.iconSystemName {
                 Image(systemName: systemName)
-                    .foregroundColor(AppTheme.Colors.brassGold)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     .frame(width: 18, height: 18)
             }
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(metric.title)
-                    .font(AppTheme.Typography.body(size: 12))
-                    .foregroundColor(AppTheme.Colors.textTertiary)
+                PTLabel(metric.title, style: .caption)
+                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                     .textCase(.uppercase)
                 
                 HStack(alignment: .firstTextBaseline, spacing: 2) {
                     Text(metric.value)
-                        .font(AppTheme.Typography.mono(size: 14))
-                        .foregroundColor(AppTheme.Colors.textPrimary)
+                        .font(.system(size: 14, weight: .medium, design: .monospaced))
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     
                     if let unit = metric.unit {
-                        Text(unit)
-                            .font(AppTheme.Typography.body(size: 12))
-                            .foregroundColor(AppTheme.Colors.textTertiary)
+                        PTLabel(unit, style: .caption)
+                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                     }
                 }
             }
@@ -138,7 +131,7 @@ struct WorkoutMetric: Identifiable {
 // Preview provider
 struct WorkoutCard_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppTheme.Spacing.cardGap) {
+        VStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
             WorkoutCard(
                 title: "Push-ups Workout",
                 subtitle: "Morning Routine",
@@ -160,7 +153,7 @@ struct WorkoutCard_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(AppTheme.Colors.background.opacity(0.5))
+        .background(AppTheme.GeneratedColors.background.opacity(0.5))
         .previewLayout(.sizeThatFits)
     }
 } 

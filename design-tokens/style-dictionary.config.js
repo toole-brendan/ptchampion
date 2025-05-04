@@ -245,7 +245,7 @@ StyleDictionary.registerAction({
     );
     
     // Create assets directory
-    const assetsDir = path.join(__dirname, 'build/ios/Colors.xcassets');
+    const assetsDir = path.join(__dirname, '../ios/PTDesignSystem/Sources/DesignTokens/Resources/Colors.xcassets');
     if (!fs.existsSync(assetsDir)) {
       fs.mkdirSync(assetsDir, { recursive: true });
     }
@@ -492,7 +492,7 @@ module.exports = {
   platforms: {
     ios: {
       transformGroup: 'ios',
-      buildPath: 'build/ios/',
+      buildPath: '../ios/PTDesignSystem/Sources/DesignTokens/Generated/',
       files: [
         {
           destination: 'AppTheme+Generated.swift',

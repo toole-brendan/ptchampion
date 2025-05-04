@@ -5,6 +5,7 @@
   "main": "style-dictionary.config.js",
   "scripts": {
     "build": "node build-tokens.js",
+    "build-tokens": "style-dictionary build --config style-dictionary.config.js",
     "clean": "rm -rf build",
     "build:watch": "nodemon --watch design-tokens.json --exec 'npm run build'"
   },

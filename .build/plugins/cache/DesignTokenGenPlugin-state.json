@@ -44,7 +44,8 @@
     "COLORTERM" : "truecolor",
     "COMMAND_MODE" : "unix2003",
     "CPATH" : "/usr/local/include",
-    "CURSOR_TRACE_ID" : "7ea9cbe1de4646b78cec6236bda8b294",
+    "CURSOR_GITHUB_TOKEN" : "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",
+    "CURSOR_TRACE_ID" : "d688aa94fc52428595384c3ff01fe82f",
     "DISABLE_AUTO_UPDATE" : "true",
     "GIT_ASKPASS" : "/Applications/Cursor.app/Contents/Resources/app/extensions/git/dist/askpass.sh",
     "HOME" : "/Users/brendantoole",
@@ -57,11 +58,11 @@
     "LOGNAME" : "brendantoole",
     "MANPATH" : "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk/usr/share/man:/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/usr/share/man:/Applications/Xcode.app/Contents/Developer/usr/share/man:/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/share/man:",
     "MallocNanoZone" : "0",
-    "OLDPWD" : "/Users/brendantoole/projects/ptchampion",
+    "OLDPWD" : "/Users/brendantoole/projects/ptchampion/ios",
     "ORIGINAL_XDG_CURRENT_DESKTOP" : "undefined",
     "PAGER" : "head -n 10000 | cat",
     "PATH" : "/opt/homebrew/opt/openjdk@21/bin:/opt/homebrew/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Library/TeX/texbin:/opt/homebrew/opt/openjdk@21/bin:/Users/brendantoole/.local/bin:/Users/brendantoole/Android/sdk/cmdline-tools/latest/bin:/Users/brendantoole/Android/sdk/platform-tools:/Users/brendantoole/Library/Android/sdk/tools:/Users/brendantoole/Library/Android/sdk/platform-tools:/Users/brendantoole/Android/sdk/cmdline-tools/latest/bin:/Users/brendantoole/Android/sdk/platform-tools:/Users/brendantoole/Library/Android/sdk/tools:/Users/brendantoole/Library/Android/sdk/platform-tools",
-    "PWD" : "/Users/brendantoole/projects/ptchampion/ios/ptchampion",
+    "PWD" : "/Users/brendantoole/projects/ptchampion/ios",
     "SDKROOT" : "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
     "SHELL" : "/bin/zsh",
     "SHLVL" : "1",
@@ -80,7 +81,7 @@
     "__CFBundleIdentifier" : "com.todesktop.230313mzl4w4u92",
     "__CF_USER_TEXT_ENCODING" : "0x1F5:0x0:0x0"
   },
-  "inputHash" : "232c704d91ad312c2d04e5d7d951bdc1c9f3a78bee5ac5381d7f6b21dc41035d",
+  "inputHash" : "54a936a2b2c51eed2c9b7320885cd9c24d6447f1dc1f411263588585e5fe2a30",
   "output" : "",
   "result" : {
     "exit" : {

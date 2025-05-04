@@ -1,0 +1,4 @@
+module PTDesignSystemPackageTests {
+    header "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.build/PTDesignSystemPackageTests-Swift.h"
+    requires objc
+}
