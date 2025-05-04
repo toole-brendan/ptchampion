@@ -1,5 +1,5 @@
 import SwiftUI
-
+import PTDesignSystem
 enum Trend {
     case up(percentage: Int)
     case down(percentage: Int)

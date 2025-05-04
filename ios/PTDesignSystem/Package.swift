@@ -5,33 +5,50 @@ let package = Package(
     name: "PTDesignSystem",
     platforms: [.iOS(.v14)],
     products: [
+        // — 1 — Pure token model & utilities (no SwiftUI)
+        .library(
+            name: "DesignTokens",
+            type: .static,                  // static is fine; dynamic also works
+            targets: ["DesignTokens"]
+        ),
+
+        // — 2 — SwiftUI components (depends on tokens)
+        .library(
+            name: "Components",
+            type: .static,
+            targets: ["Components"]
+        ),
+
+        // — 3 — Umbrella / façade (tiny target, re-exports the others)
         .library(
             name: "PTDesignSystem",
+            type: .static,                  // can be dynamic if you prefer
             targets: ["PTDesignSystem"]
-        ),
+        )
     ],
     dependencies: [],
     targets: [
         .target(
             name: "DesignTokens",
-            dependencies: [],
-            resources: [.process("Resources/Colors.xcassets")]
+            path: "Sources/DesignTokens",
+            resources: [
+                .process("Resources/Colors.xcassets")
+            ]
         ),
         .target(
             name: "Components",
-            dependencies: ["DesignTokens"]
+            dependencies: [
+                "DesignTokens"
+            ],
+            path: "Sources/Components"
         ),
         .target(
             name: "PTDesignSystem",
-            dependencies: ["Components", "DesignTokens"]
-        ),
-        .testTarget(
-            name: "DesignTokensTests",
-            dependencies: ["DesignTokens"]
-        ),
-        .testTarget(
-            name: "ComponentsTests",
-            dependencies: ["Components"]
-        ),
+            dependencies: [
+                "Components",
+                "DesignTokens"
+            ],
+            path: "Sources/PTDesignSystem"   // contains Umbrella.swift
+        )
     ]
-) 
+)

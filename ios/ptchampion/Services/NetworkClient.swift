@@ -407,7 +407,7 @@ class NetworkClient {
     }
 
     private func shouldAddAuthHeader(for url: URL) -> Bool {
-        guard let path = url.pathComponents.last else {
+        guard let path = url.path.components(separatedBy: "/").last else {
             return true // Assume auth needed if path is weird
         }
         // Check if the path suffix matches any in the noAuthPaths set

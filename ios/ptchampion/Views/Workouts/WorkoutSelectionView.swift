@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 struct WorkoutSelectionView: View {
     // TODO: Add ViewModel for workout logic

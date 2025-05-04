@@ -1,0 +1,11 @@
+version: "Apple Swift version 6.1 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)"
+options: "6febbc7eb2268d7e06b4a6220a3bbc65b45df191ccba829969e78cee5823a900"
+build_start_time: [1746386822, 634148000]
+build_end_time: [1746386825, 621705000]
+inputs:
+  ? "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/release/DesignTokens.build/DerivedSources/resource_bundle_accessor.swift"
+  : !dirty [1746386822, 432453115]
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/AppTheme.swift": !dirty [1746383235, 952076191]
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/DesignTokens.swift": !dirty [1746383235, 959179796]
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/Generated/AppTheme+Generated.swift": !dirty [1746385548, 63459010]
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ThemeManager.swift": !dirty [1746383235, 945252500]

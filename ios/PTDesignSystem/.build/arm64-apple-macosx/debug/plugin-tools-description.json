@@ -134,7 +134,9 @@
         "-Xcc",
         "-fPIC",
         "-Xcc",
-        "-g"
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
       ],
       "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/output-file-map.json",
       "outputs" : [
@@ -253,7 +255,9 @@
         "-Xcc",
         "-fPIC",
         "-Xcc",
-        "-g"
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
       ],
       "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ComponentsTests.build/output-file-map.json",
       "outputs" : [
@@ -368,7 +372,9 @@
         "-Xcc",
         "-fPIC",
         "-Xcc",
-        "-g"
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
       ],
       "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/output-file-map.json",
       "outputs" : [
@@ -482,7 +488,9 @@
         "-Xcc",
         "-fPIC",
         "-Xcc",
-        "-g"
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
       ],
       "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokensTests.build/output-file-map.json",
       "outputs" : [
@@ -500,6 +508,107 @@
         "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Tests/DesignTokensTests/AppThemeTests.swift"
       ],
       "tempsPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokensTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.PTDesignSystem-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/Components.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/DesignTokens.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "PTDesignSystem",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/PTDesignSystem.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/PTDesignSystem-Swift.h",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/PTDesignSystem.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build",
       "wholeModuleOptimization" : false
     },
     "C.PTDesignSystemPackageTests-arm64-apple-macosx15.0-debug.module" : {
@@ -581,7 +690,9 @@
         "-Xcc",
         "-fPIC",
         "-Xcc",
-        "-g"
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
       ],
       "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.build/output-file-map.json",
       "outputs" : [
@@ -610,6 +721,8 @@
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
       "-module-name",
       "Components",
+      "-package-name",
+      "ptdesignsystem",
       "-incremental",
       "-c",
       "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/DesignSystemPreview.swift",
@@ -667,6 +780,8 @@
       "-fPIC",
       "-Xcc",
       "-g",
+      "-package-name",
+      "ptdesignsystem",
       "-driver-use-frontend-path",
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
     ],
@@ -674,6 +789,8 @@
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
       "-module-name",
       "ComponentsTests",
+      "-package-name",
+      "ptdesignsystem",
       "-incremental",
       "-c",
       "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Tests/ComponentsTests/ButtonTests.swift",
@@ -725,6 +842,8 @@
       "-fPIC",
       "-Xcc",
       "-g",
+      "-package-name",
+      "ptdesignsystem",
       "-driver-use-frontend-path",
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
     ],
@@ -732,6 +851,8 @@
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
       "-module-name",
       "DesignTokens",
+      "-package-name",
+      "ptdesignsystem",
       "-incremental",
       "-c",
       "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/AppTheme.swift",
@@ -788,6 +909,8 @@
       "-fPIC",
       "-Xcc",
       "-g",
+      "-package-name",
+      "ptdesignsystem",
       "-driver-use-frontend-path",
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
     ],
@@ -795,6 +918,8 @@
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
       "-module-name",
       "DesignTokensTests",
+      "-package-name",
+      "ptdesignsystem",
       "-incremental",
       "-c",
       "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Tests/DesignTokensTests/AppThemeTests.swift",
@@ -846,6 +971,71 @@
       "-fPIC",
       "-Xcc",
       "-g",
+      "-package-name",
+      "ptdesignsystem",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "PTDesignSystem" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "PTDesignSystem",
+      "-package-name",
+      "ptdesignsystem",
+      "-incremental",
+      "-c",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift",
+      "-I",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/PTDesignSystem-Swift.h",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "ptdesignsystem",
       "-driver-use-frontend-path",
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
     ],
@@ -853,6 +1043,8 @@
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
       "-module-name",
       "PTDesignSystemPackageTests",
+      "-package-name",
+      "ptdesignsystem",
       "-incremental",
       "-c",
       "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.derived/runner.swift",
@@ -905,6 +1097,8 @@
       "-fPIC",
       "-Xcc",
       "-g",
+      "-package-name",
+      "ptdesignsystem",
       "-driver-use-frontend-path",
       "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
     ]
@@ -921,6 +1115,10 @@
 
     ],
     "DesignTokensTests" : [
+      "DesignTokens"
+    ],
+    "PTDesignSystem" : [
+      "Components",
       "DesignTokens"
     ],
     "PTDesignSystemPackageTests" : [
@@ -1041,6 +1239,20 @@
         }
       ],
       "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokensTests.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/sources"
     },
     "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystemPackageTests.build/sources" : {
       "alwaysOutOfDate" : false,

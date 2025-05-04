@@ -69,10 +69,10 @@ class NetworkService {
         
         // Add query parameters if provided
         if !parameters.isEmpty {
-            urlComponents.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+            urlqueryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
         }
         
-        guard let url = urlComponents.url else {
+        guard let url = urlurl else {
             throw NetworkError.invalidURL
         }
         
@@ -98,7 +98,7 @@ class NetworkService {
         // Log request (in debug builds)
         #if DEBUG
         print("🌐 \(method.rawValue) \(endpoint)")
-        if let parameters = urlComponents.queryItems, !parameters.isEmpty {
+        if let parameters = urlqueryItems, !parameters.isEmpty {
             print("   Parameters: \(parameters)")
         }
         #endif

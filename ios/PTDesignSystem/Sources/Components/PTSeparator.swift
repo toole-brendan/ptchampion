@@ -35,8 +35,8 @@ public struct PTSeparator: View {
     }
 }
 
-struct PTSeparator_Previews: PreviewProvider {
-    static var previews: some View {
+public struct PTSeparator_Previews: PreviewProvider {
+    public static var previews: some View {
         VStack(spacing: 32) {
             VStack(spacing: 16) {
                 PTLabel("Horizontal Separator", style: .subheading)

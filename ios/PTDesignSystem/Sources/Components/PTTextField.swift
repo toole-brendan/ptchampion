@@ -38,8 +38,8 @@ public struct PTTextField: View {
     }
 }
 
-struct PTTextField_Previews: PreviewProvider {
-    static var previews: some View {
+public struct PTTextField_Previews: PreviewProvider {
+    public static var previews: some View {
         VStack(spacing: 20) {
             PTTextField("Email", text: .constant(""))
             PTTextField("Email", text: .constant("user@example.com"))

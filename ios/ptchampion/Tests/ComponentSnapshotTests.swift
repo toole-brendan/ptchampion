@@ -1,3 +1,5 @@
+import SwiftUI
+import PTDesignSystem
 import XCTest
 import SwiftUI
 @testable import PTChampion
@@ -54,14 +56,14 @@ class ComponentSnapshotTests: XCTestCase {
     func testButtonSnapshots() {
         // Primary button - Light mode
         snapshotTest("PrimaryButton", view: 
-            PTButton(title: "Primary Button", action: {})
+            PTButton("Primary Button", action: {})
                 .padding()
                 .previewLayout(.sizeThatFits)
         )
         
         // Primary button - Dark mode
         snapshotTest("PrimaryButton", view: 
-            PTButton(title: "Primary Button", action: {})
+            PTButton("Primary Button", action: {})
                 .padding()
                 .previewLayout(.sizeThatFits),
             colorScheme: .dark
@@ -248,7 +250,7 @@ class ComponentSnapshotTests: XCTestCase {
     func testReducedMotionSnapshots() {
         // Test buttons with reduced motion
         snapshotTest("ReducedMotionButton", view:
-            PTButton(title: "Reduced Motion Button", action: {})
+            PTButton("Reduced Motion Button", action: {})
                 .environment(\.accessibilityReduceMotion, true)
                 .padding()
                 .previewLayout(.sizeThatFits)
