@@ -71,4 +71,4 @@ public struct PTButton: View {
             return AppTheme.GeneratedColors.textPrimary
         }
     }
-} 
+}

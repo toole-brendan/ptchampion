@@ -127,13 +127,13 @@ struct DesignSystemDemo: View {
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         
                         HStack {
-                            PTButton(title: "Primary", action: {})
-                            PTButton(title: "Secondary", action: {}, variant: .secondary)
+                            PTButton("Primary", action: {})
+                            PTButton("Secondary", action: {}, variant: .secondary)
                         }
                         
                         HStack {
-                            PTButton(title: "Outline", action: {}, variant: .outline)
-                            PTButton(title: "Ghost", action: {}, variant: .ghost)
+                            PTButton("Outline", action: {}, variant: .outline)
+                            PTButton("Ghost", action: {}, variant: .ghost)
                         }
                     }
                     

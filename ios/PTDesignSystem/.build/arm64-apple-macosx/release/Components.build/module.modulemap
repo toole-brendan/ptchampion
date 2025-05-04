@@ -1,0 +1,4 @@
+module Components {
+    header "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/release/Components.build/Components-Swift.h"
+    requires objc
+}

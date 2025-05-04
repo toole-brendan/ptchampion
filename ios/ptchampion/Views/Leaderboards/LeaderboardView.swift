@@ -117,11 +117,21 @@ struct LeaderboardView: View {
                 }
             }
             // Use separate task only for filter changes
-            .onChange(of: LeaderboardFilterState(
-                boardType: viewModel.selectedBoard,
-                category: viewModel.selectedCategory,
-                exerciseType: viewModel.selectedExercise
-            )) { _ in
+            .onChange(of: viewModel.selectedBoard) { _, _ in
+                if isViewActive {
+                    Task {
+                        await viewModel.fetch()
+                    }
+                }
+            }
+            .onChange(of: viewModel.selectedCategory) { _, _ in
+                if isViewActive {
+                    Task {
+                        await viewModel.fetch()
+                    }
+                }
+            }
+            .onChange(of: viewModel.selectedExercise) { _, _ in
                 if isViewActive {
                     Task {
                         await viewModel.fetch()
@@ -244,9 +254,14 @@ struct LeaderboardView: View {
     
     @ViewBuilder
     private func errorView(message: String) -> some View {
+        // Prepare variables outside of the view builder context
+        let displayEmoji = viewModel.backendStatus == .noActiveUsers ? "👥" : "⚠️"
+        let isLocationDenied = locationPermissionStatus == .denied || locationPermissionStatus == .restricted
+        let shouldShowSettingsButton = viewModel.selectedBoard == .local && isLocationDenied
+        let hasNoActiveUsers = viewModel.backendStatus == .noActiveUsers
+        
         VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-            // Use text instead of system image to avoid issues
-            Text(viewModel.backendStatus == .noActiveUsers ? "👥" : "⚠️")
+            Text(displayEmoji)
                 .font(.system(size: 70))
                 .padding(.bottom, AppTheme.GeneratedSpacing.small)
             
@@ -256,18 +271,14 @@ struct LeaderboardView: View {
                 .padding(.horizontal)
             
             // Special message for no users case
-            if case .noActiveUsers = viewModel.backendStatus {
+            if hasNoActiveUsers {
                 PTLabel("The Azure database doesn't have any active users yet. When users start completing workouts, they'll appear here!", style: .caption)
                     .multilineTextAlignment(.center)
                     .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     .padding(.horizontal)
             }
             
-            // Show settings button if location permission denied
-            if viewModel.selectedBoard == .local && 
-               (locationPermissionStatus == .denied || 
-                locationPermissionStatus == .restricted) {
-                
+            if shouldShowSettingsButton {
                 PTButton("Open Settings") {
                     if let url = URL(string: UIApplication.openSettingsURLString) {
                         UIApplication.shared.open(url)
@@ -295,7 +306,8 @@ struct LeaderboardView: View {
             LazyVStack(spacing: 0) {
                 // Use ListView placeholder during loading state
                 if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
-                    ForEach(0..<8) { i in
+                    // Use Identifiable Int to avoid binding issues
+                    ForEach(0..<8, id: \.self) { i in
                         // Create a placeholder row inline
                         HStack {
                             // Rank - simplified to avoid image loading issues
@@ -322,11 +334,14 @@ struct LeaderboardView: View {
                         .id("placeholder-\(i)")
                     }
                 } else {
-                    ForEach(viewModel.leaderboardEntries) { entry in
+                    // Ensure leaderboardEntries elements have proper identifiable IDs
+                    ForEach(Array(viewModel.leaderboardEntries.enumerated()), id: \.element.id) { index, entry in
+                        // Prepare medal display outside the card view
+                        let rankDisplay = getRankDisplay(for: entry.rank)
+                        
                         PTCard {
                             HStack {
-                                // Rank - simplified to avoid image loading issues
-                                PTLabel(entry.rank <= 3 ? "🥇" : "\(entry.rank)", style: .body)
+                                PTLabel(rankDisplay, style: .body)
                                     .frame(width: 36)
                                 
                                 PTLabel(entry.name, style: .body)
@@ -334,8 +349,9 @@ struct LeaderboardView: View {
                                 
                                 Spacer()
                                 
-                                PTLabel("\(entry.score) pts", style: .body, font: .monospaced)
+                                PTLabel("\(entry.score) pts", style: .body)
                                     .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                                    .font(.system(.body, design: .monospaced))
                             }
                         }
                         .padding(.horizontal, AppTheme.GeneratedSpacing.small)
@@ -357,30 +373,45 @@ struct LeaderboardView: View {
             }
         }
     }
+    
+    // Helper function to get rank display
+    private func getRankDisplay(for rank: Int) -> String {
+        switch rank {
+        case 1:
+            return "🥇"
+        case 2:
+            return "🥈"
+        case 3:
+            return "🥉"
+        default:
+            return "\(rank)"
+        }
+    }
 
     // MARK: - Static Configuration Methods
     
     // Function to configure Segmented Control Appearance - static to avoid recreating on each view
     private static func configureSegmentedControlAppearance() {
-        // Background color (using opaque colors)
-        UISegmentedControl.appearance().backgroundColor = UIColor(red: 0.12, green: 0.14, blue: 0.12, alpha: 0.1)
+        // Background color using design system colors
+        let backgroundColor = UIColor(AppTheme.GeneratedColors.background)
+        UISegmentedControl.appearance().backgroundColor = backgroundColor
         UISegmentedControl.appearance().setDividerImage(UIImage(), forLeftSegmentState: .normal, rightSegmentState: .normal, barMetrics: .default)
 
-        // Text attributes with system fonts instead of custom fonts
+        // Text attributes with system fonts
         let normalAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 13),
-            .foregroundColor: UIColor.darkGray
+            .foregroundColor: UIColor(AppTheme.GeneratedColors.textSecondary)
         ]
         let selectedAttributes: [NSAttributedString.Key: Any] = [
             .font: UIFont.systemFont(ofSize: 13, weight: .bold),
-            .foregroundColor: UIColor.black
+            .foregroundColor: UIColor(AppTheme.GeneratedColors.textPrimary)
         ]
 
         UISegmentedControl.appearance().setTitleTextAttributes(normalAttributes, for: .normal)
         UISegmentedControl.appearance().setTitleTextAttributes(selectedAttributes, for: .selected)
 
-        // Selected segment color (gold-like)
-        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(red: 0.75, green: 0.64, blue: 0.30, alpha: 1.0)
+        // Selected segment color using design system accent color
+        UISegmentedControl.appearance().selectedSegmentTintColor = UIColor(AppTheme.GeneratedColors.primary)
     }
 }
 

@@ -12,6 +12,9 @@
 		BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
 		BF50A27F2DC5870000534542 /* RobotoMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */; };
 		BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
+		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
+		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
+		BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31842DC7F6C40042EE65 /* PTDesignSystem */; };
 		BF63E4052DB1CF5A0037CD02 /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E3FD2DB1CF5A0037CD02 /* Enums.swift */; };
 		BF63E4062DB1CF5A0037CD02 /* UserProfileModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4012DB1CF5A0037CD02 /* UserProfileModels.swift */; };
 		BF63E4072DB1CF5A0037CD02 /* LeaderboardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E3FE2DB1CF5A0037CD02 /* LeaderboardModels.swift */; };
@@ -183,6 +186,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */,
+				BF5D31812DC7F6C40042EE65 /* Components in Frameworks */,
+				BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,6 +256,13 @@
 			path = Grading;
 			sourceTree = "<group>";
 		};
+		BF5D317F2DC7F6C40042EE65 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		BF63E3B02DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
@@ -261,6 +274,7 @@
 				79A16A0C7CBBEF900E0FC41F /* Services */,
 				BD199A079A1F7FE4C7B497AD /* Grading */,
 				B4DE1DA81E8CC8310758592E /* Utils */,
+				BF5D317F2DC7F6C40042EE65 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1081,6 +1095,21 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		BF5D31802DC7F6C40042EE65 /* Components */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			productName = Components;
+		};
+		BF5D31822DC7F6C40042EE65 /* DesignTokens */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			productName = DesignTokens;
+		};
+		BF5D31842DC7F6C40042EE65 /* PTDesignSystem */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			productName = PTDesignSystem;
+		};
 		BF60DF352DC7C8D0003487DB /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;

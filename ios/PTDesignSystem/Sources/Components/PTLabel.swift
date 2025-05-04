@@ -45,8 +45,8 @@ public struct PTLabel: View {
     }
 }
 
-struct PTLabel_Previews: PreviewProvider {
-    static var previews: some View {
+public struct PTLabel_Previews: PreviewProvider {
+    public static var previews: some View {
         VStack(alignment: .leading, spacing: 16) {
             PTLabel("Heading Text", style: .heading)
             PTLabel("Subheading Text", style: .subheading)
@@ -56,4 +56,4 @@ struct PTLabel_Previews: PreviewProvider {
         .padding()
         .previewLayout(.sizeThatFits)
     }
-} 
+}

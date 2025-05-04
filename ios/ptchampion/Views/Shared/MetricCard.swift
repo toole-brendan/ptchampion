@@ -1,5 +1,5 @@
 import SwiftUI
-
+import PTDesignSystem
 /// A tappable metric card component that displays a key metric
 /// with title, value, and optional unit, description, and trend indicators.
 public struct MetricCardView: View {

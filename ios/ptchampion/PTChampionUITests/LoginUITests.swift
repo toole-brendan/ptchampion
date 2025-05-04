@@ -1,3 +1,5 @@
+import SwiftUI
+import PTDesignSystem
 import XCTest
 @testable import PTChampion
 

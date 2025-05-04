@@ -1,5 +1,5 @@
 import SwiftUI
-
+import PTDesignSystem
 public struct BottomNavItem: Identifiable {
     public let id = UUID()
     let title: String

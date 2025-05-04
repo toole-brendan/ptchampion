@@ -26,7 +26,7 @@ struct RegistrationView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: AppTheme.GeneratedSpacing.contentGap) {
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
                 // Logo
                 Image(uiImage: UIImage(named: "pt_champion_logo") ?? 
                       (Bundle.main.path(forResource: "pt_champion_logo", ofType: "png").flatMap { UIImage(contentsOfFile: $0) }) ?? 
@@ -42,7 +42,7 @@ struct RegistrationView: View {
                     .padding(.bottom, 10)
                 
                 // Form fields with consistent styling
-                VStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
+                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                     PTTextField("First Name", text: $firstName)
                     
                     PTTextField("Last Name", text: $lastName)
@@ -123,7 +123,7 @@ struct RegistrationView: View {
                     }
                     .padding(.top, 8)
                 }
-                .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
                 
                 Spacer()
             }

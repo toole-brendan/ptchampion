@@ -157,7 +157,7 @@ public struct DesignSystemPreview: View {
 }
 
 struct DesignSystemPreview_Previews: PreviewProvider {
-    static var previews: some View {
+    public static var previews: some View {
         Group {
             DesignSystemPreview()
                 .preferredColorScheme(.light)
