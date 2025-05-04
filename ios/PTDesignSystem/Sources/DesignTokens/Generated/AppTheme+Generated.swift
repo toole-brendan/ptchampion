@@ -3,30 +3,30 @@ import SwiftUI
 
 public extension AppTheme {
   enum GeneratedColors {
-    public static let cream = Color("Cream")
-    public static let creamDark = Color("CreamDark")
-    public static let deepOps = Color("DeepOps")
-    public static let brassGold = Color("BrassGold")
-    public static let armyTan = Color("ArmyTan")
-    public static let oliveMist = Color("OliveMist")
-    public static let commandBlack = Color("CommandBlack")
-    public static let tacticalGray = Color("TacticalGray")
-    public static let success = Color("Success")
-    public static let warning = Color("Warning")
-    public static let error = Color("Error")
-    public static let info = Color("Info")
-    
-    // Semantic colors
-    public static let primary = Color("Primary")
-    public static let secondary = Color("Secondary")
-    public static let accent = Color("Accent")
-    public static let background = Color("Background")
-    public static let cardBackground = Color("CardBackground")
-    public static let textPrimary = Color("TextPrimary")
-    public static let textSecondary = Color("TextSecondary")
-    public static let textTertiary = Color("TextTertiary")
+    public static let cream = Color("Cream", bundle: .module)
+    public static let creamDark = Color("CreamDark", bundle: .module)
+    public static let deepOps = Color("DeepOps", bundle: .module)
+    public static let brassGold = Color("BrassGold", bundle: .module)
+    public static let armyTan = Color("ArmyTan", bundle: .module)
+    public static let oliveMist = Color("OliveMist", bundle: .module)
+    public static let commandBlack = Color("CommandBlack", bundle: .module)
+    public static let tacticalGray = Color("TacticalGray", bundle: .module)
+    public static let success = Color("Success", bundle: .module)
+    public static let warning = Color("Warning", bundle: .module)
+    public static let error = Color("Error", bundle: .module)
+    public static let info = Color("Info", bundle: .module)
+
+    // Semantic colours
+    public static let primary = Color("Primary", bundle: .module)
+    public static let secondary = Color("Secondary", bundle: .module)
+    public static let accent = Color("Accent", bundle: .module)
+    public static let background = Color("Background", bundle: .module)
+    public static let cardBackground = Color("CardBackground", bundle: .module)
+    public static let textPrimary = Color("TextPrimary", bundle: .module)
+    public static let textSecondary = Color("TextSecondary", bundle: .module)
+    public static let textTertiary = Color("TextTertiary", bundle: .module)
   }
-  
+
   enum GeneratedTypography {
     public static let heading1: CGFloat = 40
     public static let heading2: CGFloat = 32
@@ -36,71 +36,64 @@ public extension AppTheme {
     public static let small: CGFloat = 14
     public static let tiny: CGFloat = 12
 
-    public static func heading(size: CGFloat) -> Font {
-      return Font.custom("BebasNeue-Bold", size: size, relativeTo: .body)
+    public static func heading(size: CGFloat? = nil) -> Font {
+      return Font.custom("@\"BebasNeue-Bold\"", size: size ?? body, relativeTo: .body)
     }
 
-    public static func body(size: CGFloat) -> Font {
-      return Font.custom("Montserrat-Regular", size: size, relativeTo: .body)
+    public static func body(size: CGFloat? = nil) -> Font {
+      return Font.custom("@\"Montserrat-Regular\"", size: size ?? body, relativeTo: .body)
     }
 
-    public static func bodyBold(size: CGFloat) -> Font {
-      return Font.custom("Montserrat-Bold", size: size, relativeTo: .body)
+    public static func bodyBold(size: CGFloat? = nil) -> Font {
+      return Font.custom("@\"Montserrat-Bold\"", size: size ?? body, relativeTo: .body)
     }
 
-    public static func bodySemibold(size: CGFloat) -> Font {
-      return Font.custom("Montserrat-SemiBold", size: size, relativeTo: .body)
+    public static func bodySemibold(size: CGFloat? = nil) -> Font {
+      return Font.custom("@\"Montserrat-SemiBold\"", size: size ?? body, relativeTo: .body)
     }
 
-    public static func mono(size: CGFloat) -> Font {
-      return Font.custom("RobotoMono-Medium", size: size, relativeTo: .body)
+    public static func mono(size: CGFloat? = nil) -> Font {
+      return Font.custom("@\"RobotoMono-Medium\"", size: size ?? body, relativeTo: .body)
     }
+
   }
-  
+
   enum GeneratedRadius {
-    public static let small: CGFloat = 4
-    public static let medium: CGFloat = 8
-    public static let large: CGFloat = 16
     public static let card: CGFloat = 12
     public static let panel: CGFloat = 16
     public static let button: CGFloat = 8
     public static let input: CGFloat = 8
-    public static let full: CGFloat = 9999
+    public static let small: CGFloat = 4
+    public static let medium: CGFloat = 8
+    public static let large: CGFloat = 12
   }
-  
+
   enum GeneratedSpacing {
-    public static let extraSmall: CGFloat = 4
-    public static let small: CGFloat = 8
-    public static let medium: CGFloat = 16
-    public static let large: CGFloat = 24
-    public static let extraLarge: CGFloat = 32
     public static let section: CGFloat = 32
     public static let cardGap: CGFloat = 16
     public static let contentPadding: CGFloat = 16
     public static let itemSpacing: CGFloat = 8
-    public static let innerSpacing: CGFloat = 4
+    public static let small: CGFloat = 8
+    public static let medium: CGFloat = 16
+    public static let large: CGFloat = 24
   }
-  
+
   enum GeneratedShadows {
     public static let small = Shadow(
-      color: Color.black.opacity(0.1),
-      radius: 4,
-      x: 0,
-      y: 2
+      color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2
     )
 
     public static let medium = Shadow(
-      color: Color.black.opacity(0.15),
-      radius: 8,
-      x: 0,
-      y: 4
+      color: Color.black.opacity(0.15), radius: 8, x: 0, y: 4
     )
 
     public static let large = Shadow(
-      color: Color.black.opacity(0.2),
-      radius: 16,
-      x: 0,
-      y: 8
+      color: Color.black.opacity(0.2), radius: 16, x: 0, y: 8
     )
+
   }
+
+  enum GeneratedBorderWidth {
+  }
+
 }

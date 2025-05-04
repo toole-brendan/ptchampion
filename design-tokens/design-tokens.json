@@ -47,26 +47,32 @@
       "mono": { "value": "RobotoMono-Medium", "type": "fontFamily" }
     },
     "size": {
-      "heading1": { "value": "40", "type": "fontSize" },
-      "heading2": { "value": "32", "type": "fontSize" },
-      "heading3": { "value": "26", "type": "fontSize" },
-      "heading4": { "value": "22", "type": "fontSize" },
-      "body": { "value": "16", "type": "fontSize" },
-      "small": { "value": "14", "type": "fontSize" },
-      "tiny": { "value": "12", "type": "fontSize" }
+      "heading1": { "value": 40, "type": "fontSize" },
+      "heading2": { "value": 32, "type": "fontSize" },
+      "heading3": { "value": 26, "type": "fontSize" },
+      "heading4": { "value": 22, "type": "fontSize" },
+      "body": { "value": 16, "type": "fontSize" },
+      "small": { "value": 14, "type": "fontSize" },
+      "tiny": { "value": 12, "type": "fontSize" }
     }
   },
   "radius": {
     "card": { "value": "12", "type": "borderRadius" },
     "panel": { "value": "16", "type": "borderRadius" },
     "button": { "value": "8", "type": "borderRadius" },
-    "input": { "value": "8", "type": "borderRadius" }
+    "input": { "value": "8", "type": "borderRadius" },
+    "small": { "value": "4", "type": "borderRadius" },
+    "medium": { "value": "8", "type": "borderRadius" },
+    "large": { "value": "12", "type": "borderRadius" }
   },
   "spacing": {
     "section": { "value": "32", "type": "spacing" },
     "card-gap": { "value": "16", "type": "spacing" },
     "content-padding": { "value": "16", "type": "spacing" },
-    "item-spacing": { "value": "8", "type": "spacing" }
+    "item-spacing": { "value": "8", "type": "spacing" },
+    "small": { "value": "8", "type": "spacing" },
+    "medium": { "value": "16", "type": "spacing" },
+    "large": { "value": "24", "type": "spacing" }
   },
   "shadow": {
     "small": {

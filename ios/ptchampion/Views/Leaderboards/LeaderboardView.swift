@@ -306,8 +306,8 @@ struct LeaderboardView: View {
             LazyVStack(spacing: 0) {
                 // Use ListView placeholder during loading state
                 if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
-                    // Use Identifiable Int to avoid binding issues
-                    ForEach(0..<8, id: \.self) { i in
+                    // Use an array of integers instead of a range
+                    ForEach([0, 1, 2, 3, 4, 5, 6, 7], id: \.self) { i in
                         // Create a placeholder row inline
                         HStack {
                             // Rank - simplified to avoid image loading issues

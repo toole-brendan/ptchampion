@@ -3,7 +3,12 @@ import PackageDescription
 
 let package = Package(
     name: "PTDesignSystem",
-    platforms: [.iOS(.v14)],
+    platforms: [
+        .iOS(.v14),        // already there
+        .macOS(.v11),      // ← add this line
+        .tvOS(.v14),       // (optional) if you ever use tvOS
+        .watchOS(.v7)      // (optional) for watchOS
+    ],
     products: [
         // — 1 — Pure token model & utilities (no SwiftUI)
         .library(
