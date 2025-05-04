@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts // Assuming iOS 16+ for Swift Charts
+import PTDesignSystem
 
 struct ProgressView: View {
     // Replace hardcoded constants with generated values
@@ -16,7 +17,7 @@ struct ProgressView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Constants.cardGap) {
                     Text("Your Progress")
-                        .font(AppTheme.GeneratedTypography.heading())
+                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
                         .fontWeight(.bold)
                         .padding([.horizontal, .bottom], Constants.globalPadding)
 
@@ -24,7 +25,7 @@ struct ProgressView: View {
                     // TODO: Replace with actual chart implementation using viewModel.workoutHistory data
                     VStack(alignment: .leading) {
                         Text("Workout Trends") // Example Title
-                            .font(AppTheme.GeneratedTypography.subheading())
+                            .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
                         PlaceholderChartView()
                             .frame(height: 200)
                     }
@@ -36,7 +37,7 @@ struct ProgressView: View {
 
                     // History List Section
                     Text("Workout History")
-                        .font(AppTheme.GeneratedTypography.subheading())
+                        .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
                         .padding(.top)
                         .padding(.horizontal, Constants.globalPadding)
 
@@ -47,13 +48,13 @@ struct ProgressView: View {
                     } else if let errorMessage = viewModel.errorMessage {
                         Text(errorMessage)
                             .foregroundColor(AppTheme.GeneratedColors.error)
-                            .font(AppTheme.GeneratedTypography.body())
+                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
                             .padding(Constants.globalPadding)
                             .frame(maxWidth: .infinity)
                     } else if viewModel.workoutHistory.isEmpty {
                         Text("No workout history found. Complete a workout to see your progress!")
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                            .font(AppTheme.GeneratedTypography.body())
+                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
                             .multilineTextAlignment(.center)
                             .padding(Constants.globalPadding)
                             .frame(maxWidth: .infinity)
@@ -110,7 +111,7 @@ struct PlaceholderChartView: View {
                 .fill(AppTheme.GeneratedColors.deepOps.opacity(0.1))
             Text("Chart Area")
                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .font(AppTheme.GeneratedTypography.body())
+                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
         }
         // Apply chart styling from Theme.swift when implementing
     }

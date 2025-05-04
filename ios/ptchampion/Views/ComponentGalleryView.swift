@@ -509,7 +509,7 @@ struct ComponentGalleryView: View {
                         .cornerRadius(AppConstants.Radius.md)
                         .overlay(
                             RoundedRectangle(cornerRadius: AppConstants.Radius.md)
-                                .stroke(Color.gridlineGray, lineWidth: 1)
+                                .stroke(AppTheme.GeneratedColors.gridlineGray, lineWidth: 1)
                         )
                         .padding(.horizontal)
                 }

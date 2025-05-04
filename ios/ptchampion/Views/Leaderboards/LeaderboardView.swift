@@ -299,7 +299,7 @@ struct LeaderboardView: View {
                         // Create a placeholder row inline
                         HStack {
                             // Rank - simplified to avoid image loading issues
-                            PTLabel("\(i+1)", style: .bodyBold)
+                            PTLabel("\(i+1)", style: .body)
                                 .foregroundColor(AppTheme.GeneratedColors.textSecondary.opacity(0.5))
                                 .frame(width: 36)
                             
@@ -326,7 +326,7 @@ struct LeaderboardView: View {
                         PTCard {
                             HStack {
                                 // Rank - simplified to avoid image loading issues
-                                PTLabel(entry.rank <= 3 ? "🥇" : "\(entry.rank)", style: .bodyBold)
+                                PTLabel(entry.rank <= 3 ? "🥇" : "\(entry.rank)", style: .body)
                                     .frame(width: 36)
                                 
                                 PTLabel(entry.name, style: .body)
@@ -334,7 +334,7 @@ struct LeaderboardView: View {
                                 
                                 Spacer()
                                 
-                                PTLabel("\(entry.score) pts", style: .bodyBold, font: .monospaced)
+                                PTLabel("\(entry.score) pts", style: .body, font: .monospaced)
                                     .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                             }
                         }

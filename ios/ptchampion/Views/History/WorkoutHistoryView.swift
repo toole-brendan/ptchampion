@@ -18,7 +18,8 @@ struct WorkoutHistoryView: View {
                         ContentUnavailableView(
                             "No Workouts Yet",
                             systemImage: "figure.run.circle",
-                            description: PTLabel("Complete a workout to see your history here.", style: .body)
+                            description: Text("Complete a workout to see your history here.")
+                                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
                                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         )
                         .foregroundColor(AppTheme.GeneratedColors.brassGold)

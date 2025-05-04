@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 struct PTTextField: View {
     enum ValidationState {
@@ -16,8 +17,8 @@ struct PTTextField: View {
         
         var iconColor: Color {
             switch self {
-            case .valid: return LegacyColor.fromHex("#10B981") // emerald-500 (success green)
-            case .invalid: return LegacyColor.fromHex("#DC2626") // red-600 (error red)
+            case .valid: return AppTheme.GeneratedColors.success // success green
+            case .invalid: return AppTheme.GeneratedColors.error // error red
             default: return .clear
             }
         }
@@ -69,34 +70,34 @@ struct PTTextField: View {
             ZStack(alignment: .leading) {
                 // Floating label
                 Text(label)
-                    .font(.custom(AppFonts.body, size: shouldShowFloatingLabel ? AppConstants.FontSize.xs : AppConstants.FontSize.md))
-                    .foregroundColor(shouldShowFloatingLabel ? .tacticalGray : .tacticalGray.opacity(0.7))
+                    .font(AppTheme.GeneratedTypography.body(size: shouldShowFloatingLabel ? AppTheme.GeneratedTypography.tiny : AppTheme.GeneratedTypography.body))
+                    .foregroundColor(shouldShowFloatingLabel ? AppTheme.GeneratedColors.tacticalGray : AppTheme.GeneratedColors.tacticalGray.opacity(0.7))
                     .offset(y: shouldShowFloatingLabel ? -25 : 0)
                     .animation(.spring(response: 0.2), value: shouldShowFloatingLabel)
                 
-                HStack(spacing: AppConstants.Spacing.sm) {
+                HStack(spacing: AppTheme.GeneratedSpacing.small) {
                     // Leading icon if provided
                     if let icon = icon {
                         icon
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(width: 18, height: 18)
-                            .foregroundColor(.tacticalGray)
+                            .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
                     }
                     
                     // Text field or secure field
                     if isSecure && !secureTextVisible {
                         SecureField("", text: $text)
-                            .font(.custom(AppFonts.body, size: AppConstants.FontSize.md))
-                            .foregroundColor(.commandBlack)
+                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
+                            .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                             .keyboardType(keyboardType)
                             .textInputAutocapitalization(autocapitalization)
                             .autocorrectionDisabled(!autocorrection)
                             .padding(.top, shouldShowFloatingLabel ? 8 : 0)
                     } else {
                         TextField("", text: $text)
-                            .font(.custom(AppFonts.body, size: AppConstants.FontSize.md))
-                            .foregroundColor(.commandBlack)
+                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
+                            .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                             .keyboardType(keyboardType)
                             .textInputAutocapitalization(autocapitalization)
                             .autocorrectionDisabled(!autocorrection)
@@ -107,7 +108,7 @@ struct PTTextField: View {
                     if isSecure {
                         Button(action: { secureTextVisible.toggle() }) {
                             Image(systemName: secureTextVisible ? "eye.slash.fill" : "eye.fill")
-                                .foregroundColor(.tacticalGray)
+                                .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
                                 .frame(width: 20, height: 20)
                         }
                     } else if let icon = validationState.icon {
@@ -117,12 +118,12 @@ struct PTTextField: View {
                     }
                 }
             }
-            .padding(.vertical, AppConstants.Spacing.sm)
-            .padding(.horizontal, AppConstants.Spacing.md)
+            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
             .background(Color.white)
-            .cornerRadius(AppConstants.Radius.md)
+            .cornerRadius(AppTheme.GeneratedRadius.medium)
             .overlay(
-                RoundedRectangle(cornerRadius: AppConstants.Radius.md)
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.medium)
                     .stroke(borderColor, lineWidth: 1)
             )
             .onTapGesture {
@@ -137,9 +138,9 @@ struct PTTextField: View {
             // Error message
             if case .invalid(let message) = validationState {
                 Text(message)
-                    .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                    .foregroundColor(LegacyColor.fromHex("#DC2626")) // red-600
-                    .padding(.horizontal, AppConstants.Spacing.xs)
+                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.tiny))
+                    .foregroundColor(AppTheme.GeneratedColors.error)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.extraSmall)
                     .padding(.top, 2)
             }
         }
@@ -148,16 +149,16 @@ struct PTTextField: View {
     // Border color based on state
     private var borderColor: Color {
         if isEditing {
-            return .brassGold
+            return AppTheme.GeneratedColors.brassGold
         }
         
         switch validationState {
         case .valid:
-            return LegacyColor.fromHex("#10B981").opacity(0.5) // emerald-500
+            return AppTheme.GeneratedColors.success.opacity(0.5)
         case .invalid:
-            return LegacyColor.fromHex("#DC2626").opacity(0.5) // red-600
+            return AppTheme.GeneratedColors.error.opacity(0.5)
         case .none:
-            return .gridlineGray
+            return AppTheme.GeneratedColors.cream
         }
     }
 }
@@ -165,7 +166,7 @@ struct PTTextField: View {
 // MARK: - Preview Provider
 struct PTTextField_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppConstants.Spacing.lg) {
+        VStack(spacing: AppTheme.GeneratedSpacing.large) {
             // Empty state
             PTTextField(
                 text: .constant(""),
@@ -209,7 +210,7 @@ struct PTTextField_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(Color.tacticalCream.opacity(0.5))
+        .background(AppTheme.GeneratedColors.cream.opacity(0.5))
         .previewLayout(.sizeThatFits)
     }
 }
@@ -217,9 +218,9 @@ struct PTTextField_Previews: PreviewProvider {
 private extension ValidationState {
     var color: Color {
         switch self {
-        case .neutral: return AppTheme.Colors.tacticalGray
-        case .valid: return LegacyColor.fromHex("#10B981") // emerald-500 (success green)
-        case .invalid: return LegacyColor.fromHex("#DC2626") // red-600 (error red)
+        case .neutral: return AppTheme.GeneratedColors.tacticalGray
+        case .valid: return AppTheme.GeneratedColors.success
+        case .invalid: return AppTheme.GeneratedColors.error
         }
     }
 }
@@ -228,9 +229,9 @@ private extension ValidationType {
     var color: Color {
         switch self {
         case .email:
-            return LegacyColor.fromHex("#10B981").opacity(0.5) // emerald-500
+            return AppTheme.GeneratedColors.success.opacity(0.5)
         case .password:
-            return LegacyColor.fromHex("#DC2626").opacity(0.5) // red-600
+            return AppTheme.GeneratedColors.error.opacity(0.5)
         }
     }
 } 
