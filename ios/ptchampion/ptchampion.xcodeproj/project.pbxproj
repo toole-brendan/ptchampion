@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BF1E08682DC79B740094C5AB /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF1E08672DC79B740094C5AB /* PTDesignSystem */; };
 		BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */; };
 		BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */; };
 		BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
@@ -184,7 +183,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BF1E08682DC79B740094C5AB /* PTDesignSystem in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -523,6 +521,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF63E3DC2DB1C84F0037CD02 /* Build configuration list for PBXNativeTarget "ptchampion" */;
 			buildPhases = (
+				BF60DF342DC7C25F003487DB /* Clear Package Cache */,
 				BF63E3B52DB1C84E0037CD02 /* Sources */,
 				BF63E3B62DB1C84E0037CD02 /* Frameworks */,
 				BF63E3B72DB1C84E0037CD02 /* Resources */,
@@ -530,6 +529,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				BF60DF362DC7C8D0003487DB /* PBXTargetDependency */,
 			);
 			name = ptchampion;
 			productName = ptchampion;
@@ -650,6 +650,27 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		BF60DF342DC7C25F003487DB /* Clear Package Cache */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Clear Package Cache";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Clear Swift Package Manager caches only\nrm -rf ~/Library/Caches/org.swift.swiftpm/\n# Don't attempt to delete DerivedData from here\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		BF63E3B52DB1C84E0037CD02 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -727,6 +748,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		BF60DF362DC7C8D0003487DB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = BF60DF352DC7C8D0003487DB /* PTDesignSystem */;
+		};
 		BF63E3CA2DB1C84F0037CD02 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = BF63E3B82DB1C84E0037CD02 /* ptchampion */;
@@ -1056,8 +1081,9 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BF1E08672DC79B740094C5AB /* PTDesignSystem */ = {
+		BF60DF352DC7C8D0003487DB /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = PTDesignSystem;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 import UIKit
 import Foundation
-import PTDesignSystem // Import the design system package
+import PTDesignSystem
 
 // --- Define NavigationState and AppScreen outside the App struct ---
 

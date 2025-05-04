@@ -2,12 +2,6 @@
   "": {
     "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/master.swiftdeps"
   },
-  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/Components.swift": {
-    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/Components.d",
-    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/Components.swift.o",
-    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/Components~partial.swiftmodule",
-    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/Components.swiftdeps"
-  },
   "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/DesignSystemPreview.swift": {
     "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/DesignSystemPreview.d",
     "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/DesignSystemPreview.swift.o",
