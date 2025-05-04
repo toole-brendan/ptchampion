@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct ExerciseDetailView: View {
+import PTDesignSystem
     let exerciseType: String
     @StateObject private var viewModel = ExerciseDetailViewModel()
     @State private var isLoading = true
@@ -83,7 +84,7 @@ struct ExerciseDetailView: View {
             }
             .padding(AppConstants.Spacing.md)
         }
-        .background(Color.tacticalCream.opacity(0.5))
+        .background(AppTheme.GeneratedColors.tacticalCream.opacity(0.5))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Simulate network loading

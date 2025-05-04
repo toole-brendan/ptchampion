@@ -22,7 +22,7 @@ extension Font {
 }
 
 // Custom SwiftUI TextField that properly handles keyboard
-struct PTTextField: View {
+struct LoginTextField: View {
     let placeholder: String
     @Binding var text: String
     var isSecure: Bool = false
@@ -112,19 +112,9 @@ struct LoginView: View {
                     
                     // Form Fields
                     VStack(spacing: 16) {
-                        PTTextField(
-                            "Email",
-                            text: $email
-                        )
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
+                        PTTextField("Email", text: $email)
                         
-                        PTTextField(
-                            "Password",
-                            text: $password,
-                            isSecure: true
-                        )
-                        .autocapitalization(.none)
+                        PTTextField("Password", text: $password, isSecure: true)
                         
                         // Login Button
                         if auth.isLoading {

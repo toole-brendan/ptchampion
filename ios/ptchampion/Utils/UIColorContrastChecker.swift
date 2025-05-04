@@ -1,6 +1,6 @@
-import SwiftUI
 import UIKit
 
+import PTDesignSystem
 /// A utility to check color contrast ratio for WCAG accessibility compliance
 public struct UIColorContrastChecker {
     
@@ -179,20 +179,20 @@ public struct ContrastRatioPreview: View {
 #Preview {
     VStack {
         ContrastRatioPreview(
-            foreground: AppTheme.Colors.deepOps,
-            background: AppTheme.Colors.cream,
+            foreground: AppTheme.GeneratedColors.deepOps,
+            background: AppTheme.GeneratedColors.cream,
             text: "DeepOps on Cream"
         )
         
         ContrastRatioPreview(
-            foreground: AppTheme.Colors.brassGold,
-            background: AppTheme.Colors.deepOps,
+            foreground: AppTheme.GeneratedColors.brassGold,
+            background: AppTheme.GeneratedColors.deepOps,
             text: "BrassGold on DeepOps"
         )
         
         ContrastRatioPreview(
-            foreground: AppTheme.Colors.tacticalGray,
-            background: AppTheme.Colors.cream,
+            foreground: AppTheme.GeneratedColors.tacticalGray,
+            background: AppTheme.GeneratedColors.cream,
             text: "TacticalGray on Cream"
         )
     }

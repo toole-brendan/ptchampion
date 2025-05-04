@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 public struct Separator: View {
     public enum Orientation {

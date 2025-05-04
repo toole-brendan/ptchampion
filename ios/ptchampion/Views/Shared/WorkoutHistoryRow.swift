@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import PTDesignSystem
 
 // Helper Row View for displaying a single workout result
 struct WorkoutHistoryRow: View {
@@ -27,7 +28,7 @@ struct WorkoutHistoryRow: View {
     
     // Simple style for labels - inline instead of extension
     private func applyLabelStyle(to text: Text) -> some View {
-        text.font(AppTheme.GeneratedTypography.caption())
+        text.font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.tiny))
             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
     }
 
@@ -44,7 +45,7 @@ struct WorkoutHistoryRow: View {
             VStack(alignment: .leading) {
                  // TODO: Display actual exercise name
                 Text(result.exerciseType.capitalized) // Show exercise type
-                    .font(AppTheme.GeneratedTypography.subheading())
+                    .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
                     .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                 applyLabelStyle(to: Text("\(result.startTime, formatter: Self.dateFormatter)"))
             }
@@ -54,7 +55,7 @@ struct WorkoutHistoryRow: View {
             VStack(alignment: .trailing) {
                  // TODO: Format duration based on timeInSeconds from SwiftData model
                  Text(formatDuration(result.durationSeconds))
-                     .font(AppTheme.GeneratedTypography.subheading())
+                     .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
                      .foregroundColor(AppTheme.GeneratedColors.commandBlack)
                 // Display reps/score or distance based on type
                 if let reps = result.repCount {

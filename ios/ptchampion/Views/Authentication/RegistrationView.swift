@@ -43,35 +43,16 @@ struct RegistrationView: View {
                 
                 // Form fields with consistent styling
                 VStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
-                    PTTextField(
-                        "First Name",
-                        text: $firstName
-                    )
+                    PTTextField("First Name", text: $firstName)
                     
-                    PTTextField(
-                        "Last Name",
-                        text: $lastName
-                    )
+                    PTTextField("Last Name", text: $lastName)
                     
-                    PTTextField(
-                        "Email",
-                        text: $email
-                    )
-                    .keyboardType(.emailAddress)
-                    .autocapitalization(.none)
+                    PTTextField("Email", text: $email)
                     
-                    PTTextField(
-                        "Password",
-                        text: $password,
-                        isSecure: true
-                    )
+                    PTTextField("Password", text: $password, isSecure: true)
                     .onChange(of: password) { _, _ in validatePasswords() }
                     
-                    PTTextField(
-                        "Confirm Password",
-                        text: $confirmPassword,
-                        isSecure: true
-                    )
+                    PTTextField("Confirm Password", text: $confirmPassword, isSecure: true)
                     .onChange(of: confirmPassword) { _, _ in validatePasswords() }
                     
                     if passwordMismatch {

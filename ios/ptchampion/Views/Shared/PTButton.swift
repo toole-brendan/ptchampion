@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 struct PTButton: View {
     let title: String
@@ -29,7 +30,7 @@ struct PTButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack(spacing: AppTheme.Spacing.itemSpacing) {
+            HStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
                 if let icon = icon {
                     icon
                         .resizable()
@@ -62,7 +63,7 @@ struct PTButton: View {
 // Preview provider
 struct PTButton_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppTheme.Spacing.cardGap) {
+        VStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
             Group {
                 PTButton(title: "Primary Button", action: {})
                 
@@ -115,7 +116,7 @@ struct PTButton_Previews: PreviewProvider {
             }
         }
         .padding()
-        .background(AppTheme.Colors.background)
+        .background(AppTheme.GeneratedColors.background)
         .previewLayout(.sizeThatFits)
     }
 } 

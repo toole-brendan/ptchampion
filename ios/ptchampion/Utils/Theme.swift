@@ -1,9 +1,11 @@
 import SwiftUI
-// Don't import PTDesignSystem here - it's not available yet
+import PTDesignSystem
 
-// This file is a placeholder for backward compatibility.
-// All theme functionality is now handled by the PTDesignSystem package.
-// This file should be removed from the project when possible.
+// This file is deprecated and will be removed.
+// All theme functionality is now provided by the PTDesignSystem package.
+// Use AppTheme.GeneratedColors, AppTheme.GeneratedTypography, etc. instead.
+
+typealias AppThemeDeprecated = AppTheme
 
 // DEPRECATED: This is just a placeholder
 struct _LegacyTheme {

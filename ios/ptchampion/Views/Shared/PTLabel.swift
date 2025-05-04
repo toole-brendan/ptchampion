@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 /// A styled text component with standardized typography using design tokens
 struct PTLabel: View {
