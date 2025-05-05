@@ -3,9 +3,16 @@ import AVFoundation
 import Combine
 import UIKit // Needed for orientation
 
+#if targetEnvironment(simulator)
+private let kRunningInSimulator = true
+#else
+private let kRunningInSimulator = false
+#endif
+
 class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSampleBufferDelegate {
 
     let session = AVCaptureSession()
+    private let sessionQueueKey = DispatchSpecificKey<Bool>()
     private let sessionQueue = DispatchQueue(label: "com.ptchampion.cameraservice.sessionqueue", qos: .userInitiated)
     private let videoOutput = AVCaptureVideoDataOutput()
     private var videoDeviceInput: AVCaptureDeviceInput?
@@ -35,6 +42,8 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
 
     override init() {
         super.init()
+        // Set the queue-specific key for identifying the session queue
+        sessionQueue.setSpecific(key: sessionQueueKey, value: true)
         // Initial status check
         authorizationStatusSubject.send(AVCaptureDevice.authorizationStatus(for: .video))
         // Configure session asynchronously
@@ -52,6 +61,13 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
         }
 
         session.beginConfiguration()
+        
+        if kRunningInSimulator {
+            print("CameraService: Running in Simulator – skipping real camera configuration.")
+            session.commitConfiguration()
+            return
+        }
+        
         session.sessionPreset = .hd1280x720 // Choose appropriate preset
 
         // Input Device (Default to Front Camera)
@@ -137,8 +153,27 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
         }
     }
 
-    func stopSession() {
-        sessionQueue.async {
+    func stopSession(sync: Bool = false) {
+
+        // --------  synchronous path (used only from deinit)  --------
+        if sync {
+            if session.isRunning {
+                // execute on the session queue if we are not already on it
+                if DispatchQueue.getSpecific(key: sessionQueueKey) == nil {
+                    sessionQueue.sync { session.stopRunning() }
+                } else {
+                    session.stopRunning()
+                }
+                print("CameraService: Session stopped.")
+            } else {
+                print("CameraService: Session already stopped.")
+            }
+            return                                      // ⚑  nothing else
+        }
+
+        // --------  normal asynchronous path  --------
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
             guard self.session.isRunning else {
                 print("CameraService: Session already stopped.")
                 return
@@ -146,6 +181,11 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
             self.session.stopRunning()
             print("CameraService: Session stopped.")
         }
+    }
+
+    // ✅ add this wrapper to satisfy the protocol
+    func stopSession() {
+        stopSession(sync: false)
     }
 
     // MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
@@ -191,7 +231,7 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
 
     // MARK: - Deinitialization
     deinit {
-        stopSession()
+        stopSession(sync: true)          // now safe – does not form weak refs
         print("CameraService deinitialized.")
     }
 } 
