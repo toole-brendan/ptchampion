@@ -1,5 +1,6 @@
 import SwiftUI
 import DesignTokens
+import Introspect
 
 public struct PTTextField: View {
     private let placeholder: String
@@ -23,8 +24,28 @@ public struct PTTextField: View {
             Group {
                 if isSecure {
                     SecureField(text.isEmpty ? placeholder : "", text: $text)
+                        .introspectTextField { textField in
+                            print("🪄 Introspected:", textField)
+                            let item = textField.inputAssistantItem
+                            item.leadingBarButtonGroups  = []
+                            item.trailingBarButtonGroups = []
+
+                            if textField.inputAccessoryView == nil {
+                                textField.inputAccessoryView = UIView(frame: .zero)
+                            }
+                        }
                 } else {
                     TextField(text.isEmpty ? placeholder : "", text: $text)
+                        .introspectTextField { textField in
+                            print("🪄 Introspected:", textField)
+                            let item = textField.inputAssistantItem
+                            item.leadingBarButtonGroups  = []
+                            item.trailingBarButtonGroups = []
+
+                            if textField.inputAccessoryView == nil {
+                                textField.inputAccessoryView = UIView(frame: .zero)
+                            }
+                        }
                 }
             }
             .padding(12)

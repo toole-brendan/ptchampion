@@ -82,6 +82,12 @@ struct AuthResponse: Codable {
     }
 }
 
+// MARK: - Error Payloads
+
+struct ErrorEnvelope: Decodable {
+    let message: String?
+}
+
 // Generic API Response wrapper (Optional - Use if your API consistently wraps responses)
 // If used, ensure AuthResponse above is nested within this or handled appropriately.
 // struct APIResponse<T: Codable>: Codable {

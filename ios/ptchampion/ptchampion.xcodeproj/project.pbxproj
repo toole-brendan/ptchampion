@@ -926,7 +926,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ptchampion.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toole.ptchampion;
 				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -961,7 +961,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.ptchampion.app;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toole.ptchampion;
 				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -980,7 +980,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ptchampionTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toole.ptchampion;
 				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -1000,7 +1000,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ptchampionTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toole.ptchampion;
 				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -1018,7 +1018,7 @@
 				DEVELOPMENT_TEAM = 6DKP9BK9LF;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ptchampionUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toole.ptchampion;
 				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -1036,7 +1036,7 @@
 				DEVELOPMENT_TEAM = 6DKP9BK9LF;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ptchampionUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.toole.ptchampion;
 				PRODUCT_MODULE_NAME = PTChampion;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;

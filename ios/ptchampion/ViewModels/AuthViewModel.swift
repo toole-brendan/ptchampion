@@ -40,7 +40,7 @@ extension String {
 enum API {
     enum APIError: Error {
         case invalidURL
-        case requestFailed(Error)
+        case requestFailed(statusCode: Int, message: String)
         case invalidResponse
     }
     
@@ -56,61 +56,27 @@ enum API {
         return (response.token, response.user)
     }
     
-    static func post<R: Encodable, T: Decodable>(_ request: R, to url: URL) async throws -> T {
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.addValue("application/json", forHTTPHeaderField: "Accept")
-        urlRequest.httpBody = try JSONEncoder().encode(request)
-        
-        do {
-            print("⚙️ Sending HTTP request to \(url.absoluteString)")
-            let (data, response) = try await URLSession.shared.data(for: urlRequest)
-            
-            // Validate response
-            guard let httpResponse = response as? HTTPURLResponse,
-                  (200..<300).contains(httpResponse.statusCode) else {
-                print("❌ HTTP error: \(response)")
-                throw APIError.invalidResponse
-            }
-            
-            print("✅ HTTP response: \(httpResponse.statusCode)")
-            
-            // Print raw response for debugging
-            #if DEBUG
-            if let responseStr = String(data: data, encoding: .utf8) {
-                print("🔍 Raw JSON response: \(responseStr)")
-            }
-            #endif
-            
-            print("⚙️ Attempting to decode response")
-            do {
-                let result = try JSONDecoder().decode(T.self, from: data)
-                print("✅ Successfully decoded response")
-                return result
-            } catch {
-                print("🛑 Decoding failed - DETAILED ERROR: \(error)")
-                print("🛑 Decoding error localized description: \(error.localizedDescription)")
-                if let decodingError = error as? DecodingError {
-                    switch decodingError {
-                    case .typeMismatch(let type, let context):
-                        print("🛑 Type mismatch: expected \(type), context: \(context)")
-                    case .valueNotFound(let type, let context):
-                        print("🛑 Value not found: expected \(type), context: \(context)")
-                    case .keyNotFound(let key, let context):
-                        print("🛑 Key not found: \(key), context: \(context)")
-                    case .dataCorrupted(let context):
-                        print("🛑 Data corrupted: context: \(context)")
-                    @unknown default:
-                        print("🛑 Unknown decoding error")
-                    }
-                }
-                throw APIError.requestFailed(error)
-            }
-        } catch {
-            print("🛑 Network or decoding error: \(error)")
-            throw APIError.requestFailed(error)
+    static func post<R: Encodable, T: Decodable>(_ body: R, to url: URL) async throws -> T {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.invalidResponse
         }
+
+        // Success ----------------------------------------------------------------
+        if (200..<300).contains(http.statusCode) {
+            return try JSONDecoder().decode(T.self, from: data)
+        }
+
+        // Failure ----------------------------------------------------------------
+        // Try to decode the server's message; if that fails fall back to statusCode
+        let envelope = (try? JSONDecoder().decode(ErrorEnvelope.self, from: data))?.message
+        throw APIError.requestFailed(statusCode: http.statusCode,
+                                 message: envelope ?? HTTPURLResponse.localizedString(forStatusCode: http.statusCode))
     }
 }
 
@@ -169,10 +135,8 @@ class AuthViewModel: ObservableObject {
         } catch {
             print("🔴 API call failed - \(error) - AuthViewModel ID: \(self.instanceId)")
             await MainActor.run {
-                self.errorMessage = "Login failed: \(error.localizedDescription)"
-                withAnimation {
-                    self.authState = .unauthenticated
-                }
+                self.errorMessage = error.localizedDescription
+                withAnimation { self.authState = .unauthenticated }
             }
         }
         

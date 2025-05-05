@@ -3,6 +3,59 @@ import SwiftData
 import UIKit
 import Foundation
 import PTDesignSystem
+import ObjectiveC
+
+// Import local files/modules
+@_exported import class UIKit.UIView  // Ensure UIView is available for swizzling
+
+// AssistantKiller Implementation
+/// Hides every `SystemInputAssistantView` the moment it is added to any window.
+/// Runs exactly once per launch.
+enum AssistantKiller {
+    private static var done = false
+
+    static func activate() {
+        guard !done else { return }
+        done = true
+
+        // Install a one-time observer on every UIWindow that intercepts subview insertions.
+        NotificationCenter.default.addObserver(
+            forName: UIWindow.didBecomeVisibleNotification,
+            object: nil,
+            queue: .main
+        ) { note in
+            guard let window = note.object as? UIWindow else { return }
+            swizzleAddSubview(in: window)
+        }
+    }
+
+    /// Replace `addSubview(_:)` with a version that hides the assistant view.
+    private static func swizzleAddSubview(in window: UIWindow) {
+        let cls = UIView.self
+        let original = class_getInstanceMethod(cls, #selector(UIView.addSubview(_:)))!
+        let replacement = class_getInstanceMethod(cls, #selector(UIView._ptc_addSubview(_:)))!
+        method_exchangeImplementations(original, replacement)
+
+        // Kick the swizzled method once on existing subviews (rarely needed but harmless)
+        window.subviews.forEach { window._ptc_addSubview($0) }
+    }
+}
+
+extension UIView {
+    /// Safe replacement for `addSubview(_:)` that hides SystemInputAssistantView.
+    @objc fileprivate func _ptc_addSubview(_ view: UIView?) {   //  parameter is now *optional*
+        guard let view = view else { return }                   //  ignore nil sentinels
+
+        // Call the original implementation (now swapped)
+        _ptc_addSubview(view)
+
+        // Delete the keyboard shortcut bar at the moment it appears
+        if NSStringFromClass(type(of: view)).contains("SystemInputAssistantView") {
+            view.removeFromSuperview()
+            return
+        }
+    }
+}
 
 // --- Define NavigationState and AppScreen outside the App struct ---
 
@@ -203,6 +256,7 @@ struct PTChampionApp: App {
     
     // Initialize app appearance
     init() {
+        AssistantKiller.activate()
         print("DEBUG: PTChampionApp init() called")
         
         // Register fonts with error handling to prevent app crashes
