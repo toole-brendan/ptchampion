@@ -71,6 +71,7 @@
 		BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4772DB454230037CD02 /* Assets.xcassets */; };
 		BF8F678E2DC920D80065A2D7 /* BodyPoseDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */; };
 		BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */; };
+		BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F67902DC928E40065A2D7 /* CameraPermissionRequestView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -172,6 +173,7 @@
 		BF63E4772DB454230037CD02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPoseDetectionView.swift; sourceTree = "<group>"; };
 		BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDetectionDemoView.swift; sourceTree = "<group>"; };
+		BF8F67902DC928E40065A2D7 /* CameraPermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPermissionRequestView.swift; sourceTree = "<group>"; };
 		BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "BebasNeue-Bold.ttf"; path = "Resources/Fonts/BebasNeue-Bold.ttf"; sourceTree = "<group>"; };
 		BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Montserrat-Regular.ttf"; path = "Resources/Fonts/Montserrat-Regular.ttf"; sourceTree = "<group>"; };
 		BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Montserrat-Bold.ttf"; path = "Resources/Fonts/Montserrat-Bold.ttf"; sourceTree = "<group>"; };
@@ -462,6 +464,7 @@
 		BF63E4432DB1EB980037CD02 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				BF8F67902DC928E40065A2D7 /* CameraPermissionRequestView.swift */,
 				BF63E4412DB1EB980037CD02 /* CameraPreviewView.swift */,
 				BF63E4422DB1EB980037CD02 /* DeviceScanningView.swift */,
 			);
@@ -746,6 +749,7 @@
 				BF63E42D2DB1EB830037CD02 /* LeaderboardServiceProtocol.swift in Sources */,
 				BF63E42E2DB1EB830037CD02 /* KeychainServiceProtocol.swift in Sources */,
 				BF63E42F2DB1EB830037CD02 /* WorkoutService.swift in Sources */,
+				BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */,
 				BF63E4302DB1EB830037CD02 /* CameraServiceProtocol.swift in Sources */,
 				BF63E4312DB1EB830037CD02 /* KeychainService.swift in Sources */,
 				BF63E4322DB1EB830037CD02 /* WorkoutServiceProtocol.swift in Sources */,
