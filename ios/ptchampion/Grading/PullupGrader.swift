@@ -38,6 +38,12 @@ class PullupGrader: ExerciseGraderProtocol {
     private var feedback: String = "Hang from bar, arms extended."
     private(set) var repCount: Int = 0
     private var _lastFormIssue: String? = nil
+    private var _problemJoints: Set<VNHumanBodyPoseObservation.JointName> = [] // Track joints with issues
+    
+    // Public access to problem joints for UI highlighting
+    var problemJoints: Set<VNHumanBodyPoseObservation.JointName> {
+        return _problemJoints
+    }
     
     // Form quality tracking
     private var formScores: [Double] = []
@@ -79,6 +85,7 @@ class PullupGrader: ExerciseGraderProtocol {
         formScores = []
         formIssues = []
         _lastFormIssue = nil
+        _problemJoints = [] // Reset problem joints
         resetRepTrackingState()
         stableFrameCounter = 0
         repInProgress = false
@@ -98,6 +105,7 @@ class PullupGrader: ExerciseGraderProtocol {
     func gradePose(body: DetectedBody) -> GradingResult {
         feedback = "" // Reset feedback
         formIssues.removeAll()
+        _problemJoints = [] // Reset problem joints for this frame
 
         // Keep a snapshot of the state before analysing this frame
         let previousState = currentState
@@ -227,12 +235,16 @@ class PullupGrader: ExerciseGraderProtocol {
             if maxElbowAngleThisRep < PullupGrader.elbowAngleDownMin {
                 repFormIssues.append("Extend arms fully at bottom")
                 formQuality -= 0.2
+                _problemJoints.insert(.leftElbow)
+                _problemJoints.insert(.rightElbow)
             }
             
             // b) Check Chin Over Bar (must have been true at some point during UP)
             if !chinWasAboveBarThisRep {
                  repFormIssues.append("Chin did not clear bar")
                  formQuality -= 0.3
+                 _problemJoints.insert(.nose)
+                 _problemJoints.insert(.neck)
             }
             
             // c) Check Kipping (Hip Y travel)
@@ -242,12 +254,16 @@ class PullupGrader: ExerciseGraderProtocol {
             if startingHipY != nil && bodyHeightEstimate > 0.1 && (hipTravel / bodyHeightEstimate) > PullupGrader.kippingMaxHipYTravel {
                  repFormIssues.append("Excessive hip movement (kipping)")
                  formQuality -= 0.3
+                 _problemJoints.insert(.leftHip)
+                 _problemJoints.insert(.rightHip)
             }
             
             // d) Check Minimum Elbow Bend during Up phase
             if minElbowAngleThisRep > PullupGrader.elbowAngleUpRepCheckMax {
                  repFormIssues.append("Arms not bent enough at top")
                  formQuality -= 0.2
+                 _problemJoints.insert(.leftElbow)
+                 _problemJoints.insert(.rightElbow)
             }
             
             // Apply minimum quality floor and add to form tracking
@@ -293,11 +309,15 @@ class PullupGrader: ExerciseGraderProtocol {
              // Form issue while in DOWN position
              feedback = "Extend arms fully"
              _lastFormIssue = feedback
+             _problemJoints.insert(.leftElbow)
+             _problemJoints.insert(.rightElbow)
              gradingResult = .incorrectForm(feedback: feedback)
          } else if currentState == .up && !chinIsAboveBar {
              // Form issue while in UP position
              feedback = "Pull higher!"
              _lastFormIssue = feedback
+             _problemJoints.insert(.nose)
+             _problemJoints.insert(.neck)
              gradingResult = .incorrectForm(feedback: feedback)
          }
 
