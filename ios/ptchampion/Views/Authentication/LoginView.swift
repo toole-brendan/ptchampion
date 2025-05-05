@@ -3,22 +3,23 @@ import UIKit
 import PTDesignSystem
 import Introspect
 
-// Font extensions
+// Font extensions - Replace with AppTheme.GeneratedTypography
 extension Font {
+    // These methods are deprecated and should use AppTheme.GeneratedTypography instead
     static func bebasNeueBold(size: CGFloat) -> Font {
-        return Font.custom("BebasNeue-Bold", size: size)
+        return AppTheme.GeneratedTypography.heading(size: size)
     }
     
     static func montserratBold(size: CGFloat) -> Font {
-        return Font.custom("Montserrat-Bold", size: size)
+        return AppTheme.GeneratedTypography.bodyBold(size: size)
     }
     
     static func montserratSemiBold(size: CGFloat) -> Font {
-        return Font.custom("Montserrat-SemiBold", size: size)
+        return AppTheme.GeneratedTypography.bodySemibold(size: size)
     }
     
     static func montserratRegular(size: CGFloat) -> Font {
-        return Font.custom("Montserrat-Regular", size: size)
+        return AppTheme.GeneratedTypography.body(size: size)
     }
 }
 

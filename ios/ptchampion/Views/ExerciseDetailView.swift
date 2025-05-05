@@ -1,38 +1,38 @@
 import SwiftUI
+import PTDesignSystem
 
 struct ExerciseDetailView: View {
-import PTDesignSystem
     let exerciseType: String
     @StateObject private var viewModel = ExerciseDetailViewModel()
     @State private var isLoading = true
     
     var body: some View {
         ScrollView {
-            VStack(spacing: AppConstants.Spacing.lg) {
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
                 // Header with title and icon
                 HStack {
                     Text(exerciseType.capitalized)
-                        .font(.custom(AppFonts.heading, size: AppConstants.FontSize.xl))
-                        .foregroundColor(.deepOpsGreen)
+                        .font(.system(size: AppTheme.GeneratedTypography.heading4, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
                     
                     Spacer()
                     
                     Image(systemName: exerciseIcon)
                         .font(.system(size: 24))
-                        .foregroundColor(.deepOpsGreen)
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
                 }
-                .padding(AppConstants.Spacing.lg)
+                .padding(AppTheme.GeneratedSpacing.large)
                 .background(Color.white)
-                .cornerRadius(AppConstants.Radius.lg)
+                .cornerRadius(AppTheme.GeneratedRadius.large)
                 
                 // Stats summary
-                HStack(spacing: AppConstants.Spacing.md) {
+                HStack(spacing: AppTheme.GeneratedSpacing.medium) {
                     StatCard(
                         title: "Best Session",
                         value: "\(viewModel.personalBest)",
                         icon: "trophy.fill",
                         trend: .none,
-                        color: .brassGold,
+                        color: AppTheme.GeneratedColors.brassGold,
                         isHighlighted: false
                     )
                     
@@ -41,7 +41,7 @@ import PTDesignSystem
                         value: "\(viewModel.lastWeekTotal)",
                         icon: "calendar",
                         trend: viewModel.weeklyTrend,
-                        color: .deepOpsGreen,
+                        color: AppTheme.GeneratedColors.deepOps,
                         isHighlighted: false
                     )
                 }
@@ -58,18 +58,18 @@ import PTDesignSystem
                 }
                 
                 // Recent history
-                VStack(alignment: .leading, spacing: AppConstants.Spacing.md) {
-                    Text("Recent History")
-                        .font(.custom(AppFonts.subheading, size: AppConstants.FontSize.lg))
-                        .foregroundColor(.deepOpsGreen)
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                    Text(verbatim: "Recent History")
+                        .font(.system(size: AppTheme.GeneratedTypography.heading4, weight: .semibold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
                     
                     ForEach(viewModel.recentSessions) { session in
                         historyRow(session: session)
                     }
                 }
-                .padding(AppConstants.Spacing.lg)
+                .padding(AppTheme.GeneratedSpacing.large)
                 .background(Color.white)
-                .cornerRadius(AppConstants.Radius.lg)
+                .cornerRadius(AppTheme.GeneratedRadius.large)
                 
                 // Add exercise button
                 PTButton(
@@ -80,11 +80,11 @@ import PTDesignSystem
                         // Open recording modal
                     }
                 )
-                .padding(.vertical, AppConstants.Spacing.md)
+                .padding(.vertical, AppTheme.GeneratedSpacing.medium)
             }
-            .padding(AppConstants.Spacing.md)
+            .padding(AppTheme.GeneratedSpacing.medium)
         }
-        .background(AppTheme.GeneratedColors.tacticalCream.opacity(0.5))
+        .background(AppTheme.GeneratedColors.cream.opacity(0.5))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Simulate network loading
@@ -113,23 +113,23 @@ import PTDesignSystem
         HStack {
             VStack(alignment: .leading) {
                 Text(session.formattedDate)
-                    .font(.custom(AppFonts.subheading, size: AppConstants.FontSize.md))
-                    .foregroundColor(.deepOpsGreen)
+                    .font(.system(size: AppTheme.GeneratedTypography.body, weight: .semibold))
+                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
                 
                 Text(session.notes)
-                    .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                    .foregroundColor(.tacticalGray)
+                    .font(.system(size: AppTheme.GeneratedTypography.small))
+                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
             }
             
             Spacer()
             
             Text("\(session.value) \(session.unit)")
-                .font(.custom(AppFonts.subheading, size: AppConstants.FontSize.md))
-                .foregroundColor(.brassGold)
+                .font(.system(size: AppTheme.GeneratedTypography.body, weight: .semibold))
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
         }
-        .padding(AppConstants.Spacing.md)
+        .padding(AppTheme.GeneratedSpacing.medium)
         .background(Color.white)
-        .cornerRadius(AppConstants.Radius.md)
+        .cornerRadius(AppTheme.GeneratedRadius.medium)
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }

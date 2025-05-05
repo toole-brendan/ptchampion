@@ -2,14 +2,15 @@ import SwiftUI
 import CoreLocation // For CLAuthorizationStatus
 import SwiftData // Import SwiftData
 import CoreBluetooth // For CBManagerState
+import PTDesignSystem
 
 // Run-specific text style extensions
 extension Text {
-    func runLabelStyle(size: CGFloat = 14, color: Color = .gray) -> some View { 
+    func runLabelStyle(size: CGFloat = 14, color: Color = AppTheme.GeneratedColors.textSecondary) -> some View { 
         self.font(.system(size: size)).foregroundColor(color) 
     }
     
-    func statsNumberStyle(size: CGFloat = 32, color: Color = .primary) -> some View { 
+    func statsNumberStyle(size: CGFloat = 32, color: Color = AppTheme.GeneratedColors.textPrimary) -> some View { 
         self.font(.system(size: size, weight: .bold)).foregroundColor(color) 
     }
 }
@@ -17,9 +18,9 @@ extension Text {
 struct RunWorkoutView: View {
     // Define constants directly within the view
     private struct Constants {
-        static let globalPadding: CGFloat = 16
-        static let cardGap: CGFloat = 12
-        static let panelCornerRadius: CGFloat = 8
+        static let globalPadding: CGFloat = AppTheme.GeneratedSpacing.contentPadding
+        static let cardGap: CGFloat = AppTheme.GeneratedSpacing.cardGap
+        static let panelCornerRadius: CGFloat = AppTheme.GeneratedRadius.card
     }
     
     @StateObject private var viewModel: RunWorkoutViewModel // Use @StateObject
@@ -60,7 +61,7 @@ struct RunWorkoutView: View {
             // Bottom Controls
             runControls()
         }
-        .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea()) // Use RGB for tacticalCream
+        .background(AppTheme.GeneratedColors.cream.ignoresSafeArea()) // Use AppTheme.GeneratedColors.cream
         .navigationTitle("Run Tracking")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
@@ -72,7 +73,7 @@ struct RunWorkoutView: View {
                     }
                     dismiss()
                 }
-                .foregroundColor(Color(red: 0.749, green: 0.635, blue: 0.302)) // RGB for brassGold
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
             }
         }
         // Inject the actual modelContext when the view appears and context is available
@@ -91,27 +92,27 @@ struct RunWorkoutView: View {
         HStack {
             // Bluetooth Power Status Icon
             Image(systemName: viewModel.bluetoothState == .poweredOn ? "bolt.fill" : "bolt.slash.fill")
-                .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : .gray)
+                .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : AppTheme.GeneratedColors.textSecondary)
 
             // Connection Status Text
             switch viewModel.deviceConnectionState {
             case .disconnected:
                 Text("No Device Connected")
-                    .foregroundColor(.gray)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
             case .connecting:
                 HStack {
                     Text("Connecting...")
                     ProgressView().scaleEffect(0.7)
-                }.foregroundColor(.orange)
+                }.foregroundColor(AppTheme.GeneratedColors.warning)
             case .connected(let peripheral):
                 Text("Connected: \(peripheral.name ?? "Device")")
-                    .foregroundColor(.green)
+                    .foregroundColor(AppTheme.GeneratedColors.success)
             case .disconnecting:
                 Text("Disconnecting...")
-                    .foregroundColor(.gray)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
             case .failed:
                 Text("Connection Failed")
-                    .foregroundColor(.red)
+                    .foregroundColor(AppTheme.GeneratedColors.error)
             }
             
             Spacer()
@@ -121,7 +122,7 @@ struct RunWorkoutView: View {
                 Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
                 Text("GPS")
             }
-            .foregroundColor(viewModel.locationSource == .watch ? .blue : .primary)
+            .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
 
         }
         .font(.caption)
@@ -150,7 +151,7 @@ struct RunWorkoutView: View {
              }
         }
         .padding()
-        .background(Color(red: 0.12, green: 0.14, blue: 0.12)) // RGB for deepOpsGreen
+        .background(AppTheme.GeneratedColors.deepOps) // Use AppTheme.GeneratedColors.deepOps
     }
 
     // Helper for single metric display
@@ -160,10 +161,10 @@ struct RunWorkoutView: View {
         var body: some View {
             VStack {
                 Text(label)
-                    .runLabelStyle(size: 12, color: Color(red: 0.64, green: 0.64, blue: 0.56)) // RGB for inactiveGray
+                    .runLabelStyle(size: 12, color: AppTheme.GeneratedColors.textTertiary)
                     .padding(.bottom, 1)
                 Text(value)
-                    .statsNumberStyle(size: 24, color: Color(red: 0.957, green: 0.945, blue: 0.902)) // RGB for tacticalCream
+                    .statsNumberStyle(size: 24, color: AppTheme.GeneratedColors.cream)
             }
              .frame(maxWidth: .infinity) // Distribute horizontally
         }
@@ -177,21 +178,21 @@ struct RunWorkoutView: View {
              switch viewModel.runState {
              case .ready, .idle:
                  Button { viewModel.startRun() }
-                 label: { controlButtonLabel(systemName: "play.circle.fill", color: .green) }
+                 label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
              case .running:
                  Button { viewModel.pauseRun() }
-                 label: { controlButtonLabel(systemName: "pause.circle.fill", color: .yellow) }
+                 label: { controlButtonLabel(systemName: "pause.circle.fill", color: AppTheme.GeneratedColors.warning) }
              case .paused:
                  HStack(spacing: 40) {
                      Button { viewModel.resumeRun() }
-                     label: { controlButtonLabel(systemName: "play.circle.fill", color: .green) }
+                     label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
 
                      Button { viewModel.stopRun() }
-                     label: { controlButtonLabel(systemName: "stop.circle.fill", color: .red) }
+                     label: { controlButtonLabel(systemName: "stop.circle.fill", color: AppTheme.GeneratedColors.error) }
                  }
              case .finished, .error:
                  Button { dismiss() }
-                 label: { controlButtonLabel(systemName: "checkmark.circle.fill", color: Color(red: 0.749, green: 0.635, blue: 0.302)) } // RGB for brassGold
+                 label: { controlButtonLabel(systemName: "checkmark.circle.fill", color: AppTheme.GeneratedColors.brassGold) }
              default: // requestingPermission, permissionDenied
                  EmptyView()
              }
@@ -220,14 +221,14 @@ struct RunWorkoutView: View {
                  .resizable()
                  .scaledToFit()
                  .frame(width: 50, height: 50)
-                 .foregroundColor(viewModel.runState == .permissionDenied ? Color(red: 0.306, green: 0.353, blue: 0.282) : .orange) // RGB for tacticalGray
+                 .foregroundColor(viewModel.runState == .permissionDenied ? AppTheme.GeneratedColors.tacticalGray : AppTheme.GeneratedColors.warning)
 
              Text(viewModel.runState == .permissionDenied ? "Location Access Denied" : "Error")
                  .font(.title2).bold()
 
              Text(viewModel.errorMessage ?? "An error occurred.")
                  .multilineTextAlignment(.center)
-                 .foregroundColor(Color(red: 0.306, green: 0.353, blue: 0.282)) // RGB for tacticalGray
+                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                  .padding(.horizontal)
 
              if viewModel.runState == .permissionDenied {
@@ -238,8 +239,8 @@ struct RunWorkoutView: View {
                  }
                  .padding(.horizontal, 16)
                  .padding(.vertical, 10)
-                 .background(Color.blue)
-                 .foregroundColor(.white)
+                 .background(AppTheme.GeneratedColors.primary)
+                 .foregroundColor(AppTheme.GeneratedColors.cream)
                  .font(.headline)
                  .cornerRadius(8)
                  .padding(.top)
@@ -250,8 +251,8 @@ struct RunWorkoutView: View {
                  }
                  .padding(.horizontal, 16)
                  .padding(.vertical, 10)
-                 .background(Color.blue)
-                 .foregroundColor(.white)
+                 .background(AppTheme.GeneratedColors.primary)
+                 .foregroundColor(AppTheme.GeneratedColors.cream)
                  .font(.headline)
                  .cornerRadius(8)
                  .padding(.top)
@@ -271,7 +272,7 @@ struct MapViewPlaceholder: View {
         ZStack {
             Color.gray.opacity(0.2)
             Text("Map Area (Optional)")
-                .foregroundColor(Color(red: 0.306, green: 0.353, blue: 0.282)) // RGB for tacticalGray
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
         }
     }
 }

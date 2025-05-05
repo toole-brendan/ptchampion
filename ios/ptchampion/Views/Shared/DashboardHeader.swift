@@ -1,4 +1,5 @@
 import SwiftUI
+import PTDesignSystem
 
 struct DashboardHeader: View {
     // Props
@@ -54,17 +55,17 @@ struct DashboardHeader: View {
     var body: some View {
         VStack(spacing: 0) {
             // Header content
-            HStack(alignment: .center, spacing: AppConstants.Spacing.md) {
+            HStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.medium) {
                 // Title and subtitle
-                VStack(alignment: .leading, spacing: AppConstants.Spacing.xs) {
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
                     Text(title)
-                        .font(.custom(AppFonts.heading, size: AppConstants.FontSize.xl))
-                        .foregroundColor(.tacticalCream)
+                        .font(.system(size: AppTheme.GeneratedTypography.heading3, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.cream)
                     
                     if let subtitle = subtitle {
                         Text(subtitle)
-                            .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                            .foregroundColor(Color.tacticalCream.opacity(0.7))
+                            .font(.system(size: AppTheme.GeneratedTypography.small))
+                            .foregroundColor(AppTheme.GeneratedColors.cream.opacity(0.7))
                     }
                 }
                 
@@ -95,24 +96,24 @@ struct DashboardHeader: View {
                             .clipShape(Circle())
                             .overlay(
                                 Circle()
-                                    .stroke(Color.brassGold, lineWidth: 2)
+                                    .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 2)
                             )
                         } else {
                             Image(systemName: "person.circle.fill")
                                 .resizable()
                                 .frame(width: 40, height: 40)
-                                .foregroundColor(.brassGold)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         }
                     }
                 }
             }
-            .padding(.horizontal, AppConstants.Spacing.lg)
-            .padding(.vertical, AppConstants.Spacing.lg)
-            .background(Color.deepOpsGreen)
+            .padding(.horizontal, AppTheme.GeneratedSpacing.large)
+            .padding(.vertical, AppTheme.GeneratedSpacing.large)
+            .background(AppTheme.GeneratedColors.deepOps)
             
             // Bottom decorative line
             Rectangle()
-                .fill(Color.brassGold)
+                .fill(AppTheme.GeneratedColors.brassGold)
                 .frame(height: 2)
         }
     }
@@ -155,7 +156,7 @@ struct DashboardHeader_Previews: PreviewProvider {
                         Image(systemName: "gear")
                             .resizable()
                             .frame(width: 24, height: 24)
-                            .foregroundColor(.brassGold)
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     }
                 }
             )

@@ -130,14 +130,15 @@ struct Badge_Previews: PreviewProvider {
     }
 }
 
+// Updated to use GeneratedColors
 private extension BadgeType {
     var color: Color {
         switch self {
-        case .primary: return AppTheme.Colors.brassGold
-        case .secondary: return AppTheme.Colors.armyTan
+        case .primary: return AppTheme.GeneratedColors.brassGold
+        case .secondary: return AppTheme.GeneratedColors.armyTan
         case .outline: return .clear
-        case .destructive: return LegacyColor.fromHex("#DC2626") // red-600 from Tailwind
-        case .success: return LegacyColor.fromHex("#10B981") // emerald-500 from Tailwind
+        case .destructive: return AppTheme.GeneratedColors.error // Use semantic color instead of hardcoded
+        case .success: return AppTheme.GeneratedColors.success // Use semantic color instead of hardcoded
         }
     }
 } 

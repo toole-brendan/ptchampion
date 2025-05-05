@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import PTDesignSystem
 
 struct WorkoutProgressChart: View {
     let data: [WorkoutDataPoint]
@@ -29,34 +30,34 @@ struct WorkoutProgressChart: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppConstants.Spacing.md) {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
             // Chart header
             Text("Progress: \(formattedExerciseType)")
-                .font(.custom(AppFonts.subheading, size: AppConstants.FontSize.lg))
-                .foregroundColor(.deepOpsGreen)
+                .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.heading4))
+                .foregroundColor(AppTheme.GeneratedColors.deepOps)
             
             // The chart
             chart
                 .frame(height: 200)
             
             // Legend
-            HStack(spacing: AppConstants.Spacing.lg) {
-                legendItem(color: .brassGold, label: "Your Progress")
+            HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                legendItem(color: AppTheme.GeneratedColors.brassGold, label: "Your Progress")
                 
                 if exerciseType.lowercased() == "running" {
                     Text("Distance (km)")
-                        .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                        .foregroundColor(.tacticalGray)
+                        .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                 } else {
                     Text("Repetitions")
-                        .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                        .foregroundColor(.tacticalGray)
+                        .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                 }
             }
         }
-        .padding(AppConstants.Spacing.lg)
-        .background(Color.white)
-        .cornerRadius(AppConstants.Radius.lg)
+        .padding(AppTheme.GeneratedSpacing.large)
+        .background(AppTheme.GeneratedColors.cardBackground)
+        .cornerRadius(AppTheme.GeneratedRadius.large)
     }
     
     // Chart view using Swift Charts
@@ -67,7 +68,7 @@ struct WorkoutProgressChart: View {
                     x: .value("Date", item.date),
                     y: .value("Value", item.value)
                 )
-                .foregroundStyle(Color.brassGold)
+                .foregroundStyle(AppTheme.GeneratedColors.brassGold)
                 .interpolationMethod(.catmullRom) // Smooth curve
                 
                 AreaMark(
@@ -76,7 +77,7 @@ struct WorkoutProgressChart: View {
                 )
                 .foregroundStyle(
                     .linearGradient(
-                        colors: [Color.brassGold.opacity(0.3), Color.brassGold.opacity(0.01)],
+                        colors: [AppTheme.GeneratedColors.brassGold.opacity(0.3), AppTheme.GeneratedColors.brassGold.opacity(0.01)],
                         startPoint: .top,
                         endPoint: .bottom
                     )
@@ -87,7 +88,7 @@ struct WorkoutProgressChart: View {
                     x: .value("Date", item.date),
                     y: .value("Value", item.value)
                 )
-                .foregroundStyle(Color.brassGold)
+                .foregroundStyle(AppTheme.GeneratedColors.brassGold)
                 .symbolSize(30)
             }
         }
@@ -98,26 +99,26 @@ struct WorkoutProgressChart: View {
         .chartXAxis {
             AxisMarks(values: .automatic) { _ in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [5, 5]))
-                    .foregroundStyle(Color.tacticalGray.opacity(0.3))
+                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
                 AxisTick(stroke: StrokeStyle(lineWidth: 0.5))
-                    .foregroundStyle(Color.tacticalGray.opacity(0.3))
+                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
                 AxisValueLabel()
-                    .font(.custom(AppFonts.body, size: AppConstants.FontSize.xs))
-                    .foregroundStyle(Color.tacticalGray)
+                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.tiny))
+                    .foregroundStyle(AppTheme.GeneratedColors.textSecondary)
             }
         }
     }
     
     // Legend item helper
     private func legendItem(color: Color, label: String) -> some View {
-        HStack(spacing: AppConstants.Spacing.xs) {
+        HStack(spacing: AppTheme.GeneratedSpacing.small) {
             Circle()
                 .fill(color)
                 .frame(width: 8, height: 8)
             
             Text(label)
-                .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                .foregroundColor(.tacticalGray)
+                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
         }
     }
 }
@@ -145,7 +146,7 @@ struct WorkoutDataPoint: Identifiable {
 struct WorkoutProgressChart_Previews: PreviewProvider {
     static var previews: some View {
         ScrollView {
-            VStack(spacing: AppConstants.Spacing.xl) {
+            VStack(spacing: AppTheme.GeneratedSpacing.section) {
                 // Pushups example
                 WorkoutProgressChart(
                     data: [
@@ -175,7 +176,7 @@ struct WorkoutProgressChart_Previews: PreviewProvider {
                 )
             }
             .padding()
-            .background(Color.tacticalCream.opacity(0.5))
+            .background(AppTheme.GeneratedColors.cream.opacity(0.5))
         }
     }
 } 

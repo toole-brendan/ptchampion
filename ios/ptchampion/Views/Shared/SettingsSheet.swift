@@ -2,6 +2,11 @@ import SwiftUI
 import PTDesignSystem
 import SwiftUI
 
+// Add extension for AppTheme.GeneratedColors for any missing tokens
+public extension AppTheme.GeneratedColors {
+    static let tomahawkRed = error // Map to error color
+}
+
 /// A reusable settings sheet component that can be presented modally
 struct SettingsSheet: View {
     @Environment(\.dismiss) private var dismiss
@@ -15,7 +20,7 @@ struct SettingsSheet: View {
     var showAbout: Bool = true
     
     // State
-    @State private var selectedDistanceUnit: AppConstants.DistanceUnit = .kilometers
+    @State private var selectedDistanceUnit: AppTheme.DistanceUnit = .kilometers
     @State private var notificationsEnabled: Bool = true
     @State private var shareWorkouts: Bool = true
     @State private var darkModeEnabled: Bool = false
@@ -53,8 +58,8 @@ struct SettingsSheet: View {
                         HStack {
                             Spacer()
                             Text("Sign Out")
-                                .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.md))
-                                .foregroundColor(.tomahawkRed)
+                                .font(.system(size: AppTheme.GeneratedTypography.body, weight: .bold))
+                                .foregroundColor(AppTheme.GeneratedColors.tomahawkRed)
                             Spacer()
                         }
                     }
@@ -96,19 +101,19 @@ struct SettingsSheet: View {
                 HStack {
                     VStack(alignment: .leading) {
                         Text(user.displayName ?? user.email ?? "User")
-                            .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.md))
+                            .font(.system(size: AppTheme.GeneratedTypography.body, weight: .bold))
                         Text(user.email ?? "")
-                            .font(.custom(AppFonts.body, size: AppConstants.FontSize.sm))
-                            .foregroundColor(.tacticalGray)
+                            .font(.system(size: AppTheme.GeneratedTypography.small))
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "person.circle.fill")
                         .font(.system(size: 40))
-                        .foregroundColor(.brassGold)
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
                 }
-                .padding(.vertical, AppConstants.Spacing.xs)
+                .padding(.vertical, AppTheme.GeneratedSpacing.small)
                 
                 Button(action: {
                     // Navigate to profile edit
@@ -120,7 +125,7 @@ struct SettingsSheet: View {
                     showingDeleteAccountConfirmation = true
                 }) {
                     Text("Delete Account")
-                        .foregroundColor(.tomahawkRed)
+                        .foregroundColor(AppTheme.GeneratedColors.tomahawkRed)
                 }
             } else {
                 Button(action: {
@@ -135,7 +140,7 @@ struct SettingsSheet: View {
     private var appearanceSection: some View {
         Section(header: Text("Appearance")) {
             Picker("Distance Units", selection: $selectedDistanceUnit) {
-                ForEach(AppConstants.DistanceUnit.allCases, id: \.self) { unit in
+                ForEach(AppTheme.DistanceUnit.allCases, id: \.self) { unit in
                     Text(unit.displayName).tag(unit)
                 }
             }
@@ -181,7 +186,7 @@ struct SettingsSheet: View {
                 Text("Version")
                 Spacer()
                 Text(Bundle.main.appVersionAndBuild)
-                    .foregroundColor(.tacticalGray)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
             }
             
             NavigationLink("Send Feedback") {
@@ -216,8 +221,8 @@ struct SettingsSheet: View {
             TextEditor(text: .constant(""))
                 .frame(minHeight: 200)
                 .padding()
-                .background(Color.gridlineGray.opacity(0.5))
-                .cornerRadius(AppConstants.Radius.md)
+                .background(Color.gray.opacity(0.5))
+                .cornerRadius(AppTheme.GeneratedRadius.medium)
                 .padding()
             
             PTButton(
@@ -297,5 +302,21 @@ class MockAuthViewModel: ObservableObject {
         isAuthenticated = false
         currentUser = nil
         // Additional logout logic would go here
+    }
+}
+
+// MARK: - Extension for AppTheme
+
+extension AppTheme {
+    enum DistanceUnit: String, CaseIterable {
+        case kilometers
+        case miles
+        
+        var displayName: String {
+            switch self {
+            case .kilometers: return "Kilometers"
+            case .miles: return "Miles"
+            }
+        }
     }
 } 

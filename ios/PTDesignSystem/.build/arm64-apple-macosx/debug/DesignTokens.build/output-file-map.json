@@ -1,0 +1,53 @@
+{
+  "": {
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/AppTheme.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ColorExtension.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/CompatibilityLayer.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/DesignTokens.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/Generated/AppTheme+Generated.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/StyleExtensions.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ThemeManager.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DerivedSources/resource_bundle_accessor.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor.swiftdeps"
+  }
+}

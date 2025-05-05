@@ -305,10 +305,10 @@ struct ComponentGalleryView: View {
     }
     
     private var toastsSection: some View {
-        VStack(alignment: .leading, spacing: AppConstants.Spacing.lg) {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
             sectionHeader(title: "Toasts", description: "Notification banners and alerts")
             
-            VStack(spacing: AppConstants.Spacing.md) {
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 // Show different toast types
                 Toast(type: .success, title: "Success", message: "Your action was completed successfully.")
                 Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
@@ -408,10 +408,10 @@ struct ComponentGalleryView: View {
     }
     
     private var headersSection: some View {
-        VStack(alignment: .leading, spacing: AppConstants.Spacing.lg) {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
             sectionHeader(title: "Headers", description: "Dashboard and section headers")
             
-            VStack(spacing: AppConstants.Spacing.lg) {
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
                 DashboardHeader.greeting(userName: "John Doe")
                 
                 DashboardHeader.section(title: "Your Workouts", subtitle: "Recent activity")
@@ -424,7 +424,7 @@ struct ComponentGalleryView: View {
                             Image(systemName: "gear")
                                 .resizable()
                                 .frame(width: 24, height: 24)
-                                .foregroundColor(.brassGold)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         }
                     }
                 )
@@ -433,25 +433,23 @@ struct ComponentGalleryView: View {
     }
     
     private var listsSection: some View {
-        VStack(alignment: .leading, spacing: AppConstants.Spacing.lg) {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
             sectionHeader(title: "Lists", description: "Workout history and leaderboards")
             
-            VStack(spacing: AppConstants.Spacing.md) {
-                VStack(alignment: .leading, spacing: AppConstants.Spacing.sm) {
-                    Text("Workout History")
-                        .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.md))
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                    PTLabel("Workout History", style: .bodyBold)
                     
                     // Use our sample workout history rows
                     WorkoutHistoryRow(workout: WorkoutHistoryList_Previews.sampleWorkout())
                         .frame(height: 120)
                 }
                 .padding()
-                .background(Color.white)
-                .cornerRadius(AppConstants.Radius.md)
+                .background(AppTheme.GeneratedColors.cardBackground)
+                .cornerRadius(AppTheme.GeneratedRadius.medium)
                 
-                VStack(alignment: .leading, spacing: AppConstants.Spacing.sm) {
-                    Text("Leaderboard")
-                        .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.md))
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                    PTLabel("Leaderboard", style: .bodyBold)
                     
                     LeaderboardRow(
                         rank: 1,
@@ -478,17 +476,17 @@ struct ComponentGalleryView: View {
                     )
                 }
                 .padding()
-                .background(Color.white)
-                .cornerRadius(AppConstants.Radius.md)
+                .background(AppTheme.GeneratedColors.cardBackground)
+                .cornerRadius(AppTheme.GeneratedRadius.medium)
             }
         }
     }
     
     private var sheetsSection: some View {
-        VStack(alignment: .leading, spacing: AppConstants.Spacing.lg) {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
             sectionHeader(title: "Modal Sheets", description: "Settings and filters")
             
-            VStack(spacing: AppConstants.Spacing.md) {
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 PTButton(
                     title: "Show Settings Sheet",
                     icon: Image(systemName: "gearshape.fill"),
@@ -498,24 +496,23 @@ struct ComponentGalleryView: View {
                 )
                 
                 // Show preview of settings content
-                VStack(alignment: .leading, spacing: AppConstants.Spacing.md) {
-                    Text("Settings Preview")
-                        .font(.custom(AppFonts.bodyBold, size: AppConstants.FontSize.md))
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                    PTLabel("Settings Preview", style: .bodyBold)
                     
                     Image("settings_preview")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(height: 200)
-                        .cornerRadius(AppConstants.Radius.md)
+                        .cornerRadius(AppTheme.GeneratedRadius.medium)
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppConstants.Radius.md)
-                                .stroke(AppTheme.GeneratedColors.gridlineGray, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.medium)
+                                .stroke(AppTheme.GeneratedColors.textTertiary.opacity(0.3), lineWidth: 1)
                         )
                         .padding(.horizontal)
                 }
                 .padding()
-                .background(Color.white)
-                .cornerRadius(AppConstants.Radius.md)
+                .background(AppTheme.GeneratedColors.cardBackground)
+                .cornerRadius(AppTheme.GeneratedRadius.medium)
             }
         }
     }
