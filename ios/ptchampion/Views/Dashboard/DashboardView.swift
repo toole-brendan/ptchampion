@@ -49,7 +49,7 @@ struct DashboardView: View {
                         }
                         .padding()
                         .background(AppTheme.GeneratedColors.brassGold)
-                        .foregroundColor(AppTheme.GeneratedColors.commandWhite)
+                        .foregroundColor(AppTheme.GeneratedColors.cream)
                         .cornerRadius(AppTheme.GeneratedRadius.button)
                     }
                     .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing)

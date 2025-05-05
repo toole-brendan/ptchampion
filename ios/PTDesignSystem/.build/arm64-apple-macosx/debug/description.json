@@ -1,0 +1,2872 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem_DesignTokens.bundle/Colors.xcassets" : {
+      "inputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/Resources/Colors.xcassets"
+        }
+      ],
+      "outputs" : [
+        {
+          "kind" : "directory",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem_DesignTokens.bundle/Colors.xcassets"
+        }
+      ]
+    }
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.Components-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/DesignSystemPreview.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTButton.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTCard.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTLabel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTSeparator.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTTextField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/DesignTokens.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/Introspect.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Components",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/Components.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/DesignSystemPreview.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTButton.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTCard.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTLabel.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTSeparator.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTTextField.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx11.0",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/Components-Swift.h",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/DesignSystemPreview.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTButton.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTCard.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTLabel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTSeparator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTTextField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/Components.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/DesignSystemPreview.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTButton.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTCard.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTLabel.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTSeparator.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTTextField.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.DesignTokens-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/AppTheme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ColorExtension.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/CompatibilityLayer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/DesignTokens.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/Generated/AppTheme+Generated.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/StyleExtensions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ThemeManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DerivedSources/resource_bundle_accessor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "virtual",
+          "name" : "<DesignTokens-arm64-apple-macosx15.0-debug.module-resources>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "DesignTokens",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/DesignTokens.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx11.0",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens-Swift.h",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/DesignTokens.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/AppTheme.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ColorExtension.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/CompatibilityLayer.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/DesignTokens.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/Generated/AppTheme+Generated.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/StyleExtensions.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ThemeManager.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DerivedSources/resource_bundle_accessor.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.Introspect-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/AppKitIntrospectionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/Introspect.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/ViewExtensions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "Introspect",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/Introspect.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.15",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect-Swift.h",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/Introspect.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/AppKitIntrospectionView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/Introspect.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionViewController.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/ViewExtensions.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.PTDesignSystem-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/Components.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/DesignTokens.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "PTDesignSystem",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/PTDesignSystem.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx11.0",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/PTDesignSystem-Swift.h",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "ptdesignsystem"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/PTDesignSystem.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.SwiftUIIntrospect-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/sources",
+      "importPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Introspect.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectableViewType.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectionSelector.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformVersion.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformViewVersion.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/RuntimeWarnings.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Utils.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Button.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ColorPicker.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePicker.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithCompactStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithFieldStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithGraphicalStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithStepperFieldStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithWheelStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Form.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/FormWithGroupedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/FullScreenCover.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/List.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListCell.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithBorderedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithGroupedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithInsetGroupedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithInsetStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithSidebarStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Map.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationSplitView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationStack.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationViewWithColumnsStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationViewWithStackStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PageControl.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithMenuStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithSegmentedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithWheelStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Popover.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ProgressViewWithCircularStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ProgressViewWithLinearStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ScrollView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SearchField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SecureField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Sheet.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SignInWithAppleButton.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Slider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Stepper.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TabView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TabViewWithPageStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Table.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextEditor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextFieldWithVerticalAxis.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Toggle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithButtonStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithCheckboxStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithSwitchStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/VideoPlayer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/View.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Window.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Weak.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "SwiftUIIntrospect",
+      "moduleOutputPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/SwiftUIIntrospect.swiftmodule",
+      "objects" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Introspect.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectableViewType.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectionSelector.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectionView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformVersion.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformViewVersion.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/RuntimeWarnings.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Utils.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Button.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ColorPicker.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePicker.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithCompactStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithFieldStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithGraphicalStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithStepperFieldStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithWheelStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Form.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/FormWithGroupedStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/FullScreenCover.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/List.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListCell.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithBorderedStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithGroupedStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithInsetGroupedStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithInsetStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithSidebarStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Map.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationSplitView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationStack.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationViewWithColumnsStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationViewWithStackStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PageControl.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithMenuStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithSegmentedStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithWheelStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Popover.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ProgressViewWithCircularStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ProgressViewWithLinearStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ScrollView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SearchField.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SecureField.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Sheet.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SignInWithAppleButton.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Slider.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Stepper.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TabView.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TabViewWithPageStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Table.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextEditor.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextField.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextFieldWithVerticalAxis.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Toggle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithButtonStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithCheckboxStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithSwitchStyle.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/VideoPlayer.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/View.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ViewController.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Window.swift.o",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Weak.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.15",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SwiftUIIntrospect-Swift.h",
+        "-color-diagnostics",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-suppress-warnings"
+      ],
+      "outputFileMapPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Introspect.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectableViewType.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectionSelector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformViewVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/RuntimeWarnings.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Utils.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Button.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ColorPicker.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePicker.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithCompactStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithFieldStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithGraphicalStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithStepperFieldStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithWheelStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Form.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/FormWithGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/FullScreenCover.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/List.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListCell.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithBorderedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithInsetGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithInsetStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithSidebarStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Map.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationSplitView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationStack.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationViewWithColumnsStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationViewWithStackStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PageControl.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithMenuStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithSegmentedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithWheelStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Popover.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ProgressViewWithCircularStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ProgressViewWithLinearStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ScrollView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SearchField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SecureField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Sheet.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SignInWithAppleButton.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Slider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Stepper.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TabView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TabViewWithPageStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Table.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextEditor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextFieldWithVerticalAxis.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Toggle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithButtonStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithCheckboxStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithSwitchStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/VideoPlayer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/View.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Window.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Weak.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules/SwiftUIIntrospect.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Introspect.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectableViewType.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectionSelector.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectionView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformVersion.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformViewVersion.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/RuntimeWarnings.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Utils.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Button.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ColorPicker.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePicker.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithCompactStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithFieldStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithGraphicalStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithStepperFieldStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithWheelStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Form.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/FormWithGroupedStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/FullScreenCover.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/List.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListCell.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithBorderedStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithGroupedStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithInsetGroupedStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithInsetStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithSidebarStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Map.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationSplitView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationStack.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationViewWithColumnsStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationViewWithStackStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PageControl.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithMenuStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithSegmentedStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithWheelStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Popover.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ProgressViewWithCircularStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ProgressViewWithLinearStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ScrollView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SearchField.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SecureField.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Sheet.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SignInWithAppleButton.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Slider.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Stepper.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TabView.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TabViewWithPageStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Table.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextEditor.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextField.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextFieldWithVerticalAxis.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Toggle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithButtonStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithCheckboxStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithSwitchStyle.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/VideoPlayer.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/View.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ViewController.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Window.swift",
+        "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Weak.swift"
+      ],
+      "tempsPath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "Components" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Components",
+      "-package-name",
+      "ptdesignsystem",
+      "-incremental",
+      "-c",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/DesignSystemPreview.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTButton.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTCard.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTLabel.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTSeparator.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTTextField.swift",
+      "-I",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx11.0",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/Components-Swift.h",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "ptdesignsystem",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "DesignTokens" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "DesignTokens",
+      "-package-name",
+      "ptdesignsystem",
+      "-incremental",
+      "-c",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/AppTheme.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ColorExtension.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/CompatibilityLayer.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/DesignTokens.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/Generated/AppTheme+Generated.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/StyleExtensions.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ThemeManager.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DerivedSources/resource_bundle_accessor.swift",
+      "-I",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx11.0",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens-Swift.h",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "ptdesignsystem",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "Introspect" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "Introspect",
+      "-incremental",
+      "-c",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/AppKitIntrospectionView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/Introspect.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionViewController.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/ViewExtensions.swift",
+      "-I",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.15",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect-Swift.h",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "PTDesignSystem" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "PTDesignSystem",
+      "-package-name",
+      "ptdesignsystem",
+      "-incremental",
+      "-c",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift",
+      "-I",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx11.0",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/PTDesignSystem-Swift.h",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "ptdesignsystem",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "SwiftUIIntrospect" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "SwiftUIIntrospect",
+      "-incremental",
+      "-c",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Introspect.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectableViewType.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectionSelector.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectionView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformVersion.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformViewVersion.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/RuntimeWarnings.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Utils.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Button.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ColorPicker.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePicker.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithCompactStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithFieldStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithGraphicalStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithStepperFieldStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithWheelStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Form.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/FormWithGroupedStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/FullScreenCover.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/List.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListCell.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithBorderedStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithGroupedStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithInsetGroupedStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithInsetStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithSidebarStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Map.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationSplitView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationStack.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationViewWithColumnsStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationViewWithStackStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PageControl.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithMenuStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithSegmentedStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithWheelStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Popover.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ProgressViewWithCircularStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ProgressViewWithLinearStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ScrollView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SearchField.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SecureField.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Sheet.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SignInWithAppleButton.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Slider.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Stepper.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TabView.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TabViewWithPageStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Table.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextEditor.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextField.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextFieldWithVerticalAxis.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Toggle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithButtonStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithCheckboxStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithSwitchStyle.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/VideoPlayer.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/View.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ViewController.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Window.swift",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Weak.swift",
+      "-I",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.15",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SwiftUIIntrospect-Swift.h",
+      "-color-diagnostics",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.4.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-suppress-warnings",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "Components" : [
+      "Introspect",
+      "DesignTokens"
+    ],
+    "DesignTokens" : [
+
+    ],
+    "Introspect" : [
+
+    ],
+    "PTDesignSystem" : [
+      "Components",
+      "Introspect",
+      "DesignTokens"
+    ],
+    "SwiftUIIntrospect" : [
+
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "enableAllTraits" : false
+  },
+  "writeCommands" : {
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/DesignSystemPreview.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTButton.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTCard.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTLabel.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTSeparator.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/Components/PTTextField.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/DesignSystemPreview.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTButton.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTCard.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTLabel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTSeparator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTTextField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/AppTheme.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ColorExtension.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/CompatibilityLayer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/DesignTokens.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/Generated/AppTheme+Generated.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/StyleExtensions.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/DesignTokens/ThemeManager.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DerivedSources/resource_bundle_accessor.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect-Dynamic.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect-Dynamic.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect-Static.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect-Static.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/AppKitIntrospectionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/Introspect.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/ViewExtensions.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/DesignSystemPreview.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTButton.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTCard.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTLabel.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTSeparator.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Components.build/PTTextField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme+Generated.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/AppTheme.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ColorExtension.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/CompatibilityLayer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/DesignTokens.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/StyleExtensions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/ThemeManager.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/DesignTokens.build/resource_bundle_accessor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect-Dynamic.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Button.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ColorPicker.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePicker.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithCompactStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithFieldStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithGraphicalStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithStepperFieldStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithWheelStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Form.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/FormWithGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/FullScreenCover.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Introspect.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectableViewType.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectionSelector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/List.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListCell.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithBorderedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithInsetGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithInsetStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithSidebarStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Map.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationSplitView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationStack.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationViewWithColumnsStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationViewWithStackStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PageControl.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithMenuStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithSegmentedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithWheelStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformViewVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Popover.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ProgressViewWithCircularStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ProgressViewWithLinearStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/RuntimeWarnings.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ScrollView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SearchField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SecureField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Sheet.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SignInWithAppleButton.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Slider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Stepper.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TabView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TabViewWithPageStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Table.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextEditor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextFieldWithVerticalAxis.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Toggle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithButtonStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithCheckboxStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithSwitchStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Utils.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/VideoPlayer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/View.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Weak.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Window.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect-Dynamic.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect-Static.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Button.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ColorPicker.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePicker.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithCompactStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithFieldStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithGraphicalStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithStepperFieldStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/DatePickerWithWheelStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Form.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/FormWithGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/FullScreenCover.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Introspect.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectableViewType.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectionSelector.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/IntrospectionView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/List.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListCell.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithBorderedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithInsetGroupedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithInsetStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ListWithSidebarStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Map.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationSplitView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationStack.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationViewWithColumnsStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/NavigationViewWithStackStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PageControl.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithMenuStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithSegmentedStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PickerWithWheelStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/PlatformViewVersion.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Popover.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ProgressViewWithCircularStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ProgressViewWithLinearStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/RuntimeWarnings.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ScrollView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SearchField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SecureField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Sheet.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SignInWithAppleButton.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Slider.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Stepper.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TabView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TabViewWithPageStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Table.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextEditor.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextField.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/TextFieldWithVerticalAxis.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Toggle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithButtonStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithCheckboxStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ToggleWithSwitchStyle.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Utils.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/VideoPlayer.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/View.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/ViewController.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Weak.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/Window.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect-Static.product/Objects.LinkFileList"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Introspect.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectableViewType.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectionSelector.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/IntrospectionView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformVersion.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/PlatformViewVersion.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/RuntimeWarnings.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Utils.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Button.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ColorPicker.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePicker.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithCompactStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithFieldStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithGraphicalStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithStepperFieldStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/DatePickerWithWheelStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Form.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/FormWithGroupedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/FullScreenCover.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/List.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListCell.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithBorderedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithGroupedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithInsetGroupedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithInsetStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ListWithSidebarStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Map.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationSplitView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationStack.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationViewWithColumnsStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/NavigationViewWithStackStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PageControl.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithMenuStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithSegmentedStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/PickerWithWheelStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Popover.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ProgressViewWithCircularStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ProgressViewWithLinearStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ScrollView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SearchField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SecureField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Sheet.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/SignInWithAppleButton.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Slider.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Stepper.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TabView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TabViewWithPageStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Table.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextEditor.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextField.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/TextFieldWithVerticalAxis.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Toggle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithButtonStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithCheckboxStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ToggleWithSwitchStyle.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/VideoPlayer.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/View.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/ViewController.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/ViewTypes/Window.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Sources/Weak.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/sources"
+    },
+    "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

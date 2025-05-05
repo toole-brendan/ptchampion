@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/Sources/PTDesignSystem/Umbrella.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/PTDesignSystem.build/Umbrella.swiftdeps"
+  }
+}

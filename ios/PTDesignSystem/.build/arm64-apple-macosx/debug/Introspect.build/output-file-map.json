@@ -1,0 +1,35 @@
+{
+  "": {
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/AppKitIntrospectionView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/AppKitIntrospectionView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/Introspect.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionView.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionView.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/UIKitIntrospectionViewController.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/UIKitIntrospectionViewController.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/checkouts/SwiftUI-Introspect/Introspect/ViewExtensions.swift": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/ViewExtensions.swiftdeps"
+  }
+}

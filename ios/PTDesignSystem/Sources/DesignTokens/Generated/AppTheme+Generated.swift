@@ -25,6 +25,9 @@ public extension AppTheme {
     public static let textPrimary = Color("TextPrimary", bundle: .module)
     public static let textSecondary = Color("TextSecondary", bundle: .module)
     public static let textTertiary = Color("TextTertiary", bundle: .module)
+    
+    // Additional semantic colors
+    public static let textOnPrimary = cream // Text on primary color (usually white/cream)
   }
 
   enum GeneratedTypography {
@@ -55,7 +58,19 @@ public extension AppTheme {
     public static func mono(size: CGFloat? = nil) -> Font {
       return Font.custom("@\"RobotoMono-Medium\"", size: size ?? body, relativeTo: .body)
     }
-
+    
+    // Additional font styles
+    public static func caption(size: CGFloat? = nil) -> Font {
+      return body(size: size ?? tiny)
+    }
+    
+    public static func title(size: CGFloat? = nil) -> Font {
+      return heading(size: size ?? heading3)
+    }
+    
+    public static func subheading(size: CGFloat? = nil) -> Font {
+      return bodySemibold(size: size ?? body)
+    }
   }
 
   enum GeneratedRadius {
@@ -66,6 +81,8 @@ public extension AppTheme {
     public static let small: CGFloat = 4
     public static let medium: CGFloat = 8
     public static let large: CGFloat = 12
+    public static let full: CGFloat = 9999 // For pill-shaped elements
+    public static let badge: CGFloat = 4 // For badge elements
   }
 
   enum GeneratedSpacing {
@@ -73,6 +90,7 @@ public extension AppTheme {
     public static let cardGap: CGFloat = 16
     public static let contentPadding: CGFloat = 16
     public static let itemSpacing: CGFloat = 8
+    public static let extraSmall: CGFloat = 4 // Smallest spacing unit
     public static let small: CGFloat = 8
     public static let medium: CGFloat = 16
     public static let large: CGFloat = 24

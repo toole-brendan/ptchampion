@@ -299,13 +299,12 @@ struct PTChampionApp: App {
         }
         
         // Use system fonts as fallback if custom fonts fail to load
-        let navTitleFont = UIFont.systemFont(ofSize: 22, weight: .bold) ?? UIFont.systemFont(ofSize: 22, weight: .bold)
+        let navTitleFont = UIFont.systemFont(ofSize: 22, weight: .bold)
         
-        // Convert SwiftUI Color to UIColor
-        // Use proper import from design system
+        // Use proper tokens from design system
         UINavigationBar.appearance().tintColor = UIColor(AppTheme.GeneratedColors.deepOps)
         UINavigationBar.appearance().titleTextAttributes = [
-            .foregroundColor: UIColor(AppTheme.GeneratedColors.deepOps),
+            .foregroundColor: UIColor(AppTheme.GeneratedColors.textPrimary),
             .font: navTitleFont
         ]
     }
