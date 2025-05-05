@@ -2,6 +2,24 @@ import SwiftUI
 import DesignTokens
 import Introspect
 
+// iOS 15+ specific modifier extension
+struct iOS15ModifierWrapper: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 15.0, *) {
+            content.textInputAutocapitalization(.never)
+        } else {
+            content
+        }
+    }
+}
+
+// Safe extension for iOS 15+ features
+extension View {
+    func iOS15TextInputAutocapitalization() -> some View {
+        self.modifier(iOS15ModifierWrapper())
+    }
+}
+
 public struct PTTextField: View {
     private let placeholder: String
     private let isSecure: Bool
@@ -52,6 +70,10 @@ public struct PTTextField: View {
                         }
                 }
             }
+            .keyboardType(placeholder.lowercased().contains("email") ? .emailAddress : .default)
+            .disableAutocorrection(true)
+            .autocapitalization(.none)                    // iOS 13+
+            .iOS15TextInputAutocapitalization()           // Safe iOS 15+ wrapper
             .padding(12)
             .background(AppTheme.GeneratedColors.background)
             .cornerRadius(8)

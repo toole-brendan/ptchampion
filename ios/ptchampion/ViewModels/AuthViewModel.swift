@@ -107,7 +107,9 @@ class AuthViewModel: ObservableObject {
             
             do {
                 print("A. Starting API.login call - AuthViewModel ID: \(self.instanceId)")
-                let (token, user) = try await API.login(email, password)
+                // Normalize email: trim whitespace and convert to lowercase
+                let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                let (token, user) = try await API.login(normalizedEmail, password)
                 print("B. API.login SUCCESS - token: \(token.prefix(10))... user: \(user.id) - AuthViewModel ID: \(self.instanceId)")
                 
                 // Using a local variable to ensure this sequence completes
@@ -173,12 +175,15 @@ class AuthViewModel: ObservableObject {
         errorMessage = nil
         successMessage = nil
         
+        // Normalize username/email: trim whitespace and convert to lowercase
+        let normalizedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        
         // Create registration request with standard field names that match web implementation
         let registrationBody: [String: Any] = [
-            "username": username,
+            "username": normalizedUsername,
             "password": password,
             "display_name": displayName,  // Using snake_case for API
-            "email": username  // Ensure email is always set (matches web app)
+            "email": normalizedUsername  // Ensure email is always set (matches web app)
         ]
         
         // Convert to JSON data
