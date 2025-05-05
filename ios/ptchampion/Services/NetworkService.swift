@@ -69,10 +69,10 @@ class NetworkService {
         
         // Add query parameters if provided
         if !parameters.isEmpty {
-            urlqueryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
+            urlComponents.queryItems = parameters.map { URLQueryItem(name: $0.key, value: $0.value) }
         }
         
-        guard let url = urlurl else {
+        guard let url = urlComponents.url else {
             throw NetworkError.invalidURL
         }
         
@@ -98,7 +98,7 @@ class NetworkService {
         // Log request (in debug builds)
         #if DEBUG
         print("🌐 \(method.rawValue) \(endpoint)")
-        if let parameters = urlqueryItems, !parameters.isEmpty {
+        if let parameters = urlComponents.queryItems, !parameters.isEmpty {
             print("   Parameters: \(parameters)")
         }
         #endif
@@ -217,7 +217,7 @@ class NetworkService {
             throw NetworkError.unauthorized
         }
         
-        return try keychainService.getToken()
+        return keychainService.getAccessToken()
     }
     
     /// Check server health

@@ -69,7 +69,7 @@ struct LoginTextField: View {
 // Login View with keyboard avoidance
 struct LoginView: View {
     // Make sure we're using the shared AuthViewModel
-    @EnvironmentObject private var auth: AuthViewModel
+    @EnvironmentObject private var auth: ptchampion.AuthViewModel
     @State private var keyboardHeight: CGFloat = 0
     @State private var showDevOptions = false
     @State private var didLogBodyOnce = false
@@ -252,6 +252,6 @@ extension View {
 
 #Preview {
     LoginView()
-        .environmentObject(AuthViewModel())
+        .environmentObject(ptchampion.AuthViewModel())
         .environment(\.colorScheme, .light)
 } 

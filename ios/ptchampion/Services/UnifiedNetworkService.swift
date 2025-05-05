@@ -318,6 +318,7 @@ struct ServerHealthStatus {
 
 // MARK: - Request/Response Models
 
+// This LoginRequest is specific to UnifiedNetworkService and doesn't conflict with AuthLoginRequest
 struct LoginRequest: Encodable {
     let username: String
     let password: String

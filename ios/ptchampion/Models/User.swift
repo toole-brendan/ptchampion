@@ -1,11 +1,12 @@
 import Foundation
 
-struct User: Identifiable, Codable, Equatable {
-    let id: String
-    let email: String
-    let firstName: String?
-    let lastName: String?
-    let profilePictureUrl: String?
+// Rename to avoid conflicts with other User definitions
+public struct AuthUserModel: Identifiable, Codable, Equatable {
+    public let id: String
+    public let email: String
+    public let firstName: String?
+    public let lastName: String?
+    public let profilePictureUrl: String?
     
     // Keys that correspond 1-to-1 with stored properties
     private enum CodingKeys: String, CodingKey {
@@ -18,7 +19,7 @@ struct User: Identifiable, Codable, Equatable {
     }
     
     // MARK: – Decodable
-    init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws {
         let c   = try decoder.container(keyedBy: CodingKeys.self)
         let api = try decoder.container(keyedBy: APIKeys.self)
         
@@ -47,7 +48,7 @@ struct User: Identifiable, Codable, Equatable {
     }
     
     // MARK: – Encodable
-    func encode(to encoder: Encoder) throws {
+    public func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(id,                forKey: .id)
         try c.encode(email,             forKey: .email)
@@ -58,7 +59,7 @@ struct User: Identifiable, Codable, Equatable {
     }
     
     // Convenience init you already had
-    init(id: String,
+    public init(id: String,
          email: String,
          firstName: String?,
          lastName: String?,
@@ -70,7 +71,7 @@ struct User: Identifiable, Codable, Equatable {
         self.profilePictureUrl = profilePictureUrl
     }
     
-    var fullName: String {
+    public var fullName: String {
         switch (firstName, lastName) {
         case let (f?, l?): return "\(f) \(l)"
         case let (f?, nil): return f

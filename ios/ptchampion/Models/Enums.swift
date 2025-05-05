@@ -14,6 +14,7 @@ enum ExerciseType: String, CaseIterable, Identifiable {
 */
 
 // Uncomment DistanceUnit for RunWorkoutViewModel
+/* Commenting out to avoid duplicate declaration - already defined in RunWorkoutViewModel.swift
 enum DistanceUnit: String, CaseIterable, Identifiable {
     case kilometers = "km"
     case miles = "mi"
@@ -27,6 +28,7 @@ enum DistanceUnit: String, CaseIterable, Identifiable {
         }
     }
 }
+*/
 
 // Potential future enums can go here
 // Example:

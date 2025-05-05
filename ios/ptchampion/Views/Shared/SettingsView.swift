@@ -3,7 +3,7 @@ import Foundation
 import CoreLocation
 
 struct SettingsView: View {
-    @EnvironmentObject private var auth: AuthViewModel
+    @EnvironmentObject private var auth: ptchampion.AuthViewModel
     @State private var showLogoutConfirmation = false
     @State private var isLoggingOut = false
     
@@ -116,5 +116,5 @@ struct SettingsView: View {
 #Preview {
     // Directly create and configure the view within the preview
     SettingsView()
-        .environmentObject(AuthViewModel())
+        .environmentObject(ptchampion.AuthViewModel())
 } 

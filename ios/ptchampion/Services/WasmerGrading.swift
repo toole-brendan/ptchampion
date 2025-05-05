@@ -1,8 +1,11 @@
 import Foundation
-import WasmerSwift
+// TODO: Add WasmerSwift package dependency before using this file
+// import WasmerSwift
 
+// PROOF OF CONCEPT - NOT CURRENTLY USED
 /// A proof-of-concept implementation of WebAssembly-based grading for iOS
 /// using Wasmer-Swift to run the same WASM module used on other platforms
+/* 
 class WasmerGrading {
     /// Singleton instance
     static let shared = WasmerGrading()
@@ -221,6 +224,7 @@ struct Pose: Codable {
     
     let keypoints: [Joint]
 }
+*/
 
 /// Example Usage:
 ///
@@ -243,4 +247,6 @@ struct Pose: Codable {
 /// } catch {
 ///     print("Error: \(error)")
 /// }
-/// ``` 
+/// ```
+
+// Uncomment the class when ready to add the WasmerSwift package 

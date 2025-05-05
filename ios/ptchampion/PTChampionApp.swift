@@ -618,9 +618,9 @@ struct DeviceShakeViewModifier: ViewModifier {
 #endif
 
 #Preview("MainTabView") {
-    // Directly return the view, configuring the environment object inline
-    let previewAuth = AuthViewModel()
-    return MainTabView()
+    // Create the auth view model and wrap the view
+    let previewAuth = ptchampion.AuthViewModel()
+    MainTabView()
         .environmentObject(previewAuth)
 }
 
