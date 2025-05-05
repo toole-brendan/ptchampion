@@ -25,7 +25,9 @@ public struct PTTextField: View {
                 if isSecure {
                     SecureField(text.isEmpty ? placeholder : "", text: $text)
                         .introspectTextField { textField in
+                            #if DEBUG
                             print("🪄 Introspected:", textField)
+                            #endif
                             let item = textField.inputAssistantItem
                             item.leadingBarButtonGroups  = []
                             item.trailingBarButtonGroups = []
@@ -37,7 +39,9 @@ public struct PTTextField: View {
                 } else {
                     TextField(text.isEmpty ? placeholder : "", text: $text)
                         .introspectTextField { textField in
+                            #if DEBUG
                             print("🪄 Introspected:", textField)
+                            #endif
                             let item = textField.inputAssistantItem
                             item.leadingBarButtonGroups  = []
                             item.trailingBarButtonGroups = []
