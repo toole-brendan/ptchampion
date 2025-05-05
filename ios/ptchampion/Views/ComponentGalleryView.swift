@@ -154,6 +154,10 @@ struct ComponentGalleryView: View {
             sectionHeader(title: "Text Fields", description: "Text input components with different states")
             
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                // Standard PTTextField
+                PTLabel("Standard PTTextField", style: .bodyBold)
+                    .padding(.top, AppTheme.GeneratedSpacing.small)
+                
                 // Empty state
                 PTTextField(
                     "Enter username",
@@ -178,23 +182,39 @@ struct ComponentGalleryView: View {
                 )
                 .validationState(.invalid(message: "Username must be at least 3 characters"))
                 
-                // Password field
-                PTTextField(
-                    "Enter password",
+                // FocusableTextField demonstration
+                PTLabel("FocusableTextField (with focus ring)", style: .bodyBold)
+                    .padding(.top, AppTheme.GeneratedSpacing.medium)
+                
+                FocusableTextField(
+                    "Email Address",
+                    text: .constant("user@example.com"),
+                    label: "Email",
+                    keyboardType: .emailAddress,
+                    icon: Image(systemName: "envelope")
+                )
+                
+                FocusableTextField(
+                    "Password",
                     text: $passwordValue,
                     label: "Password",
                     isSecure: true,
                     icon: Image(systemName: "lock")
                 )
                 
-                // Email with keyboard type
+                // Advanced usage
+                PTLabel("PTTextField with focus extension", style: .bodyBold)
+                    .padding(.top, AppTheme.GeneratedSpacing.medium)
+                
+                @FocusState var isAdvancedFieldFocused: Bool
+                
                 PTTextField(
-                    "Enter email",
-                    text: .constant("user@example.com"),
-                    label: "Email Address",
-                    icon: Image(systemName: "envelope"),
-                    keyboardType: .emailAddress
+                    "Advanced example", 
+                    text: .constant("With focus ring extension"),
+                    label: "Enhanced Field",
+                    icon: Image(systemName: "star")
                 )
+                .withFocusRing($isAdvancedFieldFocused)
             }
         }
     }

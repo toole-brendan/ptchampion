@@ -447,3 +447,85 @@ Full Logo (Emblem + Text): Only on splash screens and login page
 Emblem Only: Top corner of all authenticated app pages (e.g., dashboard, leaderboard, progress)
 Placement: Subtle but consistent, preferably:
 <LogoIcon size="sm" style={{ position: "absolute", top: 16, left: 16 }} />
+
+# Design System Implementation (iOS)
+
+The iOS application implements the styling guide above through a token-based design system in the `PTDesignSystem` package. This system provides a consistent way to apply styling across the app without relying on hardcoded values.
+
+## Using the Design System
+
+### Colors
+
+Always use `AppTheme.GeneratedColors` to access color tokens rather than direct color values:
+
+```swift
+// ✅ Correct usage
+Text("Hello world")
+    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+    .background(AppTheme.GeneratedColors.cardBackground)
+
+// ❌ Incorrect usage - don't use direct RGB/hex values
+Text("Hello world")
+    .foregroundColor(Color(red: 0.12, green: 0.14, blue: 0.12))
+```
+
+### Typography
+
+Use `AppTheme.GeneratedTypography` for consistent font styling:
+
+```swift
+// ✅ Correct usage
+Text("Heading")
+    .font(AppTheme.GeneratedTypography.heading())
+
+Text("Body text")
+    .font(AppTheme.GeneratedTypography.body())
+
+// ❌ Incorrect usage - don't use Font.custom directly
+Text("Heading")
+    .font(Font.custom("BebasNeue-Bold", size: 24))
+```
+
+### Spacing
+
+Use `AppTheme.GeneratedSpacing` for consistent layout:
+
+```swift
+// ✅ Correct usage
+VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+    // Content
+}
+.padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+
+// ❌ Incorrect usage - don't use hardcoded spacing values
+VStack(spacing: 16) {
+    // Content
+}
+.padding(.horizontal, 20)
+```
+
+### Border Radius
+
+Use `AppTheme.GeneratedRadius` for consistent corner radius:
+
+```swift
+// ✅ Correct usage
+RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
+
+// ❌ Incorrect usage - don't use hardcoded radius values
+RoundedRectangle(cornerRadius: 12)
+```
+
+## Components
+
+The design system provides several ready-to-use components that help maintain consistency:
+
+- `PTButton` - Styled buttons with various states
+- `PTLabel` - Text with predefined styles
+- `PTTextField` - Standardized text input
+- `PTCard` - Card container with appropriate styling
+- `PTSeparator` - Consistent divider/separator
+
+These components automatically apply the correct styling from the token system, ensuring consistency throughout the app.
+
+For more details, see the [PTDesignSystem README](ios/PTDesignSystem/README.md).

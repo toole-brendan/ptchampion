@@ -3,67 +3,28 @@ import UIKit
 import PTDesignSystem
 import Introspect
 
-// Font extensions - Replace with AppTheme.GeneratedTypography
+// Font extensions have been migrated to use AppTheme.GeneratedTypography
+// These are kept solely for backward compatibility and should be removed in future updates
 extension Font {
     // These methods are deprecated and should use AppTheme.GeneratedTypography instead
+    @available(*, deprecated, message: "Use AppTheme.GeneratedTypography.heading instead")
     static func bebasNeueBold(size: CGFloat) -> Font {
         return AppTheme.GeneratedTypography.heading(size: size)
     }
     
+    @available(*, deprecated, message: "Use AppTheme.GeneratedTypography.bodyBold instead")
     static func montserratBold(size: CGFloat) -> Font {
         return AppTheme.GeneratedTypography.bodyBold(size: size)
     }
     
+    @available(*, deprecated, message: "Use AppTheme.GeneratedTypography.bodySemibold instead")
     static func montserratSemiBold(size: CGFloat) -> Font {
         return AppTheme.GeneratedTypography.bodySemibold(size: size)
     }
     
+    @available(*, deprecated, message: "Use AppTheme.GeneratedTypography.body instead")
     static func montserratRegular(size: CGFloat) -> Font {
         return AppTheme.GeneratedTypography.body(size: size)
-    }
-}
-
-// Custom SwiftUI TextField that properly handles keyboard
-struct LoginTextField: View {
-    let placeholder: String
-    @Binding var text: String
-    var isSecure: Bool = false
-    var keyboardType: UIKeyboardType = .default
-    
-    var body: some View {
-        ZStack {
-            if isSecure {
-                SecureField(placeholder, text: $text)
-                    .keyboardType(keyboardType)
-                    .autocapitalization(.none)
-                    .padding()
-                    .background(Color(UIColor.systemBackground))
-                    .cornerRadius(AppTheme.GeneratedRadius.input)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
-                            .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
-                    )
-                    .introspectTextField { tf in
-                        tf.inputAssistantItem.leadingBarButtonGroups  = []
-                        tf.inputAssistantItem.trailingBarButtonGroups = []
-                    }
-            } else {
-                TextField(placeholder, text: $text)
-                    .keyboardType(keyboardType)
-                    .autocapitalization(.none)
-                    .padding()
-                    .background(Color(UIColor.systemBackground))
-                    .cornerRadius(AppTheme.GeneratedRadius.input)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
-                            .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
-                    )
-                    .introspectTextField { tf in
-                        tf.inputAssistantItem.leadingBarButtonGroups  = []
-                        tf.inputAssistantItem.trailingBarButtonGroups = []
-                    }
-            }
-        }
     }
 }
 
@@ -120,21 +81,25 @@ struct LoginView: View {
                     
                     // Form Fields
                     VStack(spacing: 16) {
-                        PTTextField("Email", text: $email)
+                        FocusableTextField(
+                            "Email",
+                            text: $email,
+                            keyboardType: .emailAddress,
+                            icon: Image(systemName: "envelope")
+                        )
                         
-                        PTTextField("Password", text: $password, isSecure: true)
+                        FocusableTextField(
+                            "Password",
+                            text: $password,
+                            isSecure: true,
+                            icon: Image(systemName: "lock")
+                        )
                         
                         // Login Button
                         if auth.isLoading {
-                            Button(action: {}) {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.cream))
-                                    .frame(maxWidth: .infinity)
-                                    .padding()
+                            PTButton("Log In", isLoading: true) {
+                                // No action when loading
                             }
-                            .frame(maxWidth: .infinity)
-                            .background(Color.gray)
-                            .cornerRadius(AppTheme.GeneratedRadius.button)
                             .disabled(true)
                         } else {
                             PTButton("Log In") {
