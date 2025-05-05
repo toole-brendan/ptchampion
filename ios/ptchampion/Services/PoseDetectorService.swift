@@ -4,7 +4,7 @@ import Combine
 import CoreMedia
 import UIKit // For image orientation
 
-class PoseDetectorService: PoseDetectorServiceProtocol {
+class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject {
 
     private let visionQueue = DispatchQueue(label: "com.ptchampion.posedetector.visionqueue", qos: .userInitiated)
     private var requestHandler: VNImageRequestHandler?
