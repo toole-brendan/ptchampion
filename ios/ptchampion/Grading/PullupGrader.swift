@@ -4,6 +4,27 @@ import CoreGraphics
 
 class PullupGrader: ExerciseGraderProtocol {
 
+    // MARK: - Static Thresholds (Accessible for Unit Testing)
+    // FPS setting - helps adjust required stable frames
+    static var targetFramesPerSecond: Double = 30.0 // Target frame rate (default 30fps)
+    
+    // Required confidence for joint positions
+    static var requiredJointConfidence: Float = 0.6
+    
+    // Required stable frames
+    static var requiredStableFrames: Int = 3
+    
+    // Angle thresholds
+    static let elbowAngleDownMin: CGFloat = 160.0  // Min angle to be considered fully extended ('down')
+    static let elbowAngleUpRepCheckMax: CGFloat = 90.0 // Minimum bend required during UP phase for rep check
+    
+    // Position thresholds
+    static let chinAboveBarMinYDiff: CGFloat = 0.05 // Vertical distance threshold: Nose Y must be *above* Wrist Y
+    static let kippingMaxHipYTravel: CGFloat = 0.10 // Max allowed vertical hip movement for kipping check
+    static let chinHeightThreshold: CGFloat = 0.05  // Wrists this much (or less) *above* shoulders counts as "up"
+    static let elbowShoulderDeadHangThreshold: CGFloat = 0.20 // Wrists this much (or more) *below* shoulders is "down"
+
+    // MARK: - Pullup States
     private enum PullupPhase {
         case down // Arms fully extended hanging
         case up   // Chin above the bar
@@ -12,43 +33,27 @@ class PullupGrader: ExerciseGraderProtocol {
         case between // Transitioning
     }
 
+    // MARK: - Internal State Tracking
     private var currentState: PullupPhase = .starting
     private var feedback: String = "Hang from bar, arms extended."
-    private var repCount: Int = 0
-
-    // Configuration Thresholds (tune based on testing!)
-    private let elbowAngleDownMin: CGFloat = 160.0  // Min angle to be considered fully extended ('down') (Aligned w/ Android)
-    // Removed elbowAngleUpMax - UP state depends on chin height (Aligned w/ Android)
-    // Vertical distance threshold: Nose Y must be *above* Wrist Y by this amount (normalized)
-    // Note: In Vision coordinates (0,0 is bottom-left), smaller Y is higher.
-    private let chinAboveBarMinYDiff: CGFloat = 0.05 // Aligned w/ Android
-    // Max allowed vertical hip movement relative to shoulder height (normalized) - basic kipping check
-    private let kippingMaxHipYTravel: CGFloat = 0.10 // Aligned w/ Android
-    private let requiredConfidence: Float = 0.6 // Aligned w/ Android
-    // Minimum bend required during UP phase for rep check
-    private let elbowAngleUpRepCheckMax: CGFloat = 90.0 // Aligned w/ Android MIN_BEND_THRESHOLD
-
-    // Additional thresholds that were referenced but not previously declared
-    // Relative scale (multiplicative) factors applied to shoulder Y reference when classifying states.
-    // Tuned empirically; feel free to adjust during real‑world testing.
-    private let chinHeightThreshold: CGFloat = 0.05          // wrists this much (or less) *above* shoulders counts as "up"
-    private let elbowShoulderDeadHangThreshold: CGFloat = 0.20 // wrists this much (or more) *below* shoulders counts as "down"
-
-    // Form‑tracking helpers that were referenced but never declared
+    private(set) var repCount: Int = 0
+    private var _lastFormIssue: String? = nil
+    
+    // Form quality tracking
+    private var formScores: [Double] = []
     private var formIssues: [String] = []
-    private var formScore: Int = 100
 
-    // State tracking for rep evaluation & stability
+    // State tracking for rep evaluation
     private var maxElbowAngleThisRep: CGFloat = 0.0      // Track max angle for extension check
     private var minElbowAngleThisRep: CGFloat = 180.0    // Track min angle during UP phase for rep check
-    private var chinWasAboveBarThisRep: Bool = false   // Track if chin cleared bar during UP phase
-    private var startingHipY: CGFloat? = nil         // Initial hip Y for kipping check
-    private var minHipYThisRep: CGFloat = 1.0          // Track min/max hip Y during rep
+    private var chinWasAboveBarThisRep: Bool = false     // Track if chin cleared bar during UP phase
+    private var startingHipY: CGFloat? = nil             // Initial hip Y for kipping check
+    private var minHipYThisRep: CGFloat = 1.0            // Track min/max hip Y during rep
     private var maxHipYThisRep: CGFloat = 0.0
     private var stableFrameCounter: Int = 0
-    private let requiredStableFrames: Int = 3 // Frames needed to confirm state change (Aligned w/ Android)
-    private var repInProgress: Bool = false // Flag when moving from DOWN state
+    private var repInProgress: Bool = false              // Flag when moving from DOWN state
 
+    // MARK: - Protocol Properties
     var currentPhaseDescription: String {
         switch currentState {
         case .down: return "Down (Hang)"
@@ -58,11 +63,22 @@ class PullupGrader: ExerciseGraderProtocol {
         case .between: return "Moving"
         }
     }
+    
+    var formQualityAverage: Double {
+        guard !formScores.isEmpty else { return 0.0 }
+        return formScores.reduce(0.0, +) / Double(formScores.count)
+    }
+    
+    var lastFormIssue: String? { return _lastFormIssue }
 
+    // MARK: - Protocol Methods
     func resetState() {
         currentState = .starting
         feedback = "Hang from bar, arms extended."
         repCount = 0
+        formScores = []
+        formIssues = []
+        _lastFormIssue = nil
         resetRepTrackingState()
         stableFrameCounter = 0
         repInProgress = false
@@ -96,16 +112,17 @@ class PullupGrader: ExerciseGraderProtocol {
             .leftHip, .rightHip, // Needed for kipping check
             .nose // Needed for chin height check
         ]
-        var missingJoints: [String] = []
-        for jointName in keyJoints {
-            guard let point = body.point(jointName), point.confidence >= requiredConfidence else {
-                missingJoints.append(jointName.rawValue.rawValue)
-                continue // Check all missing joints
-            }
-        }
+        
+        // Use body's helper method to check missing joints
+        let missingJoints = body.missingJoints(from: keyJoints, minConfidence: PullupGrader.requiredJointConfidence)
+        
         if !missingJoints.isEmpty {
             updateState(to: .invalid, stable: false)
-            feedback = "Cannot see clearly: \(missingJoints.joined(separator: ", "))"
+            let missingJointNames = missingJoints.map { 
+                String(describing: $0).replacingOccurrences(of: "VNHumanBodyPoseObservation.JointName.", with: "") 
+            }
+            feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
+            _lastFormIssue = feedback
             return .invalidPose(reason: feedback)
         }
 
@@ -127,12 +144,12 @@ class PullupGrader: ExerciseGraderProtocol {
 
         let avgWristY = (leftWrist.location.y + rightWrist.location.y) / 2.0
         let noseY = nose.location.y
-        let chinIsAboveBar = noseY < (avgWristY - chinAboveBarMinYDiff) // Smaller Y is higher
+        let chinIsAboveBar = noseY < (avgWristY - PullupGrader.chinAboveBarMinYDiff) // Smaller Y is higher
 
         let avgHipY = (leftHip.location.y + rightHip.location.y) / 2.0
 
         // Set starting hip position on first valid frame in starting/down state
-        if startingHipY == nil && (currentState == .starting || currentState == .down) && avgElbowAngle >= elbowAngleDownMin * 0.95 {
+        if startingHipY == nil && (currentState == .starting || currentState == .down) && avgElbowAngle >= PullupGrader.elbowAngleDownMin * 0.95 {
              startingHipY = avgHipY
         }
 
@@ -140,54 +157,47 @@ class PullupGrader: ExerciseGraderProtocol {
         let shoulderReferenceY = (leftShoulder.location.y + rightShoulder.location.y) / 2.0
 
         // 1. Determine potential state.
-        // We consider "up" when the chin clears the bar (chinIsAboveBar).
-        // We consider "down" when the elbows are almost fully extended.
+        // STATE TRANSITION: We consider "up" when the chin clears the bar (chinIsAboveBar).
+        // STATE TRANSITION: We consider "down" when the elbows are almost fully extended.
         var potentialState: PullupPhase = currentState
         if chinIsAboveBar {
             potentialState = .up
-        } else if avgElbowAngle >= elbowAngleDownMin {
+            // STATE TRANSITION: Moving to UP state (chin above bar)
+        } else if avgElbowAngle >= PullupGrader.elbowAngleDownMin {
             potentialState = .down
+            // STATE TRANSITION: Moving to DOWN state (arms extended)
         } else {
             potentialState = .between
+            // STATE TRANSITION: In between positions
         }
 
+        // Update current state
         currentState = potentialState
 
         // 2. Check for Rep Completion: Transitioned from Down to Up
         if previousState == .down && currentState == .up {
+            // STATE TRANSITION: DOWN to UP = potential rep start
             repCount += 1
-            gradingResult = .repCompleted
-            feedback = "Rep Counted! (\(repCount))"
+            
+            // Default to perfect form for now, will calculate more precisely at end of rep
+            let formQuality = 1.0
+            
+            gradingResult = .repCompleted(formQuality: formQuality)
+            feedback = "Rep started! Pull complete. (\(repCount))"
         } else {
             // Provide feedback based on state if no rep was just counted
             switch currentState {
-            case .up: feedback = "Lower yourself."
-            case .down: feedback = "Pull up."
-            case .starting: feedback = "Begin pull-ups."
-            case .between: feedback = "Keep moving."
-            case .invalid: feedback = "Fix pose."
+            case .up: feedback = "Lower yourself"
+            case .down: feedback = "Pull up"
+            case .starting: feedback = "Begin pull-ups"
+            case .between: feedback = "Keep moving"
+            case .invalid: feedback = "Fix pose"
             }
-            // Use if-case to check GradingResult without needing Equatable conformance
-            if case .inProgress(let phase) = gradingResult {
-                 print("Still in progress: \(phase)") // Example placeholder
-            } else if case .noChange = gradingResult {
-                 gradingResult = .inProgress(phase: currentPhaseDescription) // Update if still just in progress
+            
+            // Update grading result if still in progress
+            if case .noChange = gradingResult {
+                gradingResult = .inProgress(phase: currentPhaseDescription)
             }
-
-        }
-        // Update form score (simple pass/fail for now)
-        formScore = formIssues.isEmpty ? 100 : 0 // Penalize fully for any form issue
-
-        // Add specific form feedback if issues exist
-        if !formIssues.isEmpty {
-            feedback = formIssues.joined(separator: " ")
-            // Use if-case to check GradingResult without needing Equatable conformance
-            if case .inProgress(let phase) = gradingResult {
-                 print("Still in progress with form issues: \(phase)") // Example placeholder
-            } else if case .noChange = gradingResult {
-                 gradingResult = .incorrectForm(feedback: feedback)
-            }
-
         }
 
         // Start tracking rep if moving from DOWN state
@@ -199,6 +209,7 @@ class PullupGrader: ExerciseGraderProtocol {
 
         // Track angles and positions during the rep
         if repInProgress {
+            // STATE TRACKING: Recording key metrics during rep
             maxElbowAngleThisRep = max(maxElbowAngleThisRep, avgElbowAngle)
             minElbowAngleThisRep = min(minElbowAngleThisRep, avgElbowAngle) // Track min angle too
             if chinIsAboveBar { chinWasAboveBarThisRep = true }
@@ -208,36 +219,50 @@ class PullupGrader: ExerciseGraderProtocol {
 
         // Check for Rep Completion (Transition UP -> DOWN)
         if previousState == .up && currentState == .down && repInProgress {
+            // STATE TRANSITION: UP to DOWN = rep completion
             var repFormIssues: [String] = []
+            var formQuality: Double = 1.0 // Start with perfect score
 
             // a) Check Full Extension (using max angle achieved during rep)
-            if maxElbowAngleThisRep < elbowAngleDownMin {
-                repFormIssues.append("Extend arms fully at bottom.")
+            if maxElbowAngleThisRep < PullupGrader.elbowAngleDownMin {
+                repFormIssues.append("Extend arms fully at bottom")
+                formQuality -= 0.2
             }
+            
             // b) Check Chin Over Bar (must have been true at some point during UP)
             if !chinWasAboveBarThisRep {
-                 repFormIssues.append("Chin did not clear bar.")
+                 repFormIssues.append("Chin did not clear bar")
+                 formQuality -= 0.3
             }
+            
             // c) Check Kipping (Hip Y travel)
             let hipTravel = maxHipYThisRep - minHipYThisRep
             // Estimate body height (shoulder to hip) for normalization - crude approximation
             let bodyHeightEstimate = abs(leftShoulder.location.y - leftHip.location.y) + abs(rightShoulder.location.y - rightHip.location.y) / 2.0
-            if startingHipY != nil && bodyHeightEstimate > 0.1 && (hipTravel / bodyHeightEstimate) > kippingMaxHipYTravel {
-                 repFormIssues.append("Excessive hip movement (kipping).")
+            if startingHipY != nil && bodyHeightEstimate > 0.1 && (hipTravel / bodyHeightEstimate) > PullupGrader.kippingMaxHipYTravel {
+                 repFormIssues.append("Excessive hip movement (kipping)")
+                 formQuality -= 0.3
             }
-            // d) Check Minimum Elbow Bend during Up phase (Aligned w/ Android)
-            if minElbowAngleThisRep > elbowAngleUpRepCheckMax {
-                 repFormIssues.append("Arms not bent enough at top.")
+            
+            // d) Check Minimum Elbow Bend during Up phase
+            if minElbowAngleThisRep > PullupGrader.elbowAngleUpRepCheckMax {
+                 repFormIssues.append("Arms not bent enough at top")
+                 formQuality -= 0.2
             }
+            
+            // Apply minimum quality floor and add to form tracking
+            formQuality = max(0.3, formQuality)
+            formScores.append(formQuality)
 
             if repFormIssues.isEmpty {
-                repCount += 1
-                feedback = "Rep Counted! (\(repCount))"
-                gradingResult = .repCompleted
+                feedback = "Good rep! (\(repCount))"
+                gradingResult = .repCompleted(formQuality: formQuality)
             } else {
-                feedback = repFormIssues.joined(separator: " ")
-                gradingResult = .incorrectForm(feedback: feedback)
+                feedback = repFormIssues.joined(separator: ". ")
+                _lastFormIssue = feedback
+                gradingResult = .repCompleted(formQuality: formQuality)
             }
+            
             // Reset tracking for the next rep attempt, mark rep as no longer in progress
             repInProgress = false
             resetRepTrackingState()
@@ -245,40 +270,35 @@ class PullupGrader: ExerciseGraderProtocol {
 
         } else {
             // Provide general feedback if no rep completed
-            gradingResult = .inProgress(phase: currentPhaseDescription)
-             if feedback.isEmpty { // Avoid overwriting specific form issue feedback
+            if case .noChange = gradingResult {
+                gradingResult = .inProgress(phase: currentPhaseDescription)
+            }
+            
+            if feedback.isEmpty { // Avoid overwriting specific form issue feedback
                  switch currentState {
-                 case .down: feedback = "Pull up."
-                 case .up: feedback = "Lower down slowly."
-                 case .starting: feedback = "Begin when ready."
+                 case .down: feedback = "Pull up"
+                 case .up: feedback = "Lower down slowly"
+                 case .starting: feedback = "Begin when ready"
                  case .between:
                      if previousState == .down { feedback = "Pulling up..." }
                      else if previousState == .up { feedback = "Lowering..." }
-                     else { feedback = "Keep moving."}
-                 case .invalid: feedback = "Fix pose."
+                     else { feedback = "Keep moving"}
+                 case .invalid: feedback = "Fix pose"
                  }
             }
         }
 
          // Immediate feedback on current position if needed
-         if currentState == .down && avgElbowAngle < elbowAngleDownMin {
-             // Use if-case for comparison
-             if case .inProgress = gradingResult {
-                 feedback = "Extend arms fully."
-                 gradingResult = .incorrectForm(feedback: feedback)
-             } else if case .noChange = gradingResult {
-                 feedback = "Extend arms fully."
-                 gradingResult = .incorrectForm(feedback: feedback)
-             }
+         if currentState == .down && avgElbowAngle < PullupGrader.elbowAngleDownMin {
+             // Form issue while in DOWN position
+             feedback = "Extend arms fully"
+             _lastFormIssue = feedback
+             gradingResult = .incorrectForm(feedback: feedback)
          } else if currentState == .up && !chinIsAboveBar {
-             // Use if-case for comparison
-             if case .inProgress = gradingResult {
-                 feedback = "Pull higher!"
-                 gradingResult = .incorrectForm(feedback: feedback)
-             } else if case .noChange = gradingResult {
-                 feedback = "Pull higher!"
-                 gradingResult = .incorrectForm(feedback: feedback)
-             }
+             // Form issue while in UP position
+             feedback = "Pull higher!"
+             _lastFormIssue = feedback
+             gradingResult = .incorrectForm(feedback: feedback)
          }
 
         return gradingResult
@@ -291,7 +311,7 @@ class PullupGrader: ExerciseGraderProtocol {
         } else {
             // Only change if required frames met OR the new state is invalid
             // Also allow immediate transition *out* of invalid state
-            if !stable || stableFrameCounter >= requiredStableFrames || newState == .invalid || currentState == .invalid {
+            if !stable || stableFrameCounter >= PullupGrader.requiredStableFrames || newState == .invalid || currentState == .invalid {
                  // Reset counter only if the state *actually* changes
                  if currentState != newState { stableFrameCounter = 0 }
                  currentState = newState
@@ -310,7 +330,17 @@ class PullupGrader: ExerciseGraderProtocol {
      }
      
      func calculateFinalScore() -> Double? {
-         // Simple score implementation based on form quality
-         return Double(formScore)
+         // If no reps completed, return nil
+         guard repCount > 0 else { return nil }
+         
+         // Base score is rep count * 10 (max 100)
+         let maxReps = 10 // 10 reps = 100 points
+         let repScore = min(Double(repCount) / Double(maxReps), 1.0) * 85.0 // 85% of score is rep count
+         
+         // Form quality contributes up to 15% of score
+         let formScore = formQualityAverage * 15.0
+         
+         // Total score combines rep count and form quality
+         return min(repScore + formScore, 100.0)
      }
 }

@@ -9,6 +9,7 @@ final class WorkoutResultSwiftData {
     var durationSeconds: Int
     var repCount: Int? // Optional for runs
     var score: Double? // Optional for runs or unscored exercises
+    var formQuality: Double? // Quality of form (0-100)
     var distanceMeters: Double? // Optional, specifically for runs
 
     init(exerciseType: String,
@@ -17,6 +18,7 @@ final class WorkoutResultSwiftData {
          durationSeconds: Int,
          repCount: Int? = nil,
          score: Double? = nil,
+         formQuality: Double? = nil,
          distanceMeters: Double? = nil) {
         self.exerciseType = exerciseType
         self.startTime = startTime
@@ -24,6 +26,7 @@ final class WorkoutResultSwiftData {
         self.durationSeconds = durationSeconds
         self.repCount = repCount
         self.score = score
+        self.formQuality = formQuality
         self.distanceMeters = distanceMeters
     }
 
