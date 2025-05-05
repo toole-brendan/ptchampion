@@ -337,24 +337,20 @@ struct PTChampionApp: App {
 struct RootSwitcher: View {
     @EnvironmentObject private var auth: AuthViewModel
     @State private var showDebugInfo = false
-    @State private var currentAuthState: Bool = false
 
     var body: some View {
         ZStack {
             // Main content based on authentication state
             Group {
-                if currentAuthState {
+                switch auth.authState {
+                case .authenticated(let user):
                     // Authenticated content
                     MainTabView()
                         .transition(.opacity)
                         .onAppear {
-                            if let user = auth.authState.user {
-                                print("DEBUG: MainTabView appeared with user ID: \(user.id)")
-                            } else {
-                                print("DEBUG: MainTabView appeared with no user")
-                            }
+                            print("DEBUG: MainTabView appeared with user ID: \(user.id)")
                         }
-                } else {
+                case .unauthenticated:
                     // Login view when not authenticated
                     LoginView()
                         .transition(.opacity)
@@ -365,7 +361,6 @@ struct RootSwitcher: View {
             if showDebugInfo {
                 DebugOverlayView(
                     authState: auth.authState,
-                    currentAuthState: $currentAuthState,
                     showDebugInfo: $showDebugInfo,
                     authenticateAction: { auth.debugForceAuthenticated() },
                     logoutAction: { auth.logout() }
@@ -388,25 +383,13 @@ struct RootSwitcher: View {
                 }
             }
         }
-        .onChange(of: auth.authState.isAuthenticated) { _, newValue in
-            print("📱 Auth state changed to: \(newValue ? "AUTHENTICATED" : "UNAUTHENTICATED")")
-            // Keep the state sync, but do not embed an animation here
-            currentAuthState = newValue
-            print("📱 Updated local UI state to: \(currentAuthState ? "AUTHENTICATED" : "UNAUTHENTICATED")")
-        }
-        .onAppear {
-            // Initialize our local state on appear
-            Task { @MainActor in
-                currentAuthState = auth.authState.isAuthenticated
-            }
-        }
+        .animation(.easeInOut(duration: 0.3), value: auth.authState)
     }
 }
 
 // Move debug overlay to its own view
 struct DebugOverlayView: View {
     let authState: AuthState
-    @Binding var currentAuthState: Bool
     @Binding var showDebugInfo: Bool
     let authenticateAction: () -> Void
     let logoutAction: () -> Void
@@ -418,9 +401,6 @@ struct DebugOverlayView: View {
                 .foregroundColor(.white)
             
             Text("Auth State: \(authState.isAuthenticated ? "authenticated" : "unauthenticated")")
-                .foregroundColor(.white)
-            
-            Text("Local State: \(currentAuthState ? "authenticated" : "unauthenticated")")
                 .foregroundColor(.white)
             
             if let user = authState.user {
@@ -445,17 +425,6 @@ struct DebugOverlayView: View {
             }
             .padding(8)
             .background(AppTheme.GeneratedColors.error)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            
-            Button("Manual View Switch") {
-                withAnimation {
-                    currentAuthState.toggle()
-                    print("DEBUG: Manual view toggle, now: \(currentAuthState ? "authenticated" : "unauthenticated")")
-                }
-            }
-            .padding(8)
-            .background(AppTheme.GeneratedColors.warning)
             .foregroundColor(.white)
             .cornerRadius(8)
             

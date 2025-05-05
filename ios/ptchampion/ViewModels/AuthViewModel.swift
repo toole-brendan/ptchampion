@@ -124,7 +124,7 @@ class AuthViewModel: ObservableObject {
                     print("E. On MainActor, setting authState - AuthViewModel ID: \(self.instanceId)")
                     print("BEFORE state change: \(self.authState)")
                     
-                    // Force state change on the main actor with explicit transaction
+                    // Force state change with animation
                     withTransaction(Transaction(animation: .easeInOut)) {
                         self.authState = .authenticated(user)
                     }
@@ -279,6 +279,11 @@ class AuthViewModel: ObservableObject {
     // MARK: - Cleanup
     deinit {
         print("⚙️ AuthViewModel deinit - ID: \(instanceId)")
+    }
+
+    // MARK: - Convenience Properties
+    var isAuthenticated: Bool {
+        authState.isAuthenticated
     }
 }
 
