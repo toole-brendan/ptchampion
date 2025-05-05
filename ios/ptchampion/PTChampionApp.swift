@@ -388,14 +388,11 @@ struct RootSwitcher: View {
                 }
             }
         }
-        .animation(.easeInOut(duration: 0.3), value: currentAuthState)
         .onChange(of: auth.authState.isAuthenticated) { _, newValue in
             print("📱 Auth state changed to: \(newValue ? "AUTHENTICATED" : "UNAUTHENTICATED")")
-            // Use Task to ensure UI updates happen properly and don't block main thread
-            Task { @MainActor in
-                currentAuthState = newValue
-                print("📱 Updated local UI state to: \(currentAuthState ? "AUTHENTICATED" : "UNAUTHENTICATED")")
-            }
+            // Keep the state sync, but do not embed an animation here
+            currentAuthState = newValue
+            print("📱 Updated local UI state to: \(currentAuthState ? "AUTHENTICATED" : "UNAUTHENTICATED")")
         }
         .onAppear {
             // Initialize our local state on appear

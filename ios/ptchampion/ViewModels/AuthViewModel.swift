@@ -97,52 +97,54 @@ class AuthViewModel: ObservableObject {
 
     // MARK: – Public API -----------------------------------------------------
 
-    func login(email: String, password: String) async {
+    func login(email: String, password: String) {
+        guard !email.isEmpty, !password.isEmpty else { return }
+        
         print("⚙️ LOGIN START with email: \(email) - AuthViewModel ID: \(instanceId)")
         
-        // Update loading state on main thread
-        await MainActor.run { withAnimation { isLoading = true } }
-
-        // Create a SINGLE strong task reference that won't be cancelled when view disappears
-        do {
-            print("A. Starting API.login call - AuthViewModel ID: \(self.instanceId)")
-            let (token, user) = try await API.login(email, password)
-            print("B. API.login SUCCESS - token: \(token.prefix(10))... user: \(user.id) - AuthViewModel ID: \(self.instanceId)")
+        Task.detached(priority: .userInitiated) {
+            await MainActor.run { self.isLoading = true }
             
-            // Using a local variable to ensure this sequence completes
-            print("C. Saving token - AuthViewModel ID: \(self.instanceId)")
-            KeychainService.shared.saveAccessToken(token)
-            
-            print("D. Saving user ID - AuthViewModel ID: \(self.instanceId)")
-            KeychainService.shared.saveUserID(user.id)
-            
-            print("E. Updating authState - AuthViewModel ID: \(self.instanceId)")
-            await MainActor.run {
-                print("E. On MainActor, setting authState - AuthViewModel ID: \(self.instanceId)")
-                print("BEFORE state change: \(self.authState)")
+            do {
+                print("A. Starting API.login call - AuthViewModel ID: \(self.instanceId)")
+                let (token, user) = try await API.login(email, password)
+                print("B. API.login SUCCESS - token: \(token.prefix(10))... user: \(user.id) - AuthViewModel ID: \(self.instanceId)")
                 
-                // Force state change on the main actor with animation
-                withAnimation {
-                    self.authState = .authenticated(user)
+                // Using a local variable to ensure this sequence completes
+                print("C. Saving token - AuthViewModel ID: \(self.instanceId)")
+                try KeychainService.shared.saveAccessToken(token)
+                
+                print("D. Saving user ID - AuthViewModel ID: \(self.instanceId)")
+                KeychainService.shared.saveUserID(user.id)
+                
+                print("E. Updating authState - AuthViewModel ID: \(self.instanceId)")
+                await MainActor.run {
+                    print("E. On MainActor, setting authState - AuthViewModel ID: \(self.instanceId)")
+                    print("BEFORE state change: \(self.authState)")
+                    
+                    // Force state change on the main actor with explicit transaction
+                    withTransaction(Transaction(animation: .easeInOut)) {
+                        self.authState = .authenticated(user)
+                    }
+                    
+                    // Verify state change happened
+                    print("AFTER state change: \(self.authState)")
+                    print("Auth state is now: \(self.authState.isAuthenticated ? "AUTHENTICATED" : "UNAUTHENTICATED")")
                 }
                 
-                // Verify state change happened
-                print("AFTER state change: \(self.authState)")
-                print("Auth state is now: \(self.authState.isAuthenticated ? "AUTHENTICATED" : "UNAUTHENTICATED")")
+                print("🟢 F. Login sequence COMPLETED for \(user.id) - AuthViewModel ID: \(self.instanceId)")
+            } catch {
+                print("🔴 API call failed - \(error) - AuthViewModel ID: \(self.instanceId)")
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    withAnimation { self.authState = .unauthenticated }
+                }
             }
             
-            print("🟢 F. Login sequence COMPLETED for \(user.id) - AuthViewModel ID: \(self.instanceId)")
-        } catch {
-            print("🔴 API call failed - \(error) - AuthViewModel ID: \(self.instanceId)")
-            await MainActor.run {
-                self.errorMessage = error.localizedDescription
-                withAnimation { self.authState = .unauthenticated }
-            }
+            // Always reset loading state at the end (instead of using defer)
+            await MainActor.run { self.isLoading = false }
+            print("⚙️ LOGIN SEQUENCE FINISHED - AuthViewModel ID: \(self.instanceId)")
         }
-        
-        // Always reset loading state
-        await MainActor.run { withAnimation { isLoading = false } }
-        print("⚙️ LOGIN SEQUENCE FINISHED - AuthViewModel ID: \(self.instanceId)")
     }
 
     func logout() {
