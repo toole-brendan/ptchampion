@@ -3,7 +3,7 @@ import Foundation
 import PTDesignSystem
 
 struct RegistrationView: View {
-    @EnvironmentObject private var auth: ptchampion.AuthViewModel
+    @EnvironmentObject private var auth: AuthViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.presentationMode) var presentationMode
     
@@ -183,7 +183,7 @@ struct RegistrationView: View {
 #Preview {
     NavigationView {
         RegistrationView()
-            .environmentObject(ptchampion.AuthViewModel())
+            .environmentObject(AuthViewModel())
             .environment(\.colorScheme, .light)
     }
 }
@@ -191,7 +191,7 @@ struct RegistrationView: View {
 #Preview("Dark Mode") {
     NavigationView {
         RegistrationView()
-            .environmentObject(ptchampion.AuthViewModel())
+            .environmentObject(AuthViewModel())
             .environment(\.colorScheme, .dark)
     }
 } 

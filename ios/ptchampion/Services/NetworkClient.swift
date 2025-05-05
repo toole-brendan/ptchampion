@@ -31,6 +31,8 @@ struct APIErrorResponse: Decodable, Error {
     let message: String
 }
 
+// Helper for requests that expect no response body (e.g., 204 No Content)
+struct NetworkClientEmptyResponse: Decodable {}
 
 // MARK: - Network Client
 class NetworkClient {
@@ -415,5 +417,5 @@ class NetworkClient {
     }
 }
 
-// Helper for requests that expect no response body (e.g., 204 No Content)
-struct EmptyResponse: Decodable {} 
+// No need to redeclare EmptyResponse as we're importing it from NetworkService
+// struct EmptyResponse: Decodable {} 
