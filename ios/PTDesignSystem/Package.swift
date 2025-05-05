@@ -31,7 +31,9 @@ let package = Package(
             targets: ["PTDesignSystem"]
         )
     ],
-    dependencies: [],
+    dependencies: [
+        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "0.4.0")
+    ],
     targets: [
         .target(
             name: "DesignTokens",
@@ -43,7 +45,8 @@ let package = Package(
         .target(
             name: "Components",
             dependencies: [
-                "DesignTokens"
+                "DesignTokens",
+                .product(name: "Introspect", package: "SwiftUI-Introspect")
             ],
             path: "Sources/Components"
         ),

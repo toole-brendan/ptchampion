@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import PTDesignSystem
+import Introspect
 
 // Font extensions
 extension Font {
@@ -41,6 +42,10 @@ struct LoginTextField: View {
                         RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
                             .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
                     )
+                    .introspectTextField { tf in
+                        tf.inputAssistantItem.leadingBarButtonGroups  = []
+                        tf.inputAssistantItem.trailingBarButtonGroups = []
+                    }
             } else {
                 TextField(placeholder, text: $text)
                     .keyboardType(keyboardType)
@@ -52,6 +57,10 @@ struct LoginTextField: View {
                         RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
                             .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
                     )
+                    .introspectTextField { tf in
+                        tf.inputAssistantItem.leadingBarButtonGroups  = []
+                        tf.inputAssistantItem.trailingBarButtonGroups = []
+                    }
             }
         }
     }
@@ -63,6 +72,7 @@ struct LoginView: View {
     @EnvironmentObject private var auth: AuthViewModel
     @State private var keyboardHeight: CGFloat = 0
     @State private var showDevOptions = false
+    @State private var didLogBodyOnce = false
     
     // Add explicit navigation feedback from Comprehensive Solution
     @State private var isTransitioning = false
@@ -75,9 +85,6 @@ struct LoginView: View {
     @State private var password: String = ""
     
     var body: some View {
-        // Print LoginView's auth instance ID to verify it's the same one
-        let _ = print("DEBUG: LoginView body with AuthViewModel instance: \(ObjectIdentifier(auth))")
-        
         GeometryReader { geometry in
             ScrollView {
                 VStack(spacing: 24) {
@@ -174,10 +181,12 @@ struct LoginView: View {
                             PTLabel("Don't have an account?", style: .caption)
                                 .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
                             
-                            NavigationLink(destination: RegistrationView()) {
-                                PTLabel("Register", style: .caption)
-                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            }
+                            AnyView(
+                                NavigationLink(destination: RegistrationView()) {
+                                    PTLabel("Register", style: .caption)
+                                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                }
+                            )
                         }
                         .padding(.top, 8)
                     }
