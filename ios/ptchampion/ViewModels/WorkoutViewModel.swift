@@ -133,6 +133,7 @@ class WorkoutViewModel: ObservableObject {
     // Release camera resources
     func releaseCamera() {
         print("Releasing CameraService resources")
+        _cameraService?.stopSession()
         _cameraService = nil
         cancellables.removeAll()
     }
@@ -397,11 +398,18 @@ class WorkoutViewModel: ObservableObject {
 
     // MARK: - Cleanup
     deinit {
-        // Ensure resources are released
-        Task { @MainActor in
-            stopCamera()
+        // 1. take a local strong ref while `self` is still valid
+        let service = _cameraService
+
+        // 2. stop the session asynchronously without touching `self`
+        if let service {
+            Task.detached {
+                service.stopSession()
+            }
         }
+
         timerSubscription?.cancel()
+        cancellables.removeAll()
         print("WorkoutViewModel for \(exerciseName) deinitialized.")
     }
 }
