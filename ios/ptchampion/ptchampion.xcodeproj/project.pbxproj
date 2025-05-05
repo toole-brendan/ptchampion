@@ -69,6 +69,8 @@
 		BF63E4742DB2937C0037CD02 /* PTChampionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */; };
 		BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4752DB453140037CD02 /* pt_champion_logo.png */; };
 		BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4772DB454230037CD02 /* Assets.xcassets */; };
+		BF8F678E2DC920D80065A2D7 /* BodyPoseDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */; };
+		BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -168,6 +170,8 @@
 		BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTChampionApp.swift; sourceTree = "<group>"; };
 		BF63E4752DB453140037CD02 /* pt_champion_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pt_champion_logo.png; sourceTree = "<group>"; };
 		BF63E4772DB454230037CD02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPoseDetectionView.swift; sourceTree = "<group>"; };
+		BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDetectionDemoView.swift; sourceTree = "<group>"; };
 		BF90A0012DBAF50000000001 /* BebasNeue-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "BebasNeue-Bold.ttf"; path = "Resources/Fonts/BebasNeue-Bold.ttf"; sourceTree = "<group>"; };
 		BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Montserrat-Regular.ttf"; path = "Resources/Fonts/Montserrat-Regular.ttf"; sourceTree = "<group>"; };
 		BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; name = "Montserrat-Bold.ttf"; path = "Resources/Fonts/Montserrat-Bold.ttf"; sourceTree = "<group>"; };
@@ -467,6 +471,8 @@
 		BF63E4482DB1EB980037CD02 /* Workouts */ = {
 			isa = PBXGroup;
 			children = (
+				BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */,
+				BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */,
 				BF63E4442DB1EB980037CD02 /* PoseOverlayView.swift */,
 				BF63E4452DB1EB980037CD02 /* RunWorkoutView.swift */,
 				BF63E4462DB1EB980037CD02 /* WorkoutSelectionView.swift */,
@@ -700,6 +706,8 @@
 				BF63E40A2DB1CF5A0037CD02 /* WorkoutModels.swift in Sources */,
 				BF63E40B2DB1CF5A0037CD02 /* WorkoutResultSwiftData.swift in Sources */,
 				BF63E44B2DB1EB980037CD02 /* LoginView.swift in Sources */,
+				BF8F678E2DC920D80065A2D7 /* BodyPoseDetectionView.swift in Sources */,
+				BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */,
 				BF63E44C2DB1EB980037CD02 /* RunWorkoutView.swift in Sources */,
 				BF63E4722DB1F3910037CD02 /* WorkoutHistoryRow.swift in Sources */,
 				BF63E44D2DB1EB980037CD02 /* PoseOverlayView.swift in Sources */,

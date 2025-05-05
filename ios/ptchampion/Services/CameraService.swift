@@ -9,7 +9,7 @@ private let kRunningInSimulator = true
 private let kRunningInSimulator = false
 #endif
 
-class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSampleBufferDelegate {
+class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSampleBufferDelegate, ObservableObject {
 
     let session = AVCaptureSession()
     private let sessionQueueKey = DispatchSpecificKey<Bool>()
