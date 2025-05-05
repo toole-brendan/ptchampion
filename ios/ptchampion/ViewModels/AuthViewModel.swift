@@ -10,7 +10,7 @@ private extension Error {
 
 // Define authentication states with associated user data
 enum AuthState: Equatable {
-    case authenticated(User)
+    case authenticated(AuthUser)
     case unauthenticated
     
     static func == (lhs: AuthState, rhs: AuthState) -> Bool {
@@ -44,9 +44,9 @@ enum API {
         case invalidResponse
     }
     
-    static func login(_ email: String, _ password: String) async throws -> (token: String, user: User) {
+    static func login(_ email: String, _ password: String) async throws -> (token: String, user: AuthUser) {
         print("⚙️ Starting login for email: \(email)")
-        let request = LoginRequest(username: email, password: password)
+        let request = AuthLoginRequest(username: email, password: password)
         let url = URL(string: "https://ptchampion-api-westus.azurewebsites.net/api/v1/auth/login")!
         
         print("⚙️ About to send login request")
@@ -229,7 +229,7 @@ class AuthViewModel: ObservableObject {
     
     /// Bypasses the normal authentication flow for development purposes
     func loginAsDeveloper() {
-        let devUser = User(
+        let devUser = AuthUser(
             id: "dev-123",
             email: "dev@example.com",
             firstName: "Developer", 
@@ -242,7 +242,7 @@ class AuthViewModel: ObservableObject {
     
     // Debug method for directly forcing authentication state
     func debugForceAuthenticated() {
-        let debugUser = User(
+        let debugUser = AuthUser(
             id: "debug-123",
             email: "debug@example.com",
             firstName: "Debug",
@@ -267,7 +267,7 @@ class AuthViewModel: ObservableObject {
             await MainActor.run {
                 if let token = token, !token.isEmpty, let uid = uid {
                     print("⚙️ Found token and user ID in keychain, setting state to authenticated with user ID: \(uid)")
-                    authState = .authenticated(User(id: uid, email: "", firstName: "User", lastName: "", profilePictureUrl: nil))
+                    authState = .authenticated(AuthUser(id: uid, email: "", firstName: "User", lastName: "", profilePictureUrl: nil))
                 } else {
                     print("⚙️ No valid token or user ID found in keychain, setting state to unauthenticated")
                     authState = .unauthenticated
@@ -284,6 +284,13 @@ class AuthViewModel: ObservableObject {
     // MARK: - Convenience Properties
     var isAuthenticated: Bool {
         authState.isAuthenticated
+    }
+    
+    var displayName: String {
+        if case .authenticated(let user) = authState {
+            return user.firstName ?? "User"
+        }
+        return "User"
     }
 }
 

@@ -603,68 +603,7 @@ class RunWorkoutViewModel: ObservableObject {
     }
 }
 
-/*
-// MARK: - SwiftData Model for Workout Result
-
-// IMPORTANT: This should likely live in its own file within the Models group,
-// not inside the ViewModel file.
-@Model
-final class WorkoutResultSwiftData {
-    @Attribute(.unique) var id: UUID
-    var userId: Int? // Optional: Link to the user who performed the workout
-    var workoutType: String // e.g., "Run", "Push-ups", "Sit-ups"
-    var date: Date
-    var durationSeconds: Double
-    var distanceMeters: Double? // Optional for non-distance workouts
-    var averagePaceSecondsPerMeter: Double? // Optional
-    var caloriesBurned: Int? // Optional, calculation needed
-    var averageHeartRate: Int? // Optional
-    var maxHeartRate: Int? // Optional
-    var locationDataPoints: [LocationDataPoint]? // Store simplified location data
-
-    // Relationships (Example - Adapt as needed)
-    // If you have a User model:
-    // var user: User?
-
-    init(id: UUID = UUID(),
-         userId: Int? = nil,
-         workoutType: String,
-         date: Date,
-         durationSeconds: Double,
-         distanceMeters: Double? = nil,
-         averagePaceSecondsPerMeter: Double? = nil,
-         caloriesBurned: Int? = nil,
-         averageHeartRate: Int? = nil,
-         maxHeartRate: Int? = nil,
-         locationDataPoints: [LocationDataPoint]? = nil
-         // user: User? = nil // Add user relationship if applicable
-    ) {
-        self.id = id
-        self.userId = userId
-        self.workoutType = workoutType
-        self.date = date
-        self.durationSeconds = durationSeconds
-        self.distanceMeters = distanceMeters
-        self.averagePaceSecondsPerMeter = averagePaceSecondsPerMeter
-        self.caloriesBurned = caloriesBurned
-        self.averageHeartRate = averageHeartRate
-        self.maxHeartRate = maxHeartRate
-        self.locationDataPoints = locationDataPoints
-       // self.user = user
-    }
-}
-
-// Codable struct for location data points to be stored within WorkoutResultSwiftData
-struct LocationDataPoint: Codable, Hashable {
-    var latitude: Double
-    var longitude: Double
-    var timestamp: Date
-    var speed: Double? // meters per second
-    var altitude: Double?
-}
-
-
-// Distance Unit Enum (Can also be in a separate file)
+// Distance Unit Enum (moved from the commented-out section)
 enum DistanceUnit: String, CaseIterable, Identifiable {
     case miles, kilometers
     var id: String { self.rawValue }
@@ -675,5 +614,4 @@ enum DistanceUnit: String, CaseIterable, Identifiable {
         case .kilometers: return "km"
         }
     }
-}
-*/ 
+} 

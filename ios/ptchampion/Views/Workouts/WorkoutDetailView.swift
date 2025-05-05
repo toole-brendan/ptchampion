@@ -1,14 +1,15 @@
 import SwiftUI
-import Charts // Assuming iOS 16+ for Swift Charts
 import PTDesignSystem
 
-struct WorkoutProgressView: View {
+struct WorkoutDetailView: View {
+    let exerciseType: ExerciseType
+    
     var body: some View {
         VStack {
-            PTLabel("Progress Tracking", style: .heading)
+            PTLabel("\(exerciseType.displayName) Workout", style: .heading)
                 .padding()
             
-            PTLabel("This is a placeholder for the Progress Tracking screen", style: .body)
+            PTLabel("This is a placeholder for the \(exerciseType.displayName) workout screen", style: .body)
                 .multilineTextAlignment(.center)
                 .padding()
             
@@ -16,13 +17,13 @@ struct WorkoutProgressView: View {
         }
         .padding()
         .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-        .navigationTitle("Progress")
+        .navigationTitle(exerciseType.displayName)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
 #Preview {
     NavigationView {
-        WorkoutProgressView()
+        WorkoutDetailView(exerciseType: .pushup)
     }
 } 

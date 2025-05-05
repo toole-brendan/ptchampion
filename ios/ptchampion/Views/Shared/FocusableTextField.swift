@@ -46,13 +46,13 @@ struct FocusableTextFieldStyle: TextFieldStyle {
         configuration
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(AppTheme.Colors.cardBackground)
-            .cornerRadius(AppTheme.Radius.input)
+            .background(AppTheme.GeneratedColors.cardBackground)
+            .cornerRadius(AppTheme.GeneratedRadius.input)
             .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.Radius.input)
-                    .stroke(isFocused ? AppTheme.Colors.brassGold : Color.gray.opacity(0.3), lineWidth: isFocused ? 2 : 1)
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
+                    .stroke(isFocused ? AppTheme.GeneratedColors.brassGold : Color.gray.opacity(0.3), lineWidth: isFocused ? 2 : 1)
             )
-            .font(AppTheme.Typography.body())
+            .font(AppTheme.GeneratedTypography.body())
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isFocused)
     }
 }
@@ -78,7 +78,7 @@ struct FocusableTextField_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(AppTheme.Colors.background)
+        .background(AppTheme.GeneratedColors.background)
         .previewLayout(.sizeThatFits)
     }
 } 

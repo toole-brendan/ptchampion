@@ -1,10 +1,11 @@
 import SwiftUI
 import SwiftData
+import PTDesignSystem
 
 /// A reusable component for displaying a list of workout history items
 struct WorkoutHistoryList: View {
-    // State
-    @ObservedObject var viewModel: WorkoutHistoryViewModel
+    // State - use direct property since WorkoutHistoryViewModel uses @Observable
+    var viewModel: WorkoutHistoryViewModel
     let onDelete: ((IndexSet) -> Void)?
     let onSelect: ((WorkoutHistory) -> Void)?
     let isEditable: Bool
@@ -36,7 +37,7 @@ struct WorkoutHistoryList: View {
                 .listRowBackground(Color.clear)
             } else {
                 ForEach(viewModel.workouts) { workout in
-                    WorkoutHistoryRow(workout: workout)
+                    WorkoutHistoryRowAdapter(workout: workout)
                         .contentShape(Rectangle()) // Make the entire row tappable
                         .onTapGesture {
                             onSelect?(workout)
@@ -51,7 +52,10 @@ struct WorkoutHistoryList: View {
         }
         .overlay {
             if viewModel.isLoading {
-                Spinner(size: .large, variant: .primary)
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle())
+                    .scaleEffect(1.5)
+                    .tint(AppTheme.GeneratedColors.brassGold)
             }
         }
         .task {
@@ -73,6 +77,29 @@ struct WorkoutHistoryList: View {
                 }
             }
         }
+    }
+}
+
+// Adapter to convert WorkoutHistory to WorkoutResultSwiftData for use with the existing WorkoutHistoryRow
+struct WorkoutHistoryRowAdapter: View {
+    let workout: WorkoutHistory
+    
+    var body: some View {
+        // Create a pseudo WorkoutResultSwiftData for display purposes
+        let workoutResult = createWorkoutResult()
+        WorkoutHistoryRow(result: workoutResult)
+    }
+    
+    private func createWorkoutResult() -> WorkoutResultSwiftData {
+        let workoutResult = WorkoutResultSwiftData(
+            exerciseType: workout.exerciseType,
+            startTime: workout.date,
+            endTime: workout.date.addingTimeInterval(workout.duration),
+            durationSeconds: Int(workout.duration),
+            repCount: workout.reps,
+            distanceMeters: workout.distance
+        )
+        return workoutResult
     }
 }
 
@@ -155,11 +182,6 @@ struct WorkoutHistoryList_Previews: PreviewProvider {
             .padding()
             .preferredColorScheme(.light)
             .previewDisplayName("History List")
-        
-        WorkoutHistoryRow(workout: sampleWorkout())
-            .padding()
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("History Row")
     }
     
     // Helper to create sample data

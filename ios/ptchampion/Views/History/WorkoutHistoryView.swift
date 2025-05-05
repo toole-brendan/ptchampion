@@ -2,60 +2,309 @@ import SwiftUI
 import SwiftData
 import PTDesignSystem
 
+enum WorkoutFilter: String, CaseIterable, Identifiable {
+    case all = "All"
+    case pushup = "Push-Ups"
+    case situp = "Sit-Ups"
+    case run = "Run"
+    
+    var id: String { self.rawValue }
+    
+    var systemImage: String {
+        switch self {
+        case .all: return "figure.run.circle"
+        case .pushup: return "figure.strengthtraining.traditional"
+        case .situp: return "figure.core"
+        case .run: return "figure.run"
+        }
+    }
+    
+    // Convert to exercise type string used in database
+    var exerciseTypeString: String? {
+        switch self {
+        case .all: return nil
+        case .pushup: return "pushup"
+        case .situp: return "situp"
+        case .run: return "run"
+        }
+    }
+}
+
+struct WorkoutProgressChart: View {
+    let data: [WorkoutDataPoint]
+    let exerciseType: String
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            if !data.isEmpty {
+                Text("Progress Over Time")
+                    .font(AppTheme.GeneratedTypography.subheading(size: AppTheme.GeneratedTypography.subheading))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .padding(.bottom, 4)
+                
+                // Placeholder for chart - in a real implementation this would use Swift Charts
+                HStack(alignment: .bottom, spacing: 4) {
+                    ForEach(data) { point in
+                        VStack {
+                            Rectangle()
+                                .fill(AppTheme.GeneratedColors.brassGold)
+                                .frame(width: 20, height: CGFloat(point.value) * 2)
+                            
+                            Text(point.shortDate)
+                                .font(AppTheme.GeneratedTypography.tiny(size: AppTheme.GeneratedTypography.tiny))
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        }
+                    }
+                }
+                .frame(height: 200)
+                .padding(.vertical)
+                
+                if let bestPoint = data.max(by: { $0.value < $1.value }) {
+                    HStack {
+                        Text("Personal Best:")
+                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        
+                        Text("\(bestPoint.value) \(exerciseType)")
+                            .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.small))
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        
+                        Badge(text: "Personal Best", variant: .success)
+                    }
+                }
+            } else {
+                Text("Not enough data to show progress")
+                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding()
+            }
+        }
+        .padding()
+        .background(AppTheme.GeneratedColors.cardBackground)
+        .cornerRadius(AppTheme.GeneratedRadius.card)
+    }
+}
+
+struct Badge: View {
+    let text: String
+    enum BadgeVariant {
+        case standard, success, warning, error
+        
+        var color: Color {
+            switch self {
+            case .standard: return AppTheme.GeneratedColors.brassGold
+            case .success: return Color.green
+            case .warning: return Color.orange
+            case .error: return Color.red
+            }
+        }
+    }
+    
+    let variant: BadgeVariant
+    
+    init(text: String, variant: BadgeVariant = .standard) {
+        self.text = text
+        self.variant = variant
+    }
+    
+    var body: some View {
+        Text(text)
+            .font(AppTheme.GeneratedTypography.tiny(size: AppTheme.GeneratedTypography.tiny))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(variant.color.opacity(0.2))
+            .foregroundColor(variant.color)
+            .cornerRadius(AppTheme.GeneratedRadius.badge)
+    }
+}
+
+struct WorkoutDataPoint: Identifiable {
+    let id = UUID()
+    let date: Date
+    let value: Int
+    
+    var shortDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM/dd"
+        return formatter.string(from: date)
+    }
+}
+
 struct WorkoutHistoryView: View {
     @Environment(\.modelContext) private var modelContext
     // Query for all workout results, sorted by start time descending
     @Query(sort: [SortDescriptor<WorkoutResultSwiftData>(\WorkoutResultSwiftData.startTime, order: .reverse)])
-    private var workoutResults: [WorkoutResultSwiftData]
+    private var allWorkoutResults: [WorkoutResultSwiftData]
+    
+    @State private var filter: WorkoutFilter = .all
+    @State private var isShowingShareSheet = false
+    @State private var shareText = ""
 
+    // Filter workout results based on selected filter
+    private var workoutResults: [WorkoutResultSwiftData] {
+        if filter == .all {
+            return allWorkoutResults
+        } else {
+            return allWorkoutResults.filter { $0.exerciseType == filter.exerciseTypeString }
+        }
+    }
+    
+    // Prepare chart data
+    private var chartData: [WorkoutDataPoint] {
+        let filteredResults = filter == .all ? 
+            allWorkoutResults.filter { $0.repCount != nil } : 
+            workoutResults
+        
+        return filteredResults.prefix(7)
+            .compactMap { result in
+                guard let reps = result.repCount else { return nil }
+                return WorkoutDataPoint(date: result.startTime, value: reps)
+            }
+            .sorted { $0.date < $1.date }
+    }
+    
     var body: some View {
         NavigationView {
             ZStack {
                 AppTheme.GeneratedColors.background.ignoresSafeArea()
                 
-                List {
-                    if workoutResults.isEmpty {
-                        ContentUnavailableView(
-                            "No Workouts Yet",
-                            systemImage: "figure.run.circle",
-                            description: Text("Complete a workout to see your history here.")
-                                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
-                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        )
-                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                    } else {
-                        ForEach(workoutResults) { result in
-                            WorkoutHistoryRow(result: result)
+                VStack(spacing: AppTheme.GeneratedSpacing.contentPadding) {
+                    // 4-9: Filters / Segmented Control
+                    Picker("Filter", selection: $filter) {
+                        ForEach(WorkoutFilter.allCases) { filter in
+                            Text(filter.rawValue).tag(filter)
                         }
-                        .onDelete(perform: deleteWorkout)
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    
+                    // Workout history list
+                    List {
+                        if workoutResults.isEmpty {
+                            // 4-12: Empty State Improvements
+                            ContentUnavailableView(
+                                "No \(filter == .all ? "Workouts" : filter.rawValue) Yet",
+                                systemImage: filter.systemImage,
+                                description: Text("Complete a workout to see your history here.")
+                                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
+                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            )
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        } else {
+                            ForEach(workoutResults) { result in
+                                // 4-8: History List Polish
+                                WorkoutHistoryRow(result: result)
+                                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                                    .swipeActions(edge: .trailing) {
+                                        Button(role: .destructive) {
+                                            deleteWorkout(result: result)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                        
+                                        Button {
+                                            shareWorkout(result: result)
+                                        } label: {
+                                            Label("Share", systemImage: "square.and.arrow.up")
+                                        }
+                                        .tint(AppTheme.GeneratedColors.brassGold)
+                                    }
+                            }
+                        }
+                    }
+                    .listStyle(PlainListStyle())
+                    .scrollContentBackground(.hidden)
+                    
+                    // 4-10: Progress Analytics
+                    if !workoutResults.isEmpty {
+                        WorkoutProgressChart(
+                            data: chartData,
+                            exerciseType: filter == .all ? "reps" : filter.rawValue
+                        )
+                        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                     }
                 }
-                .listStyle(PlainListStyle())
-                .scrollContentBackground(.hidden)
+                .sheet(isPresented: $isShowingShareSheet) {
+                    ActivityView(activityItems: [shareText])
+                }
             }
             .navigationTitle("Workout History")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                 // Add EditButton to enable swipe-to-delete
-                 EditButton()
+                EditButton()
                     .tint(AppTheme.GeneratedColors.brassGold)
             }
         }
     }
 
-    // Function to delete workout results from SwiftData
+    // Function to delete a specific workout result
+    private func deleteWorkout(result: WorkoutResultSwiftData) {
+        modelContext.delete(result)
+    }
+    
+    // Old function to delete workout by offset (keeping for compatibility)
     private func deleteWorkout(at offsets: IndexSet) {
         offsets.forEach { index in
             let resultToDelete = workoutResults[index]
             modelContext.delete(resultToDelete)
         }
-        // Try saving the context after deletion (optional, often autosaves)
-        // do {
-        //     try modelContext.save()
-        // } catch {
-        //     print("Error saving context after deletion: \(error)")
-        // }
     }
+    
+    // Share workout function
+    private func shareWorkout(result: WorkoutResultSwiftData) {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        
+        var text = "PT Champion Workout: \(result.exerciseType.capitalized)\n"
+        text += "Date: \(formatter.string(from: result.startTime))\n"
+        text += "Duration: \(formatDuration(result.durationSeconds))\n"
+        
+        if let reps = result.repCount {
+            text += "Reps: \(reps)\n"
+        }
+        
+        if let score = result.score {
+            text += "Score: \(Int(score))%\n"
+        }
+        
+        if let distance = result.distanceMeters {
+            let distanceMiles = distance * 0.000621371
+            text += "Distance: \(String(format: "%.2f mi", distanceMiles))\n"
+        }
+        
+        shareText = text
+        isShowingShareSheet = true
+    }
+    
+    // Formatter for duration
+    private func formatDuration(_ duration: Int) -> String {
+        let hours = duration / 3600
+        let minutes = (duration % 3600) / 60
+        let seconds = duration % 60
+        if hours > 0 {
+            return String(format: "%d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            return String(format: "%d:%02d", minutes, seconds)
+        }
+    }
+}
+
+// UIActivityViewController wrapper for SwiftUI
+struct ActivityView: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    let applicationActivities: [UIActivity]? = nil
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        let controller = UIActivityViewController(
+            activityItems: activityItems,
+            applicationActivities: applicationActivities
+        )
+        return controller
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // Helper function to create a container with sample data for previews
@@ -80,7 +329,6 @@ private func createSampleDataContainer() -> ModelContainer {
     }
 }
 
-// Preview using the helper function
 #Preview("Light Mode") {
     WorkoutHistoryView()
         .modelContainer(createSampleDataContainer())

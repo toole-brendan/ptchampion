@@ -1,8 +1,12 @@
 import Foundation
 
+// Use the renamed AuthUserModel
+typealias AuthUser = AuthUserModel
+
 // MARK: - Request Payloads
 
-struct LoginRequest: Codable {
+// Renamed to avoid conflict with UnifiedNetworkService.LoginRequest
+struct AuthLoginRequest: Codable {
     let username: String
     let password: String
 }
@@ -45,7 +49,7 @@ struct RegistrationRequest: Codable {
 
 struct AuthResponse: Codable {
     let token: String
-    let user: User
+    let user: AuthUser
     
     enum CodingKeys: String, CodingKey {
         case token, user
@@ -65,7 +69,7 @@ struct AuthResponse: Codable {
             print("AuthResponse: Using token field from response")
         }
         
-        user = try container.decode(User.self, forKey: .user)
+        user = try container.decode(AuthUser.self, forKey: .user)
     }
     
     // Add encode method to complete Codable conformance
@@ -76,7 +80,7 @@ struct AuthResponse: Codable {
     }
     
     // Custom init for creating mock responses
-    init(token: String, user: User) {
+    init(token: String, user: AuthUser) {
         self.token = token
         self.user = user
     }

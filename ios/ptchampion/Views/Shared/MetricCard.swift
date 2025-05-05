@@ -162,9 +162,6 @@ struct MetricCardButtonStyle: ButtonStyle {
     }
 }
 
-// Backward compatibility
-public typealias MetricCard = MetricCardView
-
 // Preview provider
 struct MetricCardView_Previews: PreviewProvider {
     static var previews: some View {

@@ -17,7 +17,7 @@ class AuthService: AuthServiceProtocol {
     }
 
     // MARK: - Protocol Implementation
-    func login(credentials: LoginRequest) async throws -> AuthResponse {
+    func login(credentials: AuthLoginRequest) async throws -> AuthResponse {
         print("AuthService: Attempting login with username: \(credentials.username)...")
         print("AuthService: Mock auth is disabled, will make real network request")
         
@@ -26,12 +26,12 @@ class AuthService: AuthServiceProtocol {
             
             let mockResponse = AuthResponse(
                 token: "mock-jwt-token-for-testing-12345",
-                user: User(
+                user: AuthUser(
                     id: "123",
                     email: credentials.username,
                     firstName: "Test",
                     lastName: "User",
-                    profilePictureUrl: nil
+                    profilePictureUrl: nil as String?
                 )
             )
             
@@ -90,11 +90,11 @@ class AuthService: AuthServiceProtocol {
             
             let mockResponse = AuthResponse(
                 token: "mock-jwt-token-for-testing-registration-12345",
-                user: User(
+                user: AuthUser(
                     id: "456",
                     email: userInfo.username,
                     firstName: userInfo.displayName,
-                    lastName: nil,
+                    lastName: nil as String?,
                     profilePictureUrl: userInfo.profilePictureUrl
                 )
             )
@@ -151,3 +151,5 @@ class AuthService: AuthServiceProtocol {
         print("AuthService: User location update successful.")
     }
 }
+
+// Removed the duplicate UpdateLocationRequest struct as it's already defined in UserProfileModels.swift
