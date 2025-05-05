@@ -37,6 +37,12 @@ class PushupGrader: ExerciseGraderProtocol {
     private var feedback: String = "Get into push-up position."
     private var _repCount: Int = 0 // Internal counter, exposed via protocol
     private var _lastFormIssue: String? = nil // Track last form issue
+    private var _problemJoints: Set<VNHumanBodyPoseObservation.JointName> = [] // Track joints with issues
+    
+    // Public access to problem joints for UI highlighting
+    var problemJoints: Set<VNHumanBodyPoseObservation.JointName> {
+        return _problemJoints
+    }
     
     // Form quality tracking
     private var formScores: [Double] = [] // Track form quality of each rep
@@ -81,11 +87,13 @@ class PushupGrader: ExerciseGraderProtocol {
         consecutiveInvalidFrames = 0
         inRepTransition = false
         _lastFormIssue = nil
+        _problemJoints = [] // Reset problem joints
         print("PushupGrader: State reset.")
     }
 
     func gradePose(body: DetectedBody) -> GradingResult {
         feedback = "" // Reset feedback for this frame
+        _problemJoints = [] // Reset problem joints for this frame
         
         let previousState = currentState // Remember the previous state for transition logic
 
@@ -159,6 +167,8 @@ class PushupGrader: ExerciseGraderProtocol {
         let shoulderXDiff = abs(leftShoulder.location.x - rightShoulder.location.x)
         if shoulderXDiff > PushupGrader.shoulderAlignmentMaxXDiff {
             formIssues.append("Keep shoulders level")
+            _problemJoints.insert(.leftShoulder)
+            _problemJoints.insert(.rightShoulder)
         }
 
         // b) Body straightness checks
@@ -178,11 +188,22 @@ class PushupGrader: ExerciseGraderProtocol {
         // Check for Sagging (Hips too low)
         if hipDeviationRatio > PushupGrader.hipSagThreshold {
              formIssues.append("Keep hips from sagging")
+             _problemJoints.insert(.leftHip)
+             _problemJoints.insert(.rightHip)
         }
 
         // Check for Piking (Hips too high)
         if hipDeviationRatio < -PushupGrader.hipPikeThreshold { // Check against negative threshold for piking
              formIssues.append("Lower your hips")
+             _problemJoints.insert(.leftHip)
+             _problemJoints.insert(.rightHip)
+        }
+
+        // Check for Elbow angle issues during DOWN state
+        if currentState == .down && avgElbowAngle > PushupGrader.elbowAngleDownMax {
+            formIssues.append("Bend elbows more")
+            _problemJoints.insert(.leftElbow)
+            _problemJoints.insert(.rightElbow)
         }
 
         // Record form issues if any
@@ -283,6 +304,8 @@ class PushupGrader: ExerciseGraderProtocol {
                 // Didn't go low enough on the previous down phase
                 feedback = "Push lower for rep to count"
                 _lastFormIssue = feedback
+                _problemJoints.insert(.leftElbow)
+                _problemJoints.insert(.rightElbow)
                 
                 // Reset state for next rep attempt
                 minElbowAngleThisRep = 180.0

@@ -1,9 +1,18 @@
 import SwiftUI
 import Vision // For JointName constants
+import PTDesignSystem // For AppTheme
 
 // SwiftUI view to draw detected pose landmarks over the camera feed
 struct PoseOverlayView: View {
     let detectedBody: DetectedBody?
+    let badJointNames: Set<VNHumanBodyPoseObservation.JointName>
+    
+    // Initialize with default empty set for bad joints
+    init(detectedBody: DetectedBody?, badJointNames: Set<VNHumanBodyPoseObservation.JointName> = []) {
+        self.detectedBody = detectedBody
+        self.badJointNames = badJointNames
+    }
+    
     // Specify which joints to draw connections between
     private let jointPairs: [(VNHumanBodyPoseObservation.JointName, VNHumanBodyPoseObservation.JointName)] = [
         // Torso
@@ -43,8 +52,16 @@ struct PoseOverlayView: View {
                 var path = Path()
                 path.move(to: point1)
                 path.addLine(to: point2)
-
-                context.stroke(path, with: .color(.green.opacity(0.7)), lineWidth: 3)
+                
+                // Determine if this line connects to any bad joints
+                let isBadLine = badJointNames.contains(joint1Name) || badJointNames.contains(joint2Name)
+                
+                // Use red for bad joints, green for good joints
+                let lineColor = isBadLine ? 
+                    AppTheme.GeneratedColors.error.opacity(0.7) : 
+                    AppTheme.GeneratedColors.success.opacity(0.7)
+                
+                context.stroke(path, with: .color(lineColor), lineWidth: 3)
             }
 
             // Draw points (circles)
@@ -56,7 +73,27 @@ struct PoseOverlayView: View {
                                         y: location.y - circleRadius,
                                         width: circleRadius * 2,
                                         height: circleRadius * 2)
-                context.fill(Path(ellipseIn: circleRect), with: .color(.blue.opacity(0.8)))
+                
+                // Determine if this is a bad joint
+                let isBadJoint = badJointNames.contains(point.name)
+                
+                // Use red for bad joints, white with green border for good joints
+                let circleColor = isBadJoint ? 
+                    AppTheme.GeneratedColors.error : 
+                    Color.white
+                
+                context.fill(Path(ellipseIn: circleRect), with: .color(circleColor))
+                
+                // Add border to the circle
+                let borderColor = isBadJoint ? 
+                    AppTheme.GeneratedColors.error : 
+                    AppTheme.GeneratedColors.success
+                
+                context.stroke(
+                    Path(ellipseIn: circleRect),
+                    with: .color(borderColor),
+                    lineWidth: 1.5
+                )
             }
         }
         // Important: The overlay should ignore user interaction
@@ -80,7 +117,10 @@ struct PoseOverlayView: View {
         .leftAnkle: DetectedPoint(name: .leftAnkle, location: CGPoint(x: 0.3, y: 0.9), confidence: 0.9)
     ]
     let mockBody = DetectedBody(points: mockPoints, confidence: 0.9)
+    
+    // Add some mock bad joints for preview
+    let badJoints: Set<VNHumanBodyPoseObservation.JointName> = [.leftElbow, .leftWrist]
 
-    return PoseOverlayView(detectedBody: mockBody)
+    return PoseOverlayView(detectedBody: mockBody, badJointNames: badJoints)
         .background(Color.gray) // Add background for visibility
 } 

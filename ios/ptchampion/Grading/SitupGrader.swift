@@ -36,6 +36,12 @@ class SitupGrader: ExerciseGraderProtocol {
     private var feedback: String = "Lie down, arms crossed, knees bent."
     private(set) var repCount: Int = 0
     private var _lastFormIssue: String? = nil
+    private var _problemJoints: Set<VNHumanBodyPoseObservation.JointName> = [] // Track joints with issues
+    
+    // Public access to problem joints for UI highlighting
+    var problemJoints: Set<VNHumanBodyPoseObservation.JointName> {
+        return _problemJoints
+    }
     
     // Form quality tracking
     private var formScores: [Double] = []
@@ -73,6 +79,7 @@ class SitupGrader: ExerciseGraderProtocol {
         resetRepTrackingState()
         stableFrameCounter = 0
         _lastFormIssue = nil
+        _problemJoints = [] // Reset problem joints
         print("SitupGrader: State reset.")
     }
 
@@ -84,6 +91,7 @@ class SitupGrader: ExerciseGraderProtocol {
 
     func gradePose(body: DetectedBody) -> GradingResult {
         feedback = "" // Reset feedback
+        _problemJoints = [] // Reset problem joints for this frame
 
         // 1. Check Required Joint Confidence
         let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
@@ -134,6 +142,14 @@ class SitupGrader: ExerciseGraderProtocol {
         let rightWristToLeftShoulder = distance(rightWrist.location, leftShoulder.location)
         let armsAreCrossed = (leftWristToRightShoulder < SitupGrader.armsCrossedMaxDist && 
                               rightWristToLeftShoulder < SitupGrader.armsCrossedMaxDist)
+        
+        // If arms aren't crossed, mark problem joints
+        if !armsAreCrossed {
+            _problemJoints.insert(.leftWrist)
+            _problemJoints.insert(.rightWrist)
+            _problemJoints.insert(.leftElbow)
+            _problemJoints.insert(.rightElbow)
+        }
 
         // --- State Machine Logic --- 
         let previousState = currentState
@@ -185,12 +201,16 @@ class SitupGrader: ExerciseGraderProtocol {
             if minHipAngleThisRep > SitupGrader.hipAngleUpMax {
                 repFormIssues.append("Sit up higher")
                 formQuality -= 0.3 // Reduce score for not going high enough
+                _problemJoints.insert(.leftShoulder)
+                _problemJoints.insert(.rightShoulder)
             }
             
             // Check if arms were crossed during the UP phase
             if !armsWereCrossedThisRep {
                  repFormIssues.append("Keep arms crossed")
                  formQuality -= 0.3 // Reduce score for not crossing arms
+                 _problemJoints.insert(.leftWrist)
+                 _problemJoints.insert(.rightWrist)
             }
             
             // Apply minimum quality floor
@@ -233,6 +253,10 @@ class SitupGrader: ExerciseGraderProtocol {
              case .inProgress, .noChange:
                  feedback = "Keep arms crossed over chest"
                  _lastFormIssue = feedback
+                 _problemJoints.insert(.leftWrist)
+                 _problemJoints.insert(.rightWrist)
+                 _problemJoints.insert(.leftElbow)
+                 _problemJoints.insert(.rightElbow)
                  return .incorrectForm(feedback: feedback)
              default:
                  break
@@ -245,10 +269,14 @@ class SitupGrader: ExerciseGraderProtocol {
             if case .inProgress = gradingResult {
                 feedback = "Lower further"
                 _lastFormIssue = feedback
+                _problemJoints.insert(.leftHip)
+                _problemJoints.insert(.rightHip)
                 gradingResult = .incorrectForm(feedback: feedback)
             } else if case .noChange = gradingResult {
                 feedback = "Lower further"
                 _lastFormIssue = feedback
+                _problemJoints.insert(.leftHip)
+                _problemJoints.insert(.rightHip)
                 gradingResult = .incorrectForm(feedback: feedback)
             }
         } else if currentState == .up && avgHipAngle > SitupGrader.hipAngleUpMax {
@@ -256,10 +284,14 @@ class SitupGrader: ExerciseGraderProtocol {
             if case .inProgress = gradingResult {
                 feedback = "Sit up higher"
                 _lastFormIssue = feedback
+                _problemJoints.insert(.leftShoulder)
+                _problemJoints.insert(.rightShoulder)
                 gradingResult = .incorrectForm(feedback: feedback)
             } else if case .noChange = gradingResult {
                 feedback = "Sit up higher"
                 _lastFormIssue = feedback
+                _problemJoints.insert(.leftShoulder)
+                _problemJoints.insert(.rightShoulder)
                 gradingResult = .incorrectForm(feedback: feedback)
             }
         }

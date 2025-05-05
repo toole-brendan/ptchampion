@@ -48,6 +48,8 @@ class WorkoutViewModel: ObservableObject {
     @Published var errorMessage: String? = nil
     @Published var elapsedTimeFormatted: String = "00:00"
     @Published var formScore: Double = 0.0
+    @Published var badJointNames: Set<VNHumanBodyPoseObservation.JointName> = []
+    @Published var poseFrameIndex: Int = 0 // For efficient redraws of pose overlay
     
     // Rep counter update publisher - emits once per completed rep
     private let repCompletedSubject = PassthroughSubject<Int, Never>()
@@ -492,6 +494,10 @@ class WorkoutViewModel: ObservableObject {
         guard workoutState == .counting else { return }
 
         let result = exerciseGrader.gradePose(body: body)
+        poseFrameIndex += 1 // Increment frame index for efficient Canvas redraws
+        
+        // Clear bad joints by default
+        badJointNames = []
 
         switch result {
         case .repCompleted(let formQuality):
@@ -501,13 +507,13 @@ class WorkoutViewModel: ObservableObject {
             // Emit event for UI animation
             repCompletedSubject.send(repCount)
             
-            // Update feedback
+            // Update feedback with color-coded message
             if formQuality > 0.9 {
-                feedbackMessage = "Perfect form! (\(repCount))"
+                feedbackMessage = "✅ Perfect form! (\(repCount))"
             } else if formQuality > 0.7 {
-                feedbackMessage = "Good rep! (\(repCount))"
+                feedbackMessage = "✅ Good rep! (\(repCount))"
             } else {
-                feedbackMessage = "Rep counted! Check form. (\(repCount))"
+                feedbackMessage = "⚠️ Rep counted! Check form. (\(repCount))"
             }
             
             // Optional: Play haptic feedback for completed rep
@@ -520,10 +526,20 @@ class WorkoutViewModel: ObservableObject {
             }
             
         case .invalidPose(let reason):
-            feedbackMessage = "Adjust: \(reason)"
+            feedbackMessage = "⚠️ Adjust: \(reason)"
             
         case .incorrectForm(let feedback):
-            feedbackMessage = feedback
+            feedbackMessage = "⚠️ \(feedback)"
+            
+            // Get bad joints from the grader and update the published property
+            if let grader = exerciseGrader as? PushupGrader {
+                badJointNames = grader.problemJoints
+            } else if let grader = exerciseGrader as? SitupGrader {
+                badJointNames = grader.problemJoints
+            } else if let grader = exerciseGrader as? PullupGrader {
+                badJointNames = grader.problemJoints
+            }
+            
             // Subtle haptic feedback for form correction
             playHapticFeedback(.warning)
             
