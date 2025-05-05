@@ -16,6 +16,7 @@ struct BodyPoseDetectionView: View {
     
     @State private var detectedBody: DetectedBody? = nil
     @State private var permissionDenied = false
+    @State private var showPermissionRequest = true
     @State private var cancellables = Set<AnyCancellable>()
     
     var body: some View {
@@ -30,9 +31,29 @@ struct BodyPoseDetectionView: View {
                     .edgesIgnoringSafeArea(.all)
             }
             
+            // Pre-permission request view
+            if showPermissionRequest {
+                ZStack {
+                    Color.black.opacity(0.7).edgesIgnoringSafeArea(.all)
+                    CameraPermissionRequestView(
+                        onRequestPermission: {
+                            showPermissionRequest = false
+                            cameraService.requestCameraPermission()
+                        },
+                        onCancel: {
+                            showPermissionRequest = false
+                            permissionDenied = true
+                        }
+                    )
+                }
+                .transition(.opacity)
+                .zIndex(2)
+            }
+            
             // Permission denied view
             if permissionDenied {
                 permissionDeniedView()
+                    .zIndex(1)
             }
             
             // Debug info overlay (only in development)
@@ -50,12 +71,33 @@ struct BodyPoseDetectionView: View {
         }
         .onAppear {
             setupSubscriptions()
-            cameraService.requestCameraPermission()
-            cameraService.startSession()
+            setupOrientationNotification()
+            // Permission is now requested via the custom permission view
         }
         .onDisappear {
             cancellables.forEach { $0.cancel() }
             cameraService.stopSession()
+            // Remove orientation notification observer
+            NotificationCenter.default.removeObserver(
+                self,
+                name: UIDevice.orientationDidChangeNotification,
+                object: nil
+            )
+        }
+    }
+    
+    private func setupOrientationNotification() {
+        // Register for orientation change notifications
+        NotificationCenter.default.addObserver(
+            forName: UIDevice.orientationDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { _ in
+            // Update camera orientation when device rotates
+            // Use a slight delay to ensure the interface has updated
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.cameraService.updateOutputOrientation()
+            }
         }
     }
     

@@ -128,6 +128,28 @@ class WorkoutViewModel: ObservableObject {
         print("Initializing new CameraService")
         _cameraService = CameraService()
         subscribeToServices()
+        
+        // Register for orientation changes
+        setupOrientationNotification()
+    }
+    
+    // Setup orientation observer
+    private func setupOrientationNotification() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(deviceOrientationDidChange),
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil
+        )
+    }
+    
+    // Handle orientation changes
+    @objc private func deviceOrientationDidChange() {
+        // Use a slight delay to ensure the interface has updated
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            guard let cameraService = self?._cameraService as? CameraService else { return }
+            cameraService.updateOutputOrientation()
+        }
     }
     
     // Release camera resources
@@ -136,6 +158,13 @@ class WorkoutViewModel: ObservableObject {
         _cameraService?.stopSession()
         _cameraService = nil
         cancellables.removeAll()
+        
+        // Remove orientation observer
+        NotificationCenter.default.removeObserver(
+            self,
+            name: UIDevice.orientationDidChangeNotification,
+            object: nil
+        )
     }
 
     private func subscribeToServices() {

@@ -201,7 +201,8 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
 
     // MARK: - Orientation Helper
 
-    private func updateOutputOrientation() {
+    // Change from private to public to allow external calls when device orientation changes
+    public func updateOutputOrientation() {
         guard let connection = videoOutput.connection(with: .video) else { return }
         // Get current interface orientation (requires running on main thread)
         DispatchQueue.main.async {
