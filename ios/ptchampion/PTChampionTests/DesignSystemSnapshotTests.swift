@@ -177,7 +177,7 @@ struct TextFieldVariantsView: View {
 struct ColorTokensView: View {
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.itemSpacing) {
                 Text("Color Tokens")
                     .font(AppTheme.GeneratedTypography.heading2())
                 
@@ -210,17 +210,17 @@ struct ColorSwatch: View {
     
     var body: some View {
         HStack {
-            RoundedRectangle(cornerRadius: 4)
+            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
                 .fill(color)
                 .frame(width: 40, height: 40)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 4)
+                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
                         .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                 )
             
             Text(name)
                 .font(AppTheme.GeneratedTypography.body())
-                .padding(.leading, 8)
+                .padding(.leading, AppTheme.GeneratedSpacing.small)
         }
     }
 } 

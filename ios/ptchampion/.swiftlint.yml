@@ -34,31 +34,37 @@ custom_rules:
     name: "Magic Number Spacing"
     regex: "(padding|spacing|offset)\\(\\s*[0-9]+\\s*\\)"
     message: "Don't use magic numbers for spacing. Use AppTheme.GeneratedSpacing.* instead"
-    severity: warning
+    severity: error
     
   pt_custom_corner_radius:
     name: "Custom Corner Radius"
     regex: "cornerRadius\\(\\s*[0-9]+\\s*\\)"
     message: "Don't use magic numbers for cornerRadius. Use AppTheme.GeneratedRadius.* instead"
-    severity: warning
+    severity: error
     
   use_generated_colors:
     name: "Use Generated Colors"
     regex: "AppTheme\\.Colors\\."
     message: "Use AppTheme.GeneratedColors instead of AppTheme.Colors"
-    severity: warning
+    severity: error
   
   use_generated_typography:
     name: "Use Generated Typography"
     regex: "AppTheme\\.Typography\\."
     message: "Use AppTheme.GeneratedTypography instead of AppTheme.Typography"
-    severity: warning
+    severity: error
     
   direct_color_usage:
     name: "Direct Color Usage"
     regex: "\\.foregroundColor\\((\\.deepOpsGreen|\\.brassGold|\\.tacticalGray|\\.commandBlack|\\.cream)"
     message: "Use AppTheme.GeneratedColors instead of direct color references"
-    severity: warning
+    severity: error
+  
+  font_custom_usage:
+    name: "Direct Font Custom Usage"
+    regex: "Font\\.custom\\("
+    message: "Use AppTheme.GeneratedTypography instead of Font.custom"
+    severity: error
 
 analyzer_rules:
   - unused_import

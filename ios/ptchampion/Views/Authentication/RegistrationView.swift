@@ -43,16 +43,39 @@ struct RegistrationView: View {
                 
                 // Form fields with consistent styling
                 VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                    PTTextField("First Name", text: $firstName)
+                    FocusableTextField(
+                        "First Name",
+                        text: $firstName,
+                        icon: Image(systemName: "person")
+                    )
                     
-                    PTTextField("Last Name", text: $lastName)
+                    FocusableTextField(
+                        "Last Name",
+                        text: $lastName,
+                        icon: Image(systemName: "person.2")
+                    )
                     
-                    PTTextField("Email", text: $email)
+                    FocusableTextField(
+                        "Email",
+                        text: $email,
+                        keyboardType: .emailAddress,
+                        icon: Image(systemName: "envelope")
+                    )
                     
-                    PTTextField("Password", text: $password, isSecure: true)
+                    FocusableTextField(
+                        "Password",
+                        text: $password,
+                        isSecure: true,
+                        icon: Image(systemName: "lock")
+                    )
                     .onChange(of: password) { _, _ in validatePasswords() }
                     
-                    PTTextField("Confirm Password", text: $confirmPassword, isSecure: true)
+                    FocusableTextField(
+                        "Confirm Password",
+                        text: $confirmPassword,
+                        isSecure: true,
+                        icon: Image(systemName: "lock.shield")
+                    )
                     .onChange(of: confirmPassword) { _, _ in validatePasswords() }
                     
                     if passwordMismatch {
@@ -69,23 +92,20 @@ struct RegistrationView: View {
                     }
                     
                     if let successMessage = auth.successMessage {
-                        PTLabel(successMessage, style: .caption)
+                        PTLabel(successMessage, style: .bodyBold)
                             .foregroundColor(AppTheme.GeneratedColors.success)
+                            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .background(AppTheme.GeneratedColors.success.opacity(0.1))
+                            .cornerRadius(AppTheme.GeneratedRadius.medium)
                             .padding(.top, 5)
                     }
                     
                     // Register button
                     if auth.isLoading {
-                        Button(action: {}) {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.cream))
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                        }
-                        .frame(maxWidth: .infinity)
-                        .background(Color.gray)
-                        .cornerRadius(AppTheme.GeneratedRadius.button)
-                        .disabled(true)
+                        PTButton("CREATE ACCOUNT", isLoading: true) {}
+                            .disabled(true)
+                            .padding(.top, 10)
                     } else {
                         PTButton("CREATE ACCOUNT") {
                             auth.errorMessage = nil
@@ -110,16 +130,9 @@ struct RegistrationView: View {
                     }
                     
                     // Back to login button
-                    Button(action: {
+                    PTButton("Back to Login", icon: Image(systemName: "arrow.left"), style: .ghost, size: .small) {
                         // Use dismiss instead of navigationState
                         dismiss()
-                    }) {
-                        HStack {
-                            Image(systemName: "arrow.left")
-                                .font(.caption)
-                            PTLabel("Back to Login", style: .caption)
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                        }
                     }
                     .padding(.top, 8)
                 }

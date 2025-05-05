@@ -41,17 +41,9 @@ struct DashboardView: View {
                     
                     // 4-3: Primary Call-to-Action
                     NavigationLink(destination: WorkoutSelectionView()) {
-                        HStack {
-                            Spacer()
-                            Text("Start Workout")
-                                .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
-                            Spacer()
-                        }
-                        .padding()
-                        .background(AppTheme.GeneratedColors.brassGold)
-                        .foregroundColor(AppTheme.GeneratedColors.cream)
-                        .cornerRadius(AppTheme.GeneratedRadius.button)
+                        PTButton("Start Workout", icon: Image(systemName: "play.fill"), fullWidth: true) {}
                     }
+                    .buttonStyle(PlainButtonStyle()) // Remove NavigationLink styling
                     .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing)
                     
                     // 4-4: Quick Links Section
@@ -73,16 +65,13 @@ struct DashboardView: View {
                         
                         PTCard {
                             HStack {
-                                Text("🏅")
-                                    .font(.title)
+                                PTLabel("🏅", style: .heading)
                                 
                                 VStack(alignment: .leading) {
-                                    Text("Latest Achievement")
-                                        .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
+                                    PTLabel("Latest Achievement", style: .bodyBold)
                                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                                     
-                                    Text("Completed \(viewModel.weeklyReps) push-ups this week")
-                                        .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                                    PTLabel("Completed \(viewModel.weeklyReps) push-ups this week", style: .body, size: .small)
                                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                                 }
                                 
@@ -146,8 +135,7 @@ struct QuickLinkCard: View {
                         .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         .frame(width: 30)
                     
-                    Text(title)
-                        .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.small))
+                    PTLabel(title, style: .bodySemibold, size: .small)
                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                         .padding(.leading, 4)
                     
@@ -162,7 +150,7 @@ struct QuickLinkCard: View {
     @ViewBuilder
     private var destinationView: some View {
         // Simplified placeholder version to fix build errors
-        Text("Navigating to: \(destination)...")
+        PTLabel("Navigating to: \(destination)...", style: .body)
             .padding()
     }
 }
