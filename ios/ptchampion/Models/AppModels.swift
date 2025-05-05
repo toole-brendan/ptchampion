@@ -24,7 +24,7 @@ public final class WorkoutLegacyResult {
 }
 
 // AUTH VIEW MODEL
-public class AuthViewModel: ObservableObject {
+public class LegacyAuthViewModel: ObservableObject {
     @Published public var isAuthenticated: Bool = false
     @Published public var currentUser: AuthUserModel?
     @Published public var isLoading: Bool = false

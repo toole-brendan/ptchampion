@@ -26,7 +26,7 @@ class AuthService: AuthServiceProtocol {
             
             let mockResponse = AuthResponse(
                 token: "mock-jwt-token-for-testing-12345",
-                user: AuthUser(
+                user: AuthUserModel(
                     id: "123",
                     email: credentials.username,
                     firstName: "Test",
@@ -90,7 +90,7 @@ class AuthService: AuthServiceProtocol {
             
             let mockResponse = AuthResponse(
                 token: "mock-jwt-token-for-testing-registration-12345",
-                user: AuthUser(
+                user: AuthUserModel(
                     id: "456",
                     email: userInfo.username,
                     firstName: userInfo.displayName,

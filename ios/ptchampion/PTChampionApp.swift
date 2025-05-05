@@ -4,6 +4,7 @@ import UIKit
 import Foundation
 import PTDesignSystem
 import ObjectiveC
+import Combine
 
 // Import local files/modules
 @_exported import class UIKit.UIView  // Ensure UIView is available for swizzling
@@ -619,7 +620,7 @@ struct DeviceShakeViewModifier: ViewModifier {
 
 #Preview("MainTabView") {
     // Create the auth view model and wrap the view
-    let previewAuth = ptchampion.AuthViewModel()
+    let previewAuth = AuthViewModel()
     MainTabView()
         .environmentObject(previewAuth)
 }
@@ -633,7 +634,7 @@ extension AuthState {
         return false
     }
     
-    var user: User? {
+    var user: AuthUserModel? {
         if case .authenticated(let user) = self {
             return user
         }

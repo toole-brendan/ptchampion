@@ -267,7 +267,7 @@ extension Bundle {
 
 struct SettingsSheet_Previews: PreviewProvider {
     static var previews: some View {
-        let mockAuth = AuthViewModel()
+        let mockAuth = MockAuthViewModel()
         mockAuth.currentUser = User(id: "preview", email: "user@example.com", displayName: "Preview User")
         
         return SettingsSheet()
@@ -289,7 +289,7 @@ struct User {
     }
 }
 
-class AuthViewModel: ObservableObject {
+class MockAuthViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false
     @Published var currentUser: User?
     

@@ -1,6 +1,75 @@
 import Foundation
 import Combine
 
+/// HTTP methods supported by the API
+enum HTTPMethod: String {
+    case get = "GET"
+    case post = "POST"
+    case put = "PUT"
+    case patch = "PATCH"
+    case delete = "DELETE"
+}
+
+/// Network-related errors
+enum NetworkError: Error {
+    case invalidURL
+    case invalidResponse
+    case unauthorized
+    case forbidden
+    case decodingError(Error)
+    case clientError(statusCode: Int, message: String)
+    case serverError(statusCode: Int)
+    case unexpectedStatusCode(Int)
+    case unknown
+    case serviceUnavailable
+    
+    var localizedDescription: String {
+        switch self {
+        case .invalidURL:
+            return "Invalid URL"
+        case .invalidResponse:
+            return "Invalid server response"
+        case .unauthorized:
+            return "Authentication required"
+        case .forbidden:
+            return "Access denied"
+        case .decodingError(let error):
+            return "Failed to decode response: \(error.localizedDescription)"
+        case .clientError(_, let message):
+            return "Request error: \(message)"
+        case .serverError(let statusCode):
+            return "Server error: \(statusCode)"
+        case .unexpectedStatusCode(let statusCode):
+            return "Unexpected status code: \(statusCode)"
+        case .unknown:
+            return "Unknown error occurred"
+        case .serviceUnavailable:
+            return "Service is temporarily unavailable"
+        }
+    }
+}
+
+/// Empty response placeholder for endpoints that don't return data
+struct EmptyResponse: Decodable {}
+
+/// Standard error response format
+struct ErrorResponse: Decodable {
+    let message: String
+}
+
+/// Server health status
+struct ServerHealthStatus {
+    let status: String
+    let responseTime: Int
+    let error: String?
+    
+    init(status: String, responseTime: Int, error: String? = nil) {
+        self.status = status
+        self.responseTime = responseTime
+        self.error = error
+    }
+}
+
 /// A service for handling network requests with caching and retry capabilities
 class NetworkService {
     // Singleton instance
@@ -233,76 +302,5 @@ class NetworkService {
             let responseTime = Date().timeIntervalSince(startTime) * 1000
             return ServerHealthStatus(status: "error", responseTime: Int(responseTime), error: error.localizedDescription)
         }
-    }
-}
-
-// MARK: - Supporting Types
-
-/// HTTP methods supported by the API
-enum HTTPMethod: String {
-    case get = "GET"
-    case post = "POST"
-    case put = "PUT"
-    case patch = "PATCH"
-    case delete = "DELETE"
-}
-
-/// Network-related errors
-enum NetworkError: Error {
-    case invalidURL
-    case invalidResponse
-    case unauthorized
-    case forbidden
-    case decodingError(Error)
-    case clientError(statusCode: Int, message: String)
-    case serverError(statusCode: Int)
-    case unexpectedStatusCode(Int)
-    case unknown
-    case serviceUnavailable
-    
-    var localizedDescription: String {
-        switch self {
-        case .invalidURL:
-            return "Invalid URL"
-        case .invalidResponse:
-            return "Invalid server response"
-        case .unauthorized:
-            return "Authentication required"
-        case .forbidden:
-            return "Access denied"
-        case .decodingError(let error):
-            return "Failed to decode response: \(error.localizedDescription)"
-        case .clientError(_, let message):
-            return "Request error: \(message)"
-        case .serverError(let statusCode):
-            return "Server error: \(statusCode)"
-        case .unexpectedStatusCode(let statusCode):
-            return "Unexpected status code: \(statusCode)"
-        case .unknown:
-            return "Unknown error occurred"
-        case .serviceUnavailable:
-            return "Service is temporarily unavailable"
-        }
-    }
-}
-
-/// Empty response placeholder for endpoints that don't return data
-struct EmptyResponse: Decodable {}
-
-/// Standard error response format
-struct ErrorResponse: Decodable {
-    let message: String
-}
-
-/// Server health status
-struct ServerHealthStatus {
-    let status: String
-    let responseTime: Int
-    let error: String?
-    
-    init(status: String, responseTime: Int, error: String? = nil) {
-        self.status = status
-        self.responseTime = responseTime
-        self.error = error
     }
 } 

@@ -10,7 +10,7 @@ private extension Error {
 
 // Define authentication states with associated user data
 enum AuthState: Equatable {
-    case authenticated(AuthUser)
+    case authenticated(AuthUserModel)
     case unauthenticated
     
     static func == (lhs: AuthState, rhs: AuthState) -> Bool {
@@ -44,7 +44,7 @@ enum API {
         case invalidResponse
     }
     
-    static func login(_ email: String, _ password: String) async throws -> (token: String, user: AuthUser) {
+    static func login(_ email: String, _ password: String) async throws -> (token: String, user: AuthUserModel) {
         print("⚙️ Starting login for email: \(email)")
         let request = AuthLoginRequest(username: email, password: password)
         let url = URL(string: "https://ptchampion-api-westus.azurewebsites.net/api/v1/auth/login")!
@@ -229,7 +229,7 @@ class AuthViewModel: ObservableObject {
     
     /// Bypasses the normal authentication flow for development purposes
     func loginAsDeveloper() {
-        let devUser = AuthUser(
+        let devUser = AuthUserModel(
             id: "dev-123",
             email: "dev@example.com",
             firstName: "Developer", 
@@ -242,7 +242,7 @@ class AuthViewModel: ObservableObject {
     
     // Debug method for directly forcing authentication state
     func debugForceAuthenticated() {
-        let debugUser = AuthUser(
+        let debugUser = AuthUserModel(
             id: "debug-123",
             email: "debug@example.com",
             firstName: "Debug",
@@ -267,7 +267,7 @@ class AuthViewModel: ObservableObject {
             await MainActor.run {
                 if let token = token, !token.isEmpty, let uid = uid {
                     print("⚙️ Found token and user ID in keychain, setting state to authenticated with user ID: \(uid)")
-                    authState = .authenticated(AuthUser(id: uid, email: "", firstName: "User", lastName: "", profilePictureUrl: nil))
+                    authState = .authenticated(AuthUserModel(id: uid, email: "", firstName: "User", lastName: "", profilePictureUrl: nil))
                 } else {
                     print("⚙️ No valid token or user ID found in keychain, setting state to unauthenticated")
                     authState = .unauthenticated
