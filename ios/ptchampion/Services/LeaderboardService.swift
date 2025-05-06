@@ -226,7 +226,7 @@ class LeaderboardService: LeaderboardServiceProtocol {
             queryParams["limit"] = String(limit)
         }
 
-        let endpoint = APIEndpoint.globalLeaderboard(exerciseType: exerciseType)
+        // let endpoint = APIEndpoint.globalLeaderboard(exerciseType: exerciseType) // Commented out as it's unused with the temporary mock data return
         
         // TEMPORARY FIX: Return mock data instead of making API call
         logger.debug("USING MOCK DATA INSTEAD OF REAL API CALL")

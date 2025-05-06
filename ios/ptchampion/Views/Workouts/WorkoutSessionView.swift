@@ -44,7 +44,7 @@ struct WorkoutSessionView: View {
             if viewModel.detectedBody != nil {
                 PoseOverlayView(detectedBody: viewModel.detectedBody, badJointNames: viewModel.badJointNames)
                     .ignoresSafeArea()
-                    .id(viewModel.poseFrameIndex) // Only redraw when new pose arrives
+                    .id(viewModel.poseFrameIndex)
                     .allowsHitTesting(false)
             }
             
@@ -111,7 +111,7 @@ struct WorkoutSessionView: View {
         .toolbar { // Custom toolbar for cancel button
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("Cancel") {
-                    viewModel.stopWorkout() // Use stop to ensure cleanup
+                    viewModel.stopWorkout()
                     dismiss()
                 }
                 .foregroundColor(AppTheme.GeneratedColors.accent)
@@ -129,9 +129,9 @@ struct WorkoutSessionView: View {
         }
         .onDisappear {
             print("WorkoutSessionView disappeared - stopping workout")
-            viewModel.stopWorkout() // Ensure cleanup when view disappears
+            viewModel.stopWorkout()
             viewModel.stopCamera()
-            viewModel.releaseCamera() // Release camera resources
+            viewModel.releaseCamera()
         }
         .background(Color.black) // Background for the whole view
         .onReceive(viewModel.repCompletedPublisher) { _ in

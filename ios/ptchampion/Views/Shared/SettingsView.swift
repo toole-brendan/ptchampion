@@ -1,9 +1,11 @@
 import SwiftUI
 import Foundation
 import CoreLocation
+import PTDesignSystem // Ensure PTDesignSystem is imported for AppThemeOption
 
 struct SettingsView: View {
     @EnvironmentObject private var auth: AuthViewModel
+    @EnvironmentObject private var themeManager: ThemeManager // Add ThemeManager
     @State private var showLogoutConfirmation = false
     @State private var isLoggingOut = false
     
@@ -45,6 +47,14 @@ struct SettingsView: View {
 
                 // Add other settings options here (e.g., profile edit, notifications)
                 List {
+                    Section(header: applySubheadingStyle(to: Text("Appearance"))) {
+                        Picker("Theme", selection: $themeManager.currentThemeOption) {
+                            ForEach(AppThemeOption.allCases) { option in
+                                Text(option.rawValue).tag(option)
+                            }
+                        }
+                    }
+                    
                     Section(header: applySubheadingStyle(to: Text("General"))) {
                         Text("Edit Profile (Not Implemented)")
                         Text("Notification Settings (Not Implemented)")
@@ -52,8 +62,8 @@ struct SettingsView: View {
                     
                     // Section for Device Management
                     Section(header: applySubheadingStyle(to: Text("Device Management"))) {
-                        NavigationLink("Scan for Bluetooth Devices") {
-                            Text("Device Scanning View Placeholder")
+                        NavigationLink("Manage Bluetooth Devices") {
+                            DeviceScanningView()
                         }
                     }
 

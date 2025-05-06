@@ -315,7 +315,7 @@ struct PTChampionApp: App {
             RootSwitcher()
                 .environmentObject(auth)
                 .environmentObject(themeManager)
-                .preferredColorScheme(themeManager.currentColorScheme)
+                .preferredColorScheme(themeManager.effectiveColorScheme)
                 .modelContainer(for: WorkoutResultSwiftData.self)
                 .onAppear {
                     Self.logBody() // Debug log function
@@ -446,69 +446,61 @@ struct DebugOverlayView: View {
 // Placeholder for the main authenticated view (replace with your actual implementation)
 struct MainTabView: View {
     @EnvironmentObject private var auth: AuthViewModel
-    @State private var selectedTab: Tab = .dashboard // Keep track of selected tab
-    
+    @State private var selectedTab: Tab = .home // Keep track of selected tab, default to home
+
     // Add tab tracking for debugging
     @State private var previousTab: Tab? = nil
-    
+
     // Add a flag to prevent rapid tab switching
     @State private var isTabSwitchInProgress = false
-    
+
     // Expose ComponentGallery in debug builds for design review
     @State private var showingComponentGallery = false
 
     // StateObject for the leaderboard view model - keeps it alive
     @StateObject private var leaderboardViewModel = LeaderboardViewModel()
 
-    // Define Tabs Enum for clarity and type safety
+    // Define Tabs Enum for clarity and type safety, matching user's request
     enum Tab {
-        case dashboard
-        case progress
+        case home
+        case history
         case workout
         case leaderboards
-        case settings
+        case profile
     }
 
     var body: some View {
         TabView(selection: $selectedTab) {
             DashboardView()
                 .tabItem {
-                    Label("Dashboard", systemImage: "house.fill")
+                    Label("Home", systemImage: "house.fill")
                 }
-                .tag(Tab.dashboard)
+                .tag(Tab.home)
 
             WorkoutHistoryView()
                 .tabItem {
-                    Label("Progress", systemImage: "chart.bar.fill")
+                    Label("History", systemImage: "clock.arrow.circlepath")
                 }
-                .tag(Tab.progress)
+                .tag(Tab.history)
 
             WorkoutSelectionView()
                  .tabItem {
-                     Label("Workout", systemImage: "figure.walk") // Consider custom icon later
+                     Label("Workout", systemImage: "figure.walk")
                  }
                  .tag(Tab.workout)
 
             // Standard leaderboard view for all builds
-            LeaderboardView(viewModel: leaderboardViewModel, viewId: UUID().uuidString.prefix(6).uppercased())
+            LeaderboardView(viewModel: leaderboardViewModel, viewId: UUID().uuidString) // Using full UUID string as per user's original example
                 .tabItem {
-                    Label("Leaders", systemImage: "list.star")
+                    Label("Leaders", systemImage: "rosette")
                 }
                 .tag(Tab.leaderboards)
 
-            #if DEBUG
-            // Remove or replace StyleGuideView with a placeholder
-            Text("Style Guide")
+            SettingsView() // Using SettingsView directly for all configurations
                 .tabItem {
-                    Label("Style Guide", systemImage: "paintpalette.fill")
+                    Label("Profile", systemImage: "person.crop.circle")
                 }
-            #else
-            SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
-                }
-                .tag(Tab.settings)
-            #endif
+                .tag(Tab.profile)
         }
         // Accent color is handled by UITabBarAppearance
         .onShake {
@@ -526,20 +518,20 @@ struct MainTabView: View {
                 print("📱 MainTabView: Tab change blocked during switch transition")
                 return
             }
-            
+
             let previousTabString = previousTab?.description ?? "nil"
-            print("📱 MainTabView: Tab changed from \(previousTabString) to \(newTab)")
-            
+            print("📱 MainTabView: Tab changed from \\(previousTabString) to \\(newTab)")
+
             // Set switch in progress flag
             isTabSwitchInProgress = true
-            
+
             // Add a small delay before allowing another tab switch
             // This helps prevent rapid tab switching which can cause UI issues
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 isTabSwitchInProgress = false
                 print("📱 MainTabView: Tab switch completed, now ready for next tab change")
             }
-            
+
             // Important: If switching to leaderboards tab, give extra time
             // for the view to initialize to prevent freezing
             if newTab == .leaderboards {
@@ -548,7 +540,7 @@ struct MainTabView: View {
                     // This delay gives the leaderboards view time to set up before loading data
                     print("📱 MainTabView: Leaderboard tab delay completed")
                 }
-                
+
                 // IMPORTANT: Disable quick switching from leaderboards tab
                 // This prevents a common crash scenario where users rapidly switch away
                 isTabSwitchInProgress = true
@@ -557,12 +549,16 @@ struct MainTabView: View {
                     print("📱 MainTabView: Allowing tab changes after leaderboard stabilization period")
                 }
             }
-            
+
             // Keep track of previous tab for debugging
             previousTab = newTab
         }
         .onAppear {
             print("📱 MainTabView: onAppear")
+            // Set default tab to home if not already set or if current is invalid
+            if selectedTab != .home && selectedTab != .history && selectedTab != .workout && selectedTab != .leaderboards && selectedTab != .profile {
+                 selectedTab = .home
+            }
         }
         .onDisappear {
             print("📱 MainTabView: onDisappear")
@@ -574,11 +570,11 @@ struct MainTabView: View {
 extension MainTabView.Tab: CustomStringConvertible {
     var description: String {
         switch self {
-        case .dashboard: return "dashboard"
-        case .progress: return "progress"
+        case .home: return "home"
+        case .history: return "history"
         case .workout: return "workout"
         case .leaderboards: return "leaderboards"
-        case .settings: return "settings"
+        case .profile: return "profile"
         }
     }
 }

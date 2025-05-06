@@ -29,7 +29,7 @@ enum FormQuality: String {
 }
 
 // Protocol defining the interface for an exercise-specific grader
-protocol ExerciseGraderProtocol {
+protocol ExerciseGraderProtocol: AnyObject, ObservableObject {
     // MARK: - Static Configuration
     // FPS baseline - used to adjust stability thresholds
     static var targetFramesPerSecond: Double { get }
@@ -65,6 +65,9 @@ protocol ExerciseGraderProtocol {
     
     // Last form issue detected (if any)
     var lastFormIssue: String? { get }
+    
+    // Problem joints for UI highlighting (optional)
+    var problemJoints: Set<VNHumanBodyPoseObservation.JointName> { get }
 }
 
 // Default implementation for some protocol requirements
