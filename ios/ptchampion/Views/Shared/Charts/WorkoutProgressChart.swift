@@ -21,10 +21,11 @@ struct WorkoutProgressChart: View {
         VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
             if showLabels {
                 HStack {
-                    PTLabel(title, style: .heading2)
+                    PTLabel.sized(title, style: .heading, size: .medium)
                     Spacer()
                     if let yAxisLabel = yAxisLabel {
-                        PTLabel(yAxisLabel, style: .caption, color: .textSecondary)
+                        PTLabel(yAxisLabel, style: .caption)
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     }
                 }
             }
@@ -34,7 +35,8 @@ struct WorkoutProgressChart: View {
                     Image(systemName: "chart.line.downtrend.xyaxis")
                         .font(.largeTitle)
                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    PTLabel("No data available", style: .body, color: .textSecondary)
+                    PTLabel("No data available", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                 }
                 .frame(maxWidth: .infinity, minHeight: 200)
             } else {
@@ -44,11 +46,11 @@ struct WorkoutProgressChart: View {
                         VStack(alignment: .leading, spacing: 0) {
                             ForEach(0..<5) { i in
                                 Divider()
-                                    .background(AppTheme.GeneratedColors.border)
+                                    .background(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
                                 Spacer()
                             }
                             Divider()
-                                .background(AppTheme.GeneratedColors.border)
+                                .background(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
                         }
                         
                         // Chart

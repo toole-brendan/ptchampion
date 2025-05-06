@@ -1,4 +1,32 @@
 import SwiftUI
+import PTDesignSystem
+
+/// Trend direction indicators for metric data visualization
+public enum TrendDirection {
+    case up, down, neutral
+    
+    public var icon: Image {
+        switch self {
+        case .up:
+            return Image(systemName: "arrow.up")
+        case .down:
+            return Image(systemName: "arrow.down")
+        case .neutral:
+            return Image(systemName: "arrow.forward")
+        }
+    }
+    
+    public var color: Color {
+        switch self {
+        case .up:
+            return AppTheme.GeneratedColors.success
+        case .down:
+            return AppTheme.GeneratedColors.error
+        case .neutral:
+            return AppTheme.GeneratedColors.textTertiary
+        }
+    }
+}
 
 public struct MetricData: Identifiable {
     public let id = UUID()

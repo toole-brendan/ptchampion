@@ -47,41 +47,43 @@ public struct PTLabel: View {
     }
 }
 
+// MARK: – Temporarily keep the "size:" API alive for the Gallery
+
 public extension PTLabel {
+
     enum LabelSize { case small, medium, large }
 
-    init(_ text: String,
-         style: LabelStyle = .body,
-         size: LabelSize) {
+    /// Drop-in replacement for the old init(…, size:) that now returns `some View`.
+    static func sized(_ text: String,
+                      style: LabelStyle = .body,
+                      size: LabelSize) -> some View {
 
-        self.init(text, style: style)   // call through to the original
+        let base = PTLabel(text, style: style)
 
-        // Override the font if a custom size is requested
         let customFont: Font
         switch (style, size) {
-        case (.heading, .large):  customFont = .system(size: 28, weight: .bold)
-        case (.heading, .medium): customFont = .system(size: 24, weight: .bold)
-        case (.heading, .small):  customFont = .system(size: 20, weight: .bold)
+        case (.heading,    .large):  customFont = .system(size: 28, weight: .bold)
+        case (.heading,    .medium): customFont = .system(size: 24, weight: .bold)
+        case (.heading,    .small):  customFont = .system(size: 20, weight: .bold)
 
         case (.subheading, .large):  customFont = .system(size: 22, weight: .semibold)
         case (.subheading, .medium): customFont = .system(size: 18, weight: .semibold)
         case (.subheading, .small):  customFont = .system(size: 16, weight: .semibold)
 
-        case (.body, .large):  customFont = .system(size: 18)
-        case (.body, .medium): customFont = .system(size: 16)
-        case (.body, .small):  customFont = .system(size: 14)
+        case (.body,       .large):  customFont = .system(size: 18)
+        case (.body,       .medium): customFont = .system(size: 16)
+        case (.body,       .small):  customFont = .system(size: 14)
             
-        case (.bodyBold, .large):  customFont = .system(size: 18, weight: .bold)
-        case (.bodyBold, .medium): customFont = .system(size: 16, weight: .bold)
-        case (.bodyBold, .small):  customFont = .system(size: 14, weight: .bold)
+        case (.bodyBold,   .large):  customFont = .system(size: 18, weight: .bold)
+        case (.bodyBold,   .medium): customFont = .system(size: 16, weight: .bold)
+        case (.bodyBold,   .small):  customFont = .system(size: 14, weight: .bold)
 
-        case (.caption, .large):  customFont = .system(size: 16)
-        case (.caption, .medium): customFont = .system(size: 14)
-        case (.caption, .small):  customFont = .system(size: 12)
+        case (.caption,    .large):  customFont = .system(size: 16)
+        case (.caption,    .medium): customFont = .system(size: 14)
+        case (.caption,    .small):  customFont = .system(size: 12)
         }
 
-        self = PTLabel(text, style: style)
-            .font(customFont)
+        return base.font(customFont)
     }
 }
 

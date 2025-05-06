@@ -292,19 +292,35 @@ class AuthViewModel: ObservableObject {
         }
         return "User"
     }
+}
 
-    // MARK: – Compatibility shims (delete when the gallery is refactored)
-    extension AuthViewModel {
-        /// Legacy API kept so that ComponentGalleryView still compiles
-        @MainActor
-        var currentUser: User? { authState.user }
+// MARK: – Compatibility shims (delete when gallery is refactored)
+extension AuthViewModel {
+    /// Legacy API kept so that ComponentGalleryView still compiles
+    @MainActor
+    var currentUser: User? { 
+        guard case .authenticated(let authUser) = authState else { return nil }
+        return User(id: authUser.id, email: authUser.email, firstName: authUser.firstName, lastName: authUser.lastName, profilePictureUrl: authUser.profilePictureUrl)
+    }
 
-        @MainActor
-        var displayName: String {
-            currentUser?.displayName ?? "Athlete"
-        }
+    @MainActor
+    var galleryDisplayName: String {
+        currentUser?.fullName ?? "Athlete"
+    }
+    
+    /// Updates the current user for preview/testing purposes only
+    @MainActor
+    func setMockUser(_ user: User) {
+        self.authState = .authenticated(user)
     }
 }
+
+// Compatibility User model for gallery is now replaced by the typealias in AppModels.swift
+// struct User: Identifiable, Codable {
+//     let id: String
+//     let email: String
+//     let displayName: String
+// }
 
 // Placeholder User model - move to Models/
 // struct User: Identifiable, Codable {

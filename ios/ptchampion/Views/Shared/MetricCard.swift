@@ -3,84 +3,17 @@ import PTDesignSystem
 /// A tappable metric card component that displays a key metric
 /// with title, value, and optional unit, description, and trend indicators.
 public struct MetricCardView: View {
-    public struct MetricData {
-        let title: String
-        let value: String
-        let description: String?
-        let unit: String?
-        let icon: Image?
-        let trend: TrendDirection?
-        
-        public init(
-            title: String,
-            value: String,
-            description: String? = nil,
-            unit: String? = nil,
-            icon: Image? = nil,
-            trend: TrendDirection? = nil
-        ) {
-            self.title = title
-            self.value = value
-            self.description = description
-            self.unit = unit
-            self.icon = icon
-            self.trend = trend
-        }
-        
-        // Convenience initializers for numeric values
-        public init<T: Numeric & CustomStringConvertible>(
-            title: String,
-            value: T,
-            description: String? = nil,
-            unit: String? = nil,
-            icon: Image? = nil,
-            trend: TrendDirection? = nil
-        ) {
-            self.init(
-                title: title,
-                value: value.description,
-                description: description,
-                unit: unit,
-                icon: icon,
-                trend: trend
-            )
-        }
-    }
-    
-    public enum TrendDirection {
-        case up, down, neutral
-        
-        var icon: Image {
-            switch self {
-            case .up:
-                return Image(systemName: "arrow.up")
-            case .down:
-                return Image(systemName: "arrow.down")
-            case .neutral:
-                return Image(systemName: "arrow.forward")
-            }
-        }
-        
-        var color: Color {
-            switch self {
-            case .up:
-                return AppTheme.GeneratedColors.success
-            case .down:
-                return AppTheme.GeneratedColors.error
-            case .neutral:
-                return AppTheme.GeneratedColors.textTertiary
-            }
-        }
-    }
-    
     private let metric: MetricData
     private let action: (() -> Void)?
+    private let trend: TrendDirection?
     
     public init(
         _ metric: MetricData,
+        trend: TrendDirection? = nil,
         action: (() -> Void)? = nil
     ) {
         self.metric = metric
+        self.trend = trend
         self.action = action
     }
     
@@ -90,8 +23,22 @@ public struct MetricCardView: View {
         }
         .buttonStyle(MetricCardButtonStyle())
         .accessibilityElement(children: .contain)
-        .accessibilityLabel("\(metric.title), \(metric.value) \(metric.unit ?? "")")
+        .accessibilityLabel("\(metric.title), \(displayValue) \(metric.unit ?? "")")
         .accessibilityHint(metric.description ?? "")
+    }
+    
+    // Helper to convert the Any value to a displayable string
+    private var displayValue: String {
+        switch metric.value {
+        case let intValue as Int:
+            return "\(intValue)"
+        case let doubleValue as Double:
+            return "\(doubleValue)"
+        case let stringValue as String:
+            return stringValue
+        default:
+            return "\(metric.value)"
+        }
     }
     
     private var cardContent: some View {
@@ -116,7 +63,7 @@ public struct MetricCardView: View {
             
             // Value with optional unit
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(metric.value)
+                Text(displayValue)
                     .font(AppTheme.GeneratedTypography.bodyBold(size: 20))
                     .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 
@@ -127,7 +74,7 @@ public struct MetricCardView: View {
                         .padding(.leading, -2)
                 }
                 
-                if let trend = metric.trend {
+                if let trend = self.trend {
                     trend.icon
                         .foregroundColor(trend.color)
                         .font(.system(size: 14, weight: .bold))
@@ -168,35 +115,35 @@ struct MetricCardView_Previews: PreviewProvider {
         VStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
             HStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
                 MetricCardView(
-                    .init(
+                    MetricData(
                         title: "TOTAL WORKOUTS",
                         value: 42,
-                        icon: Image(systemName: "flame.fill"),
-                        trend: .up
-                    )
+                        icon: Image(systemName: "flame.fill")
+                    ),
+                    trend: .up
                 )
                 .frame(maxWidth: .infinity)
                 
                 MetricCardView(
-                    .init(
+                    MetricData(
                         title: "DISTANCE", 
                         value: 8.5, 
                         unit: "km",
-                        icon: Image(systemName: "figure.run"),
-                        trend: .down
-                    )
+                        icon: Image(systemName: "figure.run")
+                    ),
+                    trend: .down
                 )
                 .frame(maxWidth: .infinity)
             }
             
             MetricCardView(
-                .init(
+                MetricData(
                     title: "LAST ACTIVITY",
                     value: "Pull-ups",
                     description: "Yesterday - 42 reps",
-                    icon: Image(systemName: "clock"),
-                    trend: .neutral
-                )
+                    icon: Image(systemName: "clock")
+                ),
+                trend: .neutral
             )
         }
         .padding()
@@ -206,13 +153,13 @@ struct MetricCardView_Previews: PreviewProvider {
         // Dark mode preview
         VStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
             MetricCardView(
-                .init(
+                MetricData(
                     title: "MAX HEART RATE",
-                    value: "172",
+                    value: 172,
                     unit: "bpm",
-                    icon: Image(systemName: "heart.fill"),
-                    trend: .up
-                )
+                    icon: Image(systemName: "heart.fill")
+                ),
+                trend: .up
             )
         }
         .padding()
