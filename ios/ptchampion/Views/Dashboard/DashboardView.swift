@@ -33,10 +33,30 @@ struct DashboardView: View {
                         GridItem(.flexible(), spacing: Self.cardGap),
                         GridItem(.flexible(), spacing: Self.cardGap)
                     ], spacing: Self.cardGap) {
-                        MetricCard(label: "Last Score", value: viewModel.lastScoreString)
-                        MetricCard(label: "7-Day Push-Ups", value: viewModel.weeklyReps)
-                        MetricCard(label: "Monthly Workouts", value: viewModel.monthlyWorkouts)
-                        MetricCard(label: "Personal Best", value: viewModel.personalBest)
+                        MetricCardView(
+                            MetricData(
+                                title: "Last Score",
+                                value: viewModel.lastScoreString
+                            )
+                        )
+                        MetricCardView(
+                            MetricData(
+                                title: "7-Day Push-Ups",
+                                value: viewModel.weeklyReps
+                            )
+                        )
+                        MetricCardView(
+                            MetricData(
+                                title: "Monthly Workouts",
+                                value: viewModel.monthlyWorkouts
+                            )
+                        )
+                        MetricCardView(
+                            MetricData(
+                                title: "Personal Best",
+                                value: viewModel.personalBest
+                            )
+                        )
                     }
                     
                     // 4-3: Primary Call-to-Action
@@ -74,7 +94,8 @@ struct DashboardView: View {
                                     PTLabel("Latest Achievement", style: .bodyBold)
                                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                                     
-                                    PTLabel("Completed \(viewModel.weeklyReps) push-ups this week", style: .body, size: .small)
+                                    PTLabel("Completed \(viewModel.weeklyReps) push-ups this week", style: .body)
+                                        .font(.system(size: 14))
                                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                                 }
                                 
@@ -100,26 +121,6 @@ struct DashboardView: View {
                 viewModel.setModelContext(modelContext)
             }
         }
-    }
-}
-
-// Enhanced Metric Card with token-based styling
-struct MetricCard: View {
-    let label: String
-    let value: String
-
-    var body: some View {
-        PTCard {
-            VStack(alignment: .leading) {
-                PTLabel(label, style: .caption)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                
-                PTLabel(value, style: .heading)
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .accessibilityLabel("\(label): \(value)")
     }
 }
 

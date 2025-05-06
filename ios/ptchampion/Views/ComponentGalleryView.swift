@@ -29,65 +29,17 @@ struct ComponentGalleryView: View {
         NavigationView {
             VStack(spacing: 0) {
                 // Component selector
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                        ForEach(0..<components.count, id: \.self) { index in
-                            Button(action: {
-                                withAnimation {
-                                    selectedComponent = index
-                                }
-                            }) {
-                                PTLabel(components[index], style: .bodyBold)
-                                    .foregroundColor(selectedComponent == index ? AppTheme.GeneratedColors.primary : AppTheme.GeneratedColors.textSecondary)
-                                    .padding(.vertical, AppTheme.GeneratedSpacing.small)
-                                    .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
-                                    .background(selectedComponent == index ? AppTheme.GeneratedColors.primaryLight : Color.clear)
-                                    .cornerRadius(AppTheme.GeneratedRadius.full)
-                            }
-                        }
-                    }
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
-                }
-                .padding(.vertical, AppTheme.GeneratedSpacing.small)
-                .background(AppTheme.GeneratedColors.cardBackground)
+                componentSelector
                 
                 PTSeparator()
                 
-                // Component content
-                ScrollView {
-                    VStack(spacing: AppTheme.GeneratedSpacing.large) {
-                        switch selectedComponent {
-                        case 0:
-                            buttonsSection
-                        case 1:
-                            textFieldsSection
-                        case 2:
-                            metricCardsSection
-                        case 3:
-                            workoutCardsSection
-                        case 4:
-                            badgesSection
-                        case 5:
-                            toastsSection
-                        case 6:
-                            spinnersSection
-                        case 7:
-                            headersSection
-                        case 8:
-                            listsSection
-                        case 9:
-                            sheetsSection
-                        case 10:
-                            typographySection
-                        case 11:
-                            colorsSection
-                        default:
-                            EmptyView()
-                        }
-                    }
-                    .padding()
-                }
-                .background(AppTheme.GeneratedColors.background.opacity(0.5))
+                // Component content - extracted to a separate view to reduce type-checking complexity
+                ComponentGalleryContentView(
+                    selectedComponent: selectedComponent,
+                    textFieldValue: $textFieldValue,
+                    passwordValue: $passwordValue,
+                    showingSettingsSheet: $showingSettingsSheet
+                )
             }
             .navigationTitle("Component Gallery")
             .navigationBarTitleDisplayMode(.inline)
@@ -100,6 +52,78 @@ struct ComponentGalleryView: View {
                     .environmentObject(mockAuth)
             }
         }
+    }
+    
+    // MARK: - Component Selector
+    
+    private var componentSelector: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                ForEach(0..<components.count, id: \.self) { index in
+                    Button(action: {
+                        withAnimation {
+                            selectedComponent = index
+                        }
+                    }) {
+                        PTLabel(components[index], style: .bodyBold)
+                            .foregroundColor(selectedComponent == index ? AppTheme.GeneratedColors.primary : AppTheme.GeneratedColors.textSecondary)
+                            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+                            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
+                            .background(selectedComponent == index ? AppTheme.GeneratedColors.primary.opacity(0.2) : Color.clear)
+                            .cornerRadius(AppTheme.GeneratedRadius.full)
+                    }
+                }
+            }
+            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
+        }
+        .padding(.vertical, AppTheme.GeneratedSpacing.small)
+        .background(AppTheme.GeneratedColors.cardBackground)
+    }
+}
+
+// MARK: - Component Gallery Content
+// Extracted to a separate struct to reduce type-checking complexity
+struct ComponentGalleryContentView: View {
+    let selectedComponent: Int
+    @Binding var textFieldValue: String
+    @Binding var passwordValue: String
+    @Binding var showingSettingsSheet: Bool
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                switch selectedComponent {
+                case 0:
+                    buttonsSection
+                case 1:
+                    textFieldsSection
+                case 2:
+                    metricCardsSection
+                case 3:
+                    workoutCardsSection
+                case 4:
+                    badgesSection
+                case 5:
+                    toastsSection
+                case 6:
+                    spinnersSection
+                case 7:
+                    headersSection
+                case 8:
+                    listsSection
+                case 9:
+                    sheetsSection
+                case 10:
+                    typographySection
+                case 11:
+                    colorsSection
+                default:
+                    EmptyView()
+                }
+            }
+            .padding()
+        }
+        .background(AppTheme.GeneratedColors.background.opacity(0.5))
     }
     
     // MARK: - Component Sections
@@ -133,17 +157,19 @@ struct ComponentGalleryView: View {
                 PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.small)
                 
                 HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                    PTButton("Small", size: .small) {
+                    PTButton("Small") {
+                        // action
+                    }
+                    .padding(.vertical, 4)
+                    
+                    PTButton("Medium") {
                         // action
                     }
                     
-                    PTButton("Medium", size: .medium) {
+                    PTButton("Large") {
                         // action
                     }
-                    
-                    PTButton("Large", size: .large) {
-                        // action
-                    }
+                    .padding(.vertical, 16)
                 }
             }
         }
@@ -172,7 +198,6 @@ struct ComponentGalleryView: View {
                     label: "Username",
                     icon: Image(systemName: "person")
                 )
-                .validationState(.valid)
                 
                 // Error state
                 PTTextField(
@@ -180,7 +205,6 @@ struct ComponentGalleryView: View {
                     text: .constant("j"),
                     label: "Username"
                 )
-                .validationState(.invalid(message: "Username must be at least 3 characters"))
                 
                 // FocusableTextField demonstration
                 PTLabel("FocusableTextField (with focus ring)", style: .bodyBold)
@@ -225,8 +249,8 @@ struct ComponentGalleryView: View {
             
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                    MetricCard(
-                        .init(
+                    MetricCardView(
+                        MetricData(
                             title: "TOTAL WORKOUTS",
                             value: 42,
                             icon: Image(systemName: "flame.fill")
@@ -234,8 +258,8 @@ struct ComponentGalleryView: View {
                     )
                     .frame(maxWidth: .infinity)
                     
-                    MetricCard(
-                        .init(
+                    MetricCardView(
+                        MetricData(
                             title: "DISTANCE", 
                             value: 8.5, 
                             unit: "km",
@@ -245,8 +269,8 @@ struct ComponentGalleryView: View {
                     .frame(maxWidth: .infinity)
                 }
                 
-                MetricCard(
-                    .init(
+                MetricCardView(
+                    MetricData(
                         title: "LAST ACTIVITY",
                         value: "Pull-ups",
                         description: "Yesterday - 42 reps",
@@ -336,7 +360,7 @@ struct ComponentGalleryView: View {
                 Toast(type: .info, title: "Information", message: "Here is some helpful information for you.")
                 
                 // Toast without message
-                Toast(type: .success, title: "Operation complete")
+                Toast(type: .success, title: "Operation complete", message: "")
             }
         }
     }
@@ -461,7 +485,7 @@ struct ComponentGalleryView: View {
                     PTLabel("Workout History", style: .bodyBold)
                     
                     // Use our sample workout history rows
-                    WorkoutHistoryRow(workout: WorkoutHistoryList_Previews.sampleWorkout())
+                    WorkoutHistoryRow(result: WorkoutHistoryList_Previews.sampleWorkout())
                         .frame(height: 120)
                 }
                 .padding()
@@ -507,13 +531,10 @@ struct ComponentGalleryView: View {
             sectionHeader(title: "Modal Sheets", description: "Settings and filters")
             
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                PTButton(
-                    title: "Show Settings Sheet",
-                    icon: Image(systemName: "gearshape.fill"),
-                    action: {
-                        showingSettingsSheet = true
-                    }
-                )
+                PTButton("Show Settings Sheet", 
+                         icon: Image(systemName: "gearshape.fill")) {
+                    showingSettingsSheet = true
+                }
                 
                 // Show preview of settings content
                 VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
@@ -544,14 +565,19 @@ struct ComponentGalleryView: View {
             PTCard {
                 VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
                     Group {
-                        PTLabel("Heading 1", style: .heading, size: .large)
-                        PTLabel("Heading 2", style: .heading, size: .medium)
-                        PTLabel("Heading 3", style: .heading, size: .small)
+                        PTLabel("Heading 1", style: .heading)
+                            .font(.system(size: 32, weight: .bold))
+                        PTLabel("Heading 2", style: .heading)
+                            .font(.system(size: 28, weight: .bold))
+                        PTLabel("Heading 3", style: .heading)
+                            .font(.system(size: 24, weight: .bold))
                         
                         PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
                         
-                        PTLabel("Subheading 1", style: .subheading, size: .large)
-                        PTLabel("Subheading 2", style: .subheading, size: .medium)
+                        PTLabel("Subheading 1", style: .subheading)
+                            .font(.system(size: 20, weight: .semibold))
+                        PTLabel("Subheading 2", style: .subheading)
+                            .font(.system(size: 18, weight: .semibold))
                         
                         PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
                         
@@ -577,7 +603,7 @@ struct ComponentGalleryView: View {
                 colorSwatch("Background", color: AppTheme.GeneratedColors.background)
                 colorSwatch("Card Background", color: AppTheme.GeneratedColors.cardBackground)
                 colorSwatch("Primary", color: AppTheme.GeneratedColors.primary)
-                colorSwatch("Primary Light", color: AppTheme.GeneratedColors.primaryLight)
+                colorSwatch("Primary Light", color: AppTheme.GeneratedColors.primary.opacity(0.2))
                 colorSwatch("Secondary", color: AppTheme.GeneratedColors.secondary)
                 colorSwatch("Accent", color: AppTheme.GeneratedColors.accent)
                 colorSwatch("Success", color: AppTheme.GeneratedColors.success)
@@ -609,7 +635,8 @@ struct ComponentGalleryView: View {
                 .frame(height: 60)
                 .cornerRadius(AppTheme.GeneratedRadius.small)
             
-            PTLabel(name, style: .body, size: .small)
+            PTLabel(name, style: .body)
+                .font(.system(size: 14))
                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
         }
     }

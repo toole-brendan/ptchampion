@@ -56,11 +56,15 @@ struct ButtonVariantsView: View {
                         .frame(maxWidth: .infinity)
                     
                     Button("Outline Button") {}
-                        .ptButtonStyle(variant: .outline)
+                        .ptButtonStyle(variant: .secondary)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(AppTheme.GeneratedColors.textPrimary, lineWidth: 1)
+                        )
                         .frame(maxWidth: .infinity)
                     
                     Button("Ghost Button") {}
-                        .ptButtonStyle(variant: .ghost)
+                        .ptButtonStyle(variant: .secondary)
                         .frame(maxWidth: .infinity)
                     
                     Button("Destructive Button") {}
@@ -73,15 +77,17 @@ struct ButtonVariantsView: View {
                 
                 Group {
                     Button("Small Button") {}
-                        .ptButtonStyle(size: .small)
+                        .ptButtonStyle(variant: .primary)
+                        .padding(.vertical, 4)
                         .frame(maxWidth: .infinity)
                     
                     Button("Medium Button") {}
-                        .ptButtonStyle(size: .medium)
+                        .ptButtonStyle(variant: .primary)
                         .frame(maxWidth: .infinity)
                     
                     Button("Large Button") {}
-                        .ptButtonStyle(size: .large)
+                        .ptButtonStyle(variant: .primary)
+                        .padding(.vertical, 16)
                         .frame(maxWidth: .infinity)
                 }
                 

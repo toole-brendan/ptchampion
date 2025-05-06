@@ -292,6 +292,18 @@ class AuthViewModel: ObservableObject {
         }
         return "User"
     }
+
+    // MARK: – Compatibility shims (delete when the gallery is refactored)
+    extension AuthViewModel {
+        /// Legacy API kept so that ComponentGalleryView still compiles
+        @MainActor
+        var currentUser: User? { authState.user }
+
+        @MainActor
+        var displayName: String {
+            currentUser?.displayName ?? "Athlete"
+        }
+    }
 }
 
 // Placeholder User model - move to Models/
