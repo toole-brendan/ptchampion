@@ -44,7 +44,6 @@ struct DashboardView: View {
                         PTButton("Start Workout") {
                             // action
                         }
-                        .labelStyle(.iconLeading(Image(systemName: "play.fill")))    // optional helper
                         .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(PlainButtonStyle()) // Remove NavigationLink styling

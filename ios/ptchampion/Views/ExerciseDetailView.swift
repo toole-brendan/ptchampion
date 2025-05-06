@@ -73,13 +73,11 @@ struct ExerciseDetailView: View {
                 
                 // Add exercise button
                 PTButton(
-                    title: "Record \(exerciseType.capitalized)",
-                    variant: .primary,
-                    fullWidth: true,
-                    action: {
-                        // Open recording modal
-                    }
-                )
+                    "Record \(exerciseType.capitalized)",
+                    style: .primary
+                ) {
+                    // Open recording modal
+                }
                 .padding(.vertical, AppTheme.GeneratedSpacing.medium)
             }
             .padding(AppTheme.GeneratedSpacing.medium)
@@ -151,17 +149,17 @@ class ExerciseDetailViewModel: ObservableObject {
         let random = Int.random(in: -5...10)
         
         progressData = (0...6).map { day in
-            let value = max(1, baseValue + day * 3 + Int.random(in: -5...5))
+            let intVal = max(1, baseValue + day * 3 + Int.random(in: -5...5))
             return WorkoutDataPoint(
                 date: Date().addingTimeInterval(Double(-6 + day) * 86400),
-                value: value
+                value: Double(intVal)
             )
         }
         
         // Generate sample sessions
         recentSessions = (0...4).map { i in
             let date = Date().addingTimeInterval(Double(-i) * 86400 * 2)
-            let value = progressData[min(6-i, progressData.count-1)].value
+            let value = Int(progressData[min(6-i, progressData.count-1)].value)
             
             return ExerciseSession(
                 date: date,
@@ -172,10 +170,10 @@ class ExerciseDetailViewModel: ObservableObject {
         }
         
         // Calculate stats
-        personalBest = progressData.map { $0.value }.max() ?? 0
+        personalBest = Int(progressData.map(\.value).max() ?? 0)
         
-        let thisWeek = progressData.suffix(3).map { $0.value }.reduce(0, +)
-        let lastWeek = progressData.prefix(3).map { $0.value }.reduce(0, +)
+        let thisWeek = progressData.suffix(3).reduce(0) { $0 + Int($1.value) }
+        let lastWeek = progressData.prefix(3).reduce(0) { $0 + Int($1.value) }
         lastWeekTotal = thisWeek
         
         if thisWeek > lastWeek {
