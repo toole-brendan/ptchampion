@@ -52,8 +52,8 @@ struct ExerciseDetailView: View {
                         .padding(.vertical, 100)
                 } else {
                     WorkoutProgressChart(
-                        data: viewModel.progressData,
-                        exerciseType: exerciseType
+                        dataPoints: viewModel.progressData,
+                        title: exerciseType.capitalized
                     )
                 }
                 
