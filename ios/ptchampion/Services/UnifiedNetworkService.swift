@@ -28,6 +28,12 @@ class UnifiedNetworkService {
     private var isRefreshing = false
     private var refreshSubscribers: [((Bool) -> Void)] = []
     
+    // Private error cases specific to this implementation
+    private enum ServiceError: Error {
+        case needsRetryWithNewToken
+        case maxRetriesExceeded
+    }
+    
     init(baseURL: String = "https://ptchampion-api-westus.azurewebsites.net/api/v1",
          keychainService: KeychainServiceProtocol = KeychainService()) {
         self.baseURL = baseURL
@@ -105,29 +111,29 @@ class UnifiedNetworkService {
                     if requiresAuth {
                         if await self.refreshTokenIfNeeded() {
                             // Retry with new token
-                            throw NetworkError.needsRetryWithNewToken
+                            throw ServiceError.needsRetryWithNewToken
                         } else {
-                            throw NetworkError.unauthorized
+                            throw NetworkError.server(status: 401, detail: "Unauthorized")
                         }
                     }
-                    throw NetworkError.unauthorized
+                    throw NetworkError.server(status: 401, detail: "Unauthorized")
                     
                 case 400...499:
                     // Client error
                     let errorResponse = try? JSONDecoder().decode(ErrorResponse.self, from: data)
-                    throw NetworkError.clientError(statusCode: httpResponse.statusCode, 
-                                                  message: errorResponse?.error ?? "Client error")
+                    throw NetworkError.server(status: httpResponse.statusCode, 
+                                            detail: errorResponse?.message ?? "Client error")
                     
                 case 500...599:
                     // Server error
-                    throw NetworkError.serverError(statusCode: httpResponse.statusCode)
+                    throw NetworkError.server(status: httpResponse.statusCode, detail: "Server error")
                     
                 default:
-                    throw NetworkError.unexpectedStatusCode(httpResponse.statusCode)
+                    throw NetworkError.server(status: httpResponse.statusCode, detail: "Unexpected status code")
                 }
-            } catch NetworkError.needsRetryWithNewToken {
+            } catch ServiceError.needsRetryWithNewToken {
                 // Special case to trigger retry with new token
-                throw NetworkError.needsRetryWithNewToken
+                throw ServiceError.needsRetryWithNewToken
             } catch {
                 throw error
             }
@@ -142,10 +148,10 @@ class UnifiedNetworkService {
         while attempts <= retries {
             do {
                 return try await task()
-            } catch NetworkError.needsRetryWithNewToken {
+            } catch ServiceError.needsRetryWithNewToken {
                 // This is a special case - we'll retry immediately with the new token
                 attempts += 1
-                lastError = NetworkError.unauthorized
+                lastError = NetworkError.server(status: 401, detail: "Unauthorized")
                 
                 // Small delay before retry
                 try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
@@ -161,7 +167,7 @@ class UnifiedNetworkService {
             }
         }
         
-        throw lastError ?? NetworkError.maxRetriesExceeded
+        throw lastError ?? ServiceError.maxRetriesExceeded
     }
     
     // MARK: - Authentication Methods
@@ -264,42 +270,22 @@ class UnifiedNetworkService {
         
         do {
             let _: EmptyResponse = try await request("/health", method: .get)
-            let responseTime = Date().timeIntervalSince(startTime) * 1000
-            return ServerHealthStatus(status: "ok", responseTime: Int(responseTime))
+            return ServerHealthStatus(status: "ok")
         } catch {
-            let responseTime = Date().timeIntervalSince(startTime) * 1000
-            return ServerHealthStatus(status: "error", responseTime: Int(responseTime))
+            return ServerHealthStatus(status: "error")
         }
     }
 }
 
 // MARK: - Helper Types
 
-enum HTTPMethod: String {
-    case get = "GET"
-    case post = "POST"
-    case put = "PUT"
-    case patch = "PATCH"
-    case delete = "DELETE"
-}
-
-enum NetworkError: Error {
-    case invalidURL
+enum UnifiedNetworkError: Error {
     case invalidResponse
     case unauthorized
     case needsRetryWithNewToken
-    case clientError(statusCode: Int, message: String)
-    case serverError(statusCode: Int)
-    case unexpectedStatusCode(Int)
     case maxRetriesExceeded
     case decodingError(Error)
 }
-
-struct ErrorResponse: Decodable {
-    let error: String
-}
-
-struct EmptyResponse: Decodable {}
 
 struct TokenResponse: Decodable {
     let accessToken: String
@@ -309,11 +295,6 @@ struct TokenResponse: Decodable {
         case accessToken = "access_token"
         case refreshToken = "refresh_token"
     }
-}
-
-struct ServerHealthStatus {
-    let status: String
-    let responseTime: Int
 }
 
 // MARK: - Request/Response Models
@@ -362,4 +343,7 @@ struct UserResponse: Decodable {
         case email
         case displayName = "display_name"
     }
-} 
+}
+
+// Removed duplicate type definitions for EmptyResponse, ErrorResponse, and ServerHealthStatus
+// These are now defined only in CommonNetworkTypes.swift

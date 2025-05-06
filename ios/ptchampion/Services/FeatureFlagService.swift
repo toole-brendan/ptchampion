@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 /// Feature flag constants - must match backend
 enum FeatureFlag: String {
@@ -289,18 +290,6 @@ class FeatureFlagService: ObservableObject {
         }
         
         return nil
-    }
-}
-
-// MARK: - Convenience API for SwiftUI
-
-extension View {
-    /// Conditionally render content based on a feature flag
-    func featureFlag(_ flag: FeatureFlag, defaultValue: Bool = false) -> some View {
-        let service = FeatureFlagService.shared
-        return self.opacity(service.isEnabled(flag, defaultValue: defaultValue) ? 1 : 0)
-            .frame(height: service.isEnabled(flag, defaultValue: defaultValue) ? nil : 0)
-            .disabled(!service.isEnabled(flag, defaultValue: defaultValue))
     }
 }
 

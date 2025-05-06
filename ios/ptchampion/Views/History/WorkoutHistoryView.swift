@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import PTDesignSystem
+import Foundation
 
 enum WorkoutFilter: String, CaseIterable, Identifiable {
     case all = "All"
@@ -30,107 +31,6 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
     }
 }
 
-struct WorkoutProgressChart: View {
-    let data: [WorkoutDataPoint]
-    let exerciseType: String
-    
-    var body: some View {
-        VStack(alignment: .leading) {
-            if !data.isEmpty {
-                Text("Progress Over Time")
-                    .font(AppTheme.GeneratedTypography.subheading(size: AppTheme.GeneratedTypography.subheading))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding(.bottom, 4)
-                
-                // Placeholder for chart - in a real implementation this would use Swift Charts
-                HStack(alignment: .bottom, spacing: 4) {
-                    ForEach(data) { point in
-                        VStack {
-                            Rectangle()
-                                .fill(AppTheme.GeneratedColors.brassGold)
-                                .frame(width: 20, height: CGFloat(point.value) * 2)
-                            
-                            Text(point.shortDate)
-                                .font(AppTheme.GeneratedTypography.tiny(size: AppTheme.GeneratedTypography.tiny))
-                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        }
-                    }
-                }
-                .frame(height: 200)
-                .padding(.vertical)
-                
-                if let bestPoint = data.max(by: { $0.value < $1.value }) {
-                    HStack {
-                        Text("Personal Best:")
-                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        Text("\(bestPoint.value) \(exerciseType)")
-                            .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        
-                        Badge(text: "Personal Best", variant: .success)
-                    }
-                }
-            } else {
-                Text("Not enough data to show progress")
-                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding()
-            }
-        }
-        .padding()
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
-    }
-}
-
-struct Badge: View {
-    let text: String
-    enum BadgeVariant {
-        case standard, success, warning, error
-        
-        var color: Color {
-            switch self {
-            case .standard: return AppTheme.GeneratedColors.brassGold
-            case .success: return Color.green
-            case .warning: return Color.orange
-            case .error: return Color.red
-            }
-        }
-    }
-    
-    let variant: BadgeVariant
-    
-    init(text: String, variant: BadgeVariant = .standard) {
-        self.text = text
-        self.variant = variant
-    }
-    
-    var body: some View {
-        Text(text)
-            .font(AppTheme.GeneratedTypography.tiny(size: AppTheme.GeneratedTypography.tiny))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(variant.color.opacity(0.2))
-            .foregroundColor(variant.color)
-            .cornerRadius(AppTheme.GeneratedRadius.badge)
-    }
-}
-
-struct WorkoutDataPoint: Identifiable {
-    let id = UUID()
-    let date: Date
-    let value: Int
-    
-    var shortDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MM/dd"
-        return formatter.string(from: date)
-    }
-}
-
 struct WorkoutHistoryView: View {
     @Environment(\.modelContext) private var modelContext
     // Query for all workout results, sorted by start time descending
@@ -150,7 +50,7 @@ struct WorkoutHistoryView: View {
         }
     }
     
-    // Prepare chart data
+    // Prepare chart data using the shared WorkoutDataPoint model
     private var chartData: [WorkoutDataPoint] {
         let filteredResults = filter == .all ? 
             allWorkoutResults.filter { $0.repCount != nil } : 
@@ -159,7 +59,7 @@ struct WorkoutHistoryView: View {
         return filteredResults.prefix(7)
             .compactMap { result in
                 guard let reps = result.repCount else { return nil }
-                return WorkoutDataPoint(date: result.startTime, value: reps)
+                return WorkoutDataPoint(date: result.startTime, value: Double(reps))
             }
             .sorted { $0.date < $1.date }
     }
@@ -219,8 +119,9 @@ struct WorkoutHistoryView: View {
                     // 4-10: Progress Analytics
                     if !workoutResults.isEmpty {
                         WorkoutProgressChart(
-                            data: chartData,
-                            exerciseType: filter == .all ? "reps" : filter.rawValue
+                            dataPoints: chartData,
+                            title: "Progress Over Time",
+                            yAxisLabel: filter == .all ? "Reps" : filter.rawValue
                         )
                         .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                     }
