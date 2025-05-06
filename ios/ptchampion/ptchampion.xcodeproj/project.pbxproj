@@ -74,6 +74,10 @@
 		BF89EB492DC98E8A003F8FE3 /* CommonNetworkTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB482DC98E8A003F8FE3 /* CommonNetworkTypes.swift */; };
 		BF89EB4B2DC98E9B003F8FE3 /* WorkoutDataPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB4A2DC98E9B003F8FE3 /* WorkoutDataPoint.swift */; };
 		BF89EB4E2DC99462003F8FE3 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF89EB4D2DC99462003F8FE3 /* SwiftUI.framework */; };
+		BF89EB512DC9A18C003F8FE3 /* ValidationStateExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB502DC9A18C003F8FE3 /* ValidationStateExtension.swift */; };
+		BF89EB522DC9A18C003F8FE3 /* BadgeType.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB4F2DC9A18C003F8FE3 /* BadgeType.swift */; };
+		BF89EB552DC9A1A7003F8FE3 /* WorkoutProgressChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB532DC9A1A7003F8FE3 /* WorkoutProgressChart.swift */; };
+		BF89EB572DC9A47E003F8FE3 /* MetricData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB562DC9A47E003F8FE3 /* MetricData.swift */; };
 		BF8F678E2DC920D80065A2D7 /* BodyPoseDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */; };
 		BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */; };
 		BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F67902DC928E40065A2D7 /* CameraPermissionRequestView.swift */; };
@@ -85,7 +89,6 @@
 		BFADF9A22DC93D280016AF0B /* UIColorContrastChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9A02DC93D280016AF0B /* UIColorContrastChecker.swift */; };
 		BFADF9B02DC93D890016AF0B /* BottomNavBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9A42DC93D890016AF0B /* BottomNavBar.swift */; };
 		BFADF9B12DC93D890016AF0B /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9AC2DC93D890016AF0B /* Toast.swift */; };
-		BFADF9B22DC93D890016AF0B /* WorkoutProgressChart.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9AF2DC93D890016AF0B /* WorkoutProgressChart.swift */; };
 		BFADF9B32DC93D890016AF0B /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9AB2DC93D890016AF0B /* StatCard.swift */; };
 		BFADF9B52DC93D890016AF0B /* SettingsSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9A92DC93D890016AF0B /* SettingsSheet.swift */; };
 		BFADF9B62DC93D890016AF0B /* DashboardHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9A52DC93D890016AF0B /* DashboardHeader.swift */; };
@@ -183,6 +186,10 @@
 		BF89EB482DC98E8A003F8FE3 /* CommonNetworkTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonNetworkTypes.swift; sourceTree = "<group>"; };
 		BF89EB4A2DC98E9B003F8FE3 /* WorkoutDataPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDataPoint.swift; sourceTree = "<group>"; };
 		BF89EB4D2DC99462003F8FE3 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		BF89EB4F2DC9A18C003F8FE3 /* BadgeType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeType.swift; sourceTree = "<group>"; };
+		BF89EB502DC9A18C003F8FE3 /* ValidationStateExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ValidationStateExtension.swift; sourceTree = "<group>"; };
+		BF89EB532DC9A1A7003F8FE3 /* WorkoutProgressChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutProgressChart.swift; sourceTree = "<group>"; };
+		BF89EB562DC9A47E003F8FE3 /* MetricData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricData.swift; sourceTree = "<group>"; };
 		BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPoseDetectionView.swift; sourceTree = "<group>"; };
 		BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDetectionDemoView.swift; sourceTree = "<group>"; };
 		BF8F67902DC928E40065A2D7 /* CameraPermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPermissionRequestView.swift; sourceTree = "<group>"; };
@@ -209,7 +216,6 @@
 		BFADF9AC2DC93D890016AF0B /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
 		BFADF9AD2DC93D890016AF0B /* WorkoutCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCard.swift; sourceTree = "<group>"; };
 		BFADF9AE2DC93D890016AF0B /* WorkoutHistoryList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryList.swift; sourceTree = "<group>"; };
-		BFADF9AF2DC93D890016AF0B /* WorkoutProgressChart.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutProgressChart.swift; sourceTree = "<group>"; };
 		BFADF9BD2DC93DE90016AF0B /* LeaderboardRowPlaceholder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardRowPlaceholder.swift; sourceTree = "<group>"; };
 		BFADF9BF2DC93E0A0016AF0B /* FeatureFlagService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagService.swift; sourceTree = "<group>"; };
 		BFADF9C02DC93E0A0016AF0B /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
@@ -433,6 +439,10 @@
 		BF63E4402DB1EB980037CD02 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				BF89EB562DC9A47E003F8FE3 /* MetricData.swift */,
+				BF89EB542DC9A1A7003F8FE3 /* Charts */,
+				BF89EB4F2DC9A18C003F8FE3 /* BadgeType.swift */,
+				BF89EB502DC9A18C003F8FE3 /* ValidationStateExtension.swift */,
 				BFADF9A32DC93D890016AF0B /* Badge.swift */,
 				BFADF9A42DC93D890016AF0B /* BottomNavBar.swift */,
 				BFADF9A52DC93D890016AF0B /* DashboardHeader.swift */,
@@ -444,7 +454,6 @@
 				BFADF9AC2DC93D890016AF0B /* Toast.swift */,
 				BFADF9AD2DC93D890016AF0B /* WorkoutCard.swift */,
 				BFADF9AE2DC93D890016AF0B /* WorkoutHistoryList.swift */,
-				BFADF9AF2DC93D890016AF0B /* WorkoutProgressChart.swift */,
 				BF63E4712DB1F3910037CD02 /* WorkoutHistoryRow.swift */,
 				BF63E43F2DB1EB980037CD02 /* SettingsView.swift */,
 			);
@@ -545,6 +554,14 @@
 				BF89EB4D2DC99462003F8FE3 /* SwiftUI.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		BF89EB542DC9A1A7003F8FE3 /* Charts */ = {
+			isa = PBXGroup;
+			children = (
+				BF89EB532DC9A1A7003F8FE3 /* WorkoutProgressChart.swift */,
+			);
+			path = Charts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -722,6 +739,7 @@
 				BFADF9A22DC93D280016AF0B /* UIColorContrastChecker.swift in Sources */,
 				BF8F678E2DC920D80065A2D7 /* BodyPoseDetectionView.swift in Sources */,
 				BFADF9C42DC93E0A0016AF0B /* WorkoutPersistenceService.swift in Sources */,
+				BF89EB552DC9A1A7003F8FE3 /* WorkoutProgressChart.swift in Sources */,
 				BFADF9C52DC93E0A0016AF0B /* WasmerGrading.swift in Sources */,
 				BFADF9C62DC93E0A0016AF0B /* NetworkService.swift in Sources */,
 				BFADF9C72DC93E0A0016AF0B /* FeatureFlagService.swift in Sources */,
@@ -754,7 +772,6 @@
 				BF63E46B2DB1EBAF0037CD02 /* PullupGrader.swift in Sources */,
 				BFADF9B02DC93D890016AF0B /* BottomNavBar.swift in Sources */,
 				BFADF9B12DC93D890016AF0B /* Toast.swift in Sources */,
-				BFADF9B22DC93D890016AF0B /* WorkoutProgressChart.swift in Sources */,
 				BFADF9B32DC93D890016AF0B /* StatCard.swift in Sources */,
 				BFADF9B52DC93D890016AF0B /* SettingsSheet.swift in Sources */,
 				BFADF9B62DC93D890016AF0B /* DashboardHeader.swift in Sources */,
@@ -766,6 +783,8 @@
 				BFADF9BB2DC93D890016AF0B /* MetricCard.swift in Sources */,
 				BFADF9BC2DC93D890016AF0B /* WorkoutHistoryList.swift in Sources */,
 				BF63E46C2DB1EBAF0037CD02 /* ExerciseGraderProtocol.swift in Sources */,
+				BF89EB512DC9A18C003F8FE3 /* ValidationStateExtension.swift in Sources */,
+				BF89EB522DC9A18C003F8FE3 /* BadgeType.swift in Sources */,
 				BF63E46D2DB1EBAF0037CD02 /* SitupGrader.swift in Sources */,
 				BF89EB4B2DC98E9B003F8FE3 /* WorkoutDataPoint.swift in Sources */,
 				BF63E46E2DB1EBAF0037CD02 /* PushupGrader.swift in Sources */,
@@ -774,6 +793,7 @@
 				BF8F67A32DC931750065A2D7 /* AppModels.swift in Sources */,
 				BF63E4652DB1EBA40037CD02 /* RunWorkoutViewModel.swift in Sources */,
 				BF8F67932DC930C90065A2D7 /* WorkoutDetailView.swift in Sources */,
+				BF89EB572DC9A47E003F8FE3 /* MetricData.swift in Sources */,
 				BFADF9BE2DC93DE90016AF0B /* LeaderboardRowPlaceholder.swift in Sources */,
 				BF63E4292DB1EB830037CD02 /* LocationService.swift in Sources */,
 				BF63E42A2DB1EB830037CD02 /* LeaderboardService.swift in Sources */,

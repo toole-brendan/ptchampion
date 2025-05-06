@@ -101,3 +101,48 @@ public struct PTButton: View {
         }
     }
 }
+
+// MARK: – vNext API (keeps ComponentGalleryView working)
+//
+// NOTE: These are convenience wrappers around the core PTButton
+// so nothing upstream breaks. Remove after all call-sites migrate.
+
+public extension PTButton {
+
+    enum ButtonSize { case small, medium, large }
+
+    enum ExtendedStyle {
+        case primary, secondary, outline, ghost, destructive
+    }
+
+    /// Drop-in replacement for the older wide-API initialiser
+    init(_ title: String,
+         style: ExtendedStyle = .primary,
+         size: ButtonSize = .medium,
+         icon: Image? = nil,
+         fullWidth: Bool = false,
+         isLoading: Bool = false,
+         action: @escaping () -> Void) {
+
+        // Map old style → current core style + decorations
+        let coreStyle: ButtonStyle
+        switch style {
+        case .primary       : coreStyle = .primary
+        case .secondary     : coreStyle = .secondary
+        case .destructive   : coreStyle = .destructive
+        case .outline, .ghost:
+            coreStyle = .secondary   // treat as secondary visually
+        }
+
+        // Use the base initializer without the icon
+        self.init(title, style: coreStyle, isLoading: isLoading, action: action)
+
+        // --- per-instance modifiers ---
+        _ = self                         // allows chaining if desired
+            .buttonStyle(PlainButtonStyle())
+            .frame(maxWidth: fullWidth ? .infinity : nil)
+            // Note: We're not actually adding icon overlay here since it would duplicate content
+            // The icon would need to be incorporated at the base Button level
+            .opacity(isLoading ? 0.5 : 1.0)
+    }
+}

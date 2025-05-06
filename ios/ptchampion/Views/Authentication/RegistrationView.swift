@@ -130,10 +130,11 @@ struct RegistrationView: View {
                     }
                     
                     // Back to login button
-                    PTButton("Back to Login", icon: Image(systemName: "arrow.left"), style: .ghost, size: .small) {
+                    PTButton("Back to Login", icon: Image(systemName: "arrow.left"), style: .secondary) {
                         // Use dismiss instead of navigationState
                         dismiss()
                     }
+                    .padding(.vertical, 4) // Add smaller padding to simulate the small size
                     .padding(.top, 8)
                 }
                 .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
