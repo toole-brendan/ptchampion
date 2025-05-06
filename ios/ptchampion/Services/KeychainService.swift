@@ -24,7 +24,7 @@ class KeychainService: KeychainServiceProtocol {
 
     // Define unique identifiers for the keychain item
     private let serviceIdentifier: String
-    private let accountIdentifier: String
+    private var accountIdentifier: String
     
     // Flag to detect if running in simulator
     private let isSimulator: Bool = {
@@ -117,8 +117,22 @@ class KeychainService: KeychainServiceProtocol {
     }
     
     func saveRefreshToken(_ token: String) {
-        // Could be implemented similarly to saveToken but with a different key
-        print("Saving refresh token - not implemented")
+        guard !token.isEmpty else {
+            print("KeychainService: Attempted to save empty refresh token - ignoring")
+            return
+        }
+        
+        do {
+            // store the refresh token under a different account key
+            let original = accountIdentifier
+            defer { accountIdentifier = original }
+            
+            accountIdentifier = "\(original).refresh"
+            try saveToken(token)
+            print("KeychainService: Refresh token saved successfully")
+        } catch {
+            print("KeychainService - Error saving refresh token: \(error.localizedDescription)")
+        }
     }
     
     func saveUserID(_ userId: String) {
@@ -137,6 +151,7 @@ class KeychainService: KeychainServiceProtocol {
     func clearAllTokens() {
         do {
             try deleteToken()
+            try deleteRefreshToken() // Also clear the refresh token
             UserDefaults.standard.removeObject(forKey: "com.ptchampion.userId")
             print("KeychainService: All tokens cleared")
         } catch {
@@ -276,5 +291,30 @@ class KeychainService: KeychainServiceProtocol {
         }
         
         print("KeychainService: Token deleted (or was not found).")
+    }
+}
+
+// MARK: - UnifiedNetworkService compatibility
+extension KeychainService {
+
+    func getToken() throws -> String? {
+        try loadToken()
+    }
+
+    func getRefreshToken() throws -> String? {
+        // store the refresh token under a different account key
+        let original = accountIdentifier
+        defer { accountIdentifier = original }
+
+        accountIdentifier = "\(original).refresh"
+        return try loadToken()
+    }
+
+    func deleteRefreshToken() throws {
+        let original = accountIdentifier
+        defer { accountIdentifier = original }
+
+        accountIdentifier = "\(original).refresh"
+        try deleteToken()
     }
 } 

@@ -32,7 +32,9 @@ let package = Package(
         )
     ],
     dependencies: [
-        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", from: "0.4.0")
+        // 1.1.0 is the first tag that shipped the new module name.
+        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git",
+                 from: "1.1.0")
     ],
     targets: [
         .target(
@@ -46,7 +48,7 @@ let package = Package(
             name: "Components",
             dependencies: [
                 "DesignTokens",
-                .product(name: "Introspect", package: "SwiftUI-Introspect")
+                .product(name: "SwiftUIIntrospect", package: "SwiftUI-Introspect")
             ],
             path: "Sources/Components"
         ),

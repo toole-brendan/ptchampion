@@ -227,7 +227,7 @@ class NetworkService {
         
         do {
             let _: EmptyResponse = try await request("/health")
-            let responseTime = Date().timeIntervalSince(startTime) * 1000
+            _ = Date().timeIntervalSince(startTime) * 1000
             return ServerHealthStatus(status: "ok")
         } catch {
             return ServerHealthStatus(status: "error")
