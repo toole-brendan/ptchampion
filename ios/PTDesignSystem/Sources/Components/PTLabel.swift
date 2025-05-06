@@ -6,7 +6,7 @@ public struct PTLabel: View {
     private let style: LabelStyle
     
     public enum LabelStyle {
-        case heading, subheading, body, caption
+        case heading, subheading, body, bodyBold, caption
     }
     
     public init(_ text: String, style: LabelStyle = .body) {
@@ -28,6 +28,8 @@ public struct PTLabel: View {
             return .system(size: 20, weight: .semibold)
         case .body:
             return .system(size: 16, weight: .regular)
+        case .bodyBold:
+            return .system(size: 16, weight: .bold)
         case .caption:
             return .system(size: 14, weight: .regular)
         }
@@ -37,7 +39,7 @@ public struct PTLabel: View {
         switch style {
         case .heading, .subheading:
             return AppTheme.GeneratedColors.textPrimary
-        case .body:
+        case .body, .bodyBold:
             return AppTheme.GeneratedColors.textSecondary
         case .caption:
             return AppTheme.GeneratedColors.textTertiary
@@ -51,6 +53,7 @@ public struct PTLabel_Previews: PreviewProvider {
             PTLabel("Heading Text", style: .heading)
             PTLabel("Subheading Text", style: .subheading)
             PTLabel("Body Text", style: .body)
+            PTLabel("Body Bold Text", style: .bodyBold)
             PTLabel("Caption Text", style: .caption)
         }
         .padding()

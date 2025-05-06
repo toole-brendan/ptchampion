@@ -41,7 +41,11 @@ struct DashboardView: View {
                     
                     // 4-3: Primary Call-to-Action
                     NavigationLink(destination: WorkoutSelectionView()) {
-                        PTButton("Start Workout", icon: Image(systemName: "play.fill"), fullWidth: true) {}
+                        PTButton("Start Workout") {
+                            // action
+                        }
+                        .labelStyle(.iconLeading(Image(systemName: "play.fill")))    // optional helper
+                        .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(PlainButtonStyle()) // Remove NavigationLink styling
                     .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing)
@@ -135,7 +139,9 @@ struct QuickLinkCard: View {
                         .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         .frame(width: 30)
                     
-                    PTLabel(title, style: .bodySemibold, size: .small)
+                    PTLabel(title, style: .body)
+                        .fontWeight(.semibold)
+                        .font(.caption)
                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                         .padding(.leading, 4)
                     
