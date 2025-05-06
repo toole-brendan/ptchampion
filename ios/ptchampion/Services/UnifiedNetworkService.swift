@@ -183,7 +183,10 @@ class UnifiedNetworkService {
         guard !isRefreshing else {
             // Wait for the current refresh to complete
             return await withCheckedContinuation { continuation in
-                self.refreshSubscribers.append { _ in continuation.resume(returning: ()) }
+                // forward the value the publisher will pass later
+                self.refreshSubscribers.append { success in
+                    continuation.resume(returning: success)
+                }
             }
         }
         

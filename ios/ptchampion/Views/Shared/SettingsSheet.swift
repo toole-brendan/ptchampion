@@ -97,10 +97,11 @@ struct SettingsSheet: View {
     
     private var accountSection: some View {
         Section(header: Text("Account")) {
-            if let user = authViewModel.currentUser {
+            if let user = authViewModel.authState.user {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text(user.displayName ?? user.email ?? "User")
+                        Text([user.firstName, user.lastName].compactMap { $0 }.joined(separator: " ")
+                            .ifEmpty(use: user.email ?? "User"))
                             .font(.system(size: AppTheme.GeneratedTypography.body, weight: .bold))
                         Text(user.email ?? "")
                             .font(.system(size: AppTheme.GeneratedTypography.small))
@@ -146,7 +147,7 @@ struct SettingsSheet: View {
             }
             
             Toggle("Dark Mode", isOn: $darkModeEnabled)
-                .onChange(of: darkModeEnabled) { newValue in
+                .onChange(of: darkModeEnabled) {
                     // Apply theme change
                 }
         }
@@ -225,14 +226,10 @@ struct SettingsSheet: View {
                 .cornerRadius(AppTheme.GeneratedRadius.medium)
                 .padding()
             
-            PTButton(
-                title: "Submit Feedback",
-                icon: Image(systemName: "paperplane.fill"),
-                action: {
-                    // Submit feedback
-                    dismiss()
-                }
-            )
+            PTButton("Submit Feedback") {
+                // Submit feedback
+                dismiss()
+            }
             .padding(.horizontal)
             
             Spacer()
@@ -273,7 +270,7 @@ extension Bundle {
 struct SettingsSheet_Previews: PreviewProvider {
     static var previews: some View {
         let mockAuth = MockAuthViewModel()
-        mockAuth.currentUser = User(id: "preview", email: "user@example.com", displayName: "Preview User")
+        mockAuth.authState.user = User(id: "preview", email: "user@example.com", firstName: "Preview", lastName: "User")
         
         return SettingsSheet()
             .environmentObject(mockAuth)
@@ -285,23 +282,38 @@ struct SettingsSheet_Previews: PreviewProvider {
 struct User {
     let id: String
     let email: String?
-    let displayName: String?
+    let firstName: String?
+    let lastName: String?
     
-    init(id: String, email: String? = nil, displayName: String? = nil) {
+    init(id: String, email: String? = nil, firstName: String? = nil, lastName: String? = nil) {
         self.id = id
         self.email = email
-        self.displayName = displayName
+        self.firstName = firstName
+        self.lastName = lastName
     }
 }
 
 class MockAuthViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false
-    @Published var currentUser: User?
+    @Published var authState = MockAuthState()
     
     func logout() {
         isAuthenticated = false
-        currentUser = nil
+        authState.user = nil
         // Additional logout logic would go here
+    }
+}
+
+class MockAuthState: ObservableObject {
+    @Published var user: User?
+}
+
+// MARK: - String Extension for Empty Check
+
+extension String {
+    /// Returns `self` unless it's empty, in which case `fallback` is returned.
+    func ifEmpty(use fallback: @autoclosure () -> String) -> String {
+        isEmpty ? fallback() : self
     }
 }
 

@@ -237,22 +237,16 @@ import UIKit
     // Delete a workout both remotely and locally
     @MainActor
     func deleteWorkout(id: String) async {
-        do {
-            // Optimistic update - remove from local list
-            let updatedWorkouts = self.workouts.filter { $0.id != id }
-            self.workouts = updatedWorkouts
-            
-            // Update cache after confirmed
-            cache["workouts"] = self.workouts
-            lastFetchTime["workouts"] = Date()
-            
-            // Update SwiftData
-            deleteWorkoutFromSwiftData(id: id)
-        } catch {
-            // If delete fails, refresh to sync with server
-            await fetchWorkouts()
-            self.error = error
-        }
+        // Optimistic update - remove from local list
+        let updatedWorkouts = self.workouts.filter { $0.id != id }
+        self.workouts = updatedWorkouts
+        
+        // Update cache after confirmed
+        cache["workouts"] = self.workouts
+        lastFetchTime["workouts"] = Date()
+        
+        // Update SwiftData
+        deleteWorkoutFromSwiftData(id: id)
     }
     
     // Helper to delete workout from SwiftData
