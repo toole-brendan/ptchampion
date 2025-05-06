@@ -1,6 +1,7 @@
 import SwiftUI
 import Charts
 import PTDesignSystem
+import Foundation
 
 struct WorkoutProgressChart: View {
     let data: [WorkoutDataPoint]
@@ -15,7 +16,7 @@ struct WorkoutProgressChart: View {
     private var maxValue: Double {
         if data.isEmpty { return 100 }
         let max = data.map { $0.value }.max() ?? 0
-        return Double(max * 12 / 10) // Add 20% padding
+        return max * 12 / 10 // Add 20% padding
     }
     
     // Helper for formatted exercise name
@@ -123,25 +124,6 @@ struct WorkoutProgressChart: View {
     }
 }
 
-// Data model for workout progress
-struct WorkoutDataPoint: Identifiable {
-    let id = UUID()
-    let date: Date
-    let value: Int
-    
-    // Helper initializer with ISO date string
-    init(dateString: String, value: Int) {
-        let formatter = ISO8601DateFormatter()
-        self.date = formatter.date(from: dateString) ?? Date()
-        self.value = value
-    }
-    
-    init(date: Date, value: Int) {
-        self.date = date
-        self.value = value
-    }
-}
-
 // MARK: - Preview Provider
 struct WorkoutProgressChart_Previews: PreviewProvider {
     static var previews: some View {
@@ -150,13 +132,13 @@ struct WorkoutProgressChart_Previews: PreviewProvider {
                 // Pushups example
                 WorkoutProgressChart(
                     data: [
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-6 * 86400), value: 25),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-5 * 86400), value: 28),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-4 * 86400), value: 30),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-3 * 86400), value: 32),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-2 * 86400), value: 35),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-1 * 86400), value: 40),
-                        WorkoutDataPoint(date: Date(), value: 42)
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-6 * 86400), value: 25.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-5 * 86400), value: 28.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-4 * 86400), value: 30.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-3 * 86400), value: 32.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-2 * 86400), value: 35.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-1 * 86400), value: 40.0),
+                        WorkoutDataPoint(date: Date(), value: 42.0)
                     ],
                     exerciseType: "pushup"
                 )
@@ -164,13 +146,13 @@ struct WorkoutProgressChart_Previews: PreviewProvider {
                 // Running example (distance in km)
                 WorkoutProgressChart(
                     data: [
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-6 * 86400), value: 3),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-5 * 86400), value: 2),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-4 * 86400), value: 5),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-3 * 86400), value: 4),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-2 * 86400), value: 6),
-                        WorkoutDataPoint(date: Date().addingTimeInterval(-1 * 86400), value: 5),
-                        WorkoutDataPoint(date: Date(), value: 7)
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-6 * 86400), value: 3.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-5 * 86400), value: 2.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-4 * 86400), value: 5.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-3 * 86400), value: 4.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-2 * 86400), value: 6.0),
+                        WorkoutDataPoint(date: Date().addingTimeInterval(-1 * 86400), value: 5.0),
+                        WorkoutDataPoint(date: Date(), value: 7.0)
                     ],
                     exerciseType: "running"
                 )

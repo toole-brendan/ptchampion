@@ -54,7 +54,8 @@ struct Badge: View {
                     .frame(width: 12, height: 12)
             }
             
-            PTLabel(text, style: .bodyBold, size: .small)
+            PTLabel(text, style: .body)
+                .font(.system(size: 14, weight: .bold))
                 .lineLimit(1)
         }
         .padding(.horizontal, AppTheme.GeneratedSpacing.small)
@@ -131,7 +132,7 @@ struct Badge_Previews: PreviewProvider {
 }
 
 // Updated to use GeneratedColors
-private extension BadgeType {
+private extension Badge.Variant {
     var color: Color {
         switch self {
         case .primary: return AppTheme.GeneratedColors.brassGold
