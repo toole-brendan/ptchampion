@@ -58,11 +58,11 @@ struct Toast: View {
             
             // Content
             VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.extraSmall) {
-                PTLabel(title, style: .bodyBold)
+                PTLabel(title, style: .body)
                     .foregroundColor(type.textColor)
                 
                 if let message = message {
-                    PTLabel(message, style: .body, size: .small)
+                    PTLabel(message, style: .caption)
                         .foregroundColor(type.textColor.opacity(0.7))
                         .lineLimit(3)
                 }
@@ -196,7 +196,7 @@ struct Toast_Previews: PreviewProvider {
                 Toast(type: .info, title: "Information", message: "Here is some helpful information for you.")
                 
                 // Toast without message
-                Toast(type: .success, title: "Operation complete")
+                Toast(type: .success, title: "Operation complete", message: nil)
                 
                 // Toast container example
                 ToastExample()

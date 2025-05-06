@@ -25,13 +25,11 @@ struct DashboardHeader: View {
     
     // Convenience initializer for User objects
     init(title: String, subtitle: String? = nil, user: User?, onProfileTap: (() -> Void)? = nil) {
-        // Get profile picture URL if available from user
-        let profilePictureUrl: URL? = user?.profilePictureUrl != nil ? URL(string: user!.profilePictureUrl!) : nil
-        
+        // Profile picture URL feature was intentionally removed, using placeholder avatar instead
         self.init(
             title: title,
             subtitle: subtitle,
-            userImageURL: profilePictureUrl,
+            userImageURL: nil,
             onProfileTap: onProfileTap
         )
     }
