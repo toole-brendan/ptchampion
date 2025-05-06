@@ -51,8 +51,54 @@ public struct PTTextField: View {
         self.keyboardType = keyboardType
     }
     
+    // Helper to create a standard text field with introspection
+    @ViewBuilder
+    private func standardTextField() -> some View {
+        TextField(text.isEmpty ? placeholder : "", text: $text)
+            .introspect(.textField) { (textField: UITextField) in
+                #if DEBUG
+                print("🪄 Introspected:", textField)
+                #endif
+                let item = textField.inputAssistantItem
+                item.leadingBarButtonGroups  = []
+                item.trailingBarButtonGroups = []
+
+                if textField.inputAccessoryView == nil {
+                    textField.inputAccessoryView = UIView(frame: .zero)
+                }
+            }
+    }
+    
+    // Helper to create a secure text field with introspection
+    @ViewBuilder
+    private func secureTextField() -> some View {
+        SecureField(text.isEmpty ? placeholder : "", text: $text)
+            .introspect(.textField) { (textField: UITextField) in
+                #if DEBUG
+                print("🪄 Introspected:", textField)
+                #endif
+                let item = textField.inputAssistantItem
+                item.leadingBarButtonGroups  = []
+                item.trailingBarButtonGroups = []
+
+                if textField.inputAccessoryView == nil {
+                    textField.inputAccessoryView = UIView(frame: .zero)
+                }
+            }
+    }
+    
+    // Apply common keyboard settings to any text field
+    private func applyKeyboardSettings<T: View>(_ field: T) -> some View {
+        field
+            .keyboardType(keyboardType)
+            .disableAutocorrection(true)
+            .autocapitalization(.none)
+            .iOS15TextInputAutocapitalization()
+    }
+    
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
+            // Label at the top
             if !text.isEmpty || label != nil {
                 Text(label ?? placeholder)
                     .font(.caption)
@@ -60,45 +106,24 @@ public struct PTTextField: View {
             }
             
             HStack {
-                Group {
+                // Create appropriate text field type
+                let baseField = Group {
                     if isSecure {
-                        SecureField(text.isEmpty ? placeholder : "", text: $text)
-                            .introspectTextField { textField in
-                                #if DEBUG
-                                print("🪄 Introspected:", textField)
-                                #endif
-                                let item = textField.inputAssistantItem
-                                item.leadingBarButtonGroups  = []
-                                item.trailingBarButtonGroups = []
-
-                                if textField.inputAccessoryView == nil {
-                                    textField.inputAccessoryView = UIView(frame: .zero)
-                                }
-                            }
+                        secureTextField()
                     } else {
-                        TextField(text.isEmpty ? placeholder : "", text: $text)
-                            .introspectTextField { textField in
-                                #if DEBUG
-                                print("🪄 Introspected:", textField)
-                                #endif
-                                let item = textField.inputAssistantItem
-                                item.leadingBarButtonGroups  = []
-                                item.trailingBarButtonGroups = []
-
-                                if textField.inputAccessoryView == nil {
-                                    textField.inputAccessoryView = UIView(frame: .zero)
-                                }
-                            }
+                        standardTextField()
                     }
                 }
-                .keyboardType(keyboardType)
-                .disableAutocorrection(true)
-                .autocapitalization(.none)                    // iOS 13+
-                .iOS15TextInputAutocapitalization()           // Safe iOS 15+ wrapper
                 
+                // Apply common modifiers
+                let styledField = applyKeyboardSettings(baseField)
+                
+                // Return the styled field
+                styledField
+                
+                // Add optional icon
                 if let icon = icon {
-                    icon
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    icon.foregroundColor(AppTheme.GeneratedColors.textSecondary)
                 }
             }
             .padding(12)
