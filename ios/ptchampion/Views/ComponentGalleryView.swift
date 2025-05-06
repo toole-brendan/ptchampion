@@ -46,7 +46,14 @@ struct ComponentGalleryView: View {
             .sheet(isPresented: $showingSettingsSheet) {
                 // Display settings sheet when triggered
                 let mockAuth = AuthViewModel()
-                mockAuth.currentUser = User(id: "preview", email: "user@example.com", displayName: "Preview User")
+                // Create a mock user using the User typealias (which is AuthUserModel)
+                mockAuth.setMockUser(User(
+                    id: "preview", 
+                    email: "user@example.com", 
+                    firstName: "Preview", 
+                    lastName: "User",
+                    profilePictureUrl: nil
+                ))
                 
                 SettingsSheet()
                     .environmentObject(mockAuth)
@@ -484,8 +491,18 @@ struct ComponentGalleryContentView: View {
                 VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
                     PTLabel("Workout History", style: .bodyBold)
                     
-                    // Use our sample workout history rows
-                    WorkoutHistoryRow(result: WorkoutHistoryList_Previews.sampleWorkout())
+                    // Convert WorkoutHistory to WorkoutResultSwiftData
+                    let sampleWorkout = WorkoutHistoryList_Previews.sampleWorkout()
+                    let result = WorkoutResultSwiftData(
+                        exerciseType: sampleWorkout.exerciseType,
+                        startTime: sampleWorkout.date,
+                        endTime: sampleWorkout.date.addingTimeInterval(sampleWorkout.duration),
+                        durationSeconds: Int(sampleWorkout.duration),
+                        repCount: sampleWorkout.reps,
+                        distanceMeters: sampleWorkout.distance
+                    )
+                    
+                    WorkoutHistoryRow(result: result)
                         .frame(height: 120)
                 }
                 .padding()
@@ -565,19 +582,14 @@ struct ComponentGalleryContentView: View {
             PTCard {
                 VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
                     Group {
-                        PTLabel("Heading 1", style: .heading)
-                            .font(.system(size: 32, weight: .bold))
-                        PTLabel("Heading 2", style: .heading)
-                            .font(.system(size: 28, weight: .bold))
-                        PTLabel("Heading 3", style: .heading)
-                            .font(.system(size: 24, weight: .bold))
+                        PTLabel.sized("Heading 1", style: .heading, size: .large)
+                        PTLabel.sized("Heading 2", style: .heading, size: .medium)
+                        PTLabel.sized("Heading 3", style: .heading, size: .small)
                         
                         PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
                         
-                        PTLabel("Subheading 1", style: .subheading)
-                            .font(.system(size: 20, weight: .semibold))
-                        PTLabel("Subheading 2", style: .subheading)
-                            .font(.system(size: 18, weight: .semibold))
+                        PTLabel.sized("Subheading 1", style: .subheading, size: .large)
+                        PTLabel.sized("Subheading 2", style: .subheading, size: .medium)
                         
                         PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
                         
@@ -635,8 +647,7 @@ struct ComponentGalleryContentView: View {
                 .frame(height: 60)
                 .cornerRadius(AppTheme.GeneratedRadius.small)
             
-            PTLabel(name, style: .body)
-                .font(.system(size: 14))
+            PTLabel.sized(name, style: .caption, size: .medium)
                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
         }
     }

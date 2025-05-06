@@ -270,7 +270,13 @@ extension Bundle {
 struct SettingsSheet_Previews: PreviewProvider {
     static var previews: some View {
         let mockAuth = MockAuthViewModel()
-        mockAuth.authState.user = User(id: "preview", email: "user@example.com", firstName: "Preview", lastName: "User")
+        mockAuth.authState.user = User(
+            id: "preview", 
+            email: "user@example.com", 
+            firstName: "Preview", 
+            lastName: "User",
+            profilePictureUrl: nil
+        )
         
         return SettingsSheet()
             .environmentObject(mockAuth)
@@ -279,19 +285,7 @@ struct SettingsSheet_Previews: PreviewProvider {
 
 // MARK: - Helper Models (If not already defined elsewhere)
 
-struct User {
-    let id: String
-    let email: String?
-    let firstName: String?
-    let lastName: String?
-    
-    init(id: String, email: String? = nil, firstName: String? = nil, lastName: String? = nil) {
-        self.id = id
-        self.email = email
-        self.firstName = firstName
-        self.lastName = lastName
-    }
-}
+// User struct is now defined by typealias User = AuthUserModel in AppModels.swift
 
 class MockAuthViewModel: ObservableObject {
     @Published var isAuthenticated: Bool = false

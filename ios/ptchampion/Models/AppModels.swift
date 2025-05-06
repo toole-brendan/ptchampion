@@ -1,6 +1,9 @@
 import SwiftUI
 import SwiftData
 
+// Typealias to provide backward compatibility while ensuring single-source-of-truth
+typealias User = AuthUserModel
+
 // USER MODEL - Using AuthUserModel from User.swift instead
 
 // WORKOUT RESULT MODEL FOR SWIFTDATA - Renamed to avoid conflict
