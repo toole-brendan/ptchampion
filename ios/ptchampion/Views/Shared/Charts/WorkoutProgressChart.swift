@@ -2,6 +2,13 @@ import SwiftUI
 import PTDesignSystem
 
 struct WorkoutProgressChart: View {
+    // Create a static date formatter
+    private static let dayFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M/d"
+        return formatter
+    }()
+    
     let dataPoints: [WorkoutDataPoint]
     let title: String
     let yAxisLabel: String?
@@ -98,9 +105,8 @@ struct WorkoutProgressChart: View {
                                 ForEach(dataPoints.indices, id: \.self) { i in
                                     if i == 0 || i == dataPoints.count - 1 || i % max(1, (dataPoints.count / 4)) == 0 {
                                         let date = dataPoints[i].date
-                                        let formatter = DateFormatter()
-                                        formatter.dateFormat = "M/d"
-                                        let text = formatter.string(from: date)
+                                        // Use the static formatter instead
+                                        let text = Self.dayFormatter.string(from: date)
                                         
                                         Text(text)
                                             .font(.caption)
