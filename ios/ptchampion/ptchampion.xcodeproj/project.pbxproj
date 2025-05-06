@@ -73,6 +73,7 @@
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
 		BF89EB492DC98E8A003F8FE3 /* CommonNetworkTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB482DC98E8A003F8FE3 /* CommonNetworkTypes.swift */; };
 		BF89EB4B2DC98E9B003F8FE3 /* WorkoutDataPoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB4A2DC98E9B003F8FE3 /* WorkoutDataPoint.swift */; };
+		BF89EB4E2DC99462003F8FE3 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BF89EB4D2DC99462003F8FE3 /* SwiftUI.framework */; };
 		BF8F678E2DC920D80065A2D7 /* BodyPoseDetectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */; };
 		BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */; };
 		BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F67902DC928E40065A2D7 /* CameraPermissionRequestView.swift */; };
@@ -181,6 +182,7 @@
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
 		BF89EB482DC98E8A003F8FE3 /* CommonNetworkTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonNetworkTypes.swift; sourceTree = "<group>"; };
 		BF89EB4A2DC98E9B003F8FE3 /* WorkoutDataPoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutDataPoint.swift; sourceTree = "<group>"; };
+		BF89EB4D2DC99462003F8FE3 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyPoseDetectionView.swift; sourceTree = "<group>"; };
 		BF8F678D2DC920D80065A2D7 /* PoseDetectionDemoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseDetectionDemoView.swift; sourceTree = "<group>"; };
 		BF8F67902DC928E40065A2D7 /* CameraPermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPermissionRequestView.swift; sourceTree = "<group>"; };
@@ -221,6 +223,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF89EB4E2DC99462003F8FE3 /* SwiftUI.framework in Frameworks */,
 				BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */,
 				BF5D31812DC7F6C40042EE65 /* Components in Frameworks */,
 				BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */,
@@ -252,6 +255,7 @@
 				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
 				BF71D10F2DC444F9003E1F33 /* Recovered References */,
+				BF89EB4C2DC99462003F8FE3 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -533,6 +537,14 @@
 				BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */,
 			);
 			path = Modifiers;
+			sourceTree = "<group>";
+		};
+		BF89EB4C2DC99462003F8FE3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BF89EB4D2DC99462003F8FE3 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

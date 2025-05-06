@@ -183,7 +183,7 @@ class UnifiedNetworkService {
         guard !isRefreshing else {
             // Wait for the current refresh to complete
             return await withCheckedContinuation { continuation in
-                self.refreshSubscribers.append(continuation.resume)
+                self.refreshSubscribers.append { _ in continuation.resume(returning: ()) }
             }
         }
         
@@ -279,13 +279,7 @@ class UnifiedNetworkService {
 
 // MARK: - Helper Types
 
-enum UnifiedNetworkError: Error {
-    case invalidResponse
-    case unauthorized
-    case needsRetryWithNewToken
-    case maxRetriesExceeded
-    case decodingError(Error)
-}
+// UnifiedNetworkError has been replaced by the consolidated NetworkError in CommonNetworkTypes.swift
 
 struct TokenResponse: Decodable {
     let accessToken: String

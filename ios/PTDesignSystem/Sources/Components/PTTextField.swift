@@ -1,6 +1,6 @@
 import SwiftUI
+import SwiftUIIntrospect
 import DesignTokens
-import Introspect
 
 // iOS 15+ specific modifier extension
 struct iOS15ModifierWrapper: ViewModifier {

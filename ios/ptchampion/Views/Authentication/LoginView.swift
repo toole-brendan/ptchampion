@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 import PTDesignSystem
-import Introspect
+import SwiftUIIntrospect
 
 // Font extensions have been migrated to use AppTheme.GeneratedTypography
 // These are kept solely for backward compatibility and should be removed in future updates
