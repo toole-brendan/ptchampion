@@ -45,15 +45,18 @@ struct ComponentGalleryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingSettingsSheet) {
                 // Display settings sheet when triggered
-                let mockAuth = AuthViewModel()
-                // Create a mock user using the User typealias (which is AuthUserModel)
-                mockAuth.setMockUser(User(
-                    id: "preview", 
-                    email: "user@example.com", 
-                    firstName: "Preview", 
-                    lastName: "User",
-                    profilePictureUrl: nil
-                ))
+                let mockAuth: AuthViewModel = {
+                    let auth = AuthViewModel()
+                    // Create a mock user using the User typealias (which is AuthUserModel)
+                    auth.setMockUser(User(
+                        id: "preview", 
+                        email: "user@example.com", 
+                        firstName: "Preview", 
+                        lastName: "User",
+                        profilePictureUrl: nil
+                    ))
+                    return auth
+                }()
                 
                 SettingsSheet()
                     .environmentObject(mockAuth)
@@ -549,6 +552,7 @@ struct ComponentGalleryContentView: View {
             
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 PTButton("Show Settings Sheet", 
+                         style: .primary,
                          icon: Image(systemName: "gearshape.fill")) {
                     showingSettingsSheet = true
                 }

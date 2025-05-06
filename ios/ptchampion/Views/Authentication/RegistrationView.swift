@@ -130,7 +130,7 @@ struct RegistrationView: View {
                     }
                     
                     // Back to login button
-                    PTButton("Back to Login", icon: Image(systemName: "arrow.left"), style: .secondary) {
+                    PTButton("Back to Login", style: .secondary, icon: Image(systemName: "arrow.left")) {
                         // Use dismiss instead of navigationState
                         dismiss()
                     }
