@@ -141,14 +141,9 @@ class LocationService: NSObject, LocationServiceProtocol, CLLocationManagerDeleg
                 
                 // If we got permission, try again
                 if newStatus == .authorizedWhenInUse || newStatus == .authorizedAlways {
-                    do {
-                        return try await getCurrentLocation()
-                    } catch {
-                        print("LocationService: Error getting location after permission granted: \(error.localizedDescription)")
-                        errorSubject.send(LocationError.locationUnavailable)
-                        return nil
-                    }
+                    return await getCurrentLocation()
                 } else {
+                    errorSubject.send(LocationError.permissionDenied)
                     return nil
                 }
             }

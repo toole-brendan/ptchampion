@@ -101,9 +101,9 @@ struct SettingsSheet: View {
                 HStack {
                     VStack(alignment: .leading) {
                         Text([user.firstName, user.lastName].compactMap { $0 }.joined(separator: " ")
-                            .ifEmpty(use: user.email ?? "User"))
+                            .ifEmpty(use: user.email))
                             .font(.system(size: AppTheme.GeneratedTypography.body, weight: .bold))
-                        Text(user.email ?? "")
+                        Text(user.email)
                             .font(.system(size: AppTheme.GeneratedTypography.small))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     }

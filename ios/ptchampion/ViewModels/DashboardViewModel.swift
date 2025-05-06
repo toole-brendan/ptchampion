@@ -53,7 +53,17 @@ class DashboardViewModel: ObservableObject {
         let allWorkoutsDescriptor = FetchDescriptor<WorkoutResultSwiftData>()
         if let workoutCount = try? modelContext.fetchCount(allWorkoutsDescriptor) {
             totalWorkouts = workoutCount
-            monthlyWorkouts = "\(workoutCount)" // This is a placeholder; ideally filter by last 30 days
+        }
+        
+        // Monthly workouts (last 30 days)
+        let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        let monthlyWorkoutsDescriptor = FetchDescriptor<WorkoutResultSwiftData>(
+            predicate: #Predicate { $0.startTime >= thirtyDaysAgo }
+        )
+        if let monthlyCount = try? modelContext.fetchCount(monthlyWorkoutsDescriptor) {
+            monthlyWorkouts = "\(monthlyCount)"
+        } else {
+            monthlyWorkouts = "0"
         }
         
         // Personal best (push-ups)

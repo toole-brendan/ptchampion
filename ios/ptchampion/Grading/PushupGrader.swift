@@ -1,8 +1,9 @@
 import Foundation
 import Vision
 import CoreGraphics // For CGFloat, CGPoint
+import Combine // For ObservableObject
 
-class PushupGrader: ExerciseGraderProtocol {
+final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
 
     // MARK: - Static Thresholds (Accessible for Unit Testing)
     // FPS setting - helps adjust required stable frames
@@ -138,10 +139,6 @@ class PushupGrader: ExerciseGraderProtocol {
         // Extract validated points (we know they exist with sufficient confidence now)
         let leftShoulder = body.point(.leftShoulder)!
         let rightShoulder = body.point(.rightShoulder)!
-        let leftElbow = body.point(.leftElbow)!
-        let rightElbow = body.point(.rightElbow)!
-        let leftWrist = body.point(.leftWrist)!
-        let rightWrist = body.point(.rightWrist)!
         let leftHip = body.point(.leftHip)!
         let rightHip = body.point(.rightHip)!
         let leftAnkle = body.point(.leftAnkle)!
@@ -158,7 +155,6 @@ class PushupGrader: ExerciseGraderProtocol {
         let avgShoulderY = (leftShoulder.location.y + rightShoulder.location.y) / 2.0
         let avgHipY = (leftHip.location.y + rightHip.location.y) / 2.0
         let avgAnkleY = (leftAnkle.location.y + rightAnkle.location.y) / 2.0
-        let avgKneeY = (leftKnee.location.y + rightKnee.location.y) / 2.0
 
         // 3. Form Checks
         var formIssues: [String] = []

@@ -80,14 +80,12 @@ struct ExerciseRow: View {
 //     }
 // }
 
-#Preview {
+#Preview("Light Mode") {
     WorkoutSelectionView()
         .environment(\.colorScheme, .light) // Preview in light mode
-        .previewDisplayName("Light Mode")
 }
 
-#Preview {
+#Preview("Dark Mode") {
     WorkoutSelectionView()
         .environment(\.colorScheme, .dark) // Preview in dark mode
-        .previewDisplayName("Dark Mode")
 } 

@@ -1,166 +1,169 @@
-import Foundation
+import SwiftUI
 import Combine
 import AVFoundation // For AVAuthorizationStatus
-import SwiftData // Import SwiftData
-import SwiftUI // Import SwiftUI for potential @AppStorage use later if needed
-import Vision // For VNHumanBodyPoseObservation
+import SwiftData
+import Vision // For VNHumanBodyPoseObservation.JointName
 
-// Define exercise type enum within the file scope to avoid ambiguity
-enum WorkoutExerciseType: String {
-    case pushup = "Push-ups"
-    case situp = "Sit-ups" 
-    case pullup = "Pull-ups"
-    case run = "Run"
-    case unknown = "Unknown"
+// Assuming ExerciseType is defined in Models/WorkoutModels.swift and is accessible globally in the target
+// For example:
+// enum ExerciseType: String, Codable, CaseIterable, Identifiable {
+//     case pushup = "pushup", situp = "situp", pullup = "pullup", run = "run", unknown = "unknown"
+//     var id: String { self.rawValue }
+//     var displayName: String { /* ... */ }
+// }
 
-    init(key: String) {
-        self = WorkoutExerciseType(rawValue: key) ?? .unknown
+// Assuming GradingResult and DetectedBody are defined elsewhere (e.g., Grading/ and Models/)
+
+// Moved WorkoutState enum outside the class definition
+enum WorkoutState: Equatable {
+    case initializing
+    case requestingPermission
+    case permissionDenied
+    case ready // Camera ready, waiting to start
+    case counting
+    case paused
+    case finished
+    case error(String)
+    
+    static func == (lhs: WorkoutState, rhs: WorkoutState) -> Bool {
+        switch (lhs, rhs) {
+        case (.initializing, .initializing),
+             (.requestingPermission, .requestingPermission),
+             (.permissionDenied, .permissionDenied),
+             (.ready, .ready),
+             (.counting, .counting),
+             (.paused, .paused),
+             (.finished, .finished):
+            return true
+        case (.error(let lhsMsg), .error(let rhsMsg)):
+            return lhsMsg == rhsMsg
+        default:
+            return false
+        }
     }
 }
 
 @MainActor
 class WorkoutViewModel: ObservableObject {
 
-    // Make cameraService optional and lazily initialized
-    private var _cameraService: CameraServiceProtocol?
-    var cameraService: CameraServiceProtocol? {
-        return _cameraService
-    }
-    
-    private let poseDetectorService: PoseDetectorServiceProtocol
-    private let exerciseGrader: ExerciseGraderProtocol
-    private let workoutService: WorkoutServiceProtocol
-    private let keychainService: KeychainServiceProtocol
-    var modelContext: ModelContext? // Change from private to internal
-
-    private var cancellables = Set<AnyCancellable>()
-
-    // Input
-    let exerciseName: String
-    private var exerciseType: WorkoutExerciseType { WorkoutExerciseType(key: exerciseName) }
-
-    // Published State for UI
-    @Published var cameraAuthorizationStatus: AVAuthorizationStatus = .notDetermined
-    @Published var detectedBody: DetectedBody? = nil
+    // MARK: - Published Properties for UI
+    @Published var selectedExercise: ExerciseType
     @Published var repCount: Int = 0
-    @Published var feedbackMessage: String = "Position yourself in the frame."
+    @Published var sets: Int = 0 // For manual entry or future plans
+    @Published var weight: Double = 0 // For manual entry or future plans
+    @Published var notes: String = "" // For manual entry or future plans
+
+    @Published var isWorkoutActive: Bool = false
+    @Published var workoutStartTime: Date? = nil
+    @Published var elapsedTimeFormatted: String = "00:00"
+
+    @Published var feedbackMessage: String = "Select an exercise to begin."
+    @Published var formScore: Double? = nil // Overall score, 0-100
+    @Published var currentPhase: String? = nil
+    @Published var problemJoints: Set<VNHumanBodyPoseObservation.JointName> = []
+
+    @Published var cameraAuthorizationStatus: AVAuthorizationStatus = .notDetermined
+    @Published var detectedBody: DetectedBody? = nil // For pose overlay rendering
     @Published var workoutState: WorkoutState = .initializing
     @Published var errorMessage: String? = nil
-    @Published var elapsedTimeFormatted: String = "00:00"
-    @Published var formScore: Double = 0.0
+    @Published var isCameraPermissionGranted: Bool = false
     @Published var badJointNames: Set<VNHumanBodyPoseObservation.JointName> = []
-    @Published var poseFrameIndex: Int = 0 // For efficient redraws of pose overlay
-    
-    // Rep counter update publisher - emits once per completed rep
-    private let repCompletedSubject = PassthroughSubject<Int, Never>()
-    var repCompletedPublisher: AnyPublisher<Int, Never> {
-        repCompletedSubject.eraseToAnyPublisher()
-    }
+    @Published var poseFrameIndex: Int = 0 // Or UUID, if preferred for uniqueness
 
-    // Internal State for Timer
-    private var workoutStartDate: Date?
+
+    // MARK: - Services and Grader
+    private var _cameraService: CameraServiceProtocol? // Lazily initialized
+    var cameraService: CameraServiceProtocol? { _cameraService } // Read-only public access
+
+    private let poseDetectorService: PoseDetectorServiceProtocol
+    private var exerciseGrader: any ExerciseGraderProtocol // Instance of a concrete grader
+    private let workoutService: WorkoutServiceProtocol
+    private let keychainService: KeychainServiceProtocol
+    var modelContext: ModelContext? // For saving data
+
+    // MARK: - Internal State
+    private var exerciseName: String // From init
+    private var cancellables = Set<AnyCancellable>()
+
+    // Timer
     private var timerSubscription: AnyCancellable?
     private var accumulatedTime: TimeInterval = 0
     private var isTimerRunning: Bool = false
     
-    // State for tracking body detection loss
+    // Body Detection Tracking
     private var consecutiveFramesWithoutBody: Int = 0
-    private let maxFramesWithoutBody = 10 // Threshold before showing visibility warning
-    
-    // Frame rate calculation for stable frames
-    private var frameCounter: Int = 0
-    private var lastFPSCalculationTime: TimeInterval = 0
-    private var currentFPS: Double = 30.0 // Default 30fps assumption
-    
-    // Status for body detection
-    private enum BodyDetectionStatus {
-        case detected      // Body is detected with good confidence
-        case lowConfidence // Body detected but with low confidence
-        case notVisible    // Body not visible in frame
-    }
-    private var bodyDetectionStatus: BodyDetectionStatus = .notVisible
+    private let maxFramesWithoutBodyBeforeWarning = 15 // e.g., 0.5 seconds at 30fps
 
-    // Represents the state of the workout session
-    enum WorkoutState: Equatable {
-        case initializing
-        case requestingPermission
-        case permissionDenied
-        case ready // Camera ready, waiting to start
-        case counting
-        case paused
-        case finished
-        case error(String)
-        
-        // Implement Equatable manually since the enum has associated values
-        static func == (lhs: WorkoutState, rhs: WorkoutState) -> Bool {
-            switch (lhs, rhs) {
-            case (.initializing, .initializing),
-                 (.requestingPermission, .requestingPermission),
-                 (.permissionDenied, .permissionDenied),
-                 (.ready, .ready),
-                 (.counting, .counting),
-                 (.paused, .paused),
-                 (.finished, .finished):
-                return true
-            case (.error(let lhsMsg), .error(let rhsMsg)):
-                return lhsMsg == rhsMsg
-            default:
-                return false
-            }
-        }
-    }
+    // MARK: - Publishers
+    let repCompletedPublisher = PassthroughSubject<Void, Never>()
 
-    init(exerciseName: String,
-         poseDetectorService: PoseDetectorServiceProtocol = PoseDetectorService(),
-         exerciseGrader: ExerciseGraderProtocol? = nil,
-         workoutService: WorkoutServiceProtocol = WorkoutService(),
-         keychainService: KeychainServiceProtocol = KeychainService(),
-         modelContext: ModelContext? = nil // Add modelContext parameter
+    // MARK: - Initialization
+    init(
+        exerciseName: String, // Typically corresponds to ExerciseType.rawValue
+        poseDetectorService: PoseDetectorServiceProtocol = PoseDetectorService(),
+        exerciseGrader: (any ExerciseGraderProtocol)? = nil, // Allow injecting for testing/specifics
+        workoutService: WorkoutServiceProtocol = WorkoutService(),
+        keychainService: KeychainServiceProtocol = KeychainService(),
+        modelContext: ModelContext? = nil
     ) {
         self.exerciseName = exerciseName
         self.poseDetectorService = poseDetectorService
         self.workoutService = workoutService
         self.keychainService = keychainService
-        self.modelContext = modelContext // Assign modelContext
+        self.modelContext = modelContext
 
-        // Select the appropriate grader based on exercise name
+        // Phase 1: Initialize all stored properties
+        let resolvedExerciseType = ExerciseType(rawValue: exerciseName.lowercased()) ?? .unknown
+        self.selectedExercise = resolvedExerciseType
+
         if let providedGrader = exerciseGrader {
             self.exerciseGrader = providedGrader
         } else {
-             switch WorkoutExerciseType(key: exerciseName) { // Use enum for switch
-             case .pushup:
-                 self.exerciseGrader = PushupGrader()
-             case .situp:
-                 self.exerciseGrader = SitupGrader()
-             case .pullup:
-                 self.exerciseGrader = PullupGrader()
-             case .run, .unknown:
-                 print("Warning: No specific pose grader for \(exerciseName). Using NoOpGrader.")
-                 self.exerciseGrader = NoOpGrader()
-             // Handle other cases explicitly if needed
-             }
+            self.exerciseGrader = Self.grader(for: resolvedExerciseType)
         }
+        // All properties are now initialized.
 
+        // Phase 2: `self` is fully available.
         print("WorkoutViewModel initialized for \(exerciseName) using \(type(of: self.exerciseGrader))")
-        checkInitialCameraPermission()
+        
+        // Initialize UI-related properties from grader's initial state
+        updateUIFromGraderState()
+        self.feedbackMessage = "Ready for \(resolvedExerciseType.displayName)."
+        
+        checkInitialCameraPermission() // Check current permission status
+        setupSubscribers()             // Set up Combine subscriptions
     }
-    
-    // Initialize the camera service on demand
-    func initializeCamera() {
-        guard _cameraService == nil else {
-            print("CameraService already initialized")
-            return
+
+    deinit {
+        DispatchQueue.main.async { [weak self] in // Add weak self to avoid retain cycles if self is captured
+            self?.releaseCamera() // Ensure camera resources are freed
         }
-        
-        print("Initializing new CameraService")
+        cancellables.forEach { $0.cancel() }
+        timerSubscription?.cancel()
+        print("WorkoutViewModel for \(exerciseName) deinitialized.")
+    }
+
+    // MARK: - Camera Service Management
+    func initializeCamera() {
+        guard _cameraService == nil else { return }
+        print("WorkoutViewModel: Initializing CameraService.")
         _cameraService = CameraService()
-        subscribeToServices()
-        
-        // Register for orientation changes
+        subscribeToCameraServices() // Specific subscriptions for camera
         setupOrientationNotification()
+        if cameraAuthorizationStatus == .authorized {
+             _cameraService?.startSession()
+        }
+    }
+
+    func releaseCamera() {
+        print("WorkoutViewModel: Releasing CameraService.")
+        _cameraService?.stopSession()
+        _cameraService = nil // Allows re-initialization
+        // Specific camera/pose detector cancellables might be managed separately if needed
+        // For simplicity, `cancellables.removeAll()` in deinit handles general ones.
+        NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
     }
     
-    // Setup orientation observer
     private func setupOrientationNotification() {
         NotificationCenter.default.addObserver(
             self,
@@ -169,38 +172,37 @@ class WorkoutViewModel: ObservableObject {
             object: nil
         )
     }
-    
-    // Handle orientation changes
+
     @objc private func deviceOrientationDidChange() {
-        // Use a slight delay to ensure the interface has updated
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
-            guard let cameraService = self?._cameraService as? CameraService else { return }
-            cameraService.updateOutputOrientation()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in // Increased delay slightly
+            (self?._cameraService as? CameraService)?.updateOutputOrientation()
         }
-    }
-    
-    // Release camera resources
-    func releaseCamera() {
-        print("Releasing CameraService resources")
-        _cameraService?.stopSession()
-        _cameraService = nil
-        cancellables.removeAll()
-        
-        // Remove orientation observer
-        NotificationCenter.default.removeObserver(
-            self,
-            name: UIDevice.orientationDidChangeNotification,
-            object: nil
-        )
     }
 
-    private func subscribeToServices() {
-        guard let cameraService = _cameraService else {
-            print("Cannot subscribe to services - CameraService not initialized")
-            return
-        }
-        
-        // Subscribe to Camera Authorization Status
+    func startCamera() {
+        print("WorkoutViewModel: Starting camera session.")
+        _cameraService?.startSession()
+    }
+
+    func stopCamera() {
+        print("WorkoutViewModel: Stopping camera session.")
+        _cameraService?.stopSession()
+    }
+
+    // MARK: - Subscriptions
+    private func setupSubscribers() {
+        // React to changes in selected exercise type
+        $selectedExercise
+            .dropFirst() // Ignore initial value
+            .sink { [weak self] newExerciseType in
+                self?.updateGrader(for: newExerciseType)
+            }
+            .store(in: &cancellables)
+    }
+
+    private func subscribeToCameraServices() {
+        guard let cameraService = _cameraService else { return }
+
         cameraService.authorizationStatusPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
@@ -209,356 +211,289 @@ class WorkoutViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // Subscribe to Camera Frames -> Process with Pose Detector
         cameraService.framePublisher
+            .compactMap { $0 } // Ensure frame is not nil
             .sink { [weak self] frameBuffer in
-                 guard let self = self, self.workoutState == .counting else { return } // Only process if counting
-                 
-                 // Track FPS for stable frame calculations
-                 self.frameCounter += 1
-                 let now = CACurrentMediaTime()
-                 if now - self.lastFPSCalculationTime > 1.0 { // Calculate FPS every second
-                     self.currentFPS = Double(self.frameCounter) / (now - self.lastFPSCalculationTime)
-                     self.frameCounter = 0
-                     self.lastFPSCalculationTime = now
-                 }
-                 
-                 self.poseDetectorService.processFrame(frameBuffer)
+                guard let self = self, self.workoutState == .counting, self.isTimerRunning else { return }
+                self.poseDetectorService.processFrame(frameBuffer)
             }
             .store(in: &cancellables)
 
-        // Subscribe to Detected Poses -> Grade Exercise
         poseDetectorService.detectedBodyPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] detectedBody in
                 guard let self = self else { return }
                 self.detectedBody = detectedBody
-                self.updateBodyDetectionStatus(detectedBody)
                 
-                if self.workoutState == .counting {
-                    if let body = detectedBody, self.bodyDetectionStatus == .detected {
-                        // Reset counter when body detected
-                        self.consecutiveFramesWithoutBody = 0
-                        // Grade the frame
+                if let body = detectedBody, body.confidence > (type(of: self.exerciseGrader).requiredJointConfidence * 0.8) { 
+                    self.consecutiveFramesWithoutBody = 0
+                    if self.workoutState == .counting {
                         self.gradeFrame(body: body)
-                    } else {
-                        // Handle body not detected during workout
-                        self.handleBodyNotDetected()
+                        self.poseFrameIndex += 1 // Increment to trigger UI updates for pose
+                    }
+                } else {
+                    self.consecutiveFramesWithoutBody += 1
+                    if self.consecutiveFramesWithoutBody > self.maxFramesWithoutBodyBeforeWarning && self.workoutState == .counting {
+                        self.feedbackMessage = "Body not clearly visible. Adjust position."
+                        // No need to update problemJoints here as it's a visibility issue
                     }
                 }
             }
             .store(in: &cancellables)
-
-        // Subscribe to Errors from Camera
+        
         cameraService.errorPublisher
-             .receive(on: DispatchQueue.main)
-             .sink { [weak self] error in
-                 print("WorkoutViewModel: Camera Service Error: \(error.localizedDescription)")
-                 self?.errorMessage = "Camera Error: \(error.localizedDescription)"
-                 self?.workoutState = .error(error.localizedDescription)
-                 self?.stopWorkout()
-             }
-             .store(in: &cancellables)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                 self?.handleServiceError(error, serviceName: "Camera")
+            }
+            .store(in: &cancellables)
 
-         // Subscribe to Errors from Pose Detector
-         poseDetectorService.errorPublisher
-             .receive(on: DispatchQueue.main)
-             .sink { [weak self] error in
-                 print("WorkoutViewModel: Pose Detector Error: \(error.localizedDescription)")
-                 // Decide if this error should stop the workout or just be informational
-                 self?.errorMessage = "Pose Detection Error: \(error.localizedDescription)"
-                 // Potentially revert to a state where user needs to reposition
-             }
-             .store(in: &cancellables)
+        poseDetectorService.errorPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] error in
+                self?.handleServiceError(error, serviceName: "Pose Detector")
+            }
+            .store(in: &cancellables)
     }
     
-    // Determine if the body detection is good enough to use for grading
-    private func updateBodyDetectionStatus(_ body: DetectedBody?) {
-        guard let body = body else {
-            bodyDetectionStatus = .notVisible
+    private func handleServiceError(_ error: Error, serviceName: String) {
+        print("WorkoutViewModel: \(serviceName) Error: \(error.localizedDescription)")
+        self.errorMessage = "\(serviceName) Error: \(error.localizedDescription)"
+        // Optionally change workoutState to .error only for critical camera errors
+        if serviceName == "Camera" {
+            self.workoutState = .error("A \(serviceName.lowercased()) error occurred.")
+            self.stopWorkoutFlow(saveAttempt: false) // Stop without saving if camera fails critically
+        }
+    }
+
+    // MARK: - Permissions
+    private func checkInitialCameraPermission() {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        handleAuthorizationStatusChange(status)
+    }
+
+    func requestCameraAccess() { // Public method for View to call
+        guard let cameraService = _cameraService else {
+            initializeCamera() // Ensure camera service is there to request
+            // If it's still nil after this, something is wrong
+            if _cameraService == nil {
+                 self.workoutState = .error("Camera system not available.")
+                 return
+            }
+            // Retry request after short delay for service init
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                self?._cameraService?.requestCameraPermission()
+            }
             return
         }
-        
-        // Check overall confidence and key joint availability
-        let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
-            .leftShoulder, .rightShoulder, .leftElbow, .rightElbow, .leftWrist, .rightWrist,
-            .leftHip, .rightHip, .leftKnee, .rightKnee, .leftAnkle, .rightAnkle
-        ]
-        
-        // Check if at least 80% of key joints are detected with reasonable confidence
-        let detectedKeyJoints = keyJoints.filter { jointName in
-            guard let point = body.point(jointName) else { return false }
-            return point.confidence > 0.3 // Lower threshold for status check vs. actual grading
-        }
-        
-        let detectionRatio = Double(detectedKeyJoints.count) / Double(keyJoints.count)
-        
-        if detectionRatio >= 0.8 && body.confidence > 0.5 {
-            bodyDetectionStatus = .detected
-        } else if detectionRatio >= 0.6 && body.confidence > 0.3 {
-            bodyDetectionStatus = .lowConfidence
-        } else {
-            bodyDetectionStatus = .notVisible
-        }
-    }
-    
-    // Handle situations where body isn't detected well enough for grading
-    private func handleBodyNotDetected() {
-        consecutiveFramesWithoutBody += 1
-        
-        // Only show message after several consecutive frames without detection
-        if consecutiveFramesWithoutBody > maxFramesWithoutBody {
-            switch bodyDetectionStatus {
-            case .lowConfidence:
-                feedbackMessage = "Low visibility. Move under better lighting."
-            case .notVisible:
-                feedbackMessage = "Body not detected. Ensure full body is visible."
-            case .detected:
-                // Should not reach here
-                break
-            }
-        }
-    }
-
-    private func checkInitialCameraPermission() {
-         let status = AVCaptureDevice.authorizationStatus(for: .video)
-         handleAuthorizationStatusChange(status)
+        cameraService.requestCameraPermission()
     }
 
     private func handleAuthorizationStatusChange(_ status: AVAuthorizationStatus) {
-         switch status {
-         case .authorized:
-             workoutState = .ready
-             // Don't start camera here - wait for explicit call
-         case .notDetermined:
-             workoutState = .requestingPermission
-             _cameraService?.requestCameraPermission()
-         case .denied, .restricted:
-             workoutState = .permissionDenied
-             errorMessage = "Camera access is required. Please enable it in Settings."
-         @unknown default:
-             workoutState = .error("Unknown camera authorization status.")
-             errorMessage = "An unknown error occurred with camera permissions."
-         }
-     }
+        self.cameraAuthorizationStatus = status
+        switch status {
+        case .authorized:
+            self.isCameraPermissionGranted = true
+            self.workoutState = .ready
+            self.feedbackMessage = "Ready for \(selectedExercise.displayName)."
+            _cameraService?.startSession() // Start session if authorized
+        case .notDetermined:
+            self.isCameraPermissionGranted = false
+            self.workoutState = .requestingPermission
+            self.feedbackMessage = "Camera permission needed."
+        case .denied, .restricted:
+            self.isCameraPermissionGranted = false
+            self.workoutState = .permissionDenied
+            self.feedbackMessage = "Camera access denied. Enable in Settings."
+            self.errorMessage = "Camera access is required for this feature."
+        @unknown default:
+            self.isCameraPermissionGranted = false
+            self.workoutState = .error("Unknown camera permission status.")
+            self.feedbackMessage = "Error with camera permissions."
+        }
+    }
+    
+    // MARK: - Grader Logic
+    func updateGrader(for exerciseType: ExerciseType) {
+        print("WorkoutViewModel: Updating grader for \(exerciseType.displayName)")
+        self.exerciseGrader = Self.grader(for: exerciseType)
+        self.exerciseGrader.resetState()
+        updateUIFromGraderState()
+        self.feedbackMessage = "Switched to \(exerciseType.displayName). \(exerciseGrader.currentPhaseDescription)"
+    }
 
-    func startCamera() {
-        guard cameraAuthorizationStatus == .authorized else { return }
+    static func grader(for exerciseType: ExerciseType) -> any ExerciseGraderProtocol {
+        switch exerciseType {
+        case .pushup: return PushupGrader()
+        case .situp: return SitupGrader()
+        case .pullup: return PullupGrader()
+        default:
+            print("WorkoutViewModel.grader: No specific grader for \(exerciseType.displayName). Using NoOpGrader.")
+            return NoOpGrader()
+        }
+    }
+    
+    private func gradeFrame(body: DetectedBody) {
+        let result = exerciseGrader.gradePose(body: body)
+        handleGradingResult(result)
+    }
+
+    private func handleGradingResult(_ result: GradingResult) {
+        switch result {
+        case .repCompleted(let quality):
+            feedbackMessage = "Rep! Quality: \(Int(quality * 100))%"
+            repCompletedPublisher.send()
+            // Sound/Haptics would go here
+        case .inProgress(let phase):
+            feedbackMessage = phase ?? exerciseGrader.currentPhaseDescription
+        case .invalidPose(let reason):
+            feedbackMessage = "Adjust: \(reason)"
+        case .incorrectForm(let feedback):
+            feedbackMessage = "Form: \(feedback)"
+        case .noChange:
+            feedbackMessage = exerciseGrader.currentPhaseDescription
+        }
+        updateUIFromGraderState()
+    }
+
+    private func updateUIFromGraderState() {
+        self.repCount = exerciseGrader.repCount
+        self.currentPhase = exerciseGrader.currentPhaseDescription
+        self.problemJoints = exerciseGrader.problemJoints
+        self.badJointNames = exerciseGrader.problemJoints
+        self.formScore = exerciseGrader.formQualityAverage * 100
+        if let issue = exerciseGrader.lastFormIssue, !issue.isEmpty {
+            self.feedbackMessage = issue
+        } else {
+            self.feedbackMessage = exerciseGrader.currentPhaseDescription
+        }
+    }
+
+    // MARK: - Workout Lifecycle
+    func startWorkout() {
+        guard isCameraPermissionGranted else {
+            feedbackMessage = "Camera permission required."
+            workoutState = .requestingPermission
+            requestCameraAccess()
+            return
+        }
+        guard workoutState == .ready || workoutState == .paused else { return }
+
+        isWorkoutActive = true
+        workoutState = .counting
+        
+        if workoutStartTime == nil || workoutState != .paused {
+            accumulatedTime = 0
+            workoutStartTime = Date()
+        } else {
+            // workoutStartTime should be the point we paused to calculate current segment
+        }
+        
+        exerciseGrader.resetState()
+        updateUIFromGraderState()
+        feedbackMessage = "Workout Started: \(selectedExercise.displayName)"
+        startTimer()
         _cameraService?.startSession()
-        print("WorkoutViewModel: Camera session started.")
     }
 
-    func stopCamera() {
-        _cameraService?.stopSession()
-        print("WorkoutViewModel: Camera session stopped.")
+    func pauseWorkout() {
+        guard workoutState == .counting else { return }
+        isWorkoutActive = true
+        workoutState = .paused
+        feedbackMessage = "Workout Paused"
+        pauseTimer()
     }
 
-    // MARK: - Timer Logic
+    func resumeWorkout() {
+        guard workoutState == .paused else { return }
+        isWorkoutActive = true
+        workoutState = .counting
+        feedbackMessage = "Resuming..."
+        startTimer()
+    }
 
+    func stopWorkout() {
+        stopWorkoutFlow(saveAttempt: true)
+    }
+    
+    private func stopWorkoutFlow(saveAttempt: Bool) {
+        guard isWorkoutActive else { return }
+
+        let endTime = Date()
+        pauseTimer()
+        
+        let finalRepCount = self.repCount
+        let finalScore = exerciseGrader.calculateFinalScore()
+        let finalFormQuality = exerciseGrader.formQualityAverage
+        
+        let durationSeconds = Int(accumulatedTime)
+
+        isWorkoutActive = false
+        workoutState = .finished
+        feedbackMessage = "Workout Complete! Reps: \(finalRepCount)"
+        elapsedTimeFormatted = formatTime(durationSeconds)
+
+        print("WorkoutViewModel: Workout ended. Duration: \(durationSeconds)s, Reps: \(finalRepCount), Score: \(String(describing: finalScore)), Avg Form: \(finalFormQuality * 100)%")
+
+        if saveAttempt {
+            saveWorkoutResult(
+                startTime: workoutStartTime ?? endTime.addingTimeInterval(-accumulatedTime),
+                endTime: endTime,
+                duration: durationSeconds,
+                reps: finalRepCount,
+                score: finalScore,
+                formQuality: finalFormQuality
+            )
+        }
+    }
+
+    // MARK: - Timer Control
     private func startTimer() {
         guard !isTimerRunning else { return }
-        if workoutStartDate == nil {
-            workoutStartDate = Date() // Set start time only once
-        }
-        let resumeDate = Date()
+        
+        let segmentStartDate = Date()
         isTimerRunning = true
 
-        timerSubscription = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()
+        timerSubscription = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
             .sink { [weak self] firedDate in
                 guard let self = self, self.isTimerRunning else { return }
-                // Calculate total elapsed time including pauses
-                let currentTime = firedDate.timeIntervalSince(resumeDate)
-                let totalElapsed = self.accumulatedTime + currentTime
-                self.updateTimerDisplay(totalElapsed)
+                let currentSegmentTime = firedDate.timeIntervalSince(segmentStartDate)
+                let totalElapsed = self.accumulatedTime + currentSegmentTime
+                self.elapsedTimeFormatted = self.formatTime(Int(totalElapsed))
             }
     }
 
     private func pauseTimer() {
         guard isTimerRunning else { return }
         isTimerRunning = false
-        // Calculate time elapsed since last resume and add to accumulated time
-        if let startDate = workoutStartDate {
-            accumulatedTime += Date().timeIntervalSince(startDate)
-            workoutStartDate = nil
+        if let segStart = workoutStartTime {
+             accumulatedTime += Date().timeIntervalSince(segStart)
         }
+        workoutStartTime = nil
         timerSubscription?.cancel()
-        timerSubscription = nil
     }
 
     private func stopTimer() {
         isTimerRunning = false
         timerSubscription?.cancel()
         timerSubscription = nil
-        // Reset for next workout
         accumulatedTime = 0
-        workoutStartDate = nil
-        updateTimerDisplay(0)
+        workoutStartTime = nil
+        elapsedTimeFormatted = formatTime(0)
     }
-
-    private func updateTimerDisplay(_ timeInterval: TimeInterval) {
-        let totalSeconds = Int(timeInterval)
+    
+    private func formatTime(_ totalSeconds: Int) -> String {
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
-        elapsedTimeFormatted = String(format: "%02d:%02d", minutes, seconds)
-    }
-
-    // MARK: - Workout Control
-
-    func startWorkout() {
-        guard workoutState == .ready || workoutState == .paused else { return }
-        exerciseGrader.resetState()
-        repCount = 0
-        formScore = 0.0
-        consecutiveFramesWithoutBody = 0
-        
-        // Reset time tracking
-        if workoutState != .paused {  // If starting fresh (not resuming)
-            accumulatedTime = 0       // Reset accumulated time
-            workoutStartDate = Date() // Set new start time
-        } else {
-            workoutStartDate = Date() // Set new segment start time
-        }
-        
-        feedbackMessage = "Starting... Get ready!"
-        workoutState = .counting
-        startTimer()
-        
-        // Reset FPS tracking with workout start
-        frameCounter = 0
-        lastFPSCalculationTime = CACurrentMediaTime()
-        
-        print("WorkoutViewModel: Workout started.")
-    }
-
-    func pauseWorkout() {
-        guard workoutState == .counting else { return }
-        workoutState = .paused
-        feedbackMessage = "Workout Paused"
-        pauseTimer()
-        print("WorkoutViewModel: Workout paused.")
-    }
-
-    func resumeWorkout() {
-        guard workoutState == .paused else { return }
-        workoutState = .counting
-        feedbackMessage = "Resuming..."
-        startTimer() // Restarts timer publisher
-        print("WorkoutViewModel: Workout resumed.")
-    }
-
-    func stopWorkout() {
-        guard workoutState == .counting || workoutState == .paused else { return }
-
-        // Capture final stats
-        let endTime = Date()
-        var duration: TimeInterval = 0
-        
-        if let startDate = workoutStartDate, workoutState == .counting {
-            // For active workout, add current segment to accumulated
-            duration = accumulatedTime + endTime.timeIntervalSince(startDate)
-        } else {
-            // For paused workout, use accumulated time
-            duration = accumulatedTime
-        }
-        
-        let finalRepCount = self.repCount
-        let finalScore = exerciseGrader.calculateFinalScore()
-        let formQuality = exerciseGrader.formQualityAverage * 100
-        self.formScore = formQuality
-
-        // Stop processes
-        pauseTimer() // Stop timer updates first
-        stopCamera() // Stop camera session
-        workoutState = .finished
-        feedbackMessage = "Workout Complete! Reps: \(finalRepCount)" // Update feedback
-        updateTimerDisplay(duration) // Show final time
-        print("WorkoutViewModel: Workout finished. Duration: \(Int(duration))s, Reps: \(finalRepCount), Score: \(finalScore ?? -1), Form: \(formQuality)")
-
-        // Save result using SwiftData
-        saveResultLocally(startTime: workoutStartDate ?? endTime,
-                          endTime: endTime,
-                          duration: Int(duration),
-                          reps: finalRepCount,
-                          score: finalScore,
-                          formQuality: formQuality)
-
-        // Reset internal state
-        stopTimer() // Fully reset timer state
-        repCount = 0
-        exerciseGrader.resetState()
-    }
-
-    // MARK: - Grading Logic (Uses ExerciseGrader)
-
-    private func gradeFrame(body: DetectedBody) {
-        guard workoutState == .counting else { return }
-
-        let result = exerciseGrader.gradePose(body: body)
-        poseFrameIndex += 1 // Increment frame index for efficient Canvas redraws
-        
-        // Clear bad joints by default
-        badJointNames = []
-
-        switch result {
-        case .repCompleted(let formQuality):
-            // Update rep count
-            repCount += 1
-            
-            // Emit event for UI animation
-            repCompletedSubject.send(repCount)
-            
-            // Update feedback with color-coded message
-            if formQuality > 0.9 {
-                feedbackMessage = "✅ Perfect form! (\(repCount))"
-            } else if formQuality > 0.7 {
-                feedbackMessage = "✅ Good rep! (\(repCount))"
-            } else {
-                feedbackMessage = "⚠️ Rep counted! Check form. (\(repCount))"
-            }
-            
-            // Optional: Play haptic feedback for completed rep
-            playHapticFeedback(.success)
-            
-        case .inProgress(let phase):
-            // Use phase info if provided by grader
-            if let phase = phase {
-                feedbackMessage = phase
-            }
-            
-        case .invalidPose(let reason):
-            feedbackMessage = "⚠️ Adjust: \(reason)"
-            
-        case .incorrectForm(let feedback):
-            feedbackMessage = "⚠️ \(feedback)"
-            
-            // Get bad joints from the grader and update the published property
-            if let grader = exerciseGrader as? PushupGrader {
-                badJointNames = grader.problemJoints
-            } else if let grader = exerciseGrader as? SitupGrader {
-                badJointNames = grader.problemJoints
-            } else if let grader = exerciseGrader as? PullupGrader {
-                badJointNames = grader.problemJoints
-            }
-            
-            // Subtle haptic feedback for form correction
-            playHapticFeedback(.warning)
-            
-        case .noChange:
-            // Keep previous feedback
-            break
-        }
-        
-        // Update current form score from grader (0-100)
-        formScore = exerciseGrader.formQualityAverage * 100
+        return String(format: "%02d:%02d", minutes, seconds)
     }
 
     // MARK: - Data Saving
-
-    private func saveResultLocally(
-        startTime: Date, 
-        endTime: Date, 
-        duration: Int, 
-        reps: Int, 
+    private func saveWorkoutResult(
+        startTime: Date,
+        endTime: Date,
+        duration: Int,
+        reps: Int,
         score: Double?,
         formQuality: Double
     ) {
@@ -566,179 +501,51 @@ class WorkoutViewModel: ObservableObject {
             print("WorkoutViewModel: Skipping save for zero duration/reps workout.")
             return
         }
-
         guard let context = modelContext else {
-            print("WorkoutViewModel: ModelContext not available. Cannot save workout locally.")
-            errorMessage = "Internal error: Could not save workout data."
+            print("WorkoutViewModel: ModelContext not available.")
+            errorMessage = "Failed to save: data context unavailable."
             return
         }
 
-        let resultData = WorkoutResultSwiftData(
-            exerciseType: exerciseType.rawValue,
+        let newResult = WorkoutResultSwiftData(
+            exerciseType: selectedExercise.rawValue,
             startTime: startTime,
             endTime: endTime,
             durationSeconds: duration,
             repCount: reps,
             score: score,
-            formQuality: formQuality,
-            distanceMeters: nil // Not applicable for pose workouts
+            formQuality: formQuality * 100
         )
-
-        context.insert(resultData)
-
+        context.insert(newResult)
         do {
             try context.save()
-            print("WorkoutViewModel: Workout saved locally successfully!")
-            
-            // Save to server if possible
-            Task {
-                await saveWorkoutToServer(
-                    exerciseType: exerciseType,
-                    duration: duration,
-                    reps: reps,
-                    formQuality: formQuality,
-                    score: score
-                )
-            }
+            print("WorkoutViewModel: Workout saved locally.")
         } catch {
             print("WorkoutViewModel: Failed to save workout locally: \(error.localizedDescription)")
-            errorMessage = "Failed to save workout data locally."
+            errorMessage = "Could not save workout: \(error.localizedDescription)"
         }
-    }
-    
-    // Save workout to server
-    private func saveWorkoutToServer(
-        exerciseType: WorkoutExerciseType, 
-        duration: Int, 
-        reps: Int, 
-        formQuality: Double, 
-        score: Double?
-    ) async {
-        guard let userId = keychainService.getUserID() else {
-            print("WorkoutViewModel: Cannot save to server - user ID not found")
-            return
-        }
-        
-        // Get auth token
-        guard let authToken = keychainService.getAccessToken() else {
-            print("WorkoutViewModel: Cannot save to server - no auth token")
-            return
-        }
-        
-        // Determine exercise ID based on type
-        let exerciseId: Int
-        switch exerciseType {
-        case .pushup: exerciseId = 1
-        case .situp: exerciseId = 2
-        case .pullup: exerciseId = 3
-        case .run: exerciseId = 4
-        case .unknown: exerciseId = 0
-        }
-        
-        // Skip for unknown exercise
-        guard exerciseId > 0 else { return }
-        
-        // Create metadata with additional info
-        let metadataDict: [String: Any] = [
-            "form_quality": formQuality,
-            "device_type": "iOS",
-            "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "Unknown"
-        ]
-        
-        let metadataString = try? JSONSerialization.data(withJSONObject: metadataDict)
-            .base64EncodedString()
-        
-        let workout = InsertUserExerciseRequest(
-            userId: Int(userId) ?? 0,
-            exerciseId: exerciseId,
-            repetitions: reps > 0 ? reps : nil,
-            formScore: Int(formQuality),
-            timeInSeconds: duration,
-            grade: score.map { Int($0) },
-            completed: true,
-            metadata: metadataString,
-            deviceId: UIDevice.current.identifierForVendor?.uuidString,
-            syncStatus: "app" // Add sync status
-        )
-        
-        do {
-            // Call workoutService.saveWorkout with the correct parameter names
-            try await workoutService.saveWorkout(result: workout, authToken: authToken)
-            print("WorkoutViewModel: Workout saved to server successfully!")
-        } catch {
-            print("WorkoutViewModel: Failed to save workout to server: \(error.localizedDescription)")
-        }
-    }
-
-    // MARK: - Helpers
-    
-    // Haptic feedback
-    private func playHapticFeedback(_ type: UINotificationFeedbackGenerator.FeedbackType) {
-        let generator = UINotificationFeedbackGenerator()
-        generator.notificationOccurred(type)
-    }
-
-    // MARK: - Cleanup
-    deinit {
-        // 1. take a local strong ref while `self` is still valid
-        let service = _cameraService
-
-        // 2. stop the session asynchronously without touching `self`
-        if let service {
-            Task.detached {
-                service.stopSession()
-            }
-        }
-
-        timerSubscription?.cancel()
-        cancellables.removeAll()
-        print("WorkoutViewModel for \(exerciseName) deinitialized.")
     }
 }
 
-// Simple No-Operation Grader for unknown exercises
-class NoOpGrader: ExerciseGraderProtocol {
+// No-Operation Grader for exercises that don't use pose detection or for default state
+final class NoOpGrader: ObservableObject, ExerciseGraderProtocol {
     static var targetFramesPerSecond: Double = 30.0
-    static var requiredJointConfidence: Float = 0.5
-    static var requiredStableFrames: Int = 5
-    
-    var currentPhaseDescription: String { "N/A" }
-    var repCount: Int { 0 }
-    var formQualityAverage: Double { 0.0 }
-    var lastFormIssue: String? { nil }
-    
-    func resetState() {}
-    
-    func gradePose(body: DetectedBody) -> GradingResult {
-        return .noChange
+    static var requiredJointConfidence: Float = 0.1
+    static var requiredStableFrames: Int = 1
+
+    @Published var currentPhaseDescription: String = "Not applicable for this exercise."
+    @Published var repCount: Int = 0
+    @Published var formQualityAverage: Double = 0.0
+    @Published var lastFormIssue: String? = nil
+    @Published var problemJoints: Set<VNHumanBodyPoseObservation.JointName> = []
+
+    func resetState() {
+        currentPhaseDescription = "Not applicable for this exercise."
+        repCount = 0
+        formQualityAverage = 0.0
+        lastFormIssue = nil
+        problemJoints = []
     }
-    
-    func calculateFinalScore() -> Double? {
-        return nil // No score for no-op grader
-    }
+    func gradePose(body: DetectedBody) -> GradingResult { return .noChange }
+    func calculateFinalScore() -> Double? { return nil }
 }
-
-// TODO: Implement haptic feedback helper if desired
-// import UIKit
-// func playHapticFeedback(_ type: UINotificationFeedbackGenerator.FeedbackType) {
-//     let generator = UINotificationFeedbackGenerator()
-//     generator.notificationOccurred(type)
-// }
-
-// Helper Extension for ExerciseType (if not defined elsewhere)
-// Consider moving this to a shared Enums file
-/*
-enum ExerciseType: String {
-    case pushups = "Push-ups"
-    case situps = "Sit-ups"
-    case pullups = "Pull-ups"
-    case run = "Run"
-    case unknown = "Unknown"
-
-    init(displayName: String) {
-        self = ExerciseType(rawValue: displayName) ?? .unknown
-    }
-
-    // Add iconName property if needed here or in the original Enum file
-}
-*/ 

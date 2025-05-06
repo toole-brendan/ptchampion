@@ -1,8 +1,9 @@
 import Foundation
 import Vision
 import CoreGraphics
+import Combine // For ObservableObject
 
-class PullupGrader: ExerciseGraderProtocol {
+final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
 
     // MARK: - Static Thresholds (Accessible for Unit Testing)
     // FPS setting - helps adjust required stable frames

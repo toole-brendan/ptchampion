@@ -29,7 +29,7 @@ public struct DesignSystemPreview: View {
             }
             .padding()
         }
-        .preferredColorScheme(themeManager.currentColorScheme)
+        .preferredColorScheme(themeManager.effectiveColorScheme)
         .background(AppTheme.GeneratedColors.background)
     }
     
@@ -146,8 +146,14 @@ public struct DesignSystemPreview: View {
     }
     
     private var themeToggle: some View {
-        Button("Toggle Dark Mode") {
-            themeManager.toggleDarkMode()
+        Button("Cycle Theme: \(themeManager.currentThemeOption.rawValue)") {
+            let allCases = AppThemeOption.allCases
+            if let currentIndex = allCases.firstIndex(of: themeManager.currentThemeOption) {
+                let nextIndex = (currentIndex + 1) % allCases.count
+                themeManager.currentThemeOption = allCases[nextIndex]
+            } else {
+                themeManager.currentThemeOption = .system
+            }
         }
         .padding()
         .background(AppTheme.GeneratedColors.secondary)
