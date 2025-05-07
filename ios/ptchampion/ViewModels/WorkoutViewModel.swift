@@ -151,7 +151,9 @@ class WorkoutViewModel: ObservableObject {
         subscribeToCameraServices() // Specific subscriptions for camera
         setupOrientationNotification()
         if cameraAuthorizationStatus == .authorized {
-             _cameraService?.startSession()
+            DispatchQueue.main.async { [weak self] in // Dispatch startSession
+                self?._cameraService?.startSession()
+            }
         }
     }
 
@@ -183,7 +185,9 @@ class WorkoutViewModel: ObservableObject {
 
     func startCamera() {
         print("WorkoutViewModel: Starting camera session.")
-        _cameraService?.startSession()
+        DispatchQueue.main.async { [weak self] in // Dispatch startSession
+            self?._cameraService?.startSession()
+        }
     }
 
     func stopCamera() {
@@ -208,8 +212,11 @@ class WorkoutViewModel: ObservableObject {
         cameraService.authorizationStatusPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
-                self?.cameraAuthorizationStatus = status
-                self?.handleAuthorizationStatusChange(status)
+                DispatchQueue.main.async { // Dispatch the entire handler
+                    guard let self = self else { return }
+                    self.cameraAuthorizationStatus = status
+                    self.handleAuthorizationStatusChange(status)
+                }
             }
             .store(in: &cancellables)
 
@@ -230,8 +237,10 @@ class WorkoutViewModel: ObservableObject {
                 if let body = detectedBody, body.confidence > (type(of: self.exerciseGrader).requiredJointConfidence * 0.8) { 
                     self.consecutiveFramesWithoutBody = 0
                     if self.workoutState == .counting {
-                        self.gradeFrame(body: body)
-                        self.poseFrameIndex += 1 // Increment to trigger UI updates for pose
+                        DispatchQueue.main.async { // Wrap subsequent updates
+                            self.gradeFrame(body: body)
+                            self.poseFrameIndex += 1 // Increment to trigger UI updates for pose
+                        }
                     }
                 } else {
                     self.consecutiveFramesWithoutBody += 1
@@ -298,7 +307,9 @@ class WorkoutViewModel: ObservableObject {
             self.isCameraPermissionGranted = true
             self.workoutState = .ready
             self.feedbackMessage = "Ready for \(selectedExercise.displayName)."
-            _cameraService?.startSession() // Start session if authorized
+            DispatchQueue.main.async { [weak self] in // Dispatch startSession
+                self?._cameraService?.startSession() // Start session if authorized
+            }
         case .notDetermined:
             self.isCameraPermissionGranted = false
             self.workoutState = .requestingPermission
