@@ -26,6 +26,7 @@ struct RunWorkoutView: View {
     @StateObject private var viewModel: RunWorkoutViewModel // Use @StateObject
     @Environment(\.dismiss) var dismiss
     @Environment(\.modelContext) private var modelContext // Access ModelContext
+    @State private var workoutToNavigate: WorkoutResultSwiftData? = nil // <-- ADDED
 
     // Keep the initializer simple for previews, context injected onAppear
     init() {
@@ -68,10 +69,20 @@ struct RunWorkoutView: View {
         .toolbar { // Custom toolbar for close button
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("Close") {
-                    if viewModel.runState == .running || viewModel.runState == .paused {
-                        viewModel.stopRun() // Ensure run stops if active
+                    if viewModel.runState == .finished {
+                        if let completedWorkout = viewModel.completedWorkoutForDetail {
+                            self.workoutToNavigate = completedWorkout
+                        } else {
+                            // If finished but detail not ready, just dismiss or wait?
+                            // For now, let's assume stopRun should have been called / will be called
+                            // or the navigation will happen via .onChange
+                            dismiss() 
+                        }
+                    } else if viewModel.runState == .running || viewModel.runState == .paused {
+                        viewModel.stopRun() // This will trigger saving and eventually navigation
+                    } else {
+                        dismiss() // For idle, ready, error states etc.
                     }
-                    dismiss()
                 }
                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
             }
@@ -82,6 +93,23 @@ struct RunWorkoutView: View {
             // set the modelContext property
             viewModel.modelContext = modelContext
         }
+        .onChange(of: viewModel.completedWorkoutForDetail) { newWorkoutDetail in // <-- ADDED
+            if let workout = newWorkoutDetail {
+                self.workoutToNavigate = workout
+            }
+        }
+        // Hidden NavigationLink to trigger navigation when workoutToNavigate is set
+        .background( // <-- ADDED
+            NavigationLink(
+                destination: workoutToNavigate.map { WorkoutDetailView(workoutResult: $0) }, 
+                isActive: Binding<Bool>(
+                    get: { workoutToNavigate != nil }, 
+                    set: { isActive in if !isActive { workoutToNavigate = nil } }
+                ),
+                label: { EmptyView() }
+            )
+            .opacity(0) // Keep it hidden
+        )
     }
 
     // MARK: - Subviews
@@ -190,9 +218,8 @@ struct RunWorkoutView: View {
                      Button { viewModel.stopRun() }
                      label: { controlButtonLabel(systemName: "stop.circle.fill", color: AppTheme.GeneratedColors.error) }
                  }
-             case .finished, .error:
-                 Button { dismiss() }
-                 label: { controlButtonLabel(systemName: "checkmark.circle.fill", color: AppTheme.GeneratedColors.brassGold) }
+             case .finished, .error: // <-- MODIFIED: Removed dismiss button, nav handled by completedWorkoutForDetail
+                 EmptyView() // Or a disabled button, or some other indicator
              default: // requestingPermission, permissionDenied
                  EmptyView()
              }

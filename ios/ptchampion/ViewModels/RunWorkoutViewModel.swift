@@ -54,6 +54,7 @@ class RunWorkoutViewModel: ObservableObject {
     @Published var currentHeartRate: Int? = nil
     @Published var locationSource: LocationSource = .phone // Track active location source
     @Published var isWatchLocationAvailable: Bool = false // Track if connected watch provides GPS
+    @Published var completedWorkoutForDetail: WorkoutResultSwiftData? = nil
 
     // Internal Tracking
     private var workoutStartDate: Date?
@@ -542,6 +543,7 @@ class RunWorkoutViewModel: ObservableObject {
         do {
             try context.save()
             print("RunWorkoutViewModel: Workout saved locally successfully.")
+            self.completedWorkoutForDetail = localRecord
         } catch {
             print("RunWorkoutViewModel: Failed to save workout locally: \(error)")
             errorMessage = (errorMessage ?? "") + "\nFailed to save run locally."

@@ -13,6 +13,7 @@ final class WorkoutResultSwiftData {
     var score: Double? // Optional for runs or unscored exercises
     var formQuality: Double? // Optional for runs or unscored exercises
     var distanceMeters: Double? // Optional, specifically for runs
+    var isPublic: Bool // <-- ADDED
 
     init(exerciseType: String,
          startTime: Date,
@@ -21,7 +22,8 @@ final class WorkoutResultSwiftData {
          repCount: Int? = nil,
          score: Double? = nil,
          formQuality: Double? = nil,
-         distanceMeters: Double? = nil) {
+         distanceMeters: Double? = nil,
+         isPublic: Bool = false) {
         self.exerciseType = exerciseType
         self.startTime = startTime
         self.endTime = endTime
@@ -30,6 +32,7 @@ final class WorkoutResultSwiftData {
         self.score = score
         self.formQuality = formQuality
         self.distanceMeters = distanceMeters
+        self.isPublic = isPublic
     }
     
     // Add initializer with custom ID
@@ -41,7 +44,8 @@ final class WorkoutResultSwiftData {
          repCount: Int? = nil,
          score: Double? = nil,
          formQuality: Double? = nil,
-         distanceMeters: Double? = nil) {
+         distanceMeters: Double? = nil,
+         isPublic: Bool = false) {
         if let idString = id, let uuid = UUID(uuidString: idString) {
             self.id = uuid
         }
@@ -53,6 +57,7 @@ final class WorkoutResultSwiftData {
         self.score = score
         self.formQuality = formQuality
         self.distanceMeters = distanceMeters
+        self.isPublic = isPublic
     }
 
     // Convenience computed property to get ExerciseType enum
