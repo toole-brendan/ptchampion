@@ -11,6 +11,7 @@
 		BF37B03F2DCAC89500EC4D58 /* CameraExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B03C2DCAC89500EC4D58 /* CameraExerciseView.swift */; };
 		BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0402DCACABE00EC4D58 /* ActivityView.swift */; };
 		BF37B0442DCACAE200EC4D58 /* AnyExerciseGraderBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0432DCACAE200EC4D58 /* AnyExerciseGraderBox.swift */; };
+		BF37B0462DCADB4F00EC4D58 /* LeaderboardRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */; };
 		BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */; };
 		BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */; };
 		BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
@@ -131,6 +132,7 @@
 		BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCompleteView.swift; sourceTree = "<group>"; };
 		BF37B0402DCACABE00EC4D58 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		BF37B0432DCACAE200EC4D58 /* AnyExerciseGraderBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyExerciseGraderBox.swift; sourceTree = "<group>"; };
+		BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardRowView.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -436,6 +438,7 @@
 		BF63E43B2DB1EB980037CD02 /* Leaderboards */ = {
 			isa = PBXGroup;
 			children = (
+				BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */,
 				BFADF9BD2DC93DE90016AF0B /* LeaderboardRowPlaceholder.swift */,
 				BF63E43A2DB1EB980037CD02 /* LeaderboardView.swift */,
 			);
@@ -772,6 +775,7 @@
 				BF63E4512DB1EB980037CD02 /* ProgressView.swift in Sources */,
 				BF63E4522DB1EB980037CD02 /* RegistrationView.swift in Sources */,
 				BF63E4532DB1EB980037CD02 /* WorkoutSelectionView.swift in Sources */,
+				BF37B0462DCADB4F00EC4D58 /* LeaderboardRowView.swift in Sources */,
 				BF63E4542DB1EB980037CD02 /* CameraPreviewView.swift in Sources */,
 				BF63E4552DB1EB980037CD02 /* LeaderboardView.swift in Sources */,
 				BF63E4562DB1EB980037CD02 /* ContentView.swift in Sources */,

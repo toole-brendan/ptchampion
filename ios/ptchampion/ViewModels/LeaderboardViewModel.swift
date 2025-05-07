@@ -57,6 +57,7 @@ final class LeaderboardViewModel: ObservableObject {
     private let service:    LeaderboardServiceProtocol
     let location:           LocationServiceProtocol
     private let keychain:   KeychainServiceProtocol
+    var currentUserID: String?
 
     // You can still inject mocks in unit-tests
     init(service:   LeaderboardServiceProtocol = LeaderboardService(),
@@ -65,6 +66,7 @@ final class LeaderboardViewModel: ObservableObject {
         self.service   = service
         self.location  = location
         self.keychain  = keychain
+        self.currentUserID = keychain.getUserID()
     }
 
     // ──  Public API (call from View)  ─────────────────────────────────────────
