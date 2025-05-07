@@ -158,7 +158,9 @@ class WorkoutViewModel: ObservableObject {
     func releaseCamera() {
         print("WorkoutViewModel: Releasing CameraService.")
         _cameraService?.stopSession()
-        _cameraService = nil // Allows re-initialization
+        DispatchQueue.main.async {
+            self._cameraService = nil
+        }
         // Specific camera/pose detector cancellables might be managed separately if needed
         // For simplicity, `cancellables.removeAll()` in deinit handles general ones.
         NotificationCenter.default.removeObserver(self, name: UIDevice.orientationDidChangeNotification, object: nil)
