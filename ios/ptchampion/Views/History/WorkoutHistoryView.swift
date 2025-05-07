@@ -7,15 +7,17 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
     case all = "All"
     case pushup = "Push-Ups"
     case situp = "Sit-Ups"
+    case pullup = "Pull-Ups"
     case run = "Run"
     
     var id: String { self.rawValue }
     
     var systemImage: String {
         switch self {
-        case .all: return "figure.run.circle"
+        case .all: return "figure.run.circle.fill"
         case .pushup: return "figure.strengthtraining.traditional"
-        case .situp: return "figure.core"
+        case .situp: return "figure.core.training"
+        case .pullup: return "figure.strengthtraining.upper.body"
         case .run: return "figure.run"
         }
     }
@@ -26,6 +28,7 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
         case .all: return nil
         case .pushup: return "pushup"
         case .situp: return "situp"
+        case .pullup: return "pullup"
         case .run: return "run"
         }
     }
@@ -68,7 +71,7 @@ struct WorkoutHistoryView: View {
                         // Potentially convert to preferred unit (e.g., km or miles) if stored consistently as meters
                         value = distance / 1000 // Example: convert meters to km
                     }
-                case .pushup, .situp: // Add other rep/score based exercises if any
+                case .pushup, .situp, .pullup:
                     if let score = result.score, score > 0 { // Prioritize score
                         value = score
                     } else if let reps = result.repCount, reps > 0 {
@@ -92,13 +95,13 @@ struct WorkoutHistoryView: View {
             return "N/A" // No chart shown for .all
         case .run:
             return "Distance (km)" // Assuming km for now
-        case .pushup, .situp:
+        case .pushup, .situp, .pullup:
             // This is a bit tricky if we mix score and reps. 
             // For simplicity, if the chart can show either, we might need a more dynamic label
             // or decide on one primary metric if filter is specific.
             // Let's assume if we are plotting scores, we label it Score, else Reps.
             // This requires chartData to be consistent for that filter.
-            // Based on current chartData logic: if pushups/situps have scores, it plots score, else reps.
+            // Based on current chartData logic: if pushups/situps/pullups have scores, it plots score, else reps.
             // We can check if the first item in chartData came from a score or rep to decide the label.
             if let firstDataPoint = chartData.first,
                let correspondingResult = workoutResults.first(where: { $0.startTime == firstDataPoint.date }) {
