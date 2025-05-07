@@ -63,9 +63,21 @@ public struct MetricCardView: View {
             
             // Value with optional unit
             HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(displayValue)
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: 20))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                if displayValue == "-" || displayValue == "0" {
+                    Text(displayValue)
+                        .font(AppTheme.GeneratedTypography.bodyBold(size: 20))
+                        .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                        .padding(.horizontal, AppTheme.GeneratedSpacing.small)
+                        .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
+                        .background(
+                            AppTheme.GeneratedColors.tacticalGray.opacity(0.6)
+                                .clipShape(Capsule())
+                        )
+                } else {
+                    Text(displayValue)
+                        .font(AppTheme.GeneratedTypography.bodyBold(size: 20))
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                }
                 
                 if let unit = metric.unit {
                     Text(unit)
@@ -103,9 +115,8 @@ struct MetricCardButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .offset(y: configuration.isPressed && !reduceMotion ? -2 : 0)
-            .animation(.spring(response: 0.3), value: configuration.isPressed)
-            .opacity(configuration.isPressed ? 0.9 : 1.0)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
