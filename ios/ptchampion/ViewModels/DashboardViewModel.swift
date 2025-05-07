@@ -10,6 +10,7 @@ class DashboardViewModel: ObservableObject {
     @Published var personalBest: String = "-"
     @Published var totalWorkouts: Int = 0
     @Published var nextPTTest: String = "-"
+    @Published var latestAchievement: String = ""
     
     @Published var lastScoreTrend: TrendDirection? = nil
     @Published var weeklyPushupTrend: TrendDirection? = nil
@@ -105,6 +106,24 @@ class DashboardViewModel: ObservableObject {
         formatter.timeStyle = .none
         let futureDate = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
         nextPTTest = formatter.string(from: futureDate)
+        
+        // Set latest achievement message
+        updateLatestAchievement(currentWeekReps: currentWeekReps, previousWeekReps: previousWeekReps)
+    }
+    
+    private func updateLatestAchievement(currentWeekReps: Int, previousWeekReps: Int) {
+        if currentWeekReps > 0 {
+            latestAchievement = "Completed \(weeklyReps) push-ups this week"
+            
+            // Add comparison to previous week if there's data
+            if previousWeekReps > 0 && currentWeekReps > previousWeekReps {
+                let improvement = currentWeekReps - previousWeekReps
+                let percentImprovement = Double(improvement) / Double(previousWeekReps) * 100
+                latestAchievement += String(format: " (%.0f%% increase)", percentImprovement)
+            }
+        } else {
+            latestAchievement = "Start your first workout to track achievements"
+        }
     }
     
     // Helper to get time of day greeting

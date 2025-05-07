@@ -285,6 +285,29 @@ struct PTChampionApp: App {
         // Configure TabBar appearance
         let tabBarAppearance = UITabBarAppearance()
         tabBarAppearance.configureWithOpaqueBackground()
+        // Set background color for tab bar if needed (currently uses default opaque)
+        // tabBarAppearance.backgroundColor = UIColor(AppTheme.GeneratedColors.background) // Example
+
+        // Selected tab icon and text color
+        let selectedColor = UIColor(AppTheme.GeneratedColors.brassGold)
+        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = selectedColor
+        tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
+        // For inlineLayoutAppearance and compactInlineLayoutAppearance if used
+        tabBarAppearance.inlineLayoutAppearance.selected.iconColor = selectedColor
+        tabBarAppearance.inlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
+        tabBarAppearance.compactInlineLayoutAppearance.selected.iconColor = selectedColor
+        tabBarAppearance.compactInlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
+
+        // Unselected tab icon and text color
+        let unselectedColor = UIColor(AppTheme.GeneratedColors.tacticalGray) // Or textSecondary, etc.
+        tabBarAppearance.stackedLayoutAppearance.normal.iconColor = unselectedColor
+        tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: unselectedColor]
+        // For inlineLayoutAppearance and compactInlineLayoutAppearance if used
+        tabBarAppearance.inlineLayoutAppearance.normal.iconColor = unselectedColor
+        tabBarAppearance.inlineLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: unselectedColor]
+        tabBarAppearance.compactInlineLayoutAppearance.normal.iconColor = unselectedColor
+        tabBarAppearance.compactInlineLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: unselectedColor]
+
         UITabBar.appearance().standardAppearance = tabBarAppearance
         if #available(iOS 15.0, *) {
             UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
