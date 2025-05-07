@@ -14,8 +14,8 @@ struct DashboardView: View {
     
     // Quick links for navigation
     private let quickLinks: [(title: String, icon: String, destination: String)] = [
-        ("Begin Push-Ups", "figure.strengthtraining.traditional", "workout-pushups"),
-        ("Begin Sit-Ups", "figure.core", "workout-situps"),
+        ("Begin Push-Ups", "pushup", "workout-pushups"),
+        ("Begin Sit-Ups", "situp", "workout-situps"),
         ("View Leaderboard", "list.star", "leaderboard"),
         ("Check Progress", "chart.line.uptrend.xyaxis", "progress")
     ]
@@ -25,8 +25,14 @@ struct DashboardView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: Self.cardGap) {
                     // 4-1: Dynamic greeting with user's name
-                    PTLabel("Good \(viewModel.timeOfDayGreeting), \(authViewModel.displayName)", style: .heading)
-                        .padding(.bottom)
+                    HStack(spacing: 0) {
+                        Text("Good \(viewModel.timeOfDayGreeting), ")
+                        Text(authViewModel.displayName)
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    }
+                    .font(.system(size: AppTheme.GeneratedTypography.heading2, weight: .bold))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.bottom)
                     
                     // 4-2: Quick Stats Card Grid
                     LazyVGrid(columns: [
@@ -37,13 +43,15 @@ struct DashboardView: View {
                             MetricData(
                                 title: "Last Score",
                                 value: viewModel.lastScoreString
-                            )
+                            ),
+                            trend: viewModel.lastScoreTrend
                         )
                         MetricCardView(
                             MetricData(
                                 title: "7-Day Push-Ups",
                                 value: viewModel.weeklyReps
-                            )
+                            ),
+                            trend: viewModel.weeklyPushupTrend
                         )
                         MetricCardView(
                             MetricData(
@@ -71,6 +79,7 @@ struct DashboardView: View {
                     
                     // 4-4: Quick Links Section
                     PTLabel("Quick Links", style: .subheading)
+                    PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
                     
                     LazyVGrid(columns: [
                         GridItem(.flexible(), spacing: Self.cardGap),
@@ -85,6 +94,7 @@ struct DashboardView: View {
                     if viewModel.totalWorkouts > 0 {
                         PTLabel("Recent Activity", style: .subheading)
                             .padding(.top)
+                        PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
                         
                         PTCard {
                             HStack {
@@ -130,25 +140,32 @@ struct QuickLinkCard: View {
     let icon: String
     let destination: String
     
+    // For haptics
+    private let hapticGenerator = UIImpactFeedbackGenerator(style: .soft)
+
     var body: some View {
         NavigationLink(destination: destinationView) {
             PTCard {
-                HStack {
-                    Image(systemName: icon)
-                        .font(.title2)
+                HStack(alignment: .center) {
+                    Image(icon)
+                        .resizable()
+                        .scaledToFit()
                         .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                        .frame(width: 30)
+                        .frame(width: 24, height: 24)
                     
                     PTLabel(title, style: .body)
                         .fontWeight(.semibold)
-                        .font(.caption)
                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        .padding(.leading, 4)
+                        .padding(.leading, AppTheme.GeneratedSpacing.extraSmall)
                     
                     Spacer()
                 }
                 .padding(AppTheme.GeneratedSpacing.itemSpacing)
+                .frame(minHeight: 60)
             }
+        }
+        .onTapGesture {
+            hapticGenerator.impactOccurred()
         }
     }
     

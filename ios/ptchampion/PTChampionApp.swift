@@ -366,22 +366,6 @@ struct RootSwitcher: View {
                     logoutAction: { auth.logout() }
                 )
             }
-            
-            // Debug button
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    Button(action: { showDebugInfo.toggle() }) {
-                        Image(systemName: "ladybug.fill")
-                            .font(.system(size: 24))
-                            .foregroundColor(.white)
-                            .padding(12)
-                            .background(Circle().fill(Color.gray.opacity(0.8)))
-                    }
-                    .padding()
-                }
-            }
         }
         .animation(.easeInOut(duration: 0.3), value: auth.authState)
     }
@@ -498,7 +482,7 @@ struct MainTabView: View {
 
             SettingsView() // Using SettingsView directly for all configurations
                 .tabItem {
-                    Label("Profile", systemImage: "person.crop.circle")
+                    Label("Profile", systemImage: "gearshape.fill")
                 }
                 .tag(Tab.profile)
         }

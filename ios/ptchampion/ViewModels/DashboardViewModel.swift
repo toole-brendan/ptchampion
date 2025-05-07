@@ -6,10 +6,13 @@ import Foundation
 class DashboardViewModel: ObservableObject {
     @Published var lastScoreString: String = "-"
     @Published var weeklyReps: String = "-"
-    @Published var monthlyWorkouts: String = "-"
+    @Published var monthlyWorkouts: String = "0"
     @Published var personalBest: String = "-"
     @Published var totalWorkouts: Int = 0
     @Published var nextPTTest: String = "-"
+    
+    @Published var lastScoreTrend: TrendDirection? = nil
+    @Published var weeklyPushupTrend: TrendDirection? = nil
     
     private var modelContext: ModelContext?
     
@@ -21,40 +24,58 @@ class DashboardViewModel: ObservableObject {
     func refresh() {
         guard let modelContext = modelContext else { return }
         
-        // Last score
-        var lastScoreDescriptor = FetchDescriptor<WorkoutResultSwiftData>(
-            predicate: #Predicate { $0.score != nil },
-            sortBy: [SortDescriptor(\WorkoutResultSwiftData.startTime, order: .reverse)]
-        )
-        lastScoreDescriptor.fetchLimit = 1
-        
-        if let lastScoreResult = try? modelContext.fetch(lastScoreDescriptor).first,
-           let score = lastScoreResult.score {
-            lastScoreString = String(format: "%.0f%%", score)
-        }
-        
-        // Weekly push-ups
+        let now = Date()
         let calendar = Calendar.current
-        let oneWeekAgo = calendar.date(byAdding: .day, value: -7, to: Date()) ?? Date()
         
-        let weeklyPushUpsDescriptor = FetchDescriptor<WorkoutResultSwiftData>(
-            predicate: #Predicate {
-                $0.exerciseType == "pushup" &&
-                $0.startTime >= oneWeekAgo
+        // Define date ranges
+        let oneWeekAgo = calendar.date(byAdding: .day, value: -7, to: now)!
+        let oneMonthAgo = calendar.date(byAdding: .month, value: -1, to: now)!
+        let startOfThisWeek = calendar.startOfDay(for: oneWeekAgo) // Actually 7 days ago, adjust if fiscal week needed
+        let startOfPreviousWeek = calendar.date(byAdding: .day, value: -7, to: startOfThisWeek)!
+        let endOfPreviousWeek = calendar.date(byAdding: .second, value: -1, to: startOfThisWeek)!
+
+        // Fetch all workouts (consider optimizing if performance becomes an issue)
+        let allWorkoutsDescriptor = FetchDescriptor<WorkoutResultSwiftData>(sortBy: [SortDescriptor(\WorkoutResultSwiftData.endTime, order: .reverse)])
+        guard let allWorkouts = try? modelContext.fetch(allWorkoutsDescriptor) else { return }
+        
+        self.totalWorkouts = allWorkouts.count
+
+        // Last Score and Trend
+        let scoredWorkouts = allWorkouts.filter { $0.score != nil }.prefix(2).map { $0 } // Get up to 2 most recent scored
+        if let latestScored = scoredWorkouts.first {
+            self.lastScoreString = String(format: "%.0f", latestScored.score ?? 0)
+            if scoredWorkouts.count > 1, let previousScored = scoredWorkouts.last {
+                if latestScored.score! > previousScored.score! { self.lastScoreTrend = .up }
+                else if latestScored.score! < previousScored.score! { self.lastScoreTrend = .down }
+                else { self.lastScoreTrend = .neutral }
+            } else {
+                self.lastScoreTrend = nil // Not enough data for trend
             }
-        )
-        
-        if let pushUpResults = try? modelContext.fetch(weeklyPushUpsDescriptor) {
-            let totalReps = pushUpResults.compactMap { $0.repCount }.reduce(0, +)
-            weeklyReps = "\(totalReps)"
+        } else {
+            self.lastScoreString = "-"
+            self.lastScoreTrend = nil
         }
+
+        // Weekly Reps (Push-ups) and Trend
+        let pushupPredicateThisWeek = #Predicate<WorkoutResultSwiftData> { $0.exerciseType == "pushup" && $0.endTime >= startOfThisWeek && $0.endTime <= now }
+        let pushupsThisWeekDescriptor = FetchDescriptor<WorkoutResultSwiftData>(predicate: pushupPredicateThisWeek)
+        let pushupsThisWeek = (try? modelContext.fetch(pushupsThisWeekDescriptor)) ?? []
+        let currentWeekReps = pushupsThisWeek.reduce(0) { $0 + ($1.repCount ?? 0) }
+        self.weeklyReps = "\(currentWeekReps)"
         
-        // Total workouts
-        let allWorkoutsDescriptor = FetchDescriptor<WorkoutResultSwiftData>()
-        if let workoutCount = try? modelContext.fetchCount(allWorkoutsDescriptor) {
-            totalWorkouts = workoutCount
+        let pushupPredicatePreviousWeek = #Predicate<WorkoutResultSwiftData> { $0.exerciseType == "pushup" && $0.endTime >= startOfPreviousWeek && $0.endTime < startOfThisWeek } // Use < startOfThisWeek
+        let pushupsPreviousWeekDescriptor = FetchDescriptor<WorkoutResultSwiftData>(predicate: pushupPredicatePreviousWeek)
+        let pushupsPreviousWeek = (try? modelContext.fetch(pushupsPreviousWeekDescriptor)) ?? []
+        let previousWeekReps = pushupsPreviousWeek.reduce(0) { $0 + ($1.repCount ?? 0) }
+
+        if !pushupsThisWeek.isEmpty || !pushupsPreviousWeek.isEmpty { // Only show trend if there's some data
+            if currentWeekReps > previousWeekReps { self.weeklyPushupTrend = .up }
+            else if currentWeekReps < previousWeekReps { self.weeklyPushupTrend = .down }
+            else { self.weeklyPushupTrend = .neutral }
+        } else {
+            self.weeklyPushupTrend = nil
         }
-        
+
         // Monthly workouts (last 30 days)
         let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
         let monthlyWorkoutsDescriptor = FetchDescriptor<WorkoutResultSwiftData>(

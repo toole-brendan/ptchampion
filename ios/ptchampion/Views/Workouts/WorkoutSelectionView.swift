@@ -13,10 +13,10 @@ struct WorkoutSelectionView: View {
     }
 
     let exercises = [
-        Exercise(name: "Push-ups", description: "Upper body strength", iconName: "figure.strengthtraining.traditional"),
-        Exercise(name: "Sit-ups", description: "Core strength", iconName: "figure.core.training"),
-        Exercise(name: "Pull-ups", description: "Back and bicep strength", iconName: "figure.arms.open"), // Use valid system icon
-        Exercise(name: "Run", description: "Cardiovascular endurance", iconName: "figure.run")
+        Exercise(name: "Push-ups", description: "Upper body strength", iconName: "pushup"),
+        Exercise(name: "Sit-ups", description: "Core strength", iconName: "situp"),
+        Exercise(name: "Pull-ups", description: "Back and bicep strength", iconName: "pullup"),
+        Exercise(name: "Run", description: "Cardiovascular endurance", iconName: "running")
     ]
     
     var body: some View {
@@ -53,7 +53,7 @@ struct ExerciseRow: View {
 
     var body: some View {
         HStack {
-            Image(systemName: exercise.iconName)
+            Image(exercise.iconName)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 30, height: 30)
