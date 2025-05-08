@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -70,34 +69,35 @@ type ListExerciseResponse struct {
 // LogExercise handles logging a completed exercise session
 func (h *Handler) LogExercise(c echo.Context) error {
 	// 1. Get User ID from context (echo JWT middleware will provide this)
-	userID, ok := c.Get("user_id").(int32)
-	if !ok {
-		log.Printf("ERROR: Could not get user ID from context")
-		return echo.NewHTTPError(http.StatusInternalServerError, "Authentication error")
+	ctx := c.Request().Context() // Get context once
+	userID, err := GetUserIDFromContext(c)
+	if err != nil {
+		h.Logger.Error(ctx, "Could not get user ID from context", "error", err)
+		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication error: User ID not found in context")
 	}
 
 	// 2. Decode request body
 	var req LogExerciseRequest
 	if err := c.Bind(&req); err != nil {
-		log.Printf("ERROR: Failed to decode log exercise request: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		h.Logger.Error(ctx, "Failed to decode log exercise request", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid request body")
 	}
 
 	// 3. Validate the request struct
 	if err := c.Validate(req); err != nil {
-		log.Printf("INFO: Invalid log exercise request: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		h.Logger.Warn(ctx, "Invalid log exercise request", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeValidation, err.Error())
 	}
 
 	// 4. Fetch the Exercise definition by ID to get its type and name
-	exercise, err := h.Queries.GetExercise(c.Request().Context(), req.ExerciseID)
+	exercise, err := h.Queries.GetExercise(ctx, req.ExerciseID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			log.Printf("INFO: Attempt to log exercise with invalid ID: %d", req.ExerciseID)
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid exercise ID: %d", req.ExerciseID))
+			h.Logger.Warn(ctx, "Attempt to log exercise with invalid ID", "exerciseID", req.ExerciseID)
+			return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, fmt.Sprintf("Invalid exercise ID: %d", req.ExerciseID))
 		} else {
-			log.Printf("ERROR: Failed to get exercise by ID %d: %v", req.ExerciseID, err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercise details")
+			h.Logger.Error(ctx, "Failed to get exercise by ID", "exerciseID", req.ExerciseID, "error", err)
+			return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Failed to retrieve exercise details")
 		}
 	}
 
@@ -127,28 +127,18 @@ func (h *Handler) LogExercise(c echo.Context) error {
 	// 		metricMissing = true
 	// 	}
 	default:
-		// This case should ideally not be hit if exercise type exists in DB and grading
-		log.Printf("Warning: Attempting to grade unknown or unhandled exercise type '%s'", exercise.Type)
-		// metricMissing = true // Or handle as appropriate
-		// For now, let CalculateScore handle it, which returns 0
+		h.Logger.Warn(ctx, "Attempting to grade unknown or unhandled exercise type", "exerciseType", exercise.Type)
 	}
 
-	// Validate that the required metric was provided for the exercise type
 	if metricMissing {
-		log.Printf("INFO: Missing required performance metric for user %d, exercise type %s", userID, exercise.Type)
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Missing required performance metric (duration, reps, or distance) for exercise type %s", exercise.Type))
+		h.Logger.Warn(ctx, "Missing required performance metric", "userID", userID, "exerciseType", exercise.Type)
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, fmt.Sprintf("Missing required performance metric (duration, reps, or distance) for exercise type %s", exercise.Type))
 	}
-
-	// TODO: If distance exercises are added, ensure req.Distance (expected in meters from frontend)
-	// is compatible with the unit expected by calculateDistanceScore if that's different.
 
 	calculatedGrade, err := grading.CalculateScore(exercise.Type, performanceValue)
 	if err != nil {
-		// Log the specific grading error. Maybe return BadRequest if it's due to invalid input,
-		// or InternalServerError for unexpected grading issues.
-		log.Printf("ERROR: Failed to calculate grade for user %d, exercise type %s: %v", userID, exercise.Type, err)
-		// Consider if this should be a 400 or 500 based on the nature of CalculateScore errors
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to calculate exercise grade")
+		h.Logger.Error(ctx, "Failed to calculate grade", "userID", userID, "exerciseType", exercise.Type, "error", err)
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to calculate exercise grade")
 	}
 
 	// 6. Prepare parameters for database insertion
@@ -168,10 +158,10 @@ func (h *Handler) LogExercise(c echo.Context) error {
 	}
 
 	// 7. Save to database
-	loggedExercise, err := h.Queries.LogUserExercise(c.Request().Context(), params)
+	loggedExercise, err := h.Queries.LogUserExercise(ctx, params)
 	if err != nil {
-		log.Printf("ERROR: Failed to log user exercise for user %d, exercise %d: %v", userID, exercise.ID, err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to save exercise log")
+		h.Logger.Error(ctx, "Failed to log user exercise", "userID", userID, "exerciseID", exercise.ID, "error", err)
+		return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Failed to save exercise log")
 	}
 
 	// 8. Prepare response
@@ -196,10 +186,11 @@ func (h *Handler) LogExercise(c echo.Context) error {
 // GetUserExercises handles retrieving exercise history for the logged-in user with pagination
 func (h *Handler) GetUserExercises(c echo.Context) error {
 	// 1. Get User ID from context
-	userID, ok := c.Get("user_id").(int32)
-	if !ok {
-		log.Printf("ERROR: Could not get user ID from context")
-		return echo.NewHTTPError(http.StatusInternalServerError, "Authentication error")
+	ctx := c.Request().Context() // Get context once
+	userID, err := GetUserIDFromContext(c)
+	if err != nil {
+		h.Logger.Error(ctx, "Could not get user ID from context", "error", err)
+		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication error: User ID not found in context")
 	}
 
 	// 2. Get Pagination Parameters from query string
@@ -220,13 +211,13 @@ func (h *Handler) GetUserExercises(c echo.Context) error {
 	offset := int32((page - 1) * pageSize)
 
 	// 3. Fetch total count
-	totalCount, err := h.Queries.GetUserExercisesCount(c.Request().Context(), userID)
+	totalCount, err := h.Queries.GetUserExercisesCount(ctx, userID)
 	if err != nil {
-		log.Printf("ERROR: Failed to get user exercises count for user %d: %v", userID, err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercise count")
+		h.Logger.Error(ctx, "Failed to get user exercises count", "userID", userID, "error", err)
+		return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Failed to retrieve exercise count")
 	}
 
-	var dbExercises []dbStore.GetUserExercisesRow // Assuming sqlc generated this type
+	var dbExercises []dbStore.GetUserExercisesRow
 	if totalCount > 0 {
 		// 4. Fetch exercises for the current page from database
 		params := dbStore.GetUserExercisesParams{
@@ -234,10 +225,10 @@ func (h *Handler) GetUserExercises(c echo.Context) error {
 			Limit:  limit,  // Use int32 for limit
 			Offset: offset, // Use int32 for offset
 		}
-		dbExercises, err = h.Queries.GetUserExercises(c.Request().Context(), params)
-		if err != nil && err != sql.ErrNoRows { // Ignore ErrNoRows here, could happen if page is beyond total
-			log.Printf("ERROR: Failed to get user exercises for user %d (page %d, size %d): %v", userID, page, pageSize, err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercise history")
+		dbExercises, err = h.Queries.GetUserExercises(ctx, params)
+		if err != nil && err != sql.ErrNoRows {
+			h.Logger.Error(ctx, "Failed to get user exercises", "userID", userID, "page", page, "pageSize", pageSize, "error", err)
+			return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Failed to retrieve exercise history")
 		}
 	} else {
 		dbExercises = []dbStore.GetUserExercisesRow{} // Empty slice if total count is 0
@@ -280,9 +271,8 @@ func (h *Handler) HandleListExercises(c echo.Context) error {
 	// 1. Fetch exercises from database using the existing sqlc query
 	dbExercises, err := h.Queries.ListExercises(ctx)
 	if err != nil {
-		log.Printf("ERROR [HandleListExercises]: Failed to list exercises: %v", err)
-		// Don't expose detailed error to client
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercises")
+		h.Logger.Error(ctx, "Failed to list exercises", "error", err)
+		return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Failed to retrieve exercises")
 	}
 
 	// 2. Map DB results to response struct

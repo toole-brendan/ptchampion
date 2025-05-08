@@ -1,212 +1,156 @@
 package handlers
 
 import (
-	"database/sql"
+	"errors" // For checking store.ErrUserNotFound
 	"fmt"
-	"log"
 	"net/http"
-	"strings"
 	"time"
 
-	dbStore "ptchampion/internal/store/postgres"
-
 	"github.com/labstack/echo/v4"
-	"github.com/lib/pq"
+
+	"ptchampion/internal/logging"
+	"ptchampion/internal/store" // For store.User and store.ErrUserNotFound
+	"ptchampion/internal/users" // Import the new users service package
 )
 
 // UserResponse defines the user data returned (excluding password)
+// Kept similar to before, mapping from store.User
 type UserResponse struct {
-	ID                int32     `json:"id"`
-	Username          string    `json:"username"`
-	DisplayName       string    `json:"display_name,omitempty"`
-	ProfilePictureURL string    `json:"profile_picture_url,omitempty"`
-	Location          string    `json:"location,omitempty"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	ID        string    `json:"id"`                   // Changed to string to match store.User.ID
+	Email     string    `json:"email"`                // Changed from Username
+	FirstName string    `json:"first_name"`           // Added
+	LastName  string    `json:"last_name"`            // Added
+	AvatarURL *string   `json:"avatar_url,omitempty"` // Changed from ProfilePictureURL
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// UpdateUserRequest defines the allowed fields for updating a user profile
-type UpdateUserRequest struct {
-	Username          *string  `json:"username,omitempty" validate:"omitempty,alphanum,min=3,max=30"` // Validate if present
-	DisplayName       *string  `json:"display_name,omitempty" validate:"omitempty,max=100"`           // Validate if present (max length)
-	ProfilePictureURL *string  `json:"profile_picture_url,omitempty" validate:"omitempty,url"`        // Validate if present (is URL)
-	Location          *string  `json:"location,omitempty" validate:"omitempty,max=100"`               // Validate if present (max length)
-	Latitude          *float64 `json:"latitude,omitempty" validate:"omitempty,latitude"`              // Validate if present (latitude format)
-	Longitude         *float64 `json:"longitude,omitempty" validate:"omitempty,longitude"`            // Validate if present (longitude format)
-	// Password changes should likely be handled via a separate endpoint
+// UpdateCurrentUserRequest defines the allowed fields for updating a user profile via the API
+// This remains the handler's input validation structure.
+type UpdateCurrentUserRequest struct {
+	Email     *string `json:"email,omitempty" validate:"omitempty,email"`
+	FirstName *string `json:"first_name,omitempty" validate:"omitempty,required"`
+	LastName  *string `json:"last_name,omitempty" validate:"omitempty,required"`
+	AvatarURL *string `json:"avatar_url,omitempty" validate:"omitempty,url"`
+	// Note: DisplayName is not directly settable via store.User, derived from First/Last Name
+	// Note: Password changes handled separately
 }
 
-// UpdateLocationRequest defines the structure for updating user location
-type UpdateLocationRequest struct {
-	Latitude  float64 `json:"latitude" validate:"required,latitude"`
-	Longitude float64 `json:"longitude" validate:"required,longitude"`
+// mapStoreUserToUserResponse converts the service/store user model to the API response model.
+func mapStoreUserToUserResponse(user *store.User) UserResponse {
+	return UserResponse{
+		ID:        user.ID,
+		Email:     user.Email,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		AvatarURL: user.AvatarURL,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+}
+
+// --- New User Handler ---
+
+// UserHandler handles user-related API requests.
+type UserHandler struct {
+	service users.Service
+	logger  logging.Logger
+}
+
+// NewUserHandler creates a new UserHandler instance.
+func NewUserHandler(service users.Service, logger logging.Logger) *UserHandler {
+	return &UserHandler{
+		service: service,
+		logger:  logger,
+	}
 }
 
 // GetCurrentUser handles requests to get the authenticated user's profile
-func (h *Handler) GetCurrentUser(c echo.Context) error {
-	log.Printf("DEBUG: GetCurrentUser handler called at %s", time.Now().Format(time.RFC3339))
+// Method is now on *UserHandler
+func (h *UserHandler) GetCurrentUser(c echo.Context) error {
+	ctx := c.Request().Context()
+	h.logger.Debug(ctx, "GetCurrentUser handler called")
 
-	// Dump context for debugging - use a simple approach
-	log.Printf("DEBUG: Context in GetCurrentUser: user_id=%v", c.Get("user_id"))
-
-	// 1. Get User ID from context
-	userID, ok := c.Get("user_id").(int32)
-	if !ok {
-		log.Printf("ERROR: Could not get user_id from context in GetCurrentUser")
-		return echo.NewHTTPError(http.StatusUnauthorized, "Authentication required")
-	}
-	log.Printf("DEBUG: Found user_id as int32: %d", userID)
-
-	// 2. Get user from database
-	user, err := h.Queries.GetUser(c.Request().Context(), userID)
+	// 1. Get User ID from context (using the helper)
+	userID, err := GetUserIDFromContext(c)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("ERROR: User with ID %d not found", userID)
-			return echo.NewHTTPError(http.StatusNotFound, "User not found")
+		h.logger.Error(ctx, "Could not get user_id from context in GetCurrentUser", "error", err)
+		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication required: User ID not found")
+	}
+
+	// Convert int32 userID from context to string for service layer (if needed - check service method)
+	// Assuming service layer GetUserProfile expects the string ID consistent with store.User.ID
+	// NOTE: This relies on GetUserIDFromContext returning the ID compatible with store.User.ID format.
+	// The previous implementation used int32 from context. Need to reconcile this.
+	// For now, assume GetUserIDFromContext still returns int32 and service expects string.
+	// Let's assume GetUserIDFromContext still returns int32 and service expects string.
+	userIDStr := fmt.Sprintf("%d", userID)
+	h.logger.Debug(ctx, "Found user_id", "userID", userIDStr)
+
+	// 2. Call the user service to get the profile
+	user, err := h.service.GetUserProfile(ctx, userIDStr)
+	if err != nil {
+		if errors.Is(err, store.ErrUserNotFound) {
+			return NewAPIError(http.StatusNotFound, ErrCodeNotFound, "User not found")
 		}
-		log.Printf("ERROR: Failed to get user by ID %d: %v", userID, err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve user")
+		// Log already happened in service layer
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve user profile")
 	}
 
-	log.Printf("DEBUG: Successfully retrieved user from database: id=%d, username=%s", user.ID, user.Username)
+	h.logger.Debug(ctx, "Successfully retrieved user profile from service", "userID", user.ID)
 
-	// 3. Convert to response format (excluding password/sensitive fields)
-	resp := UserResponse{
-		ID:                user.ID,
-		Username:          user.Username,
-		DisplayName:       GetNullString(user.DisplayName),
-		ProfilePictureURL: GetNullString(user.ProfilePictureUrl),
-		Location:          GetNullString(user.Location),
-		CreatedAt:         getNullTime(user.CreatedAt),
-		UpdatedAt:         getNullTime(user.UpdatedAt),
-	}
+	// 3. Map to response format
+	resp := mapStoreUserToUserResponse(user)
 
 	// 4. Send response
-	log.Printf("DEBUG: Returning user data for ID %d", user.ID)
 	return c.JSON(http.StatusOK, resp)
 }
 
 // UpdateCurrentUser handles requests to update the authenticated user's profile
-func (h *Handler) UpdateCurrentUser(c echo.Context) error {
+// Method is now on *UserHandler
+func (h *UserHandler) UpdateCurrentUser(c echo.Context) error {
+	ctx := c.Request().Context()
 	// 1. Get User ID from context
-	userID, ok := c.Get("user_id").(int32)
-	if !ok {
-		log.Printf("ERROR: Could not get user ID from context")
-		return echo.NewHTTPError(http.StatusInternalServerError, "Authentication error")
-	}
-
-	// 2. Decode request body
-	var req UpdateUserRequest
-	if err := c.Bind(&req); err != nil {
-		log.Printf("ERROR: Failed to decode update user request: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
-	}
-
-	// Validate the request struct
-	if err := c.Validate(req); err != nil {
-		log.Printf("INFO: Invalid update user request: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	// 3. Prepare parameters for DB update
-	// Need to convert *float64 to sql.NullString for latitude/longitude if they are provided
-	var latStr, lonStr sql.NullString
-	if req.Latitude != nil {
-		latStr = sql.NullString{String: fmt.Sprintf("%f", *req.Latitude), Valid: true}
-	}
-	if req.Longitude != nil {
-		lonStr = sql.NullString{String: fmt.Sprintf("%f", *req.Longitude), Valid: true}
-	}
-
-	params := dbStore.UpdateUserParams{
-		ID: userID,
-		// Username is handled below
-		DisplayName:       stringPtrToNullString(req.DisplayName),
-		ProfilePictureUrl: stringPtrToNullString(req.ProfilePictureURL),
-		Location:          stringPtrToNullString(req.Location),
-		Latitude:          latStr,
-		Longitude:         lonStr,
-	}
-	// Only include Username in params if it's provided in the request
-	if req.Username != nil {
-		params.Username = *req.Username
-	} else {
-		// We need to pass the existing username for COALESCE to work correctly if not updating.
-		// Fetch current user data first, or adjust query/params handling.
-		// For simplicity now, let's fetch the current user data first.
-		currentUser, err := h.Queries.GetUser(c.Request().Context(), userID)
-		if err != nil {
-			log.Printf("ERROR: Failed to get current user %d for update: %v", userID, err)
-			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update profile")
-		}
-		params.Username = currentUser.Username // Use current username
-	}
-
-	// 4. Update user in database
-	updatedUser, err := h.Queries.UpdateUser(c.Request().Context(), params)
+	userID, err := GetUserIDFromContext(c)
 	if err != nil {
-		// Check for unique constraint violation (duplicate username if username was updated)
-		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
-			log.Printf("INFO: Attempt to update to duplicate username: %s by user ID %d", params.Username, userID)
-			// Check if the constraint is specifically on the username column
-			if strings.Contains(pqErr.Constraint, "users_username_key") { // Adjust constraint name if different
-				return echo.NewHTTPError(http.StatusConflict, "Username already taken") // 409 Conflict
-			}
-		}
-		// Handle other errors
-		log.Printf("ERROR: Failed to update user %d: %v", userID, err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update profile")
+		h.logger.Error(ctx, "Could not get user ID from context", "error", err)
+		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication error: User ID not found")
+	}
+	userIDStr := fmt.Sprintf("%d", userID) // Convert to string for service
+
+	// 2. Decode and validate request body
+	var req UpdateCurrentUserRequest
+	if err := c.Bind(&req); err != nil {
+		h.logger.Error(ctx, "Failed to decode update user request", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid request body")
+	}
+	if err := c.Validate(&req); err != nil { // Use pointer for validation
+		h.logger.Warn(ctx, "Invalid update user request", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeValidation, err.Error())
 	}
 
-	// 5. Prepare response (similar to RegisterUser response)
-	resp := UserResponse{
-		ID:                updatedUser.ID,
-		Username:          updatedUser.Username,
-		DisplayName:       GetNullString(updatedUser.DisplayName),
-		ProfilePictureURL: GetNullString(updatedUser.ProfilePictureUrl),
-		Location:          GetNullString(updatedUser.Location),
-		CreatedAt:         getNullTime(updatedUser.CreatedAt),
-		UpdatedAt:         getNullTime(updatedUser.UpdatedAt),
+	// 3. Map handler request to service request
+	serviceReq := &users.UpdateUserProfileRequest{
+		Email:     req.Email,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		AvatarURL: req.AvatarURL,
 	}
+
+	// 4. Call the user service to update the profile
+	updatedUser, err := h.service.UpdateUserProfile(ctx, userIDStr, serviceReq)
+	if err != nil {
+		if errors.Is(err, store.ErrUserNotFound) {
+			return NewAPIError(http.StatusNotFound, ErrCodeNotFound, "User not found")
+		}
+		// TODO: Handle specific service errors like validation/conflict if service returns them
+		// Log already happened in service layer
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to update user profile")
+	}
+
+	// 5. Map result to response
+	resp := mapStoreUserToUserResponse(updatedUser)
 
 	// 6. Send response
 	return c.JSON(http.StatusOK, resp)
-}
-
-// handleUpdateUserLocation handles PUT /profile/location
-func (h *Handler) handleUpdateUserLocation(c echo.Context) error {
-	// 1. Get User ID from context
-	userID, err := GetUserIDFromContext(c) // Use helper
-	if err != nil {
-		log.Printf("ERROR [handleUpdateUserLocation]: %v", err)
-		return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
-	}
-
-	// 2. Bind and validate request body
-	var req UpdateLocationRequest
-	if err := c.Bind(&req); err != nil {
-		log.Printf("ERROR [handleUpdateUserLocation]: Failed to bind request: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
-	}
-	if err := c.Validate(&req); err != nil {
-		log.Printf("INFO [handleUpdateUserLocation]: Invalid request data: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	// 3. Call the database query to update location
-	params := dbStore.UpdateUserLocationParams{
-		ID:            userID,
-		StMakepoint:   req.Longitude, // Use generated field name for $2 (longitude)
-		StMakepoint_2: req.Latitude,  // Use generated field name for $3 (latitude)
-	}
-	err = h.Queries.UpdateUserLocation(c.Request().Context(), params)
-	if err != nil {
-		log.Printf("ERROR [handleUpdateUserLocation]: Failed to update location for user %d: %v", userID, err)
-		// Consider specific error handling for PostGIS issues if necessary
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update location")
-	}
-
-	// 4. Return success response (no body needed for PUT usually)
-	log.Printf("INFO [handleUpdateUserLocation]: Updated location for user %d", userID)
-	return c.NoContent(http.StatusOK)
 }

@@ -87,13 +87,32 @@ func RequestLogging(config RequestLoggingConfig) echo.MiddlewareFunc {
 
 			// Log at appropriate level based on status code
 			if err != nil {
-				config.Logger.Error(logMessage, err, reqData)
+				// Format reqData into key-value pairs for logger args
+				args := []interface{}{"error", err}
+				for k, v := range reqData {
+					args = append(args, k, v)
+				}
+				config.Logger.Error(c.Request().Context(), logMessage, args...)
 			} else if res.Status >= 500 {
-				config.Logger.Error(logMessage, nil, reqData)
+				args := []interface{}{}
+				for k, v := range reqData {
+					args = append(args, k, v)
+				}
+				// Pass nil for the error object in Fatal signature, but we are calling Error here
+				// Error signature: Error(ctx context.Context, message string, args ...interface{})
+				config.Logger.Error(c.Request().Context(), logMessage, args...)
 			} else if res.Status >= 400 {
-				config.Logger.Warn(logMessage, reqData)
+				args := []interface{}{}
+				for k, v := range reqData {
+					args = append(args, k, v)
+				}
+				config.Logger.Warn(c.Request().Context(), logMessage, args...)
 			} else {
-				config.Logger.Info(logMessage, reqData)
+				args := []interface{}{}
+				for k, v := range reqData {
+					args = append(args, k, v)
+				}
+				config.Logger.Info(c.Request().Context(), logMessage, args...)
 			}
 
 			return err

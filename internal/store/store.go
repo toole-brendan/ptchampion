@@ -2,7 +2,11 @@ package store
 
 import (
 	"context"
+	"errors"
 )
+
+// ErrUserNotFound is returned when a user is not found in the store.
+var ErrUserNotFound = errors.New("user not found")
 
 // "ptchampion/internal/models" // Import your domain models here later
 
