@@ -18,7 +18,7 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
         case .all: return "figure.run.circle.fill"
         case .pushup: return "figure.strengthtraining.traditional"
         case .situp: return "figure.core.training"
-        case .pullup: return "figure.strengthtraining.upper.body"
+        case .pullup: return "figure.strengthtraining.traditional"
         case .run: return "figure.run"
         }
     }
@@ -196,7 +196,7 @@ struct WorkoutHistoryView: View {
     */
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 AppTheme.GeneratedColors.background.ignoresSafeArea()
                 
@@ -214,7 +214,7 @@ struct WorkoutHistoryView: View {
                         PTCard {
                             VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
                                 PTLabel("Current Streak", style: .caption)
-                                PTLabel("\\(currentWorkoutStreak) days", style: .subheading).fontWeight(.bold) // Use state var
+                                PTLabel("\(currentWorkoutStreak) days", style: .subheading).fontWeight(.bold) // Corrected interpolation
                             }
                             .padding(AppTheme.GeneratedSpacing.medium)
                             .frame(maxWidth: .infinity)
@@ -222,7 +222,7 @@ struct WorkoutHistoryView: View {
                         PTCard {
                             VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
                                 PTLabel("Longest Streak", style: .caption)
-                                PTLabel("\\(longestWorkoutStreak) days", style: .subheading).fontWeight(.bold) // Use state var
+                                PTLabel("\(longestWorkoutStreak) days", style: .subheading).fontWeight(.bold) // Corrected interpolation
                             }
                             .padding(AppTheme.GeneratedSpacing.medium)
                             .frame(maxWidth: .infinity)
@@ -234,7 +234,7 @@ struct WorkoutHistoryView: View {
                         if workoutResults.isEmpty {
                             // Create the title string separately to avoid confusing the compiler
                             let specificFilterText = filter == .all ? "Workouts" : filter.rawValue
-                            let titleString = "No \\(specificFilterText) Yet"
+                            let titleString = "No \(specificFilterText) Yet" // Corrected interpolation
                             ContentUnavailableView(
                                 titleString, // Use the pre-composed string
                                 systemImage: filter.systemImage,

@@ -7,16 +7,17 @@ struct WorkoutSelectionView: View {
     // Example list of exercises
     struct Exercise: Identifiable {
         let id = UUID()
-        let name: String
+        let name: String // Display name
+        let rawValue: String // Raw value for enum/storage
         let description: String
         let iconName: String // System icon name for example
     }
 
     let exercises = [
-        Exercise(name: "Push-ups", description: "Upper body strength", iconName: "pushup"),
-        Exercise(name: "Sit-ups", description: "Core strength", iconName: "situp"),
-        Exercise(name: "Pull-ups", description: "Back and bicep strength", iconName: "pullup"),
-        Exercise(name: "Run", description: "Cardiovascular endurance", iconName: "running")
+        Exercise(name: "Push-ups", rawValue: "pushup", description: "Upper body strength", iconName: "pushup"),
+        Exercise(name: "Sit-ups", rawValue: "situp", description: "Core strength", iconName: "situp"),
+        Exercise(name: "Pull-ups", rawValue: "pullup", description: "Back and bicep strength", iconName: "pullup"),
+        Exercise(name: "Run", rawValue: "run", description: "Cardiovascular endurance", iconName: "running")
     ]
     
     var body: some View {
@@ -32,7 +33,7 @@ struct WorkoutSelectionView: View {
                             }
                         } else {
                             // Use existing WorkoutSessionView for pose-based exercises
-                            NavigationLink(destination: WorkoutSessionView(exerciseName: exercise.name)) {
+                            NavigationLink(destination: WorkoutSessionView(exerciseName: exercise.rawValue)) {
                                 ExerciseRow(exercise: exercise)
                             }
                         }

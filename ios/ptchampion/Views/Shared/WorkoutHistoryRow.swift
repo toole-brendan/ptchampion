@@ -32,10 +32,30 @@ struct WorkoutHistoryRow: View {
             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
     }
 
+    // Computed property to get the correct icon based on exercise type
+    private var exerciseIcon: Image {
+        let type = result.exerciseType.lowercased()
+        print("WorkoutHistoryRow: Checking exercise type: '\(type)' for icon.")
+        switch type {
+        case "pushup":
+            return Image("pushup")
+        case "situp":
+            return Image("situp")
+        case "pullup":
+            return Image("pullup")
+        case "run":
+            return Image("running") // Asset name is "running"
+        default:
+            // Fallback icon if type doesn't match known assets
+            print("WorkoutHistoryRow: Using default icon for type: '\(type)'")
+            return Image(systemName: "figure.strengthtraining.traditional")
+        }
+    }
+
     var body: some View {
         HStack {
-            // TODO: Replace placeholder icon logic with actual Exercise lookup if needed
-            Image(systemName: "figure.run") // Placeholder
+            // Use the computed exerciseIcon property
+            exerciseIcon
                 .resizable()
                 .scaledToFit()
                 .frame(width: 35, height: 35)
