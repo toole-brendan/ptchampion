@@ -250,396 +250,281 @@ class FontManager {
 
 @main
 struct PTChampionApp: App {
-    // Create a SINGLE source of truth for authentication
-    @StateObject private var auth = AuthViewModel()
-    // Add ThemeManager for styling
-    @StateObject private var themeManager = ThemeManager.shared
-    
-    // Initialize app appearance
-    init() {
-        AssistantKiller.activate()
-        print("DEBUG: PTChampionApp init() called")
-        
-        // Register fonts with error handling to prevent app crashes
+    // Environment objects & Services that need to be @StateObject
+    @StateObject private var authService: AuthService // Declared, initialized in init
+    @StateObject private var featureFlagService = FeatureFlagService() // Default init works
+    @StateObject private var poseDetectorService = PoseDetectorService() // Default init works
+    @StateObject private var navigationState = NavigationState() // Default init works
+
+    // ViewModels that need to be shared or initialized early
+    @StateObject private var authViewModel: AuthViewModel // Declared, initialized in init
+    @StateObject private var dashboardViewModel: DashboardViewModel // Declared, initialized in init
+    @StateObject private var workoutViewModel: WorkoutViewModel // Declared, initialized in init
+    @StateObject private var runWorkoutViewModel: RunWorkoutViewModel // Declared, initialized in init
+    @StateObject private var workoutHistoryViewModel: WorkoutHistoryViewModel // Declared, initialized in init
+    @StateObject private var leaderboardViewModel: LeaderboardViewModel // Declared, initialized in init
+    @StateObject private var progressViewModel: ProgressViewModel // Declared, initialized in init
+
+    // SwiftData model container
+    var sharedModelContainer: ModelContainer = {
+        let schema = Schema([
+            WorkoutResultSwiftData.self,
+            WorkoutDataPoint.self // Make sure this is included
+        ])
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
-            // Register fonts first, before accessing auth state
-            FontManager.shared.registerFonts()
+            return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            // If font registration fails, log error but continue app execution
-            print("❌ ERROR: Font registration failed but continuing app execution: \(error)")
+            fatalError("Could not create ModelContainer: \(error)")
         }
-        
+    }()
+
+    init() {
+        // Initialize FontManager first (doesn't depend on self)
+        FontManager.shared.registerFonts()
         #if DEBUG
-        // FontManager.shared.printAvailableFonts() - Font listing removed to reduce console output
-        print("--- DEBUG APP INITIALIZATION ---")
-        // Don't access StateObject here - defer to body
-        print("-------------------------------")
+        FontManager.shared.printAvailableFonts()
         #endif
         
-        configureAppearance()
-        print("DEBUG: PTChampionApp init() finished")
+        // --- Step 1: Create local temp service instances ---
+        let keychainService = KeychainService()
+        let networkClient = NetworkClient()
+        let locationService = LocationService()
+        let bluetoothService = BluetoothService()
+        let leaderboardService = LeaderboardService(networkClient: networkClient)
+        let workoutService = WorkoutService(networkClient: networkClient)
+        // Note: poseDetectorService and featureFlagService are initialized at declaration
+
+        // --- Step 2: Create ALL temporary VM instances (using defaults/placeholders for self-dependencies) ---
+        let tempAuthService = AuthService(networkClient: networkClient)
+        let tempAuthViewModel = AuthViewModel()
+        let tempDashboardViewModel = DashboardViewModel() // init takes no args
+        let tempWorkoutViewModel = WorkoutViewModel(
+             exerciseName: "pushup", // Placeholder
+             // Use default PoseDetectorService() from init, DO NOT pass self.poseDetectorService here
+             workoutService: workoutService,
+             keychainService: keychainService,
+             modelContext: nil // Set later using self.sharedModelContainer
+         )
+        let tempRunWorkoutViewModel = RunWorkoutViewModel(
+            locationService: locationService,
+            workoutService: workoutService,
+            keychainService: keychainService,
+            bluetoothService: bluetoothService,
+            modelContext: nil // Set later using self.sharedModelContainer
+        )
+        let tempWorkoutHistoryViewModel = WorkoutHistoryViewModel(workoutService: workoutService) // modelContext set later
+        let tempLeaderboardViewModel = LeaderboardViewModel(
+            service: leaderboardService,
+            location: locationService,
+            keychain: keychainService
+        )
+        let tempProgressViewModel = ProgressViewModel(workoutService: workoutService, keychainService: keychainService)
+
+        // --- Step 3: Assign ALL @StateObjects declared without initial value ---
+        // Note: featureFlagService & poseDetectorService are initialized at declaration
+        _authService = StateObject(wrappedValue: tempAuthService)
+        _authViewModel = StateObject(wrappedValue: tempAuthViewModel)
+        _dashboardViewModel = StateObject(wrappedValue: tempDashboardViewModel)
+        _workoutViewModel = StateObject(wrappedValue: tempWorkoutViewModel) // Assign workoutViewModel here
+        _runWorkoutViewModel = StateObject(wrappedValue: tempRunWorkoutViewModel)
+        _workoutHistoryViewModel = StateObject(wrappedValue: tempWorkoutHistoryViewModel)
+        _leaderboardViewModel = StateObject(wrappedValue: tempLeaderboardViewModel)
+        _progressViewModel = StateObject(wrappedValue: tempProgressViewModel)
+
+        // --- Step 4: `self` is now fully initialized. Perform final configuration. ---
+        // Now we can safely access self.sharedModelContainer etc.
+        self.dashboardViewModel.setModelContext(self.sharedModelContainer.mainContext)
+        self.workoutHistoryViewModel.modelContext = self.sharedModelContainer.mainContext
+        self.runWorkoutViewModel.modelContext = self.sharedModelContainer.mainContext
+        self.workoutViewModel.modelContext = self.sharedModelContainer.mainContext // Set context for workout VM too
+        // We are using the default PoseDetectorService created within WorkoutViewModel's init
+        // If we *needed* to use the app-level self.poseDetectorService, we'd need a setter method in WorkoutViewModel
+        // e.g., self.workoutViewModel.setPoseDetector(self.poseDetectorService)
+        
+        // Activate AssistantKiller
+        #if !targetEnvironment(simulator)
+            AssistantKiller.activate()
+        #endif
+
+        // Configure appearance
+        AppAppearance.configureAppearance()
+
+        #if DEBUG
+        print("DEBUG mode is ON")
+        #else
+        print("DEBUG mode is OFF (RELEASE mode)")
+        #endif
+        
+        // Call other setup methods
+        setupGlobalServices()
+    }
+
+    private func setupGlobalServices() {
+        print("Global services setup complete.")
     }
     
-    // Configure UI appearance manually
-    private func configureAppearance() {
-        // Configure TabBar appearance
-        let tabBarAppearance = UITabBarAppearance()
-        tabBarAppearance.configureWithOpaqueBackground()
-        // Set background color for tab bar if needed (currently uses default opaque)
-        // tabBarAppearance.backgroundColor = UIColor(AppTheme.GeneratedColors.background) // Example
-
-        // Selected tab icon and text color
-        let selectedColor = UIColor(AppTheme.GeneratedColors.brassGold)
-        tabBarAppearance.stackedLayoutAppearance.selected.iconColor = selectedColor
-        tabBarAppearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
-        // For inlineLayoutAppearance and compactInlineLayoutAppearance if used
-        tabBarAppearance.inlineLayoutAppearance.selected.iconColor = selectedColor
-        tabBarAppearance.inlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
-        tabBarAppearance.compactInlineLayoutAppearance.selected.iconColor = selectedColor
-        tabBarAppearance.compactInlineLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: selectedColor]
-
-        // Unselected tab icon and text color
-        let unselectedColor = UIColor(AppTheme.GeneratedColors.tacticalGray) // Or textSecondary, etc.
-        tabBarAppearance.stackedLayoutAppearance.normal.iconColor = unselectedColor
-        tabBarAppearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: unselectedColor]
-        // For inlineLayoutAppearance and compactInlineLayoutAppearance if used
-        tabBarAppearance.inlineLayoutAppearance.normal.iconColor = unselectedColor
-        tabBarAppearance.inlineLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: unselectedColor]
-        tabBarAppearance.compactInlineLayoutAppearance.normal.iconColor = unselectedColor
-        tabBarAppearance.compactInlineLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: unselectedColor]
-
-        UITabBar.appearance().standardAppearance = tabBarAppearance
-        if #available(iOS 15.0, *) {
-            UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
-        }
-        
-        // Configure NavigationBar appearance
-        let navBarAppearance = UINavigationBarAppearance()
-        navBarAppearance.configureWithOpaqueBackground()
-        UINavigationBar.appearance().standardAppearance = navBarAppearance
-        if #available(iOS 15.0, *) {
-            UINavigationBar.appearance().scrollEdgeAppearance = navBarAppearance
-        }
-        
-        // Use system fonts as fallback if custom fonts fail to load
-        let navTitleFont = UIFont.systemFont(ofSize: 22, weight: .bold)
-        
-        // Use proper tokens from design system
-        UINavigationBar.appearance().tintColor = UIColor(AppTheme.GeneratedColors.deepOps)
-        UINavigationBar.appearance().titleTextAttributes = [
-            .foregroundColor: UIColor(AppTheme.GeneratedColors.textPrimary),
-            .font: navTitleFont
-        ]
-    }
+    func listFilesInBundle() { /* Implementation assumed */ }
 
     var body: some Scene {
         WindowGroup {
-            // Pass the shared auth view model to all views
-            RootSwitcher()
-                .environmentObject(auth)
-                .environmentObject(themeManager)
-                .preferredColorScheme(themeManager.effectiveColorScheme)
-                .modelContainer(for: WorkoutResultSwiftData.self)
-                .onAppear {
-                    Self.logBody() // Debug log function
-                    #if DEBUG
-                    print("AuthViewModel instance being passed to views: \(ObjectIdentifier(auth))")
-                    #endif
-                    print("🚀 App Root view appeared with AuthViewModel instance: \(ObjectIdentifier(auth))")
-                }
-        }
-    }
-    
-    // MARK: - Debug Helpers
-    private static func logBody() {
-        print("DEBUG: PTChampionApp body recomputed")
-    }
-}
-
-// MARK: - Root Content Switcher that directly depends on auth.authState
-struct RootSwitcher: View {
-    @EnvironmentObject private var auth: AuthViewModel
-    @State private var showDebugInfo = false
-
-    var body: some View {
-        ZStack {
-            // Main content based on authentication state
             Group {
-                switch auth.authState {
-                case .authenticated(let user):
-                    // Authenticated content
+                // Use AuthViewModel's computed property for isAuthenticated
+                if authViewModel.isAuthenticated { // Corrected Check
                     MainTabView()
-                        .transition(.opacity)
-                        .onAppear {
-                            print("DEBUG: MainTabView appeared with user ID: \(user.id)")
-                        }
-                case .unauthenticated:
-                    // Login view when not authenticated
+                        // Pass Services
+                        .environmentObject(authService)
+                        .environmentObject(navigationState)
+                        .environmentObject(featureFlagService)
+                        .environmentObject(poseDetectorService)
+                        // Pass ViewModels (Grouped)
+                        .environmentObject(authViewModel)
+                        .environmentObject(dashboardViewModel)
+                        .environmentObject(workoutViewModel)
+                        .environmentObject(runWorkoutViewModel)
+                        .environmentObject(workoutHistoryViewModel)
+                        .environmentObject(leaderboardViewModel)
+                        .environmentObject(progressViewModel)
+                } else {
+                    // Instantiate LoginView correctly and provide necessary environment objects
                     LoginView()
-                        .transition(.opacity)
+                        .environmentObject(authService) // Pass needed services/vms
+                        .environmentObject(navigationState)
+                        .environmentObject(featureFlagService)
+                        .environmentObject(authViewModel)
                 }
             }
-            
-            // Debug overlay
-            if showDebugInfo {
-                DebugOverlayView(
-                    authState: auth.authState,
-                    showDebugInfo: $showDebugInfo,
-                    authenticateAction: { auth.debugForceAuthenticated() },
-                    logoutAction: { auth.logout() }
-                )
+            .modelContainer(sharedModelContainer)
+            .onAppear {
+                // AuthViewModel's init calls checkAuthentication, so likely not needed here
+                // authViewModel.checkAuthentication() // Or authService.loadSession() if that exists
             }
+            .environmentObject(ThemeManager.shared)
+            .preferredColorScheme(ThemeManager.shared.effectiveColorScheme) // Corrected
         }
-        .animation(.easeInOut(duration: 0.3), value: auth.authState)
     }
 }
 
-// Move debug overlay to its own view
-struct DebugOverlayView: View {
-    let authState: AuthState
-    @Binding var showDebugInfo: Bool
-    let authenticateAction: () -> Void
-    let logoutAction: () -> Void
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("DEBUG INFO")
-                .font(.headline)
-                .foregroundColor(.white)
-            
-            Text("Auth State: \(authState.isAuthenticated ? "authenticated" : "unauthenticated")")
-                .foregroundColor(.white)
-            
-            if let user = authState.user {
-                Text("User ID: \(user.id)")
-                    .foregroundColor(.white)
-                Text("User Email: \(user.email)")
-                    .foregroundColor(.white)
-            }
-            
-            Button("Force Authenticated") {
-                print("DEBUG: Force authenticated requested")
-                authenticateAction()
-            }
-            .padding(8)
-            .background(AppTheme.GeneratedColors.success)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            
-            Button("Force Unauthenticated") {
-                print("DEBUG: Manual logout requested")
-                logoutAction()
-            }
-            .padding(8)
-            .background(AppTheme.GeneratedColors.error)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-            
-            Button("Hide Debug") {
-                showDebugInfo = false
-            }
-            .padding(8)
-            .background(AppTheme.GeneratedColors.info)
-            .foregroundColor(.white)
-            .cornerRadius(8)
-        }
-        .padding()
-        .background(AppTheme.GeneratedColors.deepOps.opacity(0.8))
-        .cornerRadius(12)
-        .padding()
-    }
+// Define Tab enum for MainTabView
+enum Tab {
+    case home, history, /*workout,*/ leaderboards, profile // Workout tab commented out
 }
 
-// Placeholder for the main authenticated view (replace with your actual implementation)
+// Main TabView Structure
 struct MainTabView: View {
-    @EnvironmentObject private var auth: AuthViewModel
-    @State private var selectedTab: Tab = .home // Keep track of selected tab, default to home
-
-    // Add tab tracking for debugging
-    @State private var previousTab: Tab? = nil
-
-    // Add a flag to prevent rapid tab switching
-    @State private var isTabSwitchInProgress = false
-
-    // Expose ComponentGallery in debug builds for design review
-    @State private var showingComponentGallery = false
-
-    // StateObject for the leaderboard view model - keeps it alive
-    @StateObject private var leaderboardViewModel = LeaderboardViewModel()
-
-    // Define Tabs Enum for clarity and type safety, matching user's request
-    enum Tab {
-        case home
-        case history
-        case workout
-        case leaderboards
-        case profile
-    }
+    @State private var selectedTab: Tab = .home
+    @EnvironmentObject var authService: AuthService
+    @EnvironmentObject var navigationState: NavigationState
+    @EnvironmentObject var featureFlagService: FeatureFlagService
+    @EnvironmentObject var leaderboardVM: LeaderboardViewModel // Use the VM passed from environment
 
     var body: some View {
         TabView(selection: $selectedTab) {
             DashboardView()
-                .tabItem {
-                    Label("Home", systemImage: "house.fill")
-                }
+                .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(Tab.home)
 
             WorkoutHistoryView()
-                .tabItem {
-                    Label("History", systemImage: "clock.arrow.circlepath")
-                }
+                .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
                 .tag(Tab.history)
 
-            WorkoutSelectionView()
-                 .tabItem {
-                     Label("Workout", systemImage: "figure.walk")
-                 }
-                 .tag(Tab.workout)
-
-            // Standard leaderboard view for all builds
-            LeaderboardView(viewModel: leaderboardViewModel, viewId: UUID().uuidString) // Using full UUID string as per user's original example
-                .tabItem {
-                    Label("Leaders", systemImage: "rosette")
-                }
+            // Corrected LeaderboardView call - passes viewModel from environment
+            LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
+                .tabItem { Label("Leaders", systemImage: "rosette") }
                 .tag(Tab.leaderboards)
 
-            SettingsView() // Using SettingsView directly for all configurations
-                .tabItem {
-                    Label("Profile", systemImage: "gearshape.fill")
-                }
+            SettingsView() // Assuming SettingsView exists and takes no specific args here
+                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(Tab.profile)
         }
-        // Accent color is handled by UITabBarAppearance
-        .onShake {
-            #if DEBUG
-            // showingComponentGallery.toggle() // Uncomment if ComponentGalleryView exists
-            #endif
-        }
-        .sheet(isPresented: $showingComponentGallery) {
-            // Replace with actual ComponentGalleryView if it exists
-            Text("Component Gallery View Placeholder")
-        }
-        .onChange(of: selectedTab) { _, newTab in
-            // Prevent rapid tab switching which can cause UI freezes
-            guard !isTabSwitchInProgress else {
-                print("📱 MainTabView: Tab change blocked during switch transition")
-                return
-            }
-
-            let previousTabString = previousTab?.description ?? "nil"
-            print("📱 MainTabView: Tab changed from \\(previousTabString) to \\(newTab)")
-
-            // Set switch in progress flag
-            isTabSwitchInProgress = true
-
-            // Add a small delay before allowing another tab switch
-            // This helps prevent rapid tab switching which can cause UI issues
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                isTabSwitchInProgress = false
-                print("📱 MainTabView: Tab switch completed, now ready for next tab change")
-            }
-
-            // Important: If switching to leaderboards tab, give extra time
-            // for the view to initialize to prevent freezing
-            if newTab == .leaderboards {
-                // Use a significantly longer delay for leaderboards
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    // This delay gives the leaderboards view time to set up before loading data
-                    print("📱 MainTabView: Leaderboard tab delay completed")
-                }
-
-                // IMPORTANT: Disable quick switching from leaderboards tab
-                // This prevents a common crash scenario where users rapidly switch away
-                isTabSwitchInProgress = true
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                    isTabSwitchInProgress = false
-                    print("📱 MainTabView: Allowing tab changes after leaderboard stabilization period")
-                }
-            }
-
-            // Keep track of previous tab for debugging
-            previousTab = newTab
-        }
-        .onAppear {
-            print("📱 MainTabView: onAppear")
-            // Set default tab to home if not already set or if current is invalid
-            if selectedTab != .home && selectedTab != .history && selectedTab != .workout && selectedTab != .leaderboards && selectedTab != .profile {
-                 selectedTab = .home
-            }
-        }
-        .onDisappear {
-            print("📱 MainTabView: onDisappear")
+        .onAppear { /* Optional: Customize TabView appearance */ }
+        .onChange(of: selectedTab) { newTab in
+            print("Switched to tab: \(newTab)")
         }
     }
 }
 
-// Add extension to help with debugging
-extension MainTabView.Tab: CustomStringConvertible {
-    var description: String {
-        switch self {
-        case .home: return "home"
-        case .history: return "history"
-        case .workout: return "workout"
-        case .leaderboards: return "leaderboards"
-        case .profile: return "profile"
-        }
-    }
-}
-
-// Add device shake detection for easier component gallery access in development
+// --- Preview Providers (Corrected Initializers) ---
 #if DEBUG
-extension UIDevice {
-    static let deviceDidShakeNotification = Notification.Name(rawValue: "deviceDidShakeNotification")
-}
-
-extension UIWindow {
-    override open func motionEnded(_ motion: UIEvent.EventSubtype, with event: UIEvent?) {
-        if motion == .motionShake {
-            NotificationCenter.default.post(name: UIDevice.deviceDidShakeNotification, object: nil)
-        }
-        super.motionEnded(motion, with: event)
+// Helper function to create a ModelContainer for previews
+@MainActor
+func createPreviewModelContainer() -> ModelContainer {
+    let schema = Schema([
+        WorkoutResultSwiftData.self,
+        WorkoutDataPoint.self
+    ])
+    let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+    do {
+        return try ModelContainer(for: schema, configurations: [modelConfiguration])
+    } catch {
+        fatalError("Could not create ModelContainer for preview: \(error)")
     }
 }
 
-extension View {
-    func onShake(perform action: @escaping () -> Void) -> some View {
-        self.modifier(DeviceShakeViewModifier(action: action))
+struct PTChampionApp_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create mock services and view models for preview
+        let mockAuthService = AuthService(networkClient: NetworkClient()) // Use correct init
+        let mockNavigationState = NavigationState()
+        let mockFeatureFlagService = FeatureFlagService()
+        
+        let mockAuthViewModel = AuthViewModel() // Correct: Takes no args
+
+        // Call LoginView without arguments
+        LoginView()
+            .environmentObject(mockAuthService) // Keep providing this if any subview needs it
+            .environmentObject(mockNavigationState) // Provide NavigationState
+            .environmentObject(mockFeatureFlagService) // Keep providing this
+            .environmentObject(mockAuthViewModel) // Provide AuthViewModel
+            // Use the helper for preview container
+            .modelContainer(createPreviewModelContainer()) 
     }
 }
 
-struct DeviceShakeViewModifier: ViewModifier {
-    let action: () -> Void
-    
-    func body(content: Content) -> some View {
-        content
-            .onAppear()
-            .onReceive(NotificationCenter.default.publisher(for: UIDevice.deviceDidShakeNotification)) { _ in
-                action()
-            }
+// Preview for MainTabView specifically
+struct MainTabView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create mock services and view models needed by MainTabView and its children
+        let mockAuthService = AuthService(networkClient: NetworkClient())
+        let mockNavigationState = NavigationState()
+        let mockFeatureFlagService = FeatureFlagService()
+        let mockNetworkClient = NetworkClient()
+        
+        let mockLeaderboardService = LeaderboardService(networkClient: mockNetworkClient)
+        let mockLocationService = LocationService()
+        let mockKeychainService = KeychainService()
+        let mockLeaderboardVM = LeaderboardViewModel(
+            service: mockLeaderboardService, 
+            location: mockLocationService, 
+            keychain: mockKeychainService
+        )
+        
+        MainTabView()
+            .environmentObject(mockAuthService)
+            .environmentObject(mockNavigationState)
+            .environmentObject(mockFeatureFlagService)
+            .environmentObject(mockLeaderboardVM) 
+            // Ensure other necessary VMs/Services needed by child views are provided for preview
+            // e.g., DashboardViewModel, WorkoutHistoryViewModel, SettingsView dependencies
+            // Use the helper for preview container
+            .modelContainer(createPreviewModelContainer()) 
     }
 }
 #endif
 
-#Preview("MainTabView") {
-    // Create the auth view model and wrap the view
-    let previewAuth = AuthViewModel()
-    MainTabView()
-        .environmentObject(previewAuth)
-}
-
-// Add a convenience extension to check auth state
-extension AuthState {
-    var isAuthenticated: Bool {
-        if case .authenticated = self {
-            return true
-        }
-        return false
-    }
-    
-    var user: AuthUserModel? {
-        if case .authenticated(let user) = self {
-            return user
-        }
-        return nil
-    }
-} 
+// Add a convenience extension to check auth state (If not already defined elsewhere)
+// extension AuthState {
+//     var isAuthenticated: Bool {
+//         if case .authenticated = self {
+//             return true
+//         }
+//         return false
+//     }
+//     
+//     var user: AuthUserModel? {
+//         if case .authenticated(let user) = self {
+//             return user
+//         }
+//         return nil
+//     }
+// } 

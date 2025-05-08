@@ -131,7 +131,7 @@ class AuthViewModel: ObservableObject {
                     
                     // Verify state change happened
                     print("AFTER state change: \(self.authState)")
-                    print("Auth state is now: \(self.authState.isAuthenticated ? "AUTHENTICATED" : "UNAUTHENTICATED")")
+                    print("Auth state is now: \(self.isAuthenticated ? "AUTHENTICATED" : "UNAUTHENTICATED")")
                 }
                 
                 print("🟢 F. Login sequence COMPLETED for \(user.id) - AuthViewModel ID: \(self.instanceId)")
@@ -283,7 +283,11 @@ class AuthViewModel: ObservableObject {
 
     // MARK: - Convenience Properties
     var isAuthenticated: Bool {
-        authState.isAuthenticated
+        if case .authenticated = authState {
+            return true
+        } else {
+            return false
+        }
     }
     
     var displayName: String {

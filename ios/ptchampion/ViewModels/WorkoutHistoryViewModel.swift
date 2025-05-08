@@ -4,11 +4,12 @@ import SwiftData
 import UIKit
 
 // Annotation similar to what's mentioned in the plan
-@Observable class WorkoutHistoryViewModel {
+// @Observable class WorkoutHistoryViewModel { // Changed to ObservableObject
+class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObject
     // Published state
-    var workouts: [WorkoutHistory] = []
-    var isLoading: Bool = false
-    var error: Error? = nil
+    @Published var workouts: [WorkoutHistory] = []
+    @Published var isLoading: Bool = false
+    @Published var error: Error? = nil
     
     // Cache mechanism
     private var cache: [String: Any] = [:]

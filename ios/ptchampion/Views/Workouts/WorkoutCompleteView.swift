@@ -1,153 +1,141 @@
 import SwiftUI
+import SwiftData
+import Charts // For SwiftUI Charts
 import PTDesignSystem
-import SwiftData // For WorkoutResultSwiftData
+
+// Helper struct for chart data to ensure Identifiable conformance for ForEach in Chart
+struct RepChartData: Identifiable {
+    let id: UUID // Use WorkoutDataPoint's ID
+    let repNumber: Int
+    let formQuality: Double // 0.0 to 1.0
+}
 
 struct WorkoutCompleteView: View {
-    let result: WorkoutResultSwiftData? // Uncommented
-    let exerciseGrader: any ExerciseGraderProtocol // Uncommented
-    
-    @Environment(\.dismiss) var dismiss
-    @State private var isShowingShareSheet = false
-    @State private var shareText: String = ""
+    let result: WorkoutResultSwiftData?
+    let exerciseGrader: AnyExerciseGraderBox // For additional feedback like lastFormIssue
+
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var repDetailsForChart: [RepChartData] = []
+    @State private var isLoadingDetails: Bool = false
+    @State private var fetchError: String? = nil
 
     var body: some View {
-        // Text("Workout Complete Placeholder") // Simplified body
-        NavigationView { // Added NavigationView for a title and potential toolbar items
-            ScrollView {
-                VStack(spacing: AppTheme.GeneratedSpacing.large) {
-                    PTLabel("Workout Complete!", style: .heading)
-                        .padding(.vertical, AppTheme.GeneratedSpacing.large) // TODO: Consider adding .extraLarge to GeneratedSpacing or use .large
+        NavigationView { // Wrap in NavigationView for a title and dismiss button
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                if let workoutResult = result {
+                    Text("Workout Complete!")
+                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
 
-                    if let savedResult = result {
-                        summaryCard(savedResult)
-                        
-                        // Badges Section (Placeholder)
-                        badgesSection() // Restored call
-                        
-                    } else {
-                        PTLabel("Could not retrieve workout details.", style: .body)
-                            .multilineTextAlignment(.center)
-                            .padding()
+                    Form {
+                        Section("Summary") {
+                            WorkoutCompletionInfoRow(label: "Exercise", value: workoutResult.exerciseType.capitalized)
+                            WorkoutCompletionInfoRow(label: "Duration", value: formatDuration(workoutResult.durationSeconds))
+                            WorkoutCompletionInfoRow(label: "Total Reps", value: "\(workoutResult.repCount)")
+                            if let score = workoutResult.score {
+                                WorkoutCompletionInfoRow(label: "Overall Score", value: String(format: "%.1f", score))
+                            }
+                            WorkoutCompletionInfoRow(label: "Avg. Form Quality", value: String(format: "%.0f%%", exerciseGrader.formQualityAverage * 100))
+                            if let lastIssue = exerciseGrader.lastFormIssue, !lastIssue.isEmpty {
+                                WorkoutCompletionInfoRow(label: "Last Form Tip", value: lastIssue, isVertical: true)
+                            }
+                        }
+
+                        if isLoadingDetails {
+                            Section("Rep Details") {
+                                ProgressView("Loading rep details...")
+                            }
+                        } else if fetchError != nil {
+                            Section("Rep Details") {
+                                Text("Could not load rep details: \(fetchError!)")
+                                    .foregroundColor(AppTheme.GeneratedColors.error)
+                            }
+                        } else if !repDetailsForChart.isEmpty {
+                            Section("Form Quality per Rep") {
+                                Chart(repDetailsForChart) {
+                                    RuleMark(y: .value("Target Quality", 0.75))
+                                        .foregroundStyle(AppTheme.GeneratedColors.success.opacity(0.5))
+                                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [5]))
+                                    
+                                    BarMark(
+                                        x: .value("Rep", "Rep \($0.repNumber)"),
+                                        y: .value("Quality", $0.formQuality)
+                                    )
+                                    .foregroundStyle($0.formQuality >= 0.75 ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.warning)
+                                }
+                                .chartYScale(domain: 0...1)
+                                .frame(height: 200)
+                                .padding(.top)
+                            }
+                        } else {
+                            Section("Rep Details"){
+                                Text("No detailed rep data found for this session.")
+                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            }
+                        }
                     }
-                    
-                    Spacer(minLength: AppTheme.GeneratedSpacing.large)
-                    
-                    actionButtons()
-                    
+                } else {
+                    // Handle case where workout result is nil (e.g., save failed)
+                    Text("Workout Data Unavailable")
+                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading2))
+                        .foregroundColor(AppTheme.GeneratedColors.error)
+                    Text("There was an issue saving or loading the workout details.")
+                        .font(AppTheme.GeneratedTypography.body(size: nil))
+                        .multilineTextAlignment(.center)
+                        .padding()
                 }
-                .padding(AppTheme.GeneratedSpacing.large)
+
+                PTButton("Done", style: .primary) {
+                    dismiss()
+                }
+                .padding(.horizontal)
+                .padding(.bottom)
             }
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-            .navigationTitle(result != nil ? (ExerciseType(rawValue: result!.exerciseType)?.displayName ?? "Summary") : "Summary")
+            .background(AppTheme.GeneratedColors.cream)
+            .navigationTitle("Workout Summary")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(AppTheme.GeneratedColors.primary) // Use design system color
                 }
             }
-            .sheet(isPresented: $isShowingShareSheet) {
-                if !shareText.isEmpty {
-                    ActivityView(activityItems: [shareText])
-                }
-            }
-        }
-        .onAppear {
-            if let savedResult = result { // Uncommented
-                generateShareText(for: savedResult) // Uncommented
+            .task {
+                await fetchRepDetails()
             }
         }
     }
 
-    // Uncommenting methods that use the properties
-    @ViewBuilder
-    private func summaryCard(_ savedResult: WorkoutResultSwiftData) -> some View {
-        PTCard() { 
-            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                PTLabel("Summary", style: .subheading)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
-                
-                detailRow(label: "Exercise", value: ExerciseType(rawValue: savedResult.exerciseType)?.displayName ?? "N/A")
-                detailRow(label: "Reps", value: "\(savedResult.repCount ?? 0)")
-                detailRow(label: "Duration", value: formatDuration(savedResult.durationSeconds))
-                
-                if let score = savedResult.score {
-                    detailRow(label: "Score", value: "\(Int(score))%", highlight: true)
-                }
-                
-                let avgFormQuality = exerciseGrader.formQualityAverage // Uncommented
-                if avgFormQuality > 0 { // Uncommented
-                    detailRow(label: "Avg. Form Quality", value: "\(Int(avgFormQuality * 100))%", highlight: avgFormQuality > 0.8) // Uncommented
-                }
-            }
-            .padding(AppTheme.GeneratedSpacing.medium)
+    private func fetchRepDetails() async {
+        guard let workoutID = result?.id else {
+            fetchError = "Workout session ID is missing."
+            return
         }
-    }
-    
-    @ViewBuilder
-    private func badgesSection() -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            PTLabel("Badges Earned", style: .subheading)
-            // Placeholder for badges - replace with actual badge display logic
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    BadgePlaceholderView(icon: "star.fill", label: "New PR!")
-                    BadgePlaceholderView(icon: "flame.fill", label: "3 Day Streak")
-                    BadgePlaceholderView(icon: "figure.walk", label: "First Pushups")
-                }
-                .padding(.vertical, AppTheme.GeneratedSpacing.small)
-            }
-        }
-        .padding(AppTheme.GeneratedSpacing.medium)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
-        // .modifier(PTCardStyleShadow()) // TODO: Define or import PTCardStyleShadow
-    }
-    
-    @ViewBuilder
-    private func actionButtons() -> some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-            PTButton("Share Workout", style: .secondary, icon: Image(systemName: "square.and.arrow.up")) {
-                if result != nil { // Uncommented
-                    isShowingShareSheet = true // Uncommented
-                } else {
-                    // Optionally show an alert if there's nothing to share
-                    print("No workout data to share.")
-                }
-            }
-            
-            PTButton("Done", style: .primary) {
-                dismiss()
-            }
-        }
-    }
+        
+        isLoadingDetails = true
+        fetchError = nil
 
-    @ViewBuilder
-    private func detailRow(label: String, value: String, highlight: Bool = false) -> some View {
-        HStack {
-            PTLabel(label, style: .body)
-            Spacer()
-            PTLabel(value, style: .bodyBold)
-                .foregroundColor(highlight ? AppTheme.GeneratedColors.primary : AppTheme.GeneratedColors.textPrimary) 
+        let descriptor = FetchDescriptor<WorkoutDataPoint>(
+            predicate: #Predicate { $0.workoutID == workoutID },
+            sortBy: [SortDescriptor(\WorkoutDataPoint.timestamp)]
+        )
+
+        do {
+            let dataPoints = try modelContext.fetch(descriptor)
+            self.repDetailsForChart = dataPoints.map {
+                RepChartData(id: $0.id, repNumber: $0.repNumber, formQuality: $0.formQuality)
+            }
+            if dataPoints.isEmpty {
+                 print("No WorkoutDataPoint found for session \(workoutID.uuidString)")
+            }
+        } catch {
+            print("Failed to fetch rep details: \(error)")
+            fetchError = error.localizedDescription
         }
-    }
-    
-    private func generateShareText(for savedResult: WorkoutResultSwiftData) {
-        var text = "Check out my PT Champion workout!\n"
-        text += "Exercise: \(ExerciseType(rawValue: savedResult.exerciseType)?.displayName ?? "N/A")\n"
-        text += "Reps: \(savedResult.repCount ?? 0)\n"
-        text += "Duration: \(formatDuration(savedResult.durationSeconds))\n"
-        if let score = savedResult.score {
-            text += "Score: \(Int(score))%\n"
-        }
-        let avgFormQuality = exerciseGrader.formQualityAverage // Uncommented
-        if avgFormQuality > 0 { // Uncommented
-            text += "Avg. Form: \(Int(avgFormQuality * 100))%\n" // Uncommented
-        }
-        // TODO: Add a link to the app or a relevant webpage if applicable
-        shareText = text
+        isLoadingDetails = false
     }
 
     private func formatDuration(_ totalSeconds: Int) -> String {
@@ -157,46 +145,84 @@ struct WorkoutCompleteView: View {
     }
 }
 
-// Placeholder for Badge View - to be replaced with actual Badge component if it exists
-struct BadgePlaceholderView: View {
-    let icon: String
+// Renamed from InfoRow to avoid conflict
+struct WorkoutCompletionInfoRow: View {
     let label: String
+    let value: String
+    var isVertical: Bool = false
+
     var body: some View {
-        // Text("Placeholder") // Simplified to a single Text view
-        VStack { // Restoring VStack and its content
-            Image(systemName: icon)
-             .font(.largeTitle)
-             .foregroundColor(AppTheme.GeneratedColors.brassGold)
-             .frame(width: 60, height: 60)
-             .background(AppTheme.GeneratedColors.brassGold.opacity(0.1))
-             .clipShape(Circle())
-            Text(label).font(.caption) // Using Text view that worked before
+        if isVertical {
+            VStack(alignment: .leading) {
+                Text(label)
+                    .font(AppTheme.GeneratedTypography.caption(size: nil))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                Text(value)
+                    .font(AppTheme.GeneratedTypography.body(size: nil))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+            }
+        } else {
+            HStack {
+                Text(label)
+                    .font(AppTheme.GeneratedTypography.body(size: nil))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                Spacer()
+                Text(value)
+                    .font(AppTheme.GeneratedTypography.body(size: nil))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+            }
         }
-        .padding(AppTheme.GeneratedSpacing.small)
     }
 }
 
-// Preview
-// Commenting out Preview as it depends on the properties
 #if DEBUG
 struct WorkoutCompleteView_Previews: PreviewProvider {
     static var previews: some View {
-        // Create a mock WorkoutResultSwiftData for preview
+        // Create a mock WorkoutResultSwiftData
         let mockResult = WorkoutResultSwiftData(
-            exerciseType: "pushup", 
-            startTime: Date().addingTimeInterval(-300), 
-            endTime: Date(), 
-            durationSeconds: 300, 
-            repCount: 25, 
-            score: 88.0
+            id: UUID().uuidString,
+            exerciseType: "Pushup",
+            startTime: Date().addingTimeInterval(-60 * 5), // 5 minutes ago
+            endTime: Date(),
+            durationSeconds: 300,
+            repCount: 25,
+            score: 85.5
         )
-        let mockGrader = PlaceholderGrader() // Using PlaceholderGrader for stability
-        // mockGrader.resetState() // Populate with some mock data if needed for form avg
+
+        // Create a mock ExerciseGraderBox
+        let mockGrader = PlaceholderGrader() // Using PlaceholderGrader for simplicity
+        mockGrader.repCount = 25
+        mockGrader.formQualityAverage = 0.88
+        mockGrader.lastFormIssue = "Elbows flared out on last rep."
+        let mockGraderBox = AnyExerciseGraderBox(mockGrader)
+
+        // Create some mock rep data points for the chart preview
+        let mockRepDetails = [
+            RepChartData(id: UUID(), repNumber: 1, formQuality: 0.9),
+            RepChartData(id: UUID(), repNumber: 2, formQuality: 0.85),
+            RepChartData(id: UUID(), repNumber: 3, formQuality: 0.92),
+            RepChartData(id: UUID(), repNumber: 4, formQuality: 0.78),
+            RepChartData(id: UUID(), repNumber: 5, formQuality: 0.80)
+        ]
         
-        // Ensure ExerciseType is available for the preview context
-        // For example, by having a simple version or mock within #if DEBUG
-        WorkoutCompleteView(result: mockResult, exerciseGrader: mockGrader) // Restored preview call
-        // Text("Preview disabled for debugging")
+        // Create a mock model container and populate it for preview if needed for fetchRepDetails
+        let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(for: WorkoutResultSwiftData.self, WorkoutDataPoint.self, configurations: config)
+        
+        // Insert the mock result so it can be "found" if view expects to fetch it by ID passed via result
+        container.mainContext.insert(mockResult)
+        
+        // Insert mock WorkoutDataPoints linked to mockResult for chart preview
+        if let workoutID = mockResult.id as? UUID { // Ensure UUID is extracted correctly
+            mockRepDetails.forEach {
+                let dp = WorkoutDataPoint(id: $0.id, exerciseName: "Pushup", repNumber: $0.repNumber, formQuality: $0.formQuality, workoutID: workoutID)
+                container.mainContext.insert(dp)
+            }
+        }
+        
+        return WorkoutCompleteView(result: mockResult, exerciseGrader: mockGraderBox)
+            .modelContainer(container) // Provide the mock container for the preview
+            //.preferredColorScheme(.dark) // Example for theme testing
     }
 }
 #endif 

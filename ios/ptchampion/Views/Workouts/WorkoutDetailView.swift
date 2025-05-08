@@ -49,25 +49,25 @@ struct WorkoutDetailView: View {
             PTLabel("Workout Complete!", style: .heading)
                 .padding(.bottom)
 
-            InfoRow(label: "Type:", value: workoutResult.exerciseType.capitalized)
-            InfoRow(label: "Duration:", value: formatDuration(workoutResult.durationSeconds))
+            WorkoutDetailInfoRow(label: "Type:", value: workoutResult.exerciseType.capitalized)
+            WorkoutDetailInfoRow(label: "Duration:", value: formatDuration(workoutResult.durationSeconds))
             
             if workoutResult.exerciseType.lowercased() == "run" {
-                InfoRow(label: "Distance:", value: formatDistance(workoutResult.distanceMeters))
+                WorkoutDetailInfoRow(label: "Distance:", value: formatDistance(workoutResult.distanceMeters))
                 if isLongestRunPR { Text("🎉 Longest Run PR!").font(.caption).foregroundColor(.green).padding(.leading) }
-                InfoRow(label: "Avg Pace:", value: formatPace(distanceMeters: workoutResult.distanceMeters, durationSeconds: workoutResult.durationSeconds))
+                WorkoutDetailInfoRow(label: "Avg Pace:", value: formatPace(distanceMeters: workoutResult.distanceMeters, durationSeconds: workoutResult.durationSeconds))
                 if isFastestOverallPacePR { Text("🎉 Fastest Overall Pace PR!").font(.caption).foregroundColor(.green).padding(.leading) }
             }
             
             if let score = workoutResult.score {
-                InfoRow(label: "Score:", value: String(format: "%.1f", score))
+                WorkoutDetailInfoRow(label: "Score:", value: String(format: "%.1f", score))
                 if isHighestScorePR { Text("🎉 Highest Score PR!").font(.caption).foregroundColor(.green).padding(.leading) }
             } else if workoutResult.exerciseType.lowercased() != "run" {
-                InfoRow(label: "Score:", value: "N/A")
+                WorkoutDetailInfoRow(label: "Score:", value: "N/A")
             }
             
             if let repCount = workoutResult.repCount {
-                InfoRow(label: "Reps:", value: "\(repCount)")
+                WorkoutDetailInfoRow(label: "Reps:", value: "\(repCount)")
                 if isMostRepsPR { Text("🎉 Most Reps PR!").font(.caption).foregroundColor(.green).padding(.leading) }
             }
             
@@ -179,7 +179,8 @@ struct WorkoutDetailView: View {
 }
 
 // Helper view for consistent row display
-struct InfoRow: View {
+// Renamed from InfoRow to avoid conflict
+struct WorkoutDetailInfoRow: View {
     let label: String
     let value: String
     

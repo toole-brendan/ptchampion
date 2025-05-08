@@ -3,6 +3,8 @@ import Combine
 import PTDesignSystem
 import SwiftData // Import SwiftData for ModelContext
 import Vision // Needed for VNHumanBodyPoseObservation.JointName
+import AudioToolbox // For system sounds
+import UIKit // For haptics
 
 // Dummy Grader for types not yet implemented
 final class PlaceholderGrader: ObservableObject, ExerciseGraderProtocol {
@@ -35,6 +37,7 @@ struct CameraExerciseView: View {
     @StateObject private var cameraService = CameraService()
     @StateObject private var poseDetector = PoseDetectorService()
     @StateObject private var exerciseGraderBox: AnyExerciseGraderBox
+    @StateObject private var workoutTimer = WorkoutTimer() // New WorkoutTimer
 
     @Environment(\.modelContext) private var modelContext // For saving workout data
 
@@ -45,13 +48,14 @@ struct CameraExerciseView: View {
     // Exercise State
     @State private var repCount: Int = 0
     @State private var liveFeedback: String = "Prepare for exercise."
-    @State private var isPaused: Bool = false
+    @State private var isWorkoutPaused: Bool = false // Renamed from isPaused to clarify its scope
     @State private var isSoundEnabled: Bool = true // Or load from user prefs
+    @State private var currentWorkoutSessionID: UUID? // To link reps to a session
 
-    // Timer State
-    @State private var elapsedTime: Int = 0 // in seconds
-    @State private var timerSubscription: Cancellable? = nil
-    @State private var workoutStartTime: Date? = nil
+    // Timer State - REMOVED, managed by WorkoutTimer
+    // @State private var elapsedTime: Int = 0 // in seconds
+    // @State private var timerSubscription: Cancellable? = nil
+    // @State private var workoutStartTime: Date? = nil
 
     @State private var cancellables = Set<AnyCancellable>()
 
@@ -97,7 +101,15 @@ struct CameraExerciseView: View {
             }
 
             // UI Overlay (Rep Counter, Feedback, Controls)
-            exerciseOverlayUI()
+            ExerciseHUDView(
+                repCount: $repCount,
+                liveFeedback: $liveFeedback,
+                elapsedTimeFormatted: workoutTimer.formattedElapsedTime, // Use from WorkoutTimer
+                isPaused: $isWorkoutPaused, // Pass workout pause state
+                isSoundEnabled: $isSoundEnabled,
+                togglePauseAction: { self.toggleWorkoutPause() }, // Renamed for clarity
+                toggleSoundAction: { self.toggleSound() }
+            )
 
             // Pre-permission request view
             if showPermissionRequest {
@@ -129,9 +141,9 @@ struct CameraExerciseView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                (Button("End") {
+                Button("End") {
                     finishWorkout()
-                })
+                }
                 .foregroundColor(Color.red)
             }
         }
@@ -151,8 +163,11 @@ struct CameraExerciseView: View {
     private func setupView() {
         exerciseGraderBox.resetState()
         updateUIFromGrader()
-        elapsedTime = 0
-        startTimer() // Start timer when view is ready and not paused
+        workoutTimer.reset()
+        workoutTimer.start()
+        currentWorkoutSessionID = UUID() // Generate session ID at the start
+        let idStringForPrint = currentWorkoutSessionID?.uuidString ?? "nil-session-id"
+        print("New workout session started with ID: \(idStringForPrint)")
         setupCameraAndPoseDetection()
     }
 
@@ -160,18 +175,18 @@ struct CameraExerciseView: View {
         // Subscribe to camera authorization status
         cameraService.authorizationStatusPublisher
             .receive(on: DispatchQueue.main)
-            .sink { [self] status in
-                permissionDenied = (status == .denied || status == .restricted)
+            .sink { status in
+                self.permissionDenied = (status == .denied || status == .restricted)
                 if status == .authorized {
-                    showPermissionRequest = false
-                    cameraService.startSession()
-                    if !isPaused { startTimer() } // Start timer if authorized and not paused
+                    self.showPermissionRequest = false
+                    self.cameraService.startSession()
+                    if !self.isWorkoutPaused { self.workoutTimer.resume() }
                 } else if status == .notDetermined {
-                    showPermissionRequest = true
-                    stopTimer() // Ensure timer is stopped if permission not yet determined
+                    self.showPermissionRequest = true
+                    self.workoutTimer.pause()
                 } else {
-                    showPermissionRequest = false
-                    stopTimer() // Ensure timer is stopped if permission denied/restricted
+                    self.showPermissionRequest = false
+                    self.workoutTimer.stop()
                 }
             }
             .store(in: &cancellables)
@@ -180,7 +195,7 @@ struct CameraExerciseView: View {
         cameraService.framePublisher
             .compactMap { $0 } // Ensure frame is not nil
             .sink { frame in
-                guard !self.isPaused else { return } // Don't process frames if paused - self is captured by value
+                guard !self.isWorkoutPaused else { return } // Use isWorkoutPaused
                 self.poseDetector.processFrame(frame)
             }
             .store(in: &cancellables)
@@ -211,18 +226,44 @@ struct CameraExerciseView: View {
 
     private func cleanup() {
         cancellables.forEach { $0.cancel() }
-        timerSubscription?.cancel()
-        timerSubscription = nil
+        // timerSubscription?.cancel() // Removed
+        // timerSubscription = nil // Removed
+        workoutTimer.stop() // Stop the workout timer
         cameraService.stopSession()
     }
 
     private func handleGradingResult(_ result: GradingResult) {
         switch result {
         case .repCompleted(let formQuality):
-            // Update UI from grader's state which should now reflect the new rep
             updateUIFromGrader()
-            liveFeedback = "Rep Complete! Quality: \(Int(formQuality * 100))%" // Example feedback
-            // TODO: Play sound if enabled
+            liveFeedback = "Rep Complete! Quality: \\(Int(formQuality * 100))%"
+
+            if isSoundEnabled {
+                AudioServicesPlaySystemSound(1104)
+            }
+            let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+            impactGenerator.prepare()
+            impactGenerator.impactOccurred()
+
+            guard let workoutID = currentWorkoutSessionID else {
+                print("Error: Workout session ID is nil. Cannot save rep data.")
+                return
+            }
+
+            let repData = WorkoutDataPoint(
+                // id will be generated by default
+                timestamp: Date(),
+                exerciseName: exerciseType.displayName,
+                repNumber: self.repCount, // repCount is updated by updateUIFromGrader()
+                formQuality: formQuality,
+                phase: exerciseGraderBox.currentPhaseDescription,
+                workoutID: workoutID // Link to the current workout session
+            )
+            modelContext.insert(repData)
+            // SwiftData typically saves implicitly or on app background/quit.
+            // Explicit save can be done here if needed, but often not necessary for each rep.
+            // print("Saved rep data point: \\(repData.id) for workout \\(workoutID)")
+
         case .inProgress(let phase):
             liveFeedback = phase ?? exerciseGraderBox.currentPhaseDescription
         case .invalidPose(let reason):
@@ -245,42 +286,57 @@ struct CameraExerciseView: View {
     }
 
     private func finishWorkout() {
-        isPaused = true
-        stopTimer()
+        isWorkoutPaused = true
+        workoutTimer.stop()
         
+        guard let workoutID = currentWorkoutSessionID else {
+            print("Error: Workout session ID is nil. Cannot finalize workout.")
+            saveErrorMessage = "Workout session ID was lost. Cannot save workout."
+            showAlertForSaveError = true
+            self.completedWorkoutResult = nil
+            self.showWorkoutCompleteView = true
+            return
+        }
+
         let finalScore = exerciseGraderBox.calculateFinalScore()
         let workoutEndTime = Date()
-        let actualDuration = Int(workoutEndTime.timeIntervalSince(workoutStartTime ?? workoutEndTime))
+        let actualDuration = workoutTimer.elapsedTime
+        let startTime = workoutTimer.workoutStartTime ?? workoutEndTime // Fallback for startTime
 
+        // Use the init that doesn't take ID, then assign our pre-generated ID.
+        // Also add the missing isPublic argument.
         let newResult = WorkoutResultSwiftData(
+            // id: workoutID, // Don't pass ID here
             exerciseType: self.exerciseType.rawValue, 
-            startTime: workoutStartTime ?? workoutEndTime, 
+            startTime: startTime, 
             endTime: workoutEndTime, 
             durationSeconds: actualDuration, 
             repCount: self.repCount, 
-            score: finalScore
+            score: finalScore,
+            formQuality: exerciseGraderBox.formQualityAverage, // Add average form quality
+            distanceMeters: nil, // Assuming nil for non-running exercises
+            isPublic: false // Default to false, or add UI toggle later
         )
+        // Assign the pre-generated session ID
+        newResult.id = workoutID 
         
         modelContext.insert(newResult)
         do {
-            try modelContext.save()
+            try modelContext.save() // Explicit save for the main workout result
             self.completedWorkoutResult = newResult
-            print("Workout saved successfully: \(newResult.id)")
-            self.showWorkoutCompleteView = true // Show completion view only on successful save
+            print("Workout saved successfully: \\(newResult.id)")
+            self.showWorkoutCompleteView = true
         } catch {
-            print("Failed to save workout: \(error.localizedDescription)")
-            self.saveErrorMessage = "Could not save your workout at this time. Error: \(error.localizedDescription)"
+            print("Failed to save workout: \\(error.localizedDescription)")
+            self.saveErrorMessage = "Could not save your workout. Error: \\(error.localizedDescription)"
             self.showAlertForSaveError = true
-            self.completedWorkoutResult = nil // Ensure no result is passed if save failed
-            // Still proceed to show completion view, but it will indicate failure if result is nil
-            // Or, decide not to show completion view on save failure and just show alert then dismiss.
-            // For now, let's allow WorkoutCompleteView to show the error state based on nil result.
+            self.completedWorkoutResult = nil
             self.showWorkoutCompleteView = true 
         }
-        // self.showWorkoutCompleteView = true // Moved up into success path
     }
 
-    // MARK: - Timer Control
+    // MARK: - Timer Control - REMOVED, MOVED TO WorkoutTimer
+    /*
     private func startTimer() {
         guard !isPaused else { return }
         if workoutStartTime == nil {
@@ -296,19 +352,28 @@ struct CameraExerciseView: View {
         timerSubscription?.cancel()
         timerSubscription = nil
     }
+    */
 
-    private func togglePause() {
-        isPaused.toggle()
-        if isPaused {
-            stopTimer()
+    private func toggleWorkoutPause() { // Renamed from togglePause
+        isWorkoutPaused.toggle()
+        if isWorkoutPaused {
+            // stopTimer()
+            workoutTimer.pause()
             liveFeedback = "Paused"
         } else {
-            startTimer()
+            // startTimer()
+            workoutTimer.resume()
             updateUIFromGrader() // Refresh feedback
         }
     }
 
+    private func toggleSound() {
+        isSoundEnabled.toggle()
+        // Future: May need to inform the grader or other audio components
+    }
+
     // MARK: - UI Subviews
+    /*
     @ViewBuilder
     private func exerciseOverlayUI() -> some View {
         VStack {
@@ -372,12 +437,16 @@ struct CameraExerciseView: View {
         }
         .padding() // Overall padding for the overlay content
     }
+    */
     
+    // formatTime will be kept here as it's used by ExerciseHUDView via a property
+    /*
     private func formatTime(_ totalSeconds: Int) -> String {
         let minutes = totalSeconds / 60
         let seconds = totalSeconds % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
+    */
     
     @ViewBuilder
     private func permissionDeniedOverlay() -> some View {

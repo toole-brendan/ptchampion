@@ -1,6 +1,13 @@
 import SwiftUI
 import PTDesignSystem
 
+// New generic data point for charts
+struct ChartableDataPoint: Identifiable {
+    let id = UUID() // Conform to Identifiable for ForEach
+    let date: Date
+    let value: Double
+}
+
 struct WorkoutProgressChart: View {
     // Create a static date formatter
     private static let dayFormatter: DateFormatter = {
@@ -9,12 +16,12 @@ struct WorkoutProgressChart: View {
         return formatter
     }()
     
-    let dataPoints: [WorkoutDataPoint]
+    let dataPoints: [ChartableDataPoint] // Changed from [WorkoutDataPoint]
     let title: String
     let yAxisLabel: String?
     let showLabels: Bool
     
-    init(dataPoints: [WorkoutDataPoint], 
+    init(dataPoints: [ChartableDataPoint], // Changed from [WorkoutDataPoint]
          title: String, 
          yAxisLabel: String? = nil,
          showLabels: Bool = true) {
@@ -64,12 +71,16 @@ struct WorkoutProgressChart: View {
                         Path { path in
                             let width = geometry.size.width
                             let height = geometry.size.height
-                            let maxValue = dataPoints.map { $0.value }.max() ?? 1
+                            // Use .value from ChartableDataPoint
+                            let maxValue = dataPoints.map { $0.value }.max() ?? 1.0 
                             let xStep = width / CGFloat(max(1, dataPoints.count - 1))
                             
+                            if dataPoints.isEmpty { return } // Guard against empty array
+
                             path.move(
                                 to: CGPoint(
                                     x: 0, 
+                                    // Use .value from ChartableDataPoint
                                     y: height - CGFloat(dataPoints[0].value / maxValue) * height
                                 )
                             )
@@ -77,6 +88,7 @@ struct WorkoutProgressChart: View {
                             for i in 1..<dataPoints.count {
                                 let point = CGPoint(
                                     x: CGFloat(i) * xStep,
+                                    // Use .value from ChartableDataPoint
                                     y: height - CGFloat(dataPoints[i].value / maxValue) * height
                                 )
                                 path.addLine(to: point)
@@ -86,11 +98,13 @@ struct WorkoutProgressChart: View {
                         
                         // Data points
                         ForEach(dataPoints.indices, id: \.self) { i in
-                            let maxValue = dataPoints.map { $0.value }.max() ?? 1
+                            // Use .value from ChartableDataPoint
+                            let maxValue = dataPoints.map { $0.value }.max() ?? 1.0
                             let width = geometry.size.width
                             let height = geometry.size.height
                             let xStep = width / CGFloat(max(1, dataPoints.count - 1))
                             let x = CGFloat(i) * xStep
+                            // Use .value from ChartableDataPoint
                             let y = height - CGFloat(dataPoints[i].value / maxValue) * height
                             
                             Circle()
@@ -104,7 +118,8 @@ struct WorkoutProgressChart: View {
                             HStack(alignment: .bottom, spacing: 0) {
                                 ForEach(dataPoints.indices, id: \.self) { i in
                                     if i == 0 || i == dataPoints.count - 1 || i % max(1, (dataPoints.count / 4)) == 0 {
-                                        let date = dataPoints[i].date
+                                        // Use .date from ChartableDataPoint
+                                        let date = dataPoints[i].date 
                                         // Use the static formatter instead
                                         let text = Self.dayFormatter.string(from: date)
                                         

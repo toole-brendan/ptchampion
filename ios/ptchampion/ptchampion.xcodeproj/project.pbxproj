@@ -12,6 +12,8 @@
 		BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0402DCACABE00EC4D58 /* ActivityView.swift */; };
 		BF37B0442DCACAE200EC4D58 /* AnyExerciseGraderBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0432DCACAE200EC4D58 /* AnyExerciseGraderBox.swift */; };
 		BF37B0462DCADB4F00EC4D58 /* LeaderboardRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */; };
+		BF37B0522DCC232E00EC4D58 /* ExerciseHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0512DCC232E00EC4D58 /* ExerciseHUDView.swift */; };
+		BF37B0542DCC233F00EC4D58 /* WorkoutTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0532DCC233F00EC4D58 /* WorkoutTimer.swift */; };
 		BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */; };
 		BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */; };
 		BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
@@ -133,6 +135,8 @@
 		BF37B0402DCACABE00EC4D58 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		BF37B0432DCACAE200EC4D58 /* AnyExerciseGraderBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyExerciseGraderBox.swift; sourceTree = "<group>"; };
 		BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardRowView.swift; sourceTree = "<group>"; };
+		BF37B0512DCC232E00EC4D58 /* ExerciseHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHUDView.swift; sourceTree = "<group>"; };
+		BF37B0532DCC233F00EC4D58 /* WorkoutTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTimer.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -490,6 +494,7 @@
 		BF63E4482DB1EB980037CD02 /* Workouts */ = {
 			isa = PBXGroup;
 			children = (
+				BF37B0512DCC232E00EC4D58 /* ExerciseHUDView.swift */,
 				BF37B03C2DCAC89500EC4D58 /* CameraExerciseView.swift */,
 				BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */,
 				BF8F67922DC930C90065A2D7 /* WorkoutDetailView.swift */,
@@ -524,6 +529,7 @@
 		BF63E45F2DB1EBA40037CD02 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				BF37B0532DCC233F00EC4D58 /* WorkoutTimer.swift */,
 				BF8F67942DC931190065A2D7 /* DashboardViewModel.swift */,
 				BF8F67952DC931190065A2D7 /* WorkoutHistoryViewModel.swift */,
 				BF63E4592DB1EBA40037CD02 /* AuthViewModel.swift */,
@@ -765,6 +771,7 @@
 				BFADF9C62DC93E0A0016AF0B /* NetworkService.swift in Sources */,
 				BFADF9C72DC93E0A0016AF0B /* FeatureFlagService.swift in Sources */,
 				BFADF9C82DC93E0A0016AF0B /* UnifiedNetworkService.swift in Sources */,
+				BF37B0522DCC232E00EC4D58 /* ExerciseHUDView.swift in Sources */,
 				BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */,
 				BF63E44C2DB1EB980037CD02 /* RunWorkoutView.swift in Sources */,
 				BF63E4722DB1F3910037CD02 /* WorkoutHistoryRow.swift in Sources */,
@@ -790,6 +797,7 @@
 				BF63E4282DB1EB830037CD02 /* AuthServiceProtocol.swift in Sources */,
 				BF63E4602DB1EBA40037CD02 /* ProgressViewModel.swift in Sources */,
 				BF63E4612DB1EBA40037CD02 /* LeaderboardViewModel.swift in Sources */,
+				BF37B0542DCC233F00EC4D58 /* WorkoutTimer.swift in Sources */,
 				BF63E4622DB1EBA40037CD02 /* WorkoutViewModel.swift in Sources */,
 				BF63E46B2DB1EBAF0037CD02 /* PullupGrader.swift in Sources */,
 				BFADF9B12DC93D890016AF0B /* Toast.swift in Sources */,
