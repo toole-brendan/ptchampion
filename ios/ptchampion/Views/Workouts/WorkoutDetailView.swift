@@ -1,6 +1,15 @@
 import SwiftUI
 import PTDesignSystem
 import SwiftData
+import Charts // Ensure Charts is imported
+
+// Helper struct for detailed rep breakdown including phase
+struct WorkoutRepDetailItem: Identifiable {
+    let id: UUID
+    let repNumber: Int
+    let formQuality: Double
+    let phase: String?
+}
 
 struct WorkoutDetailView: View {
     let workoutResult: WorkoutResultSwiftData
@@ -10,6 +19,12 @@ struct WorkoutDetailView: View {
     @State private var isFastestOverallPacePR: Bool = false
     @State private var isHighestScorePR: Bool = false
     @State private var isMostRepsPR: Bool = false
+
+    // State for rep details
+    @State private var repChartDataItems: [RepChartData] = []
+    @State private var repTextDetails: [WorkoutRepDetailItem] = []
+    @State private var isLoadingRepDetails: Bool = false
+    @State private var repDetailsError: String? = nil
     
     // Helper to format duration
     private func formatDuration(_ seconds: Int) -> String {
@@ -45,66 +60,172 @@ struct WorkoutDetailView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            PTLabel("Workout Complete!", style: .heading)
-                .padding(.bottom)
+        ScrollView { // Wrap content in ScrollView if it might exceed screen height
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+                PTLabel("Workout Summary", style: .heading)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
 
-            WorkoutDetailInfoRow(label: "Type:", value: workoutResult.exerciseType.capitalized)
-            WorkoutDetailInfoRow(label: "Duration:", value: formatDuration(workoutResult.durationSeconds))
-            
-            if workoutResult.exerciseType.lowercased() == "run" {
-                WorkoutDetailInfoRow(label: "Distance:", value: formatDistance(workoutResult.distanceMeters))
-                if isLongestRunPR { Text("🎉 Longest Run PR!").font(.caption).foregroundColor(.green).padding(.leading) }
-                WorkoutDetailInfoRow(label: "Avg Pace:", value: formatPace(distanceMeters: workoutResult.distanceMeters, durationSeconds: workoutResult.durationSeconds))
-                if isFastestOverallPacePR { Text("🎉 Fastest Overall Pace PR!").font(.caption).foregroundColor(.green).padding(.leading) }
-            }
-            
-            if let score = workoutResult.score {
-                WorkoutDetailInfoRow(label: "Score:", value: String(format: "%.1f", score))
-                if isHighestScorePR { Text("🎉 Highest Score PR!").font(.caption).foregroundColor(.green).padding(.leading) }
-            } else if workoutResult.exerciseType.lowercased() != "run" {
-                WorkoutDetailInfoRow(label: "Score:", value: "N/A")
-            }
-            
-            if let repCount = workoutResult.repCount {
-                WorkoutDetailInfoRow(label: "Reps:", value: "\(repCount)")
-                if isMostRepsPR { Text("🎉 Most Reps PR!").font(.caption).foregroundColor(.green).padding(.leading) }
-            }
-            
-            // Placeholder for Badges
-            PTLabel("Badges Earned:", style: .subheading)
-                .padding(.top)
-            Text("Coming Soon!")
-                .font(.caption)
-                .foregroundColor(.gray)
-            
-            Spacer()
-            
-            // Placeholder for Share Button
-            PTButton(workoutResult.isPublic ? "Remove from Leaderboard" : "Make Public for Leaderboard", style: .secondary) {
-                workoutResult.isPublic.toggle()
-                do {
-                    try modelContext.save()
-                    print("Workout public status updated: \(workoutResult.isPublic)")
-                } catch {
-                    print("Failed to save workout public status: \(error)")
-                    // Optionally revert toggle if save fails
-                    // workoutResult.isPublic.toggle()
+                WorkoutDetailInfoRow(label: "Type:", value: workoutResult.exerciseType.capitalized)
+                WorkoutDetailInfoRow(label: "Date:", value: workoutResult.startTime, style: .dateTime.month().day().year().hour().minute())
+                WorkoutDetailInfoRow(label: "Duration:", value: formatDuration(workoutResult.durationSeconds))
+                
+                if workoutResult.exerciseType.lowercased() == "run" {
+                    WorkoutDetailInfoRow(label: "Distance:", value: formatDistance(workoutResult.distanceMeters))
+                    if isLongestRunPR { Text("🎉 Longest Run PR!").font(.caption).foregroundColor(.green).padding(.leading) }
+                    WorkoutDetailInfoRow(label: "Avg Pace:", value: formatPace(distanceMeters: workoutResult.distanceMeters, durationSeconds: workoutResult.durationSeconds))
+                    if isFastestOverallPacePR { Text("🎉 Fastest Overall Pace PR!").font(.caption).foregroundColor(.green).padding(.leading) }
                 }
+                
+                if let score = workoutResult.score {
+                    WorkoutDetailInfoRow(label: "Score:", value: String(format: "%.1f%%", score))
+                    if isHighestScorePR { Text("🎉 Highest Score PR!").font(.caption).foregroundColor(.green).padding(.leading) }
+                } else if workoutResult.exerciseType.lowercased() != "run" {
+                    WorkoutDetailInfoRow(label: "Score:", value: "N/A")
+                }
+                
+                if let repCount = workoutResult.repCount {
+                    WorkoutDetailInfoRow(label: "Reps:", value: "\(repCount)")
+                    if isMostRepsPR { Text("🎉 Most Reps PR!").font(.caption).foregroundColor(.green).padding(.leading) }
+                }
+                
+                // Section for Rep-by-Rep Breakdown
+                if workoutResult.exerciseType.lowercased() != "run" { // Only show for non-run exercises
+                    Section {
+                        PTLabel("Rep-by-Rep Breakdown", style: .subheading)
+                            .padding(.top)
+
+                        if isLoadingRepDetails {
+                            ProgressView("Loading rep details...")
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .padding()
+                        } else if let errorMsg = repDetailsError {
+                            Text("Could not load rep details: \(errorMsg)")
+                                .foregroundColor(AppTheme.GeneratedColors.error)
+                                .padding()
+                        } else if !repChartDataItems.isEmpty {
+                            PTLabel("Form Quality per Rep", style: .caption).padding(.top, AppTheme.GeneratedSpacing.small)
+                            Chart(repChartDataItems) { item in
+                                RuleMark(y: .value("Target Quality", 0.75))
+                                    .foregroundStyle(AppTheme.GeneratedColors.success.opacity(0.5))
+                                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [5]))
+                                
+                                BarMark(
+                                    x: .value("Rep", "Rep \(item.repNumber)"),
+                                    y: .value("Quality", item.formQuality)
+                                )
+                                .foregroundStyle(item.formQuality >= 0.75 ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.warning)
+                            }
+                            .chartYScale(domain: 0...1)
+                            .frame(height: 150)
+                            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+                            
+                            Divider().padding(.vertical, AppTheme.GeneratedSpacing.small)
+                            
+                            PTLabel("Detailed Feedback per Rep", style: .caption).padding(.bottom, AppTheme.GeneratedSpacing.extraSmall)
+                            ForEach(repTextDetails) { detail in
+                                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.extraSmall) {
+                                    HStack {
+                                        Text("Rep \(detail.repNumber):")
+                                            .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
+                                        Spacer()
+                                        Text("Quality: \(String(format: "%.0f%%", detail.formQuality * 100))")
+                                            .font(AppTheme.GeneratedTypography.body(size: nil))
+                                    }
+                                    if let phase = detail.phase, !phase.isEmpty {
+                                        Text("Feedback: \(phase)")
+                                            .font(AppTheme.GeneratedTypography.caption(size: nil))
+                                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                    } else {
+                                        Text("Feedback: N/A")
+                                            .font(AppTheme.GeneratedTypography.caption(size: nil))
+                                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                    }
+                                }
+                                .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
+                                if detail.id != repTextDetails.last?.id {
+                                     Divider()
+                                }
+                            }
+                        } else {
+                            Text("No detailed rep data found for this session.")
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                .padding()
+                        }
+                    }
+                }
+
+
+                // Placeholder for Badges
+                Section {
+                    PTLabel("Badges Earned:", style: .subheading)
+                        .padding(.top)
+                    Text("Coming Soon!")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer() // Push button to bottom if content is short
+                
+                PTButton(workoutResult.isPublic ? "Set to Private" : "Set to Public (Leaderboard)", style: .secondary) {
+                    workoutResult.isPublic.toggle()
+                    // No explicit save here, assumes @Query handles it or it's saved elsewhere if needed persistently
+                    // For explicit save:
+                    // do {
+                    //     try modelContext.save()
+                    // } catch {
+                    //     print("Failed to save workout public status: \(error)")
+                    // }
+                }
+                .padding(.vertical, AppTheme.GeneratedSpacing.medium) // Ensure button has padding
             }
-            .padding(.bottom)
+            .padding(AppTheme.GeneratedSpacing.contentPadding) // Overall padding for the VStack
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-        .navigationTitle("Workout Summary")
+        .navigationTitle("Workout Details") // More specific title
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            checkPersonalRecords()
+        .task { // Use .task for async operations tied to view lifecycle
+            await checkPersonalRecords()
+            if workoutResult.exerciseType.lowercased() != "run" {
+                 await fetchRepDetails()
+            }
         }
     }
     
-    private func checkPersonalRecords() {
+    private func fetchRepDetails() async {
+        guard let workoutID = workoutResult.id as? UUID else { // Ensure workoutResult.id is treated as UUID
+            repDetailsError = "Workout session ID is invalid."
+            return
+        }
+        
+        isLoadingRepDetails = true
+        repDetailsError = nil
+
+        let descriptor = FetchDescriptor<WorkoutDataPoint>(
+            predicate: #Predicate { $0.workoutID == workoutID },
+            sortBy: [SortDescriptor(\.timestamp)] // Sort by timestamp to maintain order
+        )
+
+        do {
+            let dataPoints = try modelContext.fetch(descriptor)
+            // Map to both chart data and text detail data
+            self.repChartDataItems = dataPoints.map {
+                RepChartData(id: $0.id, repNumber: $0.repNumber, formQuality: $0.formQuality)
+            }
+            self.repTextDetails = dataPoints.map {
+                WorkoutRepDetailItem(id: $0.id, repNumber: $0.repNumber, formQuality: $0.formQuality, phase: $0.phase)
+            }
+            if dataPoints.isEmpty {
+                 print("No WorkoutDataPoint found for session \(workoutID.uuidString)")
+            }
+        } catch {
+            print("Failed to fetch rep details: \(error)")
+            repDetailsError = error.localizedDescription
+        }
+        isLoadingRepDetails = false
+    }
+    
+    private func checkPersonalRecords() async { // Mark as async if any part of it becomes async
         let currentExerciseType = workoutResult.exerciseType
         let currentWorkoutID = workoutResult.id
         
@@ -179,10 +300,24 @@ struct WorkoutDetailView: View {
 }
 
 // Helper view for consistent row display
-// Renamed from InfoRow to avoid conflict
 struct WorkoutDetailInfoRow: View {
     let label: String
     let value: String
+    var dateStyle: Date.FormatStyle? = nil // Optional Date.FormatStyle
+
+    // Overloaded initializer for Date values
+    init(label: String, value: Date, style: Date.FormatStyle = .dateTime.day().month().year().hour().minute()) {
+        self.label = label
+        self.value = value.formatted(style)
+        self.dateStyle = style
+    }
+    
+    // Original initializer for String values
+    init(label: String, value: String) {
+        self.label = label
+        self.value = value
+        self.dateStyle = nil
+    }
     
     var body: some View {
         HStack {
@@ -216,10 +351,24 @@ struct WorkoutDetailInfoRow: View {
         distanceMeters: nil,
         isPublic: true
     )
+    
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: WorkoutResultSwiftData.self, WorkoutDataPoint.self, configurations: config)
+    
+    // Insert mock WorkoutDataPoints for the pushup session for preview
+    if let workoutID = samplePushups.id as? UUID {
+        let mockDataPoints = [
+            WorkoutDataPoint(id: UUID(), exerciseName: "pushup", repNumber: 1, formQuality: 0.9, phase: "Good start", workoutID: workoutID),
+            WorkoutDataPoint(id: UUID(), exerciseName: "pushup", repNumber: 2, formQuality: 0.85, phase: "Elbows slightly flared", workoutID: workoutID),
+            WorkoutDataPoint(id: UUID(), exerciseName: "pushup", repNumber: 3, formQuality: 0.70, phase: "Back arched", workoutID: workoutID)
+        ]
+        mockDataPoints.forEach { container.mainContext.insert($0) }
+    }
+
 
     return NavigationView {
         // You can switch between sampleRun and samplePushups to test
-        WorkoutDetailView(workoutResult: sampleRun)
+        WorkoutDetailView(workoutResult: samplePushups)
     }
-    .modelContainer(for: WorkoutResultSwiftData.self, inMemory: true) // Needed if WorkoutResultSwiftData uses @Model
+    .modelContainer(container)
 } 
