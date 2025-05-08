@@ -2,6 +2,29 @@ import SwiftUI
 import PTDesignSystem
 import SwiftData
 
+// Define ActivityFeedItem struct
+struct ActivityFeedItem: Identifiable {
+    let id = UUID()
+    let text: String
+    let date: Date
+    let icon: String // Added icon for visual variety
+}
+
+// Sample Activity Data
+let sampleActivities: [ActivityFeedItem] = [
+    ActivityFeedItem(text: "Completed Push-Up Challenge", date: Date().addingTimeInterval(-120), icon: "flame.fill"), // 2 min ago
+    ActivityFeedItem(text: "Set a new Personal Best in Sit-Ups", date: Date().addingTimeInterval(-3600 * 3), icon: "star.fill"), // 3 hours ago
+    ActivityFeedItem(text: "Logged 5 workouts this week", date: Date().addingTimeInterval(-3600 * 24 * 2), icon: "figure.walk"), // 2 days ago
+    ActivityFeedItem(text: "Joined the 'Monthly Fitness' leaderboard", date: Date().addingTimeInterval(-3600 * 24 * 5), icon: "rosette") // 5 days ago
+]
+
+// Helper to format dates relatively
+func relativeDateFormatter(date: Date) -> String {
+    let formatter = RelativeDateTimeFormatter()
+    formatter.unitsStyle = .full
+    return formatter.localizedString(for: date, relativeTo: Date())
+}
+
 struct DashboardView: View {
     // Keep track of the constants we need
     private static let cardGap: CGFloat = AppTheme.GeneratedSpacing.itemSpacing
@@ -46,98 +69,19 @@ struct DashboardView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Self.cardGap) {
                         // 4-1: Dynamic greeting with user's name
-                        HStack(spacing: 0) {
-                            Text("Good \(viewModel.timeOfDayGreeting), ")
-                            Text(authViewModel.displayName)
-                                .foregroundStyle(
-                                    LinearGradient(
-                                        gradient: Gradient(colors: [
-                                            AppTheme.GeneratedColors.brassGold.opacity(0.9), // Lighter gold at top
-                                            AppTheme.GeneratedColors.brassGold // Standard gold at bottom
-                                        ]), 
-                                        startPoint: .top, 
-                                        endPoint: .bottom
-                                    )
-                                )
-                        }
-                        .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading2))
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+                        greetingHeaderView() // Call the new helper method
                         
                         // 4-2: Quick Stats Card Grid
-                        LazyVGrid(columns: [
-                            GridItem(.flexible(), spacing: Self.cardGap),
-                            GridItem(.flexible(), spacing: Self.cardGap)
-                        ], spacing: Self.cardGap) {
-                            statCard(at: 0, data: MetricData(title: "Last Score", value: viewModel.lastScoreString), trend: viewModel.lastScoreTrend)
-                            statCard(at: 1, data: MetricData(title: "7-Day Push-Ups", value: viewModel.weeklyReps), trend: viewModel.weeklyPushupTrend)
-                            statCard(at: 2, data: MetricData(title: "Monthly Workouts", value: viewModel.monthlyWorkouts))
-                            statCard(at: 3, data: MetricData(title: "Personal Best", value: viewModel.personalBest))
-                        }
+                        quickStatsGridView() // Call the new helper method for stat cards
                         
                         // 4-3: Primary Call-to-Action
-                        NavigationLink(destination: WorkoutSelectionView()) {
-                            PTButton("Start Workout") {
-                                hapticGenerator.impactOccurred()
-                                // Original button action would go here if it wasn't just for NavLink label
-                                // Since this PTButton is just a label for a NavigationLink,
-                                // the haptic on the PTButton's action might not fire as expected
-                                // if the NavigationLink itself handles the tap first.
-                                // A more reliable way for NavLink haptics was the .onTapGesture on the QuickLinkCard's NavLink.
-                                // For a pure button, this action block is the place.
-                            }
-                            .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(PlainButtonStyle()) // Remove NavigationLink styling
-                        .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing)
-                        
+                        primaryCallToActionView() // Call the new helper method
+
                         // 4-4: Quick Links Section
-                        PTLabel("Quick Links", style: .subheading)
-                            .padding(.top, AppTheme.GeneratedSpacing.large)
-                        PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
-                        
-                        LazyVGrid(columns: [
-                            GridItem(.flexible(), spacing: Self.cardGap),
-                            GridItem(.flexible(), spacing: Self.cardGap)
-                        ], spacing: Self.cardGap) {
-                            ForEach(quickLinks.indices, id: \.self) { index in
-                                let link = quickLinks[index]
-                                QuickLinkCard(title: link.title, icon: link.icon, destination: link.destination, isSystemIcon: link.isSystemIcon)
-                            }
-                        }
-                        .opacity(quickLinksVisible ? 1 : 0)
-                        .offset(y: quickLinksVisible ? 0 : 15)
-                        
-                        // 4-5: Activity Feed (Optional)
-                        if viewModel.totalWorkouts > 0 {
-                            Group { // WRAP content in Group
-                                PTLabel("Recent Activity", style: .subheading)
-                                    .padding(.top, AppTheme.GeneratedSpacing.large)
-                                PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
-                                
-                                PTCard {
-                                    HStack {
-                                        PTLabel("🏅", style: .heading)
-                                        
-                                        VStack(alignment: .leading) {
-                                            PTLabel("Latest Achievement", style: .bodyBold)
-                                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                                            
-                                            // Use the new latestAchievement property from ViewModel
-                                            PTLabel(viewModel.latestAchievement, style: .body) 
-                                                .font(.system(size: 14))
-                                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                                        }
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(AppTheme.GeneratedSpacing.itemSpacing)
-                                }
-                                .transition(.move(edge: .top))
-                            } // END Group
-                            .opacity(recentActivityVisible ? 1 : 0) // Apply to Group
-                            .offset(y: recentActivityVisible ? 0 : 15) // Apply to Group
-                        }
+                        quickLinksSectionView() // Call the new helper method
+
+                        // NEW: Activity Feed Section
+                        activityFeedSectionView() // Call the new helper method
                         
                         Spacer()
                     }
@@ -158,12 +102,135 @@ struct DashboardView: View {
         }
     }
     
+    // New helper method for the greeting header
+    @ViewBuilder
+    private func greetingHeaderView() -> some View {
+        HStack(spacing: 0) {
+            Text("Good \(viewModel.timeOfDayGreeting), ")
+            Text(authViewModel.displayName)
+                .foregroundStyle(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            AppTheme.GeneratedColors.brassGold.opacity(0.9), // Lighter gold at top
+                            AppTheme.GeneratedColors.brassGold // Standard gold at bottom
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        }
+        .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading2))
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+    }
+    
+    // New helper method for the quick stats grid
+    @ViewBuilder
+    private func quickStatsGridView() -> some View {
+        LazyVGrid(columns: [
+            GridItem(.flexible(), spacing: Self.cardGap),
+            GridItem(.flexible(), spacing: Self.cardGap)
+        ], spacing: Self.cardGap) {
+            statCard(at: 0, data: MetricData(title: "Last Score", value: viewModel.lastScoreString), trend: viewModel.lastScoreTrend)
+            statCard(at: 1, data: MetricData(title: "7-Day Push-Ups", value: viewModel.weeklyReps), trend: viewModel.weeklyPushupTrend)
+            statCard(at: 2, data: MetricData(title: "Monthly Workouts", value: viewModel.monthlyWorkouts))
+            statCard(at: 3, data: MetricData(title: "Personal Best", value: viewModel.personalBest))
+        }
+    }
+    
+    // New helper method for the primary call to action button
+    @ViewBuilder
+    private func primaryCallToActionView() -> some View {
+        NavigationLink(destination: WorkoutSelectionView()) {
+            PTButton("Start Workout") {
+                hapticGenerator.impactOccurred()
+                // Original button action would go here if it wasn't just for NavLink label
+                // Since this PTButton is just a label for a NavigationLink,
+                // the haptic on the PTButton's action might not fire as expected
+                // if the NavigationLink itself handles the tap first.
+                // A more reliable way for NavLink haptics was the .onTapGesture on the QuickLinkCard's NavLink.
+                // For a pure button, this action block is the place.
+            }
+            .frame(maxWidth: .infinity)
+        }
+        .buttonStyle(PlainButtonStyle()) // Remove NavigationLink styling
+        .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing)
+    }
+
+    // New helper method for the Quick Links section
+    @ViewBuilder
+    private func quickLinksSectionView() -> some View {
+        PTLabel("Quick Links", style: .subheading)
+            .padding(.top, AppTheme.GeneratedSpacing.large)
+        PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
+
+        LazyVGrid(columns: [
+            GridItem(.flexible(), spacing: Self.cardGap),
+            GridItem(.flexible(), spacing: Self.cardGap)
+        ], spacing: Self.cardGap) {
+            ForEach(quickLinks.indices, id: \.self) { index in
+                let link = quickLinks[index]
+                QuickLinkCard(title: link.title, icon: link.icon, destination: link.destination, isSystemIcon: link.isSystemIcon)
+            }
+        }
+        .opacity(quickLinksVisible ? 1 : 0)
+        .offset(y: quickLinksVisible ? 0 : 15)
+    }
+    
+    // New helper method for the Activity Feed section
+    @ViewBuilder
+    private func activityFeedSectionView() -> some View {
+        if !sampleActivities.isEmpty { // Show only if there are activities
+            Group {
+                PTLabel("Activity Feed", style: .subheading)
+                    .padding(.top, AppTheme.GeneratedSpacing.large)
+                PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
+
+                TimelineView(.periodic(from: Date(), by: 60.0)) { context in
+                    let displayedActivities = Array(sampleActivities.prefix(3)) // Ensure it's an Array for indexed access
+                    
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                        ForEach(displayedActivities.indices, id: \.self) { index in
+                            let activity = displayedActivities[index]
+                            HStack { 
+                                Image(systemName: activity.icon)
+                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                    .frame(width: 20, alignment: .center)
+                                VStack(alignment: .leading) {
+                                    PTLabel(activity.text, style: .body)
+                                        .lineLimit(2)
+                                    PTLabel(relativeDateFormatter(date: activity.date), style: .caption)
+                                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                }
+                                Spacer() 
+                            }
+                            .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall) 
+                            
+                            // Always render separator, control by opacity, use simple color
+                            PTSeparator(color: Color.gray.opacity(0.5)) // Simplified color
+                                .opacity(index < displayedActivities.count - 1 ? 1 : 0)
+                        }
+                    }
+                    .padding(AppTheme.GeneratedSpacing.itemSpacing)
+                    .background(AppTheme.GeneratedColors.cardBackground)
+                    .cornerRadius(AppTheme.GeneratedRadius.medium)
+                }
+            }
+            // Animation modifiers still commented out for now
+            // .opacity(recentActivityVisible ? 1 : 0)
+            // .offset(y: recentActivityVisible ? 0 : 15)
+        } else {
+            EmptyView()
+        }
+    }
+    
     // Helper to build stat cards with animation modifiers
     @ViewBuilder
     private func statCard(at index: Int, data: MetricData, trend: TrendDirection? = nil) -> some View {
         MetricCardView(data, trend: trend)
             .opacity(statCardsVisible[index] ? 1 : 0)
             .offset(y: statCardsVisible[index] ? 0 : 15) // Slide up by 15 points
+            .animation(.easeOut.delay(Double(index) * 0.1), value: statCardsVisible[index])
     }
     
     private func animateContentIn() {
