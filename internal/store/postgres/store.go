@@ -269,3 +269,194 @@ var _ store.UserStore = (*Store)(nil)
 // To be safe, let's ensure Store implements the full store.Store.
 // This will fail if ExerciseStore or LeaderboardStore methods are not (even if stubbed) on *db.Store
 var _ store.Store = (*Store)(nil)
+
+// --- ExerciseStore Implementation ---
+
+// Helper to convert *int32 to sql.NullInt32
+func int32PtrToNullInt32(ptr *int32) sql.NullInt32 {
+	if ptr == nil {
+		return sql.NullInt32{}
+	}
+	return sql.NullInt32{Int32: *ptr, Valid: true}
+}
+
+// Helper to convert sql.NullInt32 to *int32
+func nullInt32ToInt32Ptr(ni sql.NullInt32) *int32 {
+	if !ni.Valid {
+		return nil
+	}
+	return &ni.Int32
+}
+
+// Helper to convert *string to sql.NullString
+func stringPtrToNullString(ptr *string) sql.NullString {
+	if ptr == nil {
+		return sql.NullString{}
+	}
+	return sql.NullString{String: *ptr, Valid: true}
+}
+
+// Helper to convert sql.NullString to *string
+func nullStringToStringPtr(ns sql.NullString) *string {
+	if !ns.Valid {
+		return nil
+	}
+	return &ns.String
+}
+
+// Helper to convert sql.NullTime to time.Time, returning zero value if null
+func nullTimeToTime(nt sql.NullTime) time.Time {
+	if nt.Valid {
+		return nt.Time
+	}
+	return time.Time{} // Return zero value for time if SQL time is NULL
+}
+
+// toStoreExercise converts db.Exercise to store.Exercise
+func toStoreExercise(dbEx Exercise) *store.Exercise {
+	return &store.Exercise{
+		ID:          dbEx.ID,
+		Name:        dbEx.Name,
+		Description: nullStringToStringPtr(dbEx.Description),
+		Type:        dbEx.Type,
+	}
+}
+
+// toStoreUserExerciseRecord converts db.UserExercise or db.GetUserExercisesRow to store.UserExerciseRecord
+func toStoreUserExerciseRecord(dbRecord interface{}) *store.UserExerciseRecord {
+	switch v := dbRecord.(type) {
+	case UserExercise: // From LogUserExercise query result
+		return &store.UserExerciseRecord{
+			ID:         v.ID,
+			UserID:     v.UserID,
+			ExerciseID: v.ExerciseID,
+			// ExerciseName and ExerciseType are not in db.UserExercise model directly
+			// These are usually populated by the service layer after fetching definition or if joined in query
+			Reps:          nullInt32ToInt32Ptr(v.Repetitions),
+			TimeInSeconds: nullInt32ToInt32Ptr(v.TimeInSeconds),
+			Distance:      nullInt32ToInt32Ptr(v.Distance),
+			Notes:         nullStringToStringPtr(v.Notes),
+			Grade:         v.Grade.Int32, // Assuming grade is always valid after logging
+			CreatedAt:     nullTimeToTime(v.CreatedAt),
+		}
+	case GetUserExercisesRow: // From GetUserExercises query result
+		return &store.UserExerciseRecord{
+			ID:            v.ID,
+			UserID:        v.UserID,
+			ExerciseID:    v.ExerciseID,
+			ExerciseName:  v.ExerciseName, // Available in GetUserExercisesRow
+			ExerciseType:  v.ExerciseType, // Available in GetUserExercisesRow
+			Reps:          nullInt32ToInt32Ptr(v.Repetitions),
+			TimeInSeconds: nullInt32ToInt32Ptr(v.TimeInSeconds),
+			Distance:      nullInt32ToInt32Ptr(v.Distance),
+			Notes:         nullStringToStringPtr(v.Notes),
+			Grade:         v.Grade.Int32, // Assuming grade is valid
+			CreatedAt:     nullTimeToTime(v.CreatedAt),
+		}
+	default:
+		// Optionally log an error here if an unexpected type is passed
+		return nil
+	}
+}
+
+// GetExerciseDefinition implements store.ExerciseStore
+func (s *Store) GetExerciseDefinition(ctx context.Context, exerciseID int32) (*store.Exercise, error) {
+	dbEx, err := s.Queries.GetExercise(ctx, exerciseID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.ErrExerciseNotFound
+		}
+		return nil, fmt.Errorf("failed to get exercise definition from DB: %w", err)
+	}
+	return toStoreExercise(dbEx), nil
+}
+
+// LogUserExercise implements store.ExerciseStore
+// Note: The input `record` is a store.UserExerciseRecord which contains denormalized ExerciseName and ExerciseType.
+// These are not used for DB insertion directly but are part of the domain model.
+// The SQLC generated LogUserExerciseParams expects only essential IDs and metric values.
+func (s *Store) LogUserExercise(ctx context.Context, record *store.UserExerciseRecord) (*store.UserExerciseRecord, error) {
+	params := LogUserExerciseParams{
+		UserID:        record.UserID,
+		ExerciseID:    record.ExerciseID,
+		Repetitions:   int32PtrToNullInt32(record.Reps),
+		TimeInSeconds: int32PtrToNullInt32(record.TimeInSeconds),
+		Distance:      int32PtrToNullInt32(record.Distance),
+		Notes:         stringPtrToNullString(record.Notes),
+		Grade:         sql.NullInt32{Int32: record.Grade, Valid: true}, // Grade is calculated by service
+	}
+	dbLoggedExercise, err := s.Queries.LogUserExercise(ctx, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to log user exercise in DB: %w", err)
+	}
+
+	// The LogUserExerciseRow doesn't have ExerciseName and ExerciseType.
+	// These need to be added back if we are to return a complete store.UserExerciseRecord.
+	// For now, we return what the DB gives back directly from LogUserExerciseRow,
+	// the service layer will be responsible for enriching it if needed.
+	resultRecord := toStoreUserExerciseRecord(dbLoggedExercise)
+	if resultRecord != nil {
+		// We copy over the potentially denormalized fields from the input if they were set,
+		// as LogUserExerciseRow doesn't include them.
+		resultRecord.ExerciseName = record.ExerciseName
+		resultRecord.ExerciseType = record.ExerciseType
+	}
+	return resultRecord, nil
+}
+
+// GetUserExerciseLogs implements store.ExerciseStore
+func (s *Store) GetUserExerciseLogs(ctx context.Context, userID int32, limit, offset int32) (*store.PaginatedUserExerciseRecords, error) {
+	count, err := s.Queries.GetUserExercisesCount(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user exercises count from DB: %w", err)
+	}
+
+	if count == 0 {
+		return &store.PaginatedUserExerciseRecords{
+			Records:    []*store.UserExerciseRecord{},
+			TotalCount: 0,
+		}, nil
+	}
+
+	params := GetUserExercisesParams{
+		UserID: userID,
+		Limit:  limit,
+		Offset: offset,
+	}
+	dbUserExercises, err := s.Queries.GetUserExercises(ctx, params)
+	if err != nil {
+		// sql.ErrNoRows is not an error if count > 0 and we just fetched an empty page
+		// but if count was 0, we wouldn't be here. If dbUserExercises is empty but no error, it's fine.
+		if err != sql.ErrNoRows {
+			return nil, fmt.Errorf("failed to get user exercises from DB: %w", err)
+		}
+	}
+
+	records := make([]*store.UserExerciseRecord, len(dbUserExercises))
+	for i, dbEx := range dbUserExercises {
+		records[i] = toStoreUserExerciseRecord(dbEx)
+	}
+
+	return &store.PaginatedUserExerciseRecords{
+		Records:    records,
+		TotalCount: count,
+	}, nil
+}
+
+// ListExerciseDefinitions implements store.ExerciseStore
+func (s *Store) ListExerciseDefinitions(ctx context.Context) ([]*store.Exercise, error) {
+	dbExercises, err := s.Queries.ListExercises(ctx)
+	if err != nil {
+		// sql.ErrNoRows is okay here, means no exercises defined.
+		if err == sql.ErrNoRows {
+			return []*store.Exercise{}, nil
+		}
+		return nil, fmt.Errorf("failed to list exercise definitions from DB: %w", err)
+	}
+
+	exercises := make([]*store.Exercise, len(dbExercises))
+	for i, dbEx := range dbExercises {
+		exercises[i] = toStoreExercise(dbEx)
+	}
+	return exercises, nil
+}
