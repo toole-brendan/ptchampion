@@ -10,6 +10,7 @@ import (
 	"ptchampion/internal/api/middleware"
 	"ptchampion/internal/auth"
 	"ptchampion/internal/config"
+	"ptchampion/internal/exercises"
 	"ptchampion/internal/logging"
 	db "ptchampion/internal/store/postgres"
 	"ptchampion/internal/store/redis"
@@ -44,6 +45,10 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	userService := users.NewUserService(store, logger)
 	userHandler := handlers.NewUserHandler(userService, logger)
 
+	// Instantiate Exercise Service and Exercise Handler
+	exerciseService := exercises.NewService(store, logger)
+	exerciseHandler := handlers.NewExerciseHandler(exerciseService, logger)
+
 	// Create API group
 	apiGroup := e.Group("/api/v1")
 
@@ -71,8 +76,8 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	RegisterLeaderboardRoutes(leaderboardRoutes, store, handler, logger)
 
 	// Exercise Routes
-	exerciseRoutes := protectedGroup.Group("/exercises")
-	RegisterExerciseRoutes(exerciseRoutes, store, handler, logger)
+	exerciseRoutesGroup := protectedGroup.Group("/exercises")
+	RegisterExerciseRoutes(exerciseRoutesGroup, store, logger, exerciseHandler)
 
 	// --- Public (non-authenticated) feature flags endpoint ---
 	apiGroup.GET("/features", func(c echo.Context) error {
@@ -131,8 +136,11 @@ func RegisterLeaderboardRoutes(g *echo.Group, store *db.Store, handler *handlers
 }
 
 // RegisterExerciseRoutes registers exercise-related routes under the given group (e.g., /api/v1/exercises)
-func RegisterExerciseRoutes(g *echo.Group, store *db.Store, handler *handlers.Handler, logger logging.Logger) {
-	// Use handler methods
-	g.GET("", handler.GetUserExercises)
-	g.POST("", handler.LogExercise)
+func RegisterExerciseRoutes(g *echo.Group, store *db.Store, logger logging.Logger, exerciseHandler *handlers.ExerciseHandler) {
+	// User's logged exercises
+	g.GET("", exerciseHandler.GetUserExercises)
+	g.POST("", exerciseHandler.LogExercise)
+
+	// Available exercise definitions (e.g., types of exercises like Pushup, Run)
+	g.GET("/definitions", exerciseHandler.HandleListExercises)
 }
