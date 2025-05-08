@@ -103,40 +103,47 @@ func (s *TokenService) GenerateTokenPair(ctx context.Context, userID string) (*T
 }
 
 // RefreshTokens validates a refresh token and issues a new token pair
-func (s *TokenService) RefreshTokens(ctx context.Context, refreshToken string) (*TokenPair, error) {
+// Returns the new token pair, the user ID, and an error.
+func (s *TokenService) RefreshTokens(ctx context.Context, refreshToken string) (*TokenPair, string, error) {
 	// Parse and validate the refresh token
 	token, err := jwt.ParseWithClaims(refreshToken, &JWTClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return s.refreshSecret, nil
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("invalid refresh token: %w", err)
+		return nil, "", fmt.Errorf("invalid refresh token: %w", err)
 	}
 
 	claims, ok := token.Claims.(*JWTClaims)
 	if !ok || !token.Valid {
-		return nil, errors.New("invalid token claims")
+		return nil, "", errors.New("invalid token claims")
 	}
 
 	// Verify this is a refresh token
 	if claims.TokenType != RefreshToken {
-		return nil, errors.New("token is not a refresh token")
+		return nil, "", errors.New("token is not a refresh token")
 	}
 
 	// Verify the token exists in our store
 	tokenID := claims.ID
 	_, err = s.RefreshStore.Find(ctx, tokenID)
 	if err != nil {
-		return nil, fmt.Errorf("refresh token not found: %w", err)
+		return nil, "", fmt.Errorf("refresh token not found: %w", err)
 	}
 
 	// Revoke the used refresh token (one-time use)
 	if err := s.RefreshStore.Revoke(ctx, tokenID); err != nil {
-		return nil, fmt.Errorf("failed to revoke refresh token: %w", err)
+		return nil, "", fmt.Errorf("failed to revoke refresh token: %w", err)
 	}
 
 	// Generate a new token pair
-	return s.GenerateTokenPair(ctx, claims.UserID)
+	newTokenPair, err := s.GenerateTokenPair(ctx, claims.UserID)
+	if err != nil {
+		return nil, "", fmt.Errorf("failed to generate new token pair during refresh: %w", err)
+	}
+
+	// Return the new token pair AND the user ID from the original claims
+	return newTokenPair, claims.UserID, nil
 }
 
 // ValidateAccessToken validates an access token and returns the claims
