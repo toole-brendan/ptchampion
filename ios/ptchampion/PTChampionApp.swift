@@ -433,7 +433,7 @@ struct MainTabView: View {
                 .tabItem { Label("Leaders", systemImage: "rosette") }
                 .tag(Tab.leaderboards)
 
-            SettingsView() // Assuming SettingsView exists and takes no specific args here
+            ProfileView() // Replaced SettingsView with ProfileView
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(Tab.profile)
         }
