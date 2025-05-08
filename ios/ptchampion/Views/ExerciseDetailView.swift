@@ -134,7 +134,7 @@ struct ExerciseDetailView: View {
 
 // MARK: - View Model
 class ExerciseDetailViewModel: ObservableObject {
-    @Published var progressData: [WorkoutDataPoint] = []
+    @Published var progressData: [ChartableDataPoint] = []
     @Published var recentSessions: [ExerciseSession] = []
     @Published var personalBest: Int = 0
     @Published var lastWeekTotal: Int = 0
@@ -144,38 +144,45 @@ class ExerciseDetailViewModel: ObservableObject {
         // This would normally fetch from the NetworkService
         // Simulating data for now
         
-        // Generate sample progress data
-        let baseValue = exerciseType == "running" ? 3 : 25
-        let random = Int.random(in: -5...10)
+        // Generate sample progress data as [ChartableDataPoint]
+        let baseValue = exerciseType == "running" ? 3.0 : 25.0 // Use Double for value
         
-        progressData = (0...6).map { day in
-            let intVal = max(1, baseValue + day * 3 + Int.random(in: -5...5))
-            return WorkoutDataPoint(
-                date: Date().addingTimeInterval(Double(-6 + day) * 86400),
-                value: Double(intVal)
-            )
+        // Generate ChartableDataPoint array
+        self.progressData = (0...6).map { day in
+            let date = Date().addingTimeInterval(Double(-6 + day) * 86400)
+            // Simulate value fluctuations
+            let value = max(1.0, baseValue + Double(day * 3) + Double.random(in: -5.0...5.0))
+            return ChartableDataPoint(date: date, value: value) // Create ChartableDataPoint
         }
         
-        // Generate sample sessions
-        recentSessions = (0...4).map { i in
-            let date = Date().addingTimeInterval(Double(-i) * 86400 * 2)
-            let value = Int(progressData[min(6-i, progressData.count-1)].value)
+        // Generate sample sessions using the generated progressData
+        self.recentSessions = (0...4).map { i in
+            let index = min(6 - i, progressData.count - 1)
+            guard index >= 0 else { 
+                // Handle edge case where progressData might be empty or index is invalid
+                return ExerciseSession(date: Date(), value: 0, notes: "Error generating session", unit: "") 
+            }
+            let chartPoint = progressData[index]
+            let value = Int(chartPoint.value) // Use value from ChartableDataPoint
             
             return ExerciseSession(
-                date: date,
+                date: chartPoint.date, // Use date from ChartableDataPoint
                 value: value,
                 notes: "Completed \(value) \(exerciseType.lowercased())\(value == 1 ? "" : "s")",
                 unit: exerciseType == "running" ? "km" : "reps"
             )
         }
         
-        // Calculate stats
-        personalBest = Int(progressData.map(\.value).max() ?? 0)
+        // Calculate stats using progressData (which is [ChartableDataPoint])
+        // Use .value property
+        self.personalBest = Int(progressData.map(\.value).max() ?? 0.0)
         
-        let thisWeek = progressData.suffix(3).reduce(0) { $0 + Int($1.value) }
-        let lastWeek = progressData.prefix(3).reduce(0) { $0 + Int($1.value) }
-        lastWeekTotal = thisWeek
+        // Correct reduce calls, ensure Int conversion
+        let thisWeek = progressData.suffix(3).reduce(0.0) { $0 + $1.value } // Reduce Doubles
+        let lastWeek = progressData.prefix(3).reduce(0.0) { $0 + $1.value } // Reduce Doubles
+        self.lastWeekTotal = Int(thisWeek) // Convert final sum to Int
         
+        // Trend calculation remains similar
         if thisWeek > lastWeek {
             weeklyTrend = .up(percentage: 15)
         } else if thisWeek < lastWeek {

@@ -53,63 +53,54 @@ struct WorkoutHistoryView: View {
         }
     }
     
-    // Prepare chart data using the shared WorkoutDataPoint model
-    private var chartData: [WorkoutDataPoint] {
-        // If filter is .all, return empty data as metrics are too varied for a single chart
-        guard filter != .all else { return [] }
-
-        let filteredResults = workoutResults // Already filtered by exercise type (unless .all)
-        
-        return filteredResults.prefix(30) // Show more data points, e.g., last 30
-            .compactMap { result -> WorkoutDataPoint? in
+    // Computed property to transform workout results into chartable data points
+    private var chartData: [ChartableDataPoint] {
+        workoutResults
+            .filter { result in
+                filter == .all || result.exerciseType.lowercased() == filter.rawValue.lowercased()
+            }
+            .compactMap { result -> ChartableDataPoint? in
                 let date = result.startTime
-                var value: Double?
+                var value: Double? = nil
                 
                 switch filter {
+                case .all:
+                    return nil
                 case .run:
                     if let distance = result.distanceMeters, distance > 0 {
-                        // Potentially convert to preferred unit (e.g., km or miles) if stored consistently as meters
-                        value = distance / 1000 // Example: convert meters to km
+                        value = distance / 1000
                     }
                 case .pushup, .situp, .pullup:
-                    if let score = result.score, score > 0 { // Prioritize score
+                    if let score = result.score, score > 0 {
                         value = score
                     } else if let reps = result.repCount, reps > 0 {
                         value = Double(reps)
                     }
-                default: // .all is handled above, this case shouldn't be hit for chartData
-                    return nil
                 }
                 
                 if let val = value {
-                    return WorkoutDataPoint(date: date, value: val)
+                    return ChartableDataPoint(date: date, value: val)
                 }
                 return nil
             }
-            .sorted { $0.date < $1.date } // Sort by date ascending for chart
+            .sorted { $0.date < $1.date }
     }
     
-    private var yAxisChartLabel: String { // <-- ADDED helper for Y-Axis label
+    private var yAxisChartLabel: String {
         switch filter {
         case .all:
-            return "N/A" // No chart shown for .all
+            return "N/A"
         case .run:
-            return "Distance (km)" // Assuming km for now
+            return "Distance (km)"
         case .pushup, .situp, .pullup:
-            // This is a bit tricky if we mix score and reps. 
-            // For simplicity, if the chart can show either, we might need a more dynamic label
-            // or decide on one primary metric if filter is specific.
-            // Let's assume if we are plotting scores, we label it Score, else Reps.
-            // This requires chartData to be consistent for that filter.
-            // Based on current chartData logic: if pushups/situps/pullups have scores, it plots score, else reps.
-            // We can check if the first item in chartData came from a score or rep to decide the label.
-            if let firstDataPoint = chartData.first,
-               let correspondingResult = workoutResults.first(where: { $0.startTime == firstDataPoint.date }) {
-                if correspondingResult.score != nil && correspondingResult.score! > 0 {
+            if chartData.first?.value != nil {
+                if chartData.contains(where: { $0.value > 50 }) {
                     return "Score"
+                } else {
+                    return "Reps"
                 }
             }
-            return "Reps"
+            return "Value"
         }
     }
     
@@ -166,11 +157,11 @@ struct WorkoutHistoryView: View {
                     .scrollContentBackground(.hidden)
                     
                     // 4-10: Progress Analytics
-                    if !workoutResults.isEmpty && filter != .all { // <-- MODIFIED: Don't show chart for .all
+                    if !workoutResults.isEmpty && filter != .all {
                         WorkoutProgressChart(
                             dataPoints: chartData,
-                            title: "Progress Over Time - \(filter.rawValue)", // <-- MODIFIED: More specific title
-                            yAxisLabel: yAxisChartLabel // <-- MODIFIED
+                            title: "Progress Over Time - \(filter.rawValue)",
+                            yAxisLabel: yAxisChartLabel
                         )
                         .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                     }

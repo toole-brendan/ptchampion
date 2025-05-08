@@ -97,7 +97,7 @@ struct SettingsSheet: View {
     
     private var accountSection: some View {
         Section(header: Text("Account")) {
-            if let user = authViewModel.authState.user {
+            if case .authenticated(let user) = authViewModel.authState {
                 HStack {
                     VStack(alignment: .leading) {
                         Text([user.firstName, user.lastName].compactMap { $0 }.joined(separator: " ")

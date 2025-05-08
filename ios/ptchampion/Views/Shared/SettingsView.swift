@@ -24,7 +24,7 @@ struct SettingsView: View {
         NavigationView {
             VStack(alignment: .leading, spacing: 20) {
 
-                if let user = auth.authState.user {
+                if case .authenticated(let user) = auth.authState {
                     applySubheadingStyle(to: Text("Account"))
                         .padding(.horizontal, 16)
 

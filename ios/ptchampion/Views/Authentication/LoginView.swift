@@ -32,6 +32,7 @@ extension Font {
 struct LoginView: View {
     // Make sure we're using the shared AuthViewModel
     @EnvironmentObject private var auth: AuthViewModel
+    @EnvironmentObject private var navigationState: NavigationState
     @State private var keyboardHeight: CGFloat = 0
     @State private var showDevOptions = false
     @State private var didLogBodyOnce = false
@@ -121,16 +122,12 @@ struct LoginView: View {
                         // Debug buttons only in dev mode
                         if showDevOptions {
                             PTButton("Check Auth State", style: .secondary) {
-                                authDebugText = "Current auth state: \(auth.authState.isAuthenticated ? "authenticated" : "unauthenticated")"
-                                print("DEBUG: Current auth state from LoginView diagnostic button: \(auth.authState)")
+                                authDebugText = "Current auth state: \(auth.isAuthenticated ? "authenticated" : "unauthenticated")"
+                                print("DEBUG: Current auth state from LoginView diagnostic button: \(auth.isAuthenticated)")
                             }
                             .padding(.top, 8)
+                            .disabled(auth.isLoading)
                             
-                            PTLabel(authDebugText, style: .body)
-                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                                .padding(.top, 8)
-                        
-                            // Dev bypass buttons
                             PTButton("DEV: Bypass Login", style: .secondary) {
                                 auth.loginAsDeveloper()
                             }
@@ -165,6 +162,13 @@ struct LoginView: View {
                             .padding(.top, 16)
                     }
                     
+                    if !authDebugText.isEmpty {
+                        Text(authDebugText)
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                            .padding(.top)
+                    }
+                    
                     Spacer()
                 }
                 .frame(minHeight: geometry.size.height)
@@ -177,11 +181,15 @@ struct LoginView: View {
             .onTapGesture {
                 hideKeyboard()
             }
-            .onChange(of: auth.authState.isAuthenticated) { _, isAuthenticated in
+            .onChange(of: auth.isAuthenticated) { _, isAuthenticated in
                 if isAuthenticated && !isTransitioning {
                     isTransitioning = true
-                    authDebugText = "Authentication state changed to: \(isAuthenticated)"
-                    print("DEBUG: LoginView detected authentication state change to isAuthenticated=true")
+                    // Delay navigation slightly to allow UI to settle if needed
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        print("LoginView: Navigating to main due to auth change.")
+                        navigationState.navigateTo(.main)
+                        isTransitioning = false
+                    }
                 }
             }
             .onAppear {
@@ -189,7 +197,7 @@ struct LoginView: View {
                 isTransitioning = false // Reset transitioning state
                 
                 // For debugging, verify if auth is already authenticated on appear
-                if auth.authState.isAuthenticated {
+                if auth.isAuthenticated {
                     print("⚠️ WARNING: LoginView appeared but auth is already authenticated!")
                 }
                 
@@ -207,7 +215,7 @@ struct LoginView: View {
     }
 }
 
-// Helper to dismiss keyboard
+// Helper to dismiss keyboard - MOVED TO FILE SCOPE
 #if canImport(UIKit)
 extension View {
     func hideKeyboard() {
@@ -216,8 +224,10 @@ extension View {
 }
 #endif
 
+// Preview - Ensure it's at file scope after all other definitions
 #Preview {
     LoginView()
         .environmentObject(AuthViewModel())
+        .environmentObject(NavigationState()) // Added missing NavigationState for preview
         .environment(\.colorScheme, .light)
 } 

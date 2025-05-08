@@ -1,6 +1,10 @@
 import Foundation
+import Combine // For ObservableObject
 
-class AuthService: AuthServiceProtocol {
+class AuthService: ObservableObject, AuthServiceProtocol {
+    // Published properties can be added here if AuthService needs to drive UI updates directly
+    // For example: @Published var isAuthenticated: Bool = false (though this is often handled in AuthViewModel)
+
     private let networkClient: NetworkClient
     private let useMockAuth: Bool
 
