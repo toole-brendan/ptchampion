@@ -51,14 +51,16 @@ SELECT
 FROM workouts w
 JOIN users u ON w.user_id = u.id
 JOIN exercises e ON w.exercise_id = e.id
-WHERE e.type = $1 AND w.is_public = true
+WHERE e.type = @type
+  AND w.is_public = true
+  AND (sqlc.narg('start_date')::timestamptz IS NULL OR w.completed_at >= sqlc.narg('start_date')::timestamptz)
+  AND (sqlc.narg('end_date')::timestamptz IS NULL OR w.completed_at < sqlc.narg('end_date')::timestamptz)
 GROUP BY u.id, u.username, u.display_name
 ORDER BY score DESC
-LIMIT $2;
+LIMIT sqlc.arg('limit');
 
 -- name: GetGlobalAggregateLeaderboard :many
 WITH user_best_scores AS (
-    -- Get each user's best score for each exercise type
     SELECT 
         u.id as user_id,
         e.type as exercise_type,
@@ -67,18 +69,20 @@ WITH user_best_scores AS (
     JOIN users u ON w.user_id = u.id
     JOIN exercises e ON w.exercise_id = e.id
     WHERE w.is_public = true
+      AND (sqlc.narg('start_date')::timestamptz IS NULL OR w.completed_at >= sqlc.narg('start_date')::timestamptz)
+      AND (sqlc.narg('end_date')::timestamptz IS NULL OR w.completed_at < sqlc.narg('end_date')::timestamptz)
     GROUP BY u.id, e.type
 )
 SELECT 
     u.id as user_id,
     u.username,
     u.display_name,
-    SUM(ubs.best_score) as score -- Sum of best scores across all exercise types
+    SUM(ubs.best_score) as score
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
 GROUP BY u.id, u.username, u.display_name
 ORDER BY score DESC
-LIMIT $1;
+LIMIT sqlc.arg('limit');
 
 -- name: GetLocalExerciseLeaderboard :many
 SELECT 
@@ -86,25 +90,26 @@ SELECT
     u.username,
     u.display_name,
     MAX(w.grade) as score,
-    ST_Distance(u.last_location::geography, ST_MakePoint($2, $3)::geography) as distance_meters
+    ST_Distance(u.last_location::geography, ST_MakePoint(@longitude, @latitude)::geography) as distance_meters
 FROM workouts w
 JOIN users u ON w.user_id = u.id
 JOIN exercises e ON w.exercise_id = e.id
 WHERE 
-    e.type = $1 
+    e.type = @type 
     AND w.is_public = true
     AND ST_DWithin(
         u.last_location::geography,
-        ST_MakePoint($2, $3)::geography,
-        $4 -- radius in meters
+        ST_MakePoint(@longitude, @latitude)::geography, -- longitude, then latitude for ST_MakePoint
+        @radius_meters 
     )
+    AND (sqlc.narg('start_date')::timestamptz IS NULL OR w.completed_at >= sqlc.narg('start_date')::timestamptz)
+    AND (sqlc.narg('end_date')::timestamptz IS NULL OR w.completed_at < sqlc.narg('end_date')::timestamptz)
 GROUP BY u.id, u.username, u.display_name, u.last_location
 ORDER BY score DESC
-LIMIT $5;
+LIMIT sqlc.arg('limit');
 
 -- name: GetLocalAggregateLeaderboard :many
 WITH user_best_scores AS (
-    -- Get each user's best score for each exercise type
     SELECT 
         u.id as user_id,
         e.type as exercise_type,
@@ -116,19 +121,21 @@ WITH user_best_scores AS (
         w.is_public = true
         AND ST_DWithin(
             u.last_location::geography,
-            ST_MakePoint($1, $2)::geography,
-            $3 -- radius in meters
+            ST_MakePoint(@longitude, @latitude)::geography, -- longitude, then latitude for ST_MakePoint
+            @radius_meters
         )
+        AND (sqlc.narg('start_date')::timestamptz IS NULL OR w.completed_at >= sqlc.narg('start_date')::timestamptz)
+        AND (sqlc.narg('end_date')::timestamptz IS NULL OR w.completed_at < sqlc.narg('end_date')::timestamptz)
     GROUP BY u.id, e.type
 )
 SELECT 
     u.id as user_id,
     u.username,
     u.display_name,
-    SUM(ubs.best_score) as score, -- Sum of best scores across all exercise types
-    ST_Distance(u.last_location::geography, ST_MakePoint($1, $2)::geography) as distance_meters
+    SUM(ubs.best_score) as score,
+    ST_Distance(u.last_location::geography, ST_MakePoint(@longitude, @latitude)::geography) as distance_meters
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
 GROUP BY u.id, u.username, u.display_name, u.last_location
 ORDER BY score DESC
-LIMIT $4; 
+LIMIT sqlc.arg('limit'); 

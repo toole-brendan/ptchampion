@@ -23,6 +23,8 @@ struct LeaderboardView: View {
     @ObservedObject var viewModel: LeaderboardViewModel // REVERTED to ObservedObject
     var viewId: String // Kept for consistency if used elsewhere, though not directly in this body
     
+    @State private var navigatingToUserID: String? // State for navigation trigger
+    
     // Initialize with required parameters
     init(viewModel: LeaderboardViewModel, viewId: String) {
         self.viewModel = viewModel
@@ -31,6 +33,7 @@ struct LeaderboardView: View {
     }
     
     var body: some View {
+        // IMPORTANT: This view or its parent needs to be in a NavigationStack for .navigationDestination to work
         VStack(spacing: 0) {
             filtersView
             contentView
@@ -45,7 +48,11 @@ struct LeaderboardView: View {
         }
         .onChange(of: viewModel.selectedBoard) { _ in Task { await viewModel.fetch() } }
         .onChange(of: viewModel.selectedCategory) { _ in Task { await viewModel.fetch() } }
-        .onChange(of: viewModel.selectedExercise) { _ in Task { await viewModel.fetch() } } // Fetch on exercise change too for future
+        .onChange(of: viewModel.selectedExercise) { _ in Task { await viewModel.fetch() } }
+        .onChange(of: viewModel.selectedRadius) { _ in Task { await viewModel.fetch() } } // Fetch on radius change
+        .navigationDestination(item: $navigatingToUserID) { userID in
+            UserProfileView(userID: userID)
+        }
     }
     
     // Helper for logging
@@ -63,6 +70,18 @@ struct LeaderboardView: View {
             }
             .pickerStyle(SegmentedPickerStyle())
             .padding(.horizontal)
+
+            // Conditional Picker for Radius, only shown if 'Local' board is selected
+            if viewModel.selectedBoard == .local {
+                Picker("Radius", selection: $viewModel.selectedRadius) {
+                    ForEach(LeaderboardRadius.allCases) { radiusValue in // Renamed to avoid conflict
+                        Text(radiusValue.displayName).tag(radiusValue)
+                    }
+                }
+                .pickerStyle(.menu)
+                .padding(.horizontal)
+                .transition(.opacity.combined(with: .scale))
+            }
 
             HStack {
                 Picker("Category", selection: $viewModel.selectedCategory) {
@@ -83,6 +102,7 @@ struct LeaderboardView: View {
         }
         .padding(.vertical, AppTheme.GeneratedSpacing.small)
         .background(AppTheme.GeneratedColors.cardBackground.opacity(0.5))
+        .animation(.easeInOut, value: viewModel.selectedBoard) // Animate changes when board type changes
     }
     
     // Extracted Content View
@@ -138,6 +158,15 @@ struct LeaderboardView: View {
             List {
                 ForEach(viewModel.leaderboardEntries) { entry in
                     LeaderboardRowView(entry: entry, isCurrentUser: entry.userId == viewModel.currentUserID && entry.userId != nil)
+                        .contentShape(Rectangle()) // Make the whole row tappable
+                        .onTapGesture {
+                            if let userID = entry.userId {
+                                logger.info("Tapping user: \(entry.name, privacy: .public), ID: \(userID, privacy: .public). Preparing for navigation.")
+                                self.navigatingToUserID = userID // Set state to trigger navigation
+                            } else {
+                                logger.info("Tapped on leaderboard entry for user: \(entry.name, privacy: .public), but user ID is nil.")
+                            }
+                        }
                 }
             }
             .listStyle(PlainListStyle())
@@ -150,7 +179,8 @@ struct LeaderboardView: View {
 }
 
 #Preview {
-    NavigationView {
+    // For preview to work with .navigationDestination, it might need to be in a NavigationStack here too
+    NavigationStack {
         LeaderboardView(
             viewModel: LeaderboardViewModel(),
             viewId: "PREVIEW"

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BF199EB72DCD8CFE00E23EFF /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EB62DCD8CFE00E23EFF /* UserProfileView.swift */; };
 		BF37B03E2DCAC89500EC4D58 /* WorkoutCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */; };
 		BF37B03F2DCAC89500EC4D58 /* CameraExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B03C2DCAC89500EC4D58 /* CameraExerciseView.swift */; };
 		BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0402DCACABE00EC4D58 /* ActivityView.swift */; };
@@ -131,6 +132,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BF199EB62DCD8CFE00E23EFF /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		BF37B03C2DCAC89500EC4D58 /* CameraExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraExerciseView.swift; sourceTree = "<group>"; };
 		BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCompleteView.swift; sourceTree = "<group>"; };
 		BF37B0402DCACABE00EC4D58 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
@@ -278,6 +280,7 @@
 		BF37B0562DCC2CD600EC4D58 /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				BF199EB62DCD8CFE00E23EFF /* UserProfileView.swift */,
 				BF37B0552DCC2CD600EC4D58 /* ProfileView.swift */,
 			);
 			path = Profile;
@@ -844,6 +847,7 @@
 				BF63E42C2DB1EB830037CD02 /* PoseDetectorServiceProtocol.swift in Sources */,
 				BF63E42D2DB1EB830037CD02 /* LeaderboardServiceProtocol.swift in Sources */,
 				BF63E42E2DB1EB830037CD02 /* KeychainServiceProtocol.swift in Sources */,
+				BF199EB72DCD8CFE00E23EFF /* UserProfileView.swift in Sources */,
 				BF63E42F2DB1EB830037CD02 /* WorkoutService.swift in Sources */,
 				BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */,
 				BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */,

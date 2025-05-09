@@ -22,35 +22,30 @@ class LeaderboardService: LeaderboardServiceProtocol {
         logger.debug("LeaderboardService initialized \(self.instanceId) (useMockData: \(useMockData))")
     }
 
-    // MARK: - API Endpoints (Paths only)
-    private enum APIEndpoint {
-        static let localLeaderboard = "/leaderboards/local"
-        // Path parameter needs to be interpolated for global
-        static func globalLeaderboard(exerciseType: String) -> String {
-             return "/leaderboard/\(exerciseType)" // Matches Android path
-        }
-    }
-
     // MARK: - Protocol Implementation
 
-    func fetchGlobalLeaderboard(authToken: String, timeFrame: String = "weekly") async throws -> [LeaderboardEntryView] {
-        print("🔍 LeaderboardService[\(instanceId)]: Fetching global leaderboard for timeFrame: \(timeFrame)...")
-        logger.debug("Fetching global leaderboard for timeFrame: \(timeFrame)...")
+    func fetchGlobalLeaderboard(authToken: String, timeFrame: String = "weekly", exerciseType: String) async throws -> [LeaderboardEntryView] {
+        print("🔍 LeaderboardService[\(instanceId)]: Fetching global leaderboard for timeFrame: \(timeFrame), exerciseType: \(exerciseType)...")
+        logger.debug("Fetching global leaderboard for timeFrame: \(timeFrame), exerciseType: \(exerciseType)...")
         
-        // If forced to use mock data or real API calls are disabled
         if useMockData {
             print("🔍 LeaderboardService[\(instanceId)]: Using mock data (useMockData=true)")
             logger.debug("Using mock data for global leaderboard")
-            return []              // WEB CONTRACT: empty array when mock-mode on
+            return []
         }
         
-        // Make the real API call
         do {
-            let queryParams = ["time_frame": timeFrame]
-            let endpoint = APIEndpoint.globalLeaderboard(exerciseType: "general")
-            print("🔍 LeaderboardService[\(instanceId)]: Making API call to \(endpoint) with params: \(queryParams)")
+            let endpointPath: String
+            var queryParams = ["time_frame": timeFrame]
+
+            if exerciseType == "aggregate_overall" {
+                endpointPath = "/leaderboards/global/aggregate"
+            } else {
+                endpointPath = "/leaderboards/global/exercise/\(exerciseType)"
+            }
             
-            // Check for NetworkClient using guard instead of if/else
+            print("🔍 LeaderboardService[\(instanceId)]: Making API call to \(endpointPath) with params: \(queryParams)")
+            
             guard let client = networkClient else {
                 logger.info("No NetworkClient – returning empty array")
                 return []              // ← KEY CHANGE
@@ -59,7 +54,7 @@ class LeaderboardService: LeaderboardServiceProtocol {
             print("🔍 LeaderboardService[\(instanceId)]: NetworkClient available, making real API call")
             print("🔍 LeaderboardService[\(instanceId)]: About to call client.performRequest")
             let backendEntries: [GlobalLeaderboardEntry] = try await client.performRequest(
-                endpointPath: endpoint,
+                endpointPath: endpointPath,
                 method: "GET",
                 queryParams: queryParams,
                 body: nil
@@ -100,34 +95,42 @@ class LeaderboardService: LeaderboardServiceProtocol {
         }
     }
 
-    func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String) async throws -> [LeaderboardEntryView] {
-        logger.debug("Fetching local leaderboard near \(latitude), \(longitude) with radius \(radiusMiles) miles")
+    func fetchLocalLeaderboard(latitude: Double, longitude: Double, radiusMiles: Int, authToken: String, exerciseType: String, timeFrame: String) async throws -> [LeaderboardEntryView] {
+        logger.debug("Fetching local leaderboard near \(latitude), \(longitude) with radius \(radiusMiles) miles, exercise: \(exerciseType), timeframe: \(timeFrame)")
         
-        // If forced to use mock data or real API calls are disabled
         if useMockData {
             logger.debug("Using mock data for local leaderboard")
-            return []              // WEB CONTRACT: empty array when mock-mode on
+            return []
         }
         
-        // Make the real API call
         do {
-            // Convert miles to meters for the API
             let radiusMeters = Double(radiusMiles) * 1609.34
-            
-            let queryParams = [
+            let endpointPath: String
+            // Query parameters common to both local aggregate and specific exercise local
+            var queryParams = [
                 "latitude": String(latitude),
                 "longitude": String(longitude),
-                "radius_meters": String(radiusMeters)
+                "radius_meters": String(radiusMeters),
+                "time_frame": timeFrame
             ]
+
+            if exerciseType == "aggregate_overall" {
+                endpointPath = "/leaderboards/local/aggregate"
+                // No exercise_type query param needed for aggregate path
+            } else {
+                endpointPath = "/leaderboards/local/exercise/\(exerciseType)"
+                // No exercise_type query param needed as it's in the path
+            }
             
-            // Check for NetworkClient using guard instead of if/else
+            print("🔍 LeaderboardService[\(instanceId)]: Making API call to \(endpointPath) with params: \(queryParams)")
+
             guard let client = networkClient else {
                 logger.info("No NetworkClient – returning empty array")
                 return []              // ← KEY CHANGE
             }
             
             let backendEntries: [LocalLeaderboardEntry] = try await client.performRequest(
-                endpointPath: APIEndpoint.localLeaderboard,
+                endpointPath: endpointPath,
                 method: "GET",
                 queryParams: queryParams,
                 body: nil
@@ -203,7 +206,7 @@ class LeaderboardService: LeaderboardServiceProtocol {
 
         do {
             let response: [LocalLeaderboardEntry] = try await networkClient?.performRequest(
-                endpointPath: APIEndpoint.localLeaderboard,
+                endpointPath: "/leaderboards/local",
                 method: "GET",
                 queryParams: queryParams
             ) ?? []

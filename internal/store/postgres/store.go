@@ -514,12 +514,23 @@ func mapSqlcRowToLeaderboardEntry(userID int32, username string, displayName sql
 }
 
 // GetGlobalExerciseLeaderboard implements store.LeaderboardStore
-func (s *Store) GetGlobalExerciseLeaderboard(ctx context.Context, exerciseType string, limit int) ([]*store.LeaderboardEntry, error) {
-	s.logger.Debug(ctx, "Store: GetGlobalExerciseLeaderboard called", "type", exerciseType, "limit", limit)
+func (s *Store) GetGlobalExerciseLeaderboard(ctx context.Context, exerciseType string, limit int, startDate time.Time, endDate time.Time) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetGlobalExerciseLeaderboard called", "type", exerciseType, "limit", limit, "startDate", startDate, "endDate", endDate)
+
+	var sqlStartDate sql.NullTime
+	if !startDate.IsZero() {
+		sqlStartDate = sql.NullTime{Time: startDate, Valid: true}
+	}
+	var sqlEndDate sql.NullTime
+	if !endDate.IsZero() {
+		sqlEndDate = sql.NullTime{Time: endDate, Valid: true}
+	}
 
 	params := GetGlobalExerciseLeaderboardParams{
-		Type:  exerciseType,
-		Limit: int32(limit),
+		Type:      exerciseType,
+		Limit:     int32(limit),
+		StartDate: sqlStartDate, // Assumes sqlc generated `StartDate sql.NullTime`
+		EndDate:   sqlEndDate,   // Assumes sqlc generated `EndDate sql.NullTime`
 	}
 	dbRows, err := s.Queries.GetGlobalExerciseLeaderboard(ctx, params)
 	if err != nil {
@@ -548,10 +559,24 @@ func (s *Store) GetGlobalExerciseLeaderboard(ctx context.Context, exerciseType s
 }
 
 // GetGlobalAggregateLeaderboard implements store.LeaderboardStore
-func (s *Store) GetGlobalAggregateLeaderboard(ctx context.Context, limit int) ([]*store.LeaderboardEntry, error) {
-	s.logger.Debug(ctx, "Store: GetGlobalAggregateLeaderboard called", "limit", limit)
+func (s *Store) GetGlobalAggregateLeaderboard(ctx context.Context, limit int, startDate time.Time, endDate time.Time) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetGlobalAggregateLeaderboard called", "limit", limit, "startDate", startDate, "endDate", endDate)
 
-	dbRows, err := s.Queries.GetGlobalAggregateLeaderboard(ctx, int32(limit))
+	var sqlStartDate sql.NullTime
+	if !startDate.IsZero() {
+		sqlStartDate = sql.NullTime{Time: startDate, Valid: true}
+	}
+	var sqlEndDate sql.NullTime
+	if !endDate.IsZero() {
+		sqlEndDate = sql.NullTime{Time: endDate, Valid: true}
+	}
+
+	params := GetGlobalAggregateLeaderboardParams{
+		Limit:     int32(limit),
+		StartDate: sqlStartDate, // Assumes sqlc generated `StartDate sql.NullTime`
+		EndDate:   sqlEndDate,   // Assumes sqlc generated `EndDate sql.NullTime`
+	}
+	dbRows, err := s.Queries.GetGlobalAggregateLeaderboard(ctx, params)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return []*store.LeaderboardEntry{}, nil
@@ -568,15 +593,26 @@ func (s *Store) GetGlobalAggregateLeaderboard(ctx context.Context, limit int) ([
 }
 
 // GetLocalExerciseLeaderboard implements store.LeaderboardStore
-func (s *Store) GetLocalExerciseLeaderboard(ctx context.Context, exerciseType string, latitude, longitude float64, radiusMeters int, limit int) ([]*store.LeaderboardEntry, error) {
-	s.logger.Debug(ctx, "Store: GetLocalExerciseLeaderboard called", "type", exerciseType, "lat", latitude, "lon", longitude, "radius", radiusMeters, "limit", limit)
+func (s *Store) GetLocalExerciseLeaderboard(ctx context.Context, exerciseType string, latitude, longitude float64, radiusMeters int, limit int, startDate time.Time, endDate time.Time) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetLocalExerciseLeaderboard called", "type", exerciseType, "lat", latitude, "lon", longitude, "radius", radiusMeters, "limit", limit, "startDate", startDate, "endDate", endDate)
+
+	var sqlStartDate sql.NullTime
+	if !startDate.IsZero() {
+		sqlStartDate = sql.NullTime{Time: startDate, Valid: true}
+	}
+	var sqlEndDate sql.NullTime
+	if !endDate.IsZero() {
+		sqlEndDate = sql.NullTime{Time: endDate, Valid: true}
+	}
 
 	params := GetLocalExerciseLeaderboardParams{
-		Type:          exerciseType,
-		StMakepoint:   longitude,
-		StMakepoint_2: latitude,
-		StDwithin:     float64(radiusMeters),
-		Limit:         int32(limit),
+		Type:         exerciseType,
+		Longitude:    longitude,             // SQLC will expect `Longitude` based on @longitude
+		Latitude:     latitude,              // SQLC will expect `Latitude` based on @latitude
+		RadiusMeters: float64(radiusMeters), // SQLC will expect `RadiusMeters`
+		Limit:        int32(limit),
+		StartDate:    sqlStartDate, // Assumes sqlc generated `StartDate sql.NullTime`
+		EndDate:      sqlEndDate,   // Assumes sqlc generated `EndDate sql.NullTime`
 	}
 	dbRows, err := s.Queries.GetLocalExerciseLeaderboard(ctx, params)
 	if err != nil {
@@ -605,14 +641,25 @@ func (s *Store) GetLocalExerciseLeaderboard(ctx context.Context, exerciseType st
 }
 
 // GetLocalAggregateLeaderboard implements store.LeaderboardStore
-func (s *Store) GetLocalAggregateLeaderboard(ctx context.Context, latitude, longitude float64, radiusMeters int, limit int) ([]*store.LeaderboardEntry, error) {
-	s.logger.Debug(ctx, "Store: GetLocalAggregateLeaderboard called", "lat", latitude, "lon", longitude, "radius", radiusMeters, "limit", limit)
+func (s *Store) GetLocalAggregateLeaderboard(ctx context.Context, latitude, longitude float64, radiusMeters int, limit int, startDate time.Time, endDate time.Time) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetLocalAggregateLeaderboard called", "lat", latitude, "lon", longitude, "radius", radiusMeters, "limit", limit, "startDate", startDate, "endDate", endDate)
+
+	var sqlStartDate sql.NullTime
+	if !startDate.IsZero() {
+		sqlStartDate = sql.NullTime{Time: startDate, Valid: true}
+	}
+	var sqlEndDate sql.NullTime
+	if !endDate.IsZero() {
+		sqlEndDate = sql.NullTime{Time: endDate, Valid: true}
+	}
 
 	params := GetLocalAggregateLeaderboardParams{
-		StMakepoint:   longitude,
-		StMakepoint_2: latitude,
-		StDwithin:     float64(radiusMeters),
-		Limit:         int32(limit),
+		Longitude:    longitude,             // SQLC will expect `Longitude`
+		Latitude:     latitude,              // SQLC will expect `Latitude`
+		RadiusMeters: float64(radiusMeters), // SQLC will expect `RadiusMeters`
+		Limit:        int32(limit),
+		StartDate:    sqlStartDate, // Assumes sqlc generated `StartDate sql.NullTime`
+		EndDate:      sqlEndDate,   // Assumes sqlc generated `EndDate sql.NullTime`
 	}
 	dbRows, err := s.Queries.GetLocalAggregateLeaderboard(ctx, params)
 	if err != nil {

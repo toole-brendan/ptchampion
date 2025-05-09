@@ -18,8 +18,8 @@ struct LeaderboardRowView: View {
             //     .foregroundColor(AppTheme.GeneratedColors.textTertiary)
 
             Text(entry.name)
-                .font(AppTheme.GeneratedTypography.bodySemibold())
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .font(AppTheme.GeneratedTypography.bodyBold())
+                .foregroundColor(isCurrentUser ? AppTheme.GeneratedColors.primary : AppTheme.GeneratedColors.textPrimary)
             
             Spacer()
             

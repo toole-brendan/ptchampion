@@ -13,7 +13,7 @@ type Querier interface {
 	CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error)
 	GetExercise(ctx context.Context, id int32) (Exercise, error)
 	GetExercisesByType(ctx context.Context, type_ string) ([]Exercise, error)
-	GetGlobalAggregateLeaderboard(ctx context.Context, limit int32) ([]GetGlobalAggregateLeaderboardRow, error)
+	GetGlobalAggregateLeaderboard(ctx context.Context, arg GetGlobalAggregateLeaderboardParams) ([]GetGlobalAggregateLeaderboardRow, error)
 	// Apply a reasonable limit
 	GetGlobalExerciseLeaderboard(ctx context.Context, arg GetGlobalExerciseLeaderboardParams) ([]GetGlobalExerciseLeaderboardRow, error)
 	GetLeaderboard(ctx context.Context, type_ string) ([]GetLeaderboardRow, error)
