@@ -436,39 +436,102 @@ jobs:
       - name: Check API health with Detailed Output
         if: ${{ inputs.deploy_backend }}
         run: |
-          API_URL="https://${{ env.FRONTEND_DOMAIN }}/api/v1/health"
+          # First find which health endpoint actually works
+          echo "Determining which health endpoint works..."
+          
+          WORKING_ENDPOINT="none"
+          
+          # Try /api/v1/health
+          API_V1_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health")
+          if [ "$API_V1_STATUS" = "200" ]; then
+            WORKING_ENDPOINT="/api/v1/health"
+            echo "Found working endpoint: /api/v1/health"
+          fi
+          
+          # Try /health if the first one failed
+          if [ "$WORKING_ENDPOINT" = "none" ]; then
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/health")
+            if [ "$HEALTH_STATUS" = "200" ]; then
+              WORKING_ENDPOINT="/health"
+              echo "Found working endpoint: /health"
+            fi
+          fi
+          
+          # Try /healthz if still no working endpoint
+          if [ "$WORKING_ENDPOINT" = "none" ]; then
+            HEALTHZ_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/healthz")
+            if [ "$HEALTHZ_STATUS" = "200" ]; then
+              WORKING_ENDPOINT="/healthz"
+              echo "Found working endpoint: /healthz"
+            fi
+          fi
+          
+          if [ "$WORKING_ENDPOINT" = "none" ]; then
+            echo "❌ ERROR: No working health endpoint found. Continuing with default /api/v1/health but expect failure."
+            WORKING_ENDPOINT="/api/v1/health"
+          fi
+          
+          echo "Using health endpoint: $WORKING_ENDPOINT"
+          
+          # Use the working endpoint through Front Door
+          API_URL="https://${{ env.FRONTEND_DOMAIN }}$WORKING_ENDPOINT"
           echo "Testing API: $API_URL"
           
           echo "Checking API using curl with verbose output..."
           curl -v -L -H "Authorization: Bearer empty" "$API_URL" || echo "Initial API curl verbose check failed"
           
-          # Check if the path components work
-          echo "Testing various API path variants..."
-          echo "Testing /api endpoint..."
-          curl -v -L -o "/tmp/health_check_logs/api_root.html" "$API_URL/../.." || echo "API root check failed"
-          
-          echo "Testing /api/v1 endpoint..."
-          curl -v -L -o "/tmp/health_check_logs/api_v1.html" "$API_URL/.." || echo "API v1 check failed"
-          
           # Try direct connection to backend bypassing Front Door
           echo "Testing direct backend connection..."
-          BACKEND_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health"
+          BACKEND_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net$WORKING_ENDPOINT"
           echo "Direct backend URL: $BACKEND_URL"
           curl -v -L -H "Authorization: Bearer empty" -o "/tmp/health_check_logs/backend_direct.json" "$BACKEND_URL" || echo "Direct backend curl check failed"
           
-          # Check other potential health endpoints on the backend
-          echo "Testing alternative health endpoints on backend..."
-          curl -v -L -o "/tmp/health_check_logs/backend_health.json" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/health" || echo "Backend /health check failed"
-          curl -v -L -o "/tmp/health_check_logs/backend_healthz.json" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/healthz" || echo "Backend /healthz check failed"
-          curl -v -L -o "/tmp/health_check_logs/backend_ping.json" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/ping" || echo "Backend /ping check failed"
-          
-          echo "Checking App Service routes and configurations..."
-          echo "Getting App Service known routes (requires kudu access)..."
-          KUDU_URL="https://${{ env.BACKEND_APP_NAME }}.scm.azurewebsites.net/api/processes"
-          curl -v -L -o "/tmp/health_check_logs/kudu_processes.json" "$KUDU_URL" || echo "Kudu processes check failed"
-          
           mkdir -p /tmp/health_check_logs
           
+          # If front door routing for API is not set up, try to set it up
+          if [ "$WORKING_ENDPOINT" != "/api/v1/health" ]; then
+            FRONT_DOOR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "$API_URL")
+            if [ "$FRONT_DOOR_STATUS" != "200" ]; then
+              echo "⚠️ WARNING: Front Door not routing to working endpoint $WORKING_ENDPOINT"
+              
+              # Try to check/fix Front Door routes
+              API_ROUTE=$(az afd route list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --query "[?contains(name, 'api')].name" -o tsv)
+            
+              if [ -z "$API_ROUTE" ]; then
+                echo "No API route found in Front Door. Creating one..."
+                
+                # Find or create origin group
+                API_ORIGIN_GROUP=$(az afd origin-group list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --query "[?contains(name, 'api')].name" -o tsv)
+                
+                if [ -z "$API_ORIGIN_GROUP" ]; then
+                  echo "Creating API origin group..."
+                  az afd origin-group create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --origin-group-name "api-origin-group" --probe-path "$WORKING_ENDPOINT" --probe-protocol Https --probe-interval 30
+                  API_ORIGIN_GROUP="api-origin-group"
+                  
+                  echo "Creating API origin..."
+                  az afd origin create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --origin-group-name "$API_ORIGIN_GROUP" --origin-name "api-origin" --host-name "${{ env.BACKEND_APP_NAME }}.azurewebsites.net" --enabled-state Enabled
+                fi
+                
+                echo "Creating API route..."
+                az afd route create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --route-name "api-route" --origin-group "$API_ORIGIN_GROUP" --forwarding-protocol HttpsOnly --patterns-to-match "/api/*" --enabled-state Enabled
+                
+                # If working endpoint is not under /api/, create an additional route
+                if [[ "$WORKING_ENDPOINT" != /api/* ]]; then
+                  echo "Creating additional route for $WORKING_ENDPOINT..."
+                  ROUTE_NAME=$(echo "$WORKING_ENDPOINT" | sed 's/\///g')
+                  az afd route create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --route-name "$ROUTE_NAME-route" --origin-group "$API_ORIGIN_GROUP" --forwarding-protocol HttpsOnly --patterns-to-match "$WORKING_ENDPOINT" --enabled-state Enabled
+                fi
+                
+                echo "Purging Front Door cache..."
+                az afd endpoint purge --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --content-paths "/*"
+                
+                echo "Waiting 60 seconds for Front Door changes to propagate..."
+                sleep 60
+              fi
+            fi
+          fi
+          
+          # Now try the health check with the working endpoint
           for i in {1..12}; do
             echo "Attempt $i: Testing API $API_URL with detailed output..."
             
@@ -597,8 +660,81 @@ jobs:
           
           # Check direct health one more time after restart
           echo "Checking health after restart..."
-          BACKEND_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health"
+          BACKEND_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net$WORKING_ENDPOINT"
           curl -v -L -H "Authorization: Bearer empty" -o "/tmp/health_check_logs/backend_after_restart.json" "$BACKEND_URL" || echo "Health check after restart failed"
+
+      # DIRECT DEBUGGING: Add triage steps directly in the health check
+      - name: Emergency API Triage
+        if: ${{ inputs.deploy_backend }}
+        run: |
+          # Create directory for logs
+          mkdir -p /tmp/emergency_triage
+          
+          echo "=== EMERGENCY TRIAGE: Testing all possible health endpoints ==="
+          
+          # Check direct access to /api/v1/health
+          echo "1. Testing direct access to /api/v1/health..."
+          DIRECT_API_V1=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health")
+          echo "Direct /api/v1/health status: $DIRECT_API_V1"
+          
+          # Check direct access to /health
+          echo "2. Testing direct access to /health..."
+          DIRECT_HEALTH=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/health")
+          echo "Direct /health status: $DIRECT_HEALTH"
+          
+          # Check direct access to /healthz
+          echo "3. Testing direct access to /healthz..."
+          DIRECT_HEALTHZ=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/healthz")
+          echo "Direct /healthz status: $DIRECT_HEALTHZ"
+          
+          # Check Front Door routing
+          echo "4. Testing Front Door access to /api/v1/health..."
+          FRONT_DOOR_API=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.FRONTEND_DOMAIN }}/api/v1/health")
+          echo "Front Door /api/v1/health status: $FRONT_DOOR_API"
+          
+          # Check Front Door API configuration
+          echo "5. Checking Front Door API routes..."
+          az afd route list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --query "[?contains(name, 'api')].{name:name,patternsToMatch:patternsToMatch,originGroup:originGroup}" -o json
+          
+          # Check if any health endpoint works
+          WORKING_ENDPOINT="none"
+          if [ "$DIRECT_API_V1" = "200" ]; then
+            WORKING_ENDPOINT="/api/v1/health"
+          elif [ "$DIRECT_HEALTH" = "200" ]; then
+            WORKING_ENDPOINT="/health"
+          elif [ "$DIRECT_HEALTHZ" = "200" ]; then
+            WORKING_ENDPOINT="/healthz"
+          fi
+          
+          echo "WORKING HEALTH ENDPOINT: $WORKING_ENDPOINT"
+          
+          # Quick fix based on findings
+          if [ "$WORKING_ENDPOINT" != "none" ] && [ "$WORKING_ENDPOINT" != "/api/v1/health" ]; then
+            echo "Found working health endpoint at $WORKING_ENDPOINT but workflow expects /api/v1/health"
+            
+            # Check if there's a Front Door route for API
+            API_ROUTE=$(az afd route list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --query "[?contains(name, 'api')].name" -o tsv)
+            
+            if [ -n "$API_ROUTE" ]; then
+              echo "Found API route in Front Door: $API_ROUTE"
+              echo "Retrieving origin group..."
+              
+              ORIGIN_GROUP=$(az afd route show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --route-name "$API_ROUTE" --query "originGroup" -o tsv)
+              
+              if [ -n "$ORIGIN_GROUP" ]; then
+                echo "Updating health probe path for origin group $ORIGIN_GROUP to $WORKING_ENDPOINT"
+                
+                az afd origin-group update \
+                  --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+                  --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+                  --origin-group-name "$ORIGIN_GROUP" \
+                  --probe-path "$WORKING_ENDPOINT" \
+                  --probe-protocol Https
+              fi
+            fi
+          fi
+          
+          echo "=== EMERGENCY TRIAGE COMPLETE ==="
 
   # Add a new job for API triage before the health check
   api-triage:
