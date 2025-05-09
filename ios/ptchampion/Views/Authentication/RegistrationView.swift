@@ -19,12 +19,13 @@ struct RegistrationView: View {
     // UI state
     @State private var isLoading = false
     @State private var passwordMismatch = false
+    @State private var passwordTooShort = false
     @State private var keyboardHeight: CGFloat = 0
     
     private var isFormValid: Bool {
         !email.isEmpty && !password.isEmpty && !confirmPassword.isEmpty &&
         !firstName.isEmpty && !lastName.isEmpty && !username.isEmpty &&
-        password == confirmPassword
+        password == confirmPassword && password.count >= 8
     }
     
     var body: some View {
@@ -89,6 +90,13 @@ struct RegistrationView: View {
                     
                     if passwordMismatch {
                         PTLabel("Passwords do not match.", style: .caption)
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal, 4)
+                    }
+                    
+                    if passwordTooShort {
+                        PTLabel("Password must be at least 8 characters.", style: .caption)
                             .foregroundColor(AppTheme.GeneratedColors.error)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
@@ -185,12 +193,18 @@ struct RegistrationView: View {
     }
     
     private func validatePasswords() -> Bool {
+        passwordTooShort = false
+
+        if password.count < 8 && !password.isEmpty {
+            passwordTooShort = true
+        }
+
         if !password.isEmpty && !confirmPassword.isEmpty && password != confirmPassword {
             passwordMismatch = true
             return false
         } else {
             passwordMismatch = false
-            return true
+            return !passwordTooShort
         }
     }
     
