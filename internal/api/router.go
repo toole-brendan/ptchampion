@@ -252,6 +252,11 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 	if apiHandler != nil {
 		log.Printf("Registering OpenAPI handlers")
 		RegisterHandlersWithBaseURL(e, apiHandler, "/api/v1")
+
+		// Add a dedicated health check at /api/v1/health for CI/CD
+		e.GET("/api/v1/health", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, map[string]string{"status": "healthy"})
+		})
 	} else {
 		log.Printf("Warning: apiHandler is nil, OpenAPI endpoints not registered")
 	}
