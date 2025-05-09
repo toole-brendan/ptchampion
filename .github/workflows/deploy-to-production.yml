@@ -184,6 +184,135 @@ jobs:
             --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
             --content-paths "/*"
 
+      # Verify and fix Front Door API route
+      - name: Verify and fix Front Door API route
+        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
+        run: |
+          echo "Checking Front Door routing configuration..."
+          
+          # Get the origin group for the API
+          API_ORIGIN_GROUP=$(az afd origin-group list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+            --query "[?contains(name, 'api') || contains(name, 'backend')].name" -o tsv)
+          
+          if [ -z "$API_ORIGIN_GROUP" ]; then
+            echo "ERROR: Could not find API origin group. Creating one..."
+            # Create API origin group if it doesn't exist
+            az afd origin-group create \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+              --origin-group-name "ptchampion-api-origin-group" \
+              --probe-path "/api/v1/health" \
+              --probe-protocol Https \
+              --probe-interval 30 \
+              --probe-request-type GET \
+              --sample-size 4 \
+              --successful-samples-required 3 \
+              --additional-latency-in-milliseconds 50
+            
+            API_ORIGIN_GROUP="ptchampion-api-origin-group"
+          else
+            echo "Found API origin group: $API_ORIGIN_GROUP"
+          fi
+          
+          # Get the origin for the API
+          API_ORIGIN=$(az afd origin list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+            --origin-group-name "$API_ORIGIN_GROUP" \
+            --query "[?contains(name, 'api') || contains(name, 'backend')].name" -o tsv)
+          
+          if [ -z "$API_ORIGIN" ]; then
+            echo "ERROR: Could not find API origin. Creating one..."
+            # Create origin if it doesn't exist
+            az afd origin create \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+              --origin-group-name "$API_ORIGIN_GROUP" \
+              --origin-name "ptchampion-api-origin" \
+              --host-name "${{ env.BACKEND_APP_NAME }}.azurewebsites.net" \
+              --http-port 80 \
+              --https-port 443 \
+              --priority 1 \
+              --weight 1000 \
+              --enabled-state Enabled
+            
+            API_ORIGIN="ptchampion-api-origin"
+          else
+            echo "Found API origin: $API_ORIGIN"
+            
+            # Verify origin host is correct
+            CURRENT_HOST=$(az afd origin show \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+              --origin-group-name "$API_ORIGIN_GROUP" \
+              --origin-name "$API_ORIGIN" \
+              --query "hostName" -o tsv)
+            
+            if [ "$CURRENT_HOST" != "${{ env.BACKEND_APP_NAME }}.azurewebsites.net" ]; then
+              echo "Incorrect host name for API origin. Updating from $CURRENT_HOST to ${{ env.BACKEND_APP_NAME }}.azurewebsites.net"
+              
+              az afd origin update \
+                --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+                --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+                --origin-group-name "$API_ORIGIN_GROUP" \
+                --origin-name "$API_ORIGIN" \
+                --host-name "${{ env.BACKEND_APP_NAME }}.azurewebsites.net" \
+                --enabled-state Enabled
+            fi
+          fi
+          
+          # Check if API route exists
+          API_ROUTE=$(az afd route list \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+            --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+            --query "[?contains(name, 'api')].name" -o tsv)
+          
+          if [ -z "$API_ROUTE" ]; then
+            echo "ERROR: Could not find API route. Creating one..."
+            # Create route if it doesn't exist
+            az afd route create \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+              --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+              --route-name "api-route" \
+              --origin-group "$API_ORIGIN_GROUP" \
+              --forwarding-protocol HttpsOnly \
+              --supported-protocols Http Https \
+              --patterns-to-match "/api/*" \
+              --enabled-state Enabled
+            
+            API_ROUTE="api-route"
+          else
+            echo "Found API route: $API_ROUTE"
+            
+            # Update the route to ensure it's correct
+            az afd route update \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+              --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+              --route-name "$API_ROUTE" \
+              --origin-group "$API_ORIGIN_GROUP" \
+              --forwarding-protocol HttpsOnly \
+              --link-to-default-domain true \
+              --enabled-state Enabled
+          fi
+          
+          echo "Front Door configuration checked and fixed. Purging cache..."
+          
+          # Purge the Front Door cache again to apply changes
+          az afd endpoint purge \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+            --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+            --content-paths "/api/*"
+            
+          # Wait for changes to propagate
+          echo "Waiting 60 seconds for changes to propagate..."
+          sleep 60
+
   health-check:
     name: Post-Deployment Health Checks
     needs: deploy
@@ -194,49 +323,240 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
-      - name: Check Web App
+      - name: Debug Environment Variables
+        run: |
+          echo "FRONTEND_DOMAIN: ${{ env.FRONTEND_DOMAIN }}"
+          echo "BACKEND_APP_NAME: ${{ env.BACKEND_APP_NAME }}"
+          echo "AZURE_RESOURCE_GROUP: ${{ env.AZURE_RESOURCE_GROUP }}"
+          echo "FRONT_DOOR_PROFILE: ${{ env.FRONT_DOOR_PROFILE }}"
+          echo "FRONT_DOOR_ENDPOINT: ${{ env.FRONT_DOOR_ENDPOINT }}"
+        
+      - name: Get App Service Info
+        run: |
+          echo "Getting App Service information..."
+          az webapp show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "{name:name,state:state,hostNames:hostNames,defaultHostName:defaultHostName,httpsOnly:httpsOnly}"
+          
+          echo "Checking App Service container settings..."
+          az webapp config container show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+          
+          echo "Checking App Service configuration..."
+          az webapp config show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "{httpLoggingEnabled:httpLoggingEnabled,detailedErrorLoggingEnabled:detailedErrorLoggingEnabled,requestTracingEnabled:requestTracingEnabled}"
+        
+      - name: Get Front Door Configuration
+        run: |
+          echo "Getting Front Door configuration..."
+          az afd endpoint show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --query "{hostName:hostName,enabledState:enabledState}"
+          
+          echo "Getting Front Door routes..."
+          az afd route list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --query "[].{routeName:name,endpointName:endpointName,originGroupName:originGroupName,enabledState:enabledState,forwardingProtocol:forwardingProtocol}"
+          
+          echo "Getting Front Door rule sets..."
+          az afd rule-set list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }}
+          
+          echo "Getting Front Door origin groups..."
+          az afd origin-group list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }}
+          
+          echo "Getting Front Door origins..."
+          az afd origin list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --origin-group-name '*'
+      
+      - name: DNS Debug
+        run: |
+          echo "Checking DNS resolution..."
+          nslookup ${{ env.FRONTEND_DOMAIN }}
+          echo "Trace route..."
+          traceroute ${{ env.FRONTEND_DOMAIN }}
+          
+      - name: Check Web App with Detailed Output
         run: |
           WEB_URL="https://${{ env.FRONTEND_DOMAIN }}"
           echo "Testing web app: $WEB_URL"
           
+          echo "Checking using curl with verbose output..."
+          curl -v -L "$WEB_URL" || echo "Initial curl verbose check failed"
+          
+          mkdir -p /tmp/health_check_logs
+          
           for i in {1..12}; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$WEB_URL")
-            if [ "$RESPONSE" = "200" ]; then
+            echo "Attempt $i: Testing $WEB_URL with detailed output..."
+            
+            # Save complete request/response details
+            RESPONSE_CODE=$(curl -v -L -o "/tmp/health_check_logs/web_response_$i.html" -w "%{http_code}\n%{time_total}\n%{size_download}\n%{speed_download}\n%{local_ip}\n%{local_port}\n%{remote_ip}\n%{remote_port}\n%{http_version}\n%{url_effective}" "$WEB_URL" 2>"/tmp/health_check_logs/web_request_$i.log")
+            
+            # Parse response details
+            HTTP_CODE=$(echo "$RESPONSE_CODE" | head -1)
+            TIME_TOTAL=$(echo "$RESPONSE_CODE" | head -2 | tail -1)
+            SIZE_DOWNLOAD=$(echo "$RESPONSE_CODE" | head -3 | tail -1)
+            SPEED_DOWNLOAD=$(echo "$RESPONSE_CODE" | head -4 | tail -1)
+            LOCAL_IP=$(echo "$RESPONSE_CODE" | head -5 | tail -1)
+            LOCAL_PORT=$(echo "$RESPONSE_CODE" | head -6 | tail -1)
+            REMOTE_IP=$(echo "$RESPONSE_CODE" | head -7 | tail -1)
+            REMOTE_PORT=$(echo "$RESPONSE_CODE" | head -8 | tail -1)
+            HTTP_VERSION=$(echo "$RESPONSE_CODE" | head -9 | tail -1)
+            URL_EFFECTIVE=$(echo "$RESPONSE_CODE" | head -10 | tail -1)
+            
+            echo "HTTP code: $HTTP_CODE"
+            echo "Request time: $TIME_TOTAL seconds"
+            echo "Response size: $SIZE_DOWNLOAD bytes"
+            echo "Download speed: $SPEED_DOWNLOAD bytes/sec"
+            echo "Local IP:Port: $LOCAL_IP:$LOCAL_PORT"
+            echo "Remote IP:Port: $REMOTE_IP:$REMOTE_PORT"
+            echo "HTTP Version: $HTTP_VERSION"
+            echo "Effective URL: $URL_EFFECTIVE"
+            
+            # Check request details
+            echo "Request details:"
+            cat "/tmp/health_check_logs/web_request_$i.log"
+            
+            # Check response content
+            echo "First 200 bytes of response body:"
+            head -c 200 "/tmp/health_check_logs/web_response_$i.html" | xxd -p | fold -w 2 | paste -sd' ' | sed 's/ /\\x/g' | xargs -I {} echo -e "{}"
+            
+            if [ "$HTTP_CODE" = "200" ]; then
               echo "Web check passed with 200 OK"
               break
             else
-              echo "Attempt $i: Web check returned $RESPONSE, waiting 10 seconds..."
+              echo "Attempt $i: Web check returned $HTTP_CODE, waiting 10 seconds..."
               sleep 10
             fi
             
             if [ $i -eq 12 ]; then
               echo "Web check failed after 2 minutes of attempts"
+              echo "All request logs:"
+              for j in {1..12}; do
+                if [ -f "/tmp/health_check_logs/web_request_$j.log" ]; then
+                  echo "===== REQUEST LOG $j ====="
+                  cat "/tmp/health_check_logs/web_request_$j.log"
+                  echo ""
+                fi
+              done
               exit 1
             fi
           done
       
-      - name: Check API health
+      - name: Check API health with Detailed Output
         if: ${{ inputs.deploy_backend }}
         run: |
           API_URL="https://${{ env.FRONTEND_DOMAIN }}/api/v1/health"
           echo "Testing API: $API_URL"
           
+          echo "Checking API using curl with verbose output..."
+          curl -v -L -H "Authorization: Bearer empty" "$API_URL" || echo "Initial API curl verbose check failed"
+          
+          # Check if the path components work
+          echo "Testing various API path variants..."
+          echo "Testing /api endpoint..."
+          curl -v -L -o "/tmp/health_check_logs/api_root.html" "$API_URL/../.." || echo "API root check failed"
+          
+          echo "Testing /api/v1 endpoint..."
+          curl -v -L -o "/tmp/health_check_logs/api_v1.html" "$API_URL/.." || echo "API v1 check failed"
+          
+          # Try direct connection to backend bypassing Front Door
+          echo "Testing direct backend connection..."
+          BACKEND_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health"
+          echo "Direct backend URL: $BACKEND_URL"
+          curl -v -L -H "Authorization: Bearer empty" -o "/tmp/health_check_logs/backend_direct.json" "$BACKEND_URL" || echo "Direct backend curl check failed"
+          
+          # Check other potential health endpoints on the backend
+          echo "Testing alternative health endpoints on backend..."
+          curl -v -L -o "/tmp/health_check_logs/backend_health.json" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/health" || echo "Backend /health check failed"
+          curl -v -L -o "/tmp/health_check_logs/backend_healthz.json" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/healthz" || echo "Backend /healthz check failed"
+          curl -v -L -o "/tmp/health_check_logs/backend_ping.json" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/ping" || echo "Backend /ping check failed"
+          
+          echo "Checking App Service routes and configurations..."
+          echo "Getting App Service known routes (requires kudu access)..."
+          KUDU_URL="https://${{ env.BACKEND_APP_NAME }}.scm.azurewebsites.net/api/processes"
+          curl -v -L -o "/tmp/health_check_logs/kudu_processes.json" "$KUDU_URL" || echo "Kudu processes check failed"
+          
+          mkdir -p /tmp/health_check_logs
+          
           for i in {1..12}; do
-            # Add Bearer token header to pass JWT authentication
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "$API_URL")
-            if [ "$RESPONSE" = "200" ]; then
+            echo "Attempt $i: Testing API $API_URL with detailed output..."
+            
+            # Save complete request/response details with timeout and retry options
+            RESPONSE_CODE=$(curl -v -L --retry 3 --retry-delay 2 --max-time 30 -H "Authorization: Bearer empty" -o "/tmp/health_check_logs/api_response_$i.json" -w "%{http_code}\n%{time_total}\n%{size_download}\n%{speed_download}\n%{local_ip}\n%{local_port}\n%{remote_ip}\n%{remote_port}\n%{http_version}\n%{url_effective}" "$API_URL" 2>"/tmp/health_check_logs/api_request_$i.log")
+            
+            # Parse response details
+            HTTP_CODE=$(echo "$RESPONSE_CODE" | head -1)
+            TIME_TOTAL=$(echo "$RESPONSE_CODE" | head -2 | tail -1)
+            SIZE_DOWNLOAD=$(echo "$RESPONSE_CODE" | head -3 | tail -1)
+            SPEED_DOWNLOAD=$(echo "$RESPONSE_CODE" | head -4 | tail -1)
+            LOCAL_IP=$(echo "$RESPONSE_CODE" | head -5 | tail -1)
+            LOCAL_PORT=$(echo "$RESPONSE_CODE" | head -6 | tail -1)
+            REMOTE_IP=$(echo "$RESPONSE_CODE" | head -7 | tail -1)
+            REMOTE_PORT=$(echo "$RESPONSE_CODE" | head -8 | tail -1)
+            HTTP_VERSION=$(echo "$RESPONSE_CODE" | head -9 | tail -1)
+            URL_EFFECTIVE=$(echo "$RESPONSE_CODE" | head -10 | tail -1)
+            
+            echo "HTTP code: $HTTP_CODE"
+            echo "Request time: $TIME_TOTAL seconds"
+            echo "Response size: $SIZE_DOWNLOAD bytes"
+            echo "Download speed: $SPEED_DOWNLOAD bytes/sec"
+            echo "Local IP:Port: $LOCAL_IP:$LOCAL_PORT"
+            echo "Remote IP:Port: $REMOTE_IP:$REMOTE_PORT"
+            echo "HTTP Version: $HTTP_VERSION"
+            echo "Effective URL: $URL_EFFECTIVE"
+            
+            # Check request details
+            echo "Request details:"
+            cat "/tmp/health_check_logs/api_request_$i.log"
+            
+            # Check response content
+            echo "Response body:"
+            if [ -s "/tmp/health_check_logs/api_response_$i.json" ]; then
+              cat "/tmp/health_check_logs/api_response_$i.json"
+            else
+              echo "Empty response body"
+            fi
+            
+            if [ "$HTTP_CODE" = "200" ]; then
               echo "API health check passed with 200 OK"
               break
             else
-              echo "Attempt $i: API check returned $RESPONSE, waiting 10 seconds..."
+              echo "Attempt $i: API check returned $HTTP_CODE, waiting 10 seconds..."
+              
+              # Try direct connection to backend on failure
+              if [ $i -eq 6 ]; then
+                echo "Testing direct backend connection after 6 failed attempts..."
+                curl -v -L -H "Authorization: Bearer empty" "$BACKEND_URL" || echo "Direct backend curl check failed"
+              fi
+              
               sleep 10
             fi
             
             if [ $i -eq 12 ]; then
               echo "API check failed after 2 minutes of attempts"
+              echo "All API request logs:"
+              for j in {1..12}; do
+                if [ -f "/tmp/health_check_logs/api_request_$j.log" ]; then
+                  echo "===== API REQUEST LOG $j ====="
+                  cat "/tmp/health_check_logs/api_request_$j.log"
+                  echo ""
+                fi
+              done
+              
+              # Check App Service logs as a last resort
+              echo "Checking App Service logs..."
+              az webapp log tail --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --timeout 60 || echo "Could not retrieve App Service logs"
+              
               exit 1
             fi
           done
+
+      - name: Check Container Logs
+        if: ${{ inputs.deploy_backend }}
+        run: |
+          echo "Retrieving container logs from App Service..."
+          az webapp log download --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} -o tsv --query "url"
+          
+          echo "Streaming recent container logs..."
+          az webapp log tail --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --timeout 30 || echo "Failed to stream logs, but continuing"
+      
+      - name: Upload Debug Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: health-check-debug-logs
+          path: /tmp/health_check_logs/
 
       - name: Notify on successful deployment
         if: success()
@@ -247,3 +567,215 @@ jobs:
           # curl -X POST -H 'Content-type: application/json' \
           #   --data '{"text":"✅ Successfully deployed PT Champion to production!"}' \
           #   ${{ secrets.SLACK_WEBHOOK_URL }} 
+
+      - name: Check App Service Configuration and Routes
+        if: ${{ inputs.deploy_backend }}
+        run: |
+          # Get detailed app settings (masking secrets)
+          echo "Getting App Service settings..."
+          az webapp config appsettings list --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} | grep -v -E 'value|connectionString' || echo "Failed to get app settings"
+          
+          # Check app service logs for any errors during startup
+          echo "Checking startup logs..."
+          az webapp log deployment show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || echo "Failed to get deployment logs"
+          
+          # Check if container is actually running
+          echo "Checking container status..."
+          az webapp config container show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || echo "Failed to get container config"
+          
+          # Check health of webapp
+          echo "Getting web app health..."
+          az webapp show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "{name:name,state:state,usageState:usageState,enabled:enabled,defaultHostName:defaultHostName,availabilityState:availabilityState}" || echo "Failed to get webapp health"
+          
+          # Try restarting app one more time
+          echo "Attempting to restart app service..."
+          az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || echo "Failed to restart app"
+          
+          # Wait for app to restart
+          echo "Waiting 30 seconds for restart..."
+          sleep 30
+          
+          # Check direct health one more time after restart
+          echo "Checking health after restart..."
+          BACKEND_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health"
+          curl -v -L -H "Authorization: Bearer empty" -o "/tmp/health_check_logs/backend_after_restart.json" "$BACKEND_URL" || echo "Health check after restart failed"
+
+  # Add a new job for API triage before the health check
+  api-triage:
+    name: API Triage
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: ${{ inputs.deploy_backend }}
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Create logs directory
+        run: mkdir -p /tmp/api_triage_logs
+      
+      - name: Check direct API health endpoint
+        run: |
+          echo "Testing direct API health endpoint at /api/v1/health..."
+          curl -v -H "Authorization: Bearer empty" https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health > /tmp/api_triage_logs/direct_api_v1_health.log 2>&1
+          
+          DIRECT_API_V1_STATUS=$(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/direct_api_v1_health.log | tail -1)
+          echo "Direct API /api/v1/health status: $DIRECT_API_V1_STATUS"
+          
+          if [ "$DIRECT_API_V1_STATUS" = "200" ]; then
+            echo "✅ Direct API health endpoint is working at /api/v1/health. This confirms Front Door routing issue."
+          elif [ "$DIRECT_API_V1_STATUS" = "404" ]; then
+            echo "❌ Direct API health endpoint returns 404 at /api/v1/health. The route is missing in the API code."
+          else
+            echo "⚠️ Direct API health endpoint returned unexpected status: $DIRECT_API_V1_STATUS"
+          fi
+      
+      - name: Check standard health endpoint
+        run: |
+          echo "Testing standard health endpoint at /health..."
+          curl -v -H "Authorization: Bearer empty" https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/health > /tmp/api_triage_logs/direct_health.log 2>&1
+          
+          DIRECT_HEALTH_STATUS=$(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/direct_health.log | tail -1)
+          echo "Direct API /health status: $DIRECT_HEALTH_STATUS"
+          
+          if [ "$DIRECT_HEALTH_STATUS" = "200" ]; then
+            echo "✅ Standard health endpoint is working at /health. Update Front Door probe to use /health instead."
+          elif [ "$DIRECT_HEALTH_STATUS" = "404" ]; then
+            echo "❌ Standard health endpoint returns 404 at /health."
+          else
+            echo "⚠️ Standard health endpoint returned unexpected status: $DIRECT_HEALTH_STATUS"
+          fi
+      
+      - name: Check healthz endpoint
+        run: |
+          echo "Testing healthz endpoint at /healthz..."
+          curl -v -H "Authorization: Bearer empty" https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/healthz > /tmp/api_triage_logs/direct_healthz.log 2>&1
+          
+          DIRECT_HEALTHZ_STATUS=$(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/direct_healthz.log | tail -1)
+          echo "Direct API /healthz status: $DIRECT_HEALTHZ_STATUS"
+          
+          if [ "$DIRECT_HEALTHZ_STATUS" = "200" ]; then
+            echo "✅ Healthz endpoint is working at /healthz. Update Front Door probe to use /healthz instead."
+          elif [ "$DIRECT_HEALTHZ_STATUS" = "404" ]; then
+            echo "❌ Healthz endpoint returns 404 at /healthz."
+          else
+            echo "⚠️ Healthz endpoint returned unexpected status: $DIRECT_HEALTHZ_STATUS"
+          fi
+      
+      - name: Check Front Door routing to API
+        run: |
+          echo "Testing Front Door routing to API..."
+          curl -v -H "Authorization: Bearer empty" https://${{ env.FRONTEND_DOMAIN }}/api/v1/health > /tmp/api_triage_logs/front_door_api_v1_health.log 2>&1
+          
+          FRONT_DOOR_STATUS=$(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/front_door_api_v1_health.log | tail -1)
+          echo "Front Door API /api/v1/health status: $FRONT_DOOR_STATUS"
+          
+          if [ "$FRONT_DOOR_STATUS" = "200" ]; then
+            echo "✅ Front Door routing is working for /api/v1/health."
+          elif [ "$FRONT_DOOR_STATUS" = "404" ]; then
+            echo "❌ Front Door returns 404 for /api/v1/health. Check routing rules."
+          else
+            echo "⚠️ Front Door returned unexpected status: $FRONT_DOOR_STATUS"
+          fi
+      
+      - name: Check logs while making request
+        run: |
+          echo "Watching logs while making request..."
+          # Start log tail in background
+          az webapp log tail --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} > /tmp/api_triage_logs/live_logs.log &
+          LOG_PID=$!
+          
+          # Give log tail time to connect
+          sleep 5
+          
+          # Make request
+          echo "Making request to direct API health endpoint..."
+          curl -v -H "Authorization: Bearer empty" https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health > /dev/null 2>&1
+          
+          # Give time for logs to show up
+          sleep 10
+          
+          # Kill log tail
+          kill $LOG_PID
+          
+          # Check for authentication bypass message
+          if grep -q "Skipping authentication for health check endpoint" /tmp/api_triage_logs/live_logs.log; then
+            echo "✅ Request bypassed authentication middleware for health check."
+            
+            # Check if request fell through router
+            if grep -q "no handler" /tmp/api_triage_logs/live_logs.log && grep -q "404" /tmp/api_triage_logs/live_logs.log; then
+              echo "❌ Request bypassed auth but fell through router (404). The route isn't registered in API code."
+            else
+              echo "API appears to have handled the request after auth bypass."
+            fi
+          else
+            echo "⚠️ No authentication bypass message found in logs."
+          fi
+      
+      - name: Get Azure health probe configuration
+        run: |
+          echo "Checking Azure App Service health probe configuration..."
+          az webapp show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "{healthCheckPath:healthCheckPath}" -o json
+          
+          HEALTH_CHECK_PATH=$(az webapp show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "healthCheckPath" -o tsv)
+          
+          if [ -n "$HEALTH_CHECK_PATH" ]; then
+            echo "Current App Service health check path: $HEALTH_CHECK_PATH"
+            
+            # Test the configured health check path
+            echo "Testing configured health check path..."
+            curl -v -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net$HEALTH_CHECK_PATH" > /tmp/api_triage_logs/configured_health.log 2>&1
+            
+            CONFIGURED_HEALTH_STATUS=$(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/configured_health.log | tail -1)
+            echo "Configured health check status: $CONFIGURED_HEALTH_STATUS"
+            
+            if [ "$CONFIGURED_HEALTH_STATUS" = "200" ]; then
+              echo "✅ Configured health check path is working."
+            else
+              echo "❌ Configured health check path returned status: $CONFIGURED_HEALTH_STATUS"
+            fi
+          else
+            echo "No health check path configured in App Service."
+          fi
+      
+      - name: Triage summary
+        run: |
+          echo "===== API TRIAGE SUMMARY ====="
+          echo "1. Direct /api/v1/health status: $(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/direct_api_v1_health.log | tail -1 || echo 'unknown')"
+          echo "2. Direct /health status: $(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/direct_health.log | tail -1 || echo 'unknown')"
+          echo "3. Direct /healthz status: $(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/direct_healthz.log | tail -1 || echo 'unknown')"
+          echo "4. Front Door /api/v1/health status: $(grep -oP "< HTTP/[0-9.]+ \K[0-9]+" /tmp/api_triage_logs/front_door_api_v1_health.log | tail -1 || echo 'unknown')"
+          
+          WORKING_ENDPOINT="none"
+          
+          if grep -q "< HTTP/[0-9.]\\+ 200" /tmp/api_triage_logs/direct_api_v1_health.log; then
+            WORKING_ENDPOINT="/api/v1/health"
+          elif grep -q "< HTTP/[0-9.]\\+ 200" /tmp/api_triage_logs/direct_health.log; then
+            WORKING_ENDPOINT="/health"
+          elif grep -q "< HTTP/[0-9.]\\+ 200" /tmp/api_triage_logs/direct_healthz.log; then
+            WORKING_ENDPOINT="/healthz"
+          fi
+          
+          echo "WORKING HEALTH ENDPOINT: $WORKING_ENDPOINT"
+          
+          if [ "$WORKING_ENDPOINT" = "none" ]; then
+            echo "❌ CRITICAL: No working health endpoint found on the API"
+            echo "Action needed: Add a health endpoint to the API code"
+          elif [ "$WORKING_ENDPOINT" != "/api/v1/health" ]; then
+            echo "⚠️ WARNING: Health endpoint exists but at $WORKING_ENDPOINT instead of /api/v1/health"
+            echo "Action needed: Either update Front Door to use $WORKING_ENDPOINT or update API to add /api/v1/health endpoint"
+          else
+            if ! grep -q "< HTTP/[0-9.]\\+ 200" /tmp/api_triage_logs/front_door_api_v1_health.log; then
+              echo "⚠️ WARNING: API has working /api/v1/health endpoint but Front Door isn't routing to it"
+              echo "Action needed: Fix Front Door routing for /api/*"
+            else
+              echo "✅ RESOLVED: Both API health endpoint and Front Door routing are working"
+            fi
+          fi
+      
+      - name: Upload Triage Logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-triage-logs
+          path: /tmp/api_triage_logs/
