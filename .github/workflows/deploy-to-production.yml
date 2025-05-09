@@ -87,7 +87,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.ACR_NAME }}.azurecr.io/ptchampion-api:${{ github.sha }},${{ env.ACR_NAME }}.azurecr.io/ptchampion-api:latest
+          tags: ${{ env.ACR_NAME }}.azurecr.io/ptchampion-api:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -155,6 +155,25 @@ jobs:
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
         run: |
           az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+          
+      # Verify deployment and force restart if needed
+      - name: Verify deployment and ensure new image is running
+        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
+        run: |
+          echo "Verifying deployment of image with tag: ${{ github.sha }}"
+          az webapp config container show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+          
+          # Give the app some time to start
+          echo "Waiting 30 seconds for app to initialize..."
+          sleep 30
+          
+          # Force a restart to ensure only the new version is running
+          echo "Forcing a second restart to ensure clean deployment"
+          az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+          
+          # Wait again for restart
+          echo "Waiting 30 seconds after restart..."
+          sleep 30
 
       # Purge Front Door cache
       - name: Purge Front Door cache

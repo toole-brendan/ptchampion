@@ -30,6 +30,12 @@ func JWTAuthMiddleware(accessSecret, refreshSecret string, refreshStore redis.Re
 		return func(c echo.Context) error {
 			log.Printf("DEBUG: JWT middleware processing request to %s %s", c.Request().Method, c.Request().URL.Path)
 
+			// Skip authentication for health check endpoint
+			if c.Request().URL.Path == "/api/v1/health" {
+				log.Printf("DEBUG: Skipping authentication for health check endpoint")
+				return next(c)
+			}
+
 			// Extract the token from the Authorization header
 			authHeader := c.Request().Header.Get("Authorization")
 			if authHeader == "" {
