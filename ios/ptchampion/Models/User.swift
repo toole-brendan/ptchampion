@@ -4,13 +4,14 @@ import Foundation
 public struct AuthUserModel: Identifiable, Codable, Equatable {
     public let id: String
     public let email: String
+    public var username: String?
     public let firstName: String?
     public let lastName: String?
     public let profilePictureUrl: String?
     
     // Keys that correspond 1-to-1 with stored properties
     private enum CodingKeys: String, CodingKey {
-        case id, email, firstName, lastName, profilePictureUrl
+        case id, email, username, firstName, lastName, profilePictureUrl
     }
     
     // Extra keys the backend may send
@@ -34,6 +35,12 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
         email = try c.decodeIfPresent(String.self, forKey: .email)
               ?? api.decode(String.self, forKey: .username)
         
+        // Try to get username from CodingKeys first, then from APIKeys if not present
+        username = try? c.decode(String.self, forKey: .username)
+        if username == nil {
+            username = try? api.decode(String.self, forKey: .username)
+        }
+        
         // name can arrive as `displayName` or split fields
         if let display = try? api.decode(String.self, forKey: .displayName) {
             let parts = display.splitDisplayName()
@@ -52,20 +59,23 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(id,                forKey: .id)
         try c.encode(email,             forKey: .email)
+        try c.encodeIfPresent(username, forKey: .username)
         try c.encodeIfPresent(firstName,forKey: .firstName)
         try c.encodeIfPresent(lastName, forKey: .lastName)
         try c.encodeIfPresent(profilePictureUrl, forKey: .profilePictureUrl)
-        // We deliberately **don't** encode `username` / `displayName`
+        // We deliberately **don't** encode `displayName`
     }
     
     // Convenience init you already had
     public init(id: String,
          email: String,
+         username: String? = nil,
          firstName: String?,
          lastName: String?,
          profilePictureUrl: String?) {
         self.id = id
         self.email = email
+        self.username = username
         self.firstName = firstName
         self.lastName = lastName
         self.profilePictureUrl = profilePictureUrl
@@ -76,7 +86,7 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
         case let (f?, l?): return "\(f) \(l)"
         case let (f?, nil): return f
         case let (nil, l?): return l
-        default: return email
+        default: return username ?? email
         }
     }
 } 

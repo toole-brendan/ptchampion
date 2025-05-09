@@ -7,7 +7,8 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 -- Create users table
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
-    username TEXT NOT NULL,
+    username TEXT NOT NULL UNIQUE, -- Username used for display, must be unique
+    email TEXT NOT NULL UNIQUE, -- Added separate email field for login
     password_hash TEXT NOT NULL, -- Note: using password_hash instead of password
     display_name TEXT,
     location TEXT,
@@ -19,6 +20,10 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
+
+-- Create indexes for email and username columns
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 
 -- Create exercises table
 CREATE TABLE IF NOT EXISTS exercises (

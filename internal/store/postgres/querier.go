@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CheckUsernameExists(ctx context.Context, username string) (bool, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error)
 	GetExercise(ctx context.Context, id int32) (Exercise, error)
@@ -23,6 +24,7 @@ type Querier interface {
 	// Limit the number of results (e.g., top 10, 20)
 	GetLocalLeaderboard(ctx context.Context, arg GetLocalLeaderboardParams) ([]GetLocalLeaderboardRow, error)
 	GetUser(ctx context.Context, id int32) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
 	GetUserExercises(ctx context.Context, arg GetUserExercisesParams) ([]GetUserExercisesRow, error)
 	GetUserExercisesByType(ctx context.Context, arg GetUserExercisesByTypeParams) ([]GetUserExercisesByTypeRow, error)

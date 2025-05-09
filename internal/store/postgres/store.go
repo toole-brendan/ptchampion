@@ -132,9 +132,12 @@ func toStoreUser(dbUser User) *store.User {
 		updatedAt = dbUser.UpdatedAt.Time
 	}
 
+	// IMPORTANT: This function will need to be updated after SQLC regeneration
+	// to use the actual Email field once it exists in the database schema
 	return &store.User{
 		ID:           strconv.Itoa(int(dbUser.ID)), // Convert int32 to string; NOTE: This is a temporary fix for ID mismatch
-		Email:        dbUser.Username,              // Assuming Username in DB is Email
+		Email:        dbUser.Username,              // TEMPORARY: Using Username as Email until schema updated
+		Username:     dbUser.Username,              // Username is the same as Email until schema update
 		PasswordHash: dbUser.PasswordHash,
 		FirstName:    firstName,
 		LastName:     lastName,
@@ -152,8 +155,10 @@ func (s *Store) CreateUser(ctx context.Context, user *store.User) (*store.User, 
 		displayName.Valid = true
 	}
 
+	// IMPORTANT: This will need to be updated after SQLC regeneration to include email
+	// when CreateUserParams is regenerated with the Email field
 	params := CreateUserParams{
-		Username:     user.Email, // Assuming Email from store.User maps to Username in db.User
+		Username:     user.Email, // TEMPORARY: Using Email as Username until schema migration
 		PasswordHash: user.PasswordHash,
 		DisplayName:  displayName,
 	}
@@ -163,10 +168,6 @@ func (s *Store) CreateUser(ctx context.Context, user *store.User) (*store.User, 
 		return nil, fmt.Errorf("failed to create user in DB: %w", err)
 	}
 
-	// The returned dbUser.ID is int32, user.ID is string (UUID)
-	// This is a significant mismatch. For now, to satisfy the interface,
-	// we convert the int32 ID to string for store.User.ID.
-	// The original UUID from store.NewUser(..) is lost here.
 	return toStoreUser(dbUser), nil
 }
 
@@ -190,14 +191,16 @@ func (s *Store) GetUserByID(ctx context.Context, id string) (*store.User, error)
 }
 
 // GetUserByEmail implements store.UserStore
-// It uses GetUserByUsername as the DB schema has username, not email.
+// It will need to be updated once GetUserByEmail is available in the generated code
 func (s *Store) GetUserByEmail(ctx context.Context, email string) (*store.User, error) {
-	dbUser, err := s.Queries.GetUserByUsername(ctx, email) // email maps to username
+	// TEMPORARY: Until the GetUserByEmail method is available from SQLC regeneration,
+	// we'll use the GetUserByUsername method since Email is stored in Username field
+	dbUser, err := s.Queries.GetUserByUsername(ctx, email)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, store.ErrUserNotFound // Consider defining this error in store package
+			return nil, store.ErrUserNotFound
 		}
-		return nil, fmt.Errorf("failed to get user by email (username) from DB: %w", err)
+		return nil, fmt.Errorf("failed to get user by email from DB: %w", err)
 	}
 	return toStoreUser(dbUser), nil
 }

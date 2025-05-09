@@ -369,8 +369,32 @@ struct PTChampionApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                // Use AuthViewModel's computed property for isAuthenticated
-                if authViewModel.isAuthenticated { // Corrected Check
+                // Use NavigationState to control which view is shown
+                switch navigationState.currentScreen {
+                case .loading:
+                    // Use the LoadingView we created
+                    LoadingView()
+                        .environmentObject(navigationState)
+                        .environmentObject(authViewModel)
+                
+                case .login:
+                    // Instantiate LoginView correctly and provide necessary environment objects
+                    LoginView()
+                        .environmentObject(authService)
+                        .environmentObject(navigationState)
+                        .environmentObject(featureFlagService)
+                        .environmentObject(authViewModel)
+                
+                case .register:
+                    // Show registration view when navigating to register
+                    RegistrationView()
+                        .environmentObject(authService)
+                        .environmentObject(navigationState)
+                        .environmentObject(featureFlagService)
+                        .environmentObject(authViewModel)
+                
+                case .main:
+                    // Use AuthViewModel's computed property for isAuthenticated
                     MainTabView()
                         // Pass Services
                         .environmentObject(authService)
@@ -385,22 +409,19 @@ struct PTChampionApp: App {
                         .environmentObject(workoutHistoryViewModel)
                         .environmentObject(leaderboardViewModel)
                         .environmentObject(progressViewModel)
-                } else {
-                    // Instantiate LoginView correctly and provide necessary environment objects
-                    LoginView()
-                        .environmentObject(authService) // Pass needed services/vms
-                        .environmentObject(navigationState)
-                        .environmentObject(featureFlagService)
-                        .environmentObject(authViewModel)
                 }
             }
             .modelContainer(sharedModelContainer)
             .onAppear {
-                // AuthViewModel's init calls checkAuthentication, so likely not needed here
-                // authViewModel.checkAuthentication() // Or authService.loadSession() if that exists
+                // Check initial authentication state on app launch
+                if navigationState.currentScreen == .loading {
+                    // Let the LoadingView handle the navigation instead of doing it here
+                    // This allows for a visual loading state before auto-navigating
+                    print("App launched, starting with loading screen")
+                }
             }
             .environmentObject(ThemeManager.shared)
-            .preferredColorScheme(ThemeManager.shared.effectiveColorScheme) // Corrected
+            .preferredColorScheme(ThemeManager.shared.effectiveColorScheme)
         }
     }
 }

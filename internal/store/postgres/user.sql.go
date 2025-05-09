@@ -10,28 +10,49 @@ import (
 	"database/sql"
 )
 
+const checkUsernameExists = `-- name: CheckUsernameExists :one
+SELECT EXISTS (
+  SELECT 1 FROM users WHERE username = $1
+) AS exists
+`
+
+func (q *Queries) CheckUsernameExists(ctx context.Context, username string) (bool, error) {
+	row := q.db.QueryRowContext(ctx, checkUsernameExists, username)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
-  username, 
+  username,
+  email, 
   password_hash, 
   display_name
 )
-VALUES ($1, $2, $3)
-RETURNING id, username, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at
+VALUES ($1, $2, $3, $4)
+RETURNING id, username, email, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
 	Username     string         `json:"username"`
+	Email        string         `json:"email"`
 	PasswordHash string         `json:"password_hash"`
 	DisplayName  sql.NullString `json:"display_name"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.PasswordHash, arg.DisplayName)
+	row := q.db.QueryRowContext(ctx, createUser,
+		arg.Username,
+		arg.Email,
+		arg.PasswordHash,
+		arg.DisplayName,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
+		&i.Email,
 		&i.PasswordHash,
 		&i.DisplayName,
 		&i.Location,
@@ -47,7 +68,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, username, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
+SELECT id, username, email, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -57,6 +78,33 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
+		&i.Email,
+		&i.PasswordHash,
+		&i.DisplayName,
+		&i.Location,
+		&i.Latitude,
+		&i.Longitude,
+		&i.LastLocation,
+		&i.TokensInvalidatedAt,
+		&i.LastSyncedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT id, username, email, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
 		&i.PasswordHash,
 		&i.DisplayName,
 		&i.Location,
@@ -72,7 +120,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
+SELECT id, username, email, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
 WHERE username = $1 LIMIT 1
 `
 
@@ -82,6 +130,7 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
+		&i.Email,
 		&i.PasswordHash,
 		&i.DisplayName,
 		&i.Location,
@@ -100,18 +149,20 @@ const updateUser = `-- name: UpdateUser :one
 UPDATE users
 SET 
   username = COALESCE($2, username),
-  display_name = COALESCE($3, display_name),
-  location = COALESCE($4, location),
-  latitude = COALESCE($5, latitude),
-  longitude = COALESCE($6, longitude),
+  email = COALESCE($3, email),
+  display_name = COALESCE($4, display_name),
+  location = COALESCE($5, location),
+  latitude = COALESCE($6, latitude),
+  longitude = COALESCE($7, longitude),
   updated_at = now()
 WHERE id = $1
-RETURNING id, username, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at
+RETURNING id, username, email, password_hash, display_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at
 `
 
 type UpdateUserParams struct {
 	ID          int32          `json:"id"`
 	Username    string         `json:"username"`
+	Email       string         `json:"email"`
 	DisplayName sql.NullString `json:"display_name"`
 	Location    sql.NullString `json:"location"`
 	Latitude    sql.NullString `json:"latitude"`
@@ -122,6 +173,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	row := q.db.QueryRowContext(ctx, updateUser,
 		arg.ID,
 		arg.Username,
+		arg.Email,
 		arg.DisplayName,
 		arg.Location,
 		arg.Latitude,
@@ -131,6 +183,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 	err := row.Scan(
 		&i.ID,
 		&i.Username,
+		&i.Email,
 		&i.PasswordHash,
 		&i.DisplayName,
 		&i.Location,

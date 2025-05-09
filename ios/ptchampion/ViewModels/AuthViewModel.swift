@@ -46,10 +46,18 @@ enum API {
     
     static func login(_ email: String, _ password: String) async throws -> (token: String, user: AuthUserModel) {
         print("⚙️ Starting login for email: \(email)")
-        let request = AuthLoginRequest(username: email, password: password)
+        let request = AuthLoginRequest(email: email, password: password)
+        
+        // Corrected API URL to include /api/v1 prefix
         let url = URL(string: "https://ptchampion-api-westus.azurewebsites.net/api/v1/auth/login")!
         
-        print("⚙️ About to send login request")
+        print("⚙️ About to send login request to: \(url.absoluteString)")
+        // For debugging - print the request body
+        if let requestData = try? JSONEncoder().encode(request),
+           let requestStr = String(data: requestData, encoding: .utf8) {
+            print("⚙️ Request body: \(requestStr)")
+        }
+        
         let response: AuthResponse = try await post(request, to: url)
         print("⚙️ Received login response with token: \(response.token.prefix(10))... and user: \(response.user.id)")
         
@@ -170,25 +178,25 @@ class AuthViewModel: ObservableObject {
     
     // MARK: - Registration
     
-    func register(username: String, password: String, displayName: String) {
+    func register(email: String, password: String, firstName: String, lastName: String, username: String) {
         isLoading = true
         errorMessage = nil
         successMessage = nil
         
-        // Normalize username/email: trim whitespace and convert to lowercase
-        let normalizedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        
-        // Create registration request with standard field names that match web implementation
-        let registrationBody: [String: Any] = [
-            "username": normalizedUsername,
-            "password": password,
-            "display_name": displayName,  // Using snake_case for API
-            "email": normalizedUsername  // Ensure email is always set (matches web app)
-        ]
+        let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let normalizedUsername = username.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let registrationPayload = RegistrationRequest(
+            email: normalizedEmail,
+            password: password,
+            firstName: firstName,
+            lastName: lastName,
+            username: normalizedUsername
+        )
         
         // Convert to JSON data
-        guard let jsonData = try? JSONSerialization.data(withJSONObject: registrationBody) else {
-            self.errorMessage = "Error creating request"
+        guard let jsonData = try? JSONEncoder().encode(registrationPayload) else {
+            self.errorMessage = "Error creating request payload"
             self.isLoading = false
             return
         }
@@ -209,18 +217,54 @@ class AuthViewModel: ObservableObject {
         // Use straightforward Task with await pattern
         Task {
             do {
+                // For debugging - print the request body
+                if let requestStr = String(data: jsonData, encoding: .utf8) {
+                    print("⚙️ Registration Request body: \(requestStr)")
+                }
+                print("⚙️ Sending registration request to: \(url.absoluteString)")
+
                 let (data, response) = try await URLSession.shared.data(for: request)
                 
-                guard let http = response as? HTTPURLResponse,
-                      (200...299).contains(http.statusCode) else {
-                    throw URLError(.badServerResponse)
+                guard let http = response as? HTTPURLResponse else {
+                    self.isLoading = false
+                    self.errorMessage = "Registration failed: Invalid response from server."
+                    throw URLError(.badServerResponse) // Or a custom error
                 }
                 
-                self.isLoading = false
-                self.successMessage = "Registration successful! Please log in."
+                if (200...299).contains(http.statusCode) {
+                    // Successful registration
+                    self.isLoading = false
+                    self.successMessage = "Registration successful! Please log in."
+                    print("✅ Registration successful!")
+                } else {
+                    // Attempt to decode server error message
+                    var serverErrorMessage = "Registration failed with status code: \(http.statusCode)."
+                    if let errorData = String(data: data, encoding: .utf8) {
+                        print("🔴 Registration error data: \(errorData)") // Log raw error data
+                        // Try to decode as ErrorEnvelope or your backend's specific error struct
+                        if let apiError = try? JSONDecoder().decode(ErrorEnvelope.self, from: data),
+                           let message = apiError.message {
+                            serverErrorMessage = message
+                        } else if let genericError = try? JSONDecoder().decode([String: String].self, from: data),
+                                  let detail = genericError["detail"] { // Common pattern for some frameworks
+                            serverErrorMessage = detail
+                        } else if let messageOnly = try? JSONDecoder().decode([String: String].self, from: data), 
+                                  let msg = messageOnly["message"] {
+                             serverErrorMessage = msg
+                        }
+                    }
+                    self.isLoading = false
+                    self.errorMessage = serverErrorMessage
+                    print("🔴 Registration failed: \(serverErrorMessage)")
+                    throw URLError(.badServerResponse) // Or a more specific error
+                }
             } catch {
+                // Catch any other errors (network, JSON parsing outside of specific status code handling)
+                if self.errorMessage == nil { // Avoid overwriting specific server error message
+                    self.errorMessage = "Registration failed: \(error.localizedDescription)"
+                }
                 self.isLoading = false
-                self.errorMessage = "Registration failed: \(error.localizedDescription)"
+                print("🔴 Registration general error: \(error.localizedDescription)")
             }
         }
     }
@@ -257,17 +301,18 @@ class AuthViewModel: ObservableObject {
     // MARK: – Startup --------------------------------------------------------
 
     func checkAuthentication() {
-        // Move keychain operations to a background task to prevent main thread blocking
         Task {
-            // Get token and user ID from keychain
             let token = KeychainService.shared.getAccessToken()
             let uid = KeychainService.shared.getUserID()
-            
-            // Update UI state on main thread
+            // It would be ideal to also store/retrieve username from keychain if needed upon cold start
+            // For now, initializing AuthUserModel with nil username if only id is found.
+            // The full user object (including username) should be fetched from backend or included in login/refresh response.
+
             await MainActor.run {
                 if let token = token, !token.isEmpty, let uid = uid {
                     print("⚙️ Found token and user ID in keychain, setting state to authenticated with user ID: \(uid)")
-                    authState = .authenticated(AuthUserModel(id: uid, email: "", firstName: "User", lastName: "", profilePictureUrl: nil))
+                    // Attempt to load more complete user from a service or use placeholder with nil username
+                    authState = .authenticated(AuthUserModel(id: uid, email: "", username: nil, firstName: "User", lastName: "", profilePictureUrl: nil))
                 } else {
                     print("⚙️ No valid token or user ID found in keychain, setting state to unauthenticated")
                     authState = .unauthenticated
@@ -292,7 +337,7 @@ class AuthViewModel: ObservableObject {
     
     var displayName: String {
         if case .authenticated(let user) = authState {
-            return user.firstName ?? "User"
+            return user.username ?? user.firstName ?? "User"
         }
         return "User"
     }
@@ -316,13 +361,25 @@ extension AuthViewModel {
 
     @MainActor
     var galleryDisplayName: String {
-        currentUser?.fullName ?? "Athlete"
+        if case .authenticated(let user) = authState {
+            return user.username ?? user.fullName
+        }
+        return "Athlete"
     }
     
     /// Updates the current user for preview/testing purposes only
     @MainActor
     func setMockUser(_ user: User) {
-        self.authState = .authenticated(user)
+        // Convert User to AuthUserModel
+        let authUser = AuthUserModel(
+            id: user.id,
+            email: user.email,
+            username: nil, // Username not available in mock User
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilePictureUrl: user.profilePictureUrl
+        )
+        self.authState = .authenticated(authUser)
     }
 }
 
