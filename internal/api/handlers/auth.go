@@ -125,6 +125,7 @@ type RegisterRequest struct {
 	Password  string `json:"password" validate:"required,min=8"`
 	FirstName string `json:"first_name" validate:"required"`
 	LastName  string `json:"last_name" validate:"required"`
+	Username  string `json:"username" validate:"required"`
 }
 
 // Register handles user registration
@@ -138,7 +139,6 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		return NewAPIError(http.StatusBadRequest, ErrCodeValidation, err.Error())
 	}
 
-	// Check if user already exists
 	ctx := c.Request().Context()
 	_, err := h.store.GetUserByEmail(ctx, req.Email)
 	if err == nil {
@@ -148,31 +148,31 @@ func (h *AuthHandler) Register(c echo.Context) error {
 		return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Error checking user existence")
 	}
 
-	// Hash the password
 	hashedPassword, err := auth.HashPassword(req.Password)
 	if err != nil {
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to hash password")
 	}
 
 	// Create the user
-	userModel := store.NewUser(req.Email, hashedPassword, req.FirstName, req.LastName)
+	userModel := store.NewUser(req.Email, hashedPassword, req.FirstName, req.LastName, req.Username)
 	createdUser, err := h.store.CreateUser(ctx, userModel)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			if pqErr.Code == "23505" {
-				if strings.Contains(pqErr.Constraint, "users_username_key") || strings.Contains(pqErr.Constraint, "users_email_key") {
-					return NewAPIError(http.StatusConflict, ErrCodeConflict, "User already exists with this email or username.")
+				if strings.Contains(pqErr.Constraint, "users_email_key") {
+					return NewAPIError(http.StatusConflict, ErrCodeConflict, "A user with this email already exists.")
+				} else if strings.Contains(pqErr.Constraint, "users_username_key") {
+					return NewAPIError(http.StatusConflict, ErrCodeConflict, "This username is already taken.")
 				}
 				return NewAPIError(http.StatusConflict, ErrCodeConflict, fmt.Sprintf("A user with some unique attribute already exists: %s", pqErr.Detail))
 			}
 			h.logger.Error(ctx, "Database error during user creation", "pq_code", pqErr.Code, "pq_message", pqErr.Message, "pq_detail", pqErr.Detail, "error", err)
 			return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Failed to create user due to database error")
 		}
-		h.logger.Error(ctx, "Failed to create user", "error", err, "email", req.Email)
+		h.logger.Error(ctx, "Failed to create user", "error", err, "email", req.Email, "username", req.Username)
 		return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Failed to create user")
 	}
 
-	// Generate token pair
 	tokenPair, err := h.tokenService.GenerateTokenPair(ctx, createdUser.ID)
 	if err != nil {
 		h.logger.Error(ctx, "Failed to generate token pair for new user", "error", err, "userID", createdUser.ID)

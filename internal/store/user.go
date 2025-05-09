@@ -10,6 +10,7 @@ import (
 type User struct {
 	ID           string    `json:"id"`
 	Email        string    `json:"email"`
+	Username     string    `json:"username"`
 	PasswordHash string    `json:"-"` // Never expose password hash
 	FirstName    string    `json:"first_name"`
 	LastName     string    `json:"last_name"`
@@ -18,7 +19,7 @@ type User struct {
 }
 
 // NewUser creates a new user with generated ID and timestamps
-func NewUser(email, passwordHash, firstName, lastName string) *User {
+func NewUser(email, passwordHash, firstName, lastName, username string) *User {
 	now := time.Now()
 	return &User{
 		ID:           uuid.New().String(),
@@ -26,6 +27,7 @@ func NewUser(email, passwordHash, firstName, lastName string) *User {
 		PasswordHash: passwordHash,
 		FirstName:    firstName,
 		LastName:     lastName,
+		Username:     username,
 		CreatedAt:    now,
 		UpdatedAt:    now,
 	}

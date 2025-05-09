@@ -12,6 +12,7 @@
 		BF199EBB2DCE225200E23EFF /* UserServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */; };
 		BF199EBD2DCE226E00E23EFF /* UserProfileData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EBC2DCE226E00E23EFF /* UserProfileData.swift */; };
 		BF199EBF2DCE228800E23EFF /* UserProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EBE2DCE228800E23EFF /* UserProfileViewModel.swift */; };
+		BF25ED342DCE323700620C84 /* LoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF25ED332DCE323700620C84 /* LoadingView.swift */; };
 		BF37B03E2DCAC89500EC4D58 /* WorkoutCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */; };
 		BF37B03F2DCAC89500EC4D58 /* CameraExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B03C2DCAC89500EC4D58 /* CameraExerciseView.swift */; };
 		BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0402DCACABE00EC4D58 /* ActivityView.swift */; };
@@ -141,6 +142,7 @@
 		BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserServiceProtocol.swift; sourceTree = "<group>"; };
 		BF199EBC2DCE226E00E23EFF /* UserProfileData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileData.swift; sourceTree = "<group>"; };
 		BF199EBE2DCE228800E23EFF /* UserProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileViewModel.swift; sourceTree = "<group>"; };
+		BF25ED332DCE323700620C84 /* LoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoadingView.swift; sourceTree = "<group>"; };
 		BF37B03C2DCAC89500EC4D58 /* CameraExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraExerciseView.swift; sourceTree = "<group>"; };
 		BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCompleteView.swift; sourceTree = "<group>"; };
 		BF37B0402DCACABE00EC4D58 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
@@ -535,6 +537,7 @@
 		BF63E44A2DB1EB980037CD02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BF25ED332DCE323700620C84 /* LoadingView.swift */,
 				BF37B0562DCC2CD600EC4D58 /* Profile */,
 				BF89EB462DC98E6A003F8FE3 /* Modifiers */,
 				BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */,
@@ -858,6 +861,7 @@
 				BF63E4292DB1EB830037CD02 /* LocationService.swift in Sources */,
 				BF63E42A2DB1EB830037CD02 /* LeaderboardService.swift in Sources */,
 				BF63E42B2DB1EB830037CD02 /* AuthService.swift in Sources */,
+				BF25ED342DCE323700620C84 /* LoadingView.swift in Sources */,
 				BF63E42C2DB1EB830037CD02 /* PoseDetectorServiceProtocol.swift in Sources */,
 				BF63E42D2DB1EB830037CD02 /* LeaderboardServiceProtocol.swift in Sources */,
 				BF63E42E2DB1EB830037CD02 /* KeychainServiceProtocol.swift in Sources */,

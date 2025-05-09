@@ -38,75 +38,115 @@ struct ProfileView: View {
         // The NavigationStack is provided by ContentView for this tab
         Form {
             // Section 1: Profile Information
-            Section(header: Text("Profile Information")) {
+            Section {
                 HStack(spacing: 15) {
                     Image(systemName: "person.circle.fill")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 60, height: 60)
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary) // Keep or use theme accent
                     
                     VStack(alignment: .leading) {
-                        // Assuming AuthViewModel provides a non-optional displayName, or handle nil
-                        PTLabel(authViewModel.displayName ?? "N/A", style: .heading)
-                        PTLabel(authViewModel.email ?? "N/A", style: .body) // Assuming AuthViewModel has email
+                        PTLabel(authViewModel.displayName ?? "N/A", style: .heading) // .heading uses textPrimary
+                        PTLabel(authViewModel.email ?? "N/A", style: .body) // .body uses textSecondary
                     }
                 }
-                Button("Edit Profile") {
+                Button("Edit Profile") { // Standard Form button
                     showingEditProfile = true
                 }
+            } header: {
+                PTLabel("Profile Information", style: .subheading)
+                    .padding(.top)
             }
 
             // Section 2: Settings
-            Section(header: Text("Settings")) {
-                Picker("Appearance", selection: $selectedAppearance) {
+            Section {
+                Picker(selection: $selectedAppearance) {
                     ForEach(AppearanceSetting.allCases) { appearance in
                         Text(appearance.rawValue).tag(appearance)
                     }
+                } label: {
+                    PTLabel("Appearance", style: .body) // .body uses textSecondary
                 }
                 .onChange(of: selectedAppearance) { newAppearance in
                     applyAppearance(newAppearance)
                 }
                 
-                Picker("Units", selection: $selectedUnit) {
+                Picker(selection: $selectedUnit) {
                     ForEach(UnitSetting.allCases) { unit in
                         Text(unit.rawValue).tag(unit)
                     }
+                } label: {
+                    PTLabel("Units", style: .body)
                 }
-                // TODO: Add action to apply unit setting if needed elsewhere in the app
 
-                Toggle("Workout Reminders", isOn: $workoutRemindersEnabled)
-                Toggle("New Achievements", isOn: $achievementNotificationsEnabled)
-                // TODO: Implement actual notification logic based on these settings
+                // Toggle constructed with HStack for custom label styling
+                HStack {
+                    PTLabel("Workout Reminders", style: .body) // PTLabel should now control its color
+                    Spacer()
+                    Toggle("", isOn: $workoutRemindersEnabled)
+                        .labelsHidden()
+                }
+                // Original Toggle for New Achievements (for comparison)
+                Toggle(isOn: $achievementNotificationsEnabled) {
+                    PTLabel("New Achievements", style: .body)
+                }
+            } header: {
+                PTLabel("Settings", style: .subheading)
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .padding(.top)
             }
             
             // Section 3: Account Management
-            Section(header: Text("Account")) {
-                Button("Logout") {
+            Section {
+                // Logout Button constructed with HStack for custom label styling
+                HStack {
+                    PTLabel("Logout", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.error)
+                    Spacer()
+                }
+                .contentShape(Rectangle()) // Make the whole HStack tappable
+                .onTapGesture {
                     authViewModel.logout()
-                    // App should react to logout by changing root view (handled by AuthViewModel.isLoggedIn changes)
                 }
-                .foregroundColor(AppTheme.GeneratedColors.error)
                 
-                Button("Change Password") {
+                Button {
                     showingChangePassword = true
+                } label: {
+                    PTLabel("Change Password", style: .body)
+                        // Default .body color is textSecondary, let's make it interactable
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary) 
                 }
                 
-                Button("Delete Account") {
+                Button {
                     showingDeleteConfirmation = true
+                } label: {
+                    PTLabel("Delete Account", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.error)
                 }
-                .foregroundColor(AppTheme.GeneratedColors.error)
+            } header: {
+                PTLabel("Account", style: .subheading)
+                    .padding(.top)
             }
             
             // Section 4: More
-            Section(header: Text("More")) {
-                Button("Privacy Policy") {
+            Section {
+                Button {
                     showingPrivacyPolicy = true
+                } label: {
+                    PTLabel("Privacy Policy", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
-                Button("Connected Devices") {
+                Button {
                     showingConnectedDevices = true
+                } label: {
+                    PTLabel("Connected Devices", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
-                PTLabel("App Version: \(appVersion())", style: .caption)
+                PTLabel("App Version: \(appVersion())", style: .caption) // .caption uses textTertiary
+            } header: {
+                PTLabel("More", style: .subheading)
+                    .padding(.top)
             }
         }
         .navigationTitle("Profile")

@@ -22,7 +22,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
 
     // MARK: - Protocol Implementation
     func login(credentials: AuthLoginRequest) async throws -> AuthResponse {
-        print("AuthService: Attempting login with username: \(credentials.username)...")
+        print("AuthService: Attempting login with email: \(credentials.email)...")
         print("AuthService: Mock auth is disabled, will make real network request")
         
         if useMockAuth {
@@ -32,7 +32,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 token: "mock-jwt-token-for-testing-12345",
                 user: AuthUserModel(
                     id: "123",
-                    email: credentials.username,
+                    email: credentials.email,
                     firstName: "Test",
                     lastName: "User",
                     profilePictureUrl: nil as String?
@@ -83,8 +83,8 @@ class AuthService: ObservableObject, AuthServiceProtocol {
     }
 
     func register(userInfo: RegistrationRequest) async throws -> Void {
-        print("AuthService: Attempting registration with username: \(userInfo.username)...")
-        print("AuthService: Registration request details: display name: \(userInfo.displayName ?? "nil")")
+        print("AuthService: Attempting registration with email: \(userInfo.email)...")
+        print("AuthService: Registration request details: name: \(userInfo.firstName) \(userInfo.lastName)")
         print("AuthService: Mock auth is disabled, will make real network request")
         
         if useMockAuth {
@@ -96,10 +96,11 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 token: "mock-jwt-token-for-testing-registration-12345",
                 user: AuthUserModel(
                     id: "456",
-                    email: userInfo.username,
-                    firstName: userInfo.displayName,
-                    lastName: nil as String?,
-                    profilePictureUrl: userInfo.profilePictureUrl
+                    email: userInfo.email,
+                    username: userInfo.username,
+                    firstName: userInfo.firstName,
+                    lastName: userInfo.lastName,
+                    profilePictureUrl: nil
                 )
             )
             

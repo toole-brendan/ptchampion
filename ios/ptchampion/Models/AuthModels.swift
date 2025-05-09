@@ -1,48 +1,37 @@
 import Foundation
 
-// Use the renamed AuthUserModel
-// Comment out this typealias to avoid ambiguity
-// typealias AuthUser = AuthUserModel
+// Use AuthUserModel from User.swift
+// No need for typealias since we're directly using the type
 
 // MARK: - Request Payloads
 
 // Renamed to avoid conflict with UnifiedNetworkService.LoginRequest
 struct AuthLoginRequest: Codable {
-    let username: String
+    let email: String
     let password: String
 }
 
 struct RegistrationRequest: Codable {
-    let username: String
-    let password: String
-    let displayName: String?
     let email: String
-    let profilePictureUrl: String?
-    let location: String?
-    let latitude: Double?
-    let longitude: Double?
+    let password: String
+    let firstName: String
+    let lastName: String
+    let username: String
     
     enum CodingKeys: String, CodingKey {
-        case username
-        case password
-        case displayName = "display_name"
         case email
-        case profilePictureUrl = "profile_picture_url"
-        case location
-        case latitude
-        case longitude
+        case password
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case username
     }
     
-    // Initializer to create registration request from different inputs
-    init(username: String, password: String, displayName: String? = nil, email: String? = nil, profilePictureUrl: String? = nil, location: String? = nil, latitude: Double? = nil, longitude: Double? = nil) {
-        self.username = username
+    init(email: String, password: String, firstName: String, lastName: String, username: String) {
+        self.email = email
         self.password = password
-        self.displayName = displayName
-        self.email = email ?? username // Fallback to username if email not provided
-        self.profilePictureUrl = profilePictureUrl
-        self.location = location
-        self.latitude = latitude
-        self.longitude = longitude
+        self.firstName = firstName
+        self.lastName = lastName
+        self.username = username
     }
 }
 

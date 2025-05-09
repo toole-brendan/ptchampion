@@ -26,8 +26,8 @@ fi
 
 echo "Using database URL: ${DATABASE_URL//:.*@/:***@}" # Log URL with password hidden
 
-# Migration files directory
-MIGRATIONS_DIR="./db/migrations"
+# Migration files directory - Updated to use sql/migrations instead of db/migrations
+MIGRATIONS_DIR="./sql/migrations"
 
 # Function to display usage information
 usage() {

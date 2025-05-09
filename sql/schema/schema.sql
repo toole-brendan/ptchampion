@@ -2,8 +2,9 @@
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    username TEXT NOT NULL,
-    password TEXT NOT NULL,
+    username TEXT NOT NULL UNIQUE, -- Username used for display, must be unique
+    email TEXT NOT NULL UNIQUE, -- Added separate email field for login
+    password_hash TEXT NOT NULL, -- Renamed to password_hash to reflect its actual content
     display_name TEXT,
     profile_picture_url TEXT,
     location TEXT,
@@ -14,6 +15,10 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
 );
+
+-- Create indexes for frequently queried fields
+CREATE INDEX idx_users_username ON users(username);
+CREATE INDEX idx_users_email ON users(email);
 
 CREATE TABLE exercises (
     id SERIAL PRIMARY KEY,

@@ -4,6 +4,7 @@ import PTDesignSystem
 
 struct RegistrationView: View {
     @EnvironmentObject private var auth: AuthViewModel
+    @EnvironmentObject private var navigationState: NavigationState
     @Environment(\.dismiss) var dismiss
     @Environment(\.presentationMode) var presentationMode
     
@@ -13,6 +14,7 @@ struct RegistrationView: View {
     @State private var confirmPassword = ""
     @State private var firstName = ""
     @State private var lastName = ""
+    @State private var username = ""
     
     // UI state
     @State private var isLoading = false
@@ -21,7 +23,8 @@ struct RegistrationView: View {
     
     private var isFormValid: Bool {
         !email.isEmpty && !password.isEmpty && !confirmPassword.isEmpty &&
-        !firstName.isEmpty && !lastName.isEmpty && password == confirmPassword
+        !firstName.isEmpty && !lastName.isEmpty && !username.isEmpty &&
+        password == confirmPassword
     }
     
     var body: some View {
@@ -60,6 +63,12 @@ struct RegistrationView: View {
                         text: $email,
                         keyboardType: .emailAddress,
                         icon: Image(systemName: "envelope")
+                    )
+                    
+                    FocusableTextField(
+                        "Username (display name)",
+                        text: $username,
+                        icon: Image(systemName: "person.text.rectangle")
                     )
                     
                     FocusableTextField(
@@ -111,13 +120,14 @@ struct RegistrationView: View {
                             auth.errorMessage = nil
                             isLoading = true
                             
-                            // Create display name from first and last name
-                            let displayName = "\(firstName) \(lastName)".trimmingCharacters(in: .whitespacesAndNewlines)
-                            
                             if validatePasswords() {
-                                auth.register(username: email,
-                                           password: password,
-                                           displayName: displayName)
+                                auth.register(
+                                    email: email,
+                                    password: password,
+                                    firstName: firstName,
+                                    lastName: lastName,
+                                    username: username
+                                )
                             }
                             
                             // Add haptic feedback
@@ -131,8 +141,8 @@ struct RegistrationView: View {
                     
                     // Back to login button
                     PTButton("Back to Login", style: .secondary, icon: Image(systemName: "arrow.left")) {
-                        // Use dismiss instead of navigationState
-                        dismiss()
+                        // Use NavigationState to navigate back to login
+                        navigationState.navigateTo(.login)
                     }
                     .padding(.vertical, 4) // Add smaller padding to simulate the small size
                     .padding(.top, 8)
@@ -167,8 +177,8 @@ struct RegistrationView: View {
             if let success = newValue, !success.isEmpty {
                 // If registration was successful, navigate back to login after a delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                    // Just dismiss this view to go back to login
-                    dismiss()
+                    // Use NavigationState instead of dismiss
+                    navigationState.navigateTo(.login)
                 }
             }
         }
