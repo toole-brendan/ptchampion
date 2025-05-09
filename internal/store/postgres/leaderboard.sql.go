@@ -12,7 +12,6 @@ import (
 
 const getGlobalAggregateLeaderboard = `-- name: GetGlobalAggregateLeaderboard :many
 WITH user_best_scores AS (
-    -- Get each user's best score for each exercise type
     SELECT 
         u.id as user_id,
         e.type as exercise_type,
@@ -21,19 +20,27 @@ WITH user_best_scores AS (
     JOIN users u ON w.user_id = u.id
     JOIN exercises e ON w.exercise_id = e.id
     WHERE w.is_public = true
+      AND ($2::timestamptz IS NULL OR w.completed_at >= $2::timestamptz)
+      AND ($3::timestamptz IS NULL OR w.completed_at < $3::timestamptz)
     GROUP BY u.id, e.type
 )
 SELECT 
     u.id as user_id,
     u.username,
     u.display_name,
-    SUM(ubs.best_score) as score -- Sum of best scores across all exercise types
+    SUM(ubs.best_score) as score
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
 GROUP BY u.id, u.username, u.display_name
 ORDER BY score DESC
 LIMIT $1
 `
+
+type GetGlobalAggregateLeaderboardParams struct {
+	Limit     int32        `json:"limit"`
+	StartDate sql.NullTime `json:"start_date"`
+	EndDate   sql.NullTime `json:"end_date"`
+}
 
 type GetGlobalAggregateLeaderboardRow struct {
 	UserID      int32          `json:"user_id"`
@@ -42,8 +49,8 @@ type GetGlobalAggregateLeaderboardRow struct {
 	Score       int64          `json:"score"`
 }
 
-func (q *Queries) GetGlobalAggregateLeaderboard(ctx context.Context, limit int32) ([]GetGlobalAggregateLeaderboardRow, error) {
-	rows, err := q.db.QueryContext(ctx, getGlobalAggregateLeaderboard, limit)
+func (q *Queries) GetGlobalAggregateLeaderboard(ctx context.Context, arg GetGlobalAggregateLeaderboardParams) ([]GetGlobalAggregateLeaderboardRow, error) {
+	rows, err := q.db.QueryContext(ctx, getGlobalAggregateLeaderboard, arg.Limit, arg.StartDate, arg.EndDate)
 	if err != nil {
 		return nil, err
 	}
@@ -80,15 +87,20 @@ SELECT
 FROM workouts w
 JOIN users u ON w.user_id = u.id
 JOIN exercises e ON w.exercise_id = e.id
-WHERE e.type = $1 AND w.is_public = true
+WHERE e.type = $1
+  AND w.is_public = true
+  AND ($2::timestamptz IS NULL OR w.completed_at >= $2::timestamptz)
+  AND ($3::timestamptz IS NULL OR w.completed_at < $3::timestamptz)
 GROUP BY u.id, u.username, u.display_name
 ORDER BY score DESC
-LIMIT $2
+LIMIT $4
 `
 
 type GetGlobalExerciseLeaderboardParams struct {
-	Type  string `json:"type"`
-	Limit int32  `json:"limit"`
+	Type      string       `json:"type"`
+	StartDate sql.NullTime `json:"start_date"`
+	EndDate   sql.NullTime `json:"end_date"`
+	Limit     int32        `json:"limit"`
 }
 
 type GetGlobalExerciseLeaderboardRow struct {
@@ -100,7 +112,12 @@ type GetGlobalExerciseLeaderboardRow struct {
 
 // Apply a reasonable limit
 func (q *Queries) GetGlobalExerciseLeaderboard(ctx context.Context, arg GetGlobalExerciseLeaderboardParams) ([]GetGlobalExerciseLeaderboardRow, error) {
-	rows, err := q.db.QueryContext(ctx, getGlobalExerciseLeaderboard, arg.Type, arg.Limit)
+	rows, err := q.db.QueryContext(ctx, getGlobalExerciseLeaderboard,
+		arg.Type,
+		arg.StartDate,
+		arg.EndDate,
+		arg.Limit,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +202,6 @@ func (q *Queries) GetLeaderboardByExerciseType(ctx context.Context, arg GetLeade
 
 const getLocalAggregateLeaderboard = `-- name: GetLocalAggregateLeaderboard :many
 WITH user_best_scores AS (
-    -- Get each user's best score for each exercise type
     SELECT 
         u.id as user_id,
         e.type as exercise_type,
@@ -197,29 +213,33 @@ WITH user_best_scores AS (
         w.is_public = true
         AND ST_DWithin(
             u.last_location::geography,
-            ST_MakePoint($1, $2)::geography,
-            $3 -- radius in meters
+            ST_MakePoint($1, $2)::geography, -- longitude, then latitude for ST_MakePoint
+            $4
         )
+        AND ($5::timestamptz IS NULL OR w.completed_at >= $5::timestamptz)
+        AND ($6::timestamptz IS NULL OR w.completed_at < $6::timestamptz)
     GROUP BY u.id, e.type
 )
 SELECT 
     u.id as user_id,
     u.username,
     u.display_name,
-    SUM(ubs.best_score) as score, -- Sum of best scores across all exercise types
+    SUM(ubs.best_score) as score,
     ST_Distance(u.last_location::geography, ST_MakePoint($1, $2)::geography) as distance_meters
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
 GROUP BY u.id, u.username, u.display_name, u.last_location
 ORDER BY score DESC
-LIMIT $4
+LIMIT $3
 `
 
 type GetLocalAggregateLeaderboardParams struct {
-	StMakepoint   interface{} `json:"st_makepoint"`
-	StMakepoint_2 interface{} `json:"st_makepoint_2"`
-	StDwithin     interface{} `json:"st_dwithin"`
-	Limit         int32       `json:"limit"`
+	Longitude    interface{}  `json:"longitude"`
+	Latitude     interface{}  `json:"latitude"`
+	Limit        int32        `json:"limit"`
+	RadiusMeters interface{}  `json:"radius_meters"`
+	StartDate    sql.NullTime `json:"start_date"`
+	EndDate      sql.NullTime `json:"end_date"`
 }
 
 type GetLocalAggregateLeaderboardRow struct {
@@ -232,10 +252,12 @@ type GetLocalAggregateLeaderboardRow struct {
 
 func (q *Queries) GetLocalAggregateLeaderboard(ctx context.Context, arg GetLocalAggregateLeaderboardParams) ([]GetLocalAggregateLeaderboardRow, error) {
 	rows, err := q.db.QueryContext(ctx, getLocalAggregateLeaderboard,
-		arg.StMakepoint,
-		arg.StMakepoint_2,
-		arg.StDwithin,
+		arg.Longitude,
+		arg.Latitude,
 		arg.Limit,
+		arg.RadiusMeters,
+		arg.StartDate,
+		arg.EndDate,
 	)
 	if err != nil {
 		return nil, err
@@ -270,29 +292,33 @@ SELECT
     u.username,
     u.display_name,
     MAX(w.grade) as score,
-    ST_Distance(u.last_location::geography, ST_MakePoint($2, $3)::geography) as distance_meters
+    ST_Distance(u.last_location::geography, ST_MakePoint($1, $2)::geography) as distance_meters
 FROM workouts w
 JOIN users u ON w.user_id = u.id
 JOIN exercises e ON w.exercise_id = e.id
 WHERE 
-    e.type = $1 
+    e.type = $3 
     AND w.is_public = true
     AND ST_DWithin(
         u.last_location::geography,
-        ST_MakePoint($2, $3)::geography,
-        $4 -- radius in meters
+        ST_MakePoint($1, $2)::geography, -- longitude, then latitude for ST_MakePoint
+        $4 
     )
+    AND ($5::timestamptz IS NULL OR w.completed_at >= $5::timestamptz)
+    AND ($6::timestamptz IS NULL OR w.completed_at < $6::timestamptz)
 GROUP BY u.id, u.username, u.display_name, u.last_location
 ORDER BY score DESC
-LIMIT $5
+LIMIT $7
 `
 
 type GetLocalExerciseLeaderboardParams struct {
-	Type          string      `json:"type"`
-	StMakepoint   interface{} `json:"st_makepoint"`
-	StMakepoint_2 interface{} `json:"st_makepoint_2"`
-	StDwithin     interface{} `json:"st_dwithin"`
-	Limit         int32       `json:"limit"`
+	Longitude    interface{}  `json:"longitude"`
+	Latitude     interface{}  `json:"latitude"`
+	Type         string       `json:"type"`
+	RadiusMeters interface{}  `json:"radius_meters"`
+	StartDate    sql.NullTime `json:"start_date"`
+	EndDate      sql.NullTime `json:"end_date"`
+	Limit        int32        `json:"limit"`
 }
 
 type GetLocalExerciseLeaderboardRow struct {
@@ -305,10 +331,12 @@ type GetLocalExerciseLeaderboardRow struct {
 
 func (q *Queries) GetLocalExerciseLeaderboard(ctx context.Context, arg GetLocalExerciseLeaderboardParams) ([]GetLocalExerciseLeaderboardRow, error) {
 	rows, err := q.db.QueryContext(ctx, getLocalExerciseLeaderboard,
+		arg.Longitude,
+		arg.Latitude,
 		arg.Type,
-		arg.StMakepoint,
-		arg.StMakepoint_2,
-		arg.StDwithin,
+		arg.RadiusMeters,
+		arg.StartDate,
+		arg.EndDate,
 		arg.Limit,
 	)
 	if err != nil {

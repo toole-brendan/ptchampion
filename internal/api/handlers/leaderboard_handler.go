@@ -444,11 +444,18 @@ func (h *LeaderboardHandler) GetGlobalExerciseLeaderboard(c echo.Context) error 
 	if err != nil || limit <= 0 {
 		limit = defaultLeaderboardLimit
 	}
-	h.logger.Debug(ctx, "GetGlobalExerciseLeaderboard called", "type", exerciseType, "limit", limit)
 
-	storeEntries, err := h.service.GetGlobalExerciseLeaderboard(ctx, exerciseType, limit)
+	// Read the time_frame query parameter
+	timeFrame := c.QueryParam("time_frame")
+	if timeFrame == "" {
+		timeFrame = "all_time" // Default to all_time if not provided
+	}
+
+	h.logger.Debug(ctx, "GetGlobalExerciseLeaderboard called", "type", exerciseType, "limit", limit, "timeFrame", timeFrame)
+
+	storeEntries, err := h.service.GetGlobalExerciseLeaderboard(ctx, exerciseType, limit, timeFrame) // Pass timeFrame
 	if err != nil {
-		h.logger.Error(ctx, "Error from GetGlobalExerciseLeaderboard service", "type", exerciseType, "error", err)
+		h.logger.Error(ctx, "Error from GetGlobalExerciseLeaderboard service", "type", exerciseType, "timeFrame", timeFrame, "error", err)
 		if err.Error() == "GetGlobalExerciseLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
 			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Global exercise leaderboard is not fully implemented yet.")
 		}
@@ -470,11 +477,18 @@ func (h *LeaderboardHandler) GetGlobalAggregateLeaderboard(c echo.Context) error
 	if err != nil || limit <= 0 {
 		limit = defaultLeaderboardLimit
 	}
-	h.logger.Debug(ctx, "GetGlobalAggregateLeaderboard called", "limit", limit)
 
-	storeEntries, err := h.service.GetGlobalAggregateLeaderboard(ctx, limit)
+	// Read the time_frame query parameter
+	timeFrame := c.QueryParam("time_frame")
+	if timeFrame == "" {
+		timeFrame = "all_time" // Default to all_time if not provided
+	}
+
+	h.logger.Debug(ctx, "GetGlobalAggregateLeaderboard called", "limit", limit, "timeFrame", timeFrame)
+
+	storeEntries, err := h.service.GetGlobalAggregateLeaderboard(ctx, limit, timeFrame) // Pass timeFrame
 	if err != nil {
-		h.logger.Error(ctx, "Error from GetGlobalAggregateLeaderboard service", "error", err)
+		h.logger.Error(ctx, "Error from GetGlobalAggregateLeaderboard service", "timeFrame", timeFrame, "error", err)
 		if err.Error() == "GetGlobalAggregateLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
 			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Global aggregate leaderboard is not fully implemented yet.")
 		}
@@ -501,6 +515,11 @@ func (h *LeaderboardHandler) GetLocalExerciseLeaderboard(c echo.Context) error {
 	lonStr := c.QueryParam("longitude")
 	radiusMetersStr := c.QueryParam("radius_meters")
 	limitStr := c.QueryParam("limit")
+	// Read the time_frame query parameter
+	timeFrame := c.QueryParam("time_frame")
+	if timeFrame == "" {
+		timeFrame = "all_time" // Default to all_time if not provided
+	}
 
 	if latStr == "" || lonStr == "" {
 		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Missing required query parameters: latitude, longitude")
@@ -523,11 +542,11 @@ func (h *LeaderboardHandler) GetLocalExerciseLeaderboard(c echo.Context) error {
 	if err != nil || limit <= 0 {
 		limit = defaultLeaderboardLimit
 	}
-	h.logger.Debug(ctx, "GetLocalExerciseLeaderboard called", "type", exerciseType, "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit)
+	h.logger.Debug(ctx, "GetLocalExerciseLeaderboard called", "type", exerciseType, "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit, "timeFrame", timeFrame)
 
-	storeEntries, err := h.service.GetLocalExerciseLeaderboard(ctx, exerciseType, latitude, longitude, radiusMeters, limit)
+	storeEntries, err := h.service.GetLocalExerciseLeaderboard(ctx, exerciseType, latitude, longitude, radiusMeters, limit, timeFrame) // Pass timeFrame
 	if err != nil {
-		h.logger.Error(ctx, "Error from GetLocalExerciseLeaderboard service", "type", exerciseType, "error", err)
+		h.logger.Error(ctx, "Error from GetLocalExerciseLeaderboard service", "type", exerciseType, "timeFrame", timeFrame, "error", err)
 		if err.Error() == "GetLocalExerciseLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
 			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Local exercise leaderboard is not fully implemented yet.")
 		}
@@ -548,6 +567,11 @@ func (h *LeaderboardHandler) GetLocalAggregateLeaderboard(c echo.Context) error 
 	lonStr := c.QueryParam("longitude")
 	radiusMetersStr := c.QueryParam("radius_meters")
 	limitStr := c.QueryParam("limit")
+	// Read the time_frame query parameter
+	timeFrame := c.QueryParam("time_frame")
+	if timeFrame == "" {
+		timeFrame = "all_time" // Default to all_time if not provided
+	}
 
 	if latStr == "" || lonStr == "" {
 		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Missing required query parameters: latitude, longitude")
@@ -570,11 +594,11 @@ func (h *LeaderboardHandler) GetLocalAggregateLeaderboard(c echo.Context) error 
 	if err != nil || limit <= 0 {
 		limit = defaultLeaderboardLimit
 	}
-	h.logger.Debug(ctx, "GetLocalAggregateLeaderboard called", "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit)
+	h.logger.Debug(ctx, "GetLocalAggregateLeaderboard called", "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit, "timeFrame", timeFrame)
 
-	storeEntries, err := h.service.GetLocalAggregateLeaderboard(ctx, latitude, longitude, radiusMeters, limit)
+	storeEntries, err := h.service.GetLocalAggregateLeaderboard(ctx, latitude, longitude, radiusMeters, limit, timeFrame) // Pass timeFrame
 	if err != nil {
-		h.logger.Error(ctx, "Error from GetLocalAggregateLeaderboard service", "error", err)
+		h.logger.Error(ctx, "Error from GetLocalAggregateLeaderboard service", "timeFrame", timeFrame, "error", err)
 		if err.Error() == "GetLocalAggregateLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
 			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Local aggregate leaderboard is not fully implemented yet.")
 		}
