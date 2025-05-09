@@ -385,8 +385,14 @@ jobs:
         run: |
           echo "Checking DNS resolution..."
           nslookup ${{ env.FRONTEND_DOMAIN }}
+          
           echo "Trace route..."
-          traceroute ${{ env.FRONTEND_DOMAIN }}
+          if command -v traceroute >/dev/null; then
+            traceroute ${{ env.FRONTEND_DOMAIN }}
+          else
+            echo "traceroute not installed; using tracepath instead"
+            tracepath ${{ env.FRONTEND_DOMAIN }}
+          fi
           
       - name: Check Web App with Detailed Output
         run: |
