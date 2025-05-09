@@ -102,6 +102,10 @@ func main() {
 	e.Validator = api.NewCustomValidatorInstance()
 	logger.Info(context.Background(), "Request validator registered with Echo instance")
 
+	// Add health routes FIRST - before any middleware that might block them
+	routes.RegisterHealthRoutes(e)
+	logger.Info(context.Background(), "Health check routes registered")
+
 	// Add middleware (Ensure RequestID runs *before* context logger middleware)
 	e.Use(middleware.Recover())   // Echo's recover middleware
 	e.Use(middleware.RequestID()) // Generate/propagate X-Request-ID header
