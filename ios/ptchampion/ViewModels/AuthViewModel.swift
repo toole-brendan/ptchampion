@@ -88,6 +88,16 @@ enum API {
     }
 }
 
+// MARK: - Error Handling Supporting Structs
+struct IOSAPIErrorResponse: Decodable {
+    let error: IOSErrorDetail
+}
+
+struct IOSErrorDetail: Decodable {
+    let code: String
+    let message: String
+}
+
 @MainActor
 class AuthViewModel: ObservableObject {
     @Published private(set) var authState: AuthState = .unauthenticated
@@ -241,9 +251,11 @@ class AuthViewModel: ObservableObject {
                     var serverErrorMessage = "Registration failed with status code: \(http.statusCode)."
                     if let errorData = String(data: data, encoding: .utf8) {
                         print("🔴 Registration error data: \(errorData)") // Log raw error data
-                        // Try to decode as ErrorEnvelope or your backend's specific error struct
-                        if let apiError = try? JSONDecoder().decode(ErrorEnvelope.self, from: data),
-                           let message = apiError.message {
+                        // Try to decode our specific backend error structure first
+                        if let backendError = try? JSONDecoder().decode(IOSAPIErrorResponse.self, from: data) {
+                            serverErrorMessage = backendError.error.message
+                        } else if let apiError = try? JSONDecoder().decode(ErrorEnvelope.self, from: data),
+                                   let message = apiError.message { // Fallback for existing ErrorEnvelope
                             serverErrorMessage = message
                         } else if let genericError = try? JSONDecoder().decode([String: String].self, from: data),
                                   let detail = genericError["detail"] { // Common pattern for some frameworks
