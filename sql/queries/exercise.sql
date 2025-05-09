@@ -80,7 +80,6 @@ SELECT
     u.id AS user_id,
     u.username,
     u.display_name,
-    u.profile_picture_url,
     MAX(ue.grade) AS max_grade,
     MAX(ue.created_at) AS last_attempt_date
 FROM 
@@ -93,7 +92,7 @@ WHERE
     e.type = $1
     AND ue.grade IS NOT NULL
 GROUP BY 
-    u.id, u.username, u.display_name, u.profile_picture_url
+    u.id, u.username, u.display_name
 ORDER BY 
     max_grade DESC, last_attempt_date ASC
 LIMIT 100;

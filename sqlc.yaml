@@ -3,7 +3,7 @@ packages:
   - name: "db"
     path: "internal/store/postgres"
     queries: "sql/queries/"
-    schema: "sql/schema/"
+    schema: "sql/schema/000_schema_for_sqlc.sql"
     engine: "postgresql"
     emit_json_tags: true
     emit_prepared_queries: false

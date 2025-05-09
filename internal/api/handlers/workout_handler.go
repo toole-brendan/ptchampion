@@ -1,196 +1,206 @@
 package handlers
 
 import (
-	"database/sql"
-	"log"
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
-	dbStore "ptchampion/internal/store/postgres"
+	"ptchampion/internal/logging"
+	"ptchampion/internal/store" // For store.WorkoutRecord, store.PaginatedWorkoutRecords
+	"ptchampion/internal/workouts"
 
 	"github.com/labstack/echo/v4"
 )
 
-// SaveWorkoutRequest defines the structure for the workout logging request body
-type SaveWorkoutRequest struct {
+// LogWorkoutRequest defines the API request for logging a workout.
+// This is the primary request struct for creating a workout record.
+type LogWorkoutRequest struct {
 	ExerciseID      int32     `json:"exercise_id" validate:"required,gt=0"`
-	Repetitions     *int32    `json:"repetitions" validate:"omitempty,gte=0"`      // Pointer for optional field
-	DurationSeconds *int32    `json:"duration_seconds" validate:"omitempty,gte=0"` // Pointer for optional field
+	Reps            *int32    `json:"reps,omitempty" validate:"omitempty,min=0"`
+	DurationSeconds *int32    `json:"duration_seconds,omitempty" validate:"omitempty,min=0"`
+	Grade           int32     `json:"grade" validate:"min=0,max=100"`
 	CompletedAt     time.Time `json:"completed_at" validate:"required"`
-	// Add other fields if needed, like notes, form_score, etc.
-	// Ensure validation tags match requirements (e.g., required, omitempty, min/max values)
+	FormScore       *int32    `json:"form_score,omitempty" validate:"omitempty,min=0,max=100"`
 }
 
-// PaginatedWorkoutsResponse defines the structure for paginated workout history
+// WorkoutResponse defines the API response for a single workout record.
+// This maps from store.WorkoutRecord.
+type WorkoutResponse struct {
+	ID              int32     `json:"id"`
+	UserID          int32     `json:"user_id"`
+	ExerciseID      int32     `json:"exercise_id"`
+	ExerciseName    string    `json:"exercise_name"`
+	ExerciseType    string    `json:"exercise_type"`
+	Reps            *int32    `json:"reps,omitempty"`
+	DurationSeconds *int32    `json:"duration_seconds,omitempty"`
+	FormScore       *int32    `json:"form_score,omitempty"`
+	Grade           int32     `json:"grade"`
+	CompletedAt     time.Time `json:"completed_at"`
+	CreatedAt       time.Time `json:"created_at"`
+}
+
+// PaginatedWorkoutsResponse defines the API response for a list of workout records.
+// This uses the WorkoutResponse struct defined above.
 type PaginatedWorkoutsResponse struct {
-	Workouts   []WorkoutResponse `json:"workouts"`
+	Items      []WorkoutResponse `json:"items"` // Corrected field name from Workouts to Items
 	TotalCount int64             `json:"totalCount"`
 	Page       int               `json:"page"`
 	PageSize   int               `json:"pageSize"`
 	TotalPages int               `json:"totalPages"`
 }
 
-// WorkoutResponse defines the structure for a single workout in the history list
-// Mapping from dbStore.GetUserWorkoutsRow
-type WorkoutResponse struct {
-	ID              int32         `json:"id"`
-	UserID          int32         `json:"userId"` // Match JSON style guide if needed
-	ExerciseID      int32         `json:"exerciseId"`
-	ExerciseName    string        `json:"exerciseName"`
-	Repetitions     sql.NullInt32 `json:"repetitions"`     // Use sql.NullInt32 for potential nulls
-	DurationSeconds sql.NullInt32 `json:"durationSeconds"` // Use sql.NullInt32 for potential nulls
-	FormScore       sql.NullInt32 `json:"formScore"`       // Use sql.NullInt32 for potential nulls
-	Grade           int32         `json:"grade"`
-	CreatedAt       time.Time     `json:"createdAt"`
-	CompletedAt     time.Time     `json:"completedAt"`
+// UpdateWorkoutVisibilityRequest defines the API request for updating visibility.
+type UpdateWorkoutVisibilityRequest struct {
+	IsPublic bool `json:"is_public"`
 }
 
-// handleSaveWorkout handles the POST /api/v1/workouts request
-func (h *Handler) handleSaveWorkout(c echo.Context) error {
-	// 1. Get user ID from context (set by auth middleware)
+// WorkoutHandler handles workout-related API requests.
+type WorkoutHandler struct {
+	service workouts.Service
+	logger  logging.Logger
+}
+
+// NewWorkoutHandler creates a new WorkoutHandler instance.
+func NewWorkoutHandler(service workouts.Service, logger logging.Logger) *WorkoutHandler {
+	return &WorkoutHandler{
+		service: service,
+		logger:  logger,
+	}
+}
+
+func mapStoreWorkoutRecordToResponse(record *store.WorkoutRecord) WorkoutResponse {
+	return WorkoutResponse{
+		ID:              record.ID,
+		UserID:          record.UserID,
+		ExerciseID:      record.ExerciseID,
+		ExerciseName:    record.ExerciseName,
+		ExerciseType:    record.ExerciseType,
+		Reps:            record.Reps,
+		DurationSeconds: record.DurationSeconds,
+		FormScore:       record.FormScore,
+		Grade:           record.Grade,
+		CompletedAt:     record.CompletedAt,
+		CreatedAt:       record.CreatedAt,
+	}
+}
+
+// LogWorkout handles POST requests to log a new workout record.
+func (h *WorkoutHandler) LogWorkout(c echo.Context) error {
+	ctx := c.Request().Context()
 	userID, err := GetUserIDFromContext(c)
 	if err != nil {
-		log.Printf("ERROR [handleSaveWorkout]: Could not get user ID from context: %v", err)
-		return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
+		h.logger.Error(ctx, "Could not get user ID from context for LogWorkout", "error", err)
+		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication error: User ID not found")
 	}
 
-	// 2. Bind and validate request body
-	var req SaveWorkoutRequest
+	var req LogWorkoutRequest
 	if err := c.Bind(&req); err != nil {
-		log.Printf("ERROR [handleSaveWorkout]: Failed to bind request: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		h.logger.Error(ctx, "Failed to decode LogWorkout request", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid request body")
 	}
+
 	if err := c.Validate(&req); err != nil {
-		log.Printf("INFO [handleSaveWorkout]: Invalid request data: %v", err)
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		h.logger.Warn(ctx, "Invalid LogWorkout request payload", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeValidation, err.Error())
 	}
 
-	// 3. Fetch Exercise details (needed for grading and exercise_type)
-	exercise, err := h.Queries.GetExercise(c.Request().Context(), req.ExerciseID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			log.Printf("INFO [handleSaveWorkout]: Exercise with ID %d not found", req.ExerciseID)
-			return echo.NewHTTPError(http.StatusNotFound, "Exercise not found")
-		}
-		log.Printf("ERROR [handleSaveWorkout]: Failed to get exercise %d: %v", req.ExerciseID, err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve exercise details")
-	}
-
-	// 4. Calculate Grade (Placeholder - Implement proper logic using grading package)
-	// grade := grading.CalculateScore(exercise.Type, req.Repetitions, req.DurationSeconds)
-	var grade int32 = 85 // Placeholder value
-
-	// 5. Prepare parameters for DB query
-	params := dbStore.CreateWorkoutParams{
-		UserID:          userID,
+	serviceData := &workouts.LogWorkoutData{
 		ExerciseID:      req.ExerciseID,
-		ExerciseType:    exercise.Type,
-		Repetitions:     int32PtrToNullInt32(req.Repetitions),
-		DurationSeconds: int32PtrToNullInt32(req.DurationSeconds),
-		Grade:           grade,
+		Reps:            req.Reps,
+		DurationSeconds: req.DurationSeconds,
+		Grade:           req.Grade,
 		CompletedAt:     req.CompletedAt,
+		FormScore:       req.FormScore,
 	}
 
-	// 6. Call the database query
-	createdWorkout, err := h.Queries.CreateWorkout(c.Request().Context(), params)
+	loggedRecord, err := h.service.LogWorkout(ctx, userID, serviceData)
 	if err != nil {
-		log.Printf("ERROR [handleSaveWorkout]: Failed to create workout for user %d: %v", userID, err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to save workout")
+		h.logger.Error(ctx, "Service failed to log workout", "userID", userID, "exerciseID", req.ExerciseID, "error", err)
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to log workout record")
 	}
 
-	// 7. Return the created workout data
-	// Consider creating a response struct if you want to customize the output
-	return c.JSON(http.StatusCreated, createdWorkout)
+	return c.JSON(http.StatusCreated, mapStoreWorkoutRecordToResponse(loggedRecord))
 }
 
-// handleGetWorkouts handles the GET /api/v1/workouts request
-func (h *Handler) handleGetWorkouts(c echo.Context) error {
-	// 1. Get user ID from context
+// ListUserWorkouts handles GET requests to list a user's workout records.
+func (h *WorkoutHandler) ListUserWorkouts(c echo.Context) error {
+	ctx := c.Request().Context()
 	userID, err := GetUserIDFromContext(c)
 	if err != nil {
-		log.Printf("ERROR [handleGetWorkouts]: Could not get user ID from context: %v", err)
-		return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
+		h.logger.Error(ctx, "Could not get user ID from context for ListUserWorkouts", "error", err)
+		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication error: User ID not found")
 	}
 
-	// 2. Parse pagination parameters
 	pageStr := c.QueryParam("page")
 	pageSizeStr := c.QueryParam("pageSize")
+	page, _ := strconv.Atoi(pageStr)
+	pageSize, _ := strconv.Atoi(pageSizeStr)
 
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1 // Default to page 1
-	}
-
-	pageSize, err := strconv.Atoi(pageSizeStr)
-	if err != nil || pageSize < 1 || pageSize > 100 { // Add a max page size
-		pageSize = 20 // Default page size
-	}
-
-	// 3. Calculate offset
-	offset := (page - 1) * pageSize
-
-	// 4. Get total workout count for the user
-	totalCount, err := h.Queries.GetUserWorkoutsCount(c.Request().Context(), userID)
+	paginatedResults, err := h.service.ListUserWorkouts(ctx, userID, page, pageSize)
 	if err != nil {
-		log.Printf("ERROR [handleGetWorkouts]: Failed to get workout count for user %d: %v", userID, err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve workout count")
+		h.logger.Error(ctx, "Service failed to list user workouts", "userID", userID, "error", err)
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve workout records")
 	}
 
-	if totalCount == 0 {
-		// Return empty response if no workouts exist
-		resp := PaginatedWorkoutsResponse{
-			Workouts:   []WorkoutResponse{},
-			TotalCount: 0,
-			Page:       page,
-			PageSize:   pageSize,
-			TotalPages: 0,
-		}
-		return c.JSON(http.StatusOK, resp)
+	apiItems := make([]WorkoutResponse, len(paginatedResults.Records))
+	for i, record := range paginatedResults.Records {
+		apiItems[i] = mapStoreWorkoutRecordToResponse(record)
 	}
 
-	// 5. Get paginated workouts from DB
-	workouts, err := h.Queries.GetUserWorkouts(c.Request().Context(), dbStore.GetUserWorkoutsParams{
-		UserID: userID,
-		Limit:  int32(pageSize),
-		Offset: int32(offset),
+	actualPage := page
+	if actualPage == 0 {
+		actualPage = 1
+	}
+	actualPageSize := pageSize
+	if actualPageSize == 0 {
+		actualPageSize = 20
+	}
+
+	return c.JSON(http.StatusOK, PaginatedWorkoutsResponse{
+		Items:      apiItems, // Corrected from Workouts to Items
+		TotalCount: paginatedResults.TotalCount,
+		Page:       actualPage,
+		PageSize:   actualPageSize,
+		TotalPages: int(math.Ceil(float64(paginatedResults.TotalCount) / float64(actualPageSize))),
 	})
-	if err != nil {
-		log.Printf("ERROR [handleGetWorkouts]: Failed to get workouts for user %d: %v", userID, err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve workouts")
-	}
-
-	// 6. Map DB results to response structure
-	workoutResponses := make([]WorkoutResponse, len(workouts))
-	for i, w := range workouts {
-		workoutResponses[i] = WorkoutResponse{
-			ID:              w.ID,
-			UserID:          w.UserID,
-			ExerciseID:      w.ExerciseID,
-			ExerciseName:    w.ExerciseName,
-			Repetitions:     w.Repetitions,
-			DurationSeconds: w.DurationSeconds,
-			FormScore:       w.FormScore, // Include the new form_score
-			Grade:           w.Grade,
-			CreatedAt:       w.CreatedAt,
-			CompletedAt:     w.CompletedAt,
-		}
-	}
-
-	// 7. Calculate total pages
-	totalPages := int(math.Ceil(float64(totalCount) / float64(pageSize)))
-
-	// 8. Construct the final response
-	resp := PaginatedWorkoutsResponse{
-		Workouts:   workoutResponses,
-		TotalCount: totalCount,
-		Page:       page,
-		PageSize:   pageSize,
-		TotalPages: totalPages,
-	}
-
-	return c.JSON(http.StatusOK, resp)
 }
 
-// --- REMOVED Helper functions (Already defined elsewhere or will be moved) ---
+// UpdateWorkoutVisibility handles PATCH requests to update a workout record's visibility.
+func (h *WorkoutHandler) UpdateWorkoutVisibility(c echo.Context) error {
+	ctx := c.Request().Context()
+	userID, err := GetUserIDFromContext(c)
+	if err != nil {
+		h.logger.Error(ctx, "Could not get user ID from context for UpdateWorkoutVisibility", "error", err)
+		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication error: User ID not found")
+	}
+
+	workoutIDStr := c.Param("workout_id")
+	workoutID, err := strconv.Atoi(workoutIDStr)
+	if err != nil {
+		h.logger.Warn(ctx, "Invalid workout ID format", "workoutID", workoutIDStr, "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid workout ID format")
+	}
+
+	var req UpdateWorkoutVisibilityRequest
+	if err := c.Bind(&req); err != nil {
+		h.logger.Error(ctx, "Failed to decode UpdateWorkoutVisibility request", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid request body")
+	}
+
+	// No validation needed for a single boolean? Add if more complex later.
+
+	err = h.service.UpdateWorkoutVisibility(ctx, userID, int32(workoutID), req.IsPublic)
+	if err != nil {
+		if err == store.ErrWorkoutRecordNotFound {
+			return NewAPIError(http.StatusNotFound, ErrCodeNotFound, "Workout record not found")
+		} else if strings.Contains(err.Error(), "user does not have permission") {
+			return NewAPIError(http.StatusForbidden, ErrCodeForbidden, "You do not have permission to modify this workout")
+		}
+		h.logger.Error(ctx, "Service failed to update workout visibility", "userID", userID, "workoutID", workoutID, "error", err)
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to update workout visibility")
+	}
+
+	return c.NoContent(http.StatusOK)
+}

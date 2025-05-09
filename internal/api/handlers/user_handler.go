@@ -16,11 +16,10 @@ import (
 // UserResponse defines the user data returned (excluding password)
 // Kept similar to before, mapping from store.User
 type UserResponse struct {
-	ID        string    `json:"id"`                   // Changed to string to match store.User.ID
-	Email     string    `json:"email"`                // Changed from Username
-	FirstName string    `json:"first_name"`           // Added
-	LastName  string    `json:"last_name"`            // Added
-	AvatarURL *string   `json:"avatar_url,omitempty"` // Changed from ProfilePictureURL
+	ID        string    `json:"id"`         // Changed to string to match store.User.ID
+	Email     string    `json:"email"`      // Changed from Username
+	FirstName string    `json:"first_name"` // Added
+	LastName  string    `json:"last_name"`  // Added
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -31,7 +30,6 @@ type UpdateCurrentUserRequest struct {
 	Email     *string `json:"email,omitempty" validate:"omitempty,email"`
 	FirstName *string `json:"first_name,omitempty" validate:"omitempty,required"`
 	LastName  *string `json:"last_name,omitempty" validate:"omitempty,required"`
-	AvatarURL *string `json:"avatar_url,omitempty" validate:"omitempty,url"`
 	// Note: DisplayName is not directly settable via store.User, derived from First/Last Name
 	// Note: Password changes handled separately
 }
@@ -43,7 +41,6 @@ func mapStoreUserToUserResponse(user *store.User) UserResponse {
 		Email:     user.Email,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
-		AvatarURL: user.AvatarURL,
 		CreatedAt: user.CreatedAt,
 		UpdatedAt: user.UpdatedAt,
 	}
@@ -134,7 +131,6 @@ func (h *UserHandler) UpdateCurrentUser(c echo.Context) error {
 		Email:     req.Email,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
-		AvatarURL: req.AvatarURL,
 	}
 
 	// 4. Call the user service to update the profile
@@ -143,8 +139,13 @@ func (h *UserHandler) UpdateCurrentUser(c echo.Context) error {
 		if errors.Is(err, store.ErrUserNotFound) {
 			return NewAPIError(http.StatusNotFound, ErrCodeNotFound, "User not found")
 		}
-		// TODO: Handle specific service errors like validation/conflict if service returns them
-		// Log already happened in service layer
+		if errors.Is(err, store.ErrEmailTaken) { // Check for the specific email taken/validation error
+			h.logger.Warn(ctx, "Failed to update user profile due to email issue", "userID", userIDStr, "error", err)
+			// Use HTTP 409 Conflict for email already in use, or HTTP 400 for general validation if preferred.
+			return NewAPIError(http.StatusConflict, ErrCodeConflict, err.Error()) // Pass service error message directly
+		}
+		// Log already happened in service layer for other generic errors
+		h.logger.Error(ctx, "Unhandled error from UpdateUserProfile service", "userID", userIDStr, "error", err) // Log it here too for handler context
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to update user profile")
 	}
 

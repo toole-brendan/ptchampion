@@ -3,9 +3,12 @@ package users
 import (
 	"context"
 	"fmt"
+	"regexp" // Added for email validation
 
 	"ptchampion/internal/logging"
 	"ptchampion/internal/store" // Using the store interface and model
+
+	"github.com/lib/pq" // Added for pq.Error type assertion
 )
 
 // UpdateUserProfileRequest defines the data needed to update a user profile in the service layer.
@@ -16,7 +19,7 @@ type UpdateUserProfileRequest struct {
 	FirstName   *string
 	LastName    *string
 	DisplayName *string // Explicit display name if provided
-	AvatarURL   *string
+	// Removed AvatarURL field
 	// Password updates should be handled by a separate dedicated method/service if needed
 }
 
@@ -70,14 +73,27 @@ func (s *service) UpdateUserProfile(ctx context.Context, userID string, req *Upd
 	}
 
 	// 2. Apply changes from the request to the user model
-	// Note: store.User uses Email, FirstName, LastName, AvatarURL
-	// The underlying postgres store uses Username, DisplayName, ProfilePictureUrl
-	// The store implementation handles the mapping. We update the store.User model here.
-
 	updated := false
 	if req.Email != nil && *req.Email != currentUser.Email {
-		// TODO: Validate email format? Check for uniqueness? (May belong in handler or deeper validation)
-		// For now, assume store handles unique constraints on save.
+		// Validate email format
+		// A more comprehensive regex could be used, but this is a basic check.
+		// Consider a dedicated validation package/library for more robust validation.
+		if !isValidEmailFormat(*req.Email) {
+			s.logger.Warn(ctx, "Invalid email format provided for update", "userID", userID, "email", *req.Email)
+			return nil, fmt.Errorf("invalid email format: %w", store.ErrEmailTaken) // Or a more specific validation error
+		}
+
+		// Check for email uniqueness before attempting update
+		existingUserWithNewEmail, err := s.userStore.GetUserByEmail(ctx, *req.Email)
+		if err != nil && err != store.ErrUserNotFound {
+			s.logger.Error(ctx, "Failed to check email uniqueness", "userID", userID, "email", *req.Email, "error", err)
+			return nil, fmt.Errorf("could not verify email uniqueness: %w", err)
+		}
+		if err == nil && existingUserWithNewEmail != nil && existingUserWithNewEmail.ID != currentUser.ID {
+			s.logger.Warn(ctx, "Email address already in use by another user", "userID", userID, "email", *req.Email)
+			return nil, store.ErrEmailTaken
+		}
+
 		currentUser.Email = *req.Email
 		updated = true
 		s.logger.Debug(ctx, "Updating user email", "userID", userID)
@@ -92,14 +108,6 @@ func (s *service) UpdateUserProfile(ctx context.Context, userID string, req *Upd
 		updated = true
 		s.logger.Debug(ctx, "Updating user last name", "userID", userID)
 	}
-	if req.AvatarURL != nil {
-		// Handle pointer comparison correctly
-		if currentUser.AvatarURL == nil || *req.AvatarURL != *currentUser.AvatarURL {
-			currentUser.AvatarURL = req.AvatarURL // Assign the pointer directly
-			updated = true
-			s.logger.Debug(ctx, "Updating user avatar URL", "userID", userID)
-		}
-	}
 
 	// Note: DisplayName is not directly on store.User, store implementation derives it.
 	// If req.DisplayName was provided, the store implementation might need to handle it.
@@ -113,12 +121,27 @@ func (s *service) UpdateUserProfile(ctx context.Context, userID string, req *Upd
 	// 3. Save the updated user model
 	updatedUser, err := s.userStore.UpdateUser(ctx, currentUser)
 	if err != nil {
-		// TODO: Handle potential unique constraint errors (e.g., duplicate email/username) more specifically
-		// if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" { ... }
+		// Check for pq specific error for unique constraint violation
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" { // unique_violation
+				s.logger.Warn(ctx, "Database unique constraint violation on user update", "userID", userID, "pgErrCode", pqErr.Code, "pgErrDetail", pqErr.Detail)
+				// Determine if it's an email/username conflict if possible from Detail or ConstraintName
+				// For now, assume it's email related if we got this far after our proactive check
+				return nil, store.ErrEmailTaken
+			}
+		}
 		s.logger.Error(ctx, "Failed to update user profile in store", "userID", userID, "error", err)
-		return nil, fmt.Errorf("failed to save updated user profile")
+		return nil, fmt.Errorf("failed to save updated user profile: %w", err)
 	}
 
 	s.logger.Info(ctx, "User profile updated successfully", "userID", userID)
 	return updatedUser, nil
+}
+
+// isValidEmailFormat performs a basic validation of email format.
+// Note: This is a simplified regex. For production, consider a more robust library.
+var emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+
+func isValidEmailFormat(email string) bool {
+	return emailRegex.MatchString(email)
 }

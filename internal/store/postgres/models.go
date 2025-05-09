@@ -17,18 +17,18 @@ type Exercise struct {
 }
 
 type User struct {
-	ID                int32          `json:"id"`
-	Username          string         `json:"username"`
-	PasswordHash      string         `json:"password_hash"`
-	DisplayName       sql.NullString `json:"display_name"`
-	ProfilePictureUrl sql.NullString `json:"profile_picture_url"`
-	Location          sql.NullString `json:"location"`
-	Latitude          sql.NullString `json:"latitude"`
-	Longitude         sql.NullString `json:"longitude"`
-	LastLocation      sql.NullString `json:"last_location"`
-	LastSyncedAt      sql.NullTime   `json:"last_synced_at"`
-	CreatedAt         sql.NullTime   `json:"created_at"`
-	UpdatedAt         sql.NullTime   `json:"updated_at"`
+	ID                  int32          `json:"id"`
+	Username            string         `json:"username"`
+	PasswordHash        string         `json:"password_hash"`
+	DisplayName         sql.NullString `json:"display_name"`
+	Location            sql.NullString `json:"location"`
+	Latitude            sql.NullString `json:"latitude"`
+	Longitude           sql.NullString `json:"longitude"`
+	LastLocation        interface{}    `json:"last_location"`
+	TokensInvalidatedAt sql.NullTime   `json:"tokens_invalidated_at"`
+	LastSyncedAt        sql.NullTime   `json:"last_synced_at"`
+	CreatedAt           sql.NullTime   `json:"created_at"`
+	UpdatedAt           sql.NullTime   `json:"updated_at"`
 }
 
 type UserExercise struct {
@@ -56,6 +56,7 @@ type Workout struct {
 	DurationSeconds sql.NullInt32 `json:"duration_seconds"`
 	FormScore       sql.NullInt32 `json:"form_score"`
 	Grade           int32         `json:"grade"`
+	IsPublic        bool          `json:"is_public"`
 	CompletedAt     time.Time     `json:"completed_at"`
 	CreatedAt       time.Time     `json:"created_at"`
 }

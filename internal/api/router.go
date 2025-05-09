@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -22,7 +23,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware" // Import echo middleware
-	"go.uber.org/zap"
 )
 
 // FileServer conveniently sets up a http.FileServer handler to serve
@@ -128,29 +128,32 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 
 	// Initialize Sentry for error monitoring (if DSN is provided)
 	if cfg.SentryDSN != "" {
-		sentryConfig := middleware.SentryConfig{
+		// Define the SentryConfig for the middleware
+		middlewareSentryConfig := middleware.SentryConfig{
 			Dsn:              cfg.SentryDSN,
 			Environment:      cfg.AppEnv,
 			Release:          cfg.AppVersion,
 			Debug:            cfg.AppEnv == "development",
-			AttachStacktrace: true,
-			TracesSampleRate: 0.2,
-			ServerName:       cfg.ServerName,
+			AttachStacktrace: true,           // Defaulting to true, adjust if needed
+			SampleRate:       1.0,            // Defaulting, adjust if needed (e.g., cfg.SentrySampleRate)
+			TracesSampleRate: 0.2,            // Defaulting, adjust if needed (e.g., cfg.SentryTracesSampleRate)
+			ServerName:       cfg.ServerName, // Assuming ServerName is in cfg
 			AppVersion:       cfg.AppVersion,
-			Tags: map[string]string{
-				"service": "backend-api",
+			Tags: map[string]string{ // Optional: Add default tags
+				"service": "ptchampion-api",
 			},
 		}
 
-		sentryMiddleware, err := middleware.SentryMiddleware(sentryConfig)
+		// Pass the middleware.SentryConfig to the middleware
+		sentryEchoMiddleware, err := middleware.SentryMiddleware(middlewareSentryConfig)
 		if err != nil {
-			logger.Warn("Failed to initialize Sentry middleware", zap.Error(err))
+			logger.Warn(context.Background(), "Failed to initialize Sentry middleware", "error", err)
 		} else {
-			logger.Info("Sentry error reporting initialized")
-			e.Use(sentryMiddleware)
+			logger.Info(context.Background(), "Sentry error reporting initialized via middleware")
+			e.Use(sentryEchoMiddleware) // Use the middleware returned by SentryMiddleware
 		}
 	} else {
-		logger.Info("Sentry DSN not provided; error reporting disabled")
+		logger.Info(context.Background(), "Sentry DSN not provided; error reporting disabled")
 	}
 
 	// Health Check endpoints
@@ -158,24 +161,58 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 		return c.JSON(http.StatusOK, map[string]string{"status": "healthy"})
 	})
 
+	// This variable will hold the DB connection if initialized by the router
+	var dbConnForHealthCheck *sql.DB
+
+	// Create API handler if one wasn't provided
+	if apiHandler == nil {
+		// Try to connect to database
+		dbConn, dbErr := db.NewDB(cfg.DatabaseURL)
+		if dbErr != nil {
+			log.Printf("Warning: Failed to connect to database for API handler: %v", dbErr)
+		} else {
+			dbConnForHealthCheck = dbConn // Capture for health check
+			// Initialize store with simple timeout
+			store := db.NewStore(dbConn, cfg.DBTimeout)
+			store.SetLogger(logger) // Make sure logger is set on store if methods use it
+
+			// Create a new handler with the store and logger
+			apiHandler = NewApiHandler(cfg, store, logger) // Pass full store and logger
+		}
+	}
+
 	// Add /healthz endpoint specifically for synthetic health checks
 	e.GET("/healthz", func(c echo.Context) error {
-		// This endpoint performs a more thorough check including:
-		// 1. System status
-		// 2. Database connection
-		// 3. External services (if applicable)
+		components := map[string]string{
+			"api": "healthy",
+		}
+		overallStatus := "healthy"
 
-		// TODO: Add additional checks for database and external services
+		// Database health check
+		if dbConnForHealthCheck != nil {
+			ctx, cancel := context.WithTimeout(c.Request().Context(), 2*time.Second) // Short timeout for ping
+			defer cancel()
+			if err := dbConnForHealthCheck.PingContext(ctx); err == nil {
+				components["database"] = "healthy"
+			} else {
+				components["database"] = "unhealthy"
+				overallStatus = "degraded"
+				logger.Error(context.Background(), "Health check: Database ping failed", "error", err)
+			}
+		} else {
+			components["database"] = "unknown"
+			// overallStatus could remain "healthy" if DB is optional or "degraded" if critical
+		}
+
+		// TODO: Add checks for other external services if applicable (e.g., Redis, Flagsmith)
+		// if featureFlagMiddleware != nil && featureFlagMiddleware.IsHealthy() { ... }
 
 		return c.JSON(http.StatusOK, map[string]interface{}{
-			"status":      "healthy",
-			"version":     os.Getenv("APP_VERSION"),
-			"environment": os.Getenv("APP_ENV"),
+			"status":      overallStatus,
+			"version":     cfg.AppVersion, // Use cfg for version
+			"environment": cfg.AppEnv,     // Use cfg for environment
 			"timestamp":   time.Now().UTC().Format(time.RFC3339),
-			"components": map[string]string{
-				"api": "healthy",
-				// Add more component statuses here as needed
-			},
+			"components":  components,
 		})
 	})
 
@@ -203,21 +240,6 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 		if _, err := os.Stat(staticFilesDir); os.IsNotExist(err) {
 			// Suppressing warning to keep logs cleaner - static files are optional for this API service
 			// log.Printf("Warning: Neither /app/static nor ./web/dist exist. Static file serving may not work correctly.")
-		}
-	}
-
-	// Create API handler if one wasn't provided
-	if apiHandler == nil {
-		// Try to connect to database
-		dbConn, dbErr := db.NewDB(cfg.DatabaseURL)
-		if dbErr != nil {
-			log.Printf("Warning: Failed to connect to database: %v", dbErr)
-		} else {
-			// Initialize store with simple timeout
-			store := db.NewStore(dbConn, cfg.DBTimeout)
-
-			// Create a new handler with the store
-			apiHandler = NewApiHandler(cfg, store.Queries)
 		}
 	}
 

@@ -19,12 +19,13 @@ INSERT INTO workouts (
     repetitions,
     duration_seconds,
     grade,
-    completed_at
+    completed_at,
+    is_public
     -- created_at is handled by DEFAULT NOW()
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
-RETURNING id, user_id, exercise_id, exercise_type, repetitions, duration_seconds, form_score, grade, completed_at, created_at
+RETURNING id, user_id, exercise_id, exercise_type, repetitions, duration_seconds, form_score, grade, is_public, completed_at, created_at
 `
 
 type CreateWorkoutParams struct {
@@ -35,6 +36,7 @@ type CreateWorkoutParams struct {
 	DurationSeconds sql.NullInt32 `json:"duration_seconds"`
 	Grade           int32         `json:"grade"`
 	CompletedAt     time.Time     `json:"completed_at"`
+	IsPublic        bool          `json:"is_public"`
 }
 
 func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error) {
@@ -46,6 +48,7 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 		arg.DurationSeconds,
 		arg.Grade,
 		arg.CompletedAt,
+		arg.IsPublic,
 	)
 	var i Workout
 	err := row.Scan(
@@ -57,6 +60,7 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 		&i.DurationSeconds,
 		&i.FormScore,
 		&i.Grade,
+		&i.IsPublic,
 		&i.CompletedAt,
 		&i.CreatedAt,
 	)
@@ -73,6 +77,7 @@ SELECT
     w.duration_seconds,
     w.form_score,
     w.grade,
+    w.is_public,
     w.created_at,
     w.completed_at
 FROM workouts w
@@ -97,6 +102,7 @@ type GetUserWorkoutsRow struct {
 	DurationSeconds sql.NullInt32 `json:"duration_seconds"`
 	FormScore       sql.NullInt32 `json:"form_score"`
 	Grade           int32         `json:"grade"`
+	IsPublic        bool          `json:"is_public"`
 	CreatedAt       time.Time     `json:"created_at"`
 	CompletedAt     time.Time     `json:"completed_at"`
 }
@@ -119,6 +125,7 @@ func (q *Queries) GetUserWorkouts(ctx context.Context, arg GetUserWorkoutsParams
 			&i.DurationSeconds,
 			&i.FormScore,
 			&i.Grade,
+			&i.IsPublic,
 			&i.CreatedAt,
 			&i.CompletedAt,
 		); err != nil {
@@ -144,4 +151,44 @@ func (q *Queries) GetUserWorkoutsCount(ctx context.Context, userID int32) (int64
 	var count int64
 	err := row.Scan(&count)
 	return count, err
+}
+
+const getWorkoutRecordByID = `-- name: GetWorkoutRecordByID :one
+SELECT id, user_id, exercise_id, exercise_type, repetitions, duration_seconds, form_score, grade, is_public, completed_at, created_at FROM workouts WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetWorkoutRecordByID(ctx context.Context, id int32) (Workout, error) {
+	row := q.db.QueryRowContext(ctx, getWorkoutRecordByID, id)
+	var i Workout
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.ExerciseID,
+		&i.ExerciseType,
+		&i.Repetitions,
+		&i.DurationSeconds,
+		&i.FormScore,
+		&i.Grade,
+		&i.IsPublic,
+		&i.CompletedAt,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateWorkoutVisibility = `-- name: UpdateWorkoutVisibility :exec
+UPDATE workouts
+SET is_public = $1
+WHERE id = $2 AND user_id = $3
+`
+
+type UpdateWorkoutVisibilityParams struct {
+	IsPublic bool  `json:"is_public"`
+	ID       int32 `json:"id"`
+	UserID   int32 `json:"user_id"`
+}
+
+func (q *Queries) UpdateWorkoutVisibility(ctx context.Context, arg UpdateWorkoutVisibilityParams) error {
+	_, err := q.db.ExecContext(ctx, updateWorkoutVisibility, arg.IsPublic, arg.ID, arg.UserID)
+	return err
 }

@@ -41,3 +41,94 @@ WHERE
 GROUP BY u.id, u.username, u.display_name, w.exercise_id
 ORDER BY score DESC
 LIMIT 50; -- Apply a reasonable limit 
+
+-- name: GetGlobalExerciseLeaderboard :many
+SELECT 
+    u.id as user_id,
+    u.username,
+    u.display_name,
+    MAX(w.grade) as score
+FROM workouts w
+JOIN users u ON w.user_id = u.id
+JOIN exercises e ON w.exercise_id = e.id
+WHERE e.type = $1 AND w.is_public = true
+GROUP BY u.id, u.username, u.display_name
+ORDER BY score DESC
+LIMIT $2;
+
+-- name: GetGlobalAggregateLeaderboard :many
+WITH user_best_scores AS (
+    -- Get each user's best score for each exercise type
+    SELECT 
+        u.id as user_id,
+        e.type as exercise_type,
+        MAX(w.grade) as best_score
+    FROM workouts w
+    JOIN users u ON w.user_id = u.id
+    JOIN exercises e ON w.exercise_id = e.id
+    WHERE w.is_public = true
+    GROUP BY u.id, e.type
+)
+SELECT 
+    u.id as user_id,
+    u.username,
+    u.display_name,
+    SUM(ubs.best_score) as score -- Sum of best scores across all exercise types
+FROM users u
+JOIN user_best_scores ubs ON u.id = ubs.user_id
+GROUP BY u.id, u.username, u.display_name
+ORDER BY score DESC
+LIMIT $1;
+
+-- name: GetLocalExerciseLeaderboard :many
+SELECT 
+    u.id as user_id,
+    u.username,
+    u.display_name,
+    MAX(w.grade) as score,
+    ST_Distance(u.last_location::geography, ST_MakePoint($2, $3)::geography) as distance_meters
+FROM workouts w
+JOIN users u ON w.user_id = u.id
+JOIN exercises e ON w.exercise_id = e.id
+WHERE 
+    e.type = $1 
+    AND w.is_public = true
+    AND ST_DWithin(
+        u.last_location::geography,
+        ST_MakePoint($2, $3)::geography,
+        $4 -- radius in meters
+    )
+GROUP BY u.id, u.username, u.display_name, u.last_location
+ORDER BY score DESC
+LIMIT $5;
+
+-- name: GetLocalAggregateLeaderboard :many
+WITH user_best_scores AS (
+    -- Get each user's best score for each exercise type
+    SELECT 
+        u.id as user_id,
+        e.type as exercise_type,
+        MAX(w.grade) as best_score
+    FROM workouts w
+    JOIN users u ON w.user_id = u.id
+    JOIN exercises e ON w.exercise_id = e.id
+    WHERE 
+        w.is_public = true
+        AND ST_DWithin(
+            u.last_location::geography,
+            ST_MakePoint($1, $2)::geography,
+            $3 -- radius in meters
+        )
+    GROUP BY u.id, e.type
+)
+SELECT 
+    u.id as user_id,
+    u.username,
+    u.display_name,
+    SUM(ubs.best_score) as score, -- Sum of best scores across all exercise types
+    ST_Distance(u.last_location::geography, ST_MakePoint($1, $2)::geography) as distance_meters
+FROM users u
+JOIN user_best_scores ubs ON u.id = ubs.user_id
+GROUP BY u.id, u.username, u.display_name, u.last_location
+ORDER BY score DESC
+LIMIT $4; 

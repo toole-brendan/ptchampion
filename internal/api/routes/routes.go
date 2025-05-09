@@ -11,10 +11,12 @@ import (
 	"ptchampion/internal/auth"
 	"ptchampion/internal/config"
 	"ptchampion/internal/exercises"
+	"ptchampion/internal/leaderboards"
 	"ptchampion/internal/logging"
 	db "ptchampion/internal/store/postgres"
 	"ptchampion/internal/store/redis"
 	"ptchampion/internal/users"
+	"ptchampion/internal/workouts"
 )
 
 // RegisterRoutes registers all routes for the application
@@ -49,6 +51,15 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	exerciseService := exercises.NewService(store, logger)
 	exerciseHandler := handlers.NewExerciseHandler(exerciseService, logger)
 
+	// Instantiate Leaderboard Service and Leaderboard Handler
+	leaderboardService := leaderboards.NewService(store, logger)
+	leaderboardHandler := handlers.NewLeaderboardHandler(leaderboardService, logger)
+
+	// Instantiate Workout Service and Workout Handler
+	// store implements both store.WorkoutStore and store.ExerciseStore
+	workoutService := workouts.NewService(store, store, logger)
+	workoutHandler := handlers.NewWorkoutHandler(workoutService, logger)
+
 	// Create API group
 	apiGroup := e.Group("/api/v1")
 
@@ -68,12 +79,12 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	RegisterUserRoutes(userRoutes, store, logger, userHandler)
 
 	// Workout Routes
-	workoutRoutes := protectedGroup.Group("/workouts")
-	RegisterWorkoutRoutes(workoutRoutes, store, logger, handler)
+	workoutRoutesGroup := protectedGroup.Group("/workouts")
+	RegisterWorkoutRoutes(workoutRoutesGroup, store, logger, workoutHandler)
 
 	// Leaderboard Routes
-	leaderboardRoutes := protectedGroup.Group("/leaderboards")
-	RegisterLeaderboardRoutes(leaderboardRoutes, store, handler, logger)
+	leaderboardRoutesGroup := protectedGroup.Group("/leaderboards")
+	RegisterLeaderboardRoutes(leaderboardRoutesGroup, store, logger, leaderboardHandler)
 
 	// Exercise Routes
 	exerciseRoutesGroup := protectedGroup.Group("/exercises")
@@ -99,40 +110,26 @@ func RegisterUserRoutes(g *echo.Group, store *db.Store, logger logging.Logger, u
 }
 
 // RegisterWorkoutRoutes registers workout-related routes under the given group (e.g., /api/v1/workouts)
-func RegisterWorkoutRoutes(g *echo.Group, store *db.Store, logger logging.Logger, handler *handlers.Handler) {
-	// TODO: Implement actual workout routes using handler methods
-	g.GET("", func(c echo.Context) error {
-		// Simple placeholder implementation
-		// Replace with actual handler call, e.g., handler.GetWorkouts
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"workouts":   []interface{}{},
-			"page":       1,
-			"pageSize":   15,
-			"totalCount": 0,
-			"totalPages": 0,
-		})
-	})
+func RegisterWorkoutRoutes(g *echo.Group, store *db.Store, logger logging.Logger, workoutHandler *handlers.WorkoutHandler) {
+	g.GET("", workoutHandler.ListUserWorkouts)
+	g.POST("", workoutHandler.LogWorkout)
+	g.PATCH("/:workout_id/visibility", workoutHandler.UpdateWorkoutVisibility)
 }
 
 // RegisterLeaderboardRoutes registers leaderboard-related routes under the given group (e.g., /api/v1/leaderboards)
-func RegisterLeaderboardRoutes(g *echo.Group, store *db.Store, handler *handlers.Handler, logger logging.Logger) {
-	g.GET("/overall", func(c echo.Context) error {
-		// Replace with actual handler call, e.g., handler.GetOverallLeaderboard
-		leaderboard := []map[string]interface{}{}
-		return c.JSON(http.StatusOK, leaderboard)
-	})
+func RegisterLeaderboardRoutes(g *echo.Group, store *db.Store, logger logging.Logger, leaderboardHandler *handlers.LeaderboardHandler) {
+	// Global leaderboards
+	g.GET("/global/exercise/:exerciseType", leaderboardHandler.GetGlobalExerciseLeaderboard)
+	g.GET("/global/aggregate", leaderboardHandler.GetGlobalAggregateLeaderboard)
 
-	g.GET("/:exerciseType", func(c echo.Context) error {
-		// Replace with actual handler call, e.g., handler.GetExerciseLeaderboard
-		leaderboard := []map[string]interface{}{}
-		return c.JSON(http.StatusOK, leaderboard)
-	})
+	// Local leaderboards
+	g.GET("/local/exercise/:exerciseType", leaderboardHandler.GetLocalExerciseLeaderboard)
+	g.GET("/local/aggregate", leaderboardHandler.GetLocalAggregateLeaderboard)
 
-	g.GET("/local", func(c echo.Context) error {
-		// Replace with actual handler call, e.g., handler.GetLocalLeaderboard
-		leaderboard := []map[string]interface{}{}
-		return c.JSON(http.StatusOK, leaderboard)
-	})
+	// Support for legacy routes if needed - these can be removed in the future
+	g.GET("/overall", leaderboardHandler.GetGlobalAggregateLeaderboard)      // Map to aggregate
+	g.GET("/:exerciseType", leaderboardHandler.GetGlobalExerciseLeaderboard) // Map to exercise type
+	g.GET("/local", leaderboardHandler.GetLocalExerciseLeaderboard)          // Map to local exercise type (requires exercise type param)
 }
 
 // RegisterExerciseRoutes registers exercise-related routes under the given group (e.g., /api/v1/exercises)

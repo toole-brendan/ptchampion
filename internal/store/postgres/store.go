@@ -8,7 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"ptchampion/internal/store" // Import the store package for the interface
+	"ptchampion/internal/logging" // Import the logging package for the logger
+	"ptchampion/internal/store"   // Import the store package for the interface
 
 	_ "github.com/lib/pq"
 )
@@ -36,11 +37,12 @@ func NewDB(databaseURL string) (*sql.DB, error) {
 	return conn, nil
 }
 
-// Store provides access to all database operations
+// Store provides access to all store interfaces backed by a postgres database
 type Store struct {
-	Queries    *Queries
+	*Queries
 	db         *sql.DB
 	DefaultTTL time.Duration
+	logger     logging.Logger // Changed from *Logger to logging.Logger
 }
 
 // NewStore creates a new Store with default timeout
@@ -54,6 +56,11 @@ func NewStore(dbPool *sql.DB, defaultTTL time.Duration) *Store {
 		db:         dbPool,
 		DefaultTTL: defaultTTL,
 	}
+}
+
+// SetLogger sets the logger for the store.
+func (s *Store) SetLogger(logger logging.Logger) {
+	s.logger = logger
 }
 
 // WithContext returns a context with timeout based on the store's default TTL
@@ -116,11 +123,6 @@ func toStoreUser(dbUser User) *store.User {
 		}
 	}
 
-	var avatarURL *string
-	if dbUser.ProfilePictureUrl.Valid {
-		avatarURL = &dbUser.ProfilePictureUrl.String
-	}
-
 	// Handle potential null times from DB
 	var createdAt, updatedAt time.Time
 	if dbUser.CreatedAt.Valid {
@@ -136,7 +138,6 @@ func toStoreUser(dbUser User) *store.User {
 		PasswordHash: dbUser.PasswordHash,
 		FirstName:    firstName,
 		LastName:     lastName,
-		AvatarURL:    avatarURL,
 		CreatedAt:    createdAt,
 		UpdatedAt:    updatedAt,
 	}
@@ -201,60 +202,90 @@ func (s *Store) GetUserByEmail(ctx context.Context, email string) (*store.User, 
 	return toStoreUser(dbUser), nil
 }
 
-// UpdateUser implements store.UserStore (STUB - needs full implementation)
+// UpdateUser implements store.UserStore
 func (s *Store) UpdateUser(ctx context.Context, user *store.User) (*store.User, error) {
-	// TODO: Implement this by converting store.User to db.UpdateUserParams
-	// and calling s.Queries.UpdateUser. Then convert result back.
-	// Handle ID string to int32 conversion.
-	// Handle FirstName/LastName to DisplayName.
-	// Handle AvatarURL to ProfilePictureUrl.
-	// This is a placeholder to satisfy the interface.
-
 	userIDInt, err := strconv.ParseInt(user.ID, 10, 32)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID format for update: %w", err)
 	}
 
-	var displayName sql.NullString
-	if user.FirstName != "" || user.LastName != "" {
-		displayName.String = strings.TrimSpace(user.FirstName + " " + user.LastName)
-		displayName.Valid = true
-	}
-
-	var profilePicURL sql.NullString
-	if user.AvatarURL != nil {
-		profilePicURL.String = *user.AvatarURL
-		profilePicURL.Valid = true
-	}
-
-	// Assuming user.Email maps to db.UpdateUserParams.Username
-	// and user.PasswordHash may or may not be updated here (usually separate flow)
-	// For now, let's assume username (email) is part of UpdateUserParams if it's changeable
-	// and PasswordHash is also part of it if it can be updated here.
-	// The existing db.UpdateUserParams includes Username and PasswordHash.
-
-	updateParams := UpdateUserParams{
-		ID:                int32(userIDInt),
-		Username:          user.Email,        // Assuming email is username and can be updated
-		PasswordHash:      user.PasswordHash, // Assuming password can be updated
-		DisplayName:       displayName,
-		ProfilePictureUrl: profilePicURL,
-		// Location, Latitude, Longitude, LastSyncedAt are not in store.User directly.
-		// They would need to be passed differently or handled by a more specific update method.
-	}
-
-	dbUser, err := s.Queries.UpdateUser(ctx, updateParams)
+	// Fetch the current user record to get existing values for Username and PasswordHash
+	// if they are not being updated, as UpdateUserParams requires them.
+	currentUserRecord, err := s.Queries.GetUser(ctx, int32(userIDInt))
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.ErrUserNotFound
+		}
+		return nil, fmt.Errorf("failed to fetch current user for update: %w", err)
+	}
+
+	params := UpdateUserParams{
+		ID: int32(userIDInt),
+		// Username and PasswordHash are not nullable in UpdateUserParams.
+		// Use existing value if not provided in the input user object.
+		Username: currentUserRecord.Username,
+		// PasswordHash: currentUserRecord.PasswordHash, // Commented out as not in UpdateUserParams
+		// Location, Latitude, Longitude, LastSyncedAt will be handled by COALESCE in SQL
+		// as they will be sql.NullString/Time with Valid=false if not set here.
+		// This is appropriate as store.User does not carry this information.
+	}
+
+	if user.Email != "" {
+		params.Username = user.Email
+	}
+
+	// if user.PasswordHash != "" { // Commented out as not in UpdateUserParams
+	// 	params.PasswordHash = user.PasswordHash
+	// }
+
+	if user.FirstName != "" || user.LastName != "" {
+		params.DisplayName = sql.NullString{
+			String: strings.TrimSpace(user.FirstName + " " + user.LastName),
+			Valid:  true,
+		}
+	} else {
+		// If both FirstName and LastName are empty in the input,
+		// explicitly preserve the existing DisplayName by not setting params.DisplayName
+		// (it remains Valid=false, COALESCE keeps old value)
+		// Or, if the intent is to clear it, one might set String="" and Valid=true.
+		// For now, we assume empty means "no change" or rely on COALESCE if DisplayName was already null.
+		// If DisplayName from currentUserRecord should be used if input names are empty:
+		// params.DisplayName = currentUserRecord.DisplayName
+		// However, COALESCE handles this better if we just don't set it when no new name is given.
+	}
+
+	updatedDbUser, err := s.Queries.UpdateUser(ctx, params)
+	if err != nil {
+		// TODO: Handle potential DB errors, e.g., unique constraint violations if username is changed
 		return nil, fmt.Errorf("failed to update user in DB: %w", err)
 	}
-	return toStoreUser(dbUser), nil
+
+	return toStoreUser(updatedDbUser), nil
 }
 
-// DeleteUser implements store.UserStore (STUB - needs underlying DB query)
+// DeleteUser implements store.UserStore
 func (s *Store) DeleteUser(ctx context.Context, id string) error {
-	// TODO: Implement this. Requires a s.Queries.DeleteUser method,
-	// which means a DELETE SQL query needs to be added to user.sql and sqlc regenerated.
-	return fmt.Errorf("DeleteUser not implemented in postgres store")
+	userIDInt, err := strconv.ParseInt(id, 10, 32)
+	if err != nil {
+		return fmt.Errorf("invalid user ID format for delete: %w", err)
+	}
+
+	// TODO: Add a DeleteUser query to internal/store/postgres/queries/user.sql (e.g., -- name: DeleteUser :exec
+	// DELETE FROM users WHERE id = $1;)
+	// TODO: Regenerate sqlc code to make s.Queries.DeleteUser available.
+	// Once s.Queries.DeleteUser is available, uncomment and adapt the following:
+	/*
+		err = s.Queries.DeleteUser(ctx, int32(userIDInt))
+		if err != nil {
+			// sql.ErrNoRows might not be returned by an Exec method for delete.
+			// Check if the user existed before delete if specific error for not found is needed.
+			// Or, the service layer can check existence first if required.
+			return fmt.Errorf("failed to delete user from DB (ID: %d): %w", userIDInt, err)
+		}
+		return nil
+	*/
+
+	return fmt.Errorf("DeleteUser SQL query and s.Queries.DeleteUser method not yet implemented (ID: %d)", userIDInt)
 }
 
 // Ensure *Store implements store.Store (and thus store.UserStore)
@@ -269,6 +300,13 @@ var _ store.UserStore = (*Store)(nil)
 // To be safe, let's ensure Store implements the full store.Store.
 // This will fail if ExerciseStore or LeaderboardStore methods are not (even if stubbed) on *db.Store
 var _ store.Store = (*Store)(nil)
+
+// Ping checks the database connectivity.
+func (s *Store) Ping(ctx context.Context) error {
+	ctxTimeout, cancel := context.WithTimeout(ctx, s.DefaultTTL) // Use store's default TTL or a specific one for pings
+	defer cancel()
+	return s.db.PingContext(ctxTimeout)
+}
 
 // --- ExerciseStore Implementation ---
 
@@ -460,3 +498,315 @@ func (s *Store) ListExerciseDefinitions(ctx context.Context) ([]*store.Exercise,
 	}
 	return exercises, nil
 }
+
+// --- LeaderboardStore Implementation ---
+
+// Helper function to map SQLC leaderboard rows to store.LeaderboardEntry
+// This is a generic helper; individual mapping might be slightly different based on actual sqlc structs.
+func mapSqlcRowToLeaderboardEntry(userID int32, username string, displayName sql.NullString, score int32) *store.LeaderboardEntry {
+	return &store.LeaderboardEntry{
+		UserID:      strconv.Itoa(int(userID)),
+		Username:    username,
+		DisplayName: nullStringToStringPtr(displayName),
+		Score:       score,
+		// Rank is set by the service layer
+	}
+}
+
+// GetGlobalExerciseLeaderboard implements store.LeaderboardStore
+func (s *Store) GetGlobalExerciseLeaderboard(ctx context.Context, exerciseType string, limit int) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetGlobalExerciseLeaderboard called", "type", exerciseType, "limit", limit)
+
+	params := GetGlobalExerciseLeaderboardParams{
+		Type:  exerciseType,
+		Limit: int32(limit),
+	}
+	dbRows, err := s.Queries.GetGlobalExerciseLeaderboard(ctx, params)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return []*store.LeaderboardEntry{}, nil
+		}
+		s.logger.Error(ctx, "Failed to get global exercise leaderboard from DB", "type", exerciseType, "error", err)
+		return nil, fmt.Errorf("failed to get global exercise leaderboard from DB: %w", err)
+	}
+
+	entries := make([]*store.LeaderboardEntry, len(dbRows))
+	for i, row := range dbRows {
+		var score int32
+		if row.Score != nil {
+			if val, ok := row.Score.(int64); ok {
+				score = int32(val)
+			} else if val, ok := row.Score.(int32); ok {
+				score = val
+			} else {
+				s.logger.Warn(ctx, "Unexpected type for score in GetGlobalExerciseLeaderboardRow", "score_type", fmt.Sprintf("%T", row.Score), "user_id", row.UserID)
+			}
+		}
+		entries[i] = mapSqlcRowToLeaderboardEntry(row.UserID, row.Username, row.DisplayName, score)
+	}
+	return entries, nil
+}
+
+// GetGlobalAggregateLeaderboard implements store.LeaderboardStore
+func (s *Store) GetGlobalAggregateLeaderboard(ctx context.Context, limit int) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetGlobalAggregateLeaderboard called", "limit", limit)
+
+	dbRows, err := s.Queries.GetGlobalAggregateLeaderboard(ctx, int32(limit))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return []*store.LeaderboardEntry{}, nil
+		}
+		s.logger.Error(ctx, "Failed to get global aggregate leaderboard from DB", "error", err)
+		return nil, fmt.Errorf("failed to get global aggregate leaderboard from DB: %w", err)
+	}
+
+	entries := make([]*store.LeaderboardEntry, len(dbRows))
+	for i, row := range dbRows {
+		entries[i] = mapSqlcRowToLeaderboardEntry(row.UserID, row.Username, row.DisplayName, int32(row.Score))
+	}
+	return entries, nil
+}
+
+// GetLocalExerciseLeaderboard implements store.LeaderboardStore
+func (s *Store) GetLocalExerciseLeaderboard(ctx context.Context, exerciseType string, latitude, longitude float64, radiusMeters int, limit int) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetLocalExerciseLeaderboard called", "type", exerciseType, "lat", latitude, "lon", longitude, "radius", radiusMeters, "limit", limit)
+
+	params := GetLocalExerciseLeaderboardParams{
+		Type:          exerciseType,
+		StMakepoint:   longitude,
+		StMakepoint_2: latitude,
+		StDwithin:     float64(radiusMeters),
+		Limit:         int32(limit),
+	}
+	dbRows, err := s.Queries.GetLocalExerciseLeaderboard(ctx, params)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return []*store.LeaderboardEntry{}, nil
+		}
+		s.logger.Error(ctx, "Failed to get local exercise leaderboard from DB", "type", exerciseType, "error", err)
+		return nil, fmt.Errorf("failed to get local exercise leaderboard from DB: %w", err)
+	}
+
+	entries := make([]*store.LeaderboardEntry, len(dbRows))
+	for i, row := range dbRows {
+		var score int32
+		if row.Score != nil {
+			if val, ok := row.Score.(int64); ok {
+				score = int32(val)
+			} else if val, ok := row.Score.(int32); ok {
+				score = val
+			} else {
+				s.logger.Warn(ctx, "Unexpected type for score in GetLocalExerciseLeaderboardRow", "score_type", fmt.Sprintf("%T", row.Score), "user_id", row.UserID)
+			}
+		}
+		entries[i] = mapSqlcRowToLeaderboardEntry(row.UserID, row.Username, row.DisplayName, score)
+	}
+	return entries, nil
+}
+
+// GetLocalAggregateLeaderboard implements store.LeaderboardStore
+func (s *Store) GetLocalAggregateLeaderboard(ctx context.Context, latitude, longitude float64, radiusMeters int, limit int) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetLocalAggregateLeaderboard called", "lat", latitude, "lon", longitude, "radius", radiusMeters, "limit", limit)
+
+	params := GetLocalAggregateLeaderboardParams{
+		StMakepoint:   longitude,
+		StMakepoint_2: latitude,
+		StDwithin:     float64(radiusMeters),
+		Limit:         int32(limit),
+	}
+	dbRows, err := s.Queries.GetLocalAggregateLeaderboard(ctx, params)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return []*store.LeaderboardEntry{}, nil
+		}
+		s.logger.Error(ctx, "Failed to get local aggregate leaderboard from DB", "error", err)
+		return nil, fmt.Errorf("failed to get local aggregate leaderboard from DB: %w", err)
+	}
+
+	entries := make([]*store.LeaderboardEntry, len(dbRows))
+	for i, row := range dbRows {
+		entries[i] = mapSqlcRowToLeaderboardEntry(row.UserID, row.Username, row.DisplayName, int32(row.Score))
+	}
+	return entries, nil
+}
+
+// Comment out or remove old generic leaderboard methods to avoid conflict with the updated interface
+/*
+func (s *Store) GetExerciseTypeLeaderboard(ctx context.Context, exerciseType string, limit int) ([]*store.LeaderboardEntry, error) {
+	// ... old implementation or stub ...
+	return nil, fmt.Errorf("use GetGlobalExerciseLeaderboard instead")
+}
+
+func (s *Store) GetOverallLeaderboard(ctx context.Context, limit int) ([]*store.LeaderboardEntry, error) {
+	// ... old implementation or stub ...
+	return nil, fmt.Errorf("use specific global leaderboard methods instead")
+}
+
+func (s *Store) GetLocalLeaderboard(ctx context.Context, exerciseID int32, latitude, longitude float64, radiusMeters int, limit int) ([]*store.LeaderboardEntry, error) {
+	// ... old implementation or stub ...
+	return nil, fmt.Errorf("use specific local leaderboard methods instead")
+}
+*/
+
+// --- WorkoutStore Implementation ---
+
+// toStoreWorkoutRecord converts db.Workout or db.GetUserWorkoutsRow to store.WorkoutRecord
+func toStoreWorkoutRecord(dbRec interface{}) *store.WorkoutRecord {
+	switch v := dbRec.(type) {
+	case Workout: // From CreateWorkout query
+		return &store.WorkoutRecord{
+			ID:              v.ID,
+			UserID:          v.UserID,
+			ExerciseID:      v.ExerciseID,
+			ExerciseType:    v.ExerciseType, // ExerciseName would need to be fetched separately if not included
+			Reps:            nullInt32ToInt32Ptr(v.Repetitions),
+			DurationSeconds: nullInt32ToInt32Ptr(v.DurationSeconds),
+			FormScore:       nullInt32ToInt32Ptr(v.FormScore),
+			Grade:           v.Grade,
+			CompletedAt:     v.CompletedAt,
+			CreatedAt:       v.CreatedAt,
+		}
+	case GetUserWorkoutsRow: // From GetUserWorkouts query
+		return &store.WorkoutRecord{
+			ID:           v.ID,
+			UserID:       v.UserID,
+			ExerciseID:   v.ExerciseID,
+			ExerciseName: v.ExerciseName, // Available from join in GetUserWorkoutsRow
+			// ExerciseType is not in GetUserWorkoutsRow, but it is in db.Workout if we need it, though less useful if ExerciseName is present
+			Reps:            nullInt32ToInt32Ptr(v.Repetitions),
+			DurationSeconds: nullInt32ToInt32Ptr(v.DurationSeconds),
+			FormScore:       nullInt32ToInt32Ptr(v.FormScore),
+			Grade:           v.Grade,
+			CompletedAt:     v.CompletedAt,
+			CreatedAt:       v.CreatedAt,
+		}
+	default:
+		return nil
+	}
+}
+
+// CreateWorkoutRecord implements store.WorkoutStore
+func (s *Store) CreateWorkoutRecord(ctx context.Context, record *store.WorkoutRecord) (*store.WorkoutRecord, error) {
+	params := CreateWorkoutParams{
+		UserID:          record.UserID,
+		ExerciseID:      record.ExerciseID,
+		ExerciseType:    record.ExerciseType,
+		Repetitions:     int32PtrToNullInt32(record.Reps),
+		DurationSeconds: int32PtrToNullInt32(record.DurationSeconds),
+		Grade:           record.Grade,
+		CompletedAt:     record.CompletedAt,
+		// FormScore is not in CreateWorkoutParams for SQLc. It's in the db.Workout model returned by the query,
+		// and also in db.GetUserWorkoutsRow. If it needs to be set on creation, the SQL query CreateWorkout
+		// and its CreateWorkoutParams struct would need to be updated to include FormScore.
+		// For now, it will be whatever the DB defaults it to or what the RETURNING clause provides if it's set by trigger/default.
+		// The db.Workout model does have FormScore, so it is read back.
+	}
+	dbWorkout, err := s.Queries.CreateWorkout(ctx, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create workout record in DB: %w", err)
+	}
+	newRecord := toStoreWorkoutRecord(dbWorkout)
+	// If ExerciseName was part of the input store.WorkoutRecord (e.g. already known by caller),
+	// we can copy it over, as db.Workout from CreateWorkout doesn't have it directly.
+	if newRecord != nil && record.ExerciseName != "" {
+		newRecord.ExerciseName = record.ExerciseName
+	}
+	return newRecord, nil
+}
+
+// GetUserWorkoutRecords implements store.WorkoutStore
+func (s *Store) GetUserWorkoutRecords(ctx context.Context, userID int32, limit int32, offset int32) (*store.PaginatedWorkoutRecords, error) {
+	count, err := s.Queries.GetUserWorkoutsCount(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user workout records count from DB: %w", err)
+	}
+
+	if count == 0 {
+		return &store.PaginatedWorkoutRecords{
+			Records:    []*store.WorkoutRecord{},
+			TotalCount: 0,
+		}, nil
+	}
+
+	params := GetUserWorkoutsParams{
+		UserID: userID,
+		Limit:  limit,
+		Offset: offset,
+	}
+	dbWorkoutRows, err := s.Queries.GetUserWorkouts(ctx, params)
+	if err != nil {
+		if err != sql.ErrNoRows { // ErrNoRows is fine if count > 0 but current page is empty
+			return nil, fmt.Errorf("failed to get user workout records from DB: %w", err)
+		}
+	}
+
+	records := make([]*store.WorkoutRecord, len(dbWorkoutRows))
+	for i, dbRow := range dbWorkoutRows {
+		records[i] = toStoreWorkoutRecord(dbRow)
+	}
+
+	return &store.PaginatedWorkoutRecords{
+		Records:    records,
+		TotalCount: count,
+	}, nil
+}
+
+// GetWorkoutRecordByID implements store.WorkoutStore
+func (s *Store) GetWorkoutRecordByID(ctx context.Context, id int32) (*store.WorkoutRecord, error) {
+	dbWorkout, err := s.Queries.GetWorkoutRecordByID(ctx, id)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, store.ErrWorkoutRecordNotFound
+		}
+		return nil, fmt.Errorf("failed to get workout record by ID from DB: %w", err)
+	}
+	// The db.Workout might not have ExerciseName directly, so we need to fetch it.
+	// This conversion needs to be smarter or the query needs to join.
+	// For now, toStoreWorkoutRecord will handle what it can.
+	workout := toStoreWorkoutRecord(dbWorkout)
+	if workout != nil && workout.ExerciseName == "" { // If name is missing, try to fetch exercise details
+		exDef, err := s.GetExerciseDefinition(ctx, workout.ExerciseID)
+		if err == nil && exDef != nil {
+			workout.ExerciseName = exDef.Name
+			workout.ExerciseType = exDef.Type // Ensure type is also set
+		}
+	}
+	return workout, nil
+}
+
+// UpdateWorkoutVisibility implements store.WorkoutStore
+func (s *Store) UpdateWorkoutVisibility(ctx context.Context, userID int32, workoutID int32, isPublic bool) error {
+	params := UpdateWorkoutVisibilityParams{
+		IsPublic: isPublic,
+		ID:       workoutID,
+		UserID:   userID, // Ensure user owns the workout
+	}
+	err := s.Queries.UpdateWorkoutVisibility(ctx, params)
+	if err != nil {
+		// TODO: Check if the error is because the row was not found (e.g., user_id didn't match or workout_id didn't exist)
+		// sqlc exec result doesn't directly tell us rows affected easily without more complex handling.
+		// The service layer should verify ownership before calling this.
+		return fmt.Errorf("failed to update workout visibility in DB: %w", err)
+	}
+	return nil
+}
+
+// Remove the mock structs as they should now be generated by sqlc
+/*
+// Temporary mock structs until SQLC generates them
+// These should be removed once sqlc generate is run
+
+// SqlcGetGlobalExerciseLeaderboardRow is a mock struct for the leaderboard row
+type SqlcGetGlobalExerciseLeaderboardRow struct {
+	UserID            int32
+	Username          string
+	DisplayName       sql.NullString
+	Score             int32
+}
+
+// SqlcGetGlobalExerciseLeaderboardParams is a mock struct for the leaderboard query params
+type SqlcGetGlobalExerciseLeaderboardParams struct {
+	Type  string
+	Limit int32
+}
+*/

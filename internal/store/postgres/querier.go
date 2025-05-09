@@ -13,8 +13,13 @@ type Querier interface {
 	CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (Workout, error)
 	GetExercise(ctx context.Context, id int32) (Exercise, error)
 	GetExercisesByType(ctx context.Context, type_ string) ([]Exercise, error)
+	GetGlobalAggregateLeaderboard(ctx context.Context, limit int32) ([]GetGlobalAggregateLeaderboardRow, error)
+	// Apply a reasonable limit
+	GetGlobalExerciseLeaderboard(ctx context.Context, arg GetGlobalExerciseLeaderboardParams) ([]GetGlobalExerciseLeaderboardRow, error)
 	GetLeaderboard(ctx context.Context, type_ string) ([]GetLeaderboardRow, error)
 	GetLeaderboardByExerciseType(ctx context.Context, arg GetLeaderboardByExerciseTypeParams) ([]GetLeaderboardByExerciseTypeRow, error)
+	GetLocalAggregateLeaderboard(ctx context.Context, arg GetLocalAggregateLeaderboardParams) ([]GetLocalAggregateLeaderboardRow, error)
+	GetLocalExerciseLeaderboard(ctx context.Context, arg GetLocalExerciseLeaderboardParams) ([]GetLocalExerciseLeaderboardRow, error)
 	// Limit the number of results (e.g., top 10, 20)
 	GetLocalLeaderboard(ctx context.Context, arg GetLocalLeaderboardParams) ([]GetLocalLeaderboardRow, error)
 	GetUser(ctx context.Context, id int32) (User, error)
@@ -24,10 +29,12 @@ type Querier interface {
 	GetUserExercisesCount(ctx context.Context, userID int32) (int64, error)
 	GetUserWorkouts(ctx context.Context, arg GetUserWorkoutsParams) ([]GetUserWorkoutsRow, error)
 	GetUserWorkoutsCount(ctx context.Context, userID int32) (int64, error)
+	GetWorkoutRecordByID(ctx context.Context, id int32) (Workout, error)
 	ListExercises(ctx context.Context) ([]Exercise, error)
 	LogUserExercise(ctx context.Context, arg LogUserExerciseParams) (UserExercise, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserLocation(ctx context.Context, arg UpdateUserLocationParams) error
+	UpdateWorkoutVisibility(ctx context.Context, arg UpdateWorkoutVisibilityParams) error
 }
 
 var _ Querier = (*Queries)(nil)
