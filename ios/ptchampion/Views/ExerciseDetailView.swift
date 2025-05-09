@@ -30,19 +30,17 @@ struct ExerciseDetailView: View {
                     StatCard(
                         title: "Best Session",
                         value: "\(viewModel.personalBest)",
-                        icon: "trophy.fill",
-                        trend: .none,
+                        unit: viewModel.unitForExerciseType(exerciseType),
                         color: AppTheme.GeneratedColors.brassGold,
-                        isHighlighted: false
+                        iconName: "trophy.fill"
                     )
                     
                     StatCard(
-                        title: "Last Week",
+                        title: "Last Week Total",
                         value: "\(viewModel.lastWeekTotal)",
-                        icon: "calendar",
-                        trend: viewModel.weeklyTrend,
+                        unit: viewModel.unitForExerciseType(exerciseType),
                         color: AppTheme.GeneratedColors.deepOps,
-                        isHighlighted: false
+                        iconName: "calendar"
                     )
                 }
                 
@@ -139,6 +137,10 @@ class ExerciseDetailViewModel: ObservableObject {
     @Published var personalBest: Int = 0
     @Published var lastWeekTotal: Int = 0
     @Published var weeklyTrend: Trend = .none
+    
+    func unitForExerciseType(_ exerciseType: String) -> String {
+        return exerciseType.lowercased() == "running" ? "km" : "reps"
+    }
     
     func loadData(for exerciseType: String) {
         // This would normally fetch from the NetworkService

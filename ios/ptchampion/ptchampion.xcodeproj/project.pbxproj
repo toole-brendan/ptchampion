@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		BF199EB72DCD8CFE00E23EFF /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EB62DCD8CFE00E23EFF /* UserProfileView.swift */; };
+		BF199EBA2DCE225200E23EFF /* MockUserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EB82DCE225200E23EFF /* MockUserService.swift */; };
+		BF199EBB2DCE225200E23EFF /* UserServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */; };
+		BF199EBD2DCE226E00E23EFF /* UserProfileData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EBC2DCE226E00E23EFF /* UserProfileData.swift */; };
+		BF199EBF2DCE228800E23EFF /* UserProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EBE2DCE228800E23EFF /* UserProfileViewModel.swift */; };
 		BF37B03E2DCAC89500EC4D58 /* WorkoutCompleteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */; };
 		BF37B03F2DCAC89500EC4D58 /* CameraExerciseView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B03C2DCAC89500EC4D58 /* CameraExerciseView.swift */; };
 		BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0402DCACABE00EC4D58 /* ActivityView.swift */; };
@@ -133,6 +137,10 @@
 
 /* Begin PBXFileReference section */
 		BF199EB62DCD8CFE00E23EFF /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
+		BF199EB82DCE225200E23EFF /* MockUserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockUserService.swift; sourceTree = "<group>"; };
+		BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserServiceProtocol.swift; sourceTree = "<group>"; };
+		BF199EBC2DCE226E00E23EFF /* UserProfileData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileData.swift; sourceTree = "<group>"; };
+		BF199EBE2DCE228800E23EFF /* UserProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileViewModel.swift; sourceTree = "<group>"; };
 		BF37B03C2DCAC89500EC4D58 /* CameraExerciseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraExerciseView.swift; sourceTree = "<group>"; };
 		BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutCompleteView.swift; sourceTree = "<group>"; };
 		BF37B0402DCACABE00EC4D58 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
@@ -374,6 +382,7 @@
 		BF63E4042DB1CF5A0037CD02 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BF199EBC2DCE226E00E23EFF /* UserProfileData.swift */,
 				BF89EB4A2DC98E9B003F8FE3 /* WorkoutDataPoint.swift */,
 				BF8F67A22DC931750065A2D7 /* AppModels.swift */,
 				BF63E3FC2DB1CF5A0037CD02 /* AuthModels.swift */,
@@ -400,6 +409,8 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BF199EB82DCE225200E23EFF /* MockUserService.swift */,
+				BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */,
 				BF89EB482DC98E8A003F8FE3 /* CommonNetworkTypes.swift */,
 				BFADF9BF2DC93E0A0016AF0B /* FeatureFlagService.swift */,
 				BFADF9C02DC93E0A0016AF0B /* NetworkService.swift */,
@@ -543,6 +554,7 @@
 		BF63E45F2DB1EBA40037CD02 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				BF199EBE2DCE228800E23EFF /* UserProfileViewModel.swift */,
 				BF37B0532DCC233F00EC4D58 /* WorkoutTimer.swift */,
 				BF8F67942DC931190065A2D7 /* DashboardViewModel.swift */,
 				BF8F67952DC931190065A2D7 /* WorkoutHistoryViewModel.swift */,
@@ -783,6 +795,7 @@
 				BF89EB552DC9A1A7003F8FE3 /* WorkoutProgressChart.swift in Sources */,
 				BFADF9C52DC93E0A0016AF0B /* WasmerGrading.swift in Sources */,
 				BFADF9C62DC93E0A0016AF0B /* NetworkService.swift in Sources */,
+				BF199EBD2DCE226E00E23EFF /* UserProfileData.swift in Sources */,
 				BFADF9C72DC93E0A0016AF0B /* FeatureFlagService.swift in Sources */,
 				BFADF9C82DC93E0A0016AF0B /* UnifiedNetworkService.swift in Sources */,
 				BF37B0522DCC232E00EC4D58 /* ExerciseHUDView.swift in Sources */,
@@ -824,6 +837,7 @@
 				BFADF9B92DC93D890016AF0B /* FocusableTextField.swift in Sources */,
 				BFADF9BA2DC93D890016AF0B /* WorkoutCard.swift in Sources */,
 				BF89EB492DC98E8A003F8FE3 /* CommonNetworkTypes.swift in Sources */,
+				BF199EBF2DCE228800E23EFF /* UserProfileViewModel.swift in Sources */,
 				BFADF9BB2DC93D890016AF0B /* MetricCard.swift in Sources */,
 				BFADF9BC2DC93D890016AF0B /* WorkoutHistoryList.swift in Sources */,
 				BF37B03E2DCAC89500EC4D58 /* WorkoutCompleteView.swift in Sources */,
@@ -854,6 +868,8 @@
 				BF63E4302DB1EB830037CD02 /* CameraServiceProtocol.swift in Sources */,
 				BF63E4312DB1EB830037CD02 /* KeychainService.swift in Sources */,
 				BF63E4322DB1EB830037CD02 /* WorkoutServiceProtocol.swift in Sources */,
+				BF199EBA2DCE225200E23EFF /* MockUserService.swift in Sources */,
+				BF199EBB2DCE225200E23EFF /* UserServiceProtocol.swift in Sources */,
 				BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */,
 				BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */,
 				BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */,

@@ -296,6 +296,13 @@ class AuthViewModel: ObservableObject {
         }
         return "User"
     }
+
+    var email: String? {
+        if case .authenticated(let user) = authState {
+            return user.email
+        }
+        return nil
+    }
 }
 
 // MARK: – Compatibility shims (delete when gallery is refactored)

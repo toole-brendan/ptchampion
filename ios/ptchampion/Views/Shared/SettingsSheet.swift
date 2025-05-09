@@ -269,37 +269,25 @@ extension Bundle {
 
 struct SettingsSheet_Previews: PreviewProvider {
     static var previews: some View {
+        // Use the MockAuthViewModel (assuming it's accessible, e.g., defined globally or in ProfileView.swift)
         let mockAuth = MockAuthViewModel()
-        mockAuth.authState.user = User(
-            id: "preview", 
-            email: "user@example.com", 
-            firstName: "Preview", 
+        
+        // To set a user for preview, we modify the authState directly if the MockAuthViewModel allows
+        // Or, if MockAuthViewModel has a specific method to set a mock user, use that.
+        // Based on AuthViewModel, we set the state to .authenticated with an AuthUserModel
+        let previewUser = AuthUserModel(
+            id: "previewUser123",
+            email: "preview@example.com",
+            firstName: "Preview",
             lastName: "User",
-            profilePictureUrl: nil
+            profilePictureUrl: nil // Assuming AuthUserModel has this property
         )
+        // mockAuth.authState = .authenticated(previewUser) // This is inaccessible
+        mockAuth.setMockUser(previewUser) // Use the provided setter method
         
         return SettingsSheet()
             .environmentObject(mockAuth)
     }
-}
-
-// MARK: - Helper Models (If not already defined elsewhere)
-
-// User struct is now defined by typealias User = AuthUserModel in AppModels.swift
-
-class MockAuthViewModel: ObservableObject {
-    @Published var isAuthenticated: Bool = false
-    @Published var authState = MockAuthState()
-    
-    func logout() {
-        isAuthenticated = false
-        authState.user = nil
-        // Additional logout logic would go here
-    }
-}
-
-class MockAuthState: ObservableObject {
-    @Published var user: User?
 }
 
 // MARK: - String Extension for Empty Check
