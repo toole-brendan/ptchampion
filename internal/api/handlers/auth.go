@@ -143,7 +143,7 @@ func (h *AuthHandler) Register(c echo.Context) error {
 	_, err := h.store.GetUserByEmail(ctx, req.Email)
 	if err == nil {
 		return NewAPIError(http.StatusConflict, ErrCodeConflict, "User already exists with this email")
-	} else if err != sql.ErrNoRows {
+	} else if err != sql.ErrNoRows && err != store.ErrUserNotFound {
 		h.logger.Error(ctx, "Error checking if user exists", "error", err, "email", req.Email)
 		return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Error checking user existence")
 	}
