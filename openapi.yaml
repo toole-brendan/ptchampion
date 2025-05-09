@@ -307,6 +307,49 @@ components:
         - success
         - timestamp
       description: Response payload after data synchronization
+    WorkoutResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        exercise_id:
+          type: integer
+        exercise_name:
+          type: string
+        exercise_type:
+          type: string
+        reps:
+          type: integer
+          nullable: true
+        duration_seconds:
+          type: integer
+          nullable: true
+        form_score:
+          type: integer
+          nullable: true
+        grade:
+          type: integer
+        completed_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - user_id
+        - exercise_id
+        - exercise_name
+        - exercise_type
+        - reps
+        - duration_seconds
+        - form_score
+        - grade
+        - completed_at
+        - created_at
+      description: A single recorded workout session
     LoginResponse:
       type: object
       properties:
@@ -475,6 +518,53 @@ components:
           - display_name
           - best_grade
       description: Leaderboard entries with best scores
+    PaginatedWorkoutsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutResponse'
+        totalCount:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+      required:
+        - items
+        - totalCount
+        - page
+        - pageSize
+        - totalPages
+    LocalLeaderboardResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          userId:
+            type: integer
+          username:
+            type: string
+          displayName:
+            type: string
+            nullable: true
+          exerciseId:
+            type: integer
+          score:
+            type: integer
+          distanceMeters:
+            type: number
+          lastUpdated:
+            type: string
+        required:
+          - userId
+          - username
+          - displayName
+          - exerciseId
+          - score
   parameters: {}
 paths:
   /auth/register:
@@ -671,3 +761,88 @@ paths:
           description: Unauthorized - missing or invalid token
         '500':
           description: Internal Server Error during sync
+  /workouts:
+    get:
+      summary: Get workout history for the current user (tracked sessions)
+      tags:
+        - Workouts
+      operationId: getWorkouts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+          required: false
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+          required: false
+      responses:
+        '200':
+          description: Workout history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkoutsResponse'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal Server Error
+  /leaderboards/local:
+    get:
+      summary: Get leaderboard filtered by proximity to user location
+      tags:
+        - Leaderboard
+      operationId: getLocalLeaderboard
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exercise_id
+          in: query
+          schema:
+            type: integer
+          description: ID of the exercise to filter leaderboard by
+          required: true
+        - name: latitude
+          in: query
+          schema:
+            type: number
+            format: double
+          description: User's current latitude
+          required: true
+        - name: longitude
+          in: query
+          schema:
+            type: number
+            format: double
+          description: User's current longitude
+          required: true
+        - name: radius_meters
+          in: query
+          schema:
+            type: number
+            format: double
+            default: 8047
+          description: Search radius in meters
+          required: false
+      responses:
+        '200':
+          description: Local leaderboard retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalLeaderboardResponse'
+        '400':
+          description: Missing or invalid required query parameters
+        '500':
+          description: Internal Server Error retrieving local leaderboard

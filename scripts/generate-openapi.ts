@@ -54,6 +54,20 @@ const userExerciseSchema = z.object({
   createdAt: z.date().nullable(),
   updatedAt: z.date().nullable(),
 }).openapi('UserExercise', { description: 'Details of a completed or tracked exercise' });
+
+const WorkoutResponseSchema = z.object({
+  id: z.number().int(),
+  user_id: z.number().int(),
+  exercise_id: z.number().int(),
+  exercise_name: z.string(),
+  exercise_type: z.string(),
+  reps: z.number().int().nullable(),
+  duration_seconds: z.number().int().nullable(),
+  form_score: z.number().int().nullable(),
+  grade: z.number().int(),
+  completed_at: z.string().datetime(),
+  created_at: z.string().datetime(),
+}).openapi('WorkoutResponse', { description: 'A single recorded workout session' });
 // --- End of manually defined schemas ---
 
 
@@ -95,6 +109,7 @@ registry.register('UpdateProfile', updateProfileWithMeta);
 registry.register('InsertUserExercise', insertUserExerciseWithMeta);
 registry.register('SyncRequest', syncRequestSchema);
 registry.register('SyncResponse', syncResponseSchema);
+registry.register('WorkoutResponse', WorkoutResponseSchema);
 
 // --- Define API endpoints here using registry.registerPath({...}) ---
 // Authentication endpoints
@@ -427,6 +442,139 @@ registry.registerPath({
     500: {
       description: 'Internal Server Error during sync',
     }
+  },
+});
+
+// Workouts Endpoint
+registry.registerPath({
+  method: 'get',
+  path: '/workouts',
+  summary: 'Get workout history for the current user (tracked sessions)',
+  tags: ['Workouts'],
+  operationId: 'getWorkouts',
+  security: [{ BearerAuth: [] }],
+  parameters: [
+    {
+      name: 'page',
+      in: 'query',
+      schema: {
+        type: 'integer',
+        minimum: 1,
+        default: 1,
+      },
+      description: 'Page number for pagination',
+      required: false,
+    },
+    {
+      name: 'pageSize',
+      in: 'query',
+      schema: {
+        type: 'integer',
+        minimum: 1,
+        maximum: 100,
+        default: 20,
+      },
+      description: 'Number of items per page',
+      required: false,
+    },
+  ],
+  responses: {
+    200: {
+      description: 'Workout history retrieved successfully',
+      content: {
+        'application/json': {
+          schema: z.object({ 
+            items: z.array(WorkoutResponseSchema),
+            totalCount: z.number().int(),
+            page: z.number().int(),
+            pageSize: z.number().int(),
+            totalPages: z.number().int(),
+          }).openapi('PaginatedWorkoutsResponse'),
+        },
+      },
+    },
+    401: {
+      description: 'Unauthorized - missing or invalid token',
+    },
+    500: {
+      description: 'Internal Server Error',
+    },
+  },
+});
+
+// Local Leaderboard Endpoint
+registry.registerPath({
+  method: 'get',
+  path: '/leaderboards/local',
+  summary: 'Get leaderboard filtered by proximity to user location',
+  tags: ['Leaderboard'],
+  operationId: 'getLocalLeaderboard',
+  security: [{ BearerAuth: [] }],
+  parameters: [
+    {
+      name: 'exercise_id',
+      in: 'query',
+      schema: {
+        type: 'integer',
+      },
+      description: 'ID of the exercise to filter leaderboard by',
+      required: true,
+    },
+    {
+      name: 'latitude',
+      in: 'query',
+      schema: {
+        type: 'number',
+        format: 'double',
+      },
+      description: "User's current latitude",
+      required: true,
+    },
+    {
+      name: 'longitude',
+      in: 'query',
+      schema: {
+        type: 'number',
+        format: 'double',
+      },
+      description: "User's current longitude",
+      required: true,
+    },
+    {
+      name: 'radius_meters',
+      in: 'query',
+      schema: {
+        type: 'number',
+        format: 'double',
+        default: 8047,
+      },
+      description: 'Search radius in meters',
+      required: false,
+    },
+  ],
+  responses: {
+    200: {
+      description: 'Local leaderboard retrieved successfully',
+      content: {
+        'application/json': {
+          schema: z.array(z.object({
+            userId: z.number().int(),
+            username: z.string(),
+            displayName: z.string().nullable(),
+            exerciseId: z.number().int(),
+            score: z.number().int(),
+            distanceMeters: z.number().optional(),
+            lastUpdated: z.string().optional(),
+          })).openapi('LocalLeaderboardResponse'),
+        },
+      },
+    },
+    400: {
+      description: 'Missing or invalid required query parameters',
+    },
+    500: {
+      description: 'Internal Server Error retrieving local leaderboard',
+    },
   },
 });
 

@@ -114,16 +114,15 @@ func (h *ApiHandler) PatchUsersMe(ctx echo.Context) error {
 	return h.userHandler.UpdateCurrentUser(ctx)
 }
 
-// Implement HandleGetLocalLeaderboard to match the ServerInterface
-func (h *ApiHandler) HandleGetLocalLeaderboard(ctx echo.Context, params HandleGetLocalLeaderboardParams) error {
-	// Call the exported handler method
-	// The underlying handler parses query params directly from ctx, so params are not passed
-	return h.leaderboardHandler.GetLocalAggregateLeaderboard(ctx)
+// GetLocalLeaderboard implements the ServerInterface
+func (h *ApiHandler) GetLocalLeaderboard(ctx echo.Context, params GetLocalLeaderboardParams) error {
+	// Call the correct handler method for local leaderboard
+	return h.genericHandler.HandleGetLocalLeaderboard(ctx)
 }
 
-// Add missing HandleGetWorkouts implementation
-func (h *ApiHandler) HandleGetWorkouts(ctx echo.Context, params HandleGetWorkoutsParams) error {
-	// Call the handler for user exercise history (assuming GetUserExercises handles /workouts logic)
+// GetWorkouts implements the ServerInterface
+func (h *ApiHandler) GetWorkouts(ctx echo.Context, params GetWorkoutsParams) error {
+	// Call the handler for user workouts
 	return h.workoutHandler.ListUserWorkouts(ctx)
 }
 
