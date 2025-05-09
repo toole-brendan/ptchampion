@@ -248,15 +248,27 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 		}
 	}
 
-	// Register OpenAPI handlers if we have them
+	// Register OpenAPI handlers and set up API groups
 	if apiHandler != nil {
-		log.Printf("Registering OpenAPI handlers")
-		RegisterHandlersWithBaseURL(e, apiHandler, "/api/v1")
+		log.Printf("Registering API routes and handlers")
 
-		// Add a dedicated health check at /api/v1/health for CI/CD
-		e.GET("/api/v1/health", func(c echo.Context) error {
-			return c.JSON(http.StatusOK, map[string]string{"status": "healthy"})
+		// Create the base API group
+		apiGroup := e.Group("/api/v1")
+
+		// 1️⃣ Public health check - MUST come before auth-protected routes
+		apiGroup.GET("/health", func(c echo.Context) error {
+			return c.JSON(http.StatusOK, map[string]string{
+				"status":  "healthy",
+				"message": "Health check endpoint for CI/CD monitoring",
+			})
 		})
+
+		// 2️⃣ Register OpenAPI handlers for auth routes that don't need protection
+		// This is handled in the generated code
+
+		// 3️⃣ Everything else requires JWT
+		// The OpenAPI handlers will apply auth middleware to protected routes
+		RegisterHandlersWithBaseURL(e, apiHandler, "/api/v1")
 	} else {
 		log.Printf("Warning: apiHandler is nil, OpenAPI endpoints not registered")
 	}
