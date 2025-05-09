@@ -10,6 +10,123 @@ import (
 	"database/sql"
 )
 
+const getGlobalAggregateLeaderboard = `-- name: GetGlobalAggregateLeaderboard :many
+WITH user_best_scores AS (
+    -- Get each user's best score for each exercise type
+    SELECT 
+        u.id as user_id,
+        e.type as exercise_type,
+        MAX(w.grade) as best_score
+    FROM workouts w
+    JOIN users u ON w.user_id = u.id
+    JOIN exercises e ON w.exercise_id = e.id
+    WHERE w.is_public = true
+    GROUP BY u.id, e.type
+)
+SELECT 
+    u.id as user_id,
+    u.username,
+    u.display_name,
+    SUM(ubs.best_score) as score -- Sum of best scores across all exercise types
+FROM users u
+JOIN user_best_scores ubs ON u.id = ubs.user_id
+GROUP BY u.id, u.username, u.display_name
+ORDER BY score DESC
+LIMIT $1
+`
+
+type GetGlobalAggregateLeaderboardRow struct {
+	UserID      int32          `json:"user_id"`
+	Username    string         `json:"username"`
+	DisplayName sql.NullString `json:"display_name"`
+	Score       int64          `json:"score"`
+}
+
+func (q *Queries) GetGlobalAggregateLeaderboard(ctx context.Context, limit int32) ([]GetGlobalAggregateLeaderboardRow, error) {
+	rows, err := q.db.QueryContext(ctx, getGlobalAggregateLeaderboard, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetGlobalAggregateLeaderboardRow{}
+	for rows.Next() {
+		var i GetGlobalAggregateLeaderboardRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Username,
+			&i.DisplayName,
+			&i.Score,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getGlobalExerciseLeaderboard = `-- name: GetGlobalExerciseLeaderboard :many
+
+SELECT 
+    u.id as user_id,
+    u.username,
+    u.display_name,
+    MAX(w.grade) as score
+FROM workouts w
+JOIN users u ON w.user_id = u.id
+JOIN exercises e ON w.exercise_id = e.id
+WHERE e.type = $1 AND w.is_public = true
+GROUP BY u.id, u.username, u.display_name
+ORDER BY score DESC
+LIMIT $2
+`
+
+type GetGlobalExerciseLeaderboardParams struct {
+	Type  string `json:"type"`
+	Limit int32  `json:"limit"`
+}
+
+type GetGlobalExerciseLeaderboardRow struct {
+	UserID      int32          `json:"user_id"`
+	Username    string         `json:"username"`
+	DisplayName sql.NullString `json:"display_name"`
+	Score       interface{}    `json:"score"`
+}
+
+// Apply a reasonable limit
+func (q *Queries) GetGlobalExerciseLeaderboard(ctx context.Context, arg GetGlobalExerciseLeaderboardParams) ([]GetGlobalExerciseLeaderboardRow, error) {
+	rows, err := q.db.QueryContext(ctx, getGlobalExerciseLeaderboard, arg.Type, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetGlobalExerciseLeaderboardRow{}
+	for rows.Next() {
+		var i GetGlobalExerciseLeaderboardRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Username,
+			&i.DisplayName,
+			&i.Score,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getLeaderboardByExerciseType = `-- name: GetLeaderboardByExerciseType :many
 SELECT 
     u.username,
@@ -52,6 +169,161 @@ func (q *Queries) GetLeaderboardByExerciseType(ctx context.Context, arg GetLeade
 			&i.DisplayName,
 			&i.ExerciseType,
 			&i.BestGrade,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLocalAggregateLeaderboard = `-- name: GetLocalAggregateLeaderboard :many
+WITH user_best_scores AS (
+    -- Get each user's best score for each exercise type
+    SELECT 
+        u.id as user_id,
+        e.type as exercise_type,
+        MAX(w.grade) as best_score
+    FROM workouts w
+    JOIN users u ON w.user_id = u.id
+    JOIN exercises e ON w.exercise_id = e.id
+    WHERE 
+        w.is_public = true
+        AND ST_DWithin(
+            u.last_location::geography,
+            ST_MakePoint($1, $2)::geography,
+            $3 -- radius in meters
+        )
+    GROUP BY u.id, e.type
+)
+SELECT 
+    u.id as user_id,
+    u.username,
+    u.display_name,
+    SUM(ubs.best_score) as score, -- Sum of best scores across all exercise types
+    ST_Distance(u.last_location::geography, ST_MakePoint($1, $2)::geography) as distance_meters
+FROM users u
+JOIN user_best_scores ubs ON u.id = ubs.user_id
+GROUP BY u.id, u.username, u.display_name, u.last_location
+ORDER BY score DESC
+LIMIT $4
+`
+
+type GetLocalAggregateLeaderboardParams struct {
+	StMakepoint   interface{} `json:"st_makepoint"`
+	StMakepoint_2 interface{} `json:"st_makepoint_2"`
+	StDwithin     interface{} `json:"st_dwithin"`
+	Limit         int32       `json:"limit"`
+}
+
+type GetLocalAggregateLeaderboardRow struct {
+	UserID         int32          `json:"user_id"`
+	Username       string         `json:"username"`
+	DisplayName    sql.NullString `json:"display_name"`
+	Score          int64          `json:"score"`
+	DistanceMeters interface{}    `json:"distance_meters"`
+}
+
+func (q *Queries) GetLocalAggregateLeaderboard(ctx context.Context, arg GetLocalAggregateLeaderboardParams) ([]GetLocalAggregateLeaderboardRow, error) {
+	rows, err := q.db.QueryContext(ctx, getLocalAggregateLeaderboard,
+		arg.StMakepoint,
+		arg.StMakepoint_2,
+		arg.StDwithin,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetLocalAggregateLeaderboardRow{}
+	for rows.Next() {
+		var i GetLocalAggregateLeaderboardRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Username,
+			&i.DisplayName,
+			&i.Score,
+			&i.DistanceMeters,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLocalExerciseLeaderboard = `-- name: GetLocalExerciseLeaderboard :many
+SELECT 
+    u.id as user_id,
+    u.username,
+    u.display_name,
+    MAX(w.grade) as score,
+    ST_Distance(u.last_location::geography, ST_MakePoint($2, $3)::geography) as distance_meters
+FROM workouts w
+JOIN users u ON w.user_id = u.id
+JOIN exercises e ON w.exercise_id = e.id
+WHERE 
+    e.type = $1 
+    AND w.is_public = true
+    AND ST_DWithin(
+        u.last_location::geography,
+        ST_MakePoint($2, $3)::geography,
+        $4 -- radius in meters
+    )
+GROUP BY u.id, u.username, u.display_name, u.last_location
+ORDER BY score DESC
+LIMIT $5
+`
+
+type GetLocalExerciseLeaderboardParams struct {
+	Type          string      `json:"type"`
+	StMakepoint   interface{} `json:"st_makepoint"`
+	StMakepoint_2 interface{} `json:"st_makepoint_2"`
+	StDwithin     interface{} `json:"st_dwithin"`
+	Limit         int32       `json:"limit"`
+}
+
+type GetLocalExerciseLeaderboardRow struct {
+	UserID         int32          `json:"user_id"`
+	Username       string         `json:"username"`
+	DisplayName    sql.NullString `json:"display_name"`
+	Score          interface{}    `json:"score"`
+	DistanceMeters interface{}    `json:"distance_meters"`
+}
+
+func (q *Queries) GetLocalExerciseLeaderboard(ctx context.Context, arg GetLocalExerciseLeaderboardParams) ([]GetLocalExerciseLeaderboardRow, error) {
+	rows, err := q.db.QueryContext(ctx, getLocalExerciseLeaderboard,
+		arg.Type,
+		arg.StMakepoint,
+		arg.StMakepoint_2,
+		arg.StDwithin,
+		arg.Limit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetLocalExerciseLeaderboardRow{}
+	for rows.Next() {
+		var i GetLocalExerciseLeaderboardRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Username,
+			&i.DisplayName,
+			&i.Score,
+			&i.DistanceMeters,
 		); err != nil {
 			return nil, err
 		}

@@ -17,6 +17,7 @@ const (
 	ErrCodeInternalServer  = "INTERNAL_SERVER_ERROR"
 	ErrCodeTokenGeneration = "TOKEN_GENERATION_FAILED"
 	ErrCodeDatabase        = "DATABASE_ERROR"
+	ErrCodeNotImplemented  = "NOT_IMPLEMENTED"
 	// Add more specific codes as needed
 )
 

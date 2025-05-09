@@ -6,10 +6,11 @@ INSERT INTO workouts (
     repetitions,
     duration_seconds,
     grade,
-    completed_at
+    completed_at,
+    is_public
     -- created_at is handled by DEFAULT NOW()
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7
+    $1, $2, $3, $4, $5, $6, $7, $8
 )
 RETURNING *;
 
@@ -23,6 +24,7 @@ SELECT
     w.duration_seconds,
     w.form_score,
     w.grade,
+    w.is_public,
     w.created_at,
     w.completed_at
 FROM workouts w
@@ -32,4 +34,12 @@ ORDER BY w.completed_at DESC
 LIMIT $2 OFFSET $3;
 
 -- name: GetUserWorkoutsCount :one
-SELECT COUNT(*) FROM workouts WHERE user_id = $1; 
+SELECT COUNT(*) FROM workouts WHERE user_id = $1;
+
+-- name: UpdateWorkoutVisibility :exec
+UPDATE workouts
+SET is_public = $1
+WHERE id = $2 AND user_id = $3;
+
+-- name: GetWorkoutRecordByID :one
+SELECT * FROM workouts WHERE id = $1 LIMIT 1; 

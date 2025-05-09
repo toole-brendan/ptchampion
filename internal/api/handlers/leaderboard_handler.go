@@ -7,10 +7,15 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	db "ptchampion/internal/store/postgres"
 	"ptchampion/internal/store/redis"
+
+	"ptchampion/internal/leaderboards"
+	"ptchampion/internal/logging"
+	"ptchampion/internal/store" // For store.LeaderboardEntry
 
 	"github.com/labstack/echo/v4"
 	goredis "github.com/redis/go-redis/v9"
@@ -39,6 +44,29 @@ type LeaderboardEntry struct {
 	Username    string `json:"username"`
 	DisplayName string `json:"display_name"`
 	BestGrade   int32  `json:"best_grade"`
+}
+
+// LeaderboardAPIEntry is the response model for a leaderboard entry.
+type LeaderboardAPIEntry struct {
+	Rank        int32   `json:"rank"`
+	UserID      string  `json:"user_id,omitempty"` // omitempty if not available
+	Username    string  `json:"username"`
+	DisplayName *string `json:"display_name,omitempty"`
+	Score       int32   `json:"score"`
+}
+
+// LeaderboardHandler handles leaderboard-related API requests.
+type LeaderboardHandler struct {
+	service leaderboards.Service
+	logger  logging.Logger
+}
+
+// NewLeaderboardHandler creates a new LeaderboardHandler instance.
+func NewLeaderboardHandler(service leaderboards.Service, logger logging.Logger) *LeaderboardHandler {
+	return &LeaderboardHandler{
+		service: service,
+		logger:  logger,
+	}
 }
 
 // GetCacheClient returns a Redis client or nil if Redis is not configured
@@ -390,4 +418,172 @@ func (h *Handler) fallbackLocalLeaderboard(c echo.Context, exerciseID int64, lat
 
 	// 5. Send response
 	return c.JSON(http.StatusOK, respEntries)
+}
+
+func mapStoreLeaderboardEntryToAPIEntry(storeEntry *store.LeaderboardEntry) LeaderboardAPIEntry {
+	return LeaderboardAPIEntry{
+		Rank:        storeEntry.Rank,
+		UserID:      storeEntry.UserID,
+		Username:    storeEntry.Username,
+		DisplayName: storeEntry.DisplayName,
+		Score:       storeEntry.Score,
+	}
+}
+
+// GetGlobalExerciseLeaderboard handles GET /leaderboards/global/exercise/:exerciseType
+func (h *LeaderboardHandler) GetGlobalExerciseLeaderboard(c echo.Context) error {
+	ctx := c.Request().Context()
+	exerciseType := c.Param("exerciseType")
+	if exerciseType == "" {
+		h.logger.Warn(ctx, "GetGlobalExerciseLeaderboard: missing exerciseType param")
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Exercise type parameter is required")
+	}
+
+	limitStr := c.QueryParam("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = defaultLeaderboardLimit
+	}
+	h.logger.Debug(ctx, "GetGlobalExerciseLeaderboard called", "type", exerciseType, "limit", limit)
+
+	storeEntries, err := h.service.GetGlobalExerciseLeaderboard(ctx, exerciseType, limit)
+	if err != nil {
+		h.logger.Error(ctx, "Error from GetGlobalExerciseLeaderboard service", "type", exerciseType, "error", err)
+		if err.Error() == "GetGlobalExerciseLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
+			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Global exercise leaderboard is not fully implemented yet.")
+		}
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve global exercise leaderboard")
+	}
+
+	apiEntries := make([]LeaderboardAPIEntry, len(storeEntries))
+	for i, entry := range storeEntries {
+		apiEntries[i] = mapStoreLeaderboardEntryToAPIEntry(entry)
+	}
+	return c.JSON(http.StatusOK, apiEntries)
+}
+
+// GetGlobalAggregateLeaderboard handles GET /leaderboards/global/aggregate
+func (h *LeaderboardHandler) GetGlobalAggregateLeaderboard(c echo.Context) error {
+	ctx := c.Request().Context()
+	limitStr := c.QueryParam("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = defaultLeaderboardLimit
+	}
+	h.logger.Debug(ctx, "GetGlobalAggregateLeaderboard called", "limit", limit)
+
+	storeEntries, err := h.service.GetGlobalAggregateLeaderboard(ctx, limit)
+	if err != nil {
+		h.logger.Error(ctx, "Error from GetGlobalAggregateLeaderboard service", "error", err)
+		if err.Error() == "GetGlobalAggregateLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
+			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Global aggregate leaderboard is not fully implemented yet.")
+		}
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve global aggregate leaderboard")
+	}
+
+	apiEntries := make([]LeaderboardAPIEntry, len(storeEntries))
+	for i, entry := range storeEntries {
+		apiEntries[i] = mapStoreLeaderboardEntryToAPIEntry(entry)
+	}
+	return c.JSON(http.StatusOK, apiEntries)
+}
+
+// GetLocalExerciseLeaderboard handles GET /leaderboards/local/exercise/:exerciseType
+func (h *LeaderboardHandler) GetLocalExerciseLeaderboard(c echo.Context) error {
+	ctx := c.Request().Context()
+	exerciseType := c.Param("exerciseType")
+	if exerciseType == "" {
+		h.logger.Warn(ctx, "GetLocalExerciseLeaderboard: missing exerciseType param")
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Exercise type parameter is required")
+	}
+
+	latStr := c.QueryParam("latitude")
+	lonStr := c.QueryParam("longitude")
+	radiusMetersStr := c.QueryParam("radius_meters")
+	limitStr := c.QueryParam("limit")
+
+	if latStr == "" || lonStr == "" {
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Missing required query parameters: latitude, longitude")
+	}
+
+	latitude, err := strconv.ParseFloat(latStr, 64)
+	if err != nil {
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid latitude parameter")
+	}
+	longitude, err := strconv.ParseFloat(lonStr, 64)
+	if err != nil {
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid longitude parameter")
+	}
+
+	radiusMeters, err := strconv.Atoi(radiusMetersStr)
+	if err != nil || radiusMeters <= 0 {
+		radiusMeters = defaultSearchRadiusMeters
+	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = defaultLeaderboardLimit
+	}
+	h.logger.Debug(ctx, "GetLocalExerciseLeaderboard called", "type", exerciseType, "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit)
+
+	storeEntries, err := h.service.GetLocalExerciseLeaderboard(ctx, exerciseType, latitude, longitude, radiusMeters, limit)
+	if err != nil {
+		h.logger.Error(ctx, "Error from GetLocalExerciseLeaderboard service", "type", exerciseType, "error", err)
+		if err.Error() == "GetLocalExerciseLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
+			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Local exercise leaderboard is not fully implemented yet.")
+		}
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve local exercise leaderboard")
+	}
+
+	apiEntries := make([]LeaderboardAPIEntry, len(storeEntries))
+	for i, entry := range storeEntries {
+		apiEntries[i] = mapStoreLeaderboardEntryToAPIEntry(entry)
+	}
+	return c.JSON(http.StatusOK, apiEntries)
+}
+
+// GetLocalAggregateLeaderboard handles GET /leaderboards/local/aggregate
+func (h *LeaderboardHandler) GetLocalAggregateLeaderboard(c echo.Context) error {
+	ctx := c.Request().Context()
+	latStr := c.QueryParam("latitude")
+	lonStr := c.QueryParam("longitude")
+	radiusMetersStr := c.QueryParam("radius_meters")
+	limitStr := c.QueryParam("limit")
+
+	if latStr == "" || lonStr == "" {
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Missing required query parameters: latitude, longitude")
+	}
+
+	latitude, err := strconv.ParseFloat(latStr, 64)
+	if err != nil {
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid latitude parameter")
+	}
+	longitude, err := strconv.ParseFloat(lonStr, 64)
+	if err != nil {
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid longitude parameter")
+	}
+
+	radiusMeters, err := strconv.Atoi(radiusMetersStr)
+	if err != nil || radiusMeters <= 0 {
+		radiusMeters = defaultSearchRadiusMeters
+	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = defaultLeaderboardLimit
+	}
+	h.logger.Debug(ctx, "GetLocalAggregateLeaderboard called", "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit)
+
+	storeEntries, err := h.service.GetLocalAggregateLeaderboard(ctx, latitude, longitude, radiusMeters, limit)
+	if err != nil {
+		h.logger.Error(ctx, "Error from GetLocalAggregateLeaderboard service", "error", err)
+		if err.Error() == "GetLocalAggregateLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
+			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Local aggregate leaderboard is not fully implemented yet.")
+		}
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve local aggregate leaderboard")
+	}
+
+	apiEntries := make([]LeaderboardAPIEntry, len(storeEntries))
+	for i, entry := range storeEntries {
+		apiEntries[i] = mapStoreLeaderboardEntryToAPIEntry(entry)
+	}
+	return c.JSON(http.StatusOK, apiEntries)
 }
