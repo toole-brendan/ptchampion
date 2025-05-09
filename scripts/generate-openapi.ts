@@ -20,7 +20,7 @@ import {
   insertUserSchema,
   updateProfileSchema,
   insertUserExerciseSchema,
-} from '../shared/schema';
+} from '../shared/schema.ts';
 import { createSelectSchema } from 'drizzle-zod';
 
 // --- Manually define Zod schemas mirroring Drizzle select types ---
