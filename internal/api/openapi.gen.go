@@ -4,12 +4,289 @@
 package api
 
 import (
+	"bytes"
+	"compress/gzip"
+	"encoding/base64"
 	"fmt"
 	"net/http"
+	"net/url"
+	"path"
+	"strings"
+	"time"
 
+	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
 	"github.com/oapi-codegen/runtime"
 )
+
+const (
+	BearerAuthScopes = "BearerAuth.Scopes"
+)
+
+// Defines values for UserExerciseSyncStatus.
+const (
+	Conflict UserExerciseSyncStatus = "conflict"
+	Pending  UserExerciseSyncStatus = "pending"
+	Synced   UserExerciseSyncStatus = "synced"
+)
+
+// Defines values for GetLeaderboardExerciseTypeParamsExerciseType.
+const (
+	Pullup GetLeaderboardExerciseTypeParamsExerciseType = "pullup"
+	Pushup GetLeaderboardExerciseTypeParamsExerciseType = "pushup"
+	Run    GetLeaderboardExerciseTypeParamsExerciseType = "run"
+	Situp  GetLeaderboardExerciseTypeParamsExerciseType = "situp"
+)
+
+// InsertUser Data required to register a new user
+type InsertUser struct {
+	DisplayName       *string `json:"displayName"`
+	Latitude          *string `json:"latitude"`
+	Location          *string `json:"location"`
+	Longitude         *string `json:"longitude"`
+	Password          string  `json:"password"`
+	ProfilePictureUrl *string `json:"profilePictureUrl"`
+	Username          string  `json:"username"`
+}
+
+// LeaderboardResponse Leaderboard entries with best scores
+type LeaderboardResponse = []struct {
+	BestGrade   int    `json:"best_grade"`
+	DisplayName string `json:"display_name"`
+	Username    string `json:"username"`
+}
+
+// LocalLeaderboardResponse defines model for LocalLeaderboardResponse.
+type LocalLeaderboardResponse = []struct {
+	DisplayName    *string  `json:"displayName"`
+	DistanceMeters *float32 `json:"distanceMeters,omitempty"`
+	ExerciseId     int      `json:"exerciseId"`
+	LastUpdated    *string  `json:"lastUpdated,omitempty"`
+	Score          int      `json:"score"`
+	UserId         int      `json:"userId"`
+	Username       string   `json:"username"`
+}
+
+// LogExerciseRequest Exercise data to log
+type LogExerciseRequest struct {
+	Distance   *int    `json:"distance,omitempty"`
+	Duration   *int    `json:"duration,omitempty"`
+	ExerciseId int     `json:"exercise_id"`
+	Notes      *string `json:"notes,omitempty"`
+	Reps       *int    `json:"reps,omitempty"`
+}
+
+// LogExerciseResponse Logged exercise data with calculated grade
+type LogExerciseResponse struct {
+	CreatedAt     time.Time `json:"created_at"`
+	Distance      *int      `json:"distance,omitempty"`
+	ExerciseId    int       `json:"exercise_id"`
+	ExerciseName  string    `json:"exercise_name"`
+	ExerciseType  string    `json:"exercise_type"`
+	Grade         int       `json:"grade"`
+	Id            int       `json:"id"`
+	Notes         *string   `json:"notes,omitempty"`
+	Reps          *int      `json:"reps,omitempty"`
+	TimeInSeconds *int      `json:"time_in_seconds,omitempty"`
+	UserId        int       `json:"user_id"`
+}
+
+// LoginRequest User credentials for login
+type LoginRequest struct {
+	Password string `json:"password"`
+	Username string `json:"username"`
+}
+
+// LoginResponse Authentication token and user profile
+type LoginResponse struct {
+	Token string `json:"token"`
+
+	// User User profile information
+	User User `json:"user"`
+}
+
+// PaginatedExerciseHistoryResponse Paginated exercise history for user
+type PaginatedExerciseHistoryResponse struct {
+	Items []struct {
+		CreatedAt     time.Time `json:"created_at"`
+		Distance      *int      `json:"distance,omitempty"`
+		ExerciseId    int       `json:"exercise_id"`
+		ExerciseName  string    `json:"exercise_name"`
+		ExerciseType  string    `json:"exercise_type"`
+		Grade         int       `json:"grade"`
+		Id            int       `json:"id"`
+		Notes         *string   `json:"notes,omitempty"`
+		Reps          *int      `json:"reps,omitempty"`
+		TimeInSeconds *int      `json:"time_in_seconds,omitempty"`
+		UserId        int       `json:"user_id"`
+	} `json:"items"`
+	Page       int `json:"page"`
+	PageSize   int `json:"page_size"`
+	TotalCount int `json:"total_count"`
+}
+
+// PaginatedWorkoutsResponse defines model for PaginatedWorkoutsResponse.
+type PaginatedWorkoutsResponse struct {
+	Items      []WorkoutResponse `json:"items"`
+	Page       int               `json:"page"`
+	PageSize   int               `json:"pageSize"`
+	TotalCount int               `json:"totalCount"`
+	TotalPages int               `json:"totalPages"`
+}
+
+// SyncRequest Request payload for synchronizing data
+type SyncRequest struct {
+	Data *struct {
+		Profile *struct {
+			DisplayName       *string `json:"displayName"`
+			Location          *string `json:"location"`
+			ProfilePictureUrl *string `json:"profilePictureUrl"`
+		} `json:"profile,omitempty"`
+		UserExercises *[]struct {
+			Completed     *bool   `json:"completed"`
+			DeviceId      *string `json:"deviceId"`
+			ExerciseId    int     `json:"exerciseId"`
+			FormScore     *int    `json:"formScore"`
+			Grade         *int    `json:"grade"`
+			Metadata      *string `json:"metadata"`
+			Repetitions   *int    `json:"repetitions"`
+			SyncStatus    *string `json:"syncStatus"`
+			TimeInSeconds *int    `json:"timeInSeconds"`
+			UserId        int     `json:"userId"`
+		} `json:"userExercises,omitempty"`
+	} `json:"data,omitempty"`
+	DeviceId          string    `json:"deviceId"`
+	LastSyncTimestamp time.Time `json:"lastSyncTimestamp"`
+	UserId            int       `json:"userId"`
+}
+
+// SyncResponse Response payload after data synchronization
+type SyncResponse struct {
+	Conflicts *[]UserExercise `json:"conflicts,omitempty"`
+	Data      *struct {
+		// Profile User profile information
+		Profile       *User           `json:"profile,omitempty"`
+		UserExercises *[]UserExercise `json:"userExercises,omitempty"`
+	} `json:"data,omitempty"`
+	Success   bool      `json:"success"`
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// UpdateUserRequest Fields to update in user profile
+type UpdateUserRequest struct {
+	DisplayName       *string  `json:"display_name,omitempty"`
+	Latitude          *float32 `json:"latitude,omitempty"`
+	Location          *string  `json:"location,omitempty"`
+	Longitude         *float32 `json:"longitude,omitempty"`
+	ProfilePictureUrl *string  `json:"profile_picture_url,omitempty"`
+	Username          *string  `json:"username,omitempty"`
+}
+
+// User User profile information
+type User struct {
+	CreatedAt         *string `json:"createdAt"`
+	DisplayName       *string `json:"displayName"`
+	Id                int     `json:"id"`
+	LastSyncedAt      *string `json:"lastSyncedAt"`
+	Latitude          *string `json:"latitude"`
+	Location          *string `json:"location"`
+	Longitude         *string `json:"longitude"`
+	ProfilePictureUrl *string `json:"profilePictureUrl"`
+	UpdatedAt         *string `json:"updatedAt"`
+	Username          string  `json:"username"`
+}
+
+// UserExercise Details of a completed or tracked exercise
+type UserExercise struct {
+	Completed     bool                    `json:"completed"`
+	CreatedAt     *string                 `json:"createdAt"`
+	DeviceId      *string                 `json:"deviceId"`
+	ExerciseId    int                     `json:"exerciseId"`
+	FormScore     *int                    `json:"formScore"`
+	Grade         *int                    `json:"grade"`
+	Id            int                     `json:"id"`
+	Metadata      *string                 `json:"metadata"`
+	Repetitions   *int                    `json:"repetitions"`
+	SyncStatus    *UserExerciseSyncStatus `json:"syncStatus"`
+	TimeInSeconds *int                    `json:"timeInSeconds"`
+	UpdatedAt     *string                 `json:"updatedAt"`
+	UserId        int                     `json:"userId"`
+}
+
+// UserExerciseSyncStatus defines model for UserExercise.SyncStatus.
+type UserExerciseSyncStatus string
+
+// WorkoutResponse A single recorded workout session
+type WorkoutResponse struct {
+	CompletedAt     time.Time `json:"completed_at"`
+	CreatedAt       time.Time `json:"created_at"`
+	DurationSeconds *int      `json:"duration_seconds"`
+	ExerciseId      int       `json:"exercise_id"`
+	ExerciseName    string    `json:"exercise_name"`
+	ExerciseType    string    `json:"exercise_type"`
+	FormScore       *int      `json:"form_score"`
+	Grade           int       `json:"grade"`
+	Id              int       `json:"id"`
+	Reps            *int      `json:"reps"`
+	UserId          int       `json:"user_id"`
+}
+
+// GetExercisesParams defines parameters for GetExercises.
+type GetExercisesParams struct {
+	// Page Page number for pagination
+	Page *int `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page
+	PageSize *int `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+}
+
+// GetLeaderboardExerciseTypeParams defines parameters for GetLeaderboardExerciseType.
+type GetLeaderboardExerciseTypeParams struct {
+	// Limit Maximum number of leaderboard entries to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+}
+
+// GetLeaderboardExerciseTypeParamsExerciseType defines parameters for GetLeaderboardExerciseType.
+type GetLeaderboardExerciseTypeParamsExerciseType string
+
+// GetLocalLeaderboardParams defines parameters for GetLocalLeaderboard.
+type GetLocalLeaderboardParams struct {
+	// ExerciseId ID of the exercise to filter leaderboard by
+	ExerciseId int `form:"exercise_id" json:"exercise_id"`
+
+	// Latitude User's current latitude
+	Latitude float64 `form:"latitude" json:"latitude"`
+
+	// Longitude User's current longitude
+	Longitude float64 `form:"longitude" json:"longitude"`
+
+	// RadiusMeters Search radius in meters
+	RadiusMeters *float64 `form:"radius_meters,omitempty" json:"radius_meters,omitempty"`
+}
+
+// GetWorkoutsParams defines parameters for GetWorkouts.
+type GetWorkoutsParams struct {
+	// Page Page number for pagination
+	Page *int `form:"page,omitempty" json:"page,omitempty"`
+
+	// PageSize Number of items per page
+	PageSize *int `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+}
+
+// PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
+type PostAuthLoginJSONRequestBody = LoginRequest
+
+// PostAuthRegisterJSONRequestBody defines body for PostAuthRegister for application/json ContentType.
+type PostAuthRegisterJSONRequestBody = InsertUser
+
+// PostExercisesJSONRequestBody defines body for PostExercises for application/json ContentType.
+type PostExercisesJSONRequestBody = LogExerciseRequest
+
+// PostSyncJSONRequestBody defines body for PostSync for application/json ContentType.
+type PostSyncJSONRequestBody = SyncRequest
+
+// PatchUsersMeJSONRequestBody defines body for PatchUsersMe for application/json ContentType.
+type PatchUsersMeJSONRequestBody = UpdateUserRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -256,4 +533,124 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.PATCH(baseURL+"/users/me", wrapper.PatchUsersMe)
 	router.GET(baseURL+"/workouts", wrapper.GetWorkouts)
 
+}
+
+// Base64 encoded, gzipped, json marshaled Swagger object
+var swaggerSpec = []string{
+
+	"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",
+	"/0UWJMXONwAA",
+}
+
+// GetSwagger returns the content of the embedded swagger specification file
+// or error if failed to decode
+func decodeSpec() ([]byte, error) {
+	zipped, err := base64.StdEncoding.DecodeString(strings.Join(swaggerSpec, ""))
+	if err != nil {
+		return nil, fmt.Errorf("error base64 decoding spec: %w", err)
+	}
+	zr, err := gzip.NewReader(bytes.NewReader(zipped))
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing spec: %w", err)
+	}
+	var buf bytes.Buffer
+	_, err = buf.ReadFrom(zr)
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing spec: %w", err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+var rawSpec = decodeSpecCached()
+
+// a naive cached of a decoded swagger spec
+func decodeSpecCached() func() ([]byte, error) {
+	data, err := decodeSpec()
+	return func() ([]byte, error) {
+		return data, err
+	}
+}
+
+// Constructs a synthetic filesystem for resolving external references when loading openapi specifications.
+func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
+	res := make(map[string]func() ([]byte, error))
+	if len(pathToFile) > 0 {
+		res[pathToFile] = rawSpec
+	}
+
+	return res
+}
+
+// GetSwagger returns the Swagger specification corresponding to the generated code
+// in this file. The external references of Swagger specification are resolved.
+// The logic of resolving external references is tightly connected to "import-mapping" feature.
+// Externally referenced files must be embedded in the corresponding golang packages.
+// Urls can be supported but this task was out of the scope.
+func GetSwagger() (swagger *openapi3.T, err error) {
+	resolvePath := PathToRawSpec("")
+
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		pathToFile := url.String()
+		pathToFile = path.Clean(pathToFile)
+		getSpec, ok := resolvePath[pathToFile]
+		if !ok {
+			err1 := fmt.Errorf("path not found: %s", pathToFile)
+			return nil, err1
+		}
+		return getSpec()
+	}
+	var specData []byte
+	specData, err = rawSpec()
+	if err != nil {
+		return
+	}
+	swagger, err = loader.LoadFromData(specData)
+	if err != nil {
+		return
+	}
+	return
 }
