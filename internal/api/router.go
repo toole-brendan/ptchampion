@@ -56,6 +56,11 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.validator.Struct(i)
 }
 
+// NewCustomValidatorInstance creates a new CustomValidator instance that implements echo.Validator.
+func NewCustomValidatorInstance() echo.Validator {
+	return &CustomValidator{validator: validator.New()}
+}
+
 // NewRouter creates and configures the main application router.
 func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger) http.Handler { // Accept *ApiHandler
 	// Use Echo router instead of Chi
