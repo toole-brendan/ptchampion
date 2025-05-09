@@ -282,6 +282,7 @@ jobs:
               --forwarding-protocol HttpsOnly \
               --supported-protocols Http Https \
               --patterns-to-match "/api/*" \
+              --link-to-default-domain Enabled \
               --enabled-state Enabled
             
             API_ROUTE="api-route"
@@ -296,7 +297,7 @@ jobs:
               --route-name "$API_ROUTE" \
               --origin-group "$API_ORIGIN_GROUP" \
               --forwarding-protocol HttpsOnly \
-              --link-to-default-domain true \
+              --link-to-default-domain Enabled \
               --enabled-state Enabled
           fi
           
@@ -513,13 +514,13 @@ jobs:
                 fi
                 
                 echo "Creating API route..."
-                az afd route create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --route-name "api-route" --origin-group "$API_ORIGIN_GROUP" --forwarding-protocol HttpsOnly --patterns-to-match "/api/*" --enabled-state Enabled
+                az afd route create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --route-name "api-route" --origin-group "$API_ORIGIN_GROUP" --forwarding-protocol HttpsOnly --patterns-to-match "/api/*" --link-to-default-domain Enabled --enabled-state Enabled
                 
                 # If working endpoint is not under /api/, create an additional route
                 if [[ "$WORKING_ENDPOINT" != /api/* ]]; then
                   echo "Creating additional route for $WORKING_ENDPOINT..."
                   ROUTE_NAME=$(echo "$WORKING_ENDPOINT" | sed 's/\///g')
-                  az afd route create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --route-name "$ROUTE_NAME-route" --origin-group "$API_ORIGIN_GROUP" --forwarding-protocol HttpsOnly --patterns-to-match "$WORKING_ENDPOINT" --enabled-state Enabled
+                  az afd route create --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --route-name "$ROUTE_NAME-route" --origin-group "$API_ORIGIN_GROUP" --forwarding-protocol HttpsOnly --patterns-to-match "$WORKING_ENDPOINT" --link-to-default-domain Enabled --enabled-state Enabled
                 fi
                 
                 echo "Purging Front Door cache..."
