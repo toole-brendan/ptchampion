@@ -46,7 +46,7 @@ jobs:
         run: syft dir:. -o json > ../sbom-web.json
 
       - name: Upload SBOM as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sboms
           path: |
@@ -92,7 +92,7 @@ jobs:
           fi
 
       - name: Upload vulnerability reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: vulnerability-reports
           path: |
@@ -186,7 +186,7 @@ jobs:
           fi
 
       - name: Upload build artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: web-build
           path: web/dist
