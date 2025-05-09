@@ -346,19 +346,40 @@ jobs:
       - name: Get Front Door Configuration
         run: |
           echo "Getting Front Door configuration..."
-          az afd endpoint show --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --query "{hostName:hostName,enabledState:enabledState}"
+          az afd endpoint show \
+            -g ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+            --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+            --query "{hostName:hostName,enabledState:enabledState}"
           
           echo "Getting Front Door routes..."
-          az afd route list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --query "[].{routeName:name,endpointName:endpointName,originGroupName:originGroupName,enabledState:enabledState,forwardingProtocol:forwardingProtocol}"
+          az afd route list \
+            -g ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+            --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+            --query "[].{routeName:name,originGroupName:originGroupName,enabledState:enabledState,forwardingProtocol:forwardingProtocol}"
           
           echo "Getting Front Door rule sets..."
-          az afd rule-set list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }}
+          az afd rule-set list \
+            -g ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }}
           
           echo "Getting Front Door origin groups..."
-          az afd origin-group list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }}
+          az afd origin-group list \
+            -g ${{ env.AZURE_RESOURCE_GROUP }} \
+            --profile-name ${{ env.FRONT_DOOR_PROFILE }}
           
           echo "Getting Front Door origins..."
-          az afd origin list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --origin-group-name '*'
+          for og in $(az afd origin-group list \
+                        -g ${{ env.AZURE_RESOURCE_GROUP }} \
+                        --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+                        --query '[].name' -o tsv); do
+            az afd origin list \
+                -g ${{ env.AZURE_RESOURCE_GROUP }} \
+                --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+                --origin-group-name "$og" \
+                --query "[].{originName:name,hostName:hostName,enabledState:enabledState}"
+          done
       
       - name: DNS Debug
         run: |
@@ -695,7 +716,7 @@ jobs:
           
           # Check Front Door API configuration
           echo "5. Checking Front Door API routes..."
-          az afd route list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --query "[?contains(name, 'api')].{name:name,patternsToMatch:patternsToMatch,originGroup:originGroup}" -o json
+          az afd route list --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --query "[?contains(name, 'api')].{name:name,patternsToMatch:patternsToMatch,originGroup:originGroup}" -o json
           
           # Check if any health endpoint works
           WORKING_ENDPOINT="none"
