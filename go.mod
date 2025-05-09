@@ -1,6 +1,6 @@
 module ptchampion
 
-go 1.24.1
+go 1.23.1
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.1
