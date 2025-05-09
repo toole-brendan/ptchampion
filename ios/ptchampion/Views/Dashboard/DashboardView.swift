@@ -46,8 +46,8 @@ struct DashboardView: View {
     private let quickLinks: [(title: String, icon: String, destination: String, isSystemIcon: Bool)] = [
         ("Begin Push-Ups", "pushup", "workout-pushups", false),
         ("Begin Sit-Ups", "situp", "workout-situps", false),
-        ("View Leaderboard", "list.star", "leaderboard", true),
-        ("Check Progress", "chart.line.uptrend.xyaxis", "progress", true)
+        ("Begin Pull-Ups", "pullup", "workout-pullups", false),
+        ("Start Running", "running", "workout-running", false)
     ]
     
     var body: some View {
@@ -318,11 +318,10 @@ struct QuickLinkCard: View {
             WorkoutSessionView(exerciseName: "Push-Ups") // Assuming WorkoutSessionView expects "Push-Ups"
         case "workout-situps":
             WorkoutSessionView(exerciseName: "Sit-Ups")  // Assuming WorkoutSessionView expects "Sit-Ups"
-        case "leaderboard":
-            // This creates a new VM instance each time. For shared state, this VM should be passed in or be an EnvironmentObject.
-            LeaderboardView(viewModel: LeaderboardViewModel(), viewId: "dashboard_quicklink_leaderboard") 
-        case "progress":
-            WorkoutHistoryView() // Navigates to the view containing progress charts
+        case "workout-pullups":
+            WorkoutSessionView(exerciseName: "Pull-Ups")
+        case "workout-running":
+            RunWorkoutView() // Assuming RunWorkoutView is the correct destination
         default:
             Text("Unknown Destination: \(destination)")
                 .padding()

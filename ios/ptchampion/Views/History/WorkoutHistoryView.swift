@@ -23,6 +23,17 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
         }
     }
     
+    // New computed property for custom icon names
+    var customIconName: String? {
+        switch self {
+        case .pushup: return "pushup"
+        case .situp: return "situp"
+        case .pullup: return "pullup"
+        case .run: return "running" // Corresponds to your "running.imageset"
+        default: return nil // .all and any future types without custom icons
+        }
+    }
+    
     // Convert to exercise type string used in database
     var exerciseTypeString: String? {
         switch self {
@@ -32,6 +43,38 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
         case .pullup: return "pullup"
         case .run: return "run"
         }
+    }
+}
+
+// New dedicated view for displaying the empty state content
+private struct EmptyHistoryDisplayView: View {
+    let currentFilter: WorkoutFilter
+    
+    // Duplicating the helper method here for now, or it could be made more globally accessible
+    @ViewBuilder
+    private func emptyStateLabelView(image: Image, title: String) -> some View {
+        VStack {
+            image
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            PTLabel(title, style: .heading)
+        }
+    }
+    
+    var body: some View {
+        let specificFilterText = currentFilter == .all ? "Workouts" : currentFilter.rawValue
+        let titleString = "No \(specificFilterText) Yet"
+        let imageForEmptyState: Image
+        if let customIcon = currentFilter.customIconName {
+            imageForEmptyState = Image(customIcon)
+        } else {
+            imageForEmptyState = Image(systemName: currentFilter.systemImage)
+        }
+        
+        return emptyStateLabelView(image: imageForEmptyState, title: titleString)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
     }
 }
 
@@ -214,7 +257,7 @@ struct WorkoutHistoryView: View {
                         PTCard {
                             VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
                                 PTLabel("Current Streak", style: .caption)
-                                PTLabel("\(currentWorkoutStreak) days", style: .subheading).fontWeight(.bold) // Corrected interpolation
+                                PTLabel("\(currentWorkoutStreak) days", style: .subheading).fontWeight(.bold)
                             }
                             .padding(AppTheme.GeneratedSpacing.medium)
                             .frame(maxWidth: .infinity)
@@ -222,7 +265,7 @@ struct WorkoutHistoryView: View {
                         PTCard {
                             VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
                                 PTLabel("Longest Streak", style: .caption)
-                                PTLabel("\(longestWorkoutStreak) days", style: .subheading).fontWeight(.bold) // Corrected interpolation
+                                PTLabel("\(longestWorkoutStreak) days", style: .subheading).fontWeight(.bold)
                             }
                             .padding(AppTheme.GeneratedSpacing.medium)
                             .frame(maxWidth: .infinity)
@@ -230,20 +273,14 @@ struct WorkoutHistoryView: View {
                     }
                     .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                     
-                    List {
-                        if workoutResults.isEmpty {
-                            // Create the title string separately to avoid confusing the compiler
-                            let specificFilterText = filter == .all ? "Workouts" : filter.rawValue
-                            let titleString = "No \(specificFilterText) Yet" // Corrected interpolation
-                            ContentUnavailableView(
-                                titleString, // Use the pre-composed string
-                                systemImage: filter.systemImage,
-                                description: Text("Complete a workout to see your history here.")
-                                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
-                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                            )
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                        } else {
+                    // Conditional display: Empty state or List with results
+                    let resultsAreEmpty = workoutResults.isEmpty // Use a local constant for the condition
+                    if resultsAreEmpty {
+                        // Use the new dedicated view for the empty state
+                        EmptyHistoryDisplayView(currentFilter: filter)
+                    } else {
+                        List {
+                            // Restore the ForEach loop
                             ForEach(workoutResults) { result in
                                 // Remove NavigationLink, make row tappable
                                 WorkoutHistoryRow(result: result)
@@ -267,14 +304,14 @@ struct WorkoutHistoryView: View {
                                     .tint(AppTheme.GeneratedColors.brassGold)
                                 } // End swipeActions
                             } // End ForEach
-                        } // End else
-                    } // End List
-                    .listStyle(PlainListStyle())
-                    .scrollContentBackground(.hidden)
-                    // Add navigation destination modifier here
-                    .navigationDestination(item: $selectedWorkout) { workout in
-                        WorkoutDetailView(workoutResult: workout)
-                    }
+                        } // End List
+                        .listStyle(PlainListStyle())
+                        .scrollContentBackground(.hidden)
+                        // Add navigation destination modifier here
+                        .navigationDestination(item: $selectedWorkout) { workout in
+                            WorkoutDetailView(workoutResult: workout)
+                        }
+                    } // End conditional display
                     
                     // Restore chart section using state variables
                     if !currentChartData.isEmpty && filter != .all { // Use currentChartData
@@ -348,6 +385,27 @@ struct WorkoutHistoryView: View {
                     .tint(AppTheme.GeneratedColors.brassGold)
             }
         }
+    }
+
+    // Helper function for the empty state label view
+    @ViewBuilder
+    private func emptyStateLabelView(image: Image, title: String) -> some View {
+        VStack {
+            image
+                .resizable()
+                .scaledToFit()
+                .frame(width: 50, height: 50)
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            PTLabel(title, style: .heading)
+        }
+    }
+
+    // Helper function for the empty state description view
+    @ViewBuilder
+    private func emptyStateDescriptionView() -> some View {
+        Text("Complete a workout to see your history here.")
+            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
+            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
     }
 
     // Function to calculate and update streaks
