@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -13,6 +15,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	"ptchampion/internal/api"
 	"ptchampion/internal/api/handlers"
 	"ptchampion/internal/api/routes"
 	"ptchampion/internal/auth"
@@ -20,36 +23,65 @@ import (
 	"ptchampion/internal/logging"
 	db "ptchampion/internal/store/postgres"
 	"ptchampion/internal/store/redis"
+	"ptchampion/internal/telemetry"
 )
 
 func main() {
-	// Initialize logger
-	logger := logging.NewDefaultLogger()
-	ctxBg := context.Background() // Background context for startup/shutdown logs
-	logger.Info(ctxBg, "Starting PT Champion server")
-
 	// Load configuration
 	cfg, err := config.Load()
 	if err != nil {
-		logger.Fatal(ctxBg, "Failed to load configuration", err)
+		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	// Validate configuration - will exit if any required config is missing
-	cfg.Validate()
+	// Initialize logger
+	logger := logging.NewDefaultLogger()
+	logger.Info(context.Background(), "Application starting up...", "version", cfg.AppVersion, "env", cfg.AppEnv)
 
-	// Initialize database connection
+	// Initialize Database Connection (moved from router to main)
 	dbConn, err := db.NewDB(cfg.DatabaseURL)
 	if err != nil {
-		logger.Fatal(ctxBg, "Failed to connect to database", err)
+		logger.Error(context.Background(), "Failed to connect to database", "error", err)
+		// Depending on requirements, you might want to os.Exit(1) here
+		// For now, we'll let it proceed and routes requiring DB will fail.
+	} else {
+		logger.Info(context.Background(), "Successfully connected to the database")
+		defer func() {
+			if err := dbConn.Close(); err != nil {
+				logger.Error(context.Background(), "Failed to close database connection", "error", err)
+			} else {
+				logger.Info(context.Background(), "Database connection closed")
+			}
+		}()
 	}
-	defer dbConn.Close()
+
+	// Initialize OpenTelemetry (moved from router to main)
+	ctx := context.Background()
+	otelShutdown, err := telemetry.SetupOTelSDK(ctx, telemetry.Config{
+		ServiceName:    "ptchampion-api",
+		Environment:    cfg.AppEnv,
+		ServiceVersion: cfg.AppVersion,
+		OTLPEndpoint:   cfg.OTLPEndpoint,
+		OTLPInsecure:   cfg.OTLPInsecure,
+	})
+	if err != nil {
+		logger.Warn(context.Background(), "Failed to initialize OpenTelemetry", "error", err)
+	} else {
+		logger.Info(context.Background(), "OpenTelemetry initialized successfully")
+		defer func() {
+			if err := otelShutdown(ctx); err != nil {
+				logger.Error(context.Background(), "Error shutting down OpenTelemetry provider", "error", err)
+			} else {
+				logger.Info(context.Background(), "OpenTelemetry provider shut down successfully")
+			}
+		}()
+	}
 
 	// Initialize Redis connection
 	redisOptions := redis.DefaultOptions()
 	redisOptions.URL = cfg.RedisURL
 	redisClient, err := redis.CreateClient(redisOptions)
 	if err != nil {
-		logger.Fatal(ctxBg, "Failed to connect to Redis", err)
+		logger.Fatal(ctx, "Failed to connect to Redis", err)
 	}
 	defer redisClient.Close()
 
@@ -58,6 +90,7 @@ func main() {
 
 	// Initialize database store with timeout
 	store := db.NewStore(dbConn, cfg.DBTimeout)
+	store.SetLogger(logger)
 
 	// Initialize token service with Redis store
 	tokenService := auth.NewTokenService(cfg.JWTSecret, cfg.RefreshTokenSecret, refreshStore)
@@ -65,8 +98,9 @@ func main() {
 	// Create Echo instance
 	e := echo.New()
 
-	// --- Custom HTTP Error Handler ---
-	e.HTTPErrorHandler = customHTTPErrorHandler(logger) // Set the custom error handler
+	// Setup Validator
+	e.Validator = api.NewCustomValidatorInstance()
+	logger.Info(context.Background(), "Request validator registered with Echo instance")
 
 	// Add middleware (Ensure RequestID runs *before* context logger middleware)
 	e.Use(middleware.Recover())   // Echo's recover middleware
@@ -91,13 +125,19 @@ func main() {
 	// Create handler for routes
 	coreHandler := handlers.NewHandler(cfg, store.Queries, logger)
 
+	// Initialize ApiHandler (using the definition from internal/api)
+	apiHandler := api.NewApiHandler(cfg, store, logger)
+
 	// Register routes
 	routes.RegisterRoutes(e, cfg, store, tokenService, logger, coreHandler)
+	api.RegisterHandlers(e, apiHandler)
 
 	// Start server in a goroutine
 	go func() {
-		if err := e.Start(":" + cfg.Port); err != nil && err != http.ErrServerClosed {
-			logger.Fatal(ctxBg, "Failed to start server", err)
+		addr := fmt.Sprintf(":%s", cfg.Port)
+		logger.Info(context.Background(), "Starting server", "address", addr)
+		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("shutting down the server")
 		}
 	}()
 
@@ -111,9 +151,9 @@ func main() {
 	defer cancel()
 	if err := e.Shutdown(ctxShutdown); err != nil {
 		// Use the shutdown context? Or background? Background safer if shutdown context times out.
-		logger.Fatal(ctxBg, "Failed to shutdown server gracefully", err)
+		logger.Fatal(ctx, "Failed to shutdown server gracefully", err)
 	} else {
-		logger.Info(ctxBg, "Server shutdown gracefully")
+		logger.Info(ctx, "Server shutdown gracefully")
 	}
 }
 
