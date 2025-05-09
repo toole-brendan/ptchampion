@@ -1,5 +1,6 @@
 import SwiftUI
 import PTDesignSystem
+
 enum Trend {
     case up(percentage: Int)
     case down(percentage: Int)
@@ -9,65 +10,35 @@ enum Trend {
 struct StatCard: View {
     let title: String
     let value: String
-    let icon: String
-    let trend: Trend
+    let unit: String
     let color: Color
-    let isHighlighted: Bool
-    
+    let iconName: String? // Optional icon for the stat card
+
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.itemSpacing) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(color)
-                
-                Text(title)
-                    .font(AppTheme.GeneratedTypography.caption())
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                PTLabel(title, style: .subheading)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                Spacer()
+                if let iconName = iconName {
+                    Image(systemName: iconName)
+                        .foregroundColor(color)
+                }
             }
-            
             Text(value)
-                .font(AppTheme.GeneratedTypography.title())
-                .foregroundColor(color)
-            
-            // Trend indicator if available
-            if case .up(let percentage) = trend {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.up")
-                        .font(.system(size: 12))
-                        .foregroundColor(AppTheme.GeneratedColors.success)
-                    
-                    Text("+\(percentage)%")
-                        .font(AppTheme.GeneratedTypography.caption())
-                        .foregroundColor(AppTheme.GeneratedColors.success)
-                }
-            } else if case .down(let percentage) = trend {
-                HStack(spacing: 4) {
-                    Image(systemName: "arrow.down")
-                        .font(.system(size: 12))
-                        .foregroundColor(AppTheme.GeneratedColors.error)
-                    
-                    Text("-\(percentage)%")
-                        .font(AppTheme.GeneratedTypography.caption())
-                        .foregroundColor(AppTheme.GeneratedColors.error)
-                }
-            } else {
-                Text("No change")
-                    .font(AppTheme.GeneratedTypography.caption())
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                    .opacity(0.8)
-            }
+                .font(.system(.largeTitle, design: .rounded))
+                .fontWeight(.bold)
+                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+            PTLabel(unit, style: .caption)
+                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
-                .fill(isHighlighted ? color.opacity(0.1) : AppTheme.GeneratedColors.cardBackground)
-        )
-        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
+        .padding()
+        .frame(maxWidth: .infinity, minHeight: 100) // Ensure a minimum height
+        .background(AppTheme.GeneratedColors.background) // Changed from backgroundSecondary
+        .cornerRadius(12)
         .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
-                .stroke(isHighlighted ? color : Color.clear, lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(color.opacity(0.5), lineWidth: 1) // Subtle border
         )
     }
 }
@@ -152,76 +123,16 @@ struct LeaderboardRow: View {
     }
 }
 
-// MARK: - Preview
+#if DEBUG
 struct StatCard_Previews: PreviewProvider {
     static var previews: some View {
-        Group {
-            VStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
-                StatCard(
-                    title: "Best Session",
-                    value: "45",
-                    icon: "trophy.fill",
-                    trend: .none,
-                    color: AppTheme.GeneratedColors.brassGold,
-                    isHighlighted: false
-                )
-                
-                StatCard(
-                    title: "This Week",
-                    value: "120",
-                    icon: "calendar",
-                    trend: .up(percentage: 15),
-                    color: AppTheme.GeneratedColors.deepOps,
-                    isHighlighted: true
-                )
-                
-                StatCard(
-                    title: "Last Month",
-                    value: "430",
-                    icon: "chart.bar.fill",
-                    trend: .down(percentage: 5),
-                    color: AppTheme.GeneratedColors.tacticalGray,
-                    isHighlighted: false
-                )
-            }
-            .padding()
-            .background(AppTheme.GeneratedColors.background)
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Light Mode")
-            
-            VStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
-                StatCard(
-                    title: "Best Session",
-                    value: "45",
-                    icon: "trophy.fill",
-                    trend: .none,
-                    color: AppTheme.GeneratedColors.brassGold,
-                    isHighlighted: false
-                )
-                
-                StatCard(
-                    title: "This Week",
-                    value: "120",
-                    icon: "calendar",
-                    trend: .up(percentage: 15),
-                    color: AppTheme.GeneratedColors.deepOps,
-                    isHighlighted: true
-                )
-                
-                StatCard(
-                    title: "Last Month",
-                    value: "430",
-                    icon: "chart.bar.fill",
-                    trend: .down(percentage: 5),
-                    color: AppTheme.GeneratedColors.tacticalGray,
-                    isHighlighted: false
-                )
-            }
-            .padding()
-            .background(AppTheme.GeneratedColors.background)
-            .environment(\.colorScheme, .dark)
-            .previewLayout(.sizeThatFits)
-            .previewDisplayName("Dark Mode")
+        VStack {
+            StatCard(title: "Total Workouts", value: "125", unit: "Sessions", color: .blue, iconName: "figure.walk")
+            StatCard(title: "Avg. Score", value: "88.5", unit: "%", color: .green, iconName: "star.fill")
+            StatCard(title: "Time Trial", value: "03:45", unit: "min", color: .orange, iconName: "timer")
         }
+        .padding()
+        .background(AppTheme.GeneratedColors.background) // Changed from backgroundPrimary
     }
-} 
+}
+#endif 
