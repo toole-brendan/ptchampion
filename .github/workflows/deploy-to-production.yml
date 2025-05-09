@@ -222,7 +222,8 @@ jobs:
           echo "Testing API: $API_URL"
           
           for i in {1..12}; do
-            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL")
+            # Add Bearer token header to pass JWT authentication
+            RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "$API_URL")
             if [ "$RESPONSE" = "200" ]; then
               echo "API health check passed with 200 OK"
               break
