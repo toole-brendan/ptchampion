@@ -344,7 +344,7 @@
 		BF63E3B02DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
-				BF63E3BB2DB1C84E0037CD02,
+				BF63E3BB2DB1C84E0037CD02 /*  */,
 				BF63E3BA2DB1C84E0037CD02 /* Products */,
 				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
@@ -363,7 +363,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BF63E3BB2DB1C84E0037CD02 = {
+		BF63E3BB2DB1C84E0037CD02 /*  */ = {
 			isa = PBXGroup;
 			children = (
 				BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */,
@@ -767,7 +767,7 @@
 			mainGroup = BF63E3B02DB1C84E0037CD02;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */,
+				BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BF63E3BA2DB1C84E0037CD02 /* Products */;
@@ -1120,6 +1120,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = ptchampion.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = HZ82J6CGHV;
@@ -1128,6 +1129,8 @@
 				INFOPLIST_KEY_ApiBaseUrl = YOUR_API_BASE_URL_HERE;
 				INFOPLIST_KEY_CFBundleDisplayName = "PT Champion";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "PT Champion needs Bluetooth access to connect to fitness devices for heart rate, GPS, pace, and cadence monitoring.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "PT Champion needs Bluetooth access to connect to fitness devices for heart rate, GPS, pace, and cadence monitoring.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs camera access to analyze exercise form.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs location access to track workout routes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -1155,6 +1158,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = ptchampion.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = HZ82J6CGHV;
@@ -1163,6 +1167,8 @@
 				INFOPLIST_KEY_ApiBaseUrl = YOUR_API_BASE_URL_HERE;
 				INFOPLIST_KEY_CFBundleDisplayName = "PT Champion";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "PT Champion needs Bluetooth access to connect to fitness devices for heart rate, GPS, pace, and cadence monitoring.";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "PT Champion needs Bluetooth access to connect to fitness devices for heart rate, GPS, pace, and cadence monitoring.";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app needs camera access to analyze exercise form.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "This app needs location access to track workout routes.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -1302,7 +1308,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */ = {
+		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../PTDesignSystem;
 		};
@@ -1311,22 +1317,22 @@
 /* Begin XCSwiftPackageProductDependency section */
 		BF5D31802DC7F6C40042EE65 /* Components */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
 			productName = Components;
 		};
 		BF5D31822DC7F6C40042EE65 /* DesignTokens */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
 			productName = DesignTokens;
 		};
 		BF5D31842DC7F6C40042EE65 /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
 			productName = PTDesignSystem;
 		};
 		BF60DF352DC7C8D0003487DB /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
 			productName = PTDesignSystem;
 		};
 /* End XCSwiftPackageProductDependency section */
