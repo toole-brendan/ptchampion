@@ -127,10 +127,16 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
         
         if !missingJoints.isEmpty {
             updateState(to: .invalid, stable: false)
+            
+            #if DEBUG
             let missingJointNames = missingJoints.map { 
                 String(describing: $0).replacingOccurrences(of: "VNHumanBodyPoseObservation.JointName.", with: "") 
             }
             feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
+            #else
+            feedback = "Cannot detect full body - adjust position or camera angle"
+            #endif
+            
             _lastFormIssue = feedback
             return .invalidPose(reason: feedback)
         }

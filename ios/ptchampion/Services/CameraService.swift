@@ -70,8 +70,8 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
         
         session.sessionPreset = .hd1280x720 // Choose appropriate preset
 
-        // Input Device (Default to Front Camera)
-        guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front), // Use .front for exercise tracking
+        // Input Device (Default to Rear Camera)
+        guard let videoDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back), // Use .back for exercise tracking
               let input = try? AVCaptureDeviceInput(device: videoDevice) else {
             errorSubject.send(CameraError.setupFailed("Could not create video device input."))
             session.commitConfiguration()
@@ -227,6 +227,40 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
                     connection.isVideoMirrored = true
                  }
              }
+        }
+    }
+
+    // MARK: - Camera Control
+    
+    func switchCamera() {
+        sessionQueue.async { [weak self] in
+            guard let self = self, let currentInput = self.videoDeviceInput else { return }
+            
+            let currentPosition = currentInput.device.position
+            let targetPosition: AVCaptureDevice.Position = (currentPosition == .back) ? .front : .back
+            
+            self.session.beginConfiguration()
+            self.session.removeInput(currentInput)
+            
+            if let newDevice = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: targetPosition),
+               let newInput = try? AVCaptureDeviceInput(device: newDevice),
+               self.session.canAddInput(newInput) {
+                self.session.addInput(newInput)
+                self.videoDeviceInput = newInput
+                
+                // Update camera orientation and mirroring
+                DispatchQueue.main.async {
+                    self.updateOutputOrientation()
+                }
+            } else {
+                // If failed, re-add old input to avoid broken session
+                if self.session.canAddInput(currentInput) {
+                    self.session.addInput(currentInput)
+                }
+            }
+            
+            self.session.commitConfiguration()
+            print("CameraService: Switched to \(targetPosition == .back ? "back" : "front") camera")
         }
     }
 

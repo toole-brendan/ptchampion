@@ -24,6 +24,9 @@ protocol CameraServiceProtocol {
 
     // Stops the camera capture session
     func stopSession()
+    
+    // Switches between front and back cameras
+    func switchCamera()
 
     // Provides the preview layer for displaying the camera feed
     // Note: Managing the layer itself might be better handled by the View
