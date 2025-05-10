@@ -38,6 +38,7 @@ struct DashboardView: View {
     @State private var statCardsVisible = [false, false, false, false] // ADDED for animation
     @State private var quickLinksVisible = false // ADDED for animation
     @State private var recentActivityVisible = false // ADDED for animation
+    @State private var showingStyleShowcase = false // Added for style showcase
     
     // For haptics on Start Workout button
     private let hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
@@ -83,13 +84,35 @@ struct DashboardView: View {
                         // NEW: Activity Feed Section
                         activityFeedSectionView() // Call the new helper method
                         
+                        // NEW: Design Showcase Button (only in DEBUG builds)
+                        #if DEBUG
+                        Button {
+                            showingStyleShowcase = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "paintbrush.fill")
+                                Text("MILITARY UI SHOWCASE")
+                                    .militaryMonospaced(size: 14)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(AppTheme.GeneratedColors.brassGold.opacity(0.15))
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
+                                    .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
+                            )
+                            .cornerRadius(AppTheme.GeneratedRadius.button)
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, AppTheme.GeneratedSpacing.large)
+                        #endif
+                        
                         Spacer()
                     }
                     .padding(Self.globalPadding)
                 }
             }
-            .navigationTitle("Dashboard")
-            .navigationBarTitleDisplayMode(.inline)
             .accessibilityLabel("You have \(viewModel.totalWorkouts) workouts logged")
             .onAppear {
                 viewModel.setModelContext(modelContext)
@@ -98,6 +121,9 @@ struct DashboardView: View {
             .refreshable {
                 viewModel.refresh()
                 // Optionally reset animation states on refresh if desired
+            }
+            .sheet(isPresented: $showingStyleShowcase) {
+                MilitaryStyleShowcase()
             }
         }
     }
@@ -162,21 +188,27 @@ struct DashboardView: View {
     // New helper method for the Quick Links section
     @ViewBuilder
     private func quickLinksSectionView() -> some View {
-        PTLabel("Quick Links", style: .subheading)
-            .padding(.top, AppTheme.GeneratedSpacing.large)
-        PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
+        VStack(alignment: .leading, spacing: 0) {
+            Text("QUICK LINKS")
+                .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .padding(.top, AppTheme.GeneratedSpacing.large)
+                .padding(.bottom, AppTheme.GeneratedSpacing.small)
+            
+            PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
 
-        LazyVGrid(columns: [
-            GridItem(.flexible(), spacing: Self.cardGap),
-            GridItem(.flexible(), spacing: Self.cardGap)
-        ], spacing: Self.cardGap) {
-            ForEach(quickLinks.indices, id: \.self) { index in
-                let link = quickLinks[index]
-                QuickLinkCard(title: link.title, icon: link.icon, destination: link.destination, isSystemIcon: link.isSystemIcon)
+            LazyVGrid(columns: [
+                GridItem(.flexible(), spacing: Self.cardGap),
+                GridItem(.flexible(), spacing: Self.cardGap)
+            ], spacing: Self.cardGap) {
+                ForEach(quickLinks.indices, id: \.self) { index in
+                    let link = quickLinks[index]
+                    QuickLinkCard(title: link.title, icon: link.icon, destination: link.destination, isSystemIcon: link.isSystemIcon)
+                }
             }
+            .opacity(quickLinksVisible ? 1 : 0)
+            .offset(y: quickLinksVisible ? 0 : 15)
         }
-        .opacity(quickLinksVisible ? 1 : 0)
-        .offset(y: quickLinksVisible ? 0 : 15)
     }
     
     // New helper method for the Activity Feed section
@@ -184,8 +216,12 @@ struct DashboardView: View {
     private func activityFeedSectionView() -> some View {
         if !sampleActivities.isEmpty { // Show only if there are activities
             Group {
-                PTLabel("Activity Feed", style: .subheading)
+                Text("ACTIVITY FEED")
+                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     .padding(.top, AppTheme.GeneratedSpacing.large)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                
                 PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
 
                 TimelineView(.periodic(from: Date(), by: 60.0)) { context in
@@ -299,7 +335,8 @@ struct QuickLinkCard: View {
                             .padding(.top, 2)
                     }
                     
-                    PTLabel(title, style: .body)
+                    Text(title)
+                        .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
                         .fontWeight(.semibold)
                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                         .padding(.leading, AppTheme.GeneratedSpacing.extraSmall)

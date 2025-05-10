@@ -33,6 +33,7 @@ public enum CardStyle {
     case elevated    // More prominent shadow
     case flat        // No shadow, just border
     case highlight   // Gold accent border
+    case military    // Military style with corner cuts
 }
 
 // Extension to apply shadow
@@ -53,6 +54,15 @@ public extension View {
             .background(AppTheme.GeneratedColors.cardBackground)
             .cornerRadius(AppTheme.GeneratedRadius.card)
             .modifier(CardStyleModifier(style: style))
+    }
+    
+    /// Applies military-style card with stencil-like corner cutouts
+    func militaryCardStyle() -> some View {
+        self
+            .padding(AppTheme.GeneratedSpacing.contentPadding)
+            .background(
+                MilitaryCardBackground()
+            )
     }
     
     /// Applies a shadow based on the design system tokens
@@ -113,6 +123,85 @@ public extension View {
     }
 }
 
+// Military style card background with corner cutouts
+public struct MilitaryCardBackground: View {
+    public init() {}
+    
+    public var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width
+            let height = geometry.size.height
+            let cornerCutSize: CGFloat = 15
+            
+            ZStack {
+                // Main background
+                AppTheme.GeneratedColors.cardBackground
+                
+                // Corner cutouts - military/stencil style
+                Path { path in
+                    // Top-left corner
+                    path.move(to: CGPoint(x: 0, y: cornerCutSize))
+                    path.addLine(to: CGPoint(x: 0, y: 0))
+                    path.addLine(to: CGPoint(x: cornerCutSize, y: 0))
+                    path.closeSubpath()
+                    
+                    // Top-right corner
+                    path.move(to: CGPoint(x: width - cornerCutSize, y: 0))
+                    path.addLine(to: CGPoint(x: width, y: 0))
+                    path.addLine(to: CGPoint(x: width, y: cornerCutSize))
+                    path.closeSubpath()
+                    
+                    // Bottom-right corner
+                    path.move(to: CGPoint(x: width, y: height - cornerCutSize))
+                    path.addLine(to: CGPoint(x: width, y: height))
+                    path.addLine(to: CGPoint(x: width - cornerCutSize, y: height))
+                    path.closeSubpath()
+                    
+                    // Bottom-left corner
+                    path.move(to: CGPoint(x: cornerCutSize, y: height))
+                    path.addLine(to: CGPoint(x: 0, y: height))
+                    path.addLine(to: CGPoint(x: 0, y: height - cornerCutSize))
+                    path.closeSubpath()
+                }
+                .fill(AppTheme.GeneratedColors.background)
+                
+                // Border outline
+                Path { path in
+                    // Top edge with gap
+                    path.move(to: CGPoint(x: cornerCutSize, y: 0))
+                    path.addLine(to: CGPoint(x: width - cornerCutSize, y: 0))
+                    
+                    // Right edge with gap
+                    path.move(to: CGPoint(x: width, y: cornerCutSize))
+                    path.addLine(to: CGPoint(x: width, y: height - cornerCutSize))
+                    
+                    // Bottom edge with gap
+                    path.move(to: CGPoint(x: width - cornerCutSize, y: height))
+                    path.addLine(to: CGPoint(x: cornerCutSize, y: height))
+                    
+                    // Left edge with gap
+                    path.move(to: CGPoint(x: 0, y: height - cornerCutSize))
+                    path.addLine(to: CGPoint(x: 0, y: cornerCutSize))
+                    
+                    // Diagonal corner connectors
+                    path.move(to: CGPoint(x: 0, y: cornerCutSize))
+                    path.addLine(to: CGPoint(x: cornerCutSize, y: 0))
+                    
+                    path.move(to: CGPoint(x: width - cornerCutSize, y: 0))
+                    path.addLine(to: CGPoint(x: width, y: cornerCutSize))
+                    
+                    path.move(to: CGPoint(x: width, y: height - cornerCutSize))
+                    path.addLine(to: CGPoint(x: width - cornerCutSize, y: height))
+                    
+                    path.move(to: CGPoint(x: cornerCutSize, y: height))
+                    path.addLine(to: CGPoint(x: 0, y: height - cornerCutSize))
+                }
+                .stroke(AppTheme.GeneratedColors.tacticalGray.opacity(0.5), lineWidth: 1)
+            }
+        }
+    }
+}
+
 // Custom ViewModifier to handle different card styles
 struct CardStyleModifier: ViewModifier {
     let style: CardStyle
@@ -139,6 +228,9 @@ struct CardStyleModifier: ViewModifier {
                         RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
                             .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1.5)
                     )
+            case .military:
+                content
+                    .withShadow(AppTheme.GeneratedShadows.small)
             }
         }
     }
