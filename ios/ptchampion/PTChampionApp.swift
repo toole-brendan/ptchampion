@@ -452,22 +452,9 @@ struct MainTabView: View {
                 .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
                 .tag(Tab.history)
 
-            // Add safety check for LeaderboardView
-            Group {
-                // Ensure the leaderboardVM is properly initialized to avoid crashes
-                if leaderboardVM.selectedExercise != nil {
-                    LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
-                } else {
-                    // Fallback to an empty view if the viewModel is not properly initialized
-                    // This should prevent crashes if leaderboardVM is in an invalid state
-                    Text("Loading leaderboard...")
-                        .onAppear {
-                            print("Warning: LeaderboardViewModel not properly initialized")
-                        }
-                }
-            }
-            .tabItem { Label("Leaders", systemImage: "rosette") }
-            .tag(Tab.leaderboards)
+            LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
+                .tabItem { Label("Leaders", systemImage: "rosette") }
+                .tag(Tab.leaderboards)
 
             ProfileView() 
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }

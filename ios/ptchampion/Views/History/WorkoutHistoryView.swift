@@ -126,29 +126,37 @@ struct WorkoutHistoryView: View {
                 AppTheme.GeneratedColors.background.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 0) {
-                        // Header using the exact same style as LeaderboardView
-                        headerView
+                    VStack(spacing: AppTheme.GeneratedSpacing.section) {
+                        // Custom header to match Leaderboard style exactly
+                        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                            Text("WORKOUT HISTORY")
+                                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
+                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            
+                            // Add subtitle caption similar to the Leaderboard
+                            Text("Track your exercise progress")
+                                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                .italic()
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                        .padding(.top, 12) // Reduced padding to match Leaderboard
                         
                         // Custom exercise filter pills
                         exerciseFilterSection
-                            .padding(.top, 12)
                         
                         // Streak cards section
                         streakCardsSection
-                            .padding(.top, AppTheme.GeneratedSpacing.medium)
                         
                         // Progress chart section
                         progressChartSection
-                            .padding(.top, AppTheme.GeneratedSpacing.medium)
                         
                         // Workout history list
                         workoutHistorySection
-                            .padding(.top, AppTheme.GeneratedSpacing.medium)
-                            .padding(.bottom, AppTheme.GeneratedSpacing.section)
                     }
+                    .padding(.bottom, AppTheme.GeneratedSpacing.section)
                 }
-                .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -181,25 +189,6 @@ struct WorkoutHistoryView: View {
                 updateStreaks()
             }
         }
-    }
-    
-    // Header view matching the LeaderboardView style
-    private var headerView: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            Text("WORKOUT HISTORY")
-                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .kerning(2)  // Add letter spacing to match the screenshot
-            
-            // Optional: add subtitle text if needed
-            Text("Exercise Records & Stats")
-                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .italic()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16) // Match the exact padding from the screenshot
-        .padding(.top, 20)        // Match the exact top padding from the screenshot
     }
     
     // MARK: - UI Components
