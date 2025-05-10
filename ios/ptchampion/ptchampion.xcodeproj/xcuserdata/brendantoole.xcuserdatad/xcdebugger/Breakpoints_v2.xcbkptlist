@@ -16,8 +16,38 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "333"
             endingLineNumber = "333"
-            landmarkName = "radiusSelectorLabel"
+            landmarkName = "radiusSelector"
             landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "FCF11FEC-046C-4C6F-9B49-260A774C8D65 - c97faaf8509a1d25"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 () -&gt; SwiftUI.TupleView&lt;(&lt;&lt;opaque return type of SwiftUI.View.foregroundColor(Swift.Optional&lt;SwiftUI.Color&gt;) -&gt; some&gt;&gt;.0, SwiftUI.Text, &lt;&lt;opaque return type of SwiftUI.View.font(Swift.Optional&lt;SwiftUI.Font&gt;) -&gt; some&gt;&gt;.0)&gt; in PTChampion.LeaderboardView.radiusSelectorLabel.getter : some"
+                  moduleName = "ptchampion.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Leaderboards/LeaderboardView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "333"
+                  endingLineNumber = "333">
+               </Location>
+               <Location
+                  uuid = "FCF11FEC-046C-4C6F-9B49-260A774C8D65 - a54dbb5a72f6bd86"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #2 () -&gt; &lt;&lt;opaque return type of PTChampion.LeaderboardView.radiusSelectorLabel : some&gt;&gt;.0 in PTChampion.LeaderboardView.radiusSelector.getter : some"
+                  moduleName = "ptchampion.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Leaderboards/LeaderboardView.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "333"
+                  endingLineNumber = "333">
+               </Location>
+            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
