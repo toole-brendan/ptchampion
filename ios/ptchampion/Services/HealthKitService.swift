@@ -102,6 +102,12 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
             throw HealthKitError.healthDataNotAvailable
         }
         
+        // Detect if running in simulator
+        #if targetEnvironment(simulator)
+        print("HealthKitService: Running in simulator - using mock HealthKit authorization")
+        authorizationStatusSubject.send(true) // Simulate authorization in simulator
+        return true
+        #else
         // Define the data types we want to read
         let typesToRead: Set<HKObjectType> = [
             HKObjectType.quantityType(forIdentifier: .heartRate)!,
@@ -134,6 +140,7 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
             print("HealthKitService: Error requesting authorization: \(error.localizedDescription)")
             throw error
         }
+        #endif
     }
     
     private func checkAuthorizationStatus() async throws -> Bool {
