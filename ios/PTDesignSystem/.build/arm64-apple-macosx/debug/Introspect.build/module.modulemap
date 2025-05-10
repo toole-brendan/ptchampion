@@ -1,4 +1,0 @@
-module Introspect {
-    header "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/Introspect.build/Introspect-Swift.h"
-    requires objc
-}

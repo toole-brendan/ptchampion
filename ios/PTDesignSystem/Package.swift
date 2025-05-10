@@ -32,9 +32,9 @@ let package = Package(
         )
     ],
     dependencies: [
-        // 1.1.0 is the first tag that shipped the new module name.
-        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git",
-                 from: "1.1.0")
+        // Updated to use the exact version 1.3.0 that we confirmed is available
+        .package(url: "https://github.com/siteline/SwiftUI-Introspect.git", 
+                exact: "1.3.0")
     ],
     targets: [
         .target(
