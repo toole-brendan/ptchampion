@@ -11,7 +11,7 @@ struct ProfilePreferencesView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
             Text("Preferences")
-                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.large, weight: .semibold))
+                .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
