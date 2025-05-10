@@ -335,7 +335,7 @@ class AuthViewModel: ObservableObject {
 
     // MARK: - Profile Management
 
-    func updateUserProfile(firstName: String, lastName: String, email: String, profileImage: UIImage? = nil) {
+    func updateUserProfile(firstName: String, lastName: String, email: String) {
         // In a real app, you would make an API call to update the user's profile here
         // For demonstration purposes, we'll just update the local state
         
@@ -359,11 +359,6 @@ class AuthViewModel: ObservableObject {
             // with other parts of the app that might be using it
             objectWillChange.send()
         }
-        
-        // In a real app, you'd upload the profile image if it was changed
-        // if let profileImage = profileImage {
-        //     uploadProfileImage(profileImage)
-        // }
         
         successMessage = "Profile updated successfully"
     }

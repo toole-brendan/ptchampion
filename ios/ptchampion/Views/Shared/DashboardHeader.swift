@@ -5,7 +5,7 @@ struct DashboardHeader: View {
     // Props
     let title: String
     let subtitle: String?
-    let userImageURL: URL?
+    var user: User?
     var onProfileTap: (() -> Void)?
     var rightAccessory: AnyView?
     
@@ -13,27 +13,47 @@ struct DashboardHeader: View {
     @State private var isLoaded = false
     @Environment(\.accessibilityReduceMotion) var reduceMotion
     
+    // Computed property to get user initials
+    private var userInitials: String {
+        guard let user = user else { return "U" }
+        
+        let firstInitial = user.firstName?.prefix(1).uppercased() ?? ""
+        let lastInitial = user.lastName?.prefix(1).uppercased() ?? ""
+        
+        if !lastInitial.isEmpty {
+            return "\(firstInitial)\(lastInitial)"
+        } else if !firstInitial.isEmpty {
+            // If only first name is available, use first two letters
+            let firstName = user.firstName ?? ""
+            if firstName.count > 1 {
+                let secondLetter = String(firstName.dropFirst().prefix(1).uppercased())
+                return "\(firstInitial)\(secondLetter)"
+            }
+            return firstInitial
+        }
+        return "U" // Default if no name available
+    }
+    
     init(
         title: String,
         subtitle: String? = nil,
-        userImageURL: URL? = nil,
+        user: User? = nil,
         onProfileTap: (() -> Void)? = nil,
         rightAccessory: AnyView? = nil
     ) {
         self.title = title
         self.subtitle = subtitle
-        self.userImageURL = userImageURL
+        self.user = user
         self.onProfileTap = onProfileTap
         self.rightAccessory = rightAccessory
     }
     
     // Convenience initializer for User objects
     init(title: String, subtitle: String? = nil, user: User?, onProfileTap: (() -> Void)? = nil) {
-        // Profile picture URL feature was intentionally removed, using placeholder avatar instead
         self.init(
             title: title,
             subtitle: subtitle,
-            userImageURL: nil,
+            user: user,
             onProfileTap: onProfileTap
         )
     }
@@ -41,14 +61,14 @@ struct DashboardHeader: View {
     init<RightContent: View>(
         title: String,
         subtitle: String? = nil,
-        userImageURL: URL? = nil,
+        user: User? = nil,
         onProfileTap: (() -> Void)? = nil,
         @ViewBuilder rightAccessory: () -> RightContent
     ) {
         self.init(
             title: title,
             subtitle: subtitle,
-            userImageURL: userImageURL,
+            user: user,
             onProfileTap: onProfileTap,
             rightAccessory: AnyView(rightAccessory())
         )
@@ -98,46 +118,31 @@ struct DashboardHeader: View {
                                 .scaleEffect(isLoaded || reduceMotion ? 1 : 0.9)
                                 .opacity(isLoaded ? 1 : 0)
                         } else if onProfileTap != nil {
-                            // User avatar with animation
+                            // User initials avatar with animation
                             Button(action: { onProfileTap?() }) {
-                                if let imageURL = userImageURL {
-                                    AsyncImage(url: imageURL) { phase in
-                                        switch phase {
-                                        case .success(let image):
-                                            image
-                                                .resizable()
-                                                .scaledToFill()
-                                        case .failure(_), .empty:
-                                            Image(systemName: "person.circle.fill")
-                                                .resizable()
-                                        @unknown default:
-                                            Image(systemName: "person.circle.fill")
-                                                .resizable()
-                                        }
-                                    }
-                                    .frame(width: 40, height: 40)
-                                    .clipShape(Circle())
-                                    .overlay(
-                                        Circle()
-                                            .stroke(
-                                                LinearGradient(
-                                                    gradient: Gradient(colors: [
-                                                        AppTheme.GeneratedColors.brassGold,
-                                                        AppTheme.GeneratedColors.brassGold.opacity(0.7)
-                                                    ]),
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                ),
-                                                lineWidth: 2
-                                            )
-                                    )
-                                } else {
-                                    Image(systemName: "person.circle.fill")
-                                        .resizable()
+                                ZStack {
+                                    Circle()
+                                        .fill(AppTheme.GeneratedColors.brassGold.opacity(0.2))
                                         .frame(width: 40, height: 40)
+                                    
+                                    Text(userInitials)
+                                        .font(.system(size: 16, weight: .bold))
                                         .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                                        .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
                                 }
+                                .overlay(
+                                    Circle()
+                                        .stroke(
+                                            LinearGradient(
+                                                gradient: Gradient(colors: [
+                                                    AppTheme.GeneratedColors.brassGold,
+                                                    AppTheme.GeneratedColors.brassGold.opacity(0.7)
+                                                ]),
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                )
                             }
                             .buttonStyle(ProfileButtonStyle())
                             .scaleEffect(isLoaded || reduceMotion ? 1 : 0.8)
@@ -187,11 +192,11 @@ struct ProfileButtonStyle: ButtonStyle {
 
 // Common configuration variant
 extension DashboardHeader {
-    static func greeting(userName: String, userImageURL: URL? = nil, onProfileTap: (() -> Void)? = nil) -> DashboardHeader {
+    static func greeting(userName: String, user: User? = nil, onProfileTap: (() -> Void)? = nil) -> DashboardHeader {
         DashboardHeader(
             title: "Welcome Back",
             subtitle: userName,
-            userImageURL: userImageURL,
+            user: user,
             onProfileTap: onProfileTap
         )
     }
@@ -208,7 +213,7 @@ extension DashboardHeader {
 struct DashboardHeader_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 20) {
-            DashboardHeader.greeting(userName: "John Doe")
+            DashboardHeader.greeting(userName: "John Doe", user: User(id: "123", email: "john@example.com", firstName: "John", lastName: "Doe", profilePictureUrl: nil))
                 .previewDisplayName("Greeting Header")
             
             DashboardHeader.section(title: "Your Workouts", subtitle: "Recent history")
