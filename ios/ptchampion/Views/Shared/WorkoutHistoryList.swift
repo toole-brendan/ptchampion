@@ -28,7 +28,7 @@ struct WorkoutHistoryList: View {
     
     var body: some View {
         List {
-            if viewModel.workouts.isEmpty {
+            if viewModel.workoutsFiltered.isEmpty {
                 ContentUnavailableView(
                     emptyStateMessage,
                     systemImage: "figure.run.circle",
@@ -36,14 +36,73 @@ struct WorkoutHistoryList: View {
                 )
                 .listRowBackground(Color.clear)
             } else {
-                ForEach(viewModel.workouts) { workout in
-                    WorkoutHistoryRowAdapter(workout: workout)
-                        .contentShape(Rectangle()) // Make the entire row tappable
-                        .onTapGesture {
-                            onSelect?(workout)
+                ForEach(Array(viewModel.workoutsFiltered.enumerated()), id: \.element.id) { index, workout in
+                    PTCard(style: isEditable ? .highlight : .standard) {
+                        HStack {
+                            WorkoutHistoryRowAdapter(workout: workout)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    if !isEditable {
+                                        onSelect?(workout)
+                                    }
+                                }
+                            
+                            if isEditable {
+                                Spacer()
+                                
+                                HStack(spacing: AppTheme.GeneratedSpacing.small) {
+                                    Button {
+                                        // TODO: Add share functionality if needed
+                                    } label: {
+                                        Image(systemName: "square.and.arrow.up")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                            .frame(width: 40, height: 40)
+                                            .background(
+                                                Circle()
+                                                    .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                                            )
+                                    }
+                                    
+                                    Button {
+                                        Task {
+                                            await viewModel.deleteWorkout(id: workout.id)
+                                        }
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(AppTheme.GeneratedColors.error)
+                                            .frame(width: 40, height: 40)
+                                            .background(
+                                                Circle()
+                                                    .fill(AppTheme.GeneratedColors.error.opacity(0.1))
+                                            )
+                                    }
+                                }
+                            }
                         }
+                        .padding(AppTheme.GeneratedSpacing.small)
+                    }
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        if !isEditable {
+                            Button(role: .destructive) {
+                                Task {
+                                    await viewModel.deleteWorkout(id: workout.id)
+                                }
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                            
+                            Button {
+                                // TODO: Add share functionality if needed
+                            } label: {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                            }
+                            .tint(AppTheme.GeneratedColors.brassGold)
+                        }
+                    }
                 }
-                .onDelete(perform: handleDelete)
             }
         }
         .listStyle(.plain)
@@ -58,9 +117,6 @@ struct WorkoutHistoryList: View {
                     .tint(AppTheme.GeneratedColors.brassGold)
             }
         }
-        .task {
-            await viewModel.fetchWorkouts()
-        }
     }
     
     private func handleDelete(at offsets: IndexSet) {
@@ -70,8 +126,8 @@ struct WorkoutHistoryList: View {
             // Default implementation if no external handler provided
             Task {
                 for index in offsets {
-                    if index < viewModel.workouts.count {
-                        let workout = viewModel.workouts[index]
+                    if index < viewModel.workoutsFiltered.count {
+                        let workout = viewModel.workoutsFiltered[index]
                         await viewModel.deleteWorkout(id: workout.id)
                     }
                 }
@@ -97,6 +153,7 @@ struct WorkoutHistoryRowAdapter: View {
             endTime: workout.date.addingTimeInterval(workout.duration),
             durationSeconds: Int(workout.duration),
             repCount: workout.reps,
+            score: workout.score,
             distanceMeters: workout.distance
         )
         return workoutResult
