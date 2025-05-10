@@ -384,7 +384,7 @@ class AuthViewModel: ObservableObject {
     
     var displayName: String {
         if case .authenticated(let user) = authState {
-            return user.username ?? user.firstName ?? "User"
+            return user.firstName ?? user.username ?? "User"
         }
         return "User"
     }
