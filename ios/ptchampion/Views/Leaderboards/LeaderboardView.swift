@@ -118,26 +118,52 @@ struct LeaderboardView: View {
     }
     
     var body: some View {
+        bodyContent
+            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+            .navigationTitle("Leaderboard")
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                // No need to check if selectedRadius is nil since it's not optional
+                Task {
+                    await viewModel.fetch()
+                }
+            }
+            .onChange(of: viewModel.selectedBoard) { newBoard in 
+                // No need to check if selectedRadius is nil since it's not optional
+                
+                // Animate content change with opacity
+                performContentTransition {
+                    Task { await viewModel.fetch() }
+                }
+            }
+            .onChange(of: viewModel.selectedCategory) { _ in 
+                performContentTransition {
+                    Task { await viewModel.fetch() }
+                }
+            }
+            .onChange(of: viewModel.selectedExercise) { _ in 
+                performContentTransition {
+                    Task { await viewModel.fetch() }
+                }
+            }
+            .onChange(of: viewModel.selectedRadius) { _ in 
+                performContentTransition {
+                    Task { await viewModel.fetch() }
+                }
+            }
+            .navigationDestination(item: $navigatingToUserID) { userID in
+                UserProfileView(userID: userID)
+            }
+    }
+    
+    // Break down the body into a separate computed property
+    private var bodyContent: some View {
         VStack(spacing: 0) {
             // Header with context information
             headerView
             
-            // Global vs Local toggle
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                // Use extracted segmented control
-                segmentedControl
-
-                // Filters section
-                filtersSection
-                
-                // Conditional Radius selector for Local leaderboards
-                if viewModel.selectedBoard == .local {
-                    radiusSelector
-                    // Remove animation
-                }
-            }
-            .padding(.vertical, AppTheme.GeneratedSpacing.medium)
-            // Remove animation
+            // All the filter controls in a separate view
+            filterControlsSection
             
             // Divider
             Rectangle()
@@ -146,54 +172,43 @@ struct LeaderboardView: View {
                 .padding(.horizontal)
             
             // Content area with simple opacity animation
-            ZStack {
-                if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
-                    loadingPlaceholders
-                } else if let errorMessage = viewModel.errorMessage {
-                    errorView(message: errorMessage)
-                } else if viewModel.leaderboardEntries.isEmpty && viewModel.backendStatus == .noActiveUsers {
-                    emptyLeaderboardView
-                } else if viewModel.leaderboardEntries.isEmpty {
-                    noResultsView
-                } else {
-                    leaderboardListView
-                }
-            }
-            .opacity(contentOpacity)
-            // No more transitions, just use opacity
+            mainContentArea
         }
-        .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-        .navigationTitle("Leaderboard")
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            Task {
-                await viewModel.fetch()
+    }
+    
+    // Break down the filter controls into a separate view
+    private var filterControlsSection: some View {
+        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            // Use extracted segmented control
+            segmentedControl
+
+            // Filters section
+            filtersSection
+            
+            // Conditional Radius selector for Local leaderboards
+            if viewModel.selectedBoard == .local {
+                radiusSelector
             }
         }
-        .onChange(of: viewModel.selectedBoard) { _ in 
-            // Animate content change with opacity
-            performContentTransition {
-                Task { await viewModel.fetch() }
+        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+    }
+    
+    // Break down the main content area into a separate view
+    private var mainContentArea: some View {
+        ZStack {
+            if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
+                loadingPlaceholders
+            } else if let errorMessage = viewModel.errorMessage {
+                errorView(message: errorMessage)
+            } else if viewModel.leaderboardEntries.isEmpty && viewModel.backendStatus == .noActiveUsers {
+                emptyLeaderboardView
+            } else if viewModel.leaderboardEntries.isEmpty {
+                noResultsView
+            } else {
+                leaderboardListView
             }
         }
-        .onChange(of: viewModel.selectedCategory) { _ in 
-            performContentTransition {
-                Task { await viewModel.fetch() }
-            }
-        }
-        .onChange(of: viewModel.selectedExercise) { _ in 
-            performContentTransition {
-                Task { await viewModel.fetch() }
-            }
-        }
-        .onChange(of: viewModel.selectedRadius) { _ in 
-            performContentTransition {
-                Task { await viewModel.fetch() }
-            }
-        }
-        .navigationDestination(item: $navigatingToUserID) { userID in
-            UserProfileView(userID: userID)
-        }
+        .opacity(contentOpacity)
     }
     
     // Helper function to perform fade transition without using .transition
@@ -326,6 +341,7 @@ struct LeaderboardView: View {
         HStack {
             Image(systemName: "map")
                 .foregroundColor(AppTheme.GeneratedColors.primary)
+            // Use non-optional access since selectedRadius is not optional
             Text("Radius: \(viewModel.selectedRadius.displayName)")
                 .font(AppTheme.GeneratedTypography.body())
             Image(systemName: "chevron.down")
