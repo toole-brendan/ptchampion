@@ -23,14 +23,14 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
         }
     }
     
-    // New computed property for custom icon names
+    // Custom icon names for exercise types
     var customIconName: String? {
         switch self {
         case .pushup: return "pushup"
         case .situp: return "situp"
         case .pullup: return "pullup"
-        case .run: return "running" // Corresponds to your "running.imageset"
-        default: return nil // .all and any future types without custom icons
+        case .run: return "running"
+        default: return nil
         }
     }
     
@@ -46,35 +46,45 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
     }
 }
 
-// New dedicated view for displaying the empty state content
-private struct EmptyHistoryDisplayView: View {
+// Enhanced empty state view with military styling
+struct EmptyHistoryDisplayView: View {
     let currentFilter: WorkoutFilter
-    
-    // Duplicating the helper method here for now, or it could be made more globally accessible
-    @ViewBuilder
-    private func emptyStateLabelView(image: Image, title: String) -> some View {
-        VStack {
-            image
-                .resizable()
-                .scaledToFit()
-                .frame(width: 50, height: 50)
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-            PTLabel(title, style: .heading)
-        }
-    }
     
     var body: some View {
         let specificFilterText = currentFilter == .all ? "Workouts" : currentFilter.rawValue
         let titleString = "No \(specificFilterText) Yet"
         let imageForEmptyState: Image
+        
         if let customIcon = currentFilter.customIconName {
             imageForEmptyState = Image(customIcon)
         } else {
             imageForEmptyState = Image(systemName: currentFilter.systemImage)
         }
         
-        return emptyStateLabelView(image: imageForEmptyState, title: titleString)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        return PTCard(style: .elevated) {
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                imageForEmptyState
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 80, height: 80)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.6))
+                    .padding(.top, AppTheme.GeneratedSpacing.medium)
+                
+                VStack(spacing: AppTheme.GeneratedSpacing.small) {
+                    PTLabel(titleString, style: .heading)
+                        .multilineTextAlignment(.center)
+                    
+                    PTLabel("Complete a workout to see your progress here!", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
+        }
+        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
     }
 }
 
@@ -98,6 +108,7 @@ struct WorkoutHistoryView: View {
     @State private var currentYAxisLabel: String = "" // State for chart label
     @State private var currentWorkoutStreak: Int = 0 // State for current streak
     @State private var longestWorkoutStreak: Int = 0 // State for longest streak
+    @State private var isEditMode: EditMode = .inactive
 
     // Filter workout results based on selected filter
     private var workoutResults: [WorkoutResultSwiftData] {
@@ -108,306 +119,356 @@ struct WorkoutHistoryView: View {
         }
     }
     
-    // Computed property to transform workout results into chartable data points
-    /*
-    private var chartData: [ChartableDataPoint] {
-        workoutResults
-            .compactMap { result -> ChartableDataPoint? in
-                let date = result.startTime
-                var value: Double? = nil
-                
-                switch filter {
-                case .all:
-                    return nil
-                case .run:
-                    if let distance = result.distanceMeters, distance > 0 {
-                        value = distance / 1000
-                    }
-                case .pushup, .situp, .pullup:
-                    if let score = result.score, score > 0 {
-                        value = score
-                    } else if let reps = result.repCount, reps > 0 {
-                        value = Double(reps)
-                    }
-                }
-                
-                if let val = value {
-                    return ChartableDataPoint(date: date, value: val)
-                }
-                return nil
-            }
-            .sorted { $0.date < $1.date }
-    }
-    */
-    
-    /*
-    private var yAxisChartLabel: String {
-        switch filter {
-        case .all:
-            return "N/A"
-        case .run:
-            return "Distance (km)"
-        case .pushup, .situp, .pullup:
-            if chartData.first?.value != nil {
-                if chartData.contains(where: { $0.value > 50 }) {
-                    return "Score"
-                } else {
-                    return "Reps"
-                }
-            }
-            return "Value"
-        }
-    }
-    */
-
-    // Helper to get unique, sorted workout days for streak calculation
-    /*
-    private var uniqueSortedWorkoutDays: [Date] {
-        allWorkoutResults // Use all results for global streaks
-            .map { Calendar.current.startOfDay(for: $0.startTime) }
-            .sorted() // Sort ascending first
-            .reduce(into: [Date]()) { (uniqueDays, date) in // Then get unique
-                if uniqueDays.last != date {
-                    uniqueDays.append(date)
-                }
-            }
-    }
-    */
-
-    /*
-    var currentStreak: Int {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let uniqueDaysSet = Set(uniqueSortedWorkoutDays)
-
-        guard !uniqueDaysSet.isEmpty else { return 0 }
-
-        var streak = 0
-        var dateToFind = today
-
-        // Check if today was a workout day, then count backwards
-        if uniqueDaysSet.contains(dateToFind) {
-            streak += 1
-            dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
-            while uniqueDaysSet.contains(dateToFind) {
-                streak += 1
-                dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
-            }
-        } else {
-            // If today was not a workout day, check if yesterday was, then count backwards
-            dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)! // yesterday
-            if uniqueDaysSet.contains(dateToFind) {
-                 streak += 1
-                 dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)! // day before yesterday
-                 while uniqueDaysSet.contains(dateToFind) {
-                    streak += 1
-                    dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
-                }
-            } else {
-                // Neither today nor yesterday had workouts
-                return 0
-            }
-        }
-        return streak
-    }
-
-    var longestStreak: Int {
-        let days = uniqueSortedWorkoutDays
-        guard !days.isEmpty else { return 0 }
-
-        var currentMaxStreak = 0
-        var currentConsecutiveStreak = 0
-        var previousDay: Date? = nil
-        let calendar = Calendar.current
-
-        for day in days {
-            if let prev = previousDay {
-                if calendar.isDate(day, inSameDayAs: calendar.date(byAdding: .day, value: 1, to: prev)!) {
-                    currentConsecutiveStreak += 1
-                } else {
-                    currentMaxStreak = max(currentMaxStreak, currentConsecutiveStreak)
-                    currentConsecutiveStreak = 1 // Reset for the new day
-                }
-            } else {
-                currentConsecutiveStreak = 1 // Start of the first streak
-            }
-            previousDay = day
-        }
-        currentMaxStreak = max(currentMaxStreak, currentConsecutiveStreak) // Final check
-        return currentMaxStreak
-    }
-    */
-    
     var body: some View {
         NavigationStack {
             ZStack {
+                // Background
                 AppTheme.GeneratedColors.background.ignoresSafeArea()
                 
-                VStack(spacing: AppTheme.GeneratedSpacing.contentPadding) {
-                    Picker("Filter", selection: $filter) {
-                        ForEach(WorkoutFilter.allCases) { filter in
-                            Text(filter.rawValue).tag(filter)
-                        }
+                ScrollView {
+                    VStack(spacing: AppTheme.GeneratedSpacing.section) {
+                        // Custom exercise filter pills
+                        exerciseFilterSection
+                            .padding(.top, AppTheme.GeneratedSpacing.medium)
+                        
+                        // Streak cards section
+                        streakCardsSection
+                        
+                        // Progress chart section
+                        progressChartSection
+                        
+                        // Workout history list
+                        workoutHistorySection
                     }
-                    .pickerStyle(SegmentedPickerStyle())
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
-
-                    // Restore Streak Cards using state variables
-                    HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                        PTCard {
-                            VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
-                                PTLabel("Current Streak", style: .caption)
-                                PTLabel("\(currentWorkoutStreak) days", style: .subheading).fontWeight(.bold)
-                            }
-                            .padding(AppTheme.GeneratedSpacing.medium)
-                            .frame(maxWidth: .infinity)
-                        }
-                        PTCard {
-                            VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
-                                PTLabel("Longest Streak", style: .caption)
-                                PTLabel("\(longestWorkoutStreak) days", style: .subheading).fontWeight(.bold)
-                            }
-                            .padding(AppTheme.GeneratedSpacing.medium)
-                            .frame(maxWidth: .infinity)
-                        }
-                    }
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
-                    
-                    // Conditional display: Empty state or List with results
-                    let resultsAreEmpty = workoutResults.isEmpty // Use a local constant for the condition
-                    if resultsAreEmpty {
-                        // Use the new dedicated view for the empty state
-                        EmptyHistoryDisplayView(currentFilter: filter)
-                    } else {
-                        List {
-                            // Restore the ForEach loop
-                            ForEach(workoutResults) { result in
-                                // Remove NavigationLink, make row tappable
-                                WorkoutHistoryRow(result: result)
-                                    .contentShape(Rectangle())
-                                    .onTapGesture {
-                                        selectedWorkout = result
-                                    }
-                                // Restore swipe actions
-                                .swipeActions(edge: .trailing) {
-                                    Button(role: .destructive) {
-                                        deleteWorkout(result: result)
-                                    } label: {
-                                        Label("Delete", systemImage: "trash")
-                                    }
-                                    
-                                    Button {
-                                        shareWorkout(result: result)
-                                    } label: {
-                                        Label("Share", systemImage: "square.and.arrow.up")
-                                    }
-                                    .tint(AppTheme.GeneratedColors.brassGold)
-                                } // End swipeActions
-                            } // End ForEach
-                        } // End List
-                        .listStyle(PlainListStyle())
-                        .scrollContentBackground(.hidden)
-                        // Add navigation destination modifier here
-                        .navigationDestination(item: $selectedWorkout) { workout in
-                            WorkoutDetailView(workoutResult: workout)
-                        }
-                    } // End conditional display
-                    
-                    // Restore chart section using state variables
-                    if !currentChartData.isEmpty && filter != .all { // Use currentChartData
-                        VStack(alignment: .leading) {
-                             PTLabel.sized("Progress Over Time - \\(filter.rawValue)", style: .heading, size: .medium)
-                                .padding(.leading, AppTheme.GeneratedSpacing.contentPadding)
-                            Chart(currentChartData) { point in // Use currentChartData
-                                LineMark(
-                                    x: .value("Date", point.date),
-                                    y: .value(currentYAxisLabel, point.value) // Use currentYAxisLabel
-                                )
-                                .foregroundStyle(AppTheme.GeneratedColors.primary)
-                                
-                                PointMark(
-                                    x: .value("Date", point.date),
-                                    y: .value(currentYAxisLabel, point.value) // Use currentYAxisLabel
-                                )
-                                .foregroundStyle(AppTheme.GeneratedColors.primary)
-                                .symbolSize(CGSize(width: 8, height: 8))
-                            }
-                            .chartYScale(domain: 0...(currentChartData.compactMap { $0.value }.max() ?? 50.0)) // Use currentChartData
-                            .chartXAxis {
-                                AxisMarks(values: .automatic(desiredCount: 5)) { value in
-                                    AxisGridLine()
-                                    AxisTick()
-                                    AxisValueLabel(format: .dateTime.month().day())
-                                }
-                            }
-                            .frame(height: 200)
-                            .padding(AppTheme.GeneratedSpacing.medium)
-                            .background(AppTheme.GeneratedColors.cardBackground)
-                            .cornerRadius(AppTheme.GeneratedRadius.card)
-                        }
-                        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
-                    } else if filter != .all { // If currentChartData is empty but filter is not .all
-                         VStack(spacing: AppTheme.GeneratedSpacing.small) {
-                             Image(systemName: "chart.line.downtrend.xyaxis")
-                                 .font(.largeTitle)
-                                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                             PTLabel("Not enough data to display chart.", style: .body)
-                                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                         }
-                         .frame(maxWidth: .infinity, minHeight: 200)
-                         .padding(AppTheme.GeneratedSpacing.medium)
-                         .background(AppTheme.GeneratedColors.cardBackground)
-                         .cornerRadius(AppTheme.GeneratedRadius.card)
-                         .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
-                    }
-                }
-                .sheet(isPresented: $isShowingShareSheet) {
-                    ActivityView(activityItems: [shareText])
-                }
-                // Add modifiers to trigger chart and streak updates
-                .onChange(of: filter) { // Use specific iOS 17+ syntax if applicable
-                    updateChartData()
-                    // Streaks are global, no need to update on filter change
-                }
-                .onChange(of: workoutResults) { // Use specific iOS 17+ syntax if applicable
-                     updateChartData()
-                     updateStreaks() // Update streaks when results change
-                }
-                .onAppear {
-                    updateChartData() // Initial calculation
-                    updateStreaks() // Initial calculation
+                    .padding(.bottom, AppTheme.GeneratedSpacing.section)
                 }
             }
             .navigationTitle("Workout History")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                EditButton()
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        withAnimation {
+                            isEditMode = isEditMode == .active ? .inactive : .active
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: isEditMode == .active ? "checkmark.circle.fill" : "pencil")
+                            Text(isEditMode == .active ? "Done" : "Edit")
+                        }
+                    }
                     .tint(AppTheme.GeneratedColors.brassGold)
+                }
+            }
+            .environment(\.editMode, $isEditMode)
+            .sheet(isPresented: $isShowingShareSheet) {
+                ActivityView(activityItems: [shareText])
+            }
+            .onChange(of: filter) { 
+                updateChartData()
+            }
+            .onChange(of: workoutResults) { 
+                updateChartData()
+                updateStreaks()
+            }
+            .onAppear {
+                updateChartData()
+                updateStreaks()
             }
         }
     }
-
-    // Helper function for the empty state label view
-    @ViewBuilder
-    private func emptyStateLabelView(image: Image, title: String) -> some View {
-        VStack {
-            image
-                .resizable()
-                .scaledToFit()
-                .frame(width: 50, height: 50)
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-            PTLabel(title, style: .heading)
+    
+    // MARK: - UI Components
+    
+    // Exercise filter pills section
+    private var exerciseFilterSection: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
+                ForEach(WorkoutFilter.allCases) { filterOption in
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            filter = filterOption
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            if let customIcon = filterOption.customIconName {
+                                Image(customIcon)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 16, height: 16)
+                            } else {
+                                Image(systemName: filterOption.systemImage)
+                                    .font(.system(size: 12))
+                            }
+                            
+                            Text(filterOption.rawValue)
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(
+                            Capsule()
+                                .fill(filter == filterOption ? 
+                                      AppTheme.GeneratedColors.primary : 
+                                      AppTheme.GeneratedColors.cardBackground)
+                                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                        )
+                        .foregroundColor(filter == filterOption ? 
+                                         AppTheme.GeneratedColors.textOnPrimary : 
+                                         AppTheme.GeneratedColors.textPrimary)
+                    }
+                    .buttonStyle(ScaleButtonStyle())
+                }
+            }
+            .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+            .padding(.vertical, 4)
         }
     }
-
-    // Helper function for the empty state description view
-    @ViewBuilder
-    private func emptyStateDescriptionView() -> some View {
-        Text("Complete a workout to see your history here.")
-            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body))
-            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+    
+    // Streak cards section
+    private var streakCardsSection: some View {
+        HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            // Current streak card
+            PTCard(style: .elevated) {
+                VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "flame.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .font(.system(size: 14))
+                        
+                        Text("Current Streak")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    }
+                    
+                    Text("\(currentWorkoutStreak)")
+                        .font(.system(size: 36, weight: .bold, design: .rounded).monospacedDigit())
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    
+                    Text("days")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        .offset(y: -5)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+            }
+            
+            // Longest streak card
+            PTCard(style: .elevated) {
+                VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "crown.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .font(.system(size: 14))
+                        
+                        Text("Longest Streak")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    }
+                    
+                    Text("\(longestWorkoutStreak)")
+                        .font(.system(size: 36, weight: .bold, design: .rounded).monospacedDigit())
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    
+                    Text("days")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        .offset(y: -5)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+            }
+        }
+        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
     }
-
+    
+    // Progress chart section
+    private var progressChartSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+            if !currentChartData.isEmpty && filter != .all {
+                PTCard(style: .elevated) {
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                        HStack {
+                            Text("Progress Chart")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            
+                            Spacer()
+                            
+                            Text(filter.rawValue)
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        }
+                        
+                        Chart(currentChartData) { point in
+                            LineMark(
+                                x: .value("Date", point.date),
+                                y: .value(currentYAxisLabel, point.value)
+                            )
+                            .foregroundStyle(AppTheme.GeneratedColors.brassGold)
+                            .interpolationMethod(.catmullRom)
+                            
+                            PointMark(
+                                x: .value("Date", point.date),
+                                y: .value(currentYAxisLabel, point.value)
+                            )
+                            .foregroundStyle(AppTheme.GeneratedColors.brassGold)
+                            .symbolSize(CGSize(width: 8, height: 8))
+                        }
+                        .chartYAxis {
+                            AxisMarks(position: .leading) { _ in
+                                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
+                                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
+                                AxisTick(stroke: StrokeStyle(lineWidth: 1))
+                                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary)
+                                AxisValueLabel()
+                                    .foregroundStyle(AppTheme.GeneratedColors.textSecondary)
+                            }
+                        }
+                        .chartXAxis {
+                            AxisMarks(values: .automatic(desiredCount: 5)) { value in
+                                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
+                                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
+                                AxisTick(stroke: StrokeStyle(lineWidth: 1))
+                                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary)
+                                AxisValueLabel(format: .dateTime.month().day())
+                                    .foregroundStyle(AppTheme.GeneratedColors.textSecondary)
+                            }
+                        }
+                        .frame(height: 200)
+                        .padding(.top, AppTheme.GeneratedSpacing.small)
+                        
+                        HStack {
+                            Spacer()
+                            
+                            HStack(spacing: 4) {
+                                Text("Y-Axis:")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                
+                                Text(currentYAxisLabel)
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            }
+                        }
+                    }
+                    .padding(AppTheme.GeneratedSpacing.contentPadding)
+                }
+            } else if filter != .all {
+                // Empty chart state
+                PTCard(style: .flat) {
+                    VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                        Image(systemName: "chart.line.downtrend.xyaxis")
+                            .font(.system(size: 36))
+                            .foregroundColor(AppTheme.GeneratedColors.textTertiary.opacity(0.6))
+                        
+                        VStack(spacing: AppTheme.GeneratedSpacing.small) {
+                            Text("Not enough data to display chart")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            
+                            Text("Complete more \(filter.rawValue) workouts to see your progress")
+                                .font(.system(size: 14))
+                                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 180)
+                    .padding(AppTheme.GeneratedSpacing.contentPadding)
+                }
+            }
+        }
+        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+    }
+    
+    // Workout history list section
+    private var workoutHistorySection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+            HStack {
+                Text("Workout History")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                
+                Spacer()
+            }
+            
+            if workoutResults.isEmpty {
+                EmptyHistoryDisplayView(currentFilter: filter)
+            } else {
+                ForEach(workoutResults) { result in
+                    PTCard(style: isEditMode == .active ? .highlight : .standard) {
+                        HStack {
+                            WorkoutHistoryRow(result: result)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    if isEditMode == .inactive {
+                                        selectedWorkout = result
+                                    }
+                                }
+                            
+                            if isEditMode == .active {
+                                Spacer()
+                                
+                                HStack(spacing: AppTheme.GeneratedSpacing.small) {
+                                    Button {
+                                        shareWorkout(result: result)
+                                    } label: {
+                                        Image(systemName: "square.and.arrow.up")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                            .frame(width: 40, height: 40)
+                                            .background(
+                                                Circle()
+                                                    .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                                            )
+                                    }
+                                    
+                                    Button {
+                                        deleteWorkout(result: result)
+                                    } label: {
+                                        Image(systemName: "trash")
+                                            .font(.system(size: 16, weight: .medium))
+                                            .foregroundColor(AppTheme.GeneratedColors.error)
+                                            .frame(width: 40, height: 40)
+                                            .background(
+                                                Circle()
+                                                    .fill(AppTheme.GeneratedColors.error.opacity(0.1))
+                                            )
+                                    }
+                                }
+                            }
+                        }
+                        .padding(AppTheme.GeneratedSpacing.small)
+                    }
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                        if isEditMode == .inactive {
+                            Button(role: .destructive) {
+                                deleteWorkout(result: result)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                            
+                            Button {
+                                shareWorkout(result: result)
+                            } label: {
+                                Label("Share", systemImage: "square.and.arrow.up")
+                            }
+                            .tint(AppTheme.GeneratedColors.brassGold)
+                        }
+                    }
+                }
+                .navigationDestination(item: $selectedWorkout) { workout in
+                    WorkoutDetailView(workoutResult: workout)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
     // Function to calculate and update streaks
     private func updateStreaks() {
         // Calculate unique sorted workout days
@@ -524,13 +585,8 @@ struct WorkoutHistoryView: View {
     }
 
     private func deleteWorkout(result: WorkoutResultSwiftData) {
-        modelContext.delete(result)
-    }
-    
-    private func deleteWorkout(at offsets: IndexSet) {
-        offsets.forEach { index in
-            let resultToDelete = workoutResults[index]
-            modelContext.delete(resultToDelete)
+        withAnimation {
+            modelContext.delete(result)
         }
     }
     
@@ -569,6 +625,15 @@ struct WorkoutHistoryView: View {
         } else {
             return String(format: "%d:%02d", minutes, seconds)
         }
+    }
+}
+
+// Custom button style for filter pills
+struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Self.Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
     }
 }
 
@@ -621,12 +686,4 @@ struct WorkoutHistoryView_Previews: PreviewProvider {
     WorkoutHistoryView()
         .modelContainer(createSampleDataContainer())
         .environment(\.colorScheme, .dark)
-}
-
-#Preview("Workout Row") {
-     let sampleRun = WorkoutResultSwiftData(exerciseType: "run", startTime: Date().addingTimeInterval(-3600), endTime: Date().addingTimeInterval(-100), durationSeconds: 2600, distanceMeters: 5012.5)
-    WorkoutHistoryRow(result: sampleRun)
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
 } 
