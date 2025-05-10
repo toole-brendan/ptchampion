@@ -40,23 +40,23 @@ public extension AppTheme {
     public static let tiny: CGFloat = 12
 
     public static func heading(size: CGFloat? = nil) -> Font {
-      return Font.custom("@\"BebasNeue-Bold\"", size: size ?? body, relativeTo: .body)
+      return Font.custom("Montserrat-Bold", size: size ?? heading1, relativeTo: .body)
     }
 
     public static func body(size: CGFloat? = nil) -> Font {
-      return Font.custom("@\"Montserrat-Regular\"", size: size ?? body, relativeTo: .body)
+      return Font.custom("Montserrat-Regular", size: size ?? body, relativeTo: .body)
     }
 
     public static func bodyBold(size: CGFloat? = nil) -> Font {
-      return Font.custom("@\"Montserrat-Bold\"", size: size ?? body, relativeTo: .body)
+      return Font.custom("Montserrat-Bold", size: size ?? body, relativeTo: .body)
     }
 
     public static func bodySemibold(size: CGFloat? = nil) -> Font {
-      return Font.custom("@\"Montserrat-SemiBold\"", size: size ?? body, relativeTo: .body)
+      return Font.custom("Montserrat-SemiBold", size: size ?? body, relativeTo: .body)
     }
 
     public static func mono(size: CGFloat? = nil) -> Font {
-      return Font.custom("@\"RobotoMono-Medium\"", size: size ?? body, relativeTo: .body)
+      return Font.custom("RobotoMono-Medium", size: size ?? body, relativeTo: .body)
     }
     
     // Additional font styles

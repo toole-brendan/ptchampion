@@ -1,6 +1,65 @@
 import Foundation
 
-// Represents a single entry in a leaderboard
+// MARK: - LeaderboardView and UI Models
+
+/// Represents a single entry in the leaderboard list view
+struct LeaderboardEntryView: Identifiable, Equatable {
+    let id: String        // unique: "global-<backendId>"
+    let rank: Int
+    let userId: String?   // optional – backend may omit
+    let name: String      // display name you show in the list
+    let score: Int        // points / reps / seconds – whatever your API returns
+}
+
+// MARK: - Enum Types for Leaderboard Filters
+
+/// Radius options for local leaderboards
+enum LeaderboardRadius: Int, CaseIterable, Identifiable {
+    case five = 5
+    case ten = 10
+    case twentyFive = 25
+    case fifty = 50
+
+    var id: Int { self.rawValue }
+    var displayName: String { "\(self.rawValue) mi" }
+}
+
+/// Types of leaderboards (global vs local)
+enum LeaderboardType: String, CaseIterable, Identifiable {
+    case global = "Global"
+    case local = "Local"
+    var id: String { rawValue }
+}
+
+/// Exercise types for leaderboard filtering
+enum LeaderboardExerciseType: String, CaseIterable, Identifiable {
+    case overall, pushup, situp, pullup, running
+    var id: String { rawValue }
+    var displayName: String { rawValue.capitalized }
+}
+
+/// Time period categories for leaderboard filtering
+enum LeaderboardCategory: String, CaseIterable, Identifiable {
+    case daily = "Daily", weekly = "Weekly", monthly = "Monthly", allTime = "All Time"
+    var id: String { rawValue }
+    var apiParameter: String {
+        switch self {
+        case .daily: return "daily"
+        case .weekly: return "weekly"
+        case .monthly: return "monthly"
+        case .allTime: return "all_time"
+        }
+    }
+}
+
+/// Backend connection status for error handling
+enum BackendStatus: Equatable {
+    case unknown, connected, noActiveUsers, connectionFailed(String)
+}
+
+// MARK: - API Models
+
+/// Represents a single entry in a leaderboard as returned from backend
 struct LeaderboardEntryModel: Codable, Identifiable {
     let id: String // Unique ID for the entry or user ID if unique per user per board
     let rank: Int

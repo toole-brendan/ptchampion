@@ -91,6 +91,7 @@
 		BF7960E32DCFCE9F00B03835 /* ExerciseFilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E02DCFCE9F00B03835 /* ExerciseFilterBarView.swift */; };
 		BF7960E42DCFCE9F00B03835 /* WorkoutChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E12DCFCE9F00B03835 /* WorkoutChartView.swift */; };
 		BF7960E52DCFCE9F00B03835 /* WorkoutStreaksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E22DCFCE9F00B03835 /* WorkoutStreaksView.swift */; };
+		BF7960E72DCFD2CE00B03835 /* LeaderboardFilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E62DCFD2CE00B03835 /* LeaderboardFilterBarView.swift */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -225,6 +226,7 @@
 		BF7960E02DCFCE9F00B03835 /* ExerciseFilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseFilterBarView.swift; sourceTree = "<group>"; };
 		BF7960E12DCFCE9F00B03835 /* WorkoutChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutChartView.swift; sourceTree = "<group>"; };
 		BF7960E22DCFCE9F00B03835 /* WorkoutStreaksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStreaksView.swift; sourceTree = "<group>"; };
+		BF7960E62DCFD2CE00B03835 /* LeaderboardFilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardFilterBarView.swift; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -494,6 +496,7 @@
 		BF63E43B2DB1EB980037CD02 /* Leaderboards */ = {
 			isa = PBXGroup;
 			children = (
+				BF7960E62DCFD2CE00B03835 /* LeaderboardFilterBarView.swift */,
 				BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */,
 				BFADF9BD2DC93DE90016AF0B /* LeaderboardRowPlaceholder.swift */,
 				BF63E43A2DB1EB980037CD02 /* LeaderboardView.swift */,
@@ -860,6 +863,7 @@
 				BF63E4622DB1EBA40037CD02 /* WorkoutViewModel.swift in Sources */,
 				BF63E46B2DB1EBAF0037CD02 /* PullupGrader.swift in Sources */,
 				BFADF9B12DC93D890016AF0B /* Toast.swift in Sources */,
+				BF7960E72DCFD2CE00B03835 /* LeaderboardFilterBarView.swift in Sources */,
 				BF37B0572DCC2CD600EC4D58 /* ProfileView.swift in Sources */,
 				BFADF9B32DC93D890016AF0B /* StatCard.swift in Sources */,
 				BFADF9B52DC93D890016AF0B /* SettingsSheet.swift in Sources */,

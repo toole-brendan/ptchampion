@@ -11,47 +11,6 @@ import PTDesignSystem
 // Setup logger for this view
 private let logger = Logger(subsystem: "com.ptchampion", category: "LeaderboardView")
 
-// Create a simple equatable struct for the task ID
-struct LeaderboardFilterState: Equatable {
-    let boardType: LeaderboardType
-    let category: LeaderboardCategory
-    let exerciseType: LeaderboardExerciseType
-}
-
-// NEW sub-view for radius selection
-private struct RadiusSelectorView: View {
-    @Binding var selectedRadius: LeaderboardRadius
-    var body: some View {
-        Menu {
-            ForEach(LeaderboardRadius.allCases, id: \.self) { radius in
-                Button {
-                    selectedRadius = radius
-                } label: {
-                    Label(radius.displayName,
-                          systemImage: selectedRadius == radius ? "checkmark" : "")
-                }
-            }
-        } label: {
-            HStack {
-                Image(systemName: "map")
-                    .foregroundColor(AppTheme.GeneratedColors.primary)
-                Text("Radius: \(selectedRadius.displayName)")
-                    .font(AppTheme.GeneratedTypography.body())
-                Image(systemName: "chevron.down")
-                    .font(.caption)
-            }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
-            .background(
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                    .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
-            )
-        }
-        .tint(AppTheme.GeneratedColors.textPrimary)
-        .padding(.horizontal)
-    }
-}
-
 struct LeaderboardView: View {
     // Add properties for viewModel and viewId
     @ObservedObject var viewModel: LeaderboardViewModel
@@ -155,49 +114,45 @@ struct LeaderboardView: View {
     
     var body: some View {
         NavigationStack {
-        bodyContent
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-            .onAppear {
-                // No need to check if selectedRadius is nil since it's not optional
-                fetchTask = Task {
-                    await viewModel.fetch()
+            bodyContent
+                .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+                .onAppear {
+                    fetchTask = Task {
+                        await viewModel.fetch()
+                    }
                 }
-            }
-            .onDisappear {
-                // Cancel any ongoing fetch when view disappears
-                fetchTask?.cancel()
-            }
-            .onChange(of: viewModel.selectedBoard) { newBoard in 
-                // No need to check if selectedRadius is nil since it's not optional
-                
-                // Animate content change with opacity
-                performContentTransition {
-                    fetchTask?.cancel() // Cancel any previous fetch
-                    fetchTask = Task { await viewModel.fetch() }
+                .onDisappear {
+                    // Cancel any ongoing fetch when view disappears
+                    fetchTask?.cancel()
                 }
-            }
-            .onChange(of: viewModel.selectedCategory) { _ in 
-                performContentTransition {
-                    fetchTask?.cancel() // Cancel any previous fetch
-                    fetchTask = Task { await viewModel.fetch() }
+                .onChange(of: viewModel.selectedBoard) { _ in 
+                    performContentTransition {
+                        fetchTask?.cancel() // Cancel any previous fetch
+                        fetchTask = Task { await viewModel.fetch() }
+                    }
                 }
-            }
-            .onChange(of: viewModel.selectedExercise) { _ in 
-                performContentTransition {
-                    fetchTask?.cancel() // Cancel any previous fetch
-                    fetchTask = Task { await viewModel.fetch() }
+                .onChange(of: viewModel.selectedCategory) { _ in 
+                    performContentTransition {
+                        fetchTask?.cancel() // Cancel any previous fetch
+                        fetchTask = Task { await viewModel.fetch() }
+                    }
                 }
-            }
-            .onChange(of: viewModel.selectedRadius) { _ in 
-                performContentTransition {
-                    fetchTask?.cancel() // Cancel any previous fetch
-                    fetchTask = Task { await viewModel.fetch() }
+                .onChange(of: viewModel.selectedExercise) { _ in 
+                    performContentTransition {
+                        fetchTask?.cancel() // Cancel any previous fetch
+                        fetchTask = Task { await viewModel.fetch() }
+                    }
                 }
-            }
-            .navigationDestination(item: $navigatingToUserID) { userID in
-                UserProfileView(userID: userID)
+                .onChange(of: viewModel.selectedRadius) { _ in 
+                    performContentTransition {
+                        fetchTask?.cancel() // Cancel any previous fetch
+                        fetchTask = Task { await viewModel.fetch() }
+                    }
                 }
-            }
+                .navigationDestination(item: $navigatingToUserID) { userID in
+                    UserProfileView(userID: userID)
+                }
+        }
     }
     
     // Break down the body into a separate computed property
@@ -226,15 +181,13 @@ struct LeaderboardView: View {
             // Use extracted segmented control
             segmentedControl
 
-            // Filters section
-            filtersSection
-            
-            // Conditional Radius selector for Local leaderboards
-            if viewModel.selectedBoard == .local {
-                RadiusSelectorView(selectedRadius: $viewModel.selectedRadius)
-            } else {
-                EmptyView() // Explicit EmptyView for type safety
-            }
+            // Use the new LeaderboardFilterBarView component
+            LeaderboardFilterBarView(
+                selectedCategory: $viewModel.selectedCategory,
+                selectedExercise: $viewModel.selectedExercise,
+                selectedRadius: $viewModel.selectedRadius,
+                showRadiusSelector: viewModel.selectedBoard == .local
+            )
         }
         .padding(.vertical, AppTheme.GeneratedSpacing.medium)
     }
@@ -271,113 +224,9 @@ struct LeaderboardView: View {
         }
     }
     
-    // Extract filters section to simplify body
-    private var filtersSection: some View {
-        HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-            categoryFilterMenu
-            exerciseFilterMenu
-        }
-        .padding(.horizontal)
-    }
-    
-    // Break down filters into separate views
-    private var categoryFilterMenu: some View {
-        // Category filter (Daily, Weekly, etc.)
-        Menu {
-            ForEach(LeaderboardCategory.allCases, id: \.self) { category in
-                Button(action: {
-                    // No animation
-                    viewModel.selectedCategory = category
-                }) {
-                    HStack {
-                        Text(category.rawValue)
-                        if viewModel.selectedCategory == category {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-            }
-        } label: {
-            categoryFilterLabel
-        }
-        .tint(AppTheme.GeneratedColors.textPrimary)
-    }
-    
-    private var categoryFilterLabel: some View {
-        HStack {
-            Image(systemName: "calendar")
-                .foregroundColor(AppTheme.GeneratedColors.primary)
-            Text(viewModel.selectedCategory.rawValue)
-                .font(AppTheme.GeneratedTypography.body())
-            Image(systemName: "chevron.down")
-                .font(.caption)
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
-        )
-    }
-    
-    private var exerciseFilterMenu: some View {
-        // Exercise type filter
-        Menu {
-            ForEach(LeaderboardExerciseType.allCases, id: \.self) { exercise in
-                Button(action: {
-                    // No animation
-                    viewModel.selectedExercise = exercise
-                }) {
-                    HStack {
-                        Text(exercise.displayName)
-                        if viewModel.selectedExercise == exercise {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-            }
-        } label: {
-            exerciseFilterLabel
-        }
-        .tint(AppTheme.GeneratedColors.textPrimary)
-    }
-    
-    private var exerciseFilterLabel: some View {
-        HStack {
-            Image(systemName: "figure.run")
-                .foregroundColor(AppTheme.GeneratedColors.primary)
-            Text(viewModel.selectedExercise.displayName)
-                .font(AppTheme.GeneratedTypography.body())
-            Image(systemName: "chevron.down")
-                .font(.caption)
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
-        )
-    }
-    
     // Helper for logging
     private func logViewContent(message: String) {
         logger.info("LeaderboardView [\(viewId)]: \(message)")
-    }
-    
-    // Extracted Content View
-    @ViewBuilder
-    private var contentView: some View {
-        if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
-            loadingPlaceholders
-        } else if let errorMessage = viewModel.errorMessage {
-            errorView(message: errorMessage)
-        } else if viewModel.leaderboardEntries.isEmpty && viewModel.backendStatus == .noActiveUsers {
-            emptyLeaderboardView
-        } else if viewModel.leaderboardEntries.isEmpty {
-            noResultsView
-        } else {
-            leaderboardListView
-        }
     }
     
     // Further break down complex views
@@ -503,8 +352,6 @@ struct LeaderboardView: View {
             .padding(.horizontal)
             .padding(.vertical, AppTheme.GeneratedSpacing.medium)
         }
-        // Replace .refreshable with a plain ScrollView
-        // This could be the source of the ambiguity at line 401
         .onAppear { logViewContent(message: "Showing \(viewModel.leaderboardEntries.count) entries") }
     }
     
