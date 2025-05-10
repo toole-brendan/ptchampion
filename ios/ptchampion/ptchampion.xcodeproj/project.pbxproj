@@ -82,6 +82,7 @@
 		BF63E4742DB2937C0037CD02 /* PTChampionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */; };
 		BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4752DB453140037CD02 /* pt_champion_logo.png */; };
 		BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4772DB454230037CD02 /* Assets.xcassets */; };
+		BF7960D52DCF927200B03835 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960D42DCF927200B03835 /* EditProfileView.swift */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -207,6 +208,7 @@
 		BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTChampionApp.swift; sourceTree = "<group>"; };
 		BF63E4752DB453140037CD02 /* pt_champion_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pt_champion_logo.png; sourceTree = "<group>"; };
 		BF63E4772DB454230037CD02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BF7960D42DCF927200B03835 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -290,6 +292,7 @@
 		BF37B0562DCC2CD600EC4D58 /* Profile */ = {
 			isa = PBXGroup;
 			children = (
+				BF7960D42DCF927200B03835 /* EditProfileView.swift */,
 				BF199EB62DCD8CFE00E23EFF /* UserProfileView.swift */,
 				BF37B0552DCC2CD600EC4D58 /* ProfileView.swift */,
 			);
@@ -871,6 +874,7 @@
 				BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */,
 				BF63E4302DB1EB830037CD02 /* CameraServiceProtocol.swift in Sources */,
 				BF63E4312DB1EB830037CD02 /* KeychainService.swift in Sources */,
+				BF7960D52DCF927200B03835 /* EditProfileView.swift in Sources */,
 				BF63E4322DB1EB830037CD02 /* WorkoutServiceProtocol.swift in Sources */,
 				BF199EBA2DCE225200E23EFF /* MockUserService.swift in Sources */,
 				BF199EBB2DCE225200E23EFF /* UserServiceProtocol.swift in Sources */,
