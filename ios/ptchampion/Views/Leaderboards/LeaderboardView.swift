@@ -62,6 +62,8 @@ struct LeaderboardView: View {
     
     // Track visibility state for animation
     @State private var contentOpacity: Double = 1.0
+    // Track active fetch task for cancellation
+    @State private var fetchTask: Task<Void, Never>? = nil
     
     // Initialize with required parameters
     init(viewModel: LeaderboardViewModel, viewId: String) {
@@ -158,31 +160,39 @@ struct LeaderboardView: View {
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 // No need to check if selectedRadius is nil since it's not optional
-                Task {
+                fetchTask = Task {
                     await viewModel.fetch()
                 }
+            }
+            .onDisappear {
+                // Cancel any ongoing fetch when view disappears
+                fetchTask?.cancel()
             }
             .onChange(of: viewModel.selectedBoard) { newBoard in 
                 // No need to check if selectedRadius is nil since it's not optional
                 
                 // Animate content change with opacity
                 performContentTransition {
-                    Task { await viewModel.fetch() }
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
                 }
             }
             .onChange(of: viewModel.selectedCategory) { _ in 
                 performContentTransition {
-                    Task { await viewModel.fetch() }
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
                 }
             }
             .onChange(of: viewModel.selectedExercise) { _ in 
                 performContentTransition {
-                    Task { await viewModel.fetch() }
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
                 }
             }
             .onChange(of: viewModel.selectedRadius) { _ in 
                 performContentTransition {
-                    Task { await viewModel.fetch() }
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
                 }
             }
             .navigationDestination(item: $navigatingToUserID) { userID in
