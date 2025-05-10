@@ -2,6 +2,13 @@ import SwiftUI
 import PTDesignSystem
 import SwiftUI
 
+/*
+ * DEPRECATION NOTICE
+ * This component is deprecated and will be removed in a future update.
+ * Please use SettingsView from the Views/Profile directory instead.
+ * The ProfileView uses SettingsView for the settings modal.
+ */
+
 // Add extension for AppTheme.GeneratedColors for any missing tokens
 public extension AppTheme.GeneratedColors {
     static let tomahawkRed = error // Map to error color
@@ -30,6 +37,18 @@ struct SettingsSheet: View {
     var body: some View {
         NavigationView {
             List {
+                // DEPRECATION NOTICE BANNER
+                Section {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                        Text("This component is deprecated. Please use SettingsView from the Profile directory instead.")
+                            .font(.caption)
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                    }
+                    .padding(.vertical, 8)
+                }
+                
                 if showAccountSettings {
                     accountSection
                 }

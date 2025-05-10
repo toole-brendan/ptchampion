@@ -20,7 +20,7 @@ fileprivate extension View {
     }
 }
 
-// Moved Enums to top-level for broader access
+// Top-level enum definitions for broader access
 enum AppearanceSetting: String, CaseIterable, Identifiable {
     case light = "Light"
     case dark = "Dark"
@@ -38,23 +38,11 @@ struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.colorScheme) var colorScheme 
     @Environment(\.scenePhase) var scenePhase
-    @Environment(\.dynamicTypeSize) var dynamicTypeSize // Added for accessibility
+    @Environment(\.dynamicTypeSize) var dynamicTypeSize
     
     @State private var showingEditProfile = false
-    @State private var showingSettings = false // Add state for settings sheet
+    @State private var showingSettings = false
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
-    
-    // AppStorage moved to ProfileSettingsSectionView or remains here if other sections need them.
-    // For settingsSection extraction, these will be in the new view.
-    // @AppStorage("selectedAppearance") private var selectedAppearance: AppearanceSetting = .system
-    // @AppStorage("selectedUnit") private var selectedUnit: UnitSetting = .metric
-    // @AppStorage("workoutRemindersEnabled") private var workoutRemindersEnabled: Bool = true
-    // @AppStorage("achievementNotificationsEnabled") private var achievementNotificationsEnabled: Bool = true
-
-    @State private var showingChangePassword = false
-    @State private var showingPrivacyPolicy = false
-    @State private var showingConnectedDevices = false
-    @State private var showingDeleteConfirmation = false
 
     var body: some View {
         NavigationStack {
@@ -74,20 +62,20 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                     
+                    // User Profile Header
                     ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)
                     
-                    // Call the new ProfileSettingsSectionView
-                    ProfileSettingsSectionView(hapticGenerator: hapticGenerator)
+                    // Quick Preferences Section
+                    ProfilePreferencesView(hapticGenerator: hapticGenerator)
                     
-                    accountSection()
+                    // Account Actions Section
+                    AccountActionsView()
                     
-                    moreSection()
+                    // More Options Section
+                    MoreActionsView()
                     
-                    Text("App Version: \(appVersion())")
-                        .font(.footnote)
-                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, AppTheme.GeneratedSpacing.medium)
+                    // App Version Information
+                    AppInfoView()
                 }
                 .padding([.horizontal, .bottom], AppTheme.GeneratedSpacing.contentPadding)
             }
@@ -115,201 +103,10 @@ struct ProfileView: View {
                         .environmentObject(authViewModel)
                 }
             }
-            .sheet(isPresented: $showingChangePassword) {
-                NavigationView {
-                    Text("Change Password View (TODO)")
-                        .navigationTitle("Change Password")
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarLeading) {
-                                Button("Cancel") { 
-                                    showingChangePassword = false 
-                                }
-                            }
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("Save") { 
-                                    showingChangePassword = false 
-                                }
-                            }
-                        }
-                }
-            }
-            .sheet(isPresented: $showingPrivacyPolicy) {
-                NavigationView {
-                    Text("Privacy Policy View (TODO)")
-                        .navigationTitle("Privacy Policy")
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("Done") { 
-                                    showingPrivacyPolicy = false 
-                                }
-                            }
-                        }
-                }
-            }
-            .sheet(isPresented: $showingConnectedDevices) {
-                NavigationView {
-                    Text("Connected Devices View (TODO)")
-                        .navigationTitle("Connected Devices")
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("Done") { 
-                                    showingConnectedDevices = false 
-                                }
-                            }
-                        }
-                }
-            }
-            .alert("Confirm Delete", isPresented: $showingDeleteConfirmation) {
-                Button("Delete", role: .destructive) {
-                    showingDeleteConfirmation = false
-                }
-                Button("Cancel", role: .cancel) { }
-            } message: {
-                Text("Are you sure you want to delete your account? This action cannot be undone.")
-            }
         }
-    }
-    
-    // MARK: - Account Section
-    @ViewBuilder
-    private func accountSection() -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-            // Section Header
-            sectionHeader("Account")
-            
-            // Account Card
-            settingsCard {
-                // Change Password
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.5)
-                    showingChangePassword = true
-                } label: {
-                    HStack {
-                        Label("Change Password", systemImage: "lock.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.footnote)
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .frame(height: 44)
-                
-                Divider()
-                    .padding(.vertical, 8)
-                
-                // Logout Button
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.6)
-                    authViewModel.logout()
-                } label: {
-                    HStack {
-                        Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                        Spacer()
-                    }
-                    .contentShape(Rectangle())
-                }
-                .frame(height: 44)
-                
-                Divider()
-                    .padding(.vertical, 8)
-                
-                // Delete Account
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.7)
-                    showingDeleteConfirmation = true
-                } label: {
-                    HStack {
-                        Label("Delete Account", systemImage: "trash.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                        Spacer()
-                    }
-                    .contentShape(Rectangle())
-                }
-                .frame(height: 44)
-            }
+        .onAppear {
+            hapticGenerator.prepare()
         }
-    }
-    
-    // MARK: - More Section
-    @ViewBuilder
-    private func moreSection() -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-            // Section Header
-            sectionHeader("More")
-            
-            // More Card
-            settingsCard {
-                // Privacy Policy
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.5)
-                    showingPrivacyPolicy = true
-                } label: {
-                    HStack {
-                        Label("Privacy Policy", systemImage: "doc.text.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.footnote)
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .frame(height: 44)
-                
-                Divider()
-                    .padding(.vertical, 8)
-                
-                // Connected Devices
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.5)
-                    showingConnectedDevices = true
-                } label: {
-                    HStack {
-                        Label("Connected Devices", systemImage: "antenna.radiowaves.left.and.right")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .font(.footnote)
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                    }
-                    .contentShape(Rectangle())
-                }
-                .frame(height: 44)
-            }
-        }
-    }
-    
-    // MARK: - Helper Views
-    
-    // Section Header
-    @ViewBuilder
-    private func sectionHeader(_ title: String) -> some View {
-        Text(title)
-            .font(.title3.weight(.semibold))
-            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityAddTraits(.isHeader)
-    }
-    
-    // Card Container for Settings
-    @ViewBuilder
-    private func settingsCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            content()
-        }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
-        .profileShadow(size: .small)
-    }
-    
-    // MARK: - Helper Methods
-    
-    private func appVersion() -> String {
-        return Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "N/A"
     }
 }
 

@@ -1,4 +1,0 @@
-module SwiftUIIntrospect {
-    header "/Users/brendantoole/projects/ptchampion/ios/PTDesignSystem/.build/arm64-apple-macosx/debug/SwiftUIIntrospect.build/SwiftUIIntrospect-Swift.h"
-    requires objc
-}
