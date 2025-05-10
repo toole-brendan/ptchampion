@@ -18,6 +18,40 @@ struct LeaderboardFilterState: Equatable {
     let exerciseType: LeaderboardExerciseType
 }
 
+// NEW sub-view for radius selection
+private struct RadiusSelectorView: View {
+    @Binding var selectedRadius: LeaderboardRadius
+    var body: some View {
+        Menu {
+            ForEach(LeaderboardRadius.allCases, id: \.self) { radius in
+                Button {
+                    selectedRadius = radius
+                } label: {
+                    Label(radius.displayName,
+                          systemImage: selectedRadius == radius ? "checkmark" : "")
+                }
+            }
+        } label: {
+            HStack {
+                Image(systemName: "map")
+                    .foregroundColor(AppTheme.GeneratedColors.primary)
+                Text("Radius: \(selectedRadius.displayName)")
+                    .font(AppTheme.GeneratedTypography.body())
+                Image(systemName: "chevron.down")
+                    .font(.caption)
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .background(
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
+                    .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
+            )
+        }
+        .tint(AppTheme.GeneratedColors.textPrimary)
+        .padding(.horizontal)
+    }
+}
+
 struct LeaderboardView: View {
     // Add properties for viewModel and viewId
     @ObservedObject var viewModel: LeaderboardViewModel
@@ -187,7 +221,9 @@ struct LeaderboardView: View {
             
             // Conditional Radius selector for Local leaderboards
             if viewModel.selectedBoard == .local {
-                radiusSelector
+                RadiusSelectorView(selectedRadius: $viewModel.selectedRadius)
+            } else {
+                EmptyView() // Explicit EmptyView for type safety
             }
         }
         .padding(.vertical, AppTheme.GeneratedSpacing.medium)
@@ -238,7 +274,7 @@ struct LeaderboardView: View {
     private var categoryFilterMenu: some View {
         // Category filter (Daily, Weekly, etc.)
         Menu {
-            ForEach(LeaderboardCategory.allCases) { category in
+            ForEach(LeaderboardCategory.allCases, id: \.self) { category in
                 Button(action: {
                     // No animation
                     viewModel.selectedCategory = category
@@ -277,7 +313,7 @@ struct LeaderboardView: View {
     private var exerciseFilterMenu: some View {
         // Exercise type filter
         Menu {
-            ForEach(LeaderboardExerciseType.allCases) { exercise in
+            ForEach(LeaderboardExerciseType.allCases, id: \.self) { exercise in
                 Button(action: {
                     // No animation
                     viewModel.selectedExercise = exercise
@@ -301,48 +337,6 @@ struct LeaderboardView: View {
             Image(systemName: "figure.run")
                 .foregroundColor(AppTheme.GeneratedColors.primary)
             Text(viewModel.selectedExercise.displayName)
-                .font(AppTheme.GeneratedTypography.body())
-            Image(systemName: "chevron.down")
-                .font(.caption)
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
-        )
-    }
-    
-    // Extract radius selector to simplify body
-    private var radiusSelector: some View {
-        Menu {
-            ForEach(LeaderboardRadius.allCases) { radiusValue in
-                Button(action: {
-                    // No animation
-                    viewModel.selectedRadius = radiusValue
-                }) {
-                    HStack {
-                        Text(radiusValue.displayName)
-                        if viewModel.selectedRadius == radiusValue {
-                            Image(systemName: "checkmark")
-                        }
-                    }
-                }
-            }
-        } label: {
-            radiusSelectorLabel
-        }
-        .tint(AppTheme.GeneratedColors.textPrimary)
-        // No transitions, just use standard animation
-        .padding(.horizontal)
-    }
-    
-    private var radiusSelectorLabel: some View {
-        HStack {
-            Image(systemName: "map")
-                .foregroundColor(AppTheme.GeneratedColors.primary)
-            // Use non-optional access since selectedRadius is not optional
-            Text("Radius: \(viewModel.selectedRadius.displayName)")
                 .font(AppTheme.GeneratedTypography.body())
             Image(systemName: "chevron.down")
                 .font(.caption)
@@ -521,6 +515,20 @@ struct LeaderboardView: View {
         LeaderboardView(
             viewModel: LeaderboardViewModel(),
             viewId: "PREVIEW"
+        )
+    }
+}
+
+#Preview("Local Mode") {
+    // Create the model, set the board to .local
+    let vm = LeaderboardViewModel()
+    vm.selectedBoard = .local
+
+    // Pass the prepared model into the view
+    return NavigationStack {
+        LeaderboardView(
+            viewModel: vm,
+            viewId: "LOCAL-PREVIEW"
         )
     }
 } 
