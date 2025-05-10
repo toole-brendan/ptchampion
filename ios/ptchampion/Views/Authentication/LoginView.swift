@@ -65,19 +65,19 @@ struct LoginView: View {
                                 Image(uiImage: logo)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 120, height: 120)
+                                    .frame(width: 150, height: 150)
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             } else {
                                 // Fallback to text if image is missing
                                 PTLabel("PT CHAMPION", style: .heading)
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                                    .frame(width: 120, height: 120)
+                                    .frame(width: 150, height: 150)
                                     .onAppear {
                                         print("WARNING: Logo file not found in asset catalog. Please ensure pt_champion_logo.png is added to Assets.xcassets.")
                                     }
                             }
                         }
-                        .padding(.top, 60)
+                        .padding(.top, 40)
                         // Allow opening dev options by tapping logo 5 times
                         .onTapGesture(count: 5) {
                             showDevOptions = true
@@ -90,14 +90,14 @@ struct LoginView: View {
                         
                         // Form Fields
                         VStack(spacing: 16) {
-                            FocusableTextField(
+                            PTTextField(
                                 "Email",
                                 text: $email,
-                                keyboardType: .emailAddress,
-                                icon: Image(systemName: "envelope")
+                                icon: Image(systemName: "envelope"),
+                                keyboardType: .emailAddress
                             )
-                            
-                            FocusableTextField(
+
+                            PTTextField(
                                 "Password",
                                 text: $password,
                                 isSecure: true,
@@ -108,14 +108,14 @@ struct LoginView: View {
                             if auth.isLoading {
                                 // Use a typed local variable to resolve ambiguity
                                 let coreButtonStyle: PTButton.ButtonStyle = .primary
-                                PTButton("Log In", style: coreButtonStyle, isLoading: true) {
+                                PTButton("LOG IN", style: coreButtonStyle, isLoading: true) {
                                     // No action when loading
                                 }
                                 .disabled(true)
                             } else {
                                 // Use a typed local variable to resolve ambiguity
                                 let coreButtonStyle: PTButton.ButtonStyle = .primary
-                                PTButton("Log In", style: coreButtonStyle) {
+                                PTButton("LOG IN", style: coreButtonStyle) {
                                     auth.errorMessage = nil // Clear error before login
                                     print("DEBUG: Login button tapped for email: \(email)")
                                     
