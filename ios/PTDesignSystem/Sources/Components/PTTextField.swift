@@ -84,6 +84,16 @@ public struct PTTextField: View {
                 if textField.inputAccessoryView == nil {
                     textField.inputAccessoryView = UIView(frame: .zero)
                 }
+                
+                // Disable password suggestions
+                textField.textContentType = nil
+                textField.passwordRules = nil
+                
+                #if targetEnvironment(simulator)
+                // This addresses the automatic strong password suggestion in simulator
+                textField.isSecureTextEntry = true
+                textField.textContentType = .oneTimeCode // This prevents auto-fill on simulator
+                #endif
             }
     }
     
