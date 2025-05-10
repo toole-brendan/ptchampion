@@ -86,6 +86,11 @@
 		BF7960D72DCFAC9500B03835 /* MilitaryStyleShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960D62DCFAC9500B03835 /* MilitaryStyleShowcase.swift */; };
 		BF7960DA2DCFC60500B03835 /* ProfileHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960D82DCFC60500B03835 /* ProfileHeaderView.swift */; };
 		BF7960DB2DCFC60500B03835 /* ProfileSettingsSectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960D92DCFC60500B03835 /* ProfileSettingsSectionView.swift */; };
+		BF7960DD2DCFCCD300B03835 /* ActivityFeedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960DC2DCFCCD300B03835 /* ActivityFeedItem.swift */; };
+		BF7960DF2DCFCCE800B03835 /* QuickLinkCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960DE2DCFCCE800B03835 /* QuickLinkCardView.swift */; };
+		BF7960E32DCFCE9F00B03835 /* ExerciseFilterBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E02DCFCE9F00B03835 /* ExerciseFilterBarView.swift */; };
+		BF7960E42DCFCE9F00B03835 /* WorkoutChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E12DCFCE9F00B03835 /* WorkoutChartView.swift */; };
+		BF7960E52DCFCE9F00B03835 /* WorkoutStreaksView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E22DCFCE9F00B03835 /* WorkoutStreaksView.swift */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -215,6 +220,11 @@
 		BF7960D62DCFAC9500B03835 /* MilitaryStyleShowcase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilitaryStyleShowcase.swift; sourceTree = "<group>"; };
 		BF7960D82DCFC60500B03835 /* ProfileHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileHeaderView.swift; sourceTree = "<group>"; };
 		BF7960D92DCFC60500B03835 /* ProfileSettingsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileSettingsSectionView.swift; sourceTree = "<group>"; };
+		BF7960DC2DCFCCD300B03835 /* ActivityFeedItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityFeedItem.swift; sourceTree = "<group>"; };
+		BF7960DE2DCFCCE800B03835 /* QuickLinkCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLinkCardView.swift; sourceTree = "<group>"; };
+		BF7960E02DCFCE9F00B03835 /* ExerciseFilterBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseFilterBarView.swift; sourceTree = "<group>"; };
+		BF7960E12DCFCE9F00B03835 /* WorkoutChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutChartView.swift; sourceTree = "<group>"; };
+		BF7960E22DCFCE9F00B03835 /* WorkoutStreaksView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStreaksView.swift; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -395,6 +405,7 @@
 		BF63E4042DB1CF5A0037CD02 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BF7960DC2DCFCCD300B03835 /* ActivityFeedItem.swift */,
 				BF199EBC2DCE226E00E23EFF /* UserProfileData.swift */,
 				BF89EB4A2DC98E9B003F8FE3 /* WorkoutDataPoint.swift */,
 				BF8F67A22DC931750065A2D7 /* AppModels.swift */,
@@ -463,6 +474,7 @@
 		BF63E4372DB1EB980037CD02 /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				BF7960DE2DCFCCE800B03835 /* QuickLinkCardView.swift */,
 				BF63E4362DB1EB980037CD02 /* DashboardView.swift */,
 			);
 			path = Dashboard;
@@ -471,6 +483,9 @@
 		BF63E4392DB1EB980037CD02 /* History */ = {
 			isa = PBXGroup;
 			children = (
+				BF7960E02DCFCE9F00B03835 /* ExerciseFilterBarView.swift */,
+				BF7960E12DCFCE9F00B03835 /* WorkoutChartView.swift */,
+				BF7960E22DCFCE9F00B03835 /* WorkoutStreaksView.swift */,
 				BF63E4382DB1EB980037CD02 /* WorkoutHistoryView.swift */,
 			);
 			path = History;
@@ -856,12 +871,17 @@
 				BF89EB492DC98E8A003F8FE3 /* CommonNetworkTypes.swift in Sources */,
 				BF199EBF2DCE228800E23EFF /* UserProfileViewModel.swift in Sources */,
 				BFADF9BB2DC93D890016AF0B /* MetricCard.swift in Sources */,
+				BF7960DF2DCFCCE800B03835 /* QuickLinkCardView.swift in Sources */,
 				BFADF9BC2DC93D890016AF0B /* WorkoutHistoryList.swift in Sources */,
 				BF37B03E2DCAC89500EC4D58 /* WorkoutCompleteView.swift in Sources */,
+				BF7960DD2DCFCCD300B03835 /* ActivityFeedItem.swift in Sources */,
 				BF37B03F2DCAC89500EC4D58 /* CameraExerciseView.swift in Sources */,
 				BF63E46C2DB1EBAF0037CD02 /* ExerciseGraderProtocol.swift in Sources */,
 				BF7960D72DCFAC9500B03835 /* MilitaryStyleShowcase.swift in Sources */,
 				BF89EB512DC9A18C003F8FE3 /* ValidationStateExtension.swift in Sources */,
+				BF7960E32DCFCE9F00B03835 /* ExerciseFilterBarView.swift in Sources */,
+				BF7960E42DCFCE9F00B03835 /* WorkoutChartView.swift in Sources */,
+				BF7960E52DCFCE9F00B03835 /* WorkoutStreaksView.swift in Sources */,
 				BF89EB522DC9A18C003F8FE3 /* BadgeType.swift in Sources */,
 				BF63E46D2DB1EBAF0037CD02 /* SitupGrader.swift in Sources */,
 				BF89EB4B2DC98E9B003F8FE3 /* WorkoutDataPoint.swift in Sources */,
