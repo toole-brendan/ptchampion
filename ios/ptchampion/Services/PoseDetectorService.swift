@@ -62,8 +62,10 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject {
             return
         }
 
-        // Determine the correct orientation for the Vision request
-        let orientation = imageOrientation(from: sampleBuffer)
+        // Get orientation on main thread to avoid UIKit thread violations
+        let orientation = DispatchQueue.main.sync {
+            return self.imageOrientation(from: sampleBuffer)
+        }
 
         visionQueue.async {
             // Create a request handler for the current frame

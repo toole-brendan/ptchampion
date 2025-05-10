@@ -84,14 +84,28 @@ struct WorkoutSessionView: View {
         }
         .onAppear {
             setupView()
+            print("WorkoutSessionView appeared for \(exerciseType.displayName)")
         }
         .onDisappear {
-            // The view model's deinit will handle cleanup
+            // Stop the countdown timer first
             stopCountdownTimer()
             
-            // Ensure camera is stopped if view disappears unexpectedly 
-            // (back button, app switching, etc.)
-            viewModel.cleanupResources()
+            // If the workout is still active (not finished), pause it when navigating away
+            if viewModel.workoutState != .finished {
+                // Pause the workout timer if it's running
+                if !viewModel.isPaused {
+                    viewModel.togglePause()
+                }
+                
+                print("WorkoutSessionView disappeared while workout was active - pausing workout")
+            }
+            
+            // Ensure comprehensive cleanup happens on the main actor
+            // This ensures all resources are properly released even if the view disappears unexpectedly
+            Task { @MainActor in
+                viewModel.cleanup()
+                print("WorkoutSessionView disappeared - resources cleaned up")
+            }
         }
         .navigationTitle(exerciseType.displayName)
         .navigationBarTitleDisplayMode(.inline)
@@ -101,12 +115,16 @@ struct WorkoutSessionView: View {
                 Button("End") {
                     if viewModel.workoutState == .counting || viewModel.workoutState == .paused {
                         viewModel.finishWorkout()
+                        print("Workout ended by user - cleanup initiated")
                     } else {
                         // If workout hasn't started yet, just dismiss
                         dismiss()
+                        print("View dismissed before workout started")
                     }
                 }
-                .foregroundColor(AppTheme.GeneratedColors.error) // Use design system color instead of .red
+                .foregroundColor(AppTheme.GeneratedColors.error)
+                // Disable the End button if the workout is already finished to prevent multiple calls
+                .disabled(viewModel.workoutState == .finished)
             }
             
             ToolbarItem(placement: .navigationBarTrailing) {

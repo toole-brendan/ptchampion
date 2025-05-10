@@ -76,6 +76,9 @@ class WorkoutSessionViewModel: ObservableObject {
     private var consecutiveFramesWithoutBody: Int = 0
     private let maxFramesWithoutBodyBeforeWarning = 15
     
+    // Add a property to track if cleanup has already been performed
+    private var hasPerformedCleanup: Bool = false
+    
     // MARK: - Computed Properties
     var elapsedTimeFormatted: String {
         workoutTimer.formattedElapsedTime
@@ -117,7 +120,7 @@ class WorkoutSessionViewModel: ObservableObject {
         // Schedule cleanup on the main actor
         Task { @MainActor in
             cleanup()
-            print("WorkoutSessionViewModel deinitialized.")
+            print("WorkoutSessionViewModel for \(exerciseType.displayName) deinitialized.")
         }
     }
     
@@ -183,18 +186,37 @@ class WorkoutSessionViewModel: ObservableObject {
             .store(in: &cancellables)
     }
     
-    private func cleanup() {
+    // Make cleanup public instead of private to allow external calls
+    public func cleanup() {
+        // Avoid performing cleanup multiple times unnecessarily
+        if hasPerformedCleanup {
+            print("Cleanup already performed for \(exerciseType.displayName) workout - skipping")
+            return
+        }
+        
+        print("Performing cleanup for \(exerciseType.displayName) workout")
+        hasPerformedCleanup = true
+        
+        // Cancel all publishers - this is safe to call multiple times
         cancellables.forEach { $0.cancel() }
         cancellables.removeAll()
+        
+        // Stop timer if running - safe to call if already stopped
         workoutTimer.stop()
+        
+        // Stop camera session - CameraService handles this safely if already stopped
         cameraService.stopSession()
+        
+        // Ensure we mark the workout as finished if not already
+        if workoutState != .finished && workoutState != .error("Camera error occurred") {
+            workoutState = .finished
+        }
     }
     
     // Public method for external cleanup
     func cleanupResources() {
-        // Stop timers and services
-        workoutTimer.stop()
-        cameraService.stopSession()
+        // Just call the main cleanup method
+        cleanup()
     }
     
     // MARK: - Camera Permission Handling
@@ -289,9 +311,17 @@ class WorkoutSessionViewModel: ObservableObject {
     }
     
     func finishWorkout() {
+        print("Finishing workout for \(exerciseType.displayName)...")
+        
         // Always stop timer and set paused
         isPaused = true
         workoutTimer.stop()
+        
+        // Stop camera session immediately to prevent frames from continuing to process
+        cameraService.stopSession()
+        
+        // Cancel all subscriptions to prevent callbacks during transition
+        cancellables.forEach { $0.cancel() }
         
         // If no workout session ID exists, we can't save a result
         // This shouldn't happen with our UI flow, but adding extra protection
@@ -328,6 +358,7 @@ class WorkoutSessionViewModel: ObservableObject {
                 try modelContext.save()
                 completedWorkoutResult = newResult
                 showWorkoutCompleteView = true
+                print("Workout saved successfully with ID: \(workoutID.uuidString)")
             } catch {
                 print("Failed to save workout: \(error.localizedDescription)")
                 saveErrorMessage = "Could not save your workout. Error: \(error.localizedDescription)"
@@ -336,9 +367,11 @@ class WorkoutSessionViewModel: ObservableObject {
         } else {
             saveErrorMessage = "Could not save workout: No database context available"
             showAlertForSaveError = true
+            print("No model context available to save workout")
         }
         
         workoutState = .finished
+        print("Workout state set to finished")
     }
     
     // MARK: - Grading Result Handling
