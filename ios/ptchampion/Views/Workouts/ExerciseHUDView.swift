@@ -34,7 +34,7 @@ struct ExerciseHUDView: View {
                 }
             }
             .padding()
-            .background(Color.black.opacity(0.7)) // Using Color.black with opacity as fallback
+            .background(.thinMaterial) // Using system blur material for better transparency
             .cornerRadius(AppTheme.GeneratedRadius.medium)
             .padding()
 
@@ -44,7 +44,7 @@ struct ExerciseHUDView: View {
                 .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 .padding()
-                .background(Color.black.opacity(0.7)) // Using Color.black with opacity as fallback
+                .background(.thinMaterial) // Using system blur material for better transparency
                 .cornerRadius(AppTheme.GeneratedRadius.small)
                 .padding(.horizontal)
             
@@ -92,7 +92,7 @@ struct ExerciseHUDView_Previews: PreviewProvider {
             togglePauseAction: { },
             toggleSoundAction: { }
         )
-        .background(Color.black.opacity(0.7)) // Dark background for preview
+        .background(Color.black.opacity(0.5)) // Lighter background for preview
         .previewLayout(.sizeThatFits)
     }
 }

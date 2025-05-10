@@ -121,10 +121,15 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
                 stableFramesInState = 0
                 currentState = .invalid
                 
+                #if DEBUG
                 let missingJointNames = missingJoints.map { 
                     String(describing: $0).replacingOccurrences(of: "VNHumanBodyPoseObservation.JointName.", with: "") 
                 }
                 feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
+                #else
+                feedback = "Cannot detect full body - step back or adjust camera"
+                #endif
+                
                 _lastFormIssue = feedback
                 return .invalidPose(reason: feedback)
             }

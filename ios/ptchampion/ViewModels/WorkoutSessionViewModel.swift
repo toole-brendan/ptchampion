@@ -258,6 +258,10 @@ class WorkoutSessionViewModel: ObservableObject {
         isSoundEnabled.toggle()
     }
     
+    func switchCamera() {
+        cameraService.switchCamera()
+    }
+    
     func finishWorkout() {
         isPaused = true
         workoutTimer.stop()

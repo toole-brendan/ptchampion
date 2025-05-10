@@ -83,6 +83,14 @@ struct WorkoutSessionView: View {
                 }
                 .foregroundColor(AppTheme.GeneratedColors.error) // Use design system color instead of .red
             }
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { viewModel.switchCamera() }) {
+                    Image(systemName: "arrow.triangle.2.circlepath.camera")
+                        .font(.system(size: 20))
+                }
+                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+            }
         }
         .fullScreenCover(isPresented: $viewModel.showWorkoutCompleteView) {
             if let result = viewModel.completedWorkoutResult {
