@@ -131,6 +131,11 @@
 		BFBF2EC22DCFE59500FFCF4F /* WorkoutSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2EC02DCFE59500FFCF4F /* WorkoutSessionViewModel.swift */; };
 		BFBF2EC32DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2EC12DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift */; };
 		BFBF2EC52DCFE5A700FFCF4F /* LocationPermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2EC42DCFE5A700FFCF4F /* LocationPermissionRequestView.swift */; };
+		BFBF2EC82DCFF6B900FFCF4F /* FitnessDeviceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2EC62DCFF6B900FFCF4F /* FitnessDeviceModels.swift */; };
+		BFBF2EC92DCFF6B900FFCF4F /* RunMetricSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2EC72DCFF6B900FFCF4F /* RunMetricSample.swift */; };
+		BFBF2ECB2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECA2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift */; };
+		BFBF2ECD2DCFF6F100FFCF4F /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */; };
+		BFBF2ECF2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECE2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -276,6 +281,11 @@
 		BFBF2EC02DCFE59500FFCF4F /* WorkoutSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSessionViewModel.swift; sourceTree = "<group>"; };
 		BFBF2EC12DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutViewModelProtocol.swift; sourceTree = "<group>"; };
 		BFBF2EC42DCFE5A700FFCF4F /* LocationPermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPermissionRequestView.swift; sourceTree = "<group>"; };
+		BFBF2EC62DCFF6B900FFCF4F /* FitnessDeviceModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitnessDeviceModels.swift; sourceTree = "<group>"; };
+		BFBF2EC72DCFF6B900FFCF4F /* RunMetricSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunMetricSample.swift; sourceTree = "<group>"; };
+		BFBF2ECA2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitnessDeviceManagerView.swift; sourceTree = "<group>"; };
+		BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		BFBF2ECE2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitnessDeviceManagerViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -419,6 +429,8 @@
 		BF63E4042DB1CF5A0037CD02 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BFBF2EC62DCFF6B900FFCF4F /* FitnessDeviceModels.swift */,
+				BFBF2EC72DCFF6B900FFCF4F /* RunMetricSample.swift */,
 				BF7960DC2DCFCCD300B03835 /* ActivityFeedItem.swift */,
 				BF199EBC2DCE226E00E23EFF /* UserProfileData.swift */,
 				BF89EB4A2DC98E9B003F8FE3 /* WorkoutDataPoint.swift */,
@@ -447,6 +459,7 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */,
 				BF199EB82DCE225200E23EFF /* MockUserService.swift */,
 				BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */,
 				BF89EB482DC98E8A003F8FE3 /* CommonNetworkTypes.swift */,
@@ -551,6 +564,7 @@
 		BF63E4432DB1EB980037CD02 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				BFBF2ECA2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift */,
 				BFBF2EC42DCFE5A700FFCF4F /* LocationPermissionRequestView.swift */,
 				BF8F67902DC928E40065A2D7 /* CameraPermissionRequestView.swift */,
 				BF63E4412DB1EB980037CD02 /* CameraPreviewView.swift */,
@@ -598,6 +612,7 @@
 		BF63E45F2DB1EBA40037CD02 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				BFBF2ECE2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift */,
 				BFBF2EC02DCFE59500FFCF4F /* WorkoutSessionViewModel.swift */,
 				BFBF2EC12DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift */,
 				BF199EBE2DCE228800E23EFF /* UserProfileViewModel.swift */,
@@ -849,6 +864,7 @@
 				BF63E44C2DB1EB980037CD02 /* RunWorkoutView.swift in Sources */,
 				BF63E4722DB1F3910037CD02 /* WorkoutHistoryRow.swift in Sources */,
 				BF63E44D2DB1EB980037CD02 /* PoseOverlayView.swift in Sources */,
+				BFBF2ECD2DCFF6F100FFCF4F /* HealthKitService.swift in Sources */,
 				BF63E44F2DB1EB980037CD02 /* WorkoutHistoryView.swift in Sources */,
 				BF63E4502DB1EB980037CD02 /* WorkoutSessionView.swift in Sources */,
 				BF63E4512DB1EB980037CD02 /* ProgressView.swift in Sources */,
@@ -863,6 +879,7 @@
 				BF7960ED2DCFD96400B03835 /* AppInfoView.swift in Sources */,
 				BF7960EE2DCFD96400B03835 /* SettingsView.swift in Sources */,
 				BF7960EF2DCFD96400B03835 /* ProfilePreferencesView.swift in Sources */,
+				BFBF2ECF2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift in Sources */,
 				BF7960F02DCFD96400B03835 /* MoreActionsView.swift in Sources */,
 				BF7960F12DCFD96400B03835 /* AccountActionsView.swift in Sources */,
 				BF63E4222DB1EB830037CD02 /* NetworkClient.swift in Sources */,
@@ -902,6 +919,7 @@
 				BF7960E52DCFCE9F00B03835 /* WorkoutStreaksView.swift in Sources */,
 				BF89EB522DC9A18C003F8FE3 /* BadgeType.swift in Sources */,
 				BF63E46D2DB1EBAF0037CD02 /* SitupGrader.swift in Sources */,
+				BFBF2ECB2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift in Sources */,
 				BF89EB4B2DC98E9B003F8FE3 /* WorkoutDataPoint.swift in Sources */,
 				BF63E46E2DB1EBAF0037CD02 /* PushupGrader.swift in Sources */,
 				BF63E4632DB1EBA40037CD02 /* AuthViewModel.swift in Sources */,
@@ -922,6 +940,8 @@
 				BF63E42F2DB1EB830037CD02 /* WorkoutService.swift in Sources */,
 				BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */,
 				BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */,
+				BFBF2EC82DCFF6B900FFCF4F /* FitnessDeviceModels.swift in Sources */,
+				BFBF2EC92DCFF6B900FFCF4F /* RunMetricSample.swift in Sources */,
 				BF63E4302DB1EB830037CD02 /* CameraServiceProtocol.swift in Sources */,
 				BF63E4312DB1EB830037CD02 /* KeychainService.swift in Sources */,
 				BF7960D52DCF927200B03835 /* EditProfileView.swift in Sources */,

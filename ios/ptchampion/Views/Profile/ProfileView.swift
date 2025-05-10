@@ -36,6 +36,7 @@ enum UnitSetting: String, CaseIterable, Identifiable {
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel
     @Environment(\.colorScheme) var colorScheme 
     @Environment(\.scenePhase) var scenePhase
     @Environment(\.dynamicTypeSize) var dynamicTypeSize
@@ -73,6 +74,7 @@ struct ProfileView: View {
                     
                     // More Options Section
                     MoreActionsView()
+                        .environmentObject(fitnessDeviceManagerViewModel)
                     
                     // App Version Information
                     AppInfoView()
@@ -116,6 +118,7 @@ struct ProfileView_Previews: PreviewProvider {
         NavigationStack {
             ProfileView()
                 .environmentObject(MockAuthViewModel())
+                .environmentObject(FitnessDeviceManagerViewModel())
         }
     }
 }

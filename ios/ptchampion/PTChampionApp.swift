@@ -5,6 +5,7 @@ import Foundation
 import PTDesignSystem
 import ObjectiveC
 import Combine
+import HealthKit
 
 // Import local files/modules
 @_exported import class UIKit.UIView  // Ensure UIView is available for swizzling
@@ -255,6 +256,11 @@ struct PTChampionApp: App {
     @StateObject private var featureFlagService = FeatureFlagService() // Default init works
     @StateObject private var poseDetectorService = PoseDetectorService() // Default init works
     @StateObject private var navigationState = NavigationState() // Default init works
+    
+    // Bluetooth and HealthKit services
+    @StateObject private var bluetoothService = BluetoothService()
+    @StateObject private var healthKitService = HealthKitService()
+    @StateObject private var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel // Declared, initialized in init
 
     // ViewModels that need to be shared or initialized early
     @StateObject private var authViewModel: AuthViewModel // Declared, initialized in init
@@ -269,7 +275,8 @@ struct PTChampionApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             WorkoutResultSwiftData.self,
-            WorkoutDataPoint.self // Make sure this is included
+            WorkoutDataPoint.self, // Make sure this is included
+            RunMetricSample.self   // Add RunMetricSample to schema
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
@@ -290,7 +297,9 @@ struct PTChampionApp: App {
         let keychainService = KeychainService()
         let networkClient = NetworkClient()
         let locationService = LocationService()
-        let bluetoothService = BluetoothService()
+        // Create local temporary instances of services that are also StateObjects
+        let tempBluetoothService = BluetoothService()
+        let tempHealthKitService = HealthKitService()
         let leaderboardService = LeaderboardService(networkClient: networkClient)
         let workoutService = WorkoutService(networkClient: networkClient)
         // Note: poseDetectorService and featureFlagService are initialized at declaration
@@ -308,7 +317,8 @@ struct PTChampionApp: App {
             locationService: locationService,
             workoutService: workoutService,
             keychainService: keychainService,
-            bluetoothService: bluetoothService,
+            bluetoothService: tempBluetoothService, // Use local temp instance instead of self.bluetoothService
+            healthKitService: tempHealthKitService, // Use local temp instance instead of self.healthKitService
             modelContext: nil // Set later using self.sharedModelContainer
         )
         let tempWorkoutHistoryViewModel = WorkoutHistoryViewModel(workoutService: workoutService) // modelContext set later
@@ -318,6 +328,10 @@ struct PTChampionApp: App {
             keychain: keychainService
         )
         let tempProgressViewModel = ProgressViewModel(workoutService: workoutService, keychainService: keychainService)
+        let tempFitnessDeviceManagerViewModel = FitnessDeviceManagerViewModel(
+            bluetoothService: tempBluetoothService, // Use local temp instance
+            healthKitService: tempHealthKitService // Use local temp instance
+        )
 
         // --- Step 3: Assign ALL @StateObjects declared without initial value ---
         // Note: featureFlagService & poseDetectorService are initialized at declaration
@@ -329,17 +343,8 @@ struct PTChampionApp: App {
         _workoutHistoryViewModel = StateObject(wrappedValue: tempWorkoutHistoryViewModel)
         _leaderboardViewModel = StateObject(wrappedValue: tempLeaderboardViewModel)
         _progressViewModel = StateObject(wrappedValue: tempProgressViewModel)
+        _fitnessDeviceManagerViewModel = StateObject(wrappedValue: tempFitnessDeviceManagerViewModel)
 
-        // --- Step 4: `self` is now fully initialized. Perform final configuration. ---
-        // Now we can safely access self.sharedModelContainer etc.
-        self.dashboardViewModel.setModelContext(self.sharedModelContainer.mainContext)
-        self.workoutHistoryViewModel.modelContext = self.sharedModelContainer.mainContext
-        self.runWorkoutViewModel.modelContext = self.sharedModelContainer.mainContext
-        self.workoutSessionViewModel.modelContext = self.sharedModelContainer.mainContext // Renamed from workoutViewModel
-        // We are using the default PoseDetectorService created within WorkoutSessionViewModel's init
-        // If we *needed* to use the app-level self.poseDetectorService, we'd need a setter method in WorkoutSessionViewModel
-        // e.g., self.workoutSessionViewModel.setPoseDetector(self.poseDetectorService)
-        
         // Activate AssistantKiller
         #if !targetEnvironment(simulator)
             AssistantKiller.activate()
@@ -353,12 +358,19 @@ struct PTChampionApp: App {
         #else
         print("DEBUG mode is OFF (RELEASE mode)")
         #endif
-        
-        // Call other setup methods
-        setupGlobalServices()
     }
-
+    
     private func setupGlobalServices() {
+        // Now that all properties are initialized, we can setup any further configuration
+        // --- Step 4: Perform final configuration now that `self` is fully initialized ---
+        dashboardViewModel.setModelContext(sharedModelContainer.mainContext)
+        workoutHistoryViewModel.modelContext = sharedModelContainer.mainContext
+        runWorkoutViewModel.modelContext = sharedModelContainer.mainContext
+        workoutSessionViewModel.modelContext = sharedModelContainer.mainContext // Renamed from workoutViewModel
+        // We are using the default PoseDetectorService created within WorkoutSessionViewModel's init
+        // If we *needed* to use the app-level self.poseDetectorService, we'd need a setter method in WorkoutSessionViewModel
+        // e.g., self.workoutSessionViewModel.setPoseDetector(self.poseDetectorService)
+        
         print("Global services setup complete.")
     }
     
@@ -399,6 +411,8 @@ struct PTChampionApp: App {
                         .environmentObject(navigationState)
                         .environmentObject(featureFlagService)
                         .environmentObject(poseDetectorService)
+                        .environmentObject(bluetoothService)
+                        .environmentObject(healthKitService)
                         // Pass ViewModels (Grouped)
                         .environmentObject(authViewModel)
                         .environmentObject(dashboardViewModel)
@@ -407,10 +421,14 @@ struct PTChampionApp: App {
                         .environmentObject(workoutHistoryViewModel)
                         .environmentObject(leaderboardViewModel)
                         .environmentObject(progressViewModel)
+                        .environmentObject(fitnessDeviceManagerViewModel)
                 }
             }
             .modelContainer(sharedModelContainer)
             .onAppear {
+                // Setup global services after all properties are initialized
+                setupGlobalServices()
+                
                 // Check initial authentication state on app launch
                 if navigationState.currentScreen == .loading {
                     // Let the LoadingView handle the navigation instead of doing it here
@@ -470,7 +488,7 @@ struct MainTabView: View {
                 UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
             }
         }
-        .onChange(of: selectedTab) { newTab in
+        .onChange(of: selectedTab) { _, newTab in
             print("Switched to tab: \(newTab)")
         }
     }
@@ -483,7 +501,8 @@ struct MainTabView: View {
 func createPreviewModelContainer() -> ModelContainer {
     let schema = Schema([
         WorkoutResultSwiftData.self,
-        WorkoutDataPoint.self
+        WorkoutDataPoint.self,
+        RunMetricSample.self
     ])
     let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
     do {

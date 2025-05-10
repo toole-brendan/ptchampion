@@ -2,6 +2,7 @@ import SwiftUI
 import PTDesignSystem
 
 struct MoreActionsView: View {
+    @EnvironmentObject var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     @State private var showingPrivacyPolicy = false
     @State private var showingConnectedDevices = false
@@ -43,7 +44,7 @@ struct MoreActionsView: View {
                     showingConnectedDevices = true
                 } label: {
                     HStack {
-                        Label("Connected Devices", systemImage: "antenna.radiowaves.left.and.right")
+                        Label("Fitness Devices", systemImage: "antenna.radiowaves.left.and.right")
                             .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
@@ -70,8 +71,8 @@ struct MoreActionsView: View {
         }
         .sheet(isPresented: $showingConnectedDevices) {
             NavigationView {
-                Text("Connected Devices View (TODO)")
-                    .navigationTitle("Connected Devices")
+                FitnessDeviceManagerView()
+                    .environmentObject(fitnessDeviceManagerViewModel)
                     .toolbar {
                         ToolbarItem(placement: .navigationBarTrailing) {
                             Button("Done") { 
@@ -107,6 +108,7 @@ struct MoreActionsView: View {
 struct MoreActionsView_Previews: PreviewProvider {
     static var previews: some View {
         MoreActionsView()
+            .environmentObject(FitnessDeviceManagerViewModel())
             .padding()
             .background(AppTheme.GeneratedColors.background)
             .previewLayout(.sizeThatFits)

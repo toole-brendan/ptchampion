@@ -4,6 +4,7 @@ import CoreLocation
 import SwiftData
 import SwiftUI
 import CoreBluetooth
+import HealthKit
 
 @MainActor
 class RunWorkoutViewModel: ObservableObject {
@@ -15,6 +16,7 @@ class RunWorkoutViewModel: ObservableObject {
     private let workoutService: WorkoutServiceProtocol
     private let keychainService: KeychainServiceProtocol
     private let bluetoothService: BluetoothServiceProtocol
+    private let healthKitService: HealthKitServiceProtocol
     var modelContext: ModelContext?
 
     private var cancellables = Set<AnyCancellable>()
@@ -56,6 +58,13 @@ class RunWorkoutViewModel: ObservableObject {
     @Published var isWatchLocationAvailable: Bool = false // Track if connected watch provides GPS
     @Published var completedWorkoutForDetail: WorkoutResultSwiftData? = nil
 
+    // HealthKit integration for Apple Watch
+    @Published var isUsingAppleWatch: Bool = false
+    @Published var workoutSessionState: Int = 1 // 1 = notStarted, 2 = running, 3 = paused, 4 = ended
+    
+    // Fallback priority (add to existing properties section)
+    @AppStorage("preferAppleWatchForHeartRate") private var preferAppleWatchForHeartRate: Bool = true
+
     // Internal Tracking
     private var workoutStartDate: Date?
     private var timerSubscription: AnyCancellable?
@@ -64,10 +73,20 @@ class RunWorkoutViewModel: ObservableObject {
     private var locationUpdates: [CLLocation] = []
     private var isTimerRunning: Bool = false
     private var locationSubscription: AnyCancellable?
+    
+    // Metric Samples Collection for History
+    private var heartRateSamples: [(timestamp: Date, elapsedSeconds: TimeInterval, value: Int)] = []
+    private var paceSamples: [(timestamp: Date, elapsedSeconds: TimeInterval, metersPerSecond: Double)] = []
+    @Published var currentCadence: Int? = nil // Make this property accessible from views
+    private var cadenceSamples: [(timestamp: Date, elapsedSeconds: TimeInterval, stepsPerMinute: Int)] = []
+    private var lastSampleTime: Date?
 
     // Constants
     private let metersToMiles = 0.000621371
     private let metersToKilometers = 0.001
+    
+    // Sample collection settings
+    private let sampleIntervalSeconds: TimeInterval = 5 // Collect detailed samples every 5 seconds
 
     private var useWatchGPS: Bool { // Computed property to check if watch should be preferred
         // Prefer watch if connected AND location service is available on it
@@ -79,16 +98,19 @@ class RunWorkoutViewModel: ObservableObject {
          workoutService: WorkoutServiceProtocol = WorkoutService(),
          keychainService: KeychainServiceProtocol = KeychainService(),
          bluetoothService: BluetoothServiceProtocol = BluetoothService(),
+         healthKitService: HealthKitServiceProtocol = HealthKitService(),
          modelContext: ModelContext? = nil) {
         self.locationService = locationService
         self.workoutService = workoutService
         self.keychainService = keychainService
         self.bluetoothService = bluetoothService
+        self.healthKitService = healthKitService
         self.modelContext = modelContext
         
         print("RunWorkoutViewModel: Initializing...")
         subscribeToLocationStatus()
         subscribeToBluetoothStatus()
+        subscribeToHealthKitStatus()
         checkInitialLocationPermission()
         updateDistanceDisplay()
         updatePaceDisplay(elapsedSeconds: 0)
@@ -120,6 +142,7 @@ class RunWorkoutViewModel: ObservableObject {
                  case .disconnected, .failed:
                      self.connectedDeviceName = nil
                      self.currentHeartRate = nil
+                     self.currentCadence = nil
                      // If run was active & using watch, switch back to phone
                      if (self.runState == .running || self.runState == .paused) && self.locationSource == .watch {
                           print("RunWorkoutViewModel: Watch disconnected during run, switching to phone GPS.")
@@ -134,7 +157,56 @@ class RunWorkoutViewModel: ObservableObject {
         bluetoothService.heartRatePublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] heartRate in
-                self?.currentHeartRate = heartRate
+                guard let self = self else { return }
+                self.currentHeartRate = heartRate
+                
+                // If workout is running, log heart rate sample
+                if self.runState == .running, let startDate = self.workoutStartDate {
+                    let now = Date()
+                    let elapsed = now.timeIntervalSince(startDate) + self.accumulatedTime
+                    self.heartRateSamples.append((timestamp: now, elapsedSeconds: elapsed, value: heartRate))
+                    
+                    // Attempt to create a complete metric sample
+                    self.collectMetricSample(at: now)
+                }
+            }
+            .store(in: &cancellables)
+            
+        // Subscribe to cadence updates
+        bluetoothService.cadencePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] cadence in
+                guard let self = self else { return }
+                self.currentCadence = cadence.stepsPerMinute
+                
+                // If workout is running, log cadence sample
+                if self.runState == .running, let startDate = self.workoutStartDate {
+                    let now = Date()
+                    let elapsed = now.timeIntervalSince(startDate) + self.accumulatedTime
+                    self.cadenceSamples.append((timestamp: now, elapsedSeconds: elapsed, stepsPerMinute: cadence.stepsPerMinute))
+                    
+                    // Attempt to create a complete metric sample
+                    self.collectMetricSample(at: now)
+                }
+            }
+            .store(in: &cancellables)
+            
+        // Subscribe to pace updates
+        bluetoothService.pacePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] pace in
+                guard let self = self else { return }
+                
+                // Only update if we get valid pace data and we're running
+                if pace.metersPerSecond > 0 && self.runState == .running, let startDate = self.workoutStartDate {
+                    let now = Date()
+                    let elapsed = now.timeIntervalSince(startDate) + self.accumulatedTime
+                    self.paceSamples.append((timestamp: now, elapsedSeconds: elapsed, metersPerSecond: pace.metersPerSecond))
+                    self.updateCurrentPaceDisplay(speed: pace.metersPerSecond)
+                    
+                    // Attempt to create a complete metric sample
+                    self.collectMetricSample(at: now)
+                }
             }
             .store(in: &cancellables)
 
@@ -161,6 +233,11 @@ class RunWorkoutViewModel: ObservableObject {
                guard let self = self, self.locationSource == .watch else { return } // Only process if watch is the source
                print("RunWorkoutViewModel: Received location from WATCH")
                self.processLocationUpdate(location)
+               
+               // Attempt to create a complete metric sample when we get location data
+               if self.runState == .running {
+                   self.collectMetricSample(at: location.timestamp)
+               }
            }
            .store(in: &cancellables)
     }
@@ -186,6 +263,59 @@ class RunWorkoutViewModel: ObservableObject {
                  }
              }
              .store(in: &cancellables)
+    }
+
+    private func subscribeToHealthKitStatus() {
+        // Subscribe to HealthKit workout session state changes
+        healthKitService.workoutSessionStatePublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] state in
+                guard let self = self else { return }
+                self.workoutSessionState = state
+                
+                // Handle the workout session state changes
+                switch state {
+                case 2: // Running
+                    print("RunWorkoutViewModel: HealthKit workout session is running")
+                    self.isUsingAppleWatch = true
+                case 3: // Paused
+                    print("RunWorkoutViewModel: HealthKit workout session is paused")
+                case 4: // Ended
+                    print("RunWorkoutViewModel: HealthKit workout session has ended")
+                    self.isUsingAppleWatch = false
+                default:
+                    break
+                }
+            }
+            .store(in: &cancellables)
+        
+        // Subscribe to HealthKit heart rate updates
+        healthKitService.heartRatePublisher
+            .receive(on: DispatchQueue.main)
+            .sink(
+                receiveCompletion: { _ in },
+                receiveValue: { [weak self] heartRate in
+                    guard let self = self, 
+                          self.preferAppleWatchForHeartRate,
+                          self.runState == .running else { return }
+                    
+                    // Only use Apple Watch heart rate if we prefer it or don't have a BLE device
+                    if self.preferAppleWatchForHeartRate || self.currentHeartRate == nil {
+                        self.currentHeartRate = heartRate
+                        
+                        // Log the heart rate sample
+                        if let startDate = self.workoutStartDate {
+                            let now = Date()
+                            let elapsed = now.timeIntervalSince(startDate) + self.accumulatedTime
+                            self.heartRateSamples.append((timestamp: now, elapsedSeconds: elapsed, value: heartRate))
+                            
+                            // Attempt to create a complete metric sample
+                            self.collectMetricSample(at: now)
+                        }
+                    }
+                }
+            )
+            .store(in: &cancellables)
     }
 
     private func checkInitialLocationPermission() {
@@ -418,6 +548,10 @@ class RunWorkoutViewModel: ObservableObject {
         
         print("RunWorkoutViewModel: Starting run...")
         locationUpdates = []
+        heartRateSamples = []
+        paceSamples = []
+        cadenceSamples = []
+        lastSampleTime = nil
         totalDistanceMeters = 0.0
         accumulatedTime = 0
         errorMessage = nil
@@ -428,6 +562,20 @@ class RunWorkoutViewModel: ObservableObject {
         runState = .running
         startTimer()
         updateLocationSubscription() // Decide source and subscribe
+        
+        // If HealthKit is available and authorized, start a workout session
+        Task {
+            do {
+                // Check authorization
+                let isAuthorized = try await healthKitService.requestAuthorization()
+                if isAuthorized {
+                    try await healthKitService.startWorkoutSession(workoutType: .running)
+                }
+            } catch {
+                print("RunWorkoutViewModel: Failed to start HealthKit workout session: \(error.localizedDescription)")
+                // Continue the run even if HealthKit fails - we'll use device sensors
+            }
+        }
     }
 
     func pauseRun() {
@@ -436,6 +584,18 @@ class RunWorkoutViewModel: ObservableObject {
         runState = .paused
         pauseTimer()
         unsubscribeFromLocationUpdates() // Stop location updates from current source
+        
+        // Pause HealthKit workout session if active
+        Task {
+            do {
+                if workoutSessionState == 2 { // 2 = running
+                    try await healthKitService.pauseWorkoutSession()
+                }
+            } catch {
+                print("RunWorkoutViewModel: Failed to pause HealthKit workout session: \(error.localizedDescription)")
+                // Continue with local pause even if HealthKit fails
+            }
+        }
     }
 
     func resumeRun() {
@@ -444,6 +604,18 @@ class RunWorkoutViewModel: ObservableObject {
         runState = .running
         startTimer()
         updateLocationSubscription() // Re-subscribe to appropriate source
+        
+        // Resume HealthKit workout session if active
+        Task {
+            do {
+                if workoutSessionState == 3 { // 3 = paused
+                    try await healthKitService.resumeWorkoutSession()
+                }
+            } catch {
+                print("RunWorkoutViewModel: Failed to resume HealthKit workout session: \(error.localizedDescription)")
+                // Continue with local resume even if HealthKit fails
+            }
+        }
     }
 
     func stopRun() {
@@ -467,8 +639,21 @@ class RunWorkoutViewModel: ObservableObject {
         if locationUpdates.isEmpty {
             updateCurrentPaceDisplay(speed: 0)
         }
-
-        Task { await saveWorkoutToServerAndLocal(elapsedTime: finalElapsedTime) }
+        
+        // End HealthKit workout session if active
+        Task {
+            do {
+                if workoutSessionState == 2 || workoutSessionState == 3 { // 2 = running, 3 = paused
+                    try await healthKitService.endWorkoutSession()
+                }
+            } catch {
+                print("RunWorkoutViewModel: Failed to end HealthKit workout session: \(error.localizedDescription)")
+                // Continue with saving local workout even if HealthKit fails
+            }
+            
+            // Save to server and local storage after HealthKit is finished
+            await saveWorkoutToServerAndLocal(elapsedTime: finalElapsedTime)
+        }
     }
 
     private func saveWorkoutToServerAndLocal(elapsedTime: TimeInterval) async {
@@ -540,6 +725,9 @@ class RunWorkoutViewModel: ObservableObject {
         // Insert and save
         context.insert(localRecord)
         
+        // Save detailed run metrics
+        saveRunMetricSamples(for: localRecord)
+        
         do {
             try context.save()
             print("RunWorkoutViewModel: Workout saved locally successfully.")
@@ -608,6 +796,139 @@ class RunWorkoutViewModel: ObservableObject {
     func requestLocationPermission() {
         print("RunWorkoutViewModel: Explicitly requesting location permission...")
         locationService.requestLocationPermission()
+    }
+
+    // Helper method to collect a comprehensive metric sample
+    private func collectMetricSample(at timestamp: Date) {
+        guard runState == .running, 
+              let startDate = workoutStartDate else { return }
+        
+        // Don't collect samples too frequently
+        if let lastSample = lastSampleTime, 
+           timestamp.timeIntervalSince(lastSample) < sampleIntervalSeconds {
+            return
+        }
+        
+        lastSampleTime = timestamp
+        
+        // Calculate elapsed time
+        let elapsed = timestamp.timeIntervalSince(startDate) + accumulatedTime
+        
+        // Get the latest location if available
+        let latestLocation = locationUpdates.last
+        
+        // Extract current pace from formatted pace if not directly available
+        var currentPaceValue: Double? = nil
+        if let latestLocation = latestLocation, latestLocation.speed > 0 {
+            currentPaceValue = latestLocation.speed
+        } else if let lastPaceSample = paceSamples.last {
+            currentPaceValue = lastPaceSample.metersPerSecond
+        }
+        
+        // Log this comprehensive sample with timestamp alignment
+        print("RunWorkoutViewModel: Collecting metric sample at \(elapsed) seconds - HR: \(currentHeartRate ?? 0), Pace: \(currentPaceValue ?? 0), Cadence: \(currentCadence ?? 0)")
+    }
+
+    // New method to save detailed metric samples
+    private func saveRunMetricSamples(for workout: WorkoutResultSwiftData) {
+        guard let context = modelContext else { return }
+        
+        print("RunWorkoutViewModel: Saving \(heartRateSamples.count) heart rate samples, \(paceSamples.count) pace samples, \(locationUpdates.count) location points")
+        
+        // Create consolidated samples from all our data
+        // This approach creates samples that align with locations when possible
+        for location in locationUpdates {
+            // Find nearest heart rate and cadence samples to this location update
+            let elapsed = location.timestamp.timeIntervalSince(workout.startTime)
+            
+            // Find the closest heart rate reading
+            let nearestHR = findClosestHeartRate(to: location.timestamp)
+            
+            // Find the closest cadence reading
+            let nearestCadence = findClosestCadence(to: location.timestamp)
+            
+            // Create the sample with all available data
+            let sample = RunMetricSample(
+                workoutID: workout.id,
+                timestamp: location.timestamp,
+                elapsedSeconds: elapsed,
+                heartRate: nearestHR,
+                paceMetersPerSecond: location.speed > 0 ? location.speed : nil,
+                cadenceStepsPerMinute: nearestCadence,
+                latitude: location.coordinate.latitude,
+                longitude: location.coordinate.longitude,
+                altitude: location.altitude,
+                horizontalAccuracy: location.horizontalAccuracy
+            )
+            
+            context.insert(sample)
+        }
+        
+        // Add any standalone heart rate samples that don't align with location updates
+        let locationTimestamps = Set(locationUpdates.map { $0.timestamp })
+        for hrSample in heartRateSamples {
+            // Skip if we already have a sample at this timestamp (within 1 second)
+            if locationTimestamps.contains(where: { abs($0.timeIntervalSince(hrSample.timestamp)) < 1.0 }) {
+                continue
+            }
+            
+            let sample = RunMetricSample(
+                workoutID: workout.id,
+                timestamp: hrSample.timestamp,
+                elapsedSeconds: hrSample.elapsedSeconds,
+                heartRate: hrSample.value
+            )
+            
+            context.insert(sample)
+        }
+        
+        print("RunWorkoutViewModel: Saved run metric samples.")
+    }
+    
+    // Helper to find closest heart rate to a timestamp
+    private func findClosestHeartRate(to timestamp: Date) -> Int? {
+        guard !heartRateSamples.isEmpty else { return nil }
+        
+        let closestSample = heartRateSamples.min(by: { 
+            abs($0.timestamp.timeIntervalSince(timestamp)) < abs($1.timestamp.timeIntervalSince(timestamp))
+        })
+        
+        // Only use if within 10 seconds of the timestamp
+        guard let sample = closestSample,
+              abs(sample.timestamp.timeIntervalSince(timestamp)) < 10 else {
+            return nil
+        }
+        
+        return sample.value
+    }
+    
+    // Helper to find closest cadence to a timestamp
+    private func findClosestCadence(to timestamp: Date) -> Int? {
+        guard !cadenceSamples.isEmpty else { return nil }
+        
+        let closestSample = cadenceSamples.min(by: { 
+            abs($0.timestamp.timeIntervalSince(timestamp)) < abs($1.timestamp.timeIntervalSince(timestamp))
+        })
+        
+        // Only use if within 10 seconds of the timestamp
+        guard let sample = closestSample,
+              abs(sample.timestamp.timeIntervalSince(timestamp)) < 10 else {
+            return nil
+        }
+        
+        return sample.stepsPerMinute
+    }
+
+    // Add this helper method to determine data source priority
+    private func shouldUseAppleWatchFor(_ dataType: String) -> Bool {
+        switch dataType {
+        case "heartRate":
+            return preferAppleWatchForHeartRate && isUsingAppleWatch
+        case "location":
+            return useWatchGPS
+        default:
+            return false
+        }
     }
 }
 
