@@ -1,5 +1,6 @@
 import SwiftUI
 import PTDesignSystem
+import SwiftUIIntrospect
 /// A text field that shows a focus ring when focused using keyboard or accessibility
 ///
 /// This component provides a focus state that changes the appearance when the field is selected.
@@ -49,6 +50,19 @@ public struct FocusableTextField: View {
                 .stroke(isFocused ? AppTheme.GeneratedColors.brassGold : Color.clear, lineWidth: 2)
         )
         .animation(.easeInOut(duration: 0.2), value: isFocused)
+        .introspect(.textField) { (textField: UITextField) in
+            // Disable password suggestions
+            if isSecure {
+                textField.textContentType = nil
+                textField.passwordRules = nil
+                
+                #if targetEnvironment(simulator)
+                // This addresses the automatic strong password suggestion in simulator
+                textField.isSecureTextEntry = true
+                textField.textContentType = UITextContentType.oneTimeCode // This prevents auto-fill on simulator
+                #endif
+            }
+        }
     }
 }
 
