@@ -83,59 +83,65 @@ struct UserProfileView: View {
     }
     
     private var statsSectionView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            PTLabel("Performance Stats", style: .body)
-                .padding(.bottom, 4)
-            HStack(spacing: 12) {
-                StatCard(title: "Total Workouts", value: "\(viewModel.userDetails.totalWorkouts)", unit: "Sessions", color: .blue, iconName: "figure.walk")
-                StatCard(title: "Avg. Score", value: viewModel.userDetails.averageScore, unit: "Overall", color: .green, iconName: "star.leadinghalf.filled")
+        PTCard {
+            VStack(alignment: .leading, spacing: 12) {
+                PTLabel("Performance Stats", style: .body)
+                    .padding(.bottom, 4)
+                HStack(spacing: 12) {
+                    StatCard(title: "Total Workouts", value: "\(viewModel.userDetails.totalWorkouts)", unit: "Sessions", color: .blue, iconName: "figure.walk")
+                    StatCard(title: "Avg. Score", value: viewModel.userDetails.averageScore, unit: "Overall", color: .green, iconName: "star.leadinghalf.filled")
+                }
+                // TODO: Add more StatCards if applicable, e.g., Streak, Time Trained
             }
-            // TODO: Add more StatCards if applicable, e.g., Streak, Time Trained
         }
     }
     
     private var personalBestsSectionView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            PTLabel("Personal Bests", style: .body)
-                .padding(.bottom, 4)
-            if viewModel.userDetails.personalBests.isEmpty {
-                PTLabel("No personal bests recorded yet.", style: .body)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-            } else {
-                ForEach(viewModel.userDetails.personalBests, id: \.self) { (pb: String) in
-                    HStack {
-                        Image(systemName: "trophy.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.warning)
-                        PTLabel(pb, style: .body)
-                        Spacer()
+        PTCard {
+            VStack(alignment: .leading, spacing: 8) {
+                PTLabel("Personal Bests", style: .body)
+                    .padding(.bottom, 4)
+                if viewModel.userDetails.personalBests.isEmpty {
+                    PTLabel("No personal bests recorded yet.", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                } else {
+                    ForEach(viewModel.userDetails.personalBests, id: \.self) { (pb: String) in
+                        HStack {
+                            Image(systemName: "trophy.fill")
+                                .foregroundColor(AppTheme.GeneratedColors.warning)
+                            PTLabel(pb, style: .body)
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
                 }
             }
         }
     }
     
     private var recentActivitySectionView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            PTLabel("Recent Activity", style: .body)
-                .padding(.bottom, 4)
-            if viewModel.userDetails.recentActivity.isEmpty {
-                PTLabel("No recent activity to display.", style: .body)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-            } else {
-                ForEach(viewModel.userDetails.recentActivity) { (activity: FormattedActivityItem) in
-                    HStack(alignment: .top) {
-                        Image(systemName: activity.iconName)
-                            .foregroundColor(AppTheme.GeneratedColors.primary)
-                            .frame(width: 20, alignment: .center) // Align icons
-                        VStack(alignment: .leading) {
-                            PTLabel(activity.description, style: .body)
-                            PTLabel(activity.relativeDate, style: .caption)
-                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+        PTCard {
+            VStack(alignment: .leading, spacing: 8) {
+                PTLabel("Recent Activity", style: .body)
+                    .padding(.bottom, 4)
+                if viewModel.userDetails.recentActivity.isEmpty {
+                    PTLabel("No recent activity to display.", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                } else {
+                    ForEach(viewModel.userDetails.recentActivity) { (activity: FormattedActivityItem) in
+                        HStack(alignment: .top) {
+                            Image(systemName: activity.iconName)
+                                .foregroundColor(AppTheme.GeneratedColors.primary)
+                                .frame(width: 20, alignment: .center) // Align icons
+                            VStack(alignment: .leading) {
+                                PTLabel(activity.description, style: .body)
+                                PTLabel(activity.relativeDate, style: .caption)
+                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            }
+                            Spacer()
                         }
-                        Spacer()
+                        .padding(.vertical, 4)
                     }
-                    .padding(.vertical, 4)
                 }
             }
         }

@@ -20,6 +20,20 @@ fileprivate extension View {
     }
 }
 
+// Moved Enums to top-level for broader access
+enum AppearanceSetting: String, CaseIterable, Identifiable {
+    case light = "Light"
+    case dark = "Dark"
+    case system = "System"
+    var id: String { self.rawValue }
+}
+
+enum UnitSetting: String, CaseIterable, Identifiable {
+    case metric = "Metric (kg, km)"
+    case imperial = "Imperial (lbs, miles)"
+    var id: String { self.rawValue }
+}
+
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @Environment(\.colorScheme) var colorScheme 
@@ -30,26 +44,12 @@ struct ProfileView: View {
     @State private var showingSettings = false // Add state for settings sheet
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     
-    // Enum for appearance settings
-    enum AppearanceSetting: String, CaseIterable, Identifiable {
-        case light = "Light"
-        case dark = "Dark"
-        case system = "System"
-        var id: String { self.rawValue }
-    }
-    // Persist selected appearance using AppStorage
-    @AppStorage("selectedAppearance") private var selectedAppearance: AppearanceSetting = .system
-
-    // Enum for unit settings
-    enum UnitSetting: String, CaseIterable, Identifiable {
-        case metric = "Metric (kg, km)"
-        case imperial = "Imperial (lbs, miles)"
-        var id: String { self.rawValue }
-    }
-    @AppStorage("selectedUnit") private var selectedUnit: UnitSetting = .metric
-    
-    @AppStorage("workoutRemindersEnabled") private var workoutRemindersEnabled: Bool = true
-    @AppStorage("achievementNotificationsEnabled") private var achievementNotificationsEnabled: Bool = true
+    // AppStorage moved to ProfileSettingsSectionView or remains here if other sections need them.
+    // For settingsSection extraction, these will be in the new view.
+    // @AppStorage("selectedAppearance") private var selectedAppearance: AppearanceSetting = .system
+    // @AppStorage("selectedUnit") private var selectedUnit: UnitSetting = .metric
+    // @AppStorage("workoutRemindersEnabled") private var workoutRemindersEnabled: Bool = true
+    // @AppStorage("achievementNotificationsEnabled") private var achievementNotificationsEnabled: Bool = true
 
     @State private var showingChangePassword = false
     @State private var showingPrivacyPolicy = false
@@ -74,19 +74,15 @@ struct ProfileView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                     
-                    // Modernized Profile Info Card
-                    profileInfoCard()
+                    ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)
                     
-                    // Settings Sections using cards
-                    settingsSection()
+                    // Call the new ProfileSettingsSectionView
+                    ProfileSettingsSectionView(hapticGenerator: hapticGenerator)
                     
-                    // Account Section
                     accountSection()
                     
-                    // More Section
                     moreSection()
                     
-                    // Footer with app version
                     Text("App Version: \(appVersion())")
                         .font(.footnote)
                         .foregroundColor(AppTheme.GeneratedColors.textTertiary)
@@ -170,166 +166,6 @@ struct ProfileView: View {
                 Button("Cancel", role: .cancel) { }
             } message: {
                 Text("Are you sure you want to delete your account? This action cannot be undone.")
-            }
-            .onAppear {
-                applyAppearance(selectedAppearance)
-                hapticGenerator.prepare() // Prepare haptic generator when view appears
-            }
-            .onChange(of: scenePhase) { newPhase in
-                if newPhase == .active {
-                    applyAppearance(selectedAppearance)
-                }
-            }
-        }
-    }
-    
-    // MARK: - Profile Info Card
-    @ViewBuilder
-    private func profileInfoCard() -> some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-            // Avatar image or placeholder
-            ZStack {
-                Circle()
-                    .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
-                    .frame(width: 100, height: 100)
-                
-                Image(systemName: "person.crop.circle.fill")
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundColor(AppTheme.GeneratedColors.primary)
-                    .frame(width: 80, height: 80)
-            }
-            .padding(.top, AppTheme.GeneratedSpacing.medium)
-            
-            // User information
-            VStack(spacing: AppTheme.GeneratedSpacing.small) {
-                Text(authViewModel.displayName ?? "N/A")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                
-                Text(authViewModel.email ?? "N/A")
-                    .font(.subheadline)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-            }
-            
-            // Edit profile button
-            Button {
-                hapticGenerator.impactOccurred(intensity: 0.5)
-                showingEditProfile = true
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "pencil")
-                        .font(.footnote)
-                    Text("Edit Profile")
-                        .font(.footnote.weight(.medium))
-                }
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(
-                    Capsule()
-                        .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
-                )
-            }
-            .padding(.bottom, AppTheme.GeneratedSpacing.small)
-        }
-        .frame(maxWidth: .infinity)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
-        .profileShadow(size: .small)
-    }
-    
-    // MARK: - Settings Section
-    @ViewBuilder
-    private func settingsSection() -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-            // Section Header
-            sectionHeader("Settings")
-            
-            // Appearance & Units Card
-            settingsCard {
-                // Appearance Picker
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-                    HStack {
-                        Label("Appearance", systemImage: "paintbrush.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        
-                        Spacer()
-                        
-                        Picker("", selection: $selectedAppearance) {
-                            ForEach(AppearanceSetting.allCases) { appearance in
-                                Text(appearance.rawValue).tag(appearance)
-                            }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        .frame(width: 120)
-                    }
-                    .frame(height: 44) // Ensure touch target size
-                    
-                    // Dark mode notice
-                    Text("Dark mode support is in progress.")
-                        .font(.caption)
-                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                        .italic()
-                        .padding(.leading, 28) // Align with text after icon
-                }
-                
-                Divider()
-                    .padding(.vertical, 8)
-                
-                // Units Picker
-                HStack {
-                    Label("Units", systemImage: "ruler")
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    
-                    Spacer()
-                    
-                    Picker("", selection: $selectedUnit) {
-                        ForEach(UnitSetting.allCases) { unit in
-                            Text(unit.rawValue).tag(unit)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .frame(width: 200)
-                }
-                .frame(height: 44)
-            }
-            
-            // Notifications Card
-            settingsCard {
-                // Workout Reminders Toggle
-                HStack {
-                    Label("Workout Reminders", systemImage: "bell.fill")
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    
-                    Spacer()
-                    
-                    Toggle("", isOn: $workoutRemindersEnabled)
-                        .tint(AppTheme.GeneratedColors.brassGold)
-                        .onChange(of: workoutRemindersEnabled) { _ in
-                            hapticGenerator.impactOccurred(intensity: 0.4)
-                        }
-                }
-                .frame(height: 44)
-                
-                Divider()
-                    .padding(.vertical, 8)
-                
-                // New Achievements Toggle
-                HStack {
-                    Label("New Achievements", systemImage: "trophy.fill")
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    
-                    Spacer()
-                    
-                    Toggle("", isOn: $achievementNotificationsEnabled)
-                        .tint(AppTheme.GeneratedColors.brassGold)
-                        .onChange(of: achievementNotificationsEnabled) { _ in
-                            hapticGenerator.impactOccurred(intensity: 0.4)
-                        }
-                }
-                .frame(height: 44)
             }
         }
     }
@@ -474,20 +310,6 @@ struct ProfileView: View {
     
     private func appVersion() -> String {
         return Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "N/A"
-    }
-
-    private func applyAppearance(_ appearance: AppearanceSetting) {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        windowScene.windows.forEach { window in
-            switch appearance {
-            case .light:
-                window.overrideUserInterfaceStyle = .light
-            case .dark:
-                window.overrideUserInterfaceStyle = .dark
-            case .system:
-                window.overrideUserInterfaceStyle = .unspecified
-            }
-        }
     }
 }
 

@@ -460,6 +460,7 @@ struct MainTabView: View {
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(Tab.profile)
         }
+        .tint(AppTheme.GeneratedColors.brassGold)
         .onAppear { 
             // Customize TabView appearance 
             let tabBarAppearance = UITabBarAppearance()
