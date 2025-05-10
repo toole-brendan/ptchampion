@@ -8,7 +8,21 @@ struct KnownServiceUUIDs {
     static let heartRate = CBUUID(string: "180D")
     static let locationAndNavigation = CBUUID(string: "1819")
     static let deviceInformation = CBUUID(string: "180A")
-    // Add UUIDs specific to Garmin, Polar, etc. if known and useful for filtering
+    static let runningSpeedAndCadence = CBUUID(string: "1814") // Added RSC service
+    static let batteryService = CBUUID(string: "180F") // Added Battery service
+    
+    // Specialized UUIDs for specific device brands if needed
+    struct Garmin {
+        static let proprietary = CBUUID(string: "6A4E3E10-667B-11E3-949A-0800200C9A66") // Example Garmin proprietary service
+    }
+    
+    struct Polar {
+        static let proprietary = CBUUID(string: "6A4E3E10-667B-11E3-949A-0800200C9A67") // Example Polar proprietary service
+    }
+    
+    struct Suunto {
+        static let proprietary = CBUUID(string: "6A4E3E10-667B-11E3-949A-0800200C9A68") // Example Suunto proprietary service
+    }
 }
 
 // Define known Characteristic UUIDs
@@ -20,12 +34,22 @@ struct KnownCharacteristicUUIDs {
     // Location and Navigation Service
     static let lnFeature = CBUUID(string: "2AB5")            // Read
     static let locationAndSpeed = CBUUID(string: "2A67")     // Notify
-    // Add others like Position Quality (2A69), LN Control Point (2A6B) if needed
+    static let navigationControl = CBUUID(string: "2A5A")    // Write
+    static let positionQuality = CBUUID(string: "2A69")      // Read, Notify
+    
+    // Running Speed and Cadence Service
+    static let rscFeature = CBUUID(string: "2A54")           // Read
+    static let rscMeasurement = CBUUID(string: "2A53")       // Notify
+    static let sensorLocation = CBUUID(string: "2A5D")       // Read
     
     // Device Information Service
-    static let manufacturerName = CBUUID(string: "2A29")   // Read
-    static let modelNumber = CBUUID(string: "2A24")      // Read
-    static let firmwareRevision = CBUUID(string: "2A26")  // Read
+    static let manufacturerName = CBUUID(string: "2A29")     // Read
+    static let modelNumber = CBUUID(string: "2A24")          // Read
+    static let firmwareRevision = CBUUID(string: "2A26")     // Read
+    static let serialNumber = CBUUID(string: "2A25")         // Read
+    
+    // Battery Service
+    static let batteryLevel = CBUUID(string: "2A19")         // Read, Notify
 }
 
 // Represents a discovered peripheral with its advertisement data
@@ -36,6 +60,43 @@ struct DiscoveredPeripheral: Identifiable, Equatable {
     
     var id: UUID { peripheral.identifier }
     var name: String { peripheral.name ?? "Unknown Device" }
+    
+    // Helper to detect device type from advertisement data
+    var deviceType: FitnessDeviceType {
+        // Check for known manufacturer data or service UUIDs
+        if let serviceUUIDs = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] {
+            if serviceUUIDs.contains(KnownServiceUUIDs.runningSpeedAndCadence) {
+                // It's a running device, try to identify brand from name
+                if let name = peripheral.name?.lowercased() {
+                    if name.contains("garmin") {
+                        return .garmin
+                    } else if name.contains("polar") {
+                        return .polar
+                    } else if name.contains("suunto") {
+                        return .suunto
+                    }
+                }
+            }
+        }
+        
+        // Check for manufacturer data to identify vendor
+        if let manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
+           manufacturerData.count >= 2 {
+            // First two bytes are company identifier
+            let companyID = UInt16(manufacturerData[0]) | (UInt16(manufacturerData[1]) << 8)
+            
+            // Known company IDs (from Bluetooth SIG)
+            switch companyID {
+            case 76: return .appleWatch    // Apple
+            case 89: return .garmin        // Garmin International, Inc.
+            case 193: return .polar        // Polar Electro Oy
+            case 299: return .suunto       // Suunto
+            default: break
+            }
+        }
+        
+        return .unknown
+    }
 
     static func == (lhs: DiscoveredPeripheral, rhs: DiscoveredPeripheral) -> Bool {
         lhs.id == rhs.id
@@ -112,9 +173,12 @@ protocol BluetoothServiceProtocol {
 */
 
 // MARK: - Bluetooth Service Implementation
-class BluetoothService: NSObject, BluetoothServiceProtocol {
+class BluetoothService: NSObject, BluetoothServiceProtocol, ObservableObject {
     
     private var centralManager: CBCentralManager!
+    
+    // UserDefaults keys
+    private let preferredDeviceUUIDKey = "com.ptchampion.preferredBluetoothDeviceUUID"
     
     // Combine Publishers
     private let centralManagerStateSubject = CurrentValueSubject<CBManagerState, Never>(.unknown)
@@ -157,8 +221,36 @@ class BluetoothService: NSObject, BluetoothServiceProtocol {
         locationServiceAvailableSubject.eraseToAnyPublisher()
     }
     
+    // New publishers for additional metrics
+    private let paceSubject = CurrentValueSubject<RunningPace, Never>(RunningPace.zero)
+    var pacePublisher: AnyPublisher<RunningPace, Never> {
+        paceSubject.eraseToAnyPublisher()
+    }
+    
+    private let cadenceSubject = CurrentValueSubject<RunningCadence, Never>(RunningCadence.zero)
+    var cadencePublisher: AnyPublisher<RunningCadence, Never> {
+        cadenceSubject.eraseToAnyPublisher()
+    }
+    
+    private let deviceTypeSubject = CurrentValueSubject<FitnessDeviceType, Never>(.unknown)
+    var deviceTypePublisher: AnyPublisher<FitnessDeviceType, Never> {
+        deviceTypeSubject.eraseToAnyPublisher()
+    }
+    
+    private let deviceBatterySubject = CurrentValueSubject<Int?, Never>(nil)
+    var deviceBatteryPublisher: AnyPublisher<Int?, Never> {
+        deviceBatterySubject.eraseToAnyPublisher()
+    }
+    
     private var peripheralToConnect: CBPeripheral?
     private var connectedPeripheralServices: [CBService]?
+    
+    // Flags for service and characteristic discovery
+    private var hasRSCService = false
+    private var hasBatteryService = false
+    
+    // Auto-reconnect flag
+    private var shouldAttemptReconnect = false
 
     override init() {
         super.init()
@@ -170,15 +262,19 @@ class BluetoothService: NSObject, BluetoothServiceProtocol {
     
     func startScan() {
         guard centralManager.state == .poweredOn else {
-            print("BluetoothService: Cannot scan, Bluetooth is not powered on. State: \(centralManager.state.description)")
+            print("BluetoothService: Cannot scan, Bluetooth is not powered on. State: \(centralManager.state.stateDescription)")
             return
         }
         
         // Clear previously discovered peripherals when starting a new scan
         discoveredPeripheralsSubject.send([]) 
         
-        print("BluetoothService: Starting scan for Heart Rate and Location/Navigation services...")
-        let serviceUUIDs: [CBUUID] = [KnownServiceUUIDs.heartRate, KnownServiceUUIDs.locationAndNavigation]
+        print("BluetoothService: Starting scan for fitness device services...")
+        let serviceUUIDs: [CBUUID] = [
+            KnownServiceUUIDs.heartRate,
+            KnownServiceUUIDs.locationAndNavigation,
+            KnownServiceUUIDs.runningSpeedAndCadence
+        ]
         
         // Scan only for peripherals advertising the specified services
         // Set allowDuplicates to true if you want updates for already discovered peripherals (e.g., RSSI changes)
@@ -212,6 +308,9 @@ class BluetoothService: NSObject, BluetoothServiceProtocol {
         peripheralToConnect = peripheral // Store the target peripheral
         connectionStateSubject.send(.connecting)
         centralManager.connect(peripheral, options: nil)
+        
+        // Save this device as preferred for future auto-reconnection
+        savePreferredDeviceUUID(peripheral.identifier)
     }
     
     func disconnect(from peripheral: CBPeripheral? = nil) {
@@ -232,7 +331,56 @@ class BluetoothService: NSObject, BluetoothServiceProtocol {
         centralManager.cancelPeripheralConnection(connectedPeripheral)
     }
     
-    // TODO: Implement methods to interact with connected peripherals (read/write characteristics)
+    // Reset all metric values when disconnected
+    private func resetMetrics() {
+        paceSubject.send(RunningPace.zero)
+        cadenceSubject.send(RunningCadence.zero)
+        deviceTypeSubject.send(.unknown)
+        deviceBatterySubject.send(nil)
+        manufacturerNameSubject.send(nil)
+        
+        // Reset service flags
+        hasRSCService = false
+        hasBatteryService = false
+    }
+    
+    // MARK: - Auto-reconnect functionality
+    
+    /// Save the UUID of the preferred device for auto-reconnect
+    private func savePreferredDeviceUUID(_ uuid: UUID) {
+        UserDefaults.standard.set(uuid.uuidString, forKey: preferredDeviceUUIDKey)
+        print("BluetoothService: Saved preferred device UUID: \(uuid.uuidString)")
+    }
+    
+    /// Get the UUID of the preferred device (if any)
+    func getPreferredDeviceUUID() -> UUID? {
+        guard let uuidString = UserDefaults.standard.string(forKey: preferredDeviceUUIDKey),
+              let uuid = UUID(uuidString: uuidString) else {
+            return nil
+        }
+        return uuid
+    }
+    
+    /// Attempt to reconnect to the previously connected device
+    func attemptReconnectToPreferredDevice() {
+        guard centralManager.state == .poweredOn,
+              connectionStateSubject.value.isDisconnected,
+              let preferredUUID = getPreferredDeviceUUID() else {
+            return
+        }
+        
+        print("BluetoothService: Attempting to reconnect to preferred device: \(preferredUUID.uuidString)")
+        
+        // Start scanning to find the preferred device
+        shouldAttemptReconnect = true
+        startScan()
+    }
+    
+    /// Clear the stored preferred device
+    func clearPreferredDevice() {
+        UserDefaults.standard.removeObject(forKey: preferredDeviceUUIDKey)
+        print("BluetoothService: Cleared preferred device")
+    }
 }
 
 // MARK: - CBCentralManagerDelegate
@@ -240,17 +388,22 @@ extension BluetoothService: CBCentralManagerDelegate {
     
     func centralManagerDidUpdateState(_ central: CBCentralManager) {
         centralManagerStateSubject.send(central.state)
-        print("BluetoothService: Central Manager state updated: \(central.state.description)")
+        print("BluetoothService: Central Manager state updated: \(central.state.stateDescription)")
         
         switch central.state {
         case .poweredOn:
             print("BluetoothService: Bluetooth is Powered ON.")
-            // Start scanning automatically or wait for explicit call
-            // startScan()
+            // If we have a preferred device, attempt to reconnect
+            if shouldAttemptReconnect == false {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                    self?.attemptReconnectToPreferredDevice()
+                }
+            }
         case .poweredOff:
             print("BluetoothService: Bluetooth is Powered OFF.")
             // Stop scan, invalidate connections etc.
             stopScan()
+            resetMetrics()
         case .resetting:
             print("BluetoothService: Bluetooth is resetting.")
             // Handle resetting state
@@ -286,7 +439,17 @@ extension BluetoothService: CBCentralManagerDelegate {
         }
         
         // Publish the updated list (consider sorting by RSSI or name)
-        discoveredPeripheralsSubject.send(currentList.sorted { $0.name < $1.name }) 
+        discoveredPeripheralsSubject.send(currentList.sorted { $0.name < $1.name })
+        
+        // Check if this is our preferred device to auto-connect
+        if shouldAttemptReconnect, 
+           let preferredUUID = getPreferredDeviceUUID(),
+           peripheral.identifier == preferredUUID {
+            print("BluetoothService: Found preferred device, attempting to auto-connect")
+            shouldAttemptReconnect = false
+            stopScan()
+            connect(to: peripheral)
+        }
     }
     
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
@@ -294,7 +457,10 @@ extension BluetoothService: CBCentralManagerDelegate {
         
         // Clear previous service/availability state
         connectedPeripheralServices = nil 
-        locationServiceAvailableSubject.send(false) 
+        locationServiceAvailableSubject.send(false)
+        
+        // Reset metrics when connecting to a new device
+        resetMetrics()
         
         // Ensure this is the peripheral we intended to connect to
         guard peripheral == peripheralToConnect else {
@@ -338,6 +504,9 @@ extension BluetoothService: CBCentralManagerDelegate {
             connectedPeripheralSubject.send(nil)
             connectedPeripheralServices = nil // Clear services
             locationServiceAvailableSubject.send(false) // Reset availability
+            
+            // Reset all metrics
+            resetMetrics()
         }
         
         // If we were trying to connect to this peripheral and it disconnected unexpectedly, treat as failure
@@ -346,18 +515,14 @@ extension BluetoothService: CBCentralManagerDelegate {
              connectionStateSubject.send(.failed(error: error ?? BluetoothError.connectionTimeout)) // Or a more specific error
              peripheralToConnect = nil
         }
-        
-        // Optionally attempt to reconnect or notify the user
     }
 }
 
-// MARK: - CBPeripheralDelegate (Add Placeholder)
-// We need this extension for service/characteristic discovery later
+// MARK: - CBPeripheralDelegate
 extension BluetoothService: CBPeripheralDelegate {
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let error = error {
             print("BluetoothService: Error discovering services for \(peripheral.identifier): \(error.localizedDescription)")
-            // Handle error, maybe disconnect or retry?
             disconnect() // Example: Disconnect on failure
             return
         }
@@ -372,10 +537,16 @@ extension BluetoothService: CBPeripheralDelegate {
         print("BluetoothService: Discovered \(services.count) services for \(peripheral.name ?? "Unknown")")
         connectedPeripheralServices = services // Store discovered services
         
-        // Check if Location & Navigation service is among them
+        // Check for services we care about
         let hasLocationService = services.contains { $0.uuid == KnownServiceUUIDs.locationAndNavigation }
         locationServiceAvailableSubject.send(hasLocationService)
         print("BluetoothService: Location & Navigation Service Available: \(hasLocationService)")
+        
+        hasRSCService = services.contains { $0.uuid == KnownServiceUUIDs.runningSpeedAndCadence }
+        print("BluetoothService: Running Speed and Cadence Service Available: \(hasRSCService)")
+        
+        hasBatteryService = services.contains { $0.uuid == KnownServiceUUIDs.batteryService }
+        print("BluetoothService: Battery Service Available: \(hasBatteryService)")
 
         for service in services {
             print("  -> Service: \(service.uuid.uuidString) (\(service.uuid.description))")
@@ -383,8 +554,9 @@ extension BluetoothService: CBPeripheralDelegate {
             let servicesToExplore = [
                 KnownServiceUUIDs.heartRate,
                 KnownServiceUUIDs.locationAndNavigation,
-                KnownServiceUUIDs.deviceInformation
-                // Add other custom service UUIDs if needed
+                KnownServiceUUIDs.deviceInformation,
+                KnownServiceUUIDs.runningSpeedAndCadence,
+                KnownServiceUUIDs.batteryService
             ]
             
             if servicesToExplore.contains(service.uuid) {
@@ -432,21 +604,60 @@ extension BluetoothService: CBPeripheralDelegate {
                     print("        Location and Speed characteristic does not support notifications.")
                 }
                 
-            // --- Device Information (Example: Read Manufacturer Name) ---
+            // --- Running Speed and Cadence ---
+            case KnownCharacteristicUUIDs.rscMeasurement:
+                if characteristic.properties.contains(.notify) {
+                    print("        Subscribing to RSC Measurement notifications...")
+                    peripheral.setNotifyValue(true, for: characteristic)
+                }
+                
+            case KnownCharacteristicUUIDs.rscFeature:
+                if characteristic.properties.contains(.read) {
+                    print("        Reading RSC Features...")
+                    peripheral.readValue(for: characteristic)
+                }
+                
+            case KnownCharacteristicUUIDs.sensorLocation:
+                if characteristic.properties.contains(.read) {
+                    print("        Reading Sensor Location...")
+                    peripheral.readValue(for: characteristic)
+                }
+                
+            // --- Device Information ---
             case KnownCharacteristicUUIDs.manufacturerName:
                 if characteristic.properties.contains(.read) {
                     print("        Reading Manufacturer Name...")
                     peripheral.readValue(for: characteristic)
                 }
                 
-            // Add cases for other characteristics you need (e.g., LN Feature, Model Number)
+            case KnownCharacteristicUUIDs.modelNumber:
+                if characteristic.properties.contains(.read) {
+                    print("        Reading Model Number...")
+                    peripheral.readValue(for: characteristic)
+                }
+                
+            case KnownCharacteristicUUIDs.firmwareRevision:
+                if characteristic.properties.contains(.read) {
+                    print("        Reading Firmware Revision...")
+                    peripheral.readValue(for: characteristic)
+                }
+                
+            // --- Battery Service ---
+            case KnownCharacteristicUUIDs.batteryLevel:
+                if characteristic.properties.contains(.read) {
+                    print("        Reading Battery Level...")
+                    peripheral.readValue(for: characteristic)
+                }
+                
+                if characteristic.properties.contains(.notify) {
+                    print("        Subscribing to Battery Level notifications...")
+                    peripheral.setNotifyValue(true, for: characteristic)
+                }
+                
             default:
-                 // print("        Ignoring characteristic \(characteristic.uuid.uuidString)")
                  break
             }
         }
-        
-        // TODO: Once all desired characteristics are found/subscribed, maybe publish a "ready" state?
     }
     
     func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
@@ -468,23 +679,49 @@ extension BluetoothService: CBPeripheralDelegate {
                 if let heartRate = parseHeartRate(data: data) {
                     heartRateSubject.send(heartRate)
                 }
-                break
                 
             case KnownCharacteristicUUIDs.locationAndSpeed:
                 if let location = parseLocationAndSpeed(data: data) {
                     locationSubject.send(location)
+                    
+                    // Extract pace from location speed if available
+                    if location.speed > 0 {
+                        let pace = RunningPace(metersPerSecond: location.speed)
+                        paceSubject.send(pace)
+                    }
                 }
-                break
+                
+            case KnownCharacteristicUUIDs.rscMeasurement:
+                if let (speed, cadence) = parseRSCMeasurement(data: data) {
+                    // Update pace from RSC if speed is available
+                    if speed > 0 {
+                        let pace = RunningPace(metersPerSecond: speed)
+                        paceSubject.send(pace)
+                    }
+                    
+                    // Update cadence if available
+                    if cadence > 0 {
+                        let runningCadence = RunningCadence(stepsPerMinute: cadence)
+                        cadenceSubject.send(runningCadence)
+                    }
+                }
                 
             case KnownCharacteristicUUIDs.manufacturerName:
                 if let manufacturer = parseUTF8String(data: data) {
                     manufacturerNameSubject.send(manufacturer)
+                    
+                    // Update device type based on manufacturer
+                    let deviceType = FitnessDeviceType.detectDeviceType(from: manufacturer)
+                    deviceTypeSubject.send(deviceType)
                 }
-                break
+                
+            case KnownCharacteristicUUIDs.batteryLevel:
+                if let batteryLevel = parseBatteryLevel(data: data) {
+                    deviceBatterySubject.send(batteryLevel)
+                }
                 
             // Add cases for other characteristics being read/notified
             default:
-                 print("        Received update for unhandled characteristic: \(characteristic.uuid.uuidString)")
                  break
         }
     }
@@ -497,20 +734,16 @@ extension BluetoothService: CBPeripheralDelegate {
         
         if characteristic.isNotifying {
              print("BluetoothService: Successfully subscribed to notifications for \(characteristic.uuid.uuidString)")
-             // If it's the last characteristic we needed to subscribe to, maybe update state to "ready"
         } else {
             print("BluetoothService: Unsubscribed from notifications for \(characteristic.uuid.uuidString)")
         }
     }
-    
-    // Add other CBPeripheralDelegate methods if needed (e.g., didWriteValueFor, didReadRSSI)
 }
 
 // MARK: - Data Parsing Helpers
 private extension BluetoothService {
     
     // Parses Heart Rate Measurement characteristic data (UUID 2A37)
-    // Reference: https://www.bluetooth.com/specifications/gatt/characteristics/
     func parseHeartRate(data: Data) -> Int? {
         guard data.count >= 2 else { return nil }
         
@@ -529,7 +762,6 @@ private extension BluetoothService {
     }
     
     // Parses Location and Speed characteristic data (UUID 2A67)
-    // Reference: https://www.bluetooth.com/specifications/gatt/characteristics/
     func parseLocationAndSpeed(data: Data) -> CLLocation? {
         // Flags (first 2 bytes) indicate which fields are present
         guard data.count >= 2 else { return nil }
@@ -643,9 +875,43 @@ private extension BluetoothService {
         return location
     }
     
+    // Parse Running Speed and Cadence Measurement (UUID 2A53)
+    func parseRSCMeasurement(data: Data) -> (speed: Double, cadence: Int)? {
+        guard data.count >= 4 else { return nil }
+        
+        let flags = data[0]
+        let isInstantaneousCadencePresent = (flags & 0x01) != 0 // Bit 0
+        let isInstantaneousStridePresent = (flags & 0x02) != 0 // Bit 1
+        let isTotalDistancePresent = (flags & 0x04) != 0 // Bit 2
+        let isRunningStatusPresent = (flags & 0x08) != 0 // Bit 3
+        
+        // Speed is always present in first 2 bytes (after flags)
+        // Resolution is 1/256 m/s (= 0.00390625 m/s)
+        let speedRaw = UInt16(data[2]) << 8 | UInt16(data[1])
+        let speed = Double(speedRaw) / 256.0
+        
+        var cadence = 0
+        
+        // Instantaneous Cadence is in byte 3 if present (resolution 1 strides/minute)
+        if isInstantaneousCadencePresent && data.count >= 4 {
+            cadence = Int(data[3])
+        }
+        
+        // Note: This implementation ignores stride length, total distance, and running status
+        
+        return (speed, cadence * 2) // Convert from strides to steps per minute (×2)
+    }
+    
     // Parses simple UTF-8 string characteristics (e.g., Manufacturer Name 2A29)
     func parseUTF8String(data: Data) -> String? {
         return String(data: data, encoding: .utf8)
+    }
+    
+    // Parse Battery Level (UUID 2A19)
+    func parseBatteryLevel(data: Data) -> Int? {
+        guard data.count >= 1 else { return nil }
+        // Battery level is 0-100%
+        return Int(data[0])
     }
 }
 
@@ -658,25 +924,10 @@ extension Data {
     }
 }
 
-// Helper extension to log raw data as hex
+// Helper to log raw data as hex
 extension Data {
     func hexEncodedString() -> String {
         return map { String(format: "%02hhx", $0) }.joined()
-    }
-}
-
-// Helper to provide descriptive strings for CBManagerState
-extension CBManagerState {
-    var description: String {
-        switch self {
-        case .poweredOn: return "Powered On"
-        case .poweredOff: return "Powered Off"
-        case .resetting: return "Resetting"
-        case .unauthorized: return "Unauthorized"
-        case .unsupported: return "Unsupported"
-        case .unknown: return "Unknown"
-        @unknown default: return "Unknown State"
-        }
     }
 }
 

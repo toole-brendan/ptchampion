@@ -126,43 +126,98 @@ struct RunWorkoutView: View {
     // MARK: - UI Components
     @ViewBuilder
     private func deviceStatusHeader() -> some View {
-        HStack {
-            // Bluetooth Power Status Icon
-            Image(systemName: viewModel.bluetoothState == .poweredOn ? "bolt.fill" : "bolt.slash.fill")
-                .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : AppTheme.GeneratedColors.textSecondary)
-
-            // Connection Status Text
-            switch viewModel.deviceConnectionState {
-            case .disconnected:
-                Text("No Device Connected")
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-            case .connecting:
-                HStack {
-                    Text("Connecting...")
-                    ProgressView().scaleEffect(0.7)
+        VStack(spacing: 2) {
+            HStack {
+                // Bluetooth Device Status
+                HStack(spacing: 4) {
+                    Image(systemName: viewModel.bluetoothState == .poweredOn ? "bolt.fill" : "bolt.slash.fill")
+                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : AppTheme.GeneratedColors.textSecondary)
+                    
+                    // Connection Status Text
+                    switch viewModel.deviceConnectionState {
+                    case .disconnected:
+                        Text("No Device Connected")
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    case .connecting:
+                        HStack {
+                            Text("Connecting...")
+                            ProgressView().scaleEffect(0.7)
+                        }
+                        .foregroundColor(AppTheme.GeneratedColors.warning)
+                    case .connected(let peripheral):
+                        Text("\(peripheral.name ?? "Device")")
+                            .foregroundColor(AppTheme.GeneratedColors.success)
+                            .fontWeight(.medium)
+                    case .disconnecting:
+                        Text("Disconnecting...")
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    case .failed:
+                        Text("Connection Failed")
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                    }
                 }
-                .foregroundColor(AppTheme.GeneratedColors.warning)
-            case .connected(let peripheral):
-                Text("Connected: \(peripheral.name ?? "Device")")
-                    .foregroundColor(AppTheme.GeneratedColors.success)
-            case .disconnecting:
-                Text("Disconnecting...")
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-            case .failed:
-                Text("Connection Failed")
-                    .foregroundColor(AppTheme.GeneratedColors.error)
+                
+                Spacer()
+                
+                // GPS Source Indicator with improved visual
+                HStack(spacing: 3) {
+                    Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
+                        .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
+                    Text("GPS")
+                        .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
+                }
+                .padding(4)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color(.systemBackground).opacity(0.3))
+                )
             }
+            .font(.caption)
             
-            Spacer()
-            
-            // Location Source Indicator
-            HStack(spacing: 3) {
-                Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
-                Text("GPS")
+            // Heart Rate Indicator Row with improved visualization
+            if case .connected = viewModel.deviceConnectionState {
+                HStack(spacing: 8) {
+                    // Heart rate display with pulsing animation
+                    HStack(spacing: 3) {
+                        Image(systemName: "heart.fill")
+                            .foregroundColor(.red)
+                            .opacity(viewModel.currentHeartRate != nil ? 1.0 : 0.5)
+                            .scaleEffect(viewModel.currentHeartRate != nil ? 1.0 : 0.9)
+                            .animation(
+                                viewModel.currentHeartRate != nil ? 
+                                    Animation.easeInOut(duration: 0.5).repeatForever(autoreverses: true) : 
+                                    .default, 
+                                value: viewModel.currentHeartRate != nil
+                            )
+                        
+                        Text(viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM")
+                            .foregroundColor(viewModel.currentHeartRate != nil ? .primary : AppTheme.GeneratedColors.textSecondary)
+                            .fontWeight(viewModel.currentHeartRate != nil ? .semibold : .regular)
+                    }
+                    
+                    // Add source indicator for heart rate
+                    if viewModel.currentHeartRate != nil {
+                        Text("via \(viewModel.connectedDeviceName ?? "Device")")
+                            .font(.caption2)
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    }
+                    
+                    Spacer()
+                    
+                    // Add cadence display if available
+                    if let cadence = viewModel.currentCadence {
+                        HStack(spacing: 3) {
+                            Image(systemName: "figure.walk")
+                                .foregroundColor(.blue)
+                            Text("\(cadence) SPM")
+                                .fontWeight(.semibold)
+                        }
+                    }
+                }
+                .font(.caption)
+                .padding(.leading, 8)
             }
-            .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
         }
-        .font(.caption)
         .padding(.horizontal)
         .padding(.vertical, 5)
         .background(.thinMaterial)
@@ -179,13 +234,24 @@ struct RunWorkoutView: View {
                 MetricDisplay(label: "AVG PACE", value: viewModel.averagePaceFormatted)
                 MetricDisplay(label: "CUR PACE", value: viewModel.currentPaceFormatted)
             }
-            // Add Heart Rate Display
+            
+            // Add Heart Rate and Cadence in a row
             GridRow {
+                // Heart Rate Display
                 MetricDisplay(
                     label: "HEART RATE",
-                    value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM"
+                    value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM",
+                    icon: "heart.fill",
+                    iconColor: .red
                 )
-                .gridCellColumns(2) // Span across two columns
+                
+                // Cadence Display
+                MetricDisplay(
+                    label: "CADENCE",
+                    value: viewModel.currentCadence != nil ? "\(viewModel.currentCadence!) SPM" : "-- SPM",
+                    icon: "metronome",
+                    iconColor: .blue
+                )
             }
         }
         .padding()
@@ -196,8 +262,17 @@ struct RunWorkoutView: View {
     struct MetricDisplay: View {
         let label: String
         let value: String
+        var icon: String? = nil
+        var iconColor: Color? = nil
+        
         var body: some View {
             VStack {
+                if let icon = icon {
+                    Image(systemName: icon)
+                        .foregroundColor(iconColor ?? AppTheme.GeneratedColors.textPrimary)
+                        .font(.system(size: 16))
+                        .padding(.bottom, 2)
+                }
                 Text(label)
                     .runLabelStyle(size: 12, color: AppTheme.GeneratedColors.textTertiary)
                     .padding(.bottom, 1)

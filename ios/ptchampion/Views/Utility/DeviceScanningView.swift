@@ -1,8 +1,10 @@
 import SwiftUI
-import CoreBluetooth // For CBManagerState description
+import CoreBluetooth // For CBManagerState
 
 struct DeviceScanningView: View {
     @StateObject private var viewModel = DeviceScanningViewModel()
+    @State private var showingDeviceDetails = false
+    @AppStorage("useImperialUnits") private var useImperialUnits = false
     
     var body: some View {
         NavigationView {
@@ -10,12 +12,27 @@ struct DeviceScanningView: View {
                 // Status Header
                 bluetoothStatusHeader()
                 
+                if viewModel.connectedPeripheral != nil {
+                    // Connected device metrics
+                    connectedDeviceMetrics()
+                }
+                
                 // List of Discovered Devices
                 List(viewModel.discoveredPeripherals) { discovered in
                     HStack {
                         VStack(alignment: .leading) {
-                            Text(discovered.name)
-                                .font(.headline)
+                            HStack {
+                                Text(discovered.name)
+                                    .font(.headline)
+                                
+                                // Show device type if known
+                                if discovered.deviceType != .unknown {
+                                    Text("• \(discovered.deviceType.rawValue)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            
                             Text("RSSI: \(discovered.rssi)")
                                 .font(.caption)
                                 .foregroundColor(.gray)
@@ -33,7 +50,10 @@ struct DeviceScanningView: View {
                 scanButton()
                 
             }
-            .navigationTitle("Scan Devices")
+            .navigationTitle("Fitness Devices")
+            .sheet(isPresented: $showingDeviceDetails) {
+                deviceDetailsView()
+            }
         }
     }
     
@@ -41,9 +61,72 @@ struct DeviceScanningView: View {
     
     @ViewBuilder
     private func bluetoothStatusHeader() -> some View {
-        Text("Bluetooth Status: \(viewModel.bluetoothState.description)")
-            .padding()
-            .foregroundColor(viewModel.bluetoothState == .poweredOn ? .green : .red)
+        VStack {
+            Text("Bluetooth Status: \(viewModel.bluetoothState.stateDescription)")
+                .padding()
+                .foregroundColor(viewModel.bluetoothState == .poweredOn ? .green : .red)
+            
+            if viewModel.isScanning {
+                HStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                    Text("Scanning for fitness devices...")
+                }
+                .padding(.bottom)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private func connectedDeviceMetrics() -> some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text(viewModel.deviceDisplayName())
+                    .font(.headline)
+                
+                if viewModel.batteryLevel != nil {
+                    Spacer()
+                    Label(viewModel.formattedBatteryLevel(), systemImage: "battery.50")
+                        .foregroundColor(.green)
+                }
+            }
+            
+            Divider()
+            
+            HStack(spacing: 20) {
+                if viewModel.heartRate > 0 {
+                    MetricView(
+                        value: viewModel.formattedHeartRate(),
+                        title: "Heart Rate",
+                        systemImage: "heart.fill"
+                    )
+                }
+                
+                if viewModel.currentPace.metersPerSecond > 0 {
+                    MetricView(
+                        value: viewModel.formattedPace(useImperial: useImperialUnits),
+                        title: useImperialUnits ? "min/mile" : "min/km",
+                        systemImage: "figure.run"
+                    )
+                }
+                
+                if viewModel.currentCadence.stepsPerMinute > 0 {
+                    MetricView(
+                        value: viewModel.formattedCadence(),
+                        title: "Cadence",
+                        systemImage: "metronome"
+                    )
+                }
+            }
+            
+            Button("Show Device Details") {
+                showingDeviceDetails = true
+            }
+            .padding(.top, 8)
+        }
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+        .padding(.horizontal)
     }
     
     @ViewBuilder
@@ -93,8 +176,53 @@ struct DeviceScanningView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(viewModel.isScanning || !isConnectable(state: viewModel.connectionState))
-                .padding(.top)
             }
+        }
+    }
+    
+    @ViewBuilder
+    private func deviceDetailsView() -> some View {
+        VStack {
+            Text("Device Details")
+                .font(.headline)
+                .padding()
+            
+            if let peripheral = viewModel.connectedPeripheral {
+                VStack(alignment: .leading, spacing: 12) {
+                    DetailRow(label: "Name", value: peripheral.name ?? "Unknown")
+                    DetailRow(label: "Manufacturer", value: viewModel.manufacturerName ?? "Unknown")
+                    DetailRow(label: "Type", value: viewModel.deviceType.rawValue)
+                    DetailRow(label: "Battery", value: viewModel.formattedBatteryLevel())
+                    
+                    Divider()
+                    
+                    Text("Supported Features:")
+                        .font(.headline)
+                        .padding(.top, 8)
+                    
+                    VStack(alignment: .leading, spacing: 8) {
+                        FeatureRow(title: "Heart Rate", isSupported: viewModel.heartRate > 0)
+                        FeatureRow(title: "Location Tracking", isSupported: viewModel.currentLocation != nil)
+                        FeatureRow(title: "Running Pace", isSupported: viewModel.currentPace.metersPerSecond > 0)
+                        FeatureRow(title: "Running Cadence", isSupported: viewModel.currentCadence.stepsPerMinute > 0)
+                    }
+                    .padding(.leading)
+                    
+                    Spacer()
+                }
+                .padding()
+            } else {
+                Text("No device connected")
+                    .foregroundColor(.secondary)
+                    .padding()
+                
+                Spacer()
+            }
+            
+            Button("Close") {
+                showingDeviceDetails = false
+            }
+            .padding()
         }
     }
 
@@ -105,6 +233,65 @@ struct DeviceScanningView: View {
             return true
         default:
             return false
+        }
+    }
+}
+
+// Helper components
+struct MetricView: View {
+    let value: String
+    let title: String
+    let systemImage: String
+    
+    var body: some View {
+        VStack {
+            Image(systemName: systemImage)
+                .font(.title3)
+                .foregroundColor(.blue)
+            
+            Text(value)
+                .font(.title3)
+                .bold()
+            
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(minWidth: 70)
+    }
+}
+
+struct DetailRow: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .foregroundColor(.secondary)
+                .frame(width: 120, alignment: .leading)
+            
+            Text(value)
+                .fontWeight(.medium)
+            
+            Spacer()
+        }
+    }
+}
+
+struct FeatureRow: View {
+    let title: String
+    let isSupported: Bool
+    
+    var body: some View {
+        HStack {
+            Image(systemName: isSupported ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .foregroundColor(isSupported ? .green : .red)
+            
+            Text(title)
+                .foregroundColor(isSupported ? .primary : .secondary)
+            
+            Spacer()
         }
     }
 }

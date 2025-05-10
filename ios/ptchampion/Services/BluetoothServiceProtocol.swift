@@ -14,8 +14,19 @@ protocol BluetoothServiceProtocol {
     var manufacturerNamePublisher: AnyPublisher<String?, Never> { get }
     var locationServiceAvailablePublisher: AnyPublisher<Bool, Never> { get }
     
+    // New publishers for running metrics
+    var pacePublisher: AnyPublisher<RunningPace, Never> { get }
+    var cadencePublisher: AnyPublisher<RunningCadence, Never> { get }
+    var deviceTypePublisher: AnyPublisher<FitnessDeviceType, Never> { get }
+    var deviceBatteryPublisher: AnyPublisher<Int?, Never> { get }
+    
     func startScan()
     func stopScan()
     func connect(to peripheral: CBPeripheral)
     func disconnect(from peripheral: CBPeripheral?)
+    
+    // Auto-reconnect functionality
+    func getPreferredDeviceUUID() -> UUID?
+    func attemptReconnectToPreferredDevice()
+    func clearPreferredDevice()
 } 
