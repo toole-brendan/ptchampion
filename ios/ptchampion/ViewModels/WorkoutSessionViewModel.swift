@@ -135,8 +135,16 @@ class WorkoutSessionViewModel: ObservableObject {
         cameraService.framePublisher
             .compactMap { $0 }
             .sink { [weak self] frame in
-                guard let self = self, !self.isPaused, self.workoutState == .counting else { return }
-                self.poseDetectorService.processFrame(frame)
+                guard let self = self,
+                      !self.isPaused,
+                      !isErrorState(self.workoutState),
+                      self.workoutState != .finished else { return }
+                
+                // Process frames for pose detection in both ready and counting states
+                // This allows the skeleton to appear as soon as the camera starts
+                if self.workoutState == .ready || self.workoutState == .counting {
+                    self.poseDetectorService.processFrame(frame)
+                }
             }
             .store(in: &cancellables)
         
@@ -182,14 +190,27 @@ class WorkoutSessionViewModel: ObservableObject {
         cameraService.stopSession()
     }
     
-    // MARK: - Camera Permission Handling
-    private func checkCameraPermission() {
-        let status = AVCaptureDevice.authorizationStatus(for: .video)
-        handleAuthorizationStatusChange(status)
+    // Public method for external cleanup
+    func cleanupResources() {
+        // Stop timers and services
+        workoutTimer.stop()
+        cameraService.stopSession()
     }
     
+    // MARK: - Camera Permission Handling
     func requestCameraPermission() {
         cameraService.requestCameraPermission()
+    }
+    
+    // Public method to check camera permission
+    func checkCameraPermission() {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        handleAuthorizationStatusChange(status)
+        
+        // Start camera session if authorized, but don't start the workout
+        if status == .authorized {
+            cameraService.startSession()
+        }
     }
     
     private func handleAuthorizationStatusChange(_ status: AVAuthorizationStatus) {
@@ -229,7 +250,12 @@ class WorkoutSessionViewModel: ObservableObject {
             return
         }
         
-        currentWorkoutSessionID = UUID()
+        // Only create a new session ID if we don't already have one
+        // This prevents issues if startWorkout is called multiple times
+        if currentWorkoutSessionID == nil {
+            currentWorkoutSessionID = UUID()
+        }
+        
         exerciseGrader.resetState()
         updateUIFromGraderState()
         
@@ -263,13 +289,17 @@ class WorkoutSessionViewModel: ObservableObject {
     }
     
     func finishWorkout() {
+        // Always stop timer and set paused
         isPaused = true
         workoutTimer.stop()
         
+        // If no workout session ID exists, we can't save a result
+        // This shouldn't happen with our UI flow, but adding extra protection
         guard let workoutID = currentWorkoutSessionID else {
             print("Error: Workout session ID is nil. Cannot finalize workout.")
             saveErrorMessage = "Workout session ID was lost. Cannot save workout."
             showAlertForSaveError = true
+            workoutState = .finished // Still mark as finished to ensure cleanup
             return
         }
         
@@ -400,6 +430,14 @@ class WorkoutSessionViewModel: ObservableObject {
             print("Warning: No specific grader for \(exerciseType.displayName). Using placeholder grader.")
             return WorkoutSessionPlaceholderGrader()
         }
+    }
+    
+    // Helper method to check if in error state
+    private func isErrorState(_ state: WorkoutSessionState) -> Bool {
+        if case .error(_) = state {
+            return true
+        }
+        return false
     }
 }
 
