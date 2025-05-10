@@ -225,11 +225,14 @@ struct Toast_Previews: PreviewProvider {
         var body: some View {
             PTCard {
                 VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                    PTButton("Show Success Toast") {
+                    // Use a typed local variable to resolve ambiguity
+                    let coreButtonStyle: PTButton.ButtonStyle = .primary
+                    PTButton("Show Success Toast", style: coreButtonStyle) {
                         toasts.append(ToastItem(type: .success, title: "Success", message: "Operation completed"))
                     }
                     
-                    PTButton("Show Error Toast", style: .destructive) {
+                    let destructiveButtonStyle: PTButton.ButtonStyle = .destructive
+                    PTButton("Show Error Toast", style: destructiveButtonStyle) {
                         toasts.append(ToastItem(type: .error, title: "Error", message: "Something went wrong"))
                     }
                 }

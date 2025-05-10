@@ -62,47 +62,59 @@ struct LeaderboardView: View {
     
     // Extracted Filters View
     private var filtersView: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.small) {
-            Picker("Board Type", selection: $viewModel.selectedBoard) {
+        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            Picker(selection: $viewModel.selectedBoard) {
                 ForEach(LeaderboardType.allCases) { type in
                     Text(type.rawValue).tag(type)
                 }
+            } label: {
+                PTLabel("Board Type", style: .body)
             }
             .pickerStyle(SegmentedPickerStyle())
+            .tint(AppTheme.GeneratedColors.primary)
             .padding(.horizontal)
 
             // Conditional Picker for Radius, only shown if 'Local' board is selected
             if viewModel.selectedBoard == .local {
-                Picker("Radius", selection: $viewModel.selectedRadius) {
+                Picker(selection: $viewModel.selectedRadius) {
                     ForEach(LeaderboardRadius.allCases) { radiusValue in // Renamed to avoid conflict
                         Text(radiusValue.displayName).tag(radiusValue)
                     }
+                } label: {
+                    PTLabel("Radius", style: .body)
                 }
                 .pickerStyle(.menu)
+                .tint(AppTheme.GeneratedColors.primary)
                 .padding(.horizontal)
                 .transition(.opacity.combined(with: .scale))
             }
 
-            HStack {
-                Picker("Category", selection: $viewModel.selectedCategory) {
+            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                Picker(selection: $viewModel.selectedCategory) {
                     ForEach(LeaderboardCategory.allCases) { category in
                         Text(category.rawValue).tag(category)
                     }
+                } label: {
+                    PTLabel("Category", style: .body)
                 }
                 .pickerStyle(.menu)
+                .tint(AppTheme.GeneratedColors.primary)
                 
-                Picker("Exercise", selection: $viewModel.selectedExercise) {
+                Picker(selection: $viewModel.selectedExercise) {
                     ForEach(LeaderboardExerciseType.allCases) { exercise in
                         Text(exercise.displayName).tag(exercise)
                     }
+                } label: {
+                    PTLabel("Exercise", style: .body)
                 }
                 .pickerStyle(.menu)
+                .tint(AppTheme.GeneratedColors.primary)
             }
             .padding(.horizontal)
         }
-        .padding(.vertical, AppTheme.GeneratedSpacing.small)
+        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
         .background(AppTheme.GeneratedColors.cardBackground.opacity(0.5))
-        .animation(.easeInOut, value: viewModel.selectedBoard) // Animate changes when board type changes
+        .animation(.easeInOut, value: viewModel.selectedBoard)
     }
     
     // Extracted Content View
@@ -124,7 +136,10 @@ struct LeaderboardView: View {
                     .foregroundColor(AppTheme.GeneratedColors.error)
                 PTLabel("Error Loading Leaderboard", style: .subheading)
                 PTLabel(errorMessage, style: .caption).foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                PTButton("Retry", style: .primary, action: { Task { await viewModel.fetch() } })
+                
+                // Use a typed local variable to resolve ambiguity
+                let coreButtonStyle: PTButton.ButtonStyle = .primary
+                PTButton("Retry", style: coreButtonStyle, action: { Task { await viewModel.fetch() } })
                     .padding(.top)
                 Spacer()
             }

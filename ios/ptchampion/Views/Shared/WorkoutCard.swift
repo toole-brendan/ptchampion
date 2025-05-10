@@ -1,7 +1,45 @@
 import SwiftUI
 import PTDesignSystem
 
+// Define a basic WorkoutModel to maintain compatibility
+struct WorkoutModel {
+    let id: String
+    let userId: String
+    let exerciseType: WorkoutExerciseType
+    let date: Date
+    let repetitions: Int
+    let duration: TimeInterval
+    let score: Int
+    let intensity: WorkoutIntensity
+    let averageHeartRate: Int?
+    let location: String?
+    
+    // Display name for exercise type
+    var displayName: String {
+        return exerciseType.rawValue
+    }
+}
+
+// Define ExerciseType enum
+enum WorkoutExerciseType: String {
+    case pushup = "Push-Ups"
+    case situp = "Sit-Ups"
+    case pullup = "Pull-Ups"
+    case running = "Running"
+    case other = "Other"
+}
+
+// Define Intensity enum 
+enum WorkoutIntensity: String {
+    case low = "Low"
+    case medium = "Medium"
+    case high = "High"
+}
+
+// MARK: - Legacy compatibility for existing codebase
+// This version supports the older API style but keeps the new styling
 struct WorkoutCard: View {
+    // Legacy properties
     let title: String
     let subtitle: String?
     let date: Date
@@ -9,6 +47,9 @@ struct WorkoutCard: View {
     let imageName: String?
     var onTap: (() -> Void)?
     
+    // MARK: - Initializers
+    
+    // Legacy initializer
     init(
         title: String,
         subtitle: String? = nil,
@@ -22,6 +63,31 @@ struct WorkoutCard: View {
         self.date = date
         self.metrics = metrics
         self.imageName = imageName
+        self.onTap = onTap
+    }
+    
+    // Modern initializer
+    init(workout: WorkoutModel, onTap: @escaping () -> Void) {
+        self.title = workout.exerciseType.rawValue
+        self.subtitle = nil
+        self.date = workout.date
+        
+        // Convert workout data to metrics
+        var workoutMetrics: [WorkoutMetric] = []
+        workoutMetrics.append(WorkoutMetric(title: "Reps", value: workout.repetitions, iconSystemName: "number"))
+        
+        // Format duration
+        let minutes = Int(workout.duration / 60)
+        let seconds = Int(workout.duration.truncatingRemainder(dividingBy: 60))
+        let formattedDuration = String(format: "%d:%02d", minutes, seconds)
+        workoutMetrics.append(WorkoutMetric(title: "Time", value: formattedDuration, unit: "min", iconSystemName: "clock"))
+        
+        if let hr = workout.averageHeartRate {
+            workoutMetrics.append(WorkoutMetric(title: "Heart Rate", value: hr, unit: "bpm", iconSystemName: "heart.fill"))
+        }
+        
+        self.metrics = workoutMetrics
+        self.imageName = nil
         self.onTap = onTap
     }
     
@@ -128,7 +194,7 @@ struct WorkoutMetric: Identifiable {
     }
 }
 
-// Preview provider
+// MARK: - Preview
 struct WorkoutCard_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: AppTheme.GeneratedSpacing.cardGap) {

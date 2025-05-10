@@ -52,10 +52,17 @@ struct LoginView: View {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 24) {
-                        // Logo with fallback
+                        // Logo with fallback - use a more structured approach
                         Group {
-                            if UIImage(named: "pt_champion_logo") != nil {
-                                Image("pt_champion_logo")
+                            let logoImage: UIImage? = {
+                                if let namedImage = UIImage(named: "pt_champion_logo") {
+                                    return namedImage
+                                }
+                                return nil
+                            }()
+                            
+                            if let logo = logoImage {
+                                Image(uiImage: logo)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 120, height: 120)
@@ -99,12 +106,16 @@ struct LoginView: View {
                             
                             // Login Button
                             if auth.isLoading {
-                                PTButton("Log In", isLoading: true) {
+                                // Use a typed local variable to resolve ambiguity
+                                let coreButtonStyle: PTButton.ButtonStyle = .primary
+                                PTButton("Log In", style: coreButtonStyle, isLoading: true) {
                                     // No action when loading
                                 }
                                 .disabled(true)
                             } else {
-                                PTButton("Log In") {
+                                // Use a typed local variable to resolve ambiguity
+                                let coreButtonStyle: PTButton.ButtonStyle = .primary
+                                PTButton("Log In", style: coreButtonStyle) {
                                     auth.errorMessage = nil // Clear error before login
                                     print("DEBUG: Login button tapped for email: \(email)")
                                     
@@ -131,19 +142,22 @@ struct LoginView: View {
                             
                             // Debug buttons only in dev mode
                             if showDevOptions {
-                                PTButton("Check Auth State", style: .secondary) {
+                                // Add coreButtonStyle for the debug button
+                                let coreButtonStyle: PTButton.ButtonStyle = .primary
+                                let secondaryButtonStyle: PTButton.ButtonStyle = .secondary
+                                PTButton("Check Auth State", style: secondaryButtonStyle) {
                                     authDebugText = "Current auth state: \(auth.isAuthenticated ? "authenticated" : "unauthenticated")"
                                     print("DEBUG: Current auth state from LoginView diagnostic button: \(auth.isAuthenticated)")
                                 }
                                 .padding(.top, 8)
                                 .disabled(auth.isLoading)
                                 
-                                PTButton("DEV: Bypass Login", style: .secondary) {
+                                PTButton("DEV: Bypass Login", style: secondaryButtonStyle) {
                                     auth.loginAsDeveloper()
                                 }
                                 .padding(.top, 8)
                                 
-                                PTButton("DEBUG: Force Auth State", style: .primary) {
+                                PTButton("DEBUG: Force Auth State", style: coreButtonStyle) {
                                     auth.debugForceAuthenticated()
                                 }
                                 .padding(.top, 8)

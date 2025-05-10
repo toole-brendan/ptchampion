@@ -7,7 +7,7 @@ struct ExerciseDetailView: View {
     @State private var isLoading = true
     
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: AppTheme.GeneratedSpacing.large) {
                 // Header with title and icon
                 HStack {
@@ -70,9 +70,10 @@ struct ExerciseDetailView: View {
                 .cornerRadius(AppTheme.GeneratedRadius.large)
                 
                 // Add exercise button
+                let buttonStyle: PTButton.ExtendedStyle = .primary
                 PTButton(
                     "Record \(exerciseType.capitalized)",
-                    style: .primary
+                    style: buttonStyle
                 ) {
                     // Open recording modal
                 }
@@ -80,7 +81,10 @@ struct ExerciseDetailView: View {
             }
             .padding(AppTheme.GeneratedSpacing.medium)
         }
-        .background(AppTheme.GeneratedColors.cream.opacity(0.5))
+        .background(
+            // Use a concrete color from UIKit to SwiftUI conversion to avoid ambiguity
+            Color(uiColor: UIColor(red: 0.95, green: 0.95, blue: 0.9, alpha: 0.5))
+        )
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Simulate network loading
@@ -126,7 +130,7 @@ struct ExerciseDetailView: View {
         .padding(AppTheme.GeneratedSpacing.medium)
         .background(Color.white)
         .cornerRadius(AppTheme.GeneratedRadius.medium)
-        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .shadow(color: Color(uiColor: UIColor.black).opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 

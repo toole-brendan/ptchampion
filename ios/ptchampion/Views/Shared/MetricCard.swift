@@ -7,6 +7,8 @@ public struct MetricCardView: View {
     private let action: (() -> Void)?
     private let trend: TrendDirection?
     
+    @State private var isHovered = false
+    
     public init(
         _ metric: MetricData,
         trend: TrendDirection? = nil,
@@ -33,7 +35,9 @@ public struct MetricCardView: View {
         case let intValue as Int:
             return "\(intValue)"
         case let doubleValue as Double:
-            return "\(doubleValue)"
+            // Format with 1 decimal place if needed
+            return doubleValue.truncatingRemainder(dividingBy: 1) == 0 ? 
+                "\(Int(doubleValue))" : String(format: "%.1f", doubleValue)
         case let stringValue as String:
             return stringValue
         default:
@@ -46,9 +50,8 @@ public struct MetricCardView: View {
             // Title row with optional icon
             HStack(spacing: 4) {
                 Text(metric.title)
-                    .font(AppTheme.GeneratedTypography.bodySemibold(size: 13))
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                    .textCase(.uppercase)
+                    .font(AppTheme.GeneratedTypography.subheading())
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 
                 Spacer()
                 
@@ -64,19 +67,22 @@ public struct MetricCardView: View {
             // Value with optional unit
             HStack(alignment: .firstTextBaseline, spacing: 4) {
                 if displayValue == "-" || displayValue == "0" {
+                    // For placeholder or zero values
                     Text(displayValue)
-                        .font(AppTheme.GeneratedTypography.bodyBold(size: 20))
+                        .font(.system(size: 20, weight: .semibold).monospaced())
                         .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
                         .padding(.horizontal, AppTheme.GeneratedSpacing.small)
                         .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
                         .background(
-                            AppTheme.GeneratedColors.tacticalGray.opacity(0.6)
+                            AppTheme.GeneratedColors.tacticalGray.opacity(0.2)
                                 .clipShape(Capsule())
                         )
                 } else {
+                    // For actual values
                     Text(displayValue)
-                        .font(AppTheme.GeneratedTypography.bodyBold(size: 20))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .font(.system(size: 20, weight: .semibold).monospaced())
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        .contentTransition(.numericText()) // Smooth transitions when value changes
                 }
                 
                 if let unit = metric.unit {
@@ -90,6 +96,9 @@ public struct MetricCardView: View {
                     trend.icon
                         .foregroundColor(trend.color)
                         .font(.system(size: 14, weight: .bold))
+                        // Add subtle rotation animation when trend changes
+                        .rotationEffect(trend == .up ? .degrees(0) : (trend == .down ? .degrees(180) : .degrees(90)))
+                        .animation(.spring(response: 0.3), value: trend)
                 }
             }
             
@@ -103,7 +112,35 @@ public struct MetricCardView: View {
         }
         .padding(AppTheme.GeneratedSpacing.contentPadding)
         .frame(maxWidth: .infinity, minHeight: 100, alignment: .leading)
-        .background(AppTheme.GeneratedColors.cardBackground)
+        .background(
+            // Add subtle gradient background for more dimension
+            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            AppTheme.GeneratedColors.cardBackground,
+                            AppTheme.GeneratedColors.cardBackground.opacity(0.95)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+        )
+        .overlay(
+            // Add subtle highlight on top edge
+            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            AppTheme.GeneratedColors.brassGold.opacity(0.1),
+                            Color.clear
+                        ]),
+                        startPoint: .top,
+                        endPoint: .center
+                    ),
+                    lineWidth: 1
+                )
+        )
         .cornerRadius(AppTheme.GeneratedRadius.card)
         .withShadow(AppTheme.GeneratedShadows.small)
     }
@@ -117,6 +154,13 @@ struct MetricCardButtonStyle: ButtonStyle {
         configuration.label
             .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
+            // Add subtle shadow increase on press
+            .shadow(
+                color: Color.black.opacity(configuration.isPressed ? 0.1 : 0.05),
+                radius: configuration.isPressed ? 2 : 4,
+                x: 0,
+                y: configuration.isPressed ? 1 : 2
+            )
     }
 }
 

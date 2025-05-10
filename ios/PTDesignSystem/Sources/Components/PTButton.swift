@@ -29,6 +29,12 @@ public struct PTButton: View {
     private let action: () -> Void
     private let style: ButtonStyle
     private let isLoading: Bool
+    private let icon: Image?
+    private let fullWidth: Bool
+    private let size: ButtonSize
+    
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+    @State private var isPressed = false
     
     /// Defines the available button styles in the design system
     public enum ButtonStyle {
@@ -42,43 +48,125 @@ public struct PTButton: View {
         case destructive
     }
     
+    /// Button size variants
+    public enum ButtonSize {
+        case small
+        case medium
+        case large
+        
+        var padding: (horizontal: CGFloat, vertical: CGFloat) {
+            switch self {
+            case .small: return (horizontal: 12, vertical: 8)
+            case .medium: return (horizontal: 16, vertical: 12)
+            case .large: return (horizontal: 20, vertical: 16)
+            }
+        }
+        
+        var fontSize: CGFloat {
+            switch self {
+            case .small: return 14
+            case .medium: return 16
+            case .large: return 18
+            }
+        }
+    }
+    
     /// Creates a new button with the specified title, style, and action
     /// - Parameters:
     ///   - title: The text to display on the button
     ///   - style: The visual style of the button (default: .primary)
+    ///   - size: Size variant of the button (default: .medium)
+    ///   - icon: Optional icon to display alongside text
+    ///   - fullWidth: Whether the button should expand to full width
     ///   - isLoading: Whether the button should display a loading indicator (default: false)
     ///   - action: The closure to execute when the button is tapped
-    public init(_ title: String, style: ButtonStyle = .primary, isLoading: Bool = false, action: @escaping () -> Void) {
+    public init(_ title: String, 
+                style: ButtonStyle = .primary, 
+                size: ButtonSize = .medium,
+                icon: Image? = nil,
+                fullWidth: Bool = false,
+                isLoading: Bool = false, 
+                action: @escaping () -> Void) {
         self.title = title
         self.style = style
         self.isLoading = isLoading
+        self.icon = icon
+        self.fullWidth = fullWidth
+        self.size = size
         self.action = action
     }
     
     public var body: some View {
-        Button(action: action) {
-            ZStack {
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.1)) {
+                isPressed = true
+            }
+            
+            // Add haptic feedback
+            let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
+            impactGenerator.impactOccurred()
+            
+            // Short delay to show press animation
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.easeInOut(duration: 0.1)) {
+                    isPressed = false
+                }
+                action()
+            }
+        }) {
+            HStack(spacing: 8) {
+                // Show icon if provided
+                if let icon = icon, !isLoading {
+                    icon
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: size.fontSize, height: size.fontSize)
+                        .foregroundColor(foregroundColor)
+                }
+                
                 // Keep original label invisible while loading to avoid width-jump
                 Text(title)
                     .opacity(isLoading ? 0 : 1)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: size.fontSize, weight: .semibold))
                     .foregroundColor(foregroundColor)
-                    .padding(.vertical, 12)
-                    .padding(.horizontal, 16)
-                    .frame(maxWidth: .infinity)
                 
                 if isLoading {
                     // Use ProgressView as a spinner
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tintCompat(foregroundColor)
+                        .scaleEffect(0.8)
                 }
             }
+            .padding(.horizontal, size.padding.horizontal)
+            .padding(.vertical, size.padding.vertical)
+            .frame(maxWidth: fullWidth ? .infinity : nil)
+            .background(
+                ZStack {
+                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
+                        .fill(backgroundColor)
+                    
+                    // Add light highlight on top for depth
+                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
+                        .fill(LinearGradient(
+                            gradient: Gradient(colors: [
+                                foregroundColor.opacity(0.15),
+                                Color.clear
+                            ]),
+                            startPoint: .top,
+                            endPoint: .center
+                        ))
+                }
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
+                    .stroke(style == .secondary ? AppTheme.GeneratedColors.tacticalGray.opacity(0.3) : Color.clear, lineWidth: 1)
+            )
+            .scaleEffect(isPressed && !reduceMotion ? 0.97 : 1.0)
+            .shadow(color: backgroundColor.opacity(style == .primary ? 0.3 : 0), radius: 4, x: 0, y: 2)
         }
-        .background(backgroundColor)
-        .cornerRadius(8)
         .disabled(isLoading)  // prevent taps while busy
-        .animation(.easeInOut(duration: 0.15), value: isLoading)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isLoading)
     }
     
     private var backgroundColor: Color {
@@ -86,7 +174,7 @@ public struct PTButton: View {
         case .primary:
             return AppTheme.GeneratedColors.primary
         case .secondary:
-            return AppTheme.GeneratedColors.secondary
+            return AppTheme.GeneratedColors.secondary.opacity(0.1)
         case .destructive:
             return AppTheme.GeneratedColors.error
         }
@@ -94,23 +182,18 @@ public struct PTButton: View {
     
     private var foregroundColor: Color {
         switch style {
-        case .primary, .destructive:
-            return .white
+        case .primary:
+            return AppTheme.GeneratedColors.textOnPrimary
         case .secondary:
             return AppTheme.GeneratedColors.textPrimary
+        case .destructive:
+            return .white
         }
     }
 }
 
-// MARK: – vNext API (keeps ComponentGalleryView working)
-//
-// NOTE: These are convenience wrappers around the core PTButton
-// so nothing upstream breaks. Remove after all call-sites migrate.
-
+// MARK: – Extended styles and backwards compatibility
 public extension PTButton {
-
-    enum ButtonSize { case small, medium, large }
-
     enum ExtendedStyle {
         case primary, secondary, outline, ghost, destructive
     }
@@ -134,15 +217,15 @@ public extension PTButton {
             coreStyle = .secondary   // treat as secondary visually
         }
 
-        // Use the base initializer without the icon
-        self.init(title, style: coreStyle, isLoading: isLoading, action: action)
-
-        // --- per-instance modifiers ---
-        _ = self                         // allows chaining if desired
-            .buttonStyle(PlainButtonStyle())
-            .frame(maxWidth: fullWidth ? .infinity : nil)
-            // Note: We're not actually adding icon overlay here since it would duplicate content
-            // The icon would need to be incorporated at the base Button level
-            .opacity(isLoading ? 0.5 : 1.0)
+        // Use the new initializer
+        self.init(
+            title, 
+            style: coreStyle, 
+            size: size,
+            icon: icon,
+            fullWidth: fullWidth,
+            isLoading: isLoading, 
+            action: action
+        )
     }
 }

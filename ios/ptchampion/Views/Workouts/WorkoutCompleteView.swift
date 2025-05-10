@@ -87,7 +87,9 @@ struct WorkoutCompleteView: View {
                         .padding()
                 }
 
-                PTButton("Done", style: .primary) {
+                // Add a typed local variable to resolve ambiguity
+                let primaryButtonStyle: PTButton.ExtendedStyle = .primary
+                PTButton("Done", style: primaryButtonStyle) {
                     dismiss()
                 }
                 .padding(.horizontal)

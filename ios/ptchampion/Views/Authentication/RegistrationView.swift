@@ -31,10 +31,19 @@ struct RegistrationView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: AppTheme.GeneratedSpacing.large) {
-                // Logo
-                Image(uiImage: UIImage(named: "pt_champion_logo") ?? 
-                      (Bundle.main.path(forResource: "pt_champion_logo", ofType: "png").flatMap { UIImage(contentsOfFile: $0) }) ?? 
-                      UIImage(systemName: "shield.lefthalf.filled")!)
+                // Logo - fix the ambiguous init by being more explicit
+                let logoImage: UIImage = {
+                    if let named = UIImage(named: "pt_champion_logo") {
+                        return named
+                    } else if let path = Bundle.main.path(forResource: "pt_champion_logo", ofType: "png"),
+                              let img = UIImage(contentsOfFile: path) {
+                        return img
+                    } else {
+                        return UIImage(systemName: "shield.lefthalf.filled") ?? UIImage()
+                    }
+                }()
+                
+                Image(uiImage: logoImage)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
@@ -120,11 +129,15 @@ struct RegistrationView: View {
                     
                     // Register button
                     if auth.isLoading {
-                        PTButton("CREATE ACCOUNT", isLoading: true) {}
+                        // Use a typed local variable to resolve ambiguity
+                        let coreButtonStyle: PTButton.ButtonStyle = .primary
+                        PTButton("CREATE ACCOUNT", style: coreButtonStyle, isLoading: true) {}
                             .disabled(true)
                             .padding(.top, 10)
                     } else {
-                        PTButton("CREATE ACCOUNT") {
+                        // Use a typed local variable to resolve ambiguity
+                        let coreButtonStyle: PTButton.ButtonStyle = .primary
+                        PTButton("CREATE ACCOUNT", style: coreButtonStyle) {
                             auth.errorMessage = nil
                             isLoading = true
                             
@@ -148,7 +161,8 @@ struct RegistrationView: View {
                     }
                     
                     // Back to login button
-                    PTButton("Back to Login", style: .secondary, icon: Image(systemName: "arrow.left")) {
+                    let secondaryButtonStyle: PTButton.ButtonStyle = .secondary
+                    PTButton("Back to Login", style: secondaryButtonStyle, icon: Image(systemName: "arrow.left")) {
                         // Use NavigationState to navigate back to login
                         navigationState.navigateTo(.login)
                     }

@@ -226,7 +226,9 @@ struct SettingsSheet: View {
                 .cornerRadius(AppTheme.GeneratedRadius.medium)
                 .padding()
             
-            PTButton("Submit Feedback") {
+            // Use a typed local variable to resolve ambiguity
+            let coreButtonStyle: PTButton.ButtonStyle = .primary
+            PTButton("Submit Feedback", style: coreButtonStyle) {
                 // Submit feedback
                 dismiss()
             }
