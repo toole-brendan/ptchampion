@@ -167,7 +167,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
             // Group title
             Text(title)
-                .font(AppTheme.GeneratedTypography.body(weight: .semibold))
+                .font(AppTheme.GeneratedTypography.bodySemibold())
                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 .padding(.leading, 4)
             

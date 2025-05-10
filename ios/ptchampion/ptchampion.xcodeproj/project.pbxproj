@@ -57,7 +57,6 @@
 		BF63E44B2DB1EB980037CD02 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4332DB1EB980037CD02 /* LoginView.swift */; };
 		BF63E44C2DB1EB980037CD02 /* RunWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4452DB1EB980037CD02 /* RunWorkoutView.swift */; };
 		BF63E44D2DB1EB980037CD02 /* PoseOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4442DB1EB980037CD02 /* PoseOverlayView.swift */; };
-		BF63E44E2DB1EB980037CD02 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E43F2DB1EB980037CD02 /* SettingsView.swift */; };
 		BF63E44F2DB1EB980037CD02 /* WorkoutHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4382DB1EB980037CD02 /* WorkoutHistoryView.swift */; };
 		BF63E4502DB1EB980037CD02 /* WorkoutSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4472DB1EB980037CD02 /* WorkoutSessionView.swift */; };
 		BF63E4512DB1EB980037CD02 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E43C2DB1EB980037CD02 /* ProgressView.swift */; };
@@ -199,7 +198,6 @@
 		BF63E4382DB1EB980037CD02 /* WorkoutHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryView.swift; sourceTree = "<group>"; };
 		BF63E43A2DB1EB980037CD02 /* LeaderboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardView.swift; sourceTree = "<group>"; };
 		BF63E43C2DB1EB980037CD02 /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
-		BF63E43F2DB1EB980037CD02 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		BF63E4412DB1EB980037CD02 /* CameraPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreviewView.swift; sourceTree = "<group>"; };
 		BF63E4422DB1EB980037CD02 /* DeviceScanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceScanningView.swift; sourceTree = "<group>"; };
 		BF63E4442DB1EB980037CD02 /* PoseOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseOverlayView.swift; sourceTree = "<group>"; };
@@ -544,7 +542,6 @@
 				BFADF9AD2DC93D890016AF0B /* WorkoutCard.swift */,
 				BFADF9AE2DC93D890016AF0B /* WorkoutHistoryList.swift */,
 				BF63E4712DB1F3910037CD02 /* WorkoutHistoryRow.swift */,
-				BF63E43F2DB1EB980037CD02 /* SettingsView.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -849,7 +846,6 @@
 				BF63E44C2DB1EB980037CD02 /* RunWorkoutView.swift in Sources */,
 				BF63E4722DB1F3910037CD02 /* WorkoutHistoryRow.swift in Sources */,
 				BF63E44D2DB1EB980037CD02 /* PoseOverlayView.swift in Sources */,
-				BF63E44E2DB1EB980037CD02 /* SettingsView.swift in Sources */,
 				BF63E44F2DB1EB980037CD02 /* WorkoutHistoryView.swift in Sources */,
 				BF63E4502DB1EB980037CD02 /* WorkoutSessionView.swift in Sources */,
 				BF63E4512DB1EB980037CD02 /* ProgressView.swift in Sources */,
