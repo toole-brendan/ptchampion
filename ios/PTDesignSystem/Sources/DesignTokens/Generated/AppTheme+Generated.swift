@@ -28,6 +28,11 @@ public extension AppTheme {
     
     // Additional semantic colors
     public static let textOnPrimary = cream // Text on primary color (usually white/cream)
+    
+    // New color tokens for elements on dark backgrounds
+    public static let textPrimaryOnDark = Color.white // Primary text on dark backgrounds
+    public static let textSecondaryOnDark = Color.gray // Secondary text on dark backgrounds
+    public static let backgroundOverlay = Color.black.opacity(0.7) // Semi-transparent overlay background
   }
 
   enum GeneratedTypography {

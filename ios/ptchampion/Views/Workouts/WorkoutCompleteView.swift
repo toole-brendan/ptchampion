@@ -192,7 +192,7 @@ struct WorkoutCompleteView_Previews: PreviewProvider {
         )
 
         // Create a mock ExerciseGraderBox
-        let mockGrader = PlaceholderGrader() // Using PlaceholderGrader for simplicity
+        let mockGrader = WorkoutSessionPlaceholderGrader() // Using WorkoutSessionPlaceholderGrader instead of PlaceholderGrader
         mockGrader.repCount = 25
         mockGrader.formQualityAverage = 0.88
         mockGrader.lastFormIssue = "Elbows flared out on last rep."

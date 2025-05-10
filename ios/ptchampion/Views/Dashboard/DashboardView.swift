@@ -144,6 +144,7 @@ struct DashboardView: View {
     @ViewBuilder
     private func quickLinksSectionView() -> some View {
         VStack(alignment: .leading, spacing: 0) {
+            // Use the same spacing pattern as the quickStatsGridView
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: Self.cardGap),
                 GridItem(.flexible(), spacing: Self.cardGap)
@@ -156,6 +157,7 @@ struct DashboardView: View {
                         destination: link.destination,
                         isSystemIcon: link.isSystemIcon
                     )
+                    // Remove extra padding to match stat cards
                 }
             }
             .opacity(quickLinksVisible ? 1 : 0)

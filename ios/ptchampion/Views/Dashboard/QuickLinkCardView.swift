@@ -31,10 +31,16 @@ struct QuickLinkCardView: View {
                         .lineLimit(1)
                         .multilineTextAlignment(.center)
                 }
-                .padding(AppTheme.GeneratedSpacing.itemSpacing)
-                .frame(maxWidth: .infinity)
+                .padding(AppTheme.GeneratedSpacing.contentPadding)
+                .frame(maxWidth: .infinity, minHeight: 110, alignment: .center)
             }
-            .frame(height: 120)
+            .shadow(
+                color: Color.black.opacity(0.08),
+                radius: 8,
+                x: 0,
+                y: 2
+            )
+            .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -44,11 +50,11 @@ struct QuickLinkCardView: View {
     private var destinationView: some View {
         switch destination {
         case "workout-pushups":
-            WorkoutSessionView(exerciseName: "Push-Ups")
+            WorkoutSessionView(exerciseType: .pushup)
         case "workout-situps":
-            WorkoutSessionView(exerciseName: "Sit-Ups")
+            WorkoutSessionView(exerciseType: .situp)
         case "workout-pullups":
-            WorkoutSessionView(exerciseName: "Pull-Ups")
+            WorkoutSessionView(exerciseType: .pullup)
         case "workout-running":
             RunWorkoutView()
         default:

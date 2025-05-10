@@ -102,9 +102,21 @@ struct WorkoutSelectionView: View {
                     exercise: exercise,
                     destination: {
                         if exercise.name == "Run" {
-                            AnyView(RunWorkoutView())
+                            return AnyView(RunWorkoutView())
                         } else {
-                            AnyView(WorkoutSessionView(exerciseName: exercise.rawValue))
+                            // Convert from Exercise to ExerciseType based on rawValue
+                            let exerciseType: ExerciseType
+                            switch exercise.rawValue {
+                            case "pushup":
+                                exerciseType = .pushup
+                            case "situp":
+                                exerciseType = .situp
+                            case "pullup":
+                                exerciseType = .pullup
+                            default:
+                                exerciseType = .unknown
+                            }
+                            return AnyView(WorkoutSessionView(exerciseType: exerciseType))
                         }
                     }
                 )

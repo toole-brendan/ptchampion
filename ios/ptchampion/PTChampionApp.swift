@@ -259,7 +259,7 @@ struct PTChampionApp: App {
     // ViewModels that need to be shared or initialized early
     @StateObject private var authViewModel: AuthViewModel // Declared, initialized in init
     @StateObject private var dashboardViewModel: DashboardViewModel // Declared, initialized in init
-    @StateObject private var workoutViewModel: WorkoutViewModel // Declared, initialized in init
+    @StateObject private var workoutSessionViewModel: WorkoutSessionViewModel // Declared, initialized in init (renamed from workoutViewModel)
     @StateObject private var runWorkoutViewModel: RunWorkoutViewModel // Declared, initialized in init
     @StateObject private var workoutHistoryViewModel: WorkoutHistoryViewModel // Declared, initialized in init
     @StateObject private var leaderboardViewModel: LeaderboardViewModel // Declared, initialized in init
@@ -299,13 +299,11 @@ struct PTChampionApp: App {
         let tempAuthService = AuthService(networkClient: networkClient)
         let tempAuthViewModel = AuthViewModel()
         let tempDashboardViewModel = DashboardViewModel() // init takes no args
-        let tempWorkoutViewModel = WorkoutViewModel(
-             exerciseName: "pushup", // Placeholder
-             // Use default PoseDetectorService() from init, DO NOT pass self.poseDetectorService here
-             workoutService: workoutService,
-             keychainService: keychainService,
-             modelContext: nil // Set later using self.sharedModelContainer
-         )
+        let tempWorkoutSessionViewModel = WorkoutSessionViewModel(
+            exerciseType: .pushup, // Default exercise type
+            cameraService: CameraService(),
+            poseDetectorService: PoseDetectorService()
+        )
         let tempRunWorkoutViewModel = RunWorkoutViewModel(
             locationService: locationService,
             workoutService: workoutService,
@@ -326,7 +324,7 @@ struct PTChampionApp: App {
         _authService = StateObject(wrappedValue: tempAuthService)
         _authViewModel = StateObject(wrappedValue: tempAuthViewModel)
         _dashboardViewModel = StateObject(wrappedValue: tempDashboardViewModel)
-        _workoutViewModel = StateObject(wrappedValue: tempWorkoutViewModel) // Assign workoutViewModel here
+        _workoutSessionViewModel = StateObject(wrappedValue: tempWorkoutSessionViewModel) // Renamed from workoutViewModel
         _runWorkoutViewModel = StateObject(wrappedValue: tempRunWorkoutViewModel)
         _workoutHistoryViewModel = StateObject(wrappedValue: tempWorkoutHistoryViewModel)
         _leaderboardViewModel = StateObject(wrappedValue: tempLeaderboardViewModel)
@@ -337,10 +335,10 @@ struct PTChampionApp: App {
         self.dashboardViewModel.setModelContext(self.sharedModelContainer.mainContext)
         self.workoutHistoryViewModel.modelContext = self.sharedModelContainer.mainContext
         self.runWorkoutViewModel.modelContext = self.sharedModelContainer.mainContext
-        self.workoutViewModel.modelContext = self.sharedModelContainer.mainContext // Set context for workout VM too
-        // We are using the default PoseDetectorService created within WorkoutViewModel's init
-        // If we *needed* to use the app-level self.poseDetectorService, we'd need a setter method in WorkoutViewModel
-        // e.g., self.workoutViewModel.setPoseDetector(self.poseDetectorService)
+        self.workoutSessionViewModel.modelContext = self.sharedModelContainer.mainContext // Renamed from workoutViewModel
+        // We are using the default PoseDetectorService created within WorkoutSessionViewModel's init
+        // If we *needed* to use the app-level self.poseDetectorService, we'd need a setter method in WorkoutSessionViewModel
+        // e.g., self.workoutSessionViewModel.setPoseDetector(self.poseDetectorService)
         
         // Activate AssistantKiller
         #if !targetEnvironment(simulator)
@@ -404,7 +402,7 @@ struct PTChampionApp: App {
                         // Pass ViewModels (Grouped)
                         .environmentObject(authViewModel)
                         .environmentObject(dashboardViewModel)
-                        .environmentObject(workoutViewModel)
+                        .environmentObject(workoutSessionViewModel) // Renamed from workoutViewModel
                         .environmentObject(runWorkoutViewModel)
                         .environmentObject(workoutHistoryViewModel)
                         .environmentObject(leaderboardViewModel)
