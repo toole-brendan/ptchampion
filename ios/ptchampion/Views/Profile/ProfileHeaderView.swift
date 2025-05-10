@@ -6,21 +6,41 @@ import PTDesignSystem
 struct ProfileHeaderView: View {
     @ObservedObject var authViewModel: AuthViewModel
     @Binding var showingEditProfile: Bool
+    
+    // Computed property to get user's initials
+    private var userInitials: String {
+        if case .authenticated(let user) = authViewModel.authState {
+            let firstInitial = user.firstName?.prefix(1).uppercased() ?? ""
+            let lastInitial = user.lastName?.prefix(1).uppercased() ?? ""
+            
+            if !lastInitial.isEmpty {
+                return "\(firstInitial)\(lastInitial)"
+            } else if !firstInitial.isEmpty {
+                // If only first name is available, use first two letters
+                let firstName = user.firstName ?? ""
+                if firstName.count > 1 {
+                    let secondLetter = String(firstName.dropFirst().prefix(1).uppercased())
+                    return "\(firstInitial)\(secondLetter)"
+                }
+                return firstInitial
+            }
+            return "U" // Default if no name available
+        }
+        return "U" // Default for unauthenticated
+    }
 
     var body: some View {
         PTCard(style: .standard) { // Use PTCard as the root
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                // Avatar image or placeholder
+                // Avatar circle with initials
                 ZStack {
                     Circle()
                         .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
                         .frame(width: 100, height: 100)
                     
-                    Image(systemName: "person.crop.circle.fill")
-                        .resizable()
-                        .scaledToFit()
+                    Text(userInitials)
+                        .font(.system(size: 40, weight: .bold))
                         .foregroundColor(AppTheme.GeneratedColors.primary)
-                        .frame(width: 80, height: 80)
                 }
                 .padding(.top, AppTheme.GeneratedSpacing.medium)
                 

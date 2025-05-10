@@ -15,6 +15,27 @@ struct LeaderboardRowView: View {
         }
     }
     
+    // Function to get initials from name
+    private func getInitials(from name: String) -> String {
+        let components = name.components(separatedBy: " ")
+        
+        if components.count > 1 {
+            // If name has multiple parts (First Last), use first letter of each
+            let firstInitial = components[0].prefix(1).uppercased()
+            let secondInitial = components[1].prefix(1).uppercased()
+            return "\(firstInitial)\(secondInitial)"
+        } else if !name.isEmpty {
+            // If single word (username), use first two letters
+            if name.count > 1 {
+                let firstTwo = name.prefix(2).uppercased()
+                return String(firstTwo)
+            }
+            return name.prefix(1).uppercased()
+        }
+        
+        return "U" // Default
+    }
+    
     var body: some View {
         let isTopThree = entry.rank <= 3
         let decoration = rankDecoration(rank: entry.rank)
@@ -41,13 +62,13 @@ struct LeaderboardRowView: View {
                 }
                 .frame(minWidth: 50, alignment: .leading)
 
-                // Avatar (placeholder for now)
+                // Avatar with initials
                 Circle()
                     .fill(AppTheme.GeneratedColors.textSecondary.opacity(0.2))
                     .frame(width: 32, height: 32)
                     .overlay(
-                        Text(entry.name.prefix(1).uppercased())
-                            .font(.system(size: 14, weight: .bold))
+                        Text(getInitials(from: entry.name))
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     )
 
