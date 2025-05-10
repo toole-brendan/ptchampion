@@ -41,14 +41,14 @@ struct DashboardView: View {
     @State private var showingStyleShowcase = false // Added for style showcase
     
     // For haptics on Start Workout button
-    private let hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
+    // private let hapticGenerator = UIImpactFeedbackGenerator(style: .medium) // Removed as button is removed
     
     // Quick links for navigation
     private let quickLinks: [(title: String, icon: String, destination: String, isSystemIcon: Bool)] = [
-        ("Begin Push-Ups", "pushup", "workout-pushups", false),
-        ("Begin Sit-Ups", "situp", "workout-situps", false),
-        ("Begin Pull-Ups", "pullup", "workout-pullups", false),
-        ("Start Running", "running", "workout-running", false)
+        ("Push-Ups", "pushup", "workout-pushups", false),
+        ("Sit-Ups", "situp", "workout-situps", false),
+        ("Pull-Ups", "pullup", "workout-pullups", false),
+        ("Running", "running", "workout-running", false)
     ]
     
     var body: some View {
@@ -75,8 +75,11 @@ struct DashboardView: View {
                         // 4-2: Quick Stats Card Grid
                         quickStatsGridView() // Call the new helper method for stat cards
                         
-                        // 4-3: Primary Call-to-Action
-                        primaryCallToActionView() // Call the new helper method
+                        // 4-3: Primary Call-to-Action - Now a static header
+                        PTLabel("Start Workout", style: .heading)
+                            .padding(.top, 16)
+                            .frame(maxWidth: .infinity, alignment: .leading) // Ensure it aligns with the grid below
+                            // .padding(.horizontal, Self.globalPadding) // Already handled by VStack's padding
 
                         // 4-4: Quick Links Section
                         quickLinksSectionView() // Call the new helper method
@@ -164,14 +167,15 @@ struct DashboardView: View {
         }
     }
     
-    // New helper method for the primary call to action button
+    // New helper method for the primary call to action button - REMOVED
+    /*
     @ViewBuilder
     private func primaryCallToActionView() -> some View {
         NavigationLink(destination: WorkoutSelectionView()) {
             // Use a typed local variable to resolve ambiguity
             let coreButtonStyle: PTButton.ButtonStyle = .primary
             PTButton("Start Workout", style: coreButtonStyle) {
-                hapticGenerator.impactOccurred()
+                // hapticGenerator.impactOccurred() // hapticGenerator is removed
                 // Original button action would go here if it wasn't just for NavLink label
                 // Since this PTButton is just a label for a NavigationLink,
                 // the haptic on the PTButton's action might not fire as expected
@@ -184,18 +188,19 @@ struct DashboardView: View {
         .buttonStyle(PlainButtonStyle()) // Remove NavigationLink styling
         .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing)
     }
+    */
 
     // New helper method for the Quick Links section
     @ViewBuilder
     private func quickLinksSectionView() -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("QUICK LINKS")
-                .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .padding(.top, AppTheme.GeneratedSpacing.large)
-                .padding(.bottom, AppTheme.GeneratedSpacing.small)
-            
-            PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
+            // REMOVED "QUICK LINKS" Text and PTSeparator
+            // Text("QUICK LINKS")
+            //     .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
+            //     .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+            //     .padding(.top, AppTheme.GeneratedSpacing.large)
+            //     .padding(.bottom, AppTheme.GeneratedSpacing.small)
+            // PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
 
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: Self.cardGap),
@@ -311,44 +316,40 @@ struct QuickLinkCard: View {
     let destination: String
     let isSystemIcon: Bool
     
-    // For haptics
-    private let hapticGenerator = UIImpactFeedbackGenerator(style: .soft)
+    // For haptics - REMOVED as it's part of NavigationLink, not a separate button interaction here.
+    // private let hapticGenerator = UIImpactFeedbackGenerator(style: .soft)
 
     var body: some View {
         NavigationLink(destination: destinationView) {
             PTCard {
-                HStack(alignment: .top) {
+                VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.extraSmall) { // Changed to VStack
                     if isSystemIcon {
                         Image(systemName: icon)
-                            .font(.title2)
-                            // MODIFIED: Changed icon color to textPrimary for better visibility as per spec
+                            .font(.system(size: 48)) // Increased icon size, .font for system icons
                             .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            .frame(width: 24, height: 24)
-                            .padding(.top, 2)
+                            .frame(width: 64, height: 64) // Larger frame for icon
+                            .scaledToFit()
                     } else {
                         Image(icon)
                             .resizable()
                             .scaledToFit()
-                            // MODIFIED: Changed icon color to textPrimary for better visibility as per spec
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            .frame(width: 24, height: 24)
-                            .padding(.top, 2)
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary) // color applied if it's a template image
+                            .frame(width: 64, height: 64) // Larger frame for icon
                     }
                     
                     Text(title)
-                        .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                        .fontWeight(.semibold)
+                        // Use system monospaced font, adjust size as needed
+                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        .padding(.leading, AppTheme.GeneratedSpacing.extraSmall)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                    
-                    Spacer()
+                        .lineLimit(1) // Ensure single line, names are short now
+                        .multilineTextAlignment(.center) // Center text below icon
                 }
                 .padding(AppTheme.GeneratedSpacing.itemSpacing)
+                .frame(maxWidth: .infinity) // Ensure VStack takes full width of PTCard
             }
-            .frame(height: 70)
+            .frame(height: 120) // Increased card height to accommodate larger icon and text
         }
+        .buttonStyle(PlainButtonStyle()) // Ensure NavigationLink doesn't add its own styling to the card
     }
     
     // Determine the destination view based on the destination string

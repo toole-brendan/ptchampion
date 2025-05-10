@@ -137,7 +137,7 @@ public struct PTTextField: View {
                 }
             }
             .padding(12)
-            .background(AppTheme.GeneratedColors.background)
+            .background(AppTheme.GeneratedColors.cardBackground)
             .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)

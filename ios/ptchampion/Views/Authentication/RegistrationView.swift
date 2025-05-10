@@ -46,9 +46,9 @@ struct RegistrationView: View {
                 Image(uiImage: logoImage)
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 100, height: 100)
+                    .frame(width: 150, height: 150)
                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                    .padding(.top, 40)
+                    .padding(.top, 20)
                 
                 PTLabel("Create Account", style: .heading)
                     .foregroundColor(AppTheme.GeneratedColors.commandBlack)
@@ -56,32 +56,32 @@ struct RegistrationView: View {
                 
                 // Form fields with consistent styling
                 VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                    FocusableTextField(
+                    PTTextField(
                         "First Name",
                         text: $firstName,
                         icon: Image(systemName: "person")
                     )
                     
-                    FocusableTextField(
+                    PTTextField(
                         "Last Name",
                         text: $lastName,
                         icon: Image(systemName: "person.2")
                     )
                     
-                    FocusableTextField(
+                    PTTextField(
                         "Email",
                         text: $email,
-                        keyboardType: .emailAddress,
-                        icon: Image(systemName: "envelope")
+                        icon: Image(systemName: "envelope"),
+                        keyboardType: .emailAddress
                     )
                     
-                    FocusableTextField(
+                    PTTextField(
                         "Username (display name)",
                         text: $username,
                         icon: Image(systemName: "person.text.rectangle")
                     )
                     
-                    FocusableTextField(
+                    PTTextField(
                         "Password",
                         text: $password,
                         isSecure: true,
@@ -89,7 +89,7 @@ struct RegistrationView: View {
                     )
                     .onChange(of: password) { _, _ in validatePasswords() }
                     
-                    FocusableTextField(
+                    PTTextField(
                         "Confirm Password",
                         text: $confirmPassword,
                         isSecure: true,
