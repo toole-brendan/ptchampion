@@ -236,8 +236,18 @@ class FitnessDeviceManagerViewModel: ObservableObject {
         do {
             return try await healthKitService.requestAuthorization()
         } catch {
-            print("Error requesting HealthKit authorization: \(error.localizedDescription)")
+            print("FitnessDeviceManagerViewModel: Error requesting HealthKit authorization: \(error.localizedDescription)")
+            
+            #if targetEnvironment(simulator)
+            // In simulator, handle gracefully and fake success
+            print("FitnessDeviceManagerViewModel: Running in simulator - simulating successful authorization")
+            return true
+            #else
+            // In real device, show proper error
+            showBluetoothError = true
+            bluetoothErrorMessage = "Could not access HealthKit: \(error.localizedDescription)"
             return false
+            #endif
         }
     }
     
