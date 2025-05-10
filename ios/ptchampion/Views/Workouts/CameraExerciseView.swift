@@ -458,7 +458,9 @@ struct CameraExerciseView: View {
             PTLabel("This feature requires camera access to track exercises. Please enable camera access in Settings.", style: .body)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-            PTButton("Open Settings", style: .primary) {
+            // Add a typed local variable to resolve ambiguity
+            let primaryButtonStyle: PTButton.ExtendedStyle = .primary
+            PTButton("Open Settings", style: primaryButtonStyle) {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
                     UIApplication.shared.open(url)
                 }
@@ -466,7 +468,11 @@ struct CameraExerciseView: View {
         }
         .padding(AppTheme.GeneratedSpacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.85).edgesIgnoringSafeArea(.all)) // TODO: Replace with correct design system color AppTheme.GeneratedColors.backgroundOverlay.edgesIgnoringSafeArea(.all)
+        .background(
+            // Use UIColor to create an explicitly translucent background
+            Color(uiColor: UIColor.black.withAlphaComponent(0.85))
+                .edgesIgnoringSafeArea(.all)
+        )
     }
 }
 

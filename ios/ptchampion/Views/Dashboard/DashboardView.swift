@@ -142,7 +142,9 @@ struct DashboardView: View {
     @ViewBuilder
     private func primaryCallToActionView() -> some View {
         NavigationLink(destination: WorkoutSelectionView()) {
-            PTButton("Start Workout") {
+            // Use a typed local variable to resolve ambiguity
+            let coreButtonStyle: PTButton.ButtonStyle = .primary
+            PTButton("Start Workout", style: coreButtonStyle) {
                 hapticGenerator.impactOccurred()
                 // Original button action would go here if it wasn't just for NavLink label
                 // Since this PTButton is just a label for a NavigationLink,
@@ -216,9 +218,9 @@ struct DashboardView: View {
                     .cornerRadius(AppTheme.GeneratedRadius.medium)
                 }
             }
-            // Animation modifiers still commented out for now
-            // .opacity(recentActivityVisible ? 1 : 0)
-            // .offset(y: recentActivityVisible ? 0 : 15)
+            // MODIFIED: Uncommented animation modifiers for recent activity feed
+            .opacity(recentActivityVisible ? 1 : 0)
+            .offset(y: recentActivityVisible ? 0 : 15)
         } else {
             EmptyView()
         }
@@ -283,14 +285,16 @@ struct QuickLinkCard: View {
                     if isSystemIcon {
                         Image(systemName: icon)
                             .font(.title2)
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            // MODIFIED: Changed icon color to textPrimary for better visibility as per spec
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                             .frame(width: 24, height: 24)
                             .padding(.top, 2)
                     } else {
                         Image(icon)
                             .resizable()
                             .scaledToFit()
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            // MODIFIED: Changed icon color to textPrimary for better visibility as per spec
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                             .frame(width: 24, height: 24)
                             .padding(.top, 2)
                     }

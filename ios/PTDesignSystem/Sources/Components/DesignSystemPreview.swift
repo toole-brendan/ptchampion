@@ -79,15 +79,15 @@ public struct DesignSystemPreview: View {
         VStack(alignment: .leading, spacing: 16) {
             PTLabel("Buttons", style: .heading)
             
-            PTButton("Primary Button") {
+            PTButton("Primary Button", style: PTButton.ButtonStyle.primary) {
                 print("Primary button tapped")
             }
             
-            PTButton("Secondary Button", style: .secondary) {
+            PTButton("Secondary Button", style: PTButton.ButtonStyle.secondary) {
                 print("Secondary button tapped")
             }
             
-            PTButton("Destructive Button", style: .destructive) {
+            PTButton("Destructive Button", style: PTButton.ButtonStyle.destructive) {
                 print("Destructive button tapped")
             }
         }
@@ -133,7 +133,7 @@ public struct DesignSystemPreview: View {
                     PTSeparator()
                     
                     HStack {
-                        PTButton("Action", style: .secondary) {
+                        PTButton("Action", style: PTButton.ButtonStyle.secondary) {
                             print("Card action tapped")
                         }
                         .frame(maxWidth: 100)

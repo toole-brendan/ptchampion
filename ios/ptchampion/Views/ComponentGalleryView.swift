@@ -143,21 +143,31 @@ struct ComponentGalleryContentView: View {
             sectionHeader(title: "Buttons", description: "Button components with different variants")
             
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                PTButton("Primary Button") {}
+                // Use a typed local variable to resolve ambiguity
+                let coreButtonStyle: PTButton.ButtonStyle = .primary
+                PTButton("Primary Button", style: coreButtonStyle) {}
                 
-                PTButton("Secondary Button", style: .secondary) {
+                // Use a typed local variable to resolve ambiguity for secondary style
+                let secondaryButtonStyle: PTButton.ButtonStyle = .secondary
+                PTButton("Secondary Button", style: secondaryButtonStyle) {
                     // action
                 }
                 
-                PTButton("Outline Button", style: .outline) {
+                // Explicitly specify the type for outline style
+                let outlineButtonStyle: PTButton.ExtendedStyle = .outline
+                PTButton("Outline Button", style: outlineButtonStyle) {
                     // action
                 }
                 
-                PTButton("Ghost Button", style: .ghost) {
+                // Explicitly specify the type for ghost style
+                let ghostButtonStyle: PTButton.ExtendedStyle = .ghost
+                PTButton("Ghost Button", style: ghostButtonStyle) {
                     // action
                 }
                 
-                PTButton("Destructive Button", style: .destructive) {
+                // Use a typed local variable to resolve ambiguity for destructive style
+                let destructiveButtonStyle: PTButton.ButtonStyle = .destructive
+                PTButton("Destructive Button", style: destructiveButtonStyle) {
                     // action
                 }
                 
@@ -167,16 +177,19 @@ struct ComponentGalleryContentView: View {
                 PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.small)
                 
                 HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                    PTButton("Small") {
+                    // Explicitly specify the style to avoid ambiguity
+                    let defaultStyle: PTButton.ExtendedStyle = .primary
+                    
+                    PTButton("Small", style: defaultStyle) {
                         // action
                     }
                     .padding(.vertical, 4)
                     
-                    PTButton("Medium") {
+                    PTButton("Medium", style: defaultStyle) {
                         // action
                     }
                     
-                    PTButton("Large") {
+                    PTButton("Large", style: defaultStyle) {
                         // action
                     }
                     .padding(.vertical, 16)
@@ -551,8 +564,10 @@ struct ComponentGalleryContentView: View {
             sectionHeader(title: "Modal Sheets", description: "Settings and filters")
             
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                // Use a typed local variable to resolve ambiguity
+                let coreButtonStyle: PTButton.ButtonStyle = .primary
                 PTButton("Show Settings Sheet", 
-                         style: .primary,
+                         style: coreButtonStyle,
                          icon: Image(systemName: "gearshape.fill")) {
                     showingSettingsSheet = true
                 }

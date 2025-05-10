@@ -60,7 +60,7 @@ struct WorkoutDetailView: View {
     }
 
     var body: some View {
-        ScrollView { // Wrap content in ScrollView if it might exceed screen height
+        ScrollView(.vertical, showsIndicators: true) { // Add explicit parameters to resolve ambiguity
             VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
                 PTLabel("Workout Summary", style: .heading)
                     .padding(.bottom, AppTheme.GeneratedSpacing.small)
@@ -166,7 +166,9 @@ struct WorkoutDetailView: View {
                 
                 Spacer() // Push button to bottom if content is short
                 
-                PTButton(workoutResult.isPublic ? "Set to Private" : "Set to Public (Leaderboard)", style: .secondary) {
+                // Use a typed local variable to resolve ambiguity
+                let secondaryButtonStyle: PTButton.ExtendedStyle = .secondary
+                PTButton(workoutResult.isPublic ? "Set to Private" : "Set to Public (Leaderboard)", style: secondaryButtonStyle) {
                     workoutResult.isPublic.toggle()
                     // No explicit save here, assumes @Query handles it or it's saved elsewhere if needed persistently
                     // For explicit save:
