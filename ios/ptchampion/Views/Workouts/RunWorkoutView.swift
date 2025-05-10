@@ -16,90 +16,81 @@ extension Text {
 }
 
 struct RunWorkoutView: View {
-    // Define constants directly within the view
+    // MARK: - Properties
+    @StateObject private var viewModel: RunWorkoutViewModel
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @State private var workoutToNavigate: WorkoutResultSwiftData? = nil
+    
+    // MARK: - Constants
     private struct Constants {
         static let globalPadding: CGFloat = AppTheme.GeneratedSpacing.contentPadding
         static let cardGap: CGFloat = AppTheme.GeneratedSpacing.cardGap
         static let panelCornerRadius: CGFloat = AppTheme.GeneratedRadius.card
     }
     
-    @StateObject private var viewModel: RunWorkoutViewModel // Use @StateObject
-    @Environment(\.dismiss) var dismiss
-    @Environment(\.modelContext) private var modelContext // Access ModelContext
-    @State private var workoutToNavigate: WorkoutResultSwiftData? = nil // <-- ADDED
-
-    // Keep the initializer simple for previews, context injected onAppear
+    // MARK: - Initialization
     init() {
-        _viewModel = StateObject(wrappedValue: RunWorkoutViewModel(modelContext: nil)) // Use StateObject
+        _viewModel = StateObject(wrappedValue: RunWorkoutViewModel())
     }
-
+    
+    // MARK: - Body
     var body: some View {
-        VStack(spacing: 0) {
-            // Device Connection Status Header
-            deviceStatusHeader()
-
-            // Top Metrics Display
-            runMetricsHeader()
-
-            // Map View Placeholder (Optional)
-            // ZStack { // Use ZStack to overlay map if needed
-            //     MapViewPlaceholder()
-            //     // Overlay current pace/time on map?
-            // }
-            // .frame(height: 200) // Example fixed height
-
-            Spacer() // Pushes controls to bottom
-
-            // Permission/Error Overlay (Similar to WorkoutSessionView)
-            if viewModel.runState == .permissionDenied || viewModel.runState == .error("") { // Check error state properly
-                 permissionOrErrorOverlay()
-                     .padding(.bottom, 80) // Adjust padding to avoid controls
-                     .transition(.opacity.animation(.easeInOut))
+        ZStack {
+            // Main Content
+            VStack(spacing: 0) {
+                // Device Connection Status Header
+                deviceStatusHeader()
+                
+                // Top Metrics Display
+                runMetricsHeader()
+                
+                Spacer() // Pushes controls to bottom
+                
+                // Bottom Controls
+                runControls()
             }
-
-            Spacer()
-
-            // Bottom Controls
-            runControls()
+            .background(AppTheme.GeneratedColors.cream.ignoresSafeArea())
+            
+            // Location Permission Request View
+            if viewModel.runState == .requestingPermission {
+                LocationPermissionRequestView(
+                    onRequestPermission: {
+                        viewModel.requestLocationPermission()
+                    },
+                    onCancel: {
+                        dismiss()
+                    }
+                )
+                .zIndex(2) // Ensure it's on top
+            }
+            
+            // Permission Denied/Error Overlay
+            if isInErrorOrPermissionDeniedState {
+                permissionOrErrorOverlay()
+                    .zIndex(1)
+            }
         }
-        .background(AppTheme.GeneratedColors.cream.ignoresSafeArea()) // Use AppTheme.GeneratedColors.cream
         .navigationTitle("Run Tracking")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .toolbar { // Custom toolbar for close button
+        .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
-                Button("Close") {
-                    if viewModel.runState == .finished {
-                        if let completedWorkout = viewModel.completedWorkoutForDetail {
-                            self.workoutToNavigate = completedWorkout
-                        } else {
-                            // If finished but detail not ready, just dismiss or wait?
-                            // For now, let's assume stopRun should have been called / will be called
-                            // or the navigation will happen via .onChange
-                            dismiss() 
-                        }
-                    } else if viewModel.runState == .running || viewModel.runState == .paused {
-                        viewModel.stopRun() // This will trigger saving and eventually navigation
-                    } else {
-                        dismiss() // For idle, ready, error states etc.
-                    }
+                Button("End") {
+                    handleEndWorkout()
                 }
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .foregroundColor(AppTheme.GeneratedColors.error)
             }
         }
-        // Inject the actual modelContext when the view appears and context is available
         .onAppear {
-            // Instead of reassigning viewModel (which won't work with @StateObject),
-            // set the modelContext property
-            viewModel.modelContext = modelContext
+            setupView()
         }
-        .onChange(of: viewModel.completedWorkoutForDetail) { newWorkoutDetail in // <-- ADDED
+        .onChange(of: viewModel.completedWorkoutForDetail) { newWorkoutDetail in
             if let workout = newWorkoutDetail {
                 self.workoutToNavigate = workout
             }
         }
-        // Hidden NavigationLink to trigger navigation when workoutToNavigate is set
-        .background( // <-- ADDED
+        .background(
             NavigationLink(
                 destination: workoutToNavigate.map { WorkoutDetailView(workoutResult: $0) }, 
                 isActive: Binding<Bool>(
@@ -111,10 +102,28 @@ struct RunWorkoutView: View {
             .opacity(0) // Keep it hidden
         )
     }
-
-    // MARK: - Subviews
-
-    // New Header for Device Status
+    
+    // MARK: - Setup
+    private func setupView() {
+        // Set the model context
+        viewModel.modelContext = modelContext
+    }
+    
+    private func handleEndWorkout() {
+        if viewModel.runState == .finished {
+            if let completedWorkout = viewModel.completedWorkoutForDetail {
+                self.workoutToNavigate = completedWorkout
+            } else {
+                dismiss()
+            }
+        } else if viewModel.runState == .running || viewModel.runState == .paused {
+            viewModel.stopRun()
+        } else {
+            dismiss()
+        }
+    }
+    
+    // MARK: - UI Components
     @ViewBuilder
     private func deviceStatusHeader() -> some View {
         HStack {
@@ -131,7 +140,8 @@ struct RunWorkoutView: View {
                 HStack {
                     Text("Connecting...")
                     ProgressView().scaleEffect(0.7)
-                }.foregroundColor(AppTheme.GeneratedColors.warning)
+                }
+                .foregroundColor(AppTheme.GeneratedColors.warning)
             case .connected(let peripheral):
                 Text("Connected: \(peripheral.name ?? "Device")")
                     .foregroundColor(AppTheme.GeneratedColors.success)
@@ -151,37 +161,37 @@ struct RunWorkoutView: View {
                 Text("GPS")
             }
             .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
-
         }
         .font(.caption)
         .padding(.horizontal)
         .padding(.vertical, 5)
-        .background(.thinMaterial) // Subtle background
+        .background(.thinMaterial)
     }
-
-
+    
     @ViewBuilder
     private func runMetricsHeader() -> some View {
         Grid(alignment: .center, horizontalSpacing: 10, verticalSpacing: 15) {
             GridRow {
-                 MetricDisplay(label: "DISTANCE", value: viewModel.distanceFormatted)
-                 MetricDisplay(label: "TIME", value: viewModel.elapsedTimeFormatted)
+                MetricDisplay(label: "DISTANCE", value: viewModel.distanceFormatted)
+                MetricDisplay(label: "TIME", value: viewModel.elapsedTimeFormatted)
             }
             GridRow {
-                 MetricDisplay(label: "AVG PACE", value: viewModel.averagePaceFormatted)
-                 MetricDisplay(label: "CUR PACE", value: viewModel.currentPaceFormatted)
+                MetricDisplay(label: "AVG PACE", value: viewModel.averagePaceFormatted)
+                MetricDisplay(label: "CUR PACE", value: viewModel.currentPaceFormatted)
             }
-             // Add Heart Rate Display
-             GridRow {
-                  MetricDisplay(label: "HEART RATE",
-                                value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM")
-                                .gridCellColumns(2) // Span across two columns
-             }
+            // Add Heart Rate Display
+            GridRow {
+                MetricDisplay(
+                    label: "HEART RATE",
+                    value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM"
+                )
+                .gridCellColumns(2) // Span across two columns
+            }
         }
         .padding()
-        .background(AppTheme.GeneratedColors.deepOps) // Use AppTheme.GeneratedColors.deepOps
+        .background(AppTheme.GeneratedColors.deepOps)
     }
-
+    
     // Helper for single metric display
     struct MetricDisplay: View {
         let label: String
@@ -194,42 +204,41 @@ struct RunWorkoutView: View {
                 Text(value)
                     .statsNumberStyle(size: 24, color: AppTheme.GeneratedColors.cream)
             }
-             .frame(maxWidth: .infinity) // Distribute horizontally
+            .frame(maxWidth: .infinity) // Distribute horizontally
         }
     }
+    
+    @ViewBuilder
+    private func runControls() -> some View {
+        HStack {
+            Spacer()
+            switch viewModel.runState {
+            case .ready, .idle:
+                Button { viewModel.startRun() }
+                label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
+            case .running:
+                Button { viewModel.pauseRun() }
+                label: { controlButtonLabel(systemName: "pause.circle.fill", color: AppTheme.GeneratedColors.warning) }
+            case .paused:
+                HStack(spacing: 40) {
+                    Button { viewModel.resumeRun() }
+                    label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
 
-    // Helper View for Run Controls (Similar to WorkoutSessionView)
-     @ViewBuilder
-     private func runControls() -> some View {
-         HStack {
-             Spacer()
-             switch viewModel.runState {
-             case .ready, .idle:
-                 Button { viewModel.startRun() }
-                 label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
-             case .running:
-                 Button { viewModel.pauseRun() }
-                 label: { controlButtonLabel(systemName: "pause.circle.fill", color: AppTheme.GeneratedColors.warning) }
-             case .paused:
-                 HStack(spacing: 40) {
-                     Button { viewModel.resumeRun() }
-                     label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
-
-                     Button { viewModel.stopRun() }
-                     label: { controlButtonLabel(systemName: "stop.circle.fill", color: AppTheme.GeneratedColors.error) }
-                 }
-             case .finished, .error: // <-- MODIFIED: Removed dismiss button, nav handled by completedWorkoutForDetail
-                 EmptyView() // Or a disabled button, or some other indicator
-             default: // requestingPermission, permissionDenied
-                 EmptyView()
-             }
-             Spacer()
-         }
-         .padding()
-         .frame(height: 80) // Consistent height for control area
-         .background(Color.black.opacity(0.3))
-     }
-
+                    Button { viewModel.stopRun() }
+                    label: { controlButtonLabel(systemName: "stop.circle.fill", color: AppTheme.GeneratedColors.error) }
+                }
+            case .finished, .error:
+                EmptyView() // Handled by navigation
+            default: // requestingPermission, permissionDenied
+                EmptyView()
+            }
+            Spacer()
+        }
+        .padding()
+        .frame(height: 80) // Consistent height for control area
+        .background(AppTheme.GeneratedColors.backgroundOverlay.opacity(0.3))
+    }
+    
     // Helper for styling control buttons
     private func controlButtonLabel(systemName: String, color: Color) -> some View {
         Image(systemName: systemName)
@@ -239,58 +248,58 @@ struct RunWorkoutView: View {
             .foregroundColor(color)
             .padding()
     }
-
-     // Helper view for permission/error overlays
-     @ViewBuilder
-     private func permissionOrErrorOverlay() -> some View {
-         VStack(spacing: 15) {
-             Image(systemName: viewModel.runState == .permissionDenied ? "location.slash.fill" : "exclamationmark.triangle.fill")
-                 .resizable()
-                 .scaledToFit()
-                 .frame(width: 50, height: 50)
-                 .foregroundColor(viewModel.runState == .permissionDenied ? AppTheme.GeneratedColors.tacticalGray : AppTheme.GeneratedColors.warning)
-
-             Text(viewModel.runState == .permissionDenied ? "Location Access Denied" : "Error")
-                 .font(.title2).bold()
-
-             Text(viewModel.errorMessage ?? "An error occurred.")
-                 .multilineTextAlignment(.center)
-                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                 .padding(.horizontal)
-
-             if viewModel.runState == .permissionDenied {
-                 Button("Open Settings") {
-                     if let url = URL(string: UIApplication.openSettingsURLString), UIApplication.shared.canOpenURL(url) {
-                         UIApplication.shared.open(url)
-                     }
-                 }
-                 .padding(.horizontal, 16)
-                 .padding(.vertical, 10)
-                 .background(AppTheme.GeneratedColors.primary)
-                 .foregroundColor(AppTheme.GeneratedColors.cream)
-                 .font(.headline)
-                 .cornerRadius(8)
-                 .padding(.top)
-             } else if case .error = viewModel.runState {
-                 Button("Dismiss") {
-                     viewModel.errorMessage = nil // Clear error message
-                     viewModel.runState = .ready // Go back to ready state?
-                 }
-                 .padding(.horizontal, 16)
-                 .padding(.vertical, 10)
-                 .background(AppTheme.GeneratedColors.primary)
-                 .foregroundColor(AppTheme.GeneratedColors.cream)
-                 .font(.headline)
-                 .cornerRadius(8)
-                 .padding(.top)
-             }
-         }
-         .adaptivePadding()
-         .background(.thinMaterial) // Use material background for overlay
-         .cornerRadius(Constants.panelCornerRadius)
-         .shadow(radius: 5)
-         .padding(Constants.globalPadding) // Padding around the overlay box
-     }
+    
+    // Helper view for permission/error overlays
+    @ViewBuilder
+    private func permissionOrErrorOverlay() -> some View {
+        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            // Use the isInPermissionDeniedState property for icon and text selection
+            let isPermissionDenied = viewModel.runState == .permissionDenied
+            
+            Image(systemName: isPermissionDenied ? "location.slash.fill" : "exclamationmark.triangle.fill")
+                .font(.system(size: 50))
+                .foregroundColor(isPermissionDenied ? 
+                                 AppTheme.GeneratedColors.textPrimaryOnDark : 
+                                 AppTheme.GeneratedColors.warning)
+            
+            PTLabel(isPermissionDenied ? 
+                   "Location Access Denied" : "Error", 
+                   style: .heading)
+            
+            PTLabel(viewModel.errorMessage ?? 
+                   "This feature requires location access to track runs. Please enable location access in Settings.", 
+                   style: .body)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            
+            let primaryButtonStyle: PTButton.ExtendedStyle = .primary
+            if isPermissionDenied {
+                PTButton("Open Settings", style: primaryButtonStyle) {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            } else {
+                PTButton("Dismiss", style: primaryButtonStyle) {
+                    viewModel.errorMessage = nil
+                    dismiss()
+                }
+            }
+        }
+        .padding(AppTheme.GeneratedSpacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(
+            Color(uiColor: UIColor.black.withAlphaComponent(0.85))
+                .edgesIgnoringSafeArea(.all)
+        )
+    }
+    
+    // Add a computed property to check if in error state
+    private var isInErrorOrPermissionDeniedState: Bool {
+        if case .permissionDenied = viewModel.runState { return true }
+        if case .error = viewModel.runState { return true }
+        return false
+    }
 }
 
 // MapView Placeholder (Replace with actual MapKit view if desired)
@@ -304,13 +313,11 @@ struct MapViewPlaceholder: View {
     }
 }
 
-
 #Preview {
-    // Provide a dummy ModelContainer for the preview
     NavigationView {
         RunWorkoutView()
     }
-    .modelContainer(for: WorkoutResultSwiftData.self, inMemory: true) // Use in-memory store for preview
+    .modelContainer(for: WorkoutResultSwiftData.self, inMemory: true)
 }
 
 // Remove duplicate protocol definitions - use the shared protocols from the Services folder instead

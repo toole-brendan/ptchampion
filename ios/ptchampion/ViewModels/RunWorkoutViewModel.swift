@@ -603,6 +603,12 @@ class RunWorkoutViewModel: ObservableObject {
         }
         cancellables.forEach { $0.cancel() }
     }
+
+    // Add this method to handle requesting location permission explicitly
+    func requestLocationPermission() {
+        print("RunWorkoutViewModel: Explicitly requesting location permission...")
+        locationService.requestLocationPermission()
+    }
 }
 
 // Distance Unit Enum (moved from the commented-out section)

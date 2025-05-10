@@ -1,10 +1,10 @@
 import SwiftUI
-import PTDesignSystem // Assuming AppTheme is part of this
+import PTDesignSystem
 
 struct ExerciseHUDView: View {
     @Binding var repCount: Int
     @Binding var liveFeedback: String
-    let elapsedTimeFormatted: String // Changed from elapsedTime: Int to take formatted string
+    let elapsedTimeFormatted: String
     @Binding var isPaused: Bool
     @Binding var isSoundEnabled: Bool
 
@@ -18,23 +18,23 @@ struct ExerciseHUDView: View {
                 VStack(alignment: .leading) {
                     Text("REPS")
                         .font(AppTheme.GeneratedTypography.caption(size: nil))
-                        .foregroundColor(Color.gray) // TODO: Replace with correct design system color AppTheme.GeneratedColors.textSecondaryOnDark
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     Text("\(repCount)")
                         .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
-                        .foregroundColor(Color.white) // TODO: Replace with correct design system color AppTheme.GeneratedColors.textPrimaryOnDark
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
                 Spacer()
                 VStack(alignment: .trailing) {
                     Text("TIME")
                         .font(AppTheme.GeneratedTypography.caption(size: nil))
-                        .foregroundColor(Color.gray) // TODO: Replace with correct design system color AppTheme.GeneratedColors.textSecondaryOnDark
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     Text(elapsedTimeFormatted)
                         .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
-                        .foregroundColor(Color.white) // TODO: Replace with correct design system color AppTheme.GeneratedColors.textPrimaryOnDark
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
             }
             .padding()
-            .background(Color.black.opacity(0.7)) // TODO: Replace with correct design system color AppTheme.GeneratedColors.backgroundOverlay.opacity(0.7)
+            .background(Color.black.opacity(0.7)) // Using Color.black with opacity as fallback
             .cornerRadius(AppTheme.GeneratedRadius.medium)
             .padding()
 
@@ -42,9 +42,9 @@ struct ExerciseHUDView: View {
 
             Text(liveFeedback)
                 .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
-                .foregroundColor(Color.white) // TODO: Replace with correct design system color AppTheme.GeneratedColors.textPrimaryOnDark
+                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 .padding()
-                .background(Color.black.opacity(0.7)) // TODO: Replace with correct design system color AppTheme.GeneratedColors.backgroundOverlay.opacity(0.7)
+                .background(Color.black.opacity(0.7)) // Using Color.black with opacity as fallback
                 .cornerRadius(AppTheme.GeneratedRadius.small)
                 .padding(.horizontal)
             
@@ -55,7 +55,7 @@ struct ExerciseHUDView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 50, height: 50)
-                        .foregroundColor(Color.white) // TODO: Replace with correct design system color AppTheme.GeneratedColors.textPrimaryOnDark
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
 
                 Button { toggleSoundAction() } label: {
@@ -63,7 +63,7 @@ struct ExerciseHUDView: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 50, height: 50)
-                        .foregroundColor(Color.white) // TODO: Replace with correct design system color AppTheme.GeneratedColors.textPrimaryOnDark
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
             }
             .padding()
@@ -79,28 +79,20 @@ struct ExerciseHUDView_Previews: PreviewProvider {
         // Create some mock state for the preview
         @State var repCount = 10
         @State var liveFeedback = "Keep it up!"
-        @State var elapsedTime = 125 // Example seconds
         @State var isPaused = false
         @State var isSoundEnabled = true
-
-        // Function to format time for preview
-        func formatTime(_ totalSeconds: Int) -> String {
-            let minutes = totalSeconds / 60
-            let seconds = totalSeconds % 60
-            return String(format: "%02d:%02d", minutes, seconds)
-        }
 
         // Add explicit return for the view
         return ExerciseHUDView(
             repCount: $repCount,
             liveFeedback: $liveFeedback,
-            elapsedTimeFormatted: formatTime(elapsedTime), // Pass formatted time
+            elapsedTimeFormatted: "01:35",
             isPaused: $isPaused,
             isSoundEnabled: $isSoundEnabled,
-            togglePauseAction: { isPaused.toggle() },
-            toggleSoundAction: { isSoundEnabled.toggle() }
+            togglePauseAction: { },
+            toggleSoundAction: { }
         )
-        .background(Color.blue.opacity(0.3)) // Add a background to see the HUD clearly
+        .background(Color.black.opacity(0.7)) // Dark background for preview
         .previewLayout(.sizeThatFits)
     }
 }
