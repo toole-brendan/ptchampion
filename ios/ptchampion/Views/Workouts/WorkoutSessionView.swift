@@ -14,6 +14,11 @@ struct WorkoutSessionView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
+    // Add countdown state
+    @State private var countdown: Int? = nil
+    @State private var countdownTimer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
+    @State private var countdownCancellable: Cancellable? = nil
+    
     // MARK: - Initialization
     init(exerciseType: ExerciseType) {
         self.exerciseType = exerciseType
@@ -33,7 +38,7 @@ struct WorkoutSessionView: View {
             
             // Pose Detection Overlay
             if let body = viewModel.detectedBody {
-                PoseOverlayView(detectedBody: body)
+                PoseOverlayView(detectedBody: body, badJointNames: viewModel.problemJoints)
                     .edgesIgnoringSafeArea(.all)
             }
             
@@ -47,6 +52,16 @@ struct WorkoutSessionView: View {
                 togglePauseAction: { viewModel.togglePause() },
                 toggleSoundAction: { viewModel.toggleSound() }
             )
+            
+            // Start Button Overlay (shown only when in ready state)
+            if viewModel.workoutState == .ready && countdown == nil {
+                startButtonOverlay()
+            }
+            
+            // Countdown Overlay (shown during countdown)
+            if let currentCount = countdown {
+                countdownOverlay(count: currentCount)
+            }
             
             // Camera Permission Request View
             if viewModel.workoutState == .requestingPermission {
@@ -72,6 +87,11 @@ struct WorkoutSessionView: View {
         }
         .onDisappear {
             // The view model's deinit will handle cleanup
+            stopCountdownTimer()
+            
+            // Ensure camera is stopped if view disappears unexpectedly 
+            // (back button, app switching, etc.)
+            viewModel.cleanupResources()
         }
         .navigationTitle(exerciseType.displayName)
         .navigationBarTitleDisplayMode(.inline)
@@ -79,7 +99,12 @@ struct WorkoutSessionView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("End") {
-                    viewModel.finishWorkout()
+                    if viewModel.workoutState == .counting || viewModel.workoutState == .paused {
+                        viewModel.finishWorkout()
+                    } else {
+                        // If workout hasn't started yet, just dismiss
+                        dismiss()
+                    }
                 }
                 .foregroundColor(AppTheme.GeneratedColors.error) // Use design system color instead of .red
             }
@@ -112,6 +137,10 @@ struct WorkoutSessionView: View {
             // Update the view model's context when it changes
             viewModel.modelContext = newContext
         }
+        // Listen for countdown timer
+        .onReceive(countdownTimer) { _ in
+            handleCountdownTick()
+        }
     }
     
     // MARK: - Setup
@@ -119,8 +148,99 @@ struct WorkoutSessionView: View {
         // Set the model context
         viewModel.modelContext = modelContext
         
-        // Start the workout
-        viewModel.startWorkout()
+        // Check camera permission - but don't auto-start workout
+        viewModel.checkCameraPermission()
+    }
+    
+    // MARK: - Start Button Overlay
+    @ViewBuilder
+    private func startButtonOverlay() -> some View {
+        VStack {
+            Spacer()
+            
+            Button {
+                startCountdown()
+            } label: {
+                Text("Ready for \(exerciseType.displayName)")
+                    .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .padding()
+                    .frame(width: 300)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(AppTheme.GeneratedRadius.medium)
+            }
+            .padding(.bottom, 120)
+        }
+    }
+    
+    // MARK: - Countdown Overlay
+    @ViewBuilder
+    private func countdownOverlay(count: Int) -> some View {
+        VStack {
+            Spacer()
+            
+            Text("\(count)")
+                .font(.system(size: 80, weight: .bold))
+                .foregroundColor(.white)
+                .padding(30)
+                .background(
+                    Circle()
+                        .fill(Color.black.opacity(0.5))
+                        .frame(width: 150, height: 150)
+                )
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - Countdown Logic
+    private func startCountdown() {
+        // Set initial countdown
+        countdown = 5
+        
+        // Start the timer
+        countdownTimer = Timer.publish(every: 1, on: .main, in: .common)
+        countdownCancellable = countdownTimer.connect()
+        
+        // Play sound feedback
+        if viewModel.isSoundEnabled {
+            AudioServicesPlaySystemSound(1103) // System beep
+        }
+    }
+    
+    private func handleCountdownTick() {
+        guard var count = countdown else { return }
+        
+        count -= 1
+        
+        // Play tick sound
+        if viewModel.isSoundEnabled && count > 0 {
+            AudioServicesPlaySystemSound(1103) // System beep
+        }
+        
+        if count > 0 {
+            countdown = count
+        } else {
+            // Countdown complete, start workout
+            countdown = nil
+            stopCountdownTimer()
+            
+            // Play start sound
+            if viewModel.isSoundEnabled {
+                AudioServicesPlaySystemSound(1104) // Stronger beep
+                let impactGenerator = UIImpactFeedbackGenerator(style: .heavy)
+                impactGenerator.prepare()
+                impactGenerator.impactOccurred()
+            }
+            
+            // Start the actual workout
+            viewModel.startWorkout()
+        }
+    }
+    
+    private func stopCountdownTimer() {
+        countdownCancellable?.cancel()
+        countdownCancellable = nil
     }
     
     // MARK: - UI Components
