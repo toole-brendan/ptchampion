@@ -71,6 +71,12 @@ func NewLeaderboardHandler(service leaderboards.Service, logger logging.Logger) 
 
 // GetCacheClient returns a Redis client or nil if Redis is not configured
 func (h *Handler) GetCacheClient() *goredis.Client {
+	// For development, when Redis URL is not set, don't try to connect
+	if os.Getenv("APP_ENV") == "development" && getEnvOrDefault("REDIS_URL", "") == "" {
+		log.Printf("Development mode with no Redis URL set - skipping Redis cache for leaderboards")
+		return nil
+	}
+
 	// Check if Redis is enabled via environment variables
 	// We're enabling Redis by default now
 	redisEnabled := true // Changed from false to true

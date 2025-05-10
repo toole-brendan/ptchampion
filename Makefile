@@ -131,7 +131,8 @@ DB_PORT ?= 5432
 DB_USER ?= user
 DB_PASSWORD ?= password
 DB_NAME ?= ptchampion
-MIGRATE_CMD := migrate -path db/migrations -database "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=disable"
+DB_SSL_MODE ?= require # Added a default for DB_SSL_MODE for safety
+MIGRATE_CMD := migrate -path sql/migrations -database "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)"
 
 migrate: migrate-up
 
@@ -154,12 +155,12 @@ migrate-create:
 		exit 1; \
 	fi
 	@echo "Creating new migration files for: $(name)"
-	@current=$$(ls -1 db/migrations/*.up.sql 2>/dev/null | wc -l | tr -d ' '); \
+	@current=$$(ls -1 sql/migrations/*.up.sql 2>/dev/null | wc -l | tr -d ' '); \
 	next=$$(printf "%04d" $$((10#$$current + 1))); \
-	touch db/migrations/$${next}_$(name).up.sql; \
-	touch db/migrations/$${next}_$(name).down.sql; \
-	echo "Created db/migrations/$${next}_$(name).up.sql"; \
-	echo "Created db/migrations/$${next}_$(name).down.sql"
+	touch sql/migrations/$${next}_$(name).up.sql; \
+	touch sql/migrations/$${next}_$(name).down.sql; \
+	echo "Created sql/migrations/$${next}_$(name).up.sql"; \
+	echo "Created sql/migrations/$${next}_$(name).down.sql"
 	@echo "Don't forget to edit the migration files to add your SQL statements"
 
 # --- WASM Targets ---

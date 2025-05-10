@@ -22,15 +22,24 @@ import (
 // RegisterRoutes registers all routes for the application
 func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenService *auth.TokenService, logger logging.Logger, handler *handlers.Handler) {
 	// Create refresh store
-	redisOptions := redis.DefaultOptions()
-	redisOptions.URL = cfg.RedisURL
-	redisClient, err := redis.CreateClient(redisOptions)
-	if err != nil {
-		logger.Fatal(context.Background(), "Failed to connect to Redis", err)
-	}
-	refreshStore := redis.NewRedisRefreshStore(redisClient)
+	var refreshStore redis.RefreshStore
 
-	// Auth middleware with Redis refresh store
+	// For development, use memory store instead of Redis if RedisURL is not set
+	if cfg.AppEnv == "development" && cfg.RedisURL == "" {
+		logger.Info(context.Background(), "Routes using in-memory refresh token store for development")
+		refreshStore = redis.NewMemoryRefreshStore()
+	} else {
+		// Use Redis for production or if RedisURL is explicitly set
+		redisOptions := redis.DefaultOptions()
+		redisOptions.URL = cfg.RedisURL
+		redisClient, err := redis.CreateClient(redisOptions)
+		if err != nil {
+			logger.Fatal(context.Background(), "Failed to connect to Redis", err)
+		}
+		refreshStore = redis.NewRedisRefreshStore(redisClient)
+	}
+
+	// Auth middleware with token store
 	authMiddleware := middleware.JWTAuthMiddleware(cfg.JWTSecret, cfg.RefreshTokenSecret, refreshStore)
 
 	// Instantiate the consolidated AuthHandler

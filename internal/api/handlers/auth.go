@@ -28,18 +28,28 @@ type AuthHandler struct {
 
 // NewAuthHandler creates a new AuthHandler
 func NewAuthHandler(store store.Store, cfg *config.Config, logger logging.Logger) *AuthHandler {
-	redisOptions := redis.DefaultOptions()
-	redisOptions.URL = cfg.RedisURL
-	redisClient, err := redis.CreateClient(redisOptions)
-	if err != nil {
-		// If Redis connection fails, token service cannot be initialized.
-		// This is critical for auth, so log fatal.
-		// In a more complex setup, NewAuthHandler might return an error.
-		logger.Fatal(context.Background(), "Redis connection failed, cannot initialize TokenService for AuthHandler", err)
-		// The line above will terminate the program, so the code below won't run if err != nil.
+	var refreshStore redis.RefreshStore
+
+	// For development, use memory store instead of Redis if RedisURL is not set
+	if cfg.AppEnv == "development" && cfg.RedisURL == "" {
+		logger.Info(context.Background(), "AuthHandler using in-memory refresh token store for development")
+		refreshStore = redis.NewMemoryRefreshStore()
+	} else {
+		// Use Redis for production or if RedisURL is explicitly set
+		redisOptions := redis.DefaultOptions()
+		redisOptions.URL = cfg.RedisURL
+		redisClient, err := redis.CreateClient(redisOptions)
+		if err != nil {
+			// If Redis connection fails, token service cannot be initialized.
+			// This is critical for auth, so log fatal.
+			// In a more complex setup, NewAuthHandler might return an error.
+			logger.Fatal(context.Background(), "Redis connection failed, cannot initialize TokenService for AuthHandler", err)
+			// The line above will terminate the program, so the code below won't run if err != nil.
+		}
+
+		refreshStore = redis.NewRedisRefreshStore(redisClient)
 	}
 
-	refreshStore := redis.NewRedisRefreshStore(redisClient)
 	tokenService := auth.NewTokenService(cfg.JWTSecret, cfg.RefreshTokenSecret, refreshStore)
 
 	logger.Info(context.Background(), "AuthHandler initialized successfully with TokenService.")
@@ -144,7 +154,21 @@ func (h *AuthHandler) Register(c echo.Context) error {
 	if err == nil {
 		return NewAPIError(http.StatusConflict, ErrCodeConflict, "User already exists with this email")
 	} else if err != sql.ErrNoRows && err != store.ErrUserNotFound {
-		h.logger.Error(ctx, "Error checking if user exists", "error", err, "email", req.Email)
+		// Add very detailed error logging for debugging
+		h.logger.Error(ctx, "Error checking if user exists",
+			"error", err,
+			"error_type", fmt.Sprintf("%T", err),
+			"email", req.Email,
+			"stack", "GetUserByEmail error in Register function")
+
+		if pqErr, ok := err.(*pq.Error); ok {
+			h.logger.Error(ctx, "PostgreSQL error details",
+				"pq_code", pqErr.Code,
+				"pq_message", pqErr.Message,
+				"pq_detail", pqErr.Detail,
+				"pq_constraint", pqErr.Constraint)
+		}
+
 		return NewAPIError(http.StatusInternalServerError, ErrCodeDatabase, "Error checking user existence")
 	}
 
