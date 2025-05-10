@@ -59,35 +59,41 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 0) {
-                    // Header using the exact same style as LeaderboardView
-                    headerView
+                VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                    // Custom header to match Leaderboard style exactly
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                        Text("PROFILE")
+                            .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        
+                        Text("Personal settings & preferences")
+                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .italic()
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                     
-                    // Modernized Profile Info Card - add appropriate spacing after header
+                    // Modernized Profile Info Card
                     profileInfoCard()
-                        .padding(.top, AppTheme.GeneratedSpacing.medium)
                     
                     // Settings Sections using cards
                     settingsSection()
-                        .padding(.top, AppTheme.GeneratedSpacing.large)
                     
                     // Account Section
                     accountSection()
-                        .padding(.top, AppTheme.GeneratedSpacing.large)
                     
                     // More Section
                     moreSection()
-                        .padding(.top, AppTheme.GeneratedSpacing.large)
                     
                     // Footer with app version
                     Text("App Version: \(appVersion())")
                         .font(.footnote)
                         .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                         .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, AppTheme.GeneratedSpacing.large)
-                        .padding(.bottom, AppTheme.GeneratedSpacing.large)
+                        .padding(.top, AppTheme.GeneratedSpacing.medium)
                 }
-                .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                .padding([.horizontal, .bottom], AppTheme.GeneratedSpacing.contentPadding)
             }
             .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
             .toolbar {
@@ -175,25 +181,6 @@ struct ProfileView: View {
                 }
             }
         }
-    }
-    
-    // Header view matching the LeaderboardView style
-    private var headerView: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            Text("PROFILE")
-                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .kerning(2)  // Add letter spacing to match the screenshot
-            
-            // Optional: add subtitle text if needed
-            Text("User Settings & Preferences")
-                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .italic()
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16) // Match the exact padding from the screenshot
-        .padding(.top, 20)        // Match the exact top padding from the screenshot
     }
     
     // MARK: - Profile Info Card

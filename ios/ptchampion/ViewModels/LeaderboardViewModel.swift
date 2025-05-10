@@ -60,19 +60,6 @@ final class LeaderboardViewModel: ObservableObject {
     @Published var selectedExercise:  LeaderboardExerciseType = .overall
     @Published var selectedRadius:    LeaderboardRadius      = .five // New property for radius
 
-    // Add safe accessor for selectedExercise
-    var safeSelectedExercise: LeaderboardExerciseType {
-        if LeaderboardExerciseType.allCases.contains(selectedExercise) {
-            return selectedExercise
-        } else {
-            // If invalid, return a safe default and fix the stored property
-            DispatchQueue.main.async {
-                self.selectedExercise = .overall
-            }
-            return .overall
-        }
-    }
-
     @Published var leaderboardEntries: [LeaderboardEntryView] = []
     @Published var backendStatus:      BackendStatus        = .unknown
     @Published var isLoading:          Bool                 = false
@@ -92,12 +79,6 @@ final class LeaderboardViewModel: ObservableObject {
         self.location  = location
         self.keychain  = keychain
         self.currentUserID = keychain.getUserID()
-        
-        // Defensive check to ensure selectedExercise is a valid value
-        if !LeaderboardExerciseType.allCases.contains(selectedExercise) {
-            // If somehow selectedExercise is invalid, set it to a safe default
-            self.selectedExercise = .overall
-        }
     }
 
     // ──  Public API (call from View)  ─────────────────────────────────────────

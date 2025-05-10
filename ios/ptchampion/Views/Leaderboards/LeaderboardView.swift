@@ -75,7 +75,7 @@ struct LeaderboardView: View {
     // Function to get formatted title - breaking up complex expression
     private var formattedFilterTitle: String {
         // Access properties individually to help compiler
-        let exerciseName = viewModel.safeSelectedExercise.displayName
+        let exerciseName = viewModel.selectedExercise.displayName
         let timeframeName = viewModel.selectedCategory.rawValue
         // Now combine them
         return "\(exerciseName) • \(timeframeName)"
@@ -88,7 +88,6 @@ struct LeaderboardView: View {
             let titleText = Text(viewModel.selectedBoard.rawValue.uppercased() + " LEADERBOARD")
                 .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .kerning(2)  // Add letter spacing to match the screenshot
             
             let subtitleText = Text(formattedFilterTitle)
                 .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
@@ -102,8 +101,8 @@ struct LeaderboardView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 16) // Match the exact padding we used in other views
-        .padding(.top, 20)        // Match the exact top padding we used in other views
+        .padding(.horizontal)
+        .padding(.top)
     }
     
     // Further break down segment control to reduce complexity
@@ -156,76 +155,69 @@ struct LeaderboardView: View {
     
     var body: some View {
         NavigationStack {
-            bodyContent
-                .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-                .onAppear {
-                    // No need to check if selectedRadius is nil since it's not optional
-                    fetchTask = Task {
-                        await viewModel.fetch()
-                    }
+        bodyContent
+            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+            .onAppear {
+                // No need to check if selectedRadius is nil since it's not optional
+                fetchTask = Task {
+                    await viewModel.fetch()
                 }
-                .onDisappear {
-                    // Cancel any ongoing fetch when view disappears
-                    fetchTask?.cancel()
+            }
+            .onDisappear {
+                // Cancel any ongoing fetch when view disappears
+                fetchTask?.cancel()
+            }
+            .onChange(of: viewModel.selectedBoard) { newBoard in 
+                // No need to check if selectedRadius is nil since it's not optional
+                
+                // Animate content change with opacity
+                performContentTransition {
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
                 }
-                .onChange(of: viewModel.selectedBoard) { newBoard in 
-                    // No need to check if selectedRadius is nil since it's not optional
-                    
-                    // Animate content change with opacity
-                    performContentTransition {
-                        fetchTask?.cancel() // Cancel any previous fetch
-                        fetchTask = Task { await viewModel.fetch() }
-                    }
+            }
+            .onChange(of: viewModel.selectedCategory) { _ in 
+                performContentTransition {
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
                 }
-                .onChange(of: viewModel.selectedCategory) { _ in 
-                    performContentTransition {
-                        fetchTask?.cancel() // Cancel any previous fetch
-                        fetchTask = Task { await viewModel.fetch() }
-                    }
+            }
+            .onChange(of: viewModel.selectedExercise) { _ in 
+                performContentTransition {
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
                 }
-                .onChange(of: viewModel.selectedExercise) { _ in 
-                    performContentTransition {
-                        fetchTask?.cancel() // Cancel any previous fetch
-                        fetchTask = Task { await viewModel.fetch() }
-                    }
+            }
+            .onChange(of: viewModel.selectedRadius) { _ in 
+                performContentTransition {
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
                 }
-                .onChange(of: viewModel.selectedRadius) { _ in 
-                    performContentTransition {
-                        fetchTask?.cancel() // Cancel any previous fetch
-                        fetchTask = Task { await viewModel.fetch() }
-                    }
+            }
+            .navigationDestination(item: $navigatingToUserID) { userID in
+                UserProfileView(userID: userID)
                 }
-                .navigationDestination(item: $navigatingToUserID) { userID in
-                    UserProfileView(userID: userID)
-                }
-        }
+            }
     }
     
     // Break down the body into a separate computed property
     private var bodyContent: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                // Header with context information
-                headerView
-                
-                // All the filter controls in a separate view
-                filterControlsSection
-                    .padding(.top, 12)
-                
-                // Divider
-                Rectangle()
-                    .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
-                    .frame(height: 1)
-                    .padding(.horizontal)
-                    .padding(.top, AppTheme.GeneratedSpacing.medium)
-                
-                // Content area with simple opacity animation
-                mainContentArea
-                    .padding(.top, AppTheme.GeneratedSpacing.medium)
-            }
-            .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+        VStack(spacing: 0) {
+            // Header with context information
+            headerView
+            
+            // All the filter controls in a separate view
+            filterControlsSection
+            
+            // Divider
+            Rectangle()
+                .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
+                .frame(height: 1)
+                .padding(.horizontal)
+            
+            // Content area with simple opacity animation
+            mainContentArea
         }
-        .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
     }
     
     // Break down the filter controls into a separate view
@@ -233,7 +225,6 @@ struct LeaderboardView: View {
         VStack(spacing: AppTheme.GeneratedSpacing.medium) {
             // Use extracted segmented control
             segmentedControl
-                .padding(.horizontal, 0)
 
             // Filters section
             filtersSection
@@ -245,16 +236,7 @@ struct LeaderboardView: View {
                 EmptyView() // Explicit EmptyView for type safety
             }
         }
-        .padding(.vertical, AppTheme.GeneratedSpacing.small)
-    }
-    
-    // Extract filters section to simplify body
-    private var filtersSection: some View {
-        HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-            categoryFilterMenu
-            exerciseFilterMenu
-        }
-        .padding(.horizontal, 0)
+        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
     }
     
     // Break down the main content area into a separate view
@@ -287,6 +269,15 @@ struct LeaderboardView: View {
                 contentOpacity = 1.0
             }
         }
+    }
+    
+    // Extract filters section to simplify body
+    private var filtersSection: some View {
+        HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            categoryFilterMenu
+            exerciseFilterMenu
+        }
+        .padding(.horizontal)
     }
     
     // Break down filters into separate views
@@ -330,17 +321,16 @@ struct LeaderboardView: View {
     }
     
     private var exerciseFilterMenu: some View {
-        // Exercise type filter with safe handling
-        let exerciseTypes = Array(LeaderboardExerciseType.allCases)
-        
-        return Menu {
-            ForEach(exerciseTypes, id: \.self) { exercise in
+        // Exercise type filter
+        Menu {
+            ForEach(LeaderboardExerciseType.allCases, id: \.self) { exercise in
                 Button(action: {
+                    // No animation
                     viewModel.selectedExercise = exercise
                 }) {
                     HStack {
                         Text(exercise.displayName)
-                        if viewModel.safeSelectedExercise == exercise {
+                        if viewModel.selectedExercise == exercise {
                             Image(systemName: "checkmark")
                         }
                     }
@@ -353,13 +343,10 @@ struct LeaderboardView: View {
     }
     
     private var exerciseFilterLabel: some View {
-        // Safe access to selectedExercise display name
-        let displayName = viewModel.safeSelectedExercise.displayName
-        
-        return HStack {
+        HStack {
             Image(systemName: "figure.run")
                 .foregroundColor(AppTheme.GeneratedColors.primary)
-            Text(displayName)
+            Text(viewModel.selectedExercise.displayName)
                 .font(AppTheme.GeneratedTypography.body())
             Image(systemName: "chevron.down")
                 .font(.caption)
