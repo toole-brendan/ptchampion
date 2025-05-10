@@ -7,7 +7,8 @@ public struct MetricCardView: View {
     private let action: (() -> Void)?
     private let trend: TrendDirection?
     
-    @State private var isHovered = false
+    @State private var isPressed = false
+    @State private var animateValue = false
     
     public init(
         _ metric: MetricData,
@@ -20,13 +21,28 @@ public struct MetricCardView: View {
     }
     
     public var body: some View {
-        Button(action: { action?() }) {
+        Button(action: { 
+            // Trigger haptic feedback
+            let generator = UIImpactFeedbackGenerator(style: .light)
+            generator.impactOccurred()
+            action?() 
+        }) {
             cardContent
         }
         .buttonStyle(MetricCardButtonStyle())
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(metric.title), \(displayValue) \(metric.unit ?? "")")
         .accessibilityHint(metric.description ?? "")
+        .onAppear {
+            // Animate the value counter when the card appears
+            if !animateValue {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                        animateValue = true
+                    }
+                }
+            }
+        }
     }
     
     // Helper to convert the Any value to a displayable string
@@ -48,101 +64,138 @@ public struct MetricCardView: View {
     private var cardContent: some View {
         VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.itemSpacing) {
             // Title row with optional icon
-            HStack(spacing: 4) {
+            HStack(spacing: 6) {
+                if let icon = metric.icon {
+                    icon
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .frame(width: 22, height: 22)
+                        .background(
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.brassGold.opacity(0.15))
+                        )
+                }
+                
                 Text(metric.title)
-                    .font(AppTheme.GeneratedTypography.subheading())
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .textCase(.uppercase)
                 
                 Spacer()
                 
-                if let icon = metric.icon {
-                    icon
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width: 16, height: 16)
-                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                // Trend indicator
+                if let trend = self.trend {
+                    HStack(spacing: 3) {
+                        trend.icon
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(trend.color)
+                            // Add subtle rotation animation when trend changes
+                            .rotationEffect(trend == .up ? .degrees(0) : (trend == .down ? .degrees(180) : .degrees(90)))
+                            .animation(.spring(response: 0.3), value: trend)
+                            
+                        // Optional percentage or change value could go here
+                    }
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
+                    .background(
+                        Capsule()
+                            .fill(trend.color.opacity(0.1))
+                    )
                 }
             }
             
             // Value with optional unit
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
                 if displayValue == "-" || displayValue == "0" {
                     // For placeholder or zero values
                     Text(displayValue)
-                        .font(.system(size: 20, weight: .semibold).monospaced())
+                        .font(.system(size: 32, weight: .bold, design: .rounded).monospacedDigit())
                         .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
-                        .padding(.horizontal, AppTheme.GeneratedSpacing.small)
-                        .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
-                        .background(
-                            AppTheme.GeneratedColors.tacticalGray.opacity(0.2)
-                                .clipShape(Capsule())
-                        )
+                        .opacity(0.7)
                 } else {
-                    // For actual values
-                    Text(displayValue)
-                        .font(.system(size: 20, weight: .semibold).monospaced())
-                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                        .contentTransition(.numericText()) // Smooth transitions when value changes
+                    // For actual values with counting animation
+                    if let intValue = Int(displayValue), animateValue {
+                        Text("\(intValue)")
+                            .font(.system(size: 32, weight: .bold, design: .rounded).monospacedDigit())
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .contentTransition(.numericText())
+                            .transaction { transaction in
+                                transaction.animation = .spring(response: 0.8, dampingFraction: 0.8)
+                            }
+                    } else if let doubleValue = Double(displayValue), animateValue {
+                        Text(String(format: "%.1f", doubleValue))
+                            .font(.system(size: 32, weight: .bold, design: .rounded).monospacedDigit())
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .contentTransition(.numericText())
+                    } else {
+                        // For string values or before animation
+                        Text(displayValue)
+                            .font(.system(size: 32, weight: .bold, design: .rounded).monospacedDigit())
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
                 }
                 
                 if let unit = metric.unit {
                     Text(unit)
-                        .font(AppTheme.GeneratedTypography.body(size: 14))
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                        .padding(.leading, -2)
-                }
-                
-                if let trend = self.trend {
-                    trend.icon
-                        .foregroundColor(trend.color)
-                        .font(.system(size: 14, weight: .bold))
-                        // Add subtle rotation animation when trend changes
-                        .rotationEffect(trend == .up ? .degrees(0) : (trend == .down ? .degrees(180) : .degrees(90)))
-                        .animation(.spring(response: 0.3), value: trend)
+                        .padding(.leading, 2)
+                        .alignmentGuide(.firstTextBaseline) { d in
+                            d[.firstTextBaseline] - 4 // Align slightly below baseline
+                        }
                 }
             }
             
             // Optional description
             if let description = metric.description {
                 Text(description)
-                    .font(AppTheme.GeneratedTypography.body(size: 13))
+                    .font(.system(size: 13))
                     .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                     .lineLimit(1)
             }
         }
         .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .frame(maxWidth: .infinity, minHeight: 100, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 110, alignment: .leading)
         .background(
-            // Add subtle gradient background for more dimension
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
-                .fill(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            AppTheme.GeneratedColors.cardBackground,
-                            AppTheme.GeneratedColors.cardBackground.opacity(0.95)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
+            ZStack {
+                // Base layer
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
+                    .fill(AppTheme.GeneratedColors.cardBackground)
+                
+                // Subtle accent gradient at top
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                AppTheme.GeneratedColors.brassGold.opacity(0.05),
+                                AppTheme.GeneratedColors.cardBackground.opacity(0.0)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .center
+                        )
                     )
-                )
+                
+                // Subtle border
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
+                    .strokeBorder(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                AppTheme.GeneratedColors.brassGold.opacity(0.2),
+                                AppTheme.GeneratedColors.cardBackground.opacity(0.1)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1
+                    )
+            }
         )
-        .overlay(
-            // Add subtle highlight on top edge
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            AppTheme.GeneratedColors.brassGold.opacity(0.1),
-                            Color.clear
-                        ]),
-                        startPoint: .top,
-                        endPoint: .center
-                    ),
-                    lineWidth: 1
-                )
+        .shadow(
+            color: Color.black.opacity(0.08),
+            radius: 8,
+            x: 0,
+            y: 2
         )
-        .cornerRadius(AppTheme.GeneratedRadius.card)
-        .withShadow(AppTheme.GeneratedShadows.small)
     }
 }
 
@@ -152,15 +205,18 @@ struct MetricCardButtonStyle: ButtonStyle {
     
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1.0)
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.98 : 1.0)
             .animation(.spring(response: 0.3, dampingFraction: 0.6), value: configuration.isPressed)
-            // Add subtle shadow increase on press
+            // Change shadow on press for tactile feedback
             .shadow(
-                color: Color.black.opacity(configuration.isPressed ? 0.1 : 0.05),
-                radius: configuration.isPressed ? 2 : 4,
+                color: configuration.isPressed ? 
+                    Color.black.opacity(0.05) : Color.black.opacity(0.08),
+                radius: configuration.isPressed ? 4 : 8,
                 x: 0,
                 y: configuration.isPressed ? 1 : 2
             )
+            // Add subtle brightness change on press
+            .brightness(configuration.isPressed ? -0.02 : 0)
     }
 }
 
@@ -171,7 +227,7 @@ struct MetricCardView_Previews: PreviewProvider {
             HStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
                 MetricCardView(
                     MetricData(
-                        title: "TOTAL WORKOUTS",
+                        title: "Workouts",
                         value: 42,
                         icon: Image(systemName: "flame.fill")
                     ),
@@ -181,7 +237,7 @@ struct MetricCardView_Previews: PreviewProvider {
                 
                 MetricCardView(
                     MetricData(
-                        title: "DISTANCE", 
+                        title: "Distance", 
                         value: 8.5, 
                         unit: "km",
                         icon: Image(systemName: "figure.run")
@@ -193,7 +249,7 @@ struct MetricCardView_Previews: PreviewProvider {
             
             MetricCardView(
                 MetricData(
-                    title: "LAST ACTIVITY",
+                    title: "Last Activity",
                     value: "Pull-ups",
                     description: "Yesterday - 42 reps",
                     icon: Image(systemName: "clock")
@@ -209,7 +265,7 @@ struct MetricCardView_Previews: PreviewProvider {
         VStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
             MetricCardView(
                 MetricData(
-                    title: "MAX HEART RATE",
+                    title: "Max Heart Rate",
                     value: 172,
                     unit: "bpm",
                     icon: Image(systemName: "heart.fill")

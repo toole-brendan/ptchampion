@@ -1,130 +1,244 @@
 import SwiftUI
 import Foundation
 import CoreLocation
-import PTDesignSystem // Ensure PTDesignSystem is imported for AppThemeOption
+import PTDesignSystem
 
 struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var auth: AuthViewModel
-    @EnvironmentObject private var themeManager: ThemeManager // Add ThemeManager
-    @State private var showLogoutConfirmation = false
-    @State private var isLoggingOut = false
+    @Environment(\.dynamicTypeSize) var dynamicTypeSize
+    @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     
-    // Helper functions for direct styling
-    private func applySubheadingStyle(to text: Text) -> some View {
-        text.font(.headline)
-            .foregroundColor(Color.gray)
+    // App theme settings
+    enum AppThemeOption: String, CaseIterable, Identifiable {
+        case system = "System"
+        case light = "Light"
+        case dark = "Dark"
+        
+        var id: String { self.rawValue }
     }
     
-    private func applyLabelStyle(to text: Text) -> some View {
-        text.font(.subheadline)
-            .foregroundColor(Color.gray)
+    @AppStorage("selectedAppearance") private var selectedAppearance: AppThemeOption = .system
+    
+    // Units settings
+    enum UnitSetting: String, CaseIterable, Identifiable {
+        case metric = "Metric (kg, km)"
+        case imperial = "Imperial (lbs, miles)"
+        var id: String { self.rawValue }
     }
-
+    @AppStorage("selectedUnit") private var selectedUnit: UnitSetting = .metric
+    
+    // Notifications
+    @AppStorage("workoutRemindersEnabled") private var workoutRemindersEnabled: Bool = true
+    @AppStorage("achievementNotificationsEnabled") private var achievementNotificationsEnabled: Bool = true
+    
+    // Device management
+    @State private var showDeviceScanner = false
+    
     var body: some View {
-        NavigationView {
-            VStack(alignment: .leading, spacing: 20) {
-
-                if case .authenticated(let user) = auth.authState {
-                    applySubheadingStyle(to: Text("Account"))
-                        .padding(.horizontal, 16)
-
-                    VStack(alignment: .leading) {
-                        Text("\(user.firstName ?? "") \(user.lastName ?? "")")
-                            .font(.headline)
-                        applyLabelStyle(to: Text(user.email))
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                    // Appearance Group
+                    settingsGroup(title: "Appearance") {
+                        SettingsRow(icon: "paintbrush.fill", label: "Theme") {
+                            Picker("", selection: $selectedAppearance) {
+                                ForEach(AppThemeOption.allCases) { option in
+                                    Text(option.rawValue).tag(option)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                            .frame(width: 120)
+                            .onChange(of: selectedAppearance) { _ in
+                                hapticGenerator.impactOccurred(intensity: 0.3)
+                                applyTheme()
+                            }
+                        }
+                        
+                        Text("Dark mode support is in progress.")
+                            .font(.caption)
+                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                            .italic()
+                            .padding(.leading, 34) // Align with text after icon
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color.white.opacity(0.9))
-                    .cornerRadius(8)
-                    .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 1)
-                    .padding(.horizontal, 16)
-
-                } else {
-                    Text("Loading user info...")
-                        .padding(16)
-                }
-
-                // Add other settings options here (e.g., profile edit, notifications)
-                List {
-                    Section(header: applySubheadingStyle(to: Text("Appearance"))) {
-                        Picker("Theme", selection: $themeManager.currentThemeOption) {
-                            ForEach(AppThemeOption.allCases) { option in
-                                Text(option.rawValue).tag(option)
+                    
+                    // Units Group
+                    settingsGroup(title: "Units") {
+                        SettingsRow(icon: "ruler", label: "Units") {
+                            Picker("", selection: $selectedUnit) {
+                                ForEach(UnitSetting.allCases) { unit in
+                                    Text(unit.rawValue).tag(unit)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                            .frame(width: 200)
+                            .onChange(of: selectedUnit) { _ in
+                                hapticGenerator.impactOccurred(intensity: 0.3)
                             }
                         }
                     }
                     
-                    Section(header: applySubheadingStyle(to: Text("General"))) {
-                        Text("Edit Profile (Not Implemented)")
-                        Text("Notification Settings (Not Implemented)")
-                    }
-                    
-                    // Section for Device Management
-                    Section(header: applySubheadingStyle(to: Text("Device Management"))) {
-                        NavigationLink("Manage Bluetooth Devices") {
-                            DeviceScanningView()
+                    // Notifications Group
+                    settingsGroup(title: "Notifications") {
+                        SettingsRow(icon: "bell.fill", label: "Workout Reminders") {
+                            Toggle("", isOn: $workoutRemindersEnabled)
+                                .tint(AppTheme.GeneratedColors.brassGold)
+                                .onChange(of: workoutRemindersEnabled) { _ in
+                                    hapticGenerator.impactOccurred(intensity: 0.4)
+                                }
+                        }
+                        
+                        Divider()
+                        
+                        SettingsRow(icon: "trophy.fill", label: "Achievement Notifications") {
+                            Toggle("", isOn: $achievementNotificationsEnabled)
+                                .tint(AppTheme.GeneratedColors.brassGold)
+                                .onChange(of: achievementNotificationsEnabled) { _ in
+                                    hapticGenerator.impactOccurred(intensity: 0.4)
+                                }
                         }
                     }
-
-                    Section {
-                         Button(action: {
-                             // Show confirmation before logout
-                             showLogoutConfirmation = true
-                         }) {
-                             HStack {
-                                 Text("Log Out")
-                                 if isLoggingOut {
-                                     Spacer()
-                                     ProgressView()
-                                 }
-                             }
-                         }
-                         .foregroundColor(.red) // Standard color for destructive actions
-                         .disabled(isLoggingOut)
+                    
+                    // Device Management Group
+                    settingsGroup(title: "Device Management") {
+                        Button {
+                            hapticGenerator.impactOccurred(intensity: 0.5)
+                            showDeviceScanner = true
+                        } label: {
+                            SettingsRow(icon: "antenna.radiowaves.left.and.right", label: "Manage Bluetooth Devices") {
+                                Image(systemName: "chevron.right")
+                                    .font(.footnote)
+                                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                            }
+                        }
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
+                    
+                    // App Version
+                    HStack {
+                        Spacer()
+                        Text("PT Champion v\(appVersion())")
+                            .font(.footnote)
+                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                            .padding(.top, AppTheme.GeneratedSpacing.large)
+                        Spacer()
                     }
                 }
-                .listStyle(InsetGroupedListStyle())
-                .frame(maxHeight: .infinity) // Allow list to take space
-                .background(Color.white.opacity(0.1)) // Use lighter background
+                .padding(AppTheme.GeneratedSpacing.contentPadding)
             }
-            .background(Color(red: 0.957, green: 0.945, blue: 0.902).ignoresSafeArea()) // Use standard color extension
+            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
-            .alert("Log Out", isPresented: $showLogoutConfirmation) {
-                Button("Cancel", role: .cancel) {}
-                Button("Log Out", role: .destructive) {
-                    performLogout()
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        hapticGenerator.impactOccurred(intensity: 0.3)
+                        dismiss()
+                    } label: {
+                        Text("Done")
+                            .fontWeight(.semibold)
+                            .foregroundColor(AppTheme.GeneratedColors.accent)
+                    }
                 }
-            } message: {
-                Text("Are you sure you want to log out?")
+            }
+            .sheet(isPresented: $showDeviceScanner) {
+                NavigationStack {
+                    DeviceScanningView()
+                        .navigationTitle("Bluetooth Devices")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Done") {
+                                    showDeviceScanner = false
+                                }
+                            }
+                        }
+                }
+            }
+            .onAppear {
+                hapticGenerator.prepare()
             }
         }
     }
     
-    // Safe logout implementation
-    private func performLogout() {
-        // Set loading state
-        isLoggingOut = true
-        
-        // Use Task to perform logout after a small delay to allow UI to update
-        Task {
-            // Add a small delay to ensure UI updates
-            try? await Task.sleep(nanoseconds: 500_000_000) // 500ms
+    // MARK: - Helper Views
+    
+    @ViewBuilder
+    private func settingsGroup<Content: View>(title: String, @ViewBuilder content: @escaping () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+            // Group title
+            Text(title)
+                .font(.headline)
+                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .padding(.leading, 4)
             
-            // Perform logout on main actor
-            await MainActor.run {
-                print("🔄 SettingsView - Performing logout")
-                // Clear authentication
-                auth.logout()
-                isLoggingOut = false
+            // Content card
+            VStack(alignment: .leading, spacing: 0) {
+                content()
+            }
+            .padding(AppTheme.GeneratedSpacing.medium)
+            .background(AppTheme.GeneratedColors.cardBackground)
+            .cornerRadius(AppTheme.GeneratedRadius.card)
+            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+        }
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func appVersion() -> String {
+        return Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "N/A"
+    }
+    
+    private func applyTheme() {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+        windowScene.windows.forEach { window in
+            switch selectedAppearance {
+            case .light:
+                window.overrideUserInterfaceStyle = .light
+            case .dark:
+                window.overrideUserInterfaceStyle = .dark
+            case .system:
+                window.overrideUserInterfaceStyle = .unspecified
             }
         }
     }
 }
 
+// MARK: - Settings Row Component
+
+struct SettingsRow<Content: View>: View {
+    let icon: String
+    let label: String
+    let control: Content
+    
+    init(icon: String, label: String, @ViewBuilder control: () -> Content) {
+        self.icon = icon
+        self.label = label
+        self.control = control()
+    }
+    
+    var body: some View {
+        HStack {
+            // Icon
+            Image(systemName: icon)
+                .frame(width: 24)
+                .foregroundColor(AppTheme.GeneratedColors.primary)
+            
+            // Label
+            Text(label)
+                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+            
+            Spacer()
+            
+            // Control (toggle, picker, etc.)
+            control
+        }
+        .frame(minHeight: 44) // Ensure minimum hit target size for accessibility
+    }
+}
+
 #Preview {
-    // Directly create and configure the view within the preview
-    SettingsView()
-        .environmentObject(AuthViewModel())
+    NavigationStack {
+        SettingsView()
+            .environmentObject(AuthViewModel())
+    }
 } 

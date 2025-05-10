@@ -1,17 +1,39 @@
 import SwiftUI
 import PTDesignSystem
 
+// Shadow size definition for ProfileView
+fileprivate enum ProfileShadowSize {
+    case small
+    case medium
+    case large
+}
+
+// Extension only for ProfileView
+fileprivate extension View {
+    func profileShadow(size: ProfileShadowSize = .medium) -> some View {
+        self.shadow(
+            color: Color.black.opacity(size == .small ? 0.1 : 0.15),
+            radius: size == .small ? 4 : 8,
+            x: 0,
+            y: size == .small ? 2 : 4
+        )
+    }
+}
+
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @Environment(\.colorScheme) var colorScheme // To react to system changes
-    @Environment(\.scenePhase) var scenePhase // To apply theme on scene activation
-
+    @Environment(\.colorScheme) var colorScheme 
+    @Environment(\.scenePhase) var scenePhase
+    @Environment(\.dynamicTypeSize) var dynamicTypeSize // Added for accessibility
+    
     @State private var showingEditProfile = false
+    @State private var showingSettings = false // Add state for settings sheet
+    @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     
     // Enum for appearance settings
     enum AppearanceSetting: String, CaseIterable, Identifiable {
         case light = "Light"
-        case dark = "Dark" // Added Dark mode
+        case dark = "Dark"
         case system = "System"
         var id: String { self.rawValue }
     }
@@ -35,182 +57,102 @@ struct ProfileView: View {
     @State private var showingDeleteConfirmation = false
 
     var body: some View {
-        // The NavigationStack is provided by ContentView for this tab
-        Form {
-            // Section 1: Profile Information
-            Section {
-                HStack(spacing: 15) {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 60, height: 60)
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary) // Keep or use theme accent
-                    
-                    VStack(alignment: .leading) {
-                        PTLabel(authViewModel.displayName ?? "N/A", style: .heading) // .heading uses textPrimary
-                        PTLabel(authViewModel.email ?? "N/A", style: .body) // .body uses textSecondary
-                    }
-                }
-                Button {
-                    showingEditProfile = true
-                } label: {
-                    PTLabel("Edit Profile", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.accent) // Use accent color (e.g., brassGold)
-                }
-            } header: {
-                PTLabel("Profile Information", style: .subheading)
-                    .padding(.top)
+        ScrollView {
+            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                // Modernized Profile Info Card
+                profileInfoCard()
+                
+                // Settings Sections using cards
+                settingsSection()
+                
+                // Account Section
+                accountSection()
+                
+                // More Section
+                moreSection()
+                
+                // Footer with app version
+                Text("App Version: \(appVersion())")
+                    .font(.footnote)
+                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, AppTheme.GeneratedSpacing.medium)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.large)
             }
-
-            // Section 2: Settings
-            Section {
-                Picker(selection: $selectedAppearance) {
-                    ForEach(AppearanceSetting.allCases) { appearance in
-                        Text(appearance.rawValue).tag(appearance)
-                    }
+            .padding(AppTheme.GeneratedSpacing.contentPadding)
+        }
+        .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+        .navigationTitle("Profile")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.3)
+                    showingSettings = true
                 } label: {
-                    PTLabel("Appearance", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary) // Ensure primary color for label
-                }
-                .onChange(of: selectedAppearance) { newAppearance in
-                    applyAppearance(newAppearance)
-                }
-                PTLabel("Dark mode support is in progress.", style: .caption)
-                    .italic()
-                
-                Picker(selection: $selectedUnit) {
-                    ForEach(UnitSetting.allCases) { unit in
-                        Text(unit.rawValue).tag(unit)
-                    }
-                } label: {
-                    PTLabel("Units", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary) // Ensure primary color for label
-                }
-
-                // Toggle constructed with HStack for custom label styling
-                Toggle(isOn: $workoutRemindersEnabled) {
-                    PTLabel("Workout Reminders", style: .body)
+                    Image(systemName: "gearshape.fill")
                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
-                
-                Toggle(isOn: $achievementNotificationsEnabled) {
-                    PTLabel("New Achievements", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                }
-            } header: {
-                PTLabel("Settings", style: .subheading)
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding(.top)
-            }
-            
-            // Section 3: Account Management
-            Section {
-                Button {
-                    authViewModel.logout()
-                } label: {
-                    HStack {
-                        Image(systemName: "rectangle.portrait.and.arrow.right")
-                        PTLabel("Logout", style: .body)
-                    }
-                    .foregroundColor(AppTheme.GeneratedColors.error) // Apply error color to HStack for both icon and text
-                }
-                
-                Button {
-                    showingChangePassword = true
-                } label: {
-                    PTLabel("Change Password", style: .body)
-                        // Default .body color is textSecondary, let's make it interactable
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary) 
-                }
-                
-                Button {
-                    showingDeleteConfirmation = true
-                } label: {
-                    PTLabel("Delete Account", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.error)
-                }
-            } header: {
-                PTLabel("Account", style: .subheading)
-                    .padding(.top)
-            }
-            
-            // Section 4: More
-            Section {
-                Button {
-                    showingPrivacyPolicy = true
-                } label: {
-                    PTLabel("Privacy Policy", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                }
-                Button {
-                    showingConnectedDevices = true
-                } label: {
-                    PTLabel("Connected Devices", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                }
-                PTLabel("App Version: \(appVersion())", style: .caption) // .caption uses textTertiary
-            } header: {
-                PTLabel("More", style: .subheading)
-                    .padding(.top)
             }
         }
-        .scrollContentBackground(.hidden) // Use overall cream background
-        .background(AppTheme.GeneratedColors.cream) // Ensure cream background
-        .navigationTitle("Profile")
-        .navigationBarTitleDisplayMode(.inline) // Or .large, as preferred
         .sheet(isPresented: $showingEditProfile) {
             NavigationView {
-                Text("Edit Profile View (TODO)")
-                    .navigationTitle("Edit Profile")
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button {
-                                showingEditProfile = false
-                            } label: {
-                                PTLabel("Cancel", style: .body)
-                                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            }
-                        }
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button {
-                                // TODO: Save action 
-                                showingEditProfile = false
-                            } label: {
-                                PTLabel("Save", style: .body)
-                                    .foregroundColor(AppTheme.GeneratedColors.accent)
-                            }
-                        }
-                    }
-                    .toolbarColorScheme(.light, for: .navigationBar) // Enforce light theme for nav bar
+                EditProfileView()
+                    .environmentObject(authViewModel)
+            }
+        }
+        .sheet(isPresented: $showingSettings) {
+            NavigationView {
+                SettingsView()
+                    .environmentObject(authViewModel)
             }
         }
         .sheet(isPresented: $showingChangePassword) {
             NavigationView {
                 Text("Change Password View (TODO)")
                     .navigationTitle("Change Password")
-                    .navigationBarItems(leading: Button("Cancel") { showingChangePassword = false },
-                                        trailing: Button("Save") { /* TODO: Save action */ showingChangePassword = false })
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Cancel") { 
+                                showingChangePassword = false 
+                            }
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Save") { 
+                                showingChangePassword = false 
+                            }
+                        }
+                    }
             }
         }
         .sheet(isPresented: $showingPrivacyPolicy) {
             NavigationView {
                 Text("Privacy Policy View (TODO)")
                     .navigationTitle("Privacy Policy")
-                    .navigationBarItems(trailing: Button("Done") { showingPrivacyPolicy = false })
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") { 
+                                showingPrivacyPolicy = false 
+                            }
+                        }
+                    }
             }
         }
         .sheet(isPresented: $showingConnectedDevices) {
             NavigationView {
                 Text("Connected Devices View (TODO)")
                     .navigationTitle("Connected Devices")
-                    .navigationBarItems(trailing: Button("Done") { showingConnectedDevices = false })
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") { 
+                                showingConnectedDevices = false 
+                            }
+                        }
+                    }
             }
         }
         .alert("Confirm Delete", isPresented: $showingDeleteConfirmation) {
             Button("Delete", role: .destructive) {
-                // TODO: Implement account deletion logic
-                // authViewModel.deleteAccount()
-                // For now, just dismiss
                 showingDeleteConfirmation = false
             }
             Button("Cancel", role: .cancel) { }
@@ -218,14 +160,304 @@ struct ProfileView: View {
             Text("Are you sure you want to delete your account? This action cannot be undone.")
         }
         .onAppear {
-            applyAppearance(selectedAppearance) // Apply on view appear
+            applyAppearance(selectedAppearance)
+            hapticGenerator.prepare() // Prepare haptic generator when view appears
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
-                applyAppearance(selectedAppearance) // Re-apply if app becomes active (e.g. system theme changed)
+                applyAppearance(selectedAppearance)
             }
         }
     }
+    
+    // MARK: - Profile Info Card
+    @ViewBuilder
+    private func profileInfoCard() -> some View {
+        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            // Avatar image or placeholder
+            ZStack {
+                Circle()
+                    .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
+                    .frame(width: 100, height: 100)
+                
+                Image(systemName: "person.crop.circle.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(AppTheme.GeneratedColors.primary)
+                    .frame(width: 80, height: 80)
+            }
+            .padding(.top, AppTheme.GeneratedSpacing.medium)
+            
+            // User information
+            VStack(spacing: AppTheme.GeneratedSpacing.small) {
+                Text(authViewModel.displayName ?? "N/A")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                
+                Text(authViewModel.email ?? "N/A")
+                    .font(.subheadline)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+            }
+            
+            // Edit profile button
+            Button {
+                hapticGenerator.impactOccurred(intensity: 0.5)
+                showingEditProfile = true
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "pencil")
+                        .font(.footnote)
+                    Text("Edit Profile")
+                        .font(.footnote.weight(.medium))
+                }
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(
+                    Capsule()
+                        .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
+                )
+            }
+            .padding(.bottom, AppTheme.GeneratedSpacing.small)
+        }
+        .frame(maxWidth: .infinity)
+        .background(AppTheme.GeneratedColors.cardBackground)
+        .cornerRadius(AppTheme.GeneratedRadius.card)
+        .profileShadow(size: .small)
+    }
+    
+    // MARK: - Settings Section
+    @ViewBuilder
+    private func settingsSection() -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+            // Section Header
+            sectionHeader("Settings")
+            
+            // Appearance & Units Card
+            settingsCard {
+                // Appearance Picker
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                    HStack {
+                        Label("Appearance", systemImage: "paintbrush.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        
+                        Spacer()
+                        
+                        Picker("", selection: $selectedAppearance) {
+                            ForEach(AppearanceSetting.allCases) { appearance in
+                                Text(appearance.rawValue).tag(appearance)
+                            }
+                        }
+                        .pickerStyle(MenuPickerStyle())
+                        .frame(width: 120)
+                    }
+                    .frame(height: 44) // Ensure touch target size
+                    
+                    // Dark mode notice
+                    Text("Dark mode support is in progress.")
+                        .font(.caption)
+                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        .italic()
+                        .padding(.leading, 28) // Align with text after icon
+                }
+                
+                Divider()
+                    .padding(.vertical, 8)
+                
+                // Units Picker
+                HStack {
+                    Label("Units", systemImage: "ruler")
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    
+                    Spacer()
+                    
+                    Picker("", selection: $selectedUnit) {
+                        ForEach(UnitSetting.allCases) { unit in
+                            Text(unit.rawValue).tag(unit)
+                        }
+                    }
+                    .pickerStyle(MenuPickerStyle())
+                    .frame(width: 200)
+                }
+                .frame(height: 44)
+            }
+            
+            // Notifications Card
+            settingsCard {
+                // Workout Reminders Toggle
+                HStack {
+                    Label("Workout Reminders", systemImage: "bell.fill")
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $workoutRemindersEnabled)
+                        .tint(AppTheme.GeneratedColors.brassGold)
+                        .onChange(of: workoutRemindersEnabled) { _ in
+                            hapticGenerator.impactOccurred(intensity: 0.4)
+                        }
+                }
+                .frame(height: 44)
+                
+                Divider()
+                    .padding(.vertical, 8)
+                
+                // New Achievements Toggle
+                HStack {
+                    Label("New Achievements", systemImage: "trophy.fill")
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    
+                    Spacer()
+                    
+                    Toggle("", isOn: $achievementNotificationsEnabled)
+                        .tint(AppTheme.GeneratedColors.brassGold)
+                        .onChange(of: achievementNotificationsEnabled) { _ in
+                            hapticGenerator.impactOccurred(intensity: 0.4)
+                        }
+                }
+                .frame(height: 44)
+            }
+        }
+    }
+    
+    // MARK: - Account Section
+    @ViewBuilder
+    private func accountSection() -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+            // Section Header
+            sectionHeader("Account")
+            
+            // Account Card
+            settingsCard {
+                // Change Password
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.5)
+                    showingChangePassword = true
+                } label: {
+                    HStack {
+                        Label("Change Password", systemImage: "lock.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote)
+                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .frame(height: 44)
+                
+                Divider()
+                    .padding(.vertical, 8)
+                
+                // Logout Button
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.6)
+                    authViewModel.logout()
+                } label: {
+                    HStack {
+                        Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .frame(height: 44)
+                
+                Divider()
+                    .padding(.vertical, 8)
+                
+                // Delete Account
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.7)
+                    showingDeleteConfirmation = true
+                } label: {
+                    HStack {
+                        Label("Delete Account", systemImage: "trash.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .frame(height: 44)
+            }
+        }
+    }
+    
+    // MARK: - More Section
+    @ViewBuilder
+    private func moreSection() -> some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+            // Section Header
+            sectionHeader("More")
+            
+            // More Card
+            settingsCard {
+                // Privacy Policy
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.5)
+                    showingPrivacyPolicy = true
+                } label: {
+                    HStack {
+                        Label("Privacy Policy", systemImage: "doc.text.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote)
+                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .frame(height: 44)
+                
+                Divider()
+                    .padding(.vertical, 8)
+                
+                // Connected Devices
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.5)
+                    showingConnectedDevices = true
+                } label: {
+                    HStack {
+                        Label("Connected Devices", systemImage: "antenna.radiowaves.left.and.right")
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote)
+                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .frame(height: 44)
+            }
+        }
+    }
+    
+    // MARK: - Helper Views
+    
+    // Section Header
+    @ViewBuilder
+    private func sectionHeader(_ title: String) -> some View {
+        Text(title)
+            .font(.title3.weight(.semibold))
+            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityAddTraits(.isHeader)
+    }
+    
+    // Card Container for Settings
+    @ViewBuilder
+    private func settingsCard<Content: View>(@ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            content()
+        }
+        .padding(AppTheme.GeneratedSpacing.contentPadding)
+        .background(AppTheme.GeneratedColors.cardBackground)
+        .cornerRadius(AppTheme.GeneratedRadius.card)
+        .profileShadow(size: .small)
+    }
+    
+    // MARK: - Helper Methods
     
     private func appVersion() -> String {
         return Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "N/A"
@@ -246,40 +478,27 @@ struct ProfileView: View {
     }
 }
 
-// Mock AuthViewModel for Previews - Ensure this matches your actual AuthViewModel structure if it exists
-// If AuthViewModel is complex, consider a more robust mocking strategy or using a simplified protocol.
-class MockAuthViewModel: AuthViewModel {
-    // Override properties and methods as needed for previews
-    // For this example, we assume base AuthViewModel can be instantiated
-    // and we can set some properties for preview display if needed.
-    // If your AuthViewModel() initializer is complex or has dependencies,
-    // this mock will need to be adjusted.
-    
-    override init() {
-        super.init() // Call the designated initializer of the superclass
-        // Create a mock user
-        let mockUser = AuthUserModel(
-            id: "mockUserID123",
-            email: "user@example.com",
-            firstName: "Preview", // This will be used by the `displayName` computed property
-            lastName: "User",
-            profilePictureUrl: nil // Assuming AuthUserModel has this
-        )
-        // Set the mock user using the method from AuthViewModel
-        // This will internally set the authState to .authenticated(mockUser)
-        self.setMockUser(mockUser)
-        
-        // After setMockUser, authState will be .authenticated(mockUser),
-        // so computed properties like displayName and email (now added) will work.
-        // No need to set self.displayName or self.email directly.
+// Preview
+struct ProfileView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationStack {
+            ProfileView()
+                .environmentObject(MockAuthViewModel())
+        }
     }
 }
 
-struct ProfileView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationStack { // Use NavigationStack for previews if the view uses navigation features
-            ProfileView()
-                .environmentObject(MockAuthViewModel()) // Provide the mock for the preview
-        }
+// Mock AuthViewModel for Previews
+class MockAuthViewModel: AuthViewModel {
+    override init() {
+        super.init()
+        let mockUser = AuthUserModel(
+            id: "mockUserID123",
+            email: "user@example.com",
+            firstName: "Preview",
+            lastName: "User",
+            profilePictureUrl: nil
+        )
+        self.setMockUser(mockUser)
     }
 } 

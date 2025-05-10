@@ -333,6 +333,41 @@ class AuthViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Profile Management
+
+    func updateUserProfile(firstName: String, lastName: String, email: String, profileImage: UIImage? = nil) {
+        // In a real app, you would make an API call to update the user's profile here
+        // For demonstration purposes, we'll just update the local state
+        
+        print("Updating user profile: \(firstName) \(lastName) - \(email)")
+        
+        guard case .authenticated(var user) = authState else {
+            errorMessage = "Cannot update profile: No authenticated user"
+            return
+        }
+        
+        // Update the user model
+        user.firstName = firstName
+        user.lastName = lastName
+        user.email = email
+        
+        // Update the auth state with the updated user model
+        withAnimation {
+            self.authState = .authenticated(user)
+            
+            // Also update the currentUser property to maintain compatibility
+            // with other parts of the app that might be using it
+            objectWillChange.send()
+        }
+        
+        // In a real app, you'd upload the profile image if it was changed
+        // if let profileImage = profileImage {
+        //     uploadProfileImage(profileImage)
+        // }
+        
+        successMessage = "Profile updated successfully"
+    }
+
     // MARK: - Cleanup
     deinit {
         print("⚙️ AuthViewModel deinit - ID: \(instanceId)")

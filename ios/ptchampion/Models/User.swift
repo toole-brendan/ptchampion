@@ -3,11 +3,11 @@ import Foundation
 // Rename to avoid conflicts with other User definitions
 public struct AuthUserModel: Identifiable, Codable, Equatable {
     public let id: String
-    public let email: String
+    public var email: String
     public var username: String?
-    public let firstName: String?
-    public let lastName: String?
-    public let profilePictureUrl: String?
+    public var firstName: String?
+    public var lastName: String?
+    public var profilePictureUrl: String?
     
     // Keys that correspond 1-to-1 with stored properties
     private enum CodingKeys: String, CodingKey {
