@@ -107,9 +107,17 @@ struct DashboardView: View {
     // Helper method for the greeting header
     @ViewBuilder
     private func greetingHeaderView() -> some View {
-        HStack(spacing: 0) {
-            Text("Good \(viewModel.timeOfDayGreeting), ")
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                Text("Good \(viewModel.timeOfDayGreeting),")
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity, alignment: .center)
+            
             Text(authViewModel.displayName)
+                .lineLimit(1)
+                .truncationMode(.tail)
+                .minimumScaleFactor(0.7)
                 .foregroundStyle(
                     LinearGradient(
                         gradient: Gradient(colors: [
@@ -120,6 +128,7 @@ struct DashboardView: View {
                         endPoint: .bottom
                     )
                 )
+                .frame(maxWidth: .infinity, alignment: .center)
         }
         .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading2))
         .frame(maxWidth: .infinity, alignment: .center)
