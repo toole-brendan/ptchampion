@@ -52,22 +52,17 @@ struct AppAppearance {
         // Create a custom appearance for iOS 15+
         let appearance = UINavigationBarAppearance()
         
-        // Configure with default background
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(AppTheme.GeneratedColors.deepOps)
+        // Configure with transparent background
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = .clear
+        appearance.backgroundEffect = nil
         
-        // Title text attributes - match the header style from web
-        let titleTextAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor(AppTheme.GeneratedColors.cream),
-            .font: UIFont.systemFont(ofSize: 20, weight: .bold)
-        ]
-        appearance.titleTextAttributes = titleTextAttributes
-        appearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor(AppTheme.GeneratedColors.cream),
-            .font: UIFont.systemFont(ofSize: 34, weight: .bold)
-        ]
+        // Remove background image and shadow
+        appearance.backgroundImage = UIImage()
+        appearance.shadowImage = UIImage()
+        appearance.shadowColor = .clear
         
-        // Set button colors
+        // Set button colors - still using gold for nav buttons
         UINavigationBar.appearance().tintColor = UIColor(AppTheme.GeneratedColors.brassGold)
         
         // Apply the appearance to both UINavigationBar.appearance() and standardAppearance
@@ -75,6 +70,49 @@ struct AppAppearance {
         if #available(iOS 15.0, *) {
             UINavigationBar.appearance().scrollEdgeAppearance = appearance
         }
+    }
+    
+    /// Create a subtle grid pattern overlay for the navigation bar
+    private static func createGridOverlayPattern() -> UIImage? {
+        let size = CGSize(width: 100, height: 44) // Typical nav bar height
+        
+        // Create a renderer for the pattern
+        UIGraphicsBeginImageContextWithOptions(size, false, 0)
+        guard let context = UIGraphicsGetCurrentContext() else { return nil }
+        
+        // Get the base color
+        let baseColor = UIColor(AppTheme.GeneratedColors.deepOps)
+        baseColor.setFill()
+        context.fill(CGRect(origin: .zero, size: size))
+        
+        // Set up the grid color (slightly lighter than the base)
+        let gridColor = UIColor.white.withAlphaComponent(0.03) // Very subtle
+        gridColor.setStroke()
+        
+        // Create the path
+        let path = UIBezierPath()
+        context.setLineWidth(0.5)
+        
+        // Draw vertical lines
+        let spacing: CGFloat = 10
+        for x in stride(from: 0, through: size.width, by: spacing) {
+            path.move(to: CGPoint(x: x, y: 0))
+            path.addLine(to: CGPoint(x: x, y: size.height))
+        }
+        
+        // Draw horizontal lines
+        for y in stride(from: 0, through: size.height, by: spacing) {
+            path.move(to: CGPoint(x: 0, y: y))
+            path.addLine(to: CGPoint(x: size.width, y: y))
+        }
+        
+        path.stroke()
+        
+        // Get the image from the context
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return image
     }
 }
 

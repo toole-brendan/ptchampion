@@ -57,117 +57,143 @@ struct ProfileView: View {
     @State private var showingDeleteConfirmation = false
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
-                // Modernized Profile Info Card
-                profileInfoCard()
-                
-                // Settings Sections using cards
-                settingsSection()
-                
-                // Account Section
-                accountSection()
-                
-                // More Section
-                moreSection()
-                
-                // Footer with app version
-                Text("App Version: \(appVersion())")
-                    .font(.footnote)
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, AppTheme.GeneratedSpacing.medium)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.large)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Header using the exact same style as LeaderboardView
+                    headerView
+                    
+                    // Modernized Profile Info Card - add appropriate spacing after header
+                    profileInfoCard()
+                        .padding(.top, AppTheme.GeneratedSpacing.medium)
+                    
+                    // Settings Sections using cards
+                    settingsSection()
+                        .padding(.top, AppTheme.GeneratedSpacing.large)
+                    
+                    // Account Section
+                    accountSection()
+                        .padding(.top, AppTheme.GeneratedSpacing.large)
+                    
+                    // More Section
+                    moreSection()
+                        .padding(.top, AppTheme.GeneratedSpacing.large)
+                    
+                    // Footer with app version
+                    Text("App Version: \(appVersion())")
+                        .font(.footnote)
+                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, AppTheme.GeneratedSpacing.large)
+                        .padding(.bottom, AppTheme.GeneratedSpacing.large)
+                }
+                .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
             }
-            .padding(AppTheme.GeneratedSpacing.contentPadding)
-        }
-        .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-        .navigationTitle("Profile")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.3)
-                    showingSettings = true
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        hapticGenerator.impactOccurred(intensity: 0.3)
+                        showingSettings = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
+                }
+            }
+            .sheet(isPresented: $showingEditProfile) {
+                NavigationView {
+                    EditProfileView()
+                        .environmentObject(authViewModel)
+                }
+            }
+            .sheet(isPresented: $showingSettings) {
+                NavigationView {
+                    SettingsView()
+                        .environmentObject(authViewModel)
+                }
+            }
+            .sheet(isPresented: $showingChangePassword) {
+                NavigationView {
+                    Text("Change Password View (TODO)")
+                        .navigationTitle("Change Password")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarLeading) {
+                                Button("Cancel") { 
+                                    showingChangePassword = false 
+                                }
+                            }
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Save") { 
+                                    showingChangePassword = false 
+                                }
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showingPrivacyPolicy) {
+                NavigationView {
+                    Text("Privacy Policy View (TODO)")
+                        .navigationTitle("Privacy Policy")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Done") { 
+                                    showingPrivacyPolicy = false 
+                                }
+                            }
+                        }
+                }
+            }
+            .sheet(isPresented: $showingConnectedDevices) {
+                NavigationView {
+                    Text("Connected Devices View (TODO)")
+                        .navigationTitle("Connected Devices")
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Done") { 
+                                    showingConnectedDevices = false 
+                                }
+                            }
+                        }
+                }
+            }
+            .alert("Confirm Delete", isPresented: $showingDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
+                    showingDeleteConfirmation = false
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you want to delete your account? This action cannot be undone.")
+            }
+            .onAppear {
+                applyAppearance(selectedAppearance)
+                hapticGenerator.prepare() // Prepare haptic generator when view appears
+            }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active {
+                    applyAppearance(selectedAppearance)
                 }
             }
         }
-        .sheet(isPresented: $showingEditProfile) {
-            NavigationView {
-                EditProfileView()
-                    .environmentObject(authViewModel)
-            }
+    }
+    
+    // Header view matching the LeaderboardView style
+    private var headerView: some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+            Text("PROFILE")
+                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
+                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .kerning(2)  // Add letter spacing to match the screenshot
+            
+            // Optional: add subtitle text if needed
+            Text("User Settings & Preferences")
+                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .italic()
         }
-        .sheet(isPresented: $showingSettings) {
-            NavigationView {
-                SettingsView()
-                    .environmentObject(authViewModel)
-            }
-        }
-        .sheet(isPresented: $showingChangePassword) {
-            NavigationView {
-                Text("Change Password View (TODO)")
-                    .navigationTitle("Change Password")
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button("Cancel") { 
-                                showingChangePassword = false 
-                            }
-                        }
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("Save") { 
-                                showingChangePassword = false 
-                            }
-                        }
-                    }
-            }
-        }
-        .sheet(isPresented: $showingPrivacyPolicy) {
-            NavigationView {
-                Text("Privacy Policy View (TODO)")
-                    .navigationTitle("Privacy Policy")
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("Done") { 
-                                showingPrivacyPolicy = false 
-                            }
-                        }
-                    }
-            }
-        }
-        .sheet(isPresented: $showingConnectedDevices) {
-            NavigationView {
-                Text("Connected Devices View (TODO)")
-                    .navigationTitle("Connected Devices")
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button("Done") { 
-                                showingConnectedDevices = false 
-                            }
-                        }
-                    }
-            }
-        }
-        .alert("Confirm Delete", isPresented: $showingDeleteConfirmation) {
-            Button("Delete", role: .destructive) {
-                showingDeleteConfirmation = false
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Are you sure you want to delete your account? This action cannot be undone.")
-        }
-        .onAppear {
-            applyAppearance(selectedAppearance)
-            hapticGenerator.prepare() // Prepare haptic generator when view appears
-        }
-        .onChange(of: scenePhase) { newPhase in
-            if newPhase == .active {
-                applyAppearance(selectedAppearance)
-            }
-        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16) // Match the exact padding from the screenshot
+        .padding(.top, 20)        // Match the exact top padding from the screenshot
     }
     
     // MARK: - Profile Info Card

@@ -18,36 +18,6 @@
             endingLineNumber = "333"
             landmarkName = "exerciseFilterMenu"
             landmarkType = "24">
-            <Locations>
-               <Location
-                  uuid = "FCF11FEC-046C-4C6F-9B49-260A774C8D65 - e846354bff935907"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "PTChampion.LeaderboardView.exerciseFilterMenu.getter : some"
-                  moduleName = "ptchampion.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Leaderboards/LeaderboardView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "333"
-                  endingLineNumber = "333">
-               </Location>
-               <Location
-                  uuid = "FCF11FEC-046C-4C6F-9B49-260A774C8D65 - 6453bad9d8e52f30"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "closure #1 () -&gt; SwiftUI.TupleView&lt;(SwiftUI.Text, Swift.Optional&lt;SwiftUI.Image&gt;)&gt; in closure #2 () -&gt; SwiftUI.HStack&lt;SwiftUI.TupleView&lt;(SwiftUI.Text, Swift.Optional&lt;SwiftUI.Image&gt;)&gt;&gt; in closure #1 (PTChampion.LeaderboardExerciseType) -&gt; SwiftUI.Button&lt;SwiftUI.HStack&lt;SwiftUI.TupleView&lt;(SwiftUI.Text, Swift.Optional&lt;SwiftUI.Image&gt;)&gt;&gt;&gt; in closure #1 () -&gt; SwiftUI.ForEach&lt;Swift.Array&lt;PTChampion.LeaderboardExerciseType&gt;, PTChampion.LeaderboardExerciseType, SwiftUI.Button&lt;SwiftUI.HStack&lt;SwiftUI.TupleView&lt;(SwiftUI.Text, Swift.Optional&lt;SwiftUI.Image&gt;)&gt;&gt;&gt;&gt; in PTChampion.LeaderboardView.exerciseFilterMenu.getter : some"
-                  moduleName = "ptchampion.debug.dylib"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/brendantoole/projects/ptchampion/ios/ptchampion/Views/Leaderboards/LeaderboardView.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "333"
-                  endingLineNumber = "333">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

@@ -126,25 +126,30 @@ struct WorkoutHistoryView: View {
                 AppTheme.GeneratedColors.background.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: AppTheme.GeneratedSpacing.section) {
+                    VStack(spacing: 0) {
+                        // Header using the exact same style as LeaderboardView
+                        headerView
+                        
                         // Custom exercise filter pills
                         exerciseFilterSection
-                            .padding(.top, AppTheme.GeneratedSpacing.medium)
+                            .padding(.top, 12)
                         
                         // Streak cards section
                         streakCardsSection
+                            .padding(.top, AppTheme.GeneratedSpacing.medium)
                         
                         // Progress chart section
                         progressChartSection
+                            .padding(.top, AppTheme.GeneratedSpacing.medium)
                         
                         // Workout history list
                         workoutHistorySection
+                            .padding(.top, AppTheme.GeneratedSpacing.medium)
+                            .padding(.bottom, AppTheme.GeneratedSpacing.section)
                     }
-                    .padding(.bottom, AppTheme.GeneratedSpacing.section)
                 }
+                .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
             }
-            .navigationTitle("Workout History")
-            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -176,6 +181,25 @@ struct WorkoutHistoryView: View {
                 updateStreaks()
             }
         }
+    }
+    
+    // Header view matching the LeaderboardView style
+    private var headerView: some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+            Text("WORKOUT HISTORY")
+                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
+                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .kerning(2)  // Add letter spacing to match the screenshot
+            
+            // Optional: add subtitle text if needed
+            Text("Exercise Records & Stats")
+                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .italic()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16) // Match the exact padding from the screenshot
+        .padding(.top, 20)        // Match the exact top padding from the screenshot
     }
     
     // MARK: - UI Components
@@ -287,11 +311,16 @@ struct WorkoutHistoryView: View {
     private var progressChartSection: some View {
         VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
             if !currentChartData.isEmpty && filter != .all {
+                Text("PROGRESS CHART")
+                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                
                 PTCard(style: .elevated) {
                     VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
                         HStack {
-                            Text("Progress Chart")
-                                .font(.system(size: 16, weight: .bold))
+                            Text(filter.rawValue)
+                                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
                                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                             
                             Spacer()
@@ -348,7 +377,7 @@ struct WorkoutHistoryView: View {
                                     .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                                 
                                 Text(currentYAxisLabel)
-                                    .font(.system(size: 12, weight: .medium))
+                                    .militaryMonospaced(size: 12)
                                     .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                             }
                         }
@@ -357,6 +386,11 @@ struct WorkoutHistoryView: View {
                 }
             } else if filter != .all {
                 // Empty chart state
+                Text("PROGRESS CHART")
+                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                
                 PTCard(style: .flat) {
                     VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                         Image(systemName: "chart.line.downtrend.xyaxis")
@@ -379,16 +413,16 @@ struct WorkoutHistoryView: View {
                 }
             }
         }
-        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+        .padding(.horizontal, filter != .all ? 0 : AppTheme.GeneratedSpacing.contentPadding)
     }
     
     // Workout history list section
     private var workoutHistorySection: some View {
         VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
             HStack {
-                Text("Workout History")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                Text("WORKOUT HISTORY")
+                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                 
                 Spacer()

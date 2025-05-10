@@ -83,6 +83,7 @@
 		BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4752DB453140037CD02 /* pt_champion_logo.png */; };
 		BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4772DB454230037CD02 /* Assets.xcassets */; };
 		BF7960D52DCF927200B03835 /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960D42DCF927200B03835 /* EditProfileView.swift */; };
+		BF7960D72DCFAC9500B03835 /* MilitaryStyleShowcase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960D62DCFAC9500B03835 /* MilitaryStyleShowcase.swift */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -209,6 +210,7 @@
 		BF63E4752DB453140037CD02 /* pt_champion_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pt_champion_logo.png; sourceTree = "<group>"; };
 		BF63E4772DB454230037CD02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		BF7960D42DCF927200B03835 /* EditProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
+		BF7960D62DCFAC9500B03835 /* MilitaryStyleShowcase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilitaryStyleShowcase.swift; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -489,6 +491,7 @@
 		BF63E4402DB1EB980037CD02 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				BF7960D62DCFAC9500B03835 /* MilitaryStyleShowcase.swift */,
 				BF37B0412DCACABE00EC4D58 /* Utility */,
 				BF89EB562DC9A47E003F8FE3 /* MetricData.swift */,
 				BF89EB542DC9A1A7003F8FE3 /* Charts */,
@@ -849,6 +852,7 @@
 				BF37B03E2DCAC89500EC4D58 /* WorkoutCompleteView.swift in Sources */,
 				BF37B03F2DCAC89500EC4D58 /* CameraExerciseView.swift in Sources */,
 				BF63E46C2DB1EBAF0037CD02 /* ExerciseGraderProtocol.swift in Sources */,
+				BF7960D72DCFAC9500B03835 /* MilitaryStyleShowcase.swift in Sources */,
 				BF89EB512DC9A18C003F8FE3 /* ValidationStateExtension.swift in Sources */,
 				BF89EB522DC9A18C003F8FE3 /* BadgeType.swift in Sources */,
 				BF63E46D2DB1EBAF0037CD02 /* SitupGrader.swift in Sources */,

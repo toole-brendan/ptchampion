@@ -12,52 +12,66 @@ struct ContentView: View {
     // You would also need @StateObject for WorkoutHistoryViewModel and potentially ProfileViewModel
     @StateObject private var workoutHistoryViewModel = WorkoutHistoryViewModel() // Assuming this exists
     // For ProfileView, if it's simple, it might not need its own ViewModel, or it might use AuthViewModel.
+    @State private var showingStyleShowcase = false
 
     var body: some View {
-        TabView {
-            // Dashboard Tab
-            NavigationStack {
-                // Pass environment objects if needed by DashboardView directly or its children
-                DashboardView()
-                    .environmentObject(authViewModel)
-                    // If DashboardViewModel is not passed directly, it should be @StateObject in DashboardView
-                    // or passed as viewModel: dashboardViewModel if it's initialized here.
-                    // For this example, let's assume DashboardView initializes its own or uses an EnvObject.
+        NavigationStack {
+            VStack(spacing: 20) {
+                Text("PT Champion")
+                    .font(.system(size: 40, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.primary)
+                
+                Image(systemName: "medal.fill")
+                    .font(.system(size: 80))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 30)
+                
+                // Use conditional tracking for iOS compatibility
+                militaryTitleText()
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                
+                Text("Powered by Computer Vision")
+                    .militaryMonospaced(size: 14)
+                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .padding(.bottom, 40)
+                
+                Button {
+                    showingStyleShowcase = true
+                } label: {
+                    Text("VIEW MILITARY UI SHOWCASE")
+                        .militaryMonospaced()
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(AppTheme.GeneratedColors.primary)
+                        .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
+                        .cornerRadius(AppTheme.GeneratedRadius.button)
+                }
+                .padding(.horizontal, 40)
+                
+                Spacer()
             }
-            .tabItem {
-                Label("Dashboard", systemImage: "house.fill")
-            }
-
-            // History Tab
-            NavigationStack {
-                // Similar ViewModel considerations for WorkoutHistoryView
-                WorkoutHistoryView() // Assuming WorkoutHistoryView initializes its own ViewModel or doesn't need one explicitly passed here for basic structure.
-            }
-            .tabItem {
-                Label("History", systemImage: "list.bullet.rectangle.fill")
-            }
-
-            // Leaderboard Tab
-            NavigationStack { 
-                LeaderboardView(viewModel: leaderboardViewModel, viewId: "mainLeaderboard")
-            }
-            .tabItem {
-                Label("Leaderboard", systemImage: "star.fill")
-            }
-
-            // Profile Tab
-            NavigationStack {
-                ProfileView()
-                    .environmentObject(authViewModel) // ProfileView might need AuthViewModel for user details/logout
-            }
-            .tabItem {
-                Label("Profile", systemImage: "person.fill")
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(AppTheme.GeneratedColors.background)
+            .navigationTitle("PT Champion")
+            .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $showingStyleShowcase) {
+                MilitaryStyleShowcase()
             }
         }
-        // If AuthViewModel is truly global and used by multiple first-level views in tabs,
-        // providing it here once can be cleaner than in each NavigationStack's root.
-        // However, some views might re-initialize their own navigation context if not careful.
-        // For now, providing to specific stacks where known to be needed.
+    }
+    
+    // Helper function to create the title text with conditional tracking
+    @ViewBuilder
+    private func militaryTitleText() -> some View {
+        let baseText = Text("FITNESS EVALUATION SYSTEM")
+            .militaryMonospaced()
+            
+        if #available(iOS 16.0, *) {
+            baseText.tracking(2) // Military stencil look
+        } else {
+            baseText
+        }
     }
 }
 

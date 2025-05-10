@@ -441,6 +441,9 @@ struct MainTabView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
+            // Each view already has a NavigationStack in their own file
+            // Don't add an additional NavigationView wrapper here
+            
             DashboardView()
                 .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(Tab.home)
@@ -449,16 +452,38 @@ struct MainTabView: View {
                 .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
                 .tag(Tab.history)
 
-            // Corrected LeaderboardView call - passes viewModel from environment
-            LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
-                .tabItem { Label("Leaders", systemImage: "rosette") }
-                .tag(Tab.leaderboards)
+            // Add safety check for LeaderboardView
+            Group {
+                // Ensure the leaderboardVM is properly initialized to avoid crashes
+                if leaderboardVM.selectedExercise != nil {
+                    LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
+                } else {
+                    // Fallback to an empty view if the viewModel is not properly initialized
+                    // This should prevent crashes if leaderboardVM is in an invalid state
+                    Text("Loading leaderboard...")
+                        .onAppear {
+                            print("Warning: LeaderboardViewModel not properly initialized")
+                        }
+                }
+            }
+            .tabItem { Label("Leaders", systemImage: "rosette") }
+            .tag(Tab.leaderboards)
 
-            ProfileView() // Replaced SettingsView with ProfileView
+            ProfileView() 
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(Tab.profile)
         }
-        .onAppear { /* Optional: Customize TabView appearance */ }
+        .onAppear { 
+            // Customize TabView appearance 
+            let tabBarAppearance = UITabBarAppearance()
+            tabBarAppearance.configureWithOpaqueBackground()
+            tabBarAppearance.backgroundColor = UIColor(AppTheme.GeneratedColors.deepOps)
+            UITabBar.appearance().standardAppearance = tabBarAppearance
+            
+            if #available(iOS 15.0, *) {
+                UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+            }
+        }
         .onChange(of: selectedTab) { newTab in
             print("Switched to tab: \(newTab)")
         }
