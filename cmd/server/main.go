@@ -43,6 +43,7 @@ func main() {
 		logger.Error(context.Background(), "Failed to connect to database", "error", err)
 		// Depending on requirements, you might want to os.Exit(1) here
 		// For now, we'll let it proceed and routes requiring DB will fail.
+		os.Exit(1) // Exit if database connection fails
 	} else {
 		logger.Info(context.Background(), "Successfully connected to the database")
 		defer func() {
@@ -77,22 +78,31 @@ func main() {
 	}
 
 	// Initialize Redis connection
-	redisOptions := redis.DefaultOptions()
-	redisOptions.URL = cfg.RedisURL
-	redisClient, err := redis.CreateClient(redisOptions)
-	if err != nil {
-		logger.Fatal(ctx, "Failed to connect to Redis", err)
-	}
-	defer redisClient.Close()
+	var refreshStore redis.RefreshStore
 
-	// Create the refresh token store
-	refreshStore := redis.NewRedisRefreshStore(redisClient)
+	// For development, use memory store instead of Redis if RedisURL is not set
+	if cfg.AppEnv == "development" && cfg.RedisURL == "" {
+		logger.Info(context.Background(), "Using in-memory refresh token store for development")
+		refreshStore = redis.NewMemoryRefreshStore()
+	} else {
+		// Use Redis for production or if RedisURL is explicitly set
+		redisOptions := redis.DefaultOptions()
+		redisOptions.URL = cfg.RedisURL
+		redisClient, err := redis.CreateClient(redisOptions)
+		if err != nil {
+			logger.Fatal(ctx, "Failed to connect to Redis", err)
+		}
+		defer redisClient.Close()
+
+		// Create the refresh token store
+		refreshStore = redis.NewRedisRefreshStore(redisClient)
+	}
 
 	// Initialize database store with timeout
 	store := db.NewStore(dbConn, cfg.DBTimeout)
 	store.SetLogger(logger)
 
-	// Initialize token service with Redis store
+	// Initialize token service with store
 	tokenService := auth.NewTokenService(cfg.JWTSecret, cfg.RefreshTokenSecret, refreshStore)
 
 	// Create Echo instance
@@ -141,6 +151,8 @@ func main() {
 		addr := fmt.Sprintf(":%s", cfg.Port)
 		logger.Info(context.Background(), "Starting server", "address", addr)
 		if err := e.Start(addr); err != nil && err != http.ErrServerClosed {
+			// Log the actual error
+			logger.Error(context.Background(), "Failed to start server", "error", err)
 			e.Logger.Fatal("shutting down the server")
 		}
 	}()

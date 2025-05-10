@@ -1,0 +1,1 @@
+-- Down migration for 000003_add_is_public_to_workouts (can be left empty if no specific down actions) 

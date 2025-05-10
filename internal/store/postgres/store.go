@@ -136,8 +136,8 @@ func toStoreUser(dbUser User) *store.User {
 	// to use the actual Email field once it exists in the database schema
 	return &store.User{
 		ID:           strconv.Itoa(int(dbUser.ID)), // Convert int32 to string; NOTE: This is a temporary fix for ID mismatch
-		Email:        dbUser.Username,              // TEMPORARY: Using Username as Email until schema updated
-		Username:     dbUser.Username,              // Username is the same as Email until schema update
+		Email:        dbUser.Email,                 // Use the actual Email field
+		Username:     dbUser.Username,
 		PasswordHash: dbUser.PasswordHash,
 		FirstName:    firstName,
 		LastName:     lastName,
@@ -158,7 +158,8 @@ func (s *Store) CreateUser(ctx context.Context, user *store.User) (*store.User, 
 	// IMPORTANT: This will need to be updated after SQLC regeneration to include email
 	// when CreateUserParams is regenerated with the Email field
 	params := CreateUserParams{
-		Username:     user.Email, // TEMPORARY: Using Email as Username until schema migration
+		Username:     user.Username, // Use the actual Username from the input
+		Email:        user.Email,    // Populate the Email field correctly
 		PasswordHash: user.PasswordHash,
 		DisplayName:  displayName,
 	}
@@ -191,11 +192,8 @@ func (s *Store) GetUserByID(ctx context.Context, id string) (*store.User, error)
 }
 
 // GetUserByEmail implements store.UserStore
-// It will need to be updated once GetUserByEmail is available in the generated code
 func (s *Store) GetUserByEmail(ctx context.Context, email string) (*store.User, error) {
-	// TEMPORARY: Until the GetUserByEmail method is available from SQLC regeneration,
-	// we'll use the GetUserByUsername method since Email is stored in Username field
-	dbUser, err := s.Queries.GetUserByUsername(ctx, email)
+	dbUser, err := s.Queries.GetUserByEmail(ctx, email) // Use the direct GetUserByEmail from sqlc
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, store.ErrUserNotFound
