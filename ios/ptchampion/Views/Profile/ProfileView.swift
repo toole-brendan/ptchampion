@@ -51,8 +51,11 @@ struct ProfileView: View {
                         PTLabel(authViewModel.email ?? "N/A", style: .body) // .body uses textSecondary
                     }
                 }
-                Button("Edit Profile") { // Standard Form button
+                Button {
                     showingEditProfile = true
+                } label: {
+                    PTLabel("Edit Profile", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.accent) // Use accent color (e.g., brassGold)
                 }
             } header: {
                 PTLabel("Profile Information", style: .subheading)
@@ -66,11 +69,14 @@ struct ProfileView: View {
                         Text(appearance.rawValue).tag(appearance)
                     }
                 } label: {
-                    PTLabel("Appearance", style: .body) // .body uses textSecondary
+                    PTLabel("Appearance", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary) // Ensure primary color for label
                 }
                 .onChange(of: selectedAppearance) { newAppearance in
                     applyAppearance(newAppearance)
                 }
+                PTLabel("Dark mode support is in progress.", style: .caption)
+                    .italic()
                 
                 Picker(selection: $selectedUnit) {
                     ForEach(UnitSetting.allCases) { unit in
@@ -78,18 +84,18 @@ struct ProfileView: View {
                     }
                 } label: {
                     PTLabel("Units", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary) // Ensure primary color for label
                 }
 
                 // Toggle constructed with HStack for custom label styling
-                HStack {
-                    PTLabel("Workout Reminders", style: .body) // PTLabel should now control its color
-                    Spacer()
-                    Toggle("", isOn: $workoutRemindersEnabled)
-                        .labelsHidden()
+                Toggle(isOn: $workoutRemindersEnabled) {
+                    PTLabel("Workout Reminders", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
-                // Original Toggle for New Achievements (for comparison)
+                
                 Toggle(isOn: $achievementNotificationsEnabled) {
                     PTLabel("New Achievements", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
             } header: {
                 PTLabel("Settings", style: .subheading)
@@ -99,15 +105,14 @@ struct ProfileView: View {
             
             // Section 3: Account Management
             Section {
-                // Logout Button constructed with HStack for custom label styling
-                HStack {
-                    PTLabel("Logout", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.error)
-                    Spacer()
-                }
-                .contentShape(Rectangle()) // Make the whole HStack tappable
-                .onTapGesture {
+                Button {
                     authViewModel.logout()
+                } label: {
+                    HStack {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                        PTLabel("Logout", style: .body)
+                    }
+                    .foregroundColor(AppTheme.GeneratedColors.error) // Apply error color to HStack for both icon and text
                 }
                 
                 Button {
@@ -149,16 +154,34 @@ struct ProfileView: View {
                     .padding(.top)
             }
         }
+        .scrollContentBackground(.hidden) // Use overall cream background
+        .background(AppTheme.GeneratedColors.cream) // Ensure cream background
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline) // Or .large, as preferred
         .sheet(isPresented: $showingEditProfile) {
-            // Placeholder for EditProfileView
-            // For a real EditProfileView, wrap it in a NavigationView for its own toolbar
             NavigationView {
                 Text("Edit Profile View (TODO)")
                     .navigationTitle("Edit Profile")
-                    .navigationBarItems(leading: Button("Cancel") { showingEditProfile = false }, 
-                                        trailing: Button("Save") { /* TODO: Save action */ showingEditProfile = false })
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button {
+                                showingEditProfile = false
+                            } label: {
+                                PTLabel("Cancel", style: .body)
+                                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            }
+                        }
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button {
+                                // TODO: Save action 
+                                showingEditProfile = false
+                            } label: {
+                                PTLabel("Save", style: .body)
+                                    .foregroundColor(AppTheme.GeneratedColors.accent)
+                            }
+                        }
+                    }
+                    .toolbarColorScheme(.light, for: .navigationBar) // Enforce light theme for nav bar
             }
         }
         .sheet(isPresented: $showingChangePassword) {

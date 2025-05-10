@@ -112,6 +112,15 @@ struct LoginView: View {
                                     Task {
                                         do {
                                             await auth.login(email: email, password: password)
+                                            // Explicitly check and navigate after login attempt
+                                            if auth.isAuthenticated && !isTransitioning {
+                                                isTransitioning = true
+                                                print("LoginView: Navigating to main post-login task.")
+                                                navigationState.navigateTo(.main)
+                                                // isTransitioning will be reset by onChange or onAppear if needed
+                                                // but to be safe for this path:
+                                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { isTransitioning = false } 
+                                            }
                                         } catch {
                                             print("Login error caught in view: \(error)")
                                         }

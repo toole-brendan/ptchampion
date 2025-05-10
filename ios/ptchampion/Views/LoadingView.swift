@@ -3,6 +3,7 @@ import PTDesignSystem
 
 struct LoadingView: View {
     @EnvironmentObject private var navigationState: NavigationState
+    @EnvironmentObject private var authViewModel: AuthViewModel
     
     var body: some View {
         ZStack {
@@ -35,9 +36,20 @@ struct LoadingView: View {
             }
         }
         .onAppear {
-            // Auto-navigate after a short delay
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                if navigationState.currentScreen == .loading {
+            // Check authentication status
+            authViewModel.checkAuthentication()
+
+            // Decision logic based on authState
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                // Ensure we are still on the loading screen before navigating
+                guard navigationState.currentScreen == .loading else { return }
+
+                switch authViewModel.authState {
+                case .authenticated:
+                    print("LoadingView: User authenticated, navigating to main.")
+                    navigationState.navigateTo(.main)
+                case .unauthenticated: // Only handle defined states
+                    print("LoadingView: User not authenticated, navigating to login.")
                     navigationState.navigateTo(.login)
                 }
             }
@@ -48,4 +60,5 @@ struct LoadingView: View {
 #Preview {
     LoadingView()
         .environmentObject(NavigationState())
+        .environmentObject(AuthViewModel())
 } 
