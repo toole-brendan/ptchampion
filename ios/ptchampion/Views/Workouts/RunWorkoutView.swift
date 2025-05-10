@@ -285,7 +285,7 @@ struct RunWorkoutView: View {
                  .padding(.top)
              }
          }
-         .padding(30)
+         .adaptivePadding()
          .background(.thinMaterial) // Use material background for overlay
          .cornerRadius(Constants.panelCornerRadius)
          .shadow(radius: 5)

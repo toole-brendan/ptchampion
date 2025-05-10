@@ -142,21 +142,8 @@ public struct PTButton: View {
             .padding(.vertical, size.padding.vertical)
             .frame(maxWidth: fullWidth ? .infinity : nil)
             .background(
-                ZStack {
-                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                        .fill(backgroundColor)
-                    
-                    // Add light highlight on top for depth
-                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                        .fill(LinearGradient(
-                            gradient: Gradient(colors: [
-                                foregroundColor.opacity(0.15),
-                                Color.clear
-                            ]),
-                            startPoint: .top,
-                            endPoint: .center
-                        ))
-                }
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
+                    .fill(backgroundColor)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)

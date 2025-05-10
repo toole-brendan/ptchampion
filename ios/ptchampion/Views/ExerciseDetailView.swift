@@ -26,48 +26,51 @@ struct ExerciseDetailView: View {
                 .cornerRadius(AppTheme.GeneratedRadius.large)
                 
                 // Stats summary
-                HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                    StatCard(
-                        title: "Best Session",
-                        value: "\(viewModel.personalBest)",
-                        unit: viewModel.unitForExerciseType(exerciseType),
-                        color: AppTheme.GeneratedColors.brassGold,
-                        iconName: "trophy.fill"
-                    )
-                    
-                    StatCard(
-                        title: "Last Week Total",
-                        value: "\(viewModel.lastWeekTotal)",
-                        unit: viewModel.unitForExerciseType(exerciseType),
-                        color: AppTheme.GeneratedColors.deepOps,
-                        iconName: "calendar"
-                    )
+                PTCard {
+                    HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                        StatCard(
+                            title: "Best Session",
+                            value: "\(viewModel.personalBest)",
+                            unit: viewModel.unitForExerciseType(exerciseType),
+                            color: AppTheme.GeneratedColors.brassGold,
+                            iconName: "trophy.fill"
+                        )
+                        
+                        StatCard(
+                            title: "Last Week Total",
+                            value: "\(viewModel.lastWeekTotal)",
+                            unit: viewModel.unitForExerciseType(exerciseType),
+                            color: AppTheme.GeneratedColors.deepOps,
+                            iconName: "calendar"
+                        )
+                    }
                 }
                 
                 // Progress chart
-                if isLoading {
-                    Spinner()
-                        .padding(.vertical, 100)
-                } else {
-                    WorkoutProgressChart(
-                        dataPoints: viewModel.progressData,
-                        title: exerciseType.capitalized
-                    )
+                PTCard {
+                    if isLoading {
+                        Spinner()
+                            .padding(.vertical, 100)
+                    } else {
+                        WorkoutProgressChart(
+                            dataPoints: viewModel.progressData,
+                            title: exerciseType.capitalized
+                        )
+                    }
                 }
                 
                 // Recent history
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                    Text(verbatim: "Recent History")
-                        .font(.system(size: AppTheme.GeneratedTypography.heading4, weight: .semibold))
-                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                    
-                    ForEach(viewModel.recentSessions) { session in
-                        historyRow(session: session)
+                PTCard {
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                        Text(verbatim: "Recent History")
+                            .font(.system(size: AppTheme.GeneratedTypography.heading4, weight: .semibold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        ForEach(viewModel.recentSessions) { session in
+                            historyRow(session: session)
+                        }
                     }
                 }
-                .padding(AppTheme.GeneratedSpacing.large)
-                .background(Color.white)
-                .cornerRadius(AppTheme.GeneratedRadius.large)
                 
                 // Add exercise button
                 let buttonStyle: PTButton.ExtendedStyle = .primary
@@ -79,7 +82,8 @@ struct ExerciseDetailView: View {
                 }
                 .padding(.vertical, AppTheme.GeneratedSpacing.medium)
             }
-            .padding(AppTheme.GeneratedSpacing.medium)
+            .frame(maxWidth: 600)
+            .adaptivePadding()
         }
         .background(
             // Use a concrete color from UIKit to SwiftUI conversion to avoid ambiguity

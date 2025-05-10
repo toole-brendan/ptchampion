@@ -46,7 +46,7 @@ struct CameraPermissionRequestView: View {
             .padding(.horizontal)
             .padding(.top, 10)
         }
-        .padding(30)
+        .adaptivePadding()
         .background(Color(.systemBackground))
         .cornerRadius(20)
         .shadow(radius: 10)

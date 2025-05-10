@@ -123,48 +123,46 @@ struct EditProfileView: View {
     
     // Personal Info Card
     private var personalInfoCard: some View {
-        VStack(spacing: 0) {
-            // First Name Field
-            formField(
-                label: "First Name",
-                iconName: "person.fill",
-                text: $firstName,
-                placeholder: "Enter your first name",
-                error: formErrors["firstName"],
-                field: .firstName
-            )
-            
-            Divider()
-                .padding(.leading, 56)
-            
-            // Last Name Field
-            formField(
-                label: "Last Name",
-                iconName: "person.fill",
-                text: $lastName,
-                placeholder: "Enter your last name",
-                error: formErrors["lastName"],
-                field: .lastName
-            )
-            
-            Divider()
-                .padding(.leading, 56)
-            
-            // Email Field
-            formField(
-                label: "Email",
-                iconName: "envelope.fill",
-                text: $email,
-                placeholder: "Enter your email",
-                error: formErrors["email"],
-                keyboardType: .emailAddress,
-                field: .email
-            )
+        PTCard {
+            VStack(spacing: 0) {
+                // First Name Field
+                formField(
+                    label: "First Name",
+                    iconName: "person.fill",
+                    text: $firstName,
+                    placeholder: "Enter your first name",
+                    error: formErrors["firstName"],
+                    field: .firstName
+                )
+                
+                Divider()
+                    .padding(.leading, 56)
+                
+                // Last Name Field
+                formField(
+                    label: "Last Name",
+                    iconName: "person.fill",
+                    text: $lastName,
+                    placeholder: "Enter your last name",
+                    error: formErrors["lastName"],
+                    field: .lastName
+                )
+                
+                Divider()
+                    .padding(.leading, 56)
+                
+                // Email Field
+                formField(
+                    label: "Email",
+                    iconName: "envelope.fill",
+                    text: $email,
+                    placeholder: "Enter your email",
+                    error: formErrors["email"],
+                    keyboardType: .emailAddress,
+                    field: .email
+                )
+            }
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
-        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
     
     // Save Button 
