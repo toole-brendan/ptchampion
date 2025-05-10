@@ -8,43 +8,41 @@ struct LeaderboardRowPlaceholder: View {
     
     var body: some View {
         PTCard {
-            HStack {
+            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 // Rank placeholder
-                Text("#")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.clear)
-                    .frame(width: 32, alignment: .center)
-                    .background(
-                        RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                            .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.2))
-                            .frame(width: 28, height: 28)
-                    )
+                HStack(spacing: 4) {
+                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
+                        .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
+                        .frame(width: 24, height: 20)
+                    
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
+                        .frame(width: 14, height: 14)
+                }
+                .frame(width: 50, alignment: .leading)
                 
                 // Avatar placeholder
                 Circle()
-                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.2))
-                    .frame(width: 40, height: 40)
-                    .padding(.leading, 4)
+                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                    .frame(width: 32, height: 32)
                 
                 // Username placeholder
-                VStack(alignment: .leading, spacing: 4) {
-                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                        .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.2))
-                        .frame(width: 120, height: 16)
-                }
-                .padding(.leading, AppTheme.GeneratedSpacing.small)
-                
-                Spacer()
+                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
+                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                    .frame(height: 16)
+                    .frame(maxWidth: .infinity)
                 
                 // Score placeholder
                 RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.2))
-                    .frame(width: 50, height: 16)
+                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                    .frame(width: 60, height: 18)
             }
-            .padding(AppTheme.GeneratedSpacing.small)
+            .padding(.vertical, AppTheme.GeneratedSpacing.small)
         }
+        .animation(.none, value: isAnimating) // Don't animate the card
         .onAppear {
-            withAnimation(Animation.easeInOut(duration: 1.0).repeatForever()) {
+            // Use a spring animation for the pulse effect
+            withAnimation(Animation.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
                 isAnimating = true
             }
         }
