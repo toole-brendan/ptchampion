@@ -108,17 +108,23 @@ struct WorkoutCompleteView: View {
             .task {
                 await fetchRepDetails()
             }
+            .onDisappear {
+                dismiss()
+                print("WorkoutCompleteView disappeared - dismissing workout session")
+            }
         }
     }
 
     private func fetchRepDetails() async {
         guard let workoutID = result?.id else {
             fetchError = "Workout session ID is missing."
+            print("Failed to fetch rep details: Workout session ID is missing")
             return
         }
         
         isLoadingDetails = true
         fetchError = nil
+        print("Fetching rep details for workout ID: \(workoutID)")
 
         let descriptor = FetchDescriptor<WorkoutDataPoint>(
             predicate: #Predicate { $0.workoutID == workoutID },
@@ -132,6 +138,8 @@ struct WorkoutCompleteView: View {
             }
             if dataPoints.isEmpty {
                  print("No WorkoutDataPoint found for session \(workoutID.uuidString)")
+            } else {
+                 print("Found \(dataPoints.count) rep data points for workout")
             }
         } catch {
             print("Failed to fetch rep details: \(error)")
