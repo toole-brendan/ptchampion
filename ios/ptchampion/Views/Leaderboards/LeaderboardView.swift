@@ -61,7 +61,8 @@ struct LeaderboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)
-        .padding(.top)
+        // Reduced top padding to minimize initial whitespace
+        .padding(.top, AppTheme.GeneratedSpacing.small)
     }
     
     // Further break down segment control to reduce complexity
@@ -172,6 +173,8 @@ struct LeaderboardView: View {
             
             // Content area with simple opacity animation
             mainContentArea
+                // Fill remaining available space
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
     }
     
@@ -194,7 +197,8 @@ struct LeaderboardView: View {
     
     // Break down the main content area into a separate view
     private var mainContentArea: some View {
-        ZStack {
+        // Changed ZStack alignment to .top to ensure content doesn't float in the center
+        ZStack(alignment: .top) {
             if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
                 loadingPlaceholders
             } else if let errorMessage = viewModel.errorMessage {
@@ -238,99 +242,115 @@ struct LeaderboardView: View {
         }
         .padding(.horizontal)
         .padding(.top, AppTheme.GeneratedSpacing.medium)
+        .frame(maxWidth: .infinity, alignment: .top) // Ensure placeholders align to top
         .onAppear { logViewContent(message: "Showing placeholders") }
     }
     
     private func errorView(message: String) -> some View {
-        VStack {
-            Spacer()
-            Image(systemName: "wifi.exclamationmark")
-                .font(.system(size: 64))
-                .foregroundColor(AppTheme.GeneratedColors.error)
-                .padding(.bottom, AppTheme.GeneratedSpacing.medium)
-            
-            Text("Error Loading Leaderboard")
-                .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .padding(.bottom, AppTheme.GeneratedSpacing.small)
-            
-            Text(message)
-                .font(AppTheme.GeneratedTypography.body())
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .multilineTextAlignment(.center)
+        // Make sure error view takes up full available space
+        GeometryReader { geometry in
+            VStack {
+                Spacer()
+                Image(systemName: "wifi.exclamationmark")
+                    .font(.system(size: 64))
+                    .foregroundColor(AppTheme.GeneratedColors.error)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+                
+                Text("Error Loading Leaderboard")
+                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                
+                Text(message)
+                    .font(AppTheme.GeneratedTypography.body())
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+                
+                // Fix ambiguous reference to .primary by using an explicit ButtonStyle
+                // Using a fully qualified type to resolve ambiguity
+                PTButton("Retry", style: PTButton.ButtonStyle.primary, action: { 
+                    // No animation
+                    Task { await viewModel.fetch() } 
+                })
                 .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-                .padding(.bottom, AppTheme.GeneratedSpacing.medium)
-            
-            // Fix ambiguous reference to .primary by using an explicit ButtonStyle
-            // Using a fully qualified type to resolve ambiguity
-            PTButton("Retry", style: PTButton.ButtonStyle.primary, action: { 
-                // No animation
-                Task { await viewModel.fetch() } 
-            })
-            .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-            
-            Spacer()
+                
+                Spacer()
+            }
+            .frame(minHeight: geometry.size.height)
+            .frame(maxWidth: .infinity)
         }
         .padding()
         .onAppear { logViewContent(message: "Showing error: \(message)") }
     }
     
     private var emptyLeaderboardView: some View {
-        VStack {
-            Spacer()
-            ZStack {
-                Circle()
-                    .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
-                    .frame(width: 120, height: 120)
+        // Make sure empty view takes up full available space
+        GeometryReader { geometry in
+            VStack {
+                Spacer()
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                        .frame(width: 120, height: 120)
+                    
+                    Image(systemName: "trophy.fill")
+                        .font(.system(size: 64))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                }
+                .padding(.bottom, AppTheme.GeneratedSpacing.medium)
                 
-                Image(systemName: "trophy.fill")
-                    .font(.system(size: 64))
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                Text("Leaderboard is Empty")
+                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                
+                Text("Be the first to set a score!")
+                    .font(AppTheme.GeneratedTypography.body())
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                
+                Text("Complete a workout to post your score on the leaderboard.")
+                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
+                
+                Spacer()
             }
-            .padding(.bottom, AppTheme.GeneratedSpacing.medium)
-            
-            Text("Leaderboard is Empty")
-                .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .padding(.bottom, AppTheme.GeneratedSpacing.small)
-            
-            Text("Be the first to set a score!")
-                .font(AppTheme.GeneratedTypography.body())
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .padding(.bottom, AppTheme.GeneratedSpacing.small)
-            
-            Text("Complete a workout to post your score on the leaderboard.")
-                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-            
-            Spacer()
+            .frame(minHeight: geometry.size.height)
+            .frame(maxWidth: .infinity)
         }
         .padding()
         .onAppear { logViewContent(message: "Showing empty state") }
     }
     
     private var noResultsView: some View {
-        VStack {
-            Spacer()
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 64))
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary.opacity(0.7))
-                .padding(.bottom, AppTheme.GeneratedSpacing.medium)
-            
-            Text("No Results Found")
-                .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .padding(.bottom, AppTheme.GeneratedSpacing.small)
-            
-            Text("No data available for the current selection.")
-                .font(AppTheme.GeneratedTypography.body())
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-            
-            Spacer()
+        // Make sure no results view takes up full available space
+        GeometryReader { geometry in
+            VStack {
+                Spacer()
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 64))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary.opacity(0.7))
+                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+                
+                Text("No Results Found")
+                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                
+                Text("No data available for the current selection.")
+                    .font(AppTheme.GeneratedTypography.body())
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
+                
+                Spacer()
+            }
+            .frame(minHeight: geometry.size.height)
+            .frame(maxWidth: .infinity)
         }
         .padding()
         .onAppear { logViewContent(message: "Showing no data for selection") }
