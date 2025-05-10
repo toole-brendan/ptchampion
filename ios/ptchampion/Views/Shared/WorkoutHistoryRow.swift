@@ -2,15 +2,22 @@ import SwiftUI
 import SwiftData
 import PTDesignSystem
 
-// Helper Row View for displaying a single workout result
+// Enhanced Row View for displaying a single workout result
 struct WorkoutHistoryRow: View {
     let result: WorkoutResultSwiftData
-
+    
     // Formatter for date
     private static var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
+        return formatter
+    }()
+    
+    // Alternate date formatter for more compact display
+    private static var shortDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d, h:mm a"
         return formatter
     }()
 
@@ -26,16 +33,9 @@ struct WorkoutHistoryRow: View {
         }
     }
     
-    // Simple style for labels - inline instead of extension
-    private func applyLabelStyle(to text: Text) -> some View {
-        text.font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.tiny))
-            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-    }
-
     // Computed property to get the correct icon based on exercise type
     private var exerciseIcon: Image {
         let type = result.exerciseType.lowercased()
-        print("WorkoutHistoryRow: Checking exercise type: '\(type)' for icon.")
         switch type {
         case "pushup":
             return Image("pushup")
@@ -44,53 +44,131 @@ struct WorkoutHistoryRow: View {
         case "pullup":
             return Image("pullup")
         case "run":
-            return Image("running") // Asset name is "running"
+            return Image("running")
         default:
-            // Fallback icon if type doesn't match known assets
-            print("WorkoutHistoryRow: Using default icon for type: '\(type)'")
             return Image(systemName: "figure.strengthtraining.traditional")
+        }
+    }
+    
+    // Get the performance metric details based on exercise type
+    private var performanceMetric: (value: String, label: String) {
+        if let reps = result.repCount {
+            return ("\(reps)", "reps")
+        } else if let distance = result.distanceMeters, distance > 0 {
+            let distanceMiles = distance * 0.000621371
+            return (String(format: "%.2f", distanceMiles), "mi")
+        } else if let score = result.score {
+            return ("\(Int(score))%", "score")
+        } else {
+            return ("--", "")
         }
     }
 
     var body: some View {
-        HStack {
-            // Use the computed exerciseIcon property
+        HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            // Exercise icon in a circular background
             exerciseIcon
                 .resizable()
                 .scaledToFit()
-                .frame(width: 35, height: 35)
+                .frame(width: 24, height: 24)
+                .padding(10)
+                .background(
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                )
                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                .padding(.trailing, AppTheme.GeneratedSpacing.itemSpacing)
-
-            VStack(alignment: .leading) {
-                 // TODO: Display actual exercise name
-                Text(result.exerciseType.capitalized) // Show exercise type
-                    .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
-                    .foregroundColor(AppTheme.GeneratedColors.commandBlack)
-                applyLabelStyle(to: Text("\(result.startTime, formatter: Self.dateFormatter)"))
+            
+            // Workout details
+            VStack(alignment: .leading, spacing: 4) {
+                Text(result.exerciseType.capitalized)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                
+                Text(result.startTime, formatter: Self.shortDateFormatter)
+                    .font(.system(size: 14))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
             }
-
+            
             Spacer()
-
-            VStack(alignment: .trailing) {
-                 // TODO: Format duration based on timeInSeconds from SwiftData model
-                 Text(formatDuration(result.durationSeconds))
-                     .font(AppTheme.GeneratedTypography.bodySemibold(size: AppTheme.GeneratedTypography.body))
-                     .foregroundColor(AppTheme.GeneratedColors.commandBlack)
-                // Display reps/score or distance based on type
-                if let reps = result.repCount {
-                    applyLabelStyle(to: Text("\(reps) reps"))
-                } else if let distance = result.distanceMeters, distance > 0 {
-                     let distanceMiles = distance * 0.000621371
-                     applyLabelStyle(to: Text(String(format: "%.2f mi", distanceMiles)))
-                 } else if let score = result.score {
-                     applyLabelStyle(to: Text("Score: \(Int(score))%"))
-                 }
+            
+            // Performance metrics with visual styling
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(performanceMetric.value)
+                    .font(.system(size: 20, weight: .bold, design: .rounded).monospacedDigit())
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                
+                Text(performanceMetric.label)
+                    .font(.system(size: 14))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .padding(.leading, 2)
+            }
+            
+            // Duration badge
+            VStack(spacing: 2) {
+                Text("Duration")
+                    .font(.system(size: 12))
+                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                
+                Text(formatDuration(result.durationSeconds))
+                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.1))
+                    )
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
             }
         }
-        .padding(.vertical, AppTheme.GeneratedSpacing.itemSpacing / 2)
+        .padding(AppTheme.GeneratedSpacing.medium)
+    }
+}
+
+// Standalone preview
+struct WorkoutHistoryRow_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            // Preview for pushup workout
+            WorkoutHistoryRow(
+                result: WorkoutResultSwiftData(
+                    exerciseType: "pushup", 
+                    startTime: Date().addingTimeInterval(-86400), 
+                    endTime: Date().addingTimeInterval(-86300), 
+                    durationSeconds: 100, 
+                    repCount: 25, 
+                    score: 85
+                )
+            )
+            .previewDisplayName("Pushup Workout")
+            
+            // Preview for run workout
+            WorkoutHistoryRow(
+                result: WorkoutResultSwiftData(
+                    exerciseType: "run", 
+                    startTime: Date(), 
+                    endTime: Date().addingTimeInterval(3600), 
+                    durationSeconds: 3600, 
+                    distanceMeters: 5280
+                )
+            )
+            .previewDisplayName("Run Workout")
+            
+            // Preview for dark mode
+            WorkoutHistoryRow(
+                result: WorkoutResultSwiftData(
+                    exerciseType: "situp", 
+                    startTime: Date(), 
+                    endTime: Date().addingTimeInterval(600), 
+                    durationSeconds: 600, 
+                    repCount: 42
+                )
+            )
+            .preferredColorScheme(.dark)
+            .previewDisplayName("Dark Mode")
+        }
+        .previewLayout(.sizeThatFits)
+        .padding()
         .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
     }
 }
 
