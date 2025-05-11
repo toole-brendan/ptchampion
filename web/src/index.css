@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import './components/ui/theme.css';
 @import './styles/ios-tokens.css';
 @import './styles/fonts.css';
@@ -47,10 +51,6 @@
   src: url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap');
   src: url('https://fonts.gstatic.com/s/robotomono/v22/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_7Pq_ROW4AJi8SJQt.woff2') format('woff2');
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 @layer base {
   * {

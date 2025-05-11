@@ -6,10 +6,19 @@ import { Input } from '../../components/ui/input';
 import { Alert, AlertDescription } from '../../components/ui/alert';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import logoImage from '../../assets/pt_champion_logo_2.png';
+import DeveloperMenu from '../../components/ui/DeveloperMenu';
+
+// Is this a development build?
+const IS_DEV = import.meta.env.MODE === 'development';
 
 // Real logo component
-const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <img src={logoImage} alt="PT Champion Logo" className={`${className} max-h-36 w-auto`} />
+const LogoIcon: React.FC<{ className?: string; onClick?: () => void }> = ({ className, onClick }) => (
+  <img 
+    src={logoImage} 
+    alt="PT Champion Logo" 
+    className={`${className} max-h-48 w-auto cursor-pointer`} 
+    onClick={onClick}
+  />
 );
 
 const RegisterPage: React.FC = () => {
@@ -20,6 +29,8 @@ const RegisterPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [logoTaps, setLogoTaps] = useState(0);
+  const [showDevMenu, setShowDevMenu] = useState(false);
   
   const { register, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
@@ -37,6 +48,19 @@ const RegisterPage: React.FC = () => {
       clearError();
     };
   }, [clearError]);
+
+  const handleLogoClick = () => {
+    if (IS_DEV) {
+      const newCount = logoTaps + 1;
+      setLogoTaps(newCount);
+      
+      // Show developer menu after 5 taps
+      if (newCount >= 5) {
+        setShowDevMenu(true);
+        setLogoTaps(0);
+      }
+    }
+  };
 
   const validateForm = (): boolean => {
     // Clear previous validation errors
@@ -90,7 +114,7 @@ const RegisterPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="mb-4 flex flex-col items-center">
           <div className="relative mb-2">
-            <LogoIcon className="relative z-10" />
+            <LogoIcon className="relative z-10" onClick={handleLogoClick} />
             <div className="absolute inset-x-0 bottom-0 h-4 bg-brass-gold/10 blur-md"></div>
           </div>
         </div>
@@ -119,8 +143,9 @@ const RegisterPage: React.FC = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="w-full rounded border border-army-tan/50 bg-cream p-2 font-mono text-sm"
+                  className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
                   placeholder="John"
+                  aria-label="First Name"
                 />
               </div>
               
@@ -133,8 +158,9 @@ const RegisterPage: React.FC = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  className="w-full rounded border border-army-tan/50 bg-cream p-2 font-mono text-sm"
+                  className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
                   placeholder="Doe"
+                  aria-label="Last Name"
                 />
               </div>
             </div>
@@ -149,9 +175,10 @@ const RegisterPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-cream p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
                 placeholder="you@example.com"
                 autoComplete="email"
+                aria-label="Email"
               />
             </div>
             
@@ -164,9 +191,10 @@ const RegisterPage: React.FC = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-cream p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
                 placeholder="username"
                 autoComplete="username"
+                aria-label="Username"
               />
             </div>
             
@@ -180,9 +208,10 @@ const RegisterPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-cream p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
                 placeholder="••••••••"
                 autoComplete="new-password"
+                aria-label="Password"
               />
             </div>
             
@@ -196,9 +225,10 @@ const RegisterPage: React.FC = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-cream p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
                 placeholder="••••••••"
                 autoComplete="new-password"
+                aria-label="Confirm Password"
               />
             </div>
             
@@ -206,6 +236,7 @@ const RegisterPage: React.FC = () => {
               type="submit" 
               className="mt-2 w-full bg-brass-gold font-heading text-sm uppercase text-white shadow-sm transition-all hover:bg-brass-gold/90" 
               disabled={isLoading}
+              aria-label="Create Account"
             >
               {isLoading ? (
                 <>
@@ -228,6 +259,9 @@ const RegisterPage: React.FC = () => {
           </p>
         </div>
       </div>
+      
+      {/* Developer Menu */}
+      <DeveloperMenu isOpen={showDevMenu} onClose={() => setShowDevMenu(false)} />
     </div>
   );
 };
