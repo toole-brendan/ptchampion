@@ -105,7 +105,7 @@ const RegisterPage: React.FC = () => {
         <div className="relative overflow-hidden rounded-md border border-army-tan/30 bg-card-background shadow-md">
           <form onSubmit={handleSubmit} className="space-y-4 p-5">
             <div className="mb-2">
-              <h2 className="mb-2 text-center font-heading text-xl font-bold uppercase text-foreground">Create Account</h2>
+              <h2 className="mb-2 text-center font-heading text-xl uppercase text-foreground">Create Account</h2>
               <div className="mx-auto h-0.5 w-24 bg-brass-gold"></div>
             </div>
           
@@ -204,7 +204,7 @@ const RegisterPage: React.FC = () => {
             
             <Button 
               type="submit" 
-              className="mt-2 w-full bg-brass-gold font-heading text-sm font-bold uppercase text-white shadow-sm transition-all hover:bg-brass-gold/90" 
+              className="mt-2 w-full bg-brass-gold font-heading text-sm uppercase text-white shadow-sm transition-all hover:bg-brass-gold/90" 
               disabled={isLoading}
             >
               {isLoading ? (

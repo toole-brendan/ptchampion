@@ -16,7 +16,7 @@ import { LogExerciseRequest, ExerciseResponse } from '../lib/types';
 import { BaseTrackerViewModel, ExerciseResult, SessionStatus, TrackerErrorType } from './TrackerViewModel';
 import { Subscription } from 'rxjs';
 import { ExerciseId } from '../constants/exercises';
-import { PoseDetector, PoseDetectorResult } from '../services/poseDetector';
+import { PoseDetector } from '../services/poseDetector';
 import { NormalizedLandmark } from '@mediapipe/tasks-vision';
 
 /**

@@ -6,56 +6,6 @@ import { PoseLandmarkIndex as ImportedPoseLandmarkIndex } from '@/services/PoseL
 // Re-export the imported landmark index
 export { ImportedPoseLandmarkIndex as PoseLandmarkIndex };
 
-// Local copy of pose landmark indices for internal use
-// This should match the exported enum from PoseLandmarkIndex.ts
-enum LocalPoseLandmarkIndex {
-  NOSE = 0,
-  // Eyes
-  LEFT_EYE_INNER = 1,
-  LEFT_EYE = 2,
-  LEFT_EYE_OUTER = 3,
-  RIGHT_EYE_INNER = 4,
-  RIGHT_EYE = 5,
-  RIGHT_EYE_OUTER = 6,
-  // Ears
-  LEFT_EAR = 7,
-  RIGHT_EAR = 8,
-  // Mouth
-  MOUTH_LEFT = 9,
-  MOUTH_RIGHT = 10,
-  // Shoulders
-  LEFT_SHOULDER = 11,
-  RIGHT_SHOULDER = 12,
-  // Elbows
-  LEFT_ELBOW = 13,
-  RIGHT_ELBOW = 14,
-  // Wrists
-  LEFT_WRIST = 15,
-  RIGHT_WRIST = 16,
-  // Thumbs
-  LEFT_PINKY = 17,
-  RIGHT_PINKY = 18,
-  LEFT_INDEX = 19,
-  RIGHT_INDEX = 20,
-  LEFT_THUMB = 21,
-  RIGHT_THUMB = 22,
-  // Hips
-  LEFT_HIP = 23,
-  RIGHT_HIP = 24,
-  // Knees
-  LEFT_KNEE = 25,
-  RIGHT_KNEE = 26,
-  // Ankles
-  LEFT_ANKLE = 27,
-  RIGHT_ANKLE = 28,
-  // Heels
-  LEFT_HEEL = 29,
-  RIGHT_HEEL = 30,
-  // Foot index (toes)
-  LEFT_FOOT_INDEX = 31,
-  RIGHT_FOOT_INDEX = 32,
-}
-
 // Configuration options for the pose detector
 export interface PoseDetectorOptions {
   minPoseDetectionConfidence?: number;
