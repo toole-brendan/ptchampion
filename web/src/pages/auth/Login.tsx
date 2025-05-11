@@ -8,18 +8,29 @@ import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import logoImage from '../../assets/pt_champion_logo_2.png';
 import config from '../../lib/config';
 import { cleanAuthStorage } from '../../lib/secureStorage';
+import DeveloperMenu from '../../components/ui/DeveloperMenu';
 
 // Get token storage key from config to ensure consistency
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 
+// Is this a development build?
+const IS_DEV = import.meta.env.MODE === 'development';
+
 // Real logo component
-const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <img src={logoImage} alt="PT Champion Logo" className={`${className} max-h-36 w-auto`} />
+const LogoIcon: React.FC<{ className?: string; onClick?: () => void }> = ({ className, onClick }) => (
+  <img 
+    src={logoImage} 
+    alt="PT Champion Logo" 
+    className={`${className} max-h-48 w-auto cursor-pointer`} 
+    onClick={onClick}
+  />
 );
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [logoTaps, setLogoTaps] = useState(0);
+  const [showDevMenu, setShowDevMenu] = useState(false);
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,6 +61,19 @@ const LoginPage: React.FC = () => {
     };
   }, [clearError, isAuthenticated]);
 
+  const handleLogoClick = () => {
+    if (IS_DEV) {
+      const newCount = logoTaps + 1;
+      setLogoTaps(newCount);
+      
+      // Show developer menu after 5 taps
+      if (newCount >= 5) {
+        setShowDevMenu(true);
+        setLogoTaps(0);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -74,7 +98,7 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="mb-4 flex flex-col items-center">
           <div className="relative mb-2">
-            <LogoIcon className="relative z-10" />
+            <LogoIcon className="relative z-10" onClick={handleLogoClick} />
             <div className="absolute inset-x-0 bottom-0 h-4 bg-brass-gold/10 blur-md"></div>
           </div>
         </div>
@@ -89,7 +113,7 @@ const LoginPage: React.FC = () => {
         <div className="relative overflow-hidden rounded-md border border-army-tan/30 bg-card-background shadow-md">
           <form onSubmit={handleSubmit} className="space-y-4 p-5">
             <div className="mb-2">
-              <h2 className="mb-2 text-center font-heading text-xl uppercase text-foreground">Sign In</h2>
+              <h2 className="mb-2 text-center font-heading text-xl uppercase text-foreground">Welcome Back</h2>
               <div className="mx-auto h-0.5 w-16 bg-brass-gold"></div>
             </div>
             
@@ -103,9 +127,10 @@ const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-cream p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
                 placeholder="you@example.com"
                 autoComplete="email"
+                aria-label="Email"
               />
             </div>
             
@@ -124,9 +149,10 @@ const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-cream p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
                 placeholder="••••••••"
                 autoComplete="current-password"
+                aria-label="Password"
               />
             </div>
             
@@ -134,6 +160,7 @@ const LoginPage: React.FC = () => {
               type="submit" 
               className="mt-2 w-full bg-brass-gold font-heading text-sm uppercase text-white shadow-sm transition-all hover:bg-brass-gold/90" 
               disabled={isLoading}
+              aria-label="Sign in"
             >
               {isLoading ? (
                 <>
@@ -156,6 +183,9 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
       </div>
+      
+      {/* Developer Menu */}
+      <DeveloperMenu isOpen={showDevMenu} onClose={() => setShowDevMenu(false)} />
     </div>
   );
 };
