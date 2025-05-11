@@ -29,7 +29,31 @@ import { useApi } from "@/lib/apiClient"; // Import API client hook
 import { Player } from '@lottiefiles/react-lottie-player'; // Import Lottie player
 import emptyLeaderboardAnimation from '@/assets/empty-leaderboard.json';
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, Trophy, Medal, MapPin } from 'lucide-react';
+
+// Military-style corner component
+const MilitaryCorners: React.FC = () => (
+  <>
+    {/* Military corner cutouts - top left and right */}
+    <div className="absolute top-0 left-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute top-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    
+    {/* Military corner cutouts - bottom left and right */}
+    <div className="absolute bottom-0 left-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute bottom-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    
+    {/* Diagonal lines for corners */}
+    <div className="absolute top-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-top-left"></div>
+    <div className="absolute top-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-top-right"></div>
+    <div className="absolute bottom-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-bottom-left"></div>
+    <div className="absolute bottom-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-bottom-right"></div>
+  </>
+);
+
+// Header divider component
+const HeaderDivider: React.FC = () => (
+  <div className="h-[1px] w-16 bg-brass-gold mx-auto my-2"></div>
+);
 
 const exerciseOptions = ['overall', 'pushup', 'situp', 'pullup', 'running'];
 const exerciseDisplayNames = {
@@ -47,6 +71,14 @@ const getInitials = (name: string) => {
     .split(' ')
     .map((n) => n[0])
     .join('');
+};
+
+// Get medal component based on rank
+const getRankMedal = (rank: number) => {
+  if (rank === 1) return <Medal className="size-6 text-yellow-500" />;
+  if (rank === 2) return <Medal className="size-6 text-gray-400" />;
+  if (rank === 3) return <Medal className="size-6 text-amber-700" />;
+  return null;
 };
 
 // Geolocation state type
@@ -171,27 +203,33 @@ const Leaderboard: React.FC = () => {
     }));
   }, [leaderboardData]);
 
-  // Dynamically set the card title
-  const cardTitle = `Top Performers - ${exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} (${scopeFilter})`;
-
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-foreground">Leaderboard</h1>
+    <div className="space-y-section">
+      <div className="relative overflow-hidden rounded-card bg-card-background p-content shadow-medium">
+        <MilitaryCorners />
+        <div className="mb-4 text-center">
+          <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
+            Leaderboard
+          </h2>
+          <HeaderDivider />
+          <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Compare your performance</p>
+        </div>
+      </div>
       
       {/* Geolocation Alert - Show if needed */}
       {scopeFilter === scopeOptions[1] && geoState.error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Location Error</AlertTitle>
+        <Alert variant="destructive" className="rounded-card">
+          <AlertCircle className="h-5 w-5" />
+          <AlertTitle className="font-heading text-sm">Location Error</AlertTitle>
           <AlertDescription>
             {geoState.error}
             <Button 
               variant="outline" 
               size="sm" 
-              className="mt-2" 
+              className="mt-2 border-brass-gold text-brass-gold" 
               onClick={requestGeolocation}
             >
-              Try Again
+              TRY AGAIN
             </Button>
           </AlertDescription>
         </Alert>
@@ -199,8 +237,9 @@ const Leaderboard: React.FC = () => {
       
       {/* Location Status Alert - Only show when actively looking for location */}
       {geoState.isLoading && (
-        <Alert className="mb-4">
-          <AlertTitle>Getting your location</AlertTitle>
+        <Alert className="rounded-card bg-olive-mist/10 border-olive-mist">
+          <MapPin className="h-5 w-5 text-brass-gold" />
+          <AlertTitle className="font-heading text-sm">Getting your location</AlertTitle>
           <AlertDescription>
             Please allow location access to view the local leaderboard.
           </AlertDescription>
@@ -209,123 +248,152 @@ const Leaderboard: React.FC = () => {
 
       {/* API Error Alert */}
       {isError && !geoState.isLoading && error instanceof Error && error.message !== 'Location permission required' && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error loading leaderboard</AlertTitle>
+        <Alert variant="destructive" className="rounded-card">
+          <AlertCircle className="h-5 w-5" />
+          <AlertTitle className="font-heading text-sm">Error loading leaderboard</AlertTitle>
           <AlertDescription>
             {error.message}
             <Button 
               variant="outline" 
               size="sm" 
-              className="mt-2" 
+              className="mt-2 border-brass-gold text-brass-gold" 
               onClick={() => refetch()}
             >
-              Retry
+              RETRY
             </Button>
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Leaderboard Table Card */}
-      <Card className="rounded-lg border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">{cardTitle}</CardTitle>
-          <CardDescription className="text-muted-foreground">See how you stack up against the competition.</CardDescription>
-        </CardHeader>
-        <CardContent>
-            {/* Filter Controls */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-              <div className="flex-1 space-y-1.5">
-                <Label htmlFor="exercise-filter" className="text-sm font-medium">Exercise</Label>
-                <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
-                  <SelectTrigger id="exercise-filter">
-                    <SelectValue placeholder="Select Exercise" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {exerciseOptions.map(option => (
-                      <SelectItem key={option} value={option}>
-                        {exerciseDisplayNames[option as keyof typeof exerciseDisplayNames]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex-1 space-y-1.5">
-                <Label htmlFor="scope-filter" className="text-sm font-medium">Scope</Label>
-                <Select value={scopeFilter} onValueChange={setScopeFilter}>
-                  <SelectTrigger id="scope-filter">
-                    <SelectValue placeholder="Select Scope" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {scopeOptions.map(option => (
-                      <SelectItem key={option} value={option}>{option}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      {/* Leaderboard Filters */}
+      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+        <MilitaryCorners />
+        <div className="rounded-t-card bg-deep-ops p-content">
+          <div className="flex items-center">
+            <Trophy className="mr-2 size-5 text-brass-gold" />
+            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+              {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Rankings
+            </h2>
+          </div>
+          <p className="text-sm text-army-tan">
+            {scopeFilter === scopeOptions[1] 
+              ? 'See how you compare to athletes in your area'
+              : 'See how you measure up against the global competition'}
+          </p>
+        </div>
+        
+        <div className="p-content">
+          {/* Filter Controls */}
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="exercise-filter" className="text-sm font-semibold uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
+              <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
+                <SelectTrigger id="exercise-filter" className="bg-cream border-army-tan/30">
+                  <SelectValue placeholder="Select Exercise" />
+                </SelectTrigger>
+                <SelectContent>
+                  {exerciseOptions.map(option => (
+                    <SelectItem key={option} value={option}>
+                      {exerciseDisplayNames[option as keyof typeof exerciseDisplayNames]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="scope-filter" className="text-sm font-semibold uppercase tracking-wide text-tactical-gray">Leaderboard Scope</Label>
+              <Select value={scopeFilter} onValueChange={setScopeFilter}>
+                <SelectTrigger id="scope-filter" className="bg-cream border-army-tan/30">
+                  <SelectValue placeholder="Select Scope" />
+                </SelectTrigger>
+                <SelectContent>
+                  {scopeOptions.map(option => (
+                    <SelectItem key={option} value={option}>{option}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-12">
-                <Loader2 className="h-12 w-12 animate-spin text-brass-gold" />
-                <p className="mt-4 text-center text-muted-foreground">
-                  Loading leaderboard data...
-                </p>
-              </div>
-            ) : processedLeaderboard.length > 0 ? (
-              <Table>
-                <TableCaption className="py-4 text-muted-foreground">
-                  Leaderboard rankings based on selected criteria.
-                </TableCaption>
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-12 w-12 animate-spin text-brass-gold" />
+              <p className="mt-4 text-center text-tactical-gray font-semibold">
+                Loading leaderboard data...
+              </p>
+            </div>
+          ) : processedLeaderboard.length > 0 ? (
+            <div className="overflow-hidden rounded-card border border-olive-mist/20">
+              <Table className="w-full">
                 <TableHeader>
-                <TableRow className="border-b border-border hover:bg-transparent">
-                    <TableHead className="w-[80px] font-medium text-muted-foreground">Rank</TableHead>
-                    <TableHead className="font-medium text-muted-foreground">User</TableHead>
-                    <TableHead className="text-right font-medium text-muted-foreground">Score</TableHead>
-                </TableRow>
+                  <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
+                    <TableHead className="w-[80px] font-heading uppercase text-tactical-gray text-xs tracking-wider">Rank</TableHead>
+                    <TableHead className="font-heading uppercase text-tactical-gray text-xs tracking-wider">User</TableHead>
+                    <TableHead className="text-right font-heading uppercase text-tactical-gray text-xs tracking-wider">Score</TableHead>
+                  </TableRow>
                 </TableHeader>
                 <TableBody>
                   {processedLeaderboard.map((user) => (
-                    <TableRow key={`${user.username}-${user.rank}`} className="border-b border-border/50 transition-colors hover:bg-muted/50">
-                        <TableCell className="text-lg font-semibold text-primary">{user.rank}</TableCell>
-                        <TableCell>
-                            <div className="flex items-center space-x-3">
-                                <Avatar className="size-8">
-                                    <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                                    <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
-                                        {getInitials(user.name)}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <span className="font-medium text-foreground">{user.name}</span>
-                            </div>
-                        </TableCell>
-                        <TableCell className="text-right font-medium tabular-nums text-foreground">{user.score}</TableCell>
+                    <TableRow 
+                      key={`${user.username}-${user.rank}`} 
+                      className={cn(
+                        "border-b border-olive-mist/10 transition-colors hover:bg-brass-gold/5",
+                        user.rank <= 3 && "bg-cream/30"
+                      )}
+                    >
+                      <TableCell className="flex items-center space-x-2">
+                        <span className={cn(
+                          "font-heading text-lg",
+                          user.rank === 1 && "text-yellow-600",
+                          user.rank === 2 && "text-gray-500",
+                          user.rank === 3 && "text-amber-800"
+                        )}>{user.rank}</span>
+                        {getRankMedal(user.rank)}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="size-8 border-2 border-brass-gold/20">
+                            <AvatarImage src={user.avatar || undefined} alt={user.name} />
+                            <AvatarFallback className="bg-army-tan/20 text-xs font-medium text-tactical-gray">
+                              {getInitials(user.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="font-semibold text-command-black">{user.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-heading tabular-nums text-brass-gold text-lg">{user.score}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-8">
-                <Player
-                  autoplay
-                  loop
-                  src={emptyLeaderboardAnimation}
-                  style={{ height: '200px', width: '200px' }}
-                  className="text-brass-gold"
-                />
-                <p className="mt-4 text-center text-muted-foreground">
-                  No rankings found for {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]}.
-                </p>
-                <p className="text-center text-sm text-muted-foreground">
-                  {scopeFilter === scopeOptions[1]
-                    ? "Try changing to Global scope or completing an exercise in this area."
-                    : "Try selecting a different exercise type or complete your first workout to get on the board."
-                  }
-                </p>
-              </div>
-            )}
-        </CardContent>
-      </Card>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-8">
+              <Player
+                autoplay
+                loop
+                src={emptyLeaderboardAnimation}
+                style={{ height: '200px', width: '200px' }}
+                className="text-brass-gold"
+              />
+              <p className="mt-4 text-center font-semibold text-tactical-gray">
+                No rankings found for {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]}.
+              </p>
+              <p className="text-center text-sm text-tactical-gray">
+                {scopeFilter === scopeOptions[1]
+                  ? "Try changing to Global scope or completing an exercise in this area."
+                  : "Try selecting a different exercise type or complete your first workout to get on the board."
+                }
+              </p>
+            </div>
+          )}
+          
+          <div className="mt-4 text-center text-xs text-tactical-gray">
+            <p>Rankings reset weekly. Complete exercises to improve your position.</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

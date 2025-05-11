@@ -74,10 +74,15 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-cream p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="w-full max-w-md">
         <div className="mb-10 flex flex-col items-center">
-          <LogoIcon className="mb-4" />
+          <div className="relative mb-4">
+            <LogoIcon className="relative z-10" />
+            <div className="absolute bottom-0 left-0 right-0 h-8 bg-brass-gold/10 blur-md"></div>
+          </div>
+          <h1 className="font-heading text-heading2 uppercase text-command-black tracking-wider mb-2">PT Champion</h1>
+          <p className="text-tactical-gray font-semibold text-sm uppercase tracking-wider">Fitness Evaluation System</p>
         </div>
 
         {error && (
@@ -87,68 +92,89 @@ const LoginPage: React.FC = () => {
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="email" className="block text-sm font-medium text-tactical-gray">
-              Email
-            </label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full rounded-md border border-army-tan/50 bg-white p-3"
-              placeholder="you@example.com"
-              autoComplete="email"
-            />
-          </div>
+        <div className="bg-card-background rounded-card shadow-medium overflow-hidden relative">
+          {/* Military corner cutouts - top left and right */}
+          <div className="absolute top-0 left-0 w-[15px] h-[15px] bg-background"></div>
+          <div className="absolute top-0 right-0 w-[15px] h-[15px] bg-background"></div>
           
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <label htmlFor="password" className="block text-sm font-medium text-tactical-gray">
-                Password
-              </label>
-              <Link to="/forgot-password" className="text-sm text-brass-gold hover:underline">
-                Forgot password?
-              </Link>
+          {/* Military corner cutouts - bottom left and right */}
+          <div className="absolute bottom-0 left-0 w-[15px] h-[15px] bg-background"></div>
+          <div className="absolute bottom-0 right-0 w-[15px] h-[15px] bg-background"></div>
+          
+          {/* Diagonal lines for corners */}
+          <div className="absolute top-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-top-left"></div>
+          <div className="absolute top-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-top-right"></div>
+          <div className="absolute bottom-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-bottom-left"></div>
+          <div className="absolute bottom-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-bottom-right"></div>
+          
+          <form onSubmit={handleSubmit} className="space-y-6 p-content">
+            <div className="mb-2">
+              <h2 className="font-heading text-heading4 text-center uppercase mb-2">Sign In</h2>
+              <div className="h-[1px] w-16 bg-brass-gold mx-auto"></div>
             </div>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full rounded-md border border-army-tan/50 bg-white p-3"
-              placeholder="••••••••"
-              autoComplete="current-password"
-            />
-          </div>
-          
-          <Button 
-            type="submit" 
-            className="w-full" 
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <div className="size-4 animate-spin rounded-full border-2 border-t-transparent" />
-                <span className="ml-2">Signing in...</span>
-              </>
-            ) : (
-              'SIGN IN'
-            )}
-          </Button>
+            
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-semibold text-tactical-gray uppercase tracking-wide">
+                Email
+              </label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full rounded-input border border-army-tan/50 bg-cream p-3 font-mono"
+                placeholder="you@example.com"
+                autoComplete="email"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <label htmlFor="password" className="block text-sm font-semibold text-tactical-gray uppercase tracking-wide">
+                  Password
+                </label>
+                <Link to="/forgot-password" className="text-sm text-brass-gold hover:underline font-semibold">
+                  Forgot password?
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full rounded-input border border-army-tan/50 bg-cream p-3 font-mono"
+                placeholder="••••••••"
+                autoComplete="current-password"
+              />
+            </div>
+            
+            <Button 
+              type="submit" 
+              className="w-full shadow-medium hover:shadow-large transition-all font-heading" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <div className="size-4 animate-spin rounded-full border-2 border-t-transparent" />
+                  <span className="ml-2">SIGNING IN...</span>
+                </>
+              ) : (
+                'SIGN IN'
+              )}
+            </Button>
+          </form>
+        </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-tactical-gray">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-brass-gold hover:underline">
-                Sign up
-              </Link>
-            </p>
-          </div>
-        </form>
+        <div className="mt-6 text-center">
+          <p className="text-tactical-gray">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-brass-gold hover:underline font-semibold">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

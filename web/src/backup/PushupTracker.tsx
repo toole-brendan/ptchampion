@@ -4,14 +4,38 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { usePoseDetector, PoseLandmarkIndex, Landmark } from '@/lib/hooks/usePoseDetector';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { InfoIcon, PlayIcon, PauseIcon, RefreshCw, ShareIcon, CheckCircle, CloudOff } from 'lucide-react';
+import { InfoIcon, PlayIcon, PauseIcon, RefreshCw, ShareIcon, CheckCircle, CloudOff, Timer, ChevronLeft } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
 import { apiRequest } from '@/lib/apiClient';
 import { saveWorkout } from '@/lib/db/indexedDB';
 import { registerBackgroundSync } from '@/serviceWorkerRegistration';
 import { v4 as uuidv4 } from 'uuid';
+
+// Military-style corner component
+const MilitaryCorners: React.FC = () => (
+  <>
+    {/* Military corner cutouts - top left and right */}
+    <div className="absolute top-0 left-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute top-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    
+    {/* Military corner cutouts - bottom left and right */}
+    <div className="absolute bottom-0 left-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute bottom-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    
+    {/* Diagonal lines for corners */}
+    <div className="absolute top-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-top-left"></div>
+    <div className="absolute top-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-top-right"></div>
+    <div className="absolute bottom-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-bottom-left"></div>
+    <div className="absolute bottom-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-bottom-right"></div>
+  </>
+);
+
+// Header divider component
+const HeaderDivider: React.FC = () => (
+  <div className="h-[1px] w-16 bg-brass-gold mx-auto my-2"></div>
+);
 
 export function PushupTracker() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -21,6 +45,7 @@ export function PushupTracker() {
   const [isTracking, setIsTracking] = useState(false);
   const [repCount, setRepCount] = useState(0);
   const [formScore, setFormScore] = useState(100);
+  const [formFeedback, setFormFeedback] = useState<string | null>(null);
   const [currentPhase, setCurrentPhase] = useState<'up' | 'down' | 'unknown'>('unknown');
   const [lastPhase, setLastPhase] = useState<'up' | 'down' | 'unknown'>('unknown');
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
@@ -33,9 +58,30 @@ export function PushupTracker() {
   const [scoreGrade, setScoreGrade] = useState<'A' | 'B' | 'C' | 'D' | 'F'>('A');
   const [savedOffline, setSavedOffline] = useState(false);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+
+  // Timer for tracking session duration
+  useEffect(() => {
+    if (isTracking) {
+      timerIntervalRef.current = setInterval(() => {
+        setElapsedTime(prev => prev + 1);
+      }, 1000);
+    } else if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+      }
+    };
+  }, [isTracking]);
 
   // Track online status
   useEffect(() => {
@@ -131,9 +177,11 @@ export function PushupTracker() {
       setFormScore(100);
       setCurrentPhase('unknown');
       setLastPhase('unknown');
+      setElapsedTime(0);
       setSessionStartTime(Date.now());
       setSubmitSuccess(false);
       setSavedOffline(false);
+      setFormFeedback(null);
     }
   };
 
@@ -147,6 +195,8 @@ export function PushupTracker() {
     if (sessionStartTime) {
       const duration = Math.round((Date.now() - sessionStartTime) / 1000); // in seconds
       setSessionTime(duration);
+    } else {
+      setSessionTime(elapsedTime);
     }
     
     // Only show results if at least 1 rep was completed
@@ -178,8 +228,10 @@ export function PushupTracker() {
     setLastPhase('unknown');
     setSessionStartTime(null);
     setSessionTime(0);
+    setElapsedTime(0);
     setShowResultModal(false);
     setSavedOffline(false);
+    setFormFeedback(null);
   };
 
   // Submit workout results to the API
@@ -196,7 +248,7 @@ export function PushupTracker() {
       exerciseType: 'PUSHUP',
       count: repCount,
       formScore: formScore,
-      durationSeconds: sessionTime,
+      durationSeconds: sessionTime || elapsedTime,
       deviceType: 'WEB',
       userId: String(user.id),
       date: new Date().toISOString()
@@ -275,6 +327,8 @@ export function PushupTracker() {
     const rightWrist = poseLandmarks[PoseLandmarkIndex.RIGHT_WRIST];
     const leftHip = poseLandmarks[PoseLandmarkIndex.LEFT_HIP];
     const rightHip = poseLandmarks[PoseLandmarkIndex.RIGHT_HIP];
+    const leftKnee = poseLandmarks[PoseLandmarkIndex.LEFT_KNEE];
+    const rightKnee = poseLandmarks[PoseLandmarkIndex.RIGHT_KNEE];
     
     // Calculate average shoulder and elbow heights (y-coordinate)
     const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
@@ -288,6 +342,22 @@ export function PushupTracker() {
     const DOWN_THRESHOLD = 0.55; // Threshold for "down" position
     const UP_THRESHOLD = 0.4;    // Threshold for "up" position
     
+    // Check for proper form - back should be straight
+    const backAngle = calculateBodyLineAngle(
+      leftHip, rightHip, leftShoulder, rightShoulder
+    );
+    
+    // Check if back is straight (less than 15 degrees from vertical)
+    const isBackStraight = backAngle <= 15;
+    
+    if (!isBackStraight && formFeedback !== "Keep your back straight!") {
+      setFormFeedback("Keep your back straight!");
+      // Clear feedback after 2 seconds
+      setTimeout(() => {
+        setFormFeedback(null);
+      }, 2000);
+    }
+    
     // Determine current phase
     let newPhase = currentPhase;
     if (avgShoulderY > DOWN_THRESHOLD) {
@@ -296,17 +366,12 @@ export function PushupTracker() {
       newPhase = 'up';
     }
     
-    // Check for rep completion
+    // Only count reps with good form
     if (newPhase === 'up' && lastPhase === 'down') {
-      setRepCount((count) => count + 1);
-      
-      // Basic form checking - check if back is straight
-      const hipToShoulderAngle = calculateBodyLineAngle(
-        leftHip, rightHip, leftShoulder, rightShoulder
-      );
-      
-      // Deduct points for poor form
-      if (hipToShoulderAngle > 15) {
+      if (isBackStraight) {
+        setRepCount((count) => count + 1);
+      } else {
+        // Bad form - deduct points
         setFormScore((score) => Math.max(0, score - 5));
       }
     }
@@ -317,7 +382,7 @@ export function PushupTracker() {
       setCurrentPhase(newPhase);
     }
     
-  }, [landmarks, isTracking, currentPhase, lastPhase]);
+  }, [landmarks, isTracking, currentPhase, lastPhase, formFeedback]);
 
   // Calculate angle between body segments for form checking
   const calculateBodyLineAngle = (
@@ -354,9 +419,38 @@ export function PushupTracker() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="space-y-6">
+      {/* Back button with military styling */}
+      <Button 
+        variant="outline" 
+        onClick={() => {
+          // Determine where to navigate back to based on the current URL
+          if (location.pathname.includes('/trackers')) {
+            navigate('/trackers');
+          } else {
+            navigate('/exercises');
+          }
+        }}
+        className="mb-4 border-tactical-gray text-tactical-gray hover:bg-tactical-gray/10"
+      >
+        <ChevronLeft className="mr-2 size-4" /> 
+        {location.pathname.includes('/trackers') ? 'Back to Trackers' : 'Back to Exercises'}
+      </Button>
+      
+      {/* Page title with military styling */}
+      <div className="relative overflow-hidden rounded-card bg-card-background p-content shadow-medium">
+        <MilitaryCorners />
+        <div className="mb-4 text-center">
+          <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
+            Push-up Tracker
+          </h2>
+          <HeaderDivider />
+          <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Track and count your push-ups with form analysis</p>
+        </div>
+      </div>
+
       {!isOnline && (
-        <Alert className="mb-4 border-amber-200 bg-amber-50">
+        <Alert className="mb-4 rounded-card border-amber-200 bg-amber-50">
           <CloudOff className="size-4 text-amber-500" />
           <AlertTitle className="text-amber-800">Offline Mode</AlertTitle>
           <AlertDescription className="text-amber-700">
@@ -365,31 +459,33 @@ export function PushupTracker() {
         </Alert>
       )}
       
-      <Card className="mx-auto w-full max-w-3xl bg-cream">
-        <CardHeader className="rounded-t-lg bg-deep-ops text-cream">
-          <CardTitle className="font-heading text-2xl tracking-wide">Pushup Tracker</CardTitle>
+      <Card className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+        <MilitaryCorners />
+        <CardHeader className="rounded-t-card bg-deep-ops">
+          <CardTitle className="font-heading text-xl text-cream tracking-wider uppercase">Live Tracking</CardTitle>
           <CardDescription className="text-army-tan">
-            Track your form and count repetitions
+            Position yourself correctly and press Begin to start tracking
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="p-6">
+        <CardContent className="p-content space-y-4">
           {errorMessage && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-4 rounded-card">
               <InfoIcon className="size-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
             </Alert>
           )}
           
-          <div className="relative mb-6 aspect-video overflow-hidden rounded-lg bg-muted">
-            {/* Base video element (hidden) */}
+          {/* Camera Feed Section */}
+          <div className="relative aspect-video overflow-hidden rounded-card bg-muted">
+            {/* Base video element */}
             <video 
               ref={videoRef}
               autoPlay 
               playsInline
               muted
-              className="absolute inset-0 size-full object-cover opacity-30"
+              className="size-full object-cover"
             />
             
             {/* Canvas overlay for pose landmarks */}
@@ -400,8 +496,15 @@ export function PushupTracker() {
             
             {/* Countdown overlay */}
             {isCountingDown && (
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
                 <span className="text-8xl font-bold text-brass-gold">{countdown}</span>
+              </div>
+            )}
+            
+            {/* Form feedback message */}
+            {formFeedback && (
+              <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md bg-destructive/80 px-4 py-2 text-sm font-semibold text-white">
+                {formFeedback}
               </div>
             )}
             
@@ -417,75 +520,116 @@ export function PushupTracker() {
             )}
           </div>
           
-          {/* Status and progress */}
-          <div className="mb-4">
-            <div className="mb-2 flex justify-between">
-              <span className="text-sm font-medium">Form Quality</span>
-              <span className="font-mono text-sm">{formScore}%</span>
+          {/* Stats Display */}
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div>
+              <p className="text-sm font-medium text-tactical-gray uppercase tracking-wider">Repetitions</p>
+              <p className="font-heading text-heading2 text-command-black">{repCount}</p>
             </div>
-            <Progress value={formScore} className="h-2" />
+            <div>
+              <p className="text-sm font-medium text-tactical-gray uppercase tracking-wider">Time</p>
+              <p className="flex items-center justify-center font-heading text-heading2 text-command-black">
+                <Timer className="mr-1 inline-block size-5 text-brass-gold" />
+                {formatTime(elapsedTime)}
+              </p>
+            </div>
           </div>
           
-          <div className="mb-4 rounded-lg bg-muted p-4">
-            <h3 className="mb-2 font-semibold">Exercise Stats</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Repetitions</p>
-                <p className="font-mono text-2xl text-brass-gold">{repCount}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Current Phase</p>
-                <p className="font-mono text-lg">
-                  {currentPhase === 'up' ? 'UP' : currentPhase === 'down' ? 'DOWN' : 'READY'}
-                </p>
-              </div>
+          {/* Form Quality Indicator */}
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm font-semibold text-tactical-gray uppercase tracking-wider">Form Quality</span>
+              <span className="font-mono text-sm text-brass-gold">{formScore}%</span>
             </div>
+            <Progress value={formScore} className="h-2" 
+              style={{
+                "--progress-background": "var(--color-olive-mist)",
+                "--progress-foreground": "var(--color-brass-gold)"
+              } as React.CSSProperties} 
+            />
+          </div>
+          
+          {/* Instructions */}
+          <div className="rounded-card border border-olive-mist/20 p-content">
+            <h3 className="text-md mb-2 font-heading uppercase tracking-wider text-command-black">Form Requirements:</h3>
+            <ul className="list-disc space-y-1 pl-5 text-sm text-tactical-gray">
+              <li>
+                <strong>Camera:</strong> Position side-on to capture your full body.
+              </li>
+              <li>
+                <strong>Body:</strong> Keep your back straight throughout the exercise.
+              </li>
+              <li>
+                <strong>Movement:</strong> Lower your body until elbows are at 90°, then push up until arms are fully extended.
+              </li>
+              <li>
+                <strong>Rep Counts:</strong> Only reps with correct form through the full range of motion are counted.
+              </li>
+            </ul>
           </div>
         </CardContent>
         
-        <CardFooter className="flex justify-between border-t border-border p-4">
+        <CardFooter className="flex flex-wrap justify-center gap-4 border-t border-olive-mist/20 bg-background/50 p-content">
           {!isTracking ? (
-            <Button 
-              onClick={startCountdown} 
-              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
-              disabled={!isDetectorReady || isCountingDown}
-              size="lg"
-            >
-              <PlayIcon className="mr-2 size-5" />
-              {isCountingDown ? `Starting in ${countdown}...` : 'Begin Tracking'}
-            </Button>
+            <>
+              <Button 
+                onClick={startCountdown}
+                size="lg"
+                className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90 shadow-medium hover:shadow-large transition-all"
+                disabled={!isDetectorReady || isCountingDown || !cameraPermission}
+              >
+                <PlayIcon className="mr-2 size-5" />
+                {isCountingDown ? `Starting in ${countdown}...` : 'Begin Tracking'}
+              </Button>
+              
+              <Button 
+                onClick={resetTracking}
+                size="lg"
+                variant="outline"
+                className="border-tactical-gray text-tactical-gray hover:bg-tactical-gray/10"
+                disabled={repCount === 0 && !isTracking}
+              >
+                <RefreshCw className="mr-2 size-5" />
+                Reset
+              </Button>
+            </>
           ) : (
-            <Button 
-              onClick={stopTracking} 
-              variant="outline" 
-              className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
-              size="lg"
-            >
-              <PauseIcon className="mr-2 size-5" />
-              End Session
-            </Button>
+            <>
+              <Button 
+                onClick={stopTracking}
+                size="lg"
+                variant="destructive"
+                className="bg-tactical-red hover:bg-tactical-red/90"
+              >
+                <PauseIcon className="mr-2 size-5" />
+                Finish & Save
+              </Button>
+              
+              <Button 
+                onClick={resetTracking}
+                size="lg"
+                variant="outline"
+                className="border-tactical-gray text-tactical-gray hover:bg-tactical-gray/10"
+              >
+                <RefreshCw className="mr-2 size-5" />
+                Reset
+              </Button>
+            </>
           )}
-          
-          <Button 
-            onClick={resetTracking} 
-            variant="ghost" 
-            className="text-muted-foreground"
-            disabled={repCount === 0}
-          >
-            <RefreshCw className="mr-2 size-4" />
-            Reset
-          </Button>
         </CardFooter>
       </Card>
       
-      {/* Results Modal */}
+      {/* Results Dialog with military styling */}
       <Dialog open={showResultModal} onOpenChange={setShowResultModal}>
-        <DialogContent className="bg-cream sm:max-w-md">
+        <DialogContent className="relative overflow-hidden rounded-card bg-card-background shadow-large">
+          <MilitaryCorners />
           <DialogHeader>
-            <DialogTitle className="text-center font-heading text-2xl">Session Results</DialogTitle>
-            <DialogDescription className="text-center">
+            <DialogTitle className="text-center font-heading text-heading3 uppercase tracking-wider text-command-black">
+              Workout Results
+            </DialogTitle>
+            <DialogDescription className="text-center text-tactical-gray">
               {submitSuccess ? (
-                <div className="mt-2 flex items-center justify-center text-green-600">
+                <div className="mt-2 flex items-center justify-center text-success">
                   <CheckCircle className="mr-2 size-5" />
                   Workout saved successfully!
                 </div>
@@ -498,35 +642,36 @@ export function PushupTracker() {
                 "Your push-up session is complete!"
               )}
             </DialogDescription>
+            <HeaderDivider />
           </DialogHeader>
           
           <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="rounded-lg bg-white/50 p-4 text-center">
-              <div className="mb-1 text-sm font-medium text-tactical-gray">Repetitions</div>
-              <div className="font-mono text-3xl text-brass-gold">{repCount}</div>
+            <div className="rounded-card bg-cream/30 p-4 text-center">
+              <div className="mb-1 text-sm font-semibold text-tactical-gray uppercase tracking-wider">Repetitions</div>
+              <div className="font-heading text-heading2 text-brass-gold">{repCount}</div>
             </div>
             
-            <div className="rounded-lg bg-white/50 p-4 text-center">
-              <div className="mb-1 text-sm font-medium text-tactical-gray">Form Score</div>
-              <div className="font-mono text-3xl text-brass-gold">{formScore}%</div>
+            <div className="rounded-card bg-cream/30 p-4 text-center">
+              <div className="mb-1 text-sm font-semibold text-tactical-gray uppercase tracking-wider">Form Score</div>
+              <div className="font-heading text-heading2 text-brass-gold">{formScore}%</div>
             </div>
             
-            <div className="rounded-lg bg-white/50 p-4 text-center">
-              <div className="mb-1 text-sm font-medium text-tactical-gray">Duration</div>
-              <div className="font-mono text-2xl text-brass-gold">{formatTime(sessionTime)}</div>
+            <div className="rounded-card bg-cream/30 p-4 text-center">
+              <div className="mb-1 text-sm font-semibold text-tactical-gray uppercase tracking-wider">Duration</div>
+              <div className="font-heading text-heading3 text-brass-gold">{formatTime(sessionTime)}</div>
             </div>
             
-            <div className="rounded-lg bg-white/50 p-4 text-center">
-              <div className="mb-1 text-sm font-medium text-tactical-gray">Grade</div>
-              <div className="font-mono text-3xl text-brass-gold">{scoreGrade}</div>
+            <div className="rounded-card bg-cream/30 p-4 text-center">
+              <div className="mb-1 text-sm font-semibold text-tactical-gray uppercase tracking-wider">Grade</div>
+              <div className="font-heading text-heading2 text-brass-gold">{scoreGrade}</div>
             </div>
           </div>
           
-          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between">
+          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between pt-2">
             {!submitSuccess && !savedOffline ? (
               <Button 
                 onClick={submitWorkout} 
-                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
+                className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90 shadow-medium hover:shadow-large transition-all"
                 disabled={submitting}
               >
                 {submitting ? 'Saving...' : `Save Results${!isOnline ? ' Offline' : ''}`}
@@ -534,7 +679,7 @@ export function PushupTracker() {
             ) : (
               <Button
                 onClick={() => navigate('/history')}
-                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
+                className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90 shadow-medium hover:shadow-large transition-all"
               >
                 View History
               </Button>
@@ -543,7 +688,7 @@ export function PushupTracker() {
             <Button 
               onClick={shareResults} 
               variant="outline" 
-              className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10 sm:w-auto"
+              className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
             >
               <ShareIcon className="mr-2 size-4" />
               Share Results

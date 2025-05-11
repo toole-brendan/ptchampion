@@ -20,7 +20,10 @@ const HistoryDetail = lazy(() => import('./pages/HistoryDetail').then(module => 
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 
-// Lazy load exercise trackers
+// Import the trackers index
+const TrackerIndex = lazy(() => import('./pages/trackers/index'));
+
+// Import exercise trackers from a single source - using the exercises directory as canonical
 const PushupTracker = lazy(() => import('./pages/exercises/PushupTracker'));
 const PullupTracker = lazy(() => import('./pages/exercises/PullupTracker'));
 const SitupTracker = lazy(() => import('./pages/exercises/SitupTracker'));
@@ -33,43 +36,41 @@ const Loading = () => (
   </div>
 );
 
-// Page not found component
+// Not found page
 const NotFound = () => (
-  <div className="flex h-screen flex-col items-center justify-center bg-cream p-4">
-    <h1 className="mb-4 text-3xl font-bold text-brass-gold">404</h1>
-    <p className="mb-8 text-lg text-tactical-gray">Page not found</p>
+  <div className="flex h-screen flex-col items-center justify-center gap-4 bg-cream">
+    <h1 className="text-3xl font-bold text-brass-gold">404 - Page Not Found</h1>
+    <p className="text-tactical-gray">The page you're looking for does not exist.</p>
     <button 
       onClick={() => window.location.href = '/'}
-      className="rounded-md bg-brass-gold px-4 py-2 font-medium text-white transition-colors hover:bg-brass-gold/90"
+      className="mt-4 rounded-lg bg-brass-gold px-4 py-2 text-white hover:bg-brass-gold/90 transition-colors"
     >
-      Go Home
+      Return Home
     </button>
   </div>
 );
 
-// Define App props interface
+// Define the type for App props
 interface AppProps {
-  queryClient?: QueryClient;
+  queryClient?: QueryClient; // Optional for testing
 }
 
+/**
+ * Main application component
+ */
 function App({ queryClient }: AppProps) {
   // Create a default QueryClient if none provided
-  const defaultQueryClient = new QueryClient({
+  const qclient = queryClient || new QueryClient({
     defaultOptions: {
       queries: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        gcTime: 10 * 60 * 1000, // 10 minutes (use gcTime instead of cacheTime)
-        retry: 1,
-        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 5, // 5 minutes
+        retry: 2,
       },
     },
   });
 
-  // Use provided queryClient or default
-  const clientToUse = queryClient || defaultQueryClient;
-
   return (
-    <QueryClientProvider client={clientToUse}>
+    <QueryClientProvider client={qclient}>
       <ThemeProvider>
         <AuthProvider>
           <FeatureFlagProvider>
@@ -78,11 +79,11 @@ function App({ queryClient }: AppProps) {
                 <OfflineBanner />
                 <Suspense fallback={<Loading />}>
                   <Routes>
-                    {/* Public routes - accessible without authentication */}
+                    {/* Public routes */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     
-                    {/* Protected routes - using nested route pattern */}
+                    {/* Protected routes - require authentication */}
                     <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
                       <Route index element={<Dashboard />} />
                       <Route path="dashboard" element={<Dashboard />} />
@@ -92,14 +93,21 @@ function App({ queryClient }: AppProps) {
                       <Route path="leaderboard" element={<Leaderboard />} />
                       <Route path="profile" element={<Profile />} />
                       
-                      {/* Exercise tracking routes */}
+                      {/* Tracker routes - both paths point to the same components */}
+                      <Route path="trackers" element={<TrackerIndex />} />
+                      <Route path="trackers/pushups" element={<PushupTracker />} />
+                      <Route path="trackers/pullups" element={<PullupTracker />} />
+                      <Route path="trackers/situps" element={<SitupTracker />} />
+                      <Route path="trackers/running" element={<RunningTracker />} />
+                      
+                      {/* Exercise tracking routes - use the same components */}
                       <Route path="exercises/pushups" element={<PushupTracker />} />
                       <Route path="exercises/pullups" element={<PullupTracker />} />
                       <Route path="exercises/situps" element={<SitupTracker />} />
                       <Route path="exercises/running" element={<RunningTracker />} />
                     </Route>
                     
-                    {/* Catch-all route - redirect to login instead of home to prevent auth loops */}
+                    {/* Catch-all route - redirect to NotFound */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

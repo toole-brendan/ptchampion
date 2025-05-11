@@ -1,3 +1,13 @@
+/**
+ * Running Tracker - Canonical Component
+ * 
+ * This is the canonical source for running tracking used by both:
+ * - /exercises/running
+ * - /trackers/running
+ * 
+ * Any modifications should be made to this file only.
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

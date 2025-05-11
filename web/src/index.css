@@ -1,4 +1,6 @@
 @import './components/ui/theme.css';
+@import './styles/ios-tokens.css';
+@import './styles/fonts.css';
 
 /* Import fonts from Google Fonts */
 @font-face {
@@ -45,10 +47,6 @@
   src: url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap');
   src: url('https://fonts.gstatic.com/s/robotomono/v22/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_7Pq_ROW4AJi8SJQt.woff2') format('woff2');
 }
-
-/* Import iOS design tokens */
-@import './styles/ios-tokens.css';
-@import './styles/fonts.css';
 
 @tailwind base;
 @tailwind components;
@@ -97,7 +95,7 @@
 @layer components {
   /* Bottom Navigation */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around border-t border-deep-ops/10 bg-deep-ops px-4 shadow-medium;
+    @apply fixed bottom-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around border-t border-deep-ops border-opacity-10 bg-deep-ops px-4 shadow-medium;
   }
   
   .bottom-nav-item {
