@@ -3,10 +3,11 @@ import Combine
 import SwiftData
 import UIKit
 
-// Annotation similar to what's mentioned in the plan
-// @Observable class WorkoutHistoryViewModel { // Changed to ObservableObject
-class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObject
-    // Published state
+// Only one class declaration for WorkoutHistoryViewModel
+class WorkoutHistoryViewModel: ObservableObject {
+    // MARK: - Published Properties
+    
+    // Published state for UI
     @Published var workouts: [WorkoutHistory] = []
     @Published var isLoading: Bool = false
     @Published var error: Error? = nil
@@ -16,6 +17,12 @@ class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObjec
     @Published var chartData: [ChartableDataPoint] = []
     @Published var chartYAxisLabel: String = "Value"
     
+    // Error display state
+    @Published var showError = false
+    @Published var errorMessage = "An error occurred"
+    
+    // MARK: - Internal Properties
+    
     // Cache mechanism
     private var cache: [String: Any] = [:]
     private var lastFetchTime: [String: Date] = [:]
@@ -24,12 +31,49 @@ class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObjec
     private let workoutService: WorkoutServiceProtocol
     var modelContext: ModelContext?
     
+    // MARK: - Computed Properties
+    
+    // Computed property for filtered workouts
+    var workoutsFiltered: [WorkoutHistory] {
+        if filter == .all {
+            return workouts
+        } else {
+            return workouts.filter { $0.exerciseType == filter.exerciseTypeString }
+        }
+    }
+    
+    // MARK: - Initialization
+    
     init(workoutService: WorkoutServiceProtocol = WorkoutService()) {
         self.workoutService = workoutService
         
         // Check if we have cached data on init
         loadFromCache()
         
+        // Set up observers
+        setupObservers()
+    }
+    
+    // MARK: - Setup Methods
+    
+    private func setupObservers() {
+        // Listen for sync completion notifications to refresh UI
+        NotificationCenter.default
+            .publisher(for: .syncCompleted)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] notification in
+                // Check if there was an error
+                if let error = notification.userInfo?["error"] as? Error {
+                    self?.handleSyncError(error)
+                } else {
+                    // Refresh workout list on successful sync
+                    Task { @MainActor in
+                        await self?.refreshWorkouts()
+                    }
+                }
+            }
+            .store(in: &cancellables)
+            
         // Set up publishers for filter changes
         $filter
             .sink { [weak self] _ in
@@ -45,14 +89,7 @@ class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObjec
             .store(in: &cancellables)
     }
     
-    // Computed property for filtered workouts
-    var workoutsFiltered: [WorkoutHistory] {
-        if filter == .all {
-            return workouts
-        } else {
-            return workouts.filter { $0.exerciseType == filter.exerciseTypeString }
-        }
-    }
+    // MARK: - Cache Methods
     
     private func loadFromCache() {
         if let cached = cache["workouts"] as? [WorkoutHistory] {
@@ -92,6 +129,8 @@ class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObjec
             return []
         }
     }
+    
+    // MARK: - Public API Methods
     
     // Similar to React Query's useQuery with stale data behavior
     @MainActor
@@ -161,65 +200,48 @@ class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObjec
     
     // For manual refresh, force a new fetch regardless of cache state
     @MainActor
-    func refreshWorkouts() async {
+    func refreshWorkouts() {
         isLoading = true
         error = nil
         
-        do {
-            guard let authToken = KeychainService.shared.getAccessToken() else {
-                throw NSError(domain: "WorkoutHistoryViewModel", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token found"])
+        // First, try to load from local storage
+        loadLocalWorkouts()
+        
+        // Then, try to fetch from network
+        Task {
+            do {
+                // Make the API call with correct parameters
+                guard let authToken = KeychainService.shared.getAccessToken() else {
+                    throw NSError(domain: "WorkoutHistoryViewModel", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token found"])
+                }
+                
+                let response = try await workoutService.fetchWorkoutHistory(authToken: authToken)
+                
+                await MainActor.run {
+                    workouts = response.map { record in
+                        WorkoutHistory(
+                            id: String(record.id),
+                            exerciseType: record.exerciseTypeKey,
+                            reps: record.repetitions,
+                            distance: nil, // Extract from metadata if available
+                            duration: TimeInterval(record.timeInSeconds ?? 0),
+                            date: record.createdAt,
+                            score: nil
+                        )
+                    }
+                    isLoading = false
+                    
+                    // Save fetched workouts to local storage
+                    saveWorkoutsToLocalStorage(workouts)
+                }
+            } catch {
+                print("Failed to fetch workout history: \(error)")
+                await MainActor.run {
+                    isLoading = false
+                    // Note: We don't show an error here because we've already 
+                    // loaded data from local storage as a fallback
+                }
             }
-            
-            let freshWorkouts = try await workoutService.fetchWorkoutHistory(authToken: authToken)
-            
-            // Convert API model to our local model
-            let convertedWorkouts = freshWorkouts.map { record in
-                WorkoutHistory(
-                    id: String(record.id),
-                    exerciseType: record.exerciseTypeKey,
-                    reps: record.repetitions,
-                    distance: nil, // Extract from metadata if available
-                    duration: TimeInterval(record.timeInSeconds ?? 0),
-                    date: record.createdAt,
-                    score: nil
-                )
-            }
-            
-            // Update and save
-            self.workouts = convertedWorkouts
-            cache["workouts"] = convertedWorkouts
-            lastFetchTime["workouts"] = Date()
-            
-            saveWorkoutsToSwiftData(convertedWorkouts)
-        } catch {
-            self.error = error
-        }
-        
-        isLoading = false
-    }
-    
-    // Helper to save workouts to SwiftData
-    private func saveWorkoutsToSwiftData(_ workouts: [WorkoutHistory]) {
-        guard let context = modelContext else { return }
-        
-        for workout in workouts {
-            let result = WorkoutResultSwiftData(
-                exerciseType: workout.exerciseType,
-                startTime: workout.date,
-                endTime: workout.date.addingTimeInterval(workout.duration),
-                durationSeconds: Int(workout.duration),
-                repCount: workout.reps,
-                score: workout.score,
-                distanceMeters: workout.distance
-            )
-            context.insert(result)
-        }
-        
-        do {
-            try context.save()
-            print("Saved \(workouts.count) workouts to SwiftData")
-        } catch {
-            print("Failed to save workouts to SwiftData: \(error)")
         }
     }
     
@@ -282,6 +304,63 @@ class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObjec
         deleteWorkoutFromSwiftData(id: id)
     }
     
+    // MARK: - SwiftData Operations
+    
+    /// Delete a workout by ID
+    func deleteWorkout(id: String) {
+        guard let modelContext = modelContext else {
+            showError(message: "Local storage not available")
+            return
+        }
+        
+        // First mark the workout for deletion in SwiftData
+        do {
+            // Find the workout in SwiftData based on string ID
+            // We need to manually find workouts by string ID comparison since
+            // function calls like UUID() aren't allowed in Predicates
+            let descriptor = FetchDescriptor<WorkoutResultSwiftData>()
+            let results = try modelContext.fetch(descriptor)
+            
+            // Find the matching workout manually
+            let matchingWorkout = results.first { workout in
+                workout.id.uuidString == id
+            }
+            
+            if let workout = matchingWorkout {
+                // If it has a server ID, mark it for deletion
+                if workout.serverId != nil {
+                    workout.syncStatusEnum = .pendingDeletion
+                    
+                    // Update the lastSyncAttempt timestamp
+                    workout.lastSyncAttempt = Date()
+                    
+                    try modelContext.save()
+                    
+                    // Post notification to trigger sync if online
+                    NotificationCenter.default.post(name: .connectivityRestored, object: nil)
+                } else {
+                    // If it doesn't have a server ID, delete it directly
+                    modelContext.delete(workout)
+                    try modelContext.save()
+                }
+            }
+            
+            // Remove from the displayed list
+            workouts.removeAll { $0.id == id }
+            
+        } catch {
+            print("Error marking workout for deletion: \(error)")
+            showError(message: "Failed to delete workout: \(error.localizedDescription)")
+        }
+    }
+    
+    /// Delete workouts at specified indices (for SwiftUI onDelete)
+    func deleteWorkout(at offsets: IndexSet) {
+        for index in offsets {
+            deleteWorkout(id: workouts[index].id)
+        }
+    }
+    
     // Helper to delete workout from SwiftData
     private func deleteWorkoutFromSwiftData(id: String) {
         guard let context = modelContext else { return }
@@ -307,6 +386,160 @@ class WorkoutHistoryViewModel: ObservableObject { // Conforms to ObservableObjec
             print("Failed to delete workout from SwiftData: \(error)")
         }
     }
+    
+    /// Load workouts from local SwiftData storage
+    private func loadLocalWorkouts() {
+        guard let modelContext = modelContext else {
+            print("ModelContext not available for local workout loading")
+            return
+        }
+        
+        do {
+            // Create descriptor to fetch all workouts sorted by date (newest first)
+            var descriptor = FetchDescriptor<WorkoutResultSwiftData>(
+                sortBy: [SortDescriptor(\.startTime, order: .reverse)]
+            )
+            
+            // Exclude workouts marked for deletion
+            // Fix for Predicate body syntax
+            let syncStatus = SyncStatus.pendingDeletion.rawValue
+            let predicate = #Predicate<WorkoutResultSwiftData> { workout in
+                workout.syncStatus != syncStatus
+            }
+            descriptor.predicate = predicate
+            
+            let results = try modelContext.fetch(descriptor)
+            
+            // Convert to WorkoutHistory objects
+            let localWorkouts = results.map { model in
+                WorkoutHistory(
+                    id: model.id.uuidString,
+                    exerciseType: model.exerciseType,
+                    reps: model.repCount,
+                    distance: model.distanceMeters,
+                    duration: TimeInterval(model.durationSeconds),
+                    date: model.startTime
+                )
+            }
+            
+            // Update the workouts list
+            self.workouts = localWorkouts
+            print("Loaded \(localWorkouts.count) workouts from local storage")
+            
+        } catch {
+            print("Failed to load workouts from local storage: \(error)")
+        }
+    }
+    
+    // Helper to save workouts to SwiftData
+    private func saveWorkoutsToSwiftData(_ workouts: [WorkoutHistory]) {
+        guard let context = modelContext else { return }
+        
+        for workout in workouts {
+            let result = WorkoutResultSwiftData(
+                exerciseType: workout.exerciseType,
+                startTime: workout.date,
+                endTime: workout.date.addingTimeInterval(workout.duration),
+                durationSeconds: Int(workout.duration),
+                repCount: workout.reps,
+                score: workout.score,
+                distanceMeters: workout.distance
+            )
+            context.insert(result)
+        }
+        
+        do {
+            try context.save()
+            print("Saved \(workouts.count) workouts to SwiftData")
+        } catch {
+            print("Failed to save workouts to SwiftData: \(error)")
+        }
+    }
+    
+    /// Save workouts to local SwiftData storage
+    private func saveWorkoutsToLocalStorage(_ workouts: [WorkoutHistory]) {
+        guard let modelContext = modelContext else {
+            print("ModelContext not available for local workout saving")
+            return
+        }
+        
+        do {
+            // Create descriptor to fetch all existing workouts
+            let descriptor = FetchDescriptor<WorkoutResultSwiftData>()
+            let existingWorkouts = try modelContext.fetch(descriptor)
+            
+            // Create a set of existing IDs for efficient lookup
+            let existingIds = Set(existingWorkouts.compactMap { 
+                $0.serverId != nil ? String($0.serverId!) : nil
+            })
+            
+            // Process each workout
+            for workout in workouts {
+                // Check if this workout already exists by server ID
+                if existingIds.contains(workout.id) {
+                    print("Workout with server ID \(workout.id) already exists in local storage")
+                    continue
+                }
+                
+                // Create a new SwiftData workout
+                let newWorkout = WorkoutResultSwiftData(
+                    exerciseType: workout.exerciseType,
+                    startTime: workout.date,
+                    endTime: workout.date.addingTimeInterval(workout.duration),
+                    durationSeconds: Int(workout.duration),
+                    repCount: workout.reps,
+                    distanceMeters: workout.distance
+                )
+                
+                // Set server ID and mark as synced since it came from the server
+                if let serverId = Int(workout.id) {
+                    newWorkout.serverId = serverId
+                    newWorkout.syncStatusEnum = .synced
+                }
+                
+                // Save the workout
+                modelContext.insert(newWorkout)
+            }
+            
+            // Save the context
+            try modelContext.save()
+            print("Saved \(workouts.count) workouts to local storage")
+            
+        } catch {
+            print("Failed to save workouts to local storage: \(error)")
+        }
+    }
+    
+    // MARK: - Error Handling
+    
+    /// Show an error message
+    private func showError(message: String) {
+        errorMessage = message
+        showError = true
+    }
+    
+    /// Handle sync errors
+    private func handleSyncError(_ error: Error) {
+        if let apiError = error as? APIError {
+            switch apiError {
+            case .authenticationError:
+                showError(message: "Authentication failed. Please log in again.")
+                
+            case .requestFailed(let statusCode, let message):
+                showError(message: "Server error (\(statusCode)): \(message ?? "Unknown error")")
+                
+            case .invalidResponse, .decodingError:
+                showError(message: "Could not understand the server's response. Try again later.")
+                
+            default:
+                showError(message: apiError.localizedDescription)
+            }
+        } else {
+            showError(message: "Sync error: \(error.localizedDescription)")
+        }
+    }
+    
+    // MARK: - Chart and Streak Methods
     
     // Calculate and update chart data based on filtered workouts
     private func updateChartData() {

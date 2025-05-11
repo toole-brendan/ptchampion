@@ -15,7 +15,35 @@ class WorkoutService: WorkoutServiceProtocol {
         static let workouts = "/workouts"
         static let exercises = "/exercises"
         static func workoutDetail(id: String) -> String { return "/workouts/\(id)" }
+        static func exerciseDetail(id: Int) -> String { return "/exercises/\(id)" }
         // static let updateUserLocation = "/profile/location" // Placeholder
+    }
+    
+    // MARK: - API Request Models
+    
+    // Codable struct for the exercise API request
+    private struct ExerciseAPIRequest: Encodable {
+        let exercise_type: String
+        let timestamp: String
+        let duration: Double
+        let rep_count: Int?
+        let score: Double?
+        let form_quality: Double?
+        let distance_meters: Double?
+        let is_public: Bool
+        let idempotency_key: String?
+        
+        init(exercise: LogExerciseRequest, isPublic: Bool, idempotencyKey: String?) {
+            self.exercise_type = exercise.exerciseType
+            self.timestamp = ISO8601DateFormatter().string(from: exercise.timestamp)
+            self.duration = exercise.duration
+            self.rep_count = exercise.repCount
+            self.score = exercise.score
+            self.form_quality = exercise.formQuality
+            self.distance_meters = exercise.distanceMeters
+            self.is_public = isPublic
+            self.idempotency_key = idempotencyKey ?? exercise.idempotencyKey
+        }
     }
 
     // MARK: - Protocol Implementation
@@ -101,6 +129,60 @@ class WorkoutService: WorkoutServiceProtocol {
         // )
         // return history
         return [] // Placeholder
+    }
+
+    // MARK: - Offline Sync Support Methods
+    
+    /// Log an exercise to the server
+    func logExercise(_ exercise: LogExerciseRequest, isPublic: Bool, idempotencyKey: String? = nil) async throws -> LogExerciseResponse {
+        // Create a proper Encodable request object
+        let params = ExerciseAPIRequest(
+            exercise: exercise,
+            isPublic: isPublic,
+            idempotencyKey: idempotencyKey
+        )
+        
+        // Make the network request
+        return try await networkClient.performRequest(
+            endpointPath: "/exercises/log",
+            method: "POST",
+            body: params
+        )
+    }
+    
+    /// Update an existing exercise on the server
+    func updateExercise(id: Int, data: LogExerciseRequest, isPublic: Bool) async throws -> LogExerciseResponse {
+        // Create a proper Encodable request object
+        let params = ExerciseAPIRequest(
+            exercise: data,
+            isPublic: isPublic,
+            idempotencyKey: data.idempotencyKey
+        )
+        
+        // Make the network request
+        return try await networkClient.performRequest(
+            endpointPath: "/exercises/\(id)",
+            method: "PUT",
+            body: params
+        )
+    }
+    
+    /// Delete an exercise from the server
+    func deleteExercise(id: Int) async throws {
+        // Make the delete request
+        try await networkClient.performRequestNoContent(
+            endpointPath: "/exercises/\(id)",
+            method: "DELETE"
+        )
+    }
+    
+    /// Get workout by server ID for conflict checking
+    func getWorkoutById(serverId: Int) async throws -> ServerWorkoutModel {
+        // Make the network request to get workout details
+        return try await networkClient.performRequest(
+            endpointPath: APIEndpoint.exerciseDetail(id: serverId),
+            method: "GET"
+        )
     }
 }
 

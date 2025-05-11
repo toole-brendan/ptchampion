@@ -48,7 +48,7 @@ struct EmptyHistoryDisplayView: View {
 
 struct WorkoutHistoryView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var viewModel = WorkoutHistoryViewModel()
+    @EnvironmentObject var viewModel: WorkoutHistoryViewModel
     @State private var isShowingShareSheet = false
     @State private var shareText = ""
     @State private var selectedWorkout: WorkoutResultSwiftData?

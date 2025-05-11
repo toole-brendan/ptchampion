@@ -6,9 +6,13 @@ import PTDesignSystem
 import ObjectiveC
 import Combine
 import HealthKit
+import BackgroundTasks
+
 
 // Import local files/modules
 @_exported import class UIKit.UIView  // Ensure UIView is available for swizzling
+
+// No typealiases needed - use direct references
 
 // AssistantKiller Implementation
 /// Hides every `SystemInputAssistantView` the moment it is added to any window.
@@ -262,12 +266,16 @@ struct PTChampionApp: App {
     @StateObject private var healthKitService = HealthKitService()
     @StateObject private var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel // Declared, initialized in init
 
+    // Network monitoring and offline sync
+    @StateObject private var networkMonitorService = NetworkMonitorService()
+    @StateObject private var synchronizationService: SynchronizationService // Declared, initialized in init
+
     // ViewModels that need to be shared or initialized early
     @StateObject private var authViewModel: AuthViewModel // Declared, initialized in init
     @StateObject private var dashboardViewModel: DashboardViewModel // Declared, initialized in init
     @StateObject private var workoutSessionViewModel: WorkoutSessionViewModel // Declared, initialized in init (renamed from workoutViewModel)
     @StateObject private var runWorkoutViewModel: RunWorkoutViewModel // Declared, initialized in init
-    @StateObject private var workoutHistoryViewModel: WorkoutHistoryViewModel // Declared, initialized in init
+    @StateObject private var workoutHistoryViewModel: WorkoutHistoryViewModel // Direct reference to class
     @StateObject private var leaderboardViewModel: LeaderboardViewModel // Declared, initialized in init
     @StateObject private var progressViewModel: ProgressViewModel // Declared, initialized in init
 
@@ -303,6 +311,17 @@ struct PTChampionApp: App {
         let leaderboardService = LeaderboardService(networkClient: networkClient)
         let workoutService = WorkoutService(networkClient: networkClient)
         // Note: poseDetectorService and featureFlagService are initialized at declaration
+        
+        // Create persistence service for offline sync
+        let workoutPersistenceService = WorkoutPersistenceService()
+        
+        // Create network monitor and sync services
+        let tempNetworkMonitorService = NetworkMonitorService()
+        let tempSynchronizationService = SynchronizationService(
+            workoutService: workoutService,
+            persistenceService: workoutPersistenceService,
+            networkMonitor: tempNetworkMonitorService
+        )
 
         // --- Step 2: Create ALL temporary VM instances (using defaults/placeholders for self-dependencies) ---
         let tempAuthService = AuthService(networkClient: networkClient)
@@ -321,7 +340,7 @@ struct PTChampionApp: App {
             healthKitService: tempHealthKitService, // Use local temp instance instead of self.healthKitService
             modelContext: nil // Set later using self.sharedModelContainer
         )
-        let tempWorkoutHistoryViewModel = WorkoutHistoryViewModel(workoutService: workoutService) // modelContext set later
+        let tempWorkoutHistoryViewModel = WorkoutHistoryViewModel(workoutService: workoutService as WorkoutServiceProtocol) // Direct reference to class
         let tempLeaderboardViewModel = LeaderboardViewModel(
             service: leaderboardService,
             location: locationService,
@@ -344,6 +363,7 @@ struct PTChampionApp: App {
         _leaderboardViewModel = StateObject(wrappedValue: tempLeaderboardViewModel)
         _progressViewModel = StateObject(wrappedValue: tempProgressViewModel)
         _fitnessDeviceManagerViewModel = StateObject(wrappedValue: tempFitnessDeviceManagerViewModel)
+        _synchronizationService = StateObject(wrappedValue: tempSynchronizationService)
 
         // Activate AssistantKiller
         #if !targetEnvironment(simulator)
@@ -352,6 +372,9 @@ struct PTChampionApp: App {
 
         // Configure appearance
         AppAppearance.configureAppearance()
+        
+        // Register background tasks
+        setupBackgroundTasks()
 
         #if DEBUG
         print("DEBUG mode is ON")
@@ -371,7 +394,42 @@ struct PTChampionApp: App {
         // If we *needed* to use the app-level self.poseDetectorService, we'd need a setter method in WorkoutSessionViewModel
         // e.g., self.workoutSessionViewModel.setPoseDetector(self.poseDetectorService)
         
+        // Schedule initial background sync
+        synchronizationService.scheduleBackgroundSync()
+        
         print("Global services setup complete.")
+    }
+    
+    /// Register background tasks with the system
+    private func setupBackgroundTasks() {
+        // Register background tasks
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: SynchronizationService.backgroundTaskIdentifier,
+            using: nil
+        ) { task in
+            // Handle background sync task
+            guard let appRefreshTask = task as? BGAppRefreshTask else {
+                task.setTaskCompleted(success: false)
+                return
+            }
+            
+            // Since we have no direct access to the synchronizationService here
+            // (as it's a property of the app structure), we use a notification to trigger the sync
+            NotificationCenter.default.post(name: .connectivityRestored, object: nil)
+            
+            // Set up a timer to ensure we complete the task before expiration
+            let timer = Timer.scheduledTimer(withTimeInterval: 20, repeats: false) { _ in
+                appRefreshTask.setTaskCompleted(success: true)
+            }
+            
+            // Add an expiration handler to handle the case where the task takes too long
+            appRefreshTask.expirationHandler = {
+                timer.invalidate() // Invalidate the timer
+                appRefreshTask.setTaskCompleted(success: false)
+            }
+        }
+        
+        print("Background tasks registered")
     }
     
     func listFilesInBundle() { /* Implementation assumed */ }
@@ -413,6 +471,7 @@ struct PTChampionApp: App {
                         .environmentObject(poseDetectorService)
                         .environmentObject(bluetoothService)
                         .environmentObject(healthKitService)
+                        .environmentObject(networkMonitorService)
                         // Pass ViewModels (Grouped)
                         .environmentObject(authViewModel)
                         .environmentObject(dashboardViewModel)
@@ -436,6 +495,12 @@ struct PTChampionApp: App {
                     print("App launched, starting with loading screen")
                 }
             }
+            .task {
+                // Fix for missing generic parameter R by using explicit type annotation
+                await MainActor.run { () -> Void in
+                    print("App started on main actor")
+                }
+            }
             .environmentObject(ThemeManager.shared)
             .preferredColorScheme(ThemeManager.shared.effectiveColorScheme)
         }
@@ -454,6 +519,7 @@ struct MainTabView: View {
     @EnvironmentObject var navigationState: NavigationState
     @EnvironmentObject var featureFlagService: FeatureFlagService
     @EnvironmentObject var leaderboardVM: LeaderboardViewModel // Use the VM passed from environment
+    @EnvironmentObject var workoutHistoryViewModel: WorkoutHistoryViewModel // Direct reference to class
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -464,7 +530,8 @@ struct MainTabView: View {
                 .tabItem { Label("Home", systemImage: "house.fill") }
                 .tag(Tab.home)
 
-            WorkoutHistoryView()
+            // Use a dedicated HistoryTabView to wrap WorkoutHistoryView
+            HistoryTabView()
                 .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
                 .tag(Tab.history)
 
@@ -562,6 +629,31 @@ struct MainTabView_Previews: PreviewProvider {
     }
 }
 #endif
+
+// Dedicated wrapper view for History tab
+struct HistoryTabView: View {
+    @EnvironmentObject var workoutHistoryViewModel: WorkoutHistoryViewModel
+    @Environment(\.modelContext) private var modelContext
+    
+    var body: some View {
+        NavigationStack {
+            // Directly create the view and environmentObject wrapper in a single statement
+            AnyView(
+                WorkoutHistoryView()
+                    .environmentObject(workoutHistoryViewModel)
+                    .onAppear {
+                        // Ensure the view model has the context
+                        workoutHistoryViewModel.modelContext = modelContext
+                        
+                        // Fetch workouts when the view appears
+                        Task {
+                            await workoutHistoryViewModel.fetchWorkouts()
+                        }
+                    }
+            )
+        }
+    }
+}
 
 // Add a convenience extension to check auth state (If not already defined elsewhere)
 // extension AuthState {
