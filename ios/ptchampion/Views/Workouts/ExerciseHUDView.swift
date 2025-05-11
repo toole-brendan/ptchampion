@@ -7,6 +7,7 @@ struct ExerciseHUDView: View {
     let elapsedTimeFormatted: String
     @Binding var isPaused: Bool
     @Binding var isSoundEnabled: Bool
+    let showControls: Bool // New parameter to control visibility of bottom controls
 
     var togglePauseAction: () -> Void
     var toggleSoundAction: () -> Void
@@ -40,33 +41,38 @@ struct ExerciseHUDView: View {
 
             Spacer() // Pushes feedback and controls down
 
-            Text(liveFeedback)
-                .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .padding()
-                .background(.thinMaterial) // Using system blur material for better transparency
-                .cornerRadius(AppTheme.GeneratedRadius.small)
-                .padding(.horizontal)
-            
-            // Bottom: Pause/Sound Controls
-            HStack(spacing: 30) {
-                Button { togglePauseAction() } label: {
-                    Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                }
-
-                Button { toggleSoundAction() } label: {
-                    Image(systemName: isSoundEnabled ? "speaker.wave.2.circle.fill" : "speaker.slash.circle.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 50, height: 50)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                }
+            // Only show feedback if controls are shown (not in ready state)
+            if showControls {
+                Text(liveFeedback)
+                    .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .padding()
+                    .background(.thinMaterial) // Using system blur material for better transparency
+                    .cornerRadius(AppTheme.GeneratedRadius.small)
+                    .padding(.horizontal)
             }
-            .padding()
+            
+            // Bottom: Pause/Sound Controls - only shown when workout is active
+            if showControls {
+                HStack(spacing: 30) {
+                    Button { togglePauseAction() } label: {
+                        Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
+
+                    Button { toggleSoundAction() } label: {
+                        Image(systemName: isSoundEnabled ? "speaker.wave.2.circle.fill" : "speaker.slash.circle.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
+                }
+                .padding()
+            }
         }
         .padding() // Overall padding for the overlay content
     }
@@ -89,6 +95,7 @@ struct ExerciseHUDView_Previews: PreviewProvider {
             elapsedTimeFormatted: "01:35",
             isPaused: $isPaused,
             isSoundEnabled: $isSoundEnabled,
+            showControls: true, // Show controls in this preview
             togglePauseAction: { },
             toggleSoundAction: { }
         )
