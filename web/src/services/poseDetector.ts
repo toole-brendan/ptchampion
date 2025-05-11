@@ -2,7 +2,8 @@ import {
   FilesetResolver,
   PoseLandmarker,
   DrawingUtils,
-  NormalizedLandmark
+  NormalizedLandmark,
+  PoseLandmarkerResult
 } from "@mediapipe/tasks-vision";
 
 export interface PoseDetectorResult {
@@ -36,13 +37,24 @@ export class PoseDetector {
     this.lastVideoTime = video.currentTime;
 
     const now = performance.now();
-    const result = this.landmarker.detectForVideo(video, now);
-
-    if (!result.landmarks?.[0]) return null;
-
+    
+    // Create a temporary result variable
+    let resultValue: PoseLandmarkerResult | undefined;
+    
+    // Call detectForVideo synchronously with a callback
+    this.landmarker.detectForVideo(video, now, (detectionResult) => {
+      resultValue = detectionResult;
+    });
+    
+    // If no results or no landmarks detected, return null
+    if (!resultValue || !resultValue.landmarks || resultValue.landmarks.length === 0) {
+      return null;
+    }
+    
+    // Return the first pose's landmarks
     return {
-      landmarks: result.landmarks[0],
-      worldLandmarks: result.worldLandmarks?.[0],
+      landmarks: resultValue.landmarks[0],
+      worldLandmarks: resultValue.worldLandmarks?.[0],
       timestamp: Date.now()
     };
   }

@@ -158,12 +158,11 @@ class PoseDetectorService {
         
         this.initialized = true;
         console.log("PoseDetectorService: Model initialized successfully");
-        return Promise.resolve();
       } catch (err) {
         this.modelError = err instanceof Error ? err.message : String(err);
         console.error("PoseDetectorService: Failed to initialize model:", this.modelError);
         const error = new PoseDetectorError(InitError.MODEL_LOAD, this.modelError);
-        return Promise.reject(error);
+        throw error;
       } finally {
         this.isModelLoading = false;
       }
