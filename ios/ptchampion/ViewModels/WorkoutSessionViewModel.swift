@@ -59,6 +59,9 @@ class WorkoutSessionViewModel: ObservableObject {
     @Published var showAlertForSaveError: Bool = false
     @Published var saveErrorMessage: String = ""
     
+    // Add a flag to ignore late pose detection results
+    @Published private var isWorkoutActive: Bool = false
+    
     // MARK: - Services
     private var _cameraService: CameraServiceProtocol
     var cameraService: CameraServiceProtocol { _cameraService }
@@ -117,10 +120,11 @@ class WorkoutSessionViewModel: ObservableObject {
     }
     
     deinit {
-        // Schedule cleanup on the main actor
-        Task { @MainActor in
-            cleanup()
-            print("WorkoutSessionViewModel for \(exerciseType.displayName) deinitialized.")
+        // Schedule cleanup on the main actor with weak self to avoid strong retention
+        Task { @MainActor [weak self] in
+            self?.cleanup()
+            // Don't reference self directly here - could be deallocated
+            print("WorkoutSessionViewModel deinitialized.")
         }
     }
     
@@ -139,6 +143,7 @@ class WorkoutSessionViewModel: ObservableObject {
             .compactMap { $0 }
             .sink { [weak self] frame in
                 guard let self = self,
+                      self.isWorkoutActive, // Only process if workout is active
                       !self.isPaused,
                       !isErrorState(self.workoutState),
                       self.workoutState != .finished else { return }
@@ -155,7 +160,9 @@ class WorkoutSessionViewModel: ObservableObject {
         poseDetectorService.detectedBodyPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] body in
-                guard let self = self else { return }
+                guard let self = self, 
+                      self.isWorkoutActive else { return } // Only process if workout is active
+                      
                 self.detectedBody = body
                 
                 if let body = body {
@@ -196,6 +203,9 @@ class WorkoutSessionViewModel: ObservableObject {
         
         print("Performing cleanup for \(exerciseType.displayName) workout")
         hasPerformedCleanup = true
+        
+        // Mark workout as inactive to prevent late callbacks from processing
+        isWorkoutActive = false
         
         // Cancel all publishers - this is safe to call multiple times
         cancellables.forEach { $0.cancel() }
@@ -271,6 +281,9 @@ class WorkoutSessionViewModel: ObservableObject {
             workoutState = .requestingPermission
             return
         }
+        
+        // Mark workout as active
+        isWorkoutActive = true
         
         // Only create a new session ID if we don't already have one
         // This prevents issues if startWorkout is called multiple times
