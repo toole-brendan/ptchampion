@@ -25,6 +25,9 @@ import {
   PoseLandmarkerResult
 } from "@mediapipe/tasks-vision";
 
+// --- APFT Scoring Import ---
+import { calculateSitupScore, formatScoreDisplay } from '../../grading/APFTScoring';
+
 // --- Sit-up specific logic constants (tuned for stricter form) ---
 const SITUP_THRESHOLD_ANGLE_DOWN = 160; // Min hip angle (shoulder-hip-knee) when DOWN (closer to 180)
 const SITUP_THRESHOLD_ANGLE_UP = 80;  // Max hip angle (shoulder-hip-knee) when UP (more acute)
@@ -48,6 +51,9 @@ const SitupTracker: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // APFT scoring state
+  const [situpScore, setSitupScore] = useState<number>(0);
 
   // Camera state
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -436,7 +442,12 @@ const SitupTracker: React.FC = () => {
     if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
     }
-    console.log(`Workout finished! Reps: ${repCount}, Time: ${formatTime(timer)}`);
+
+    // Calculate final APFT score
+    const finalScore = calculateSitupScore(repCount);
+    setSitupScore(finalScore);
+
+    console.log(`Workout finished! Reps: ${repCount}, Time: ${formatTime(timer)}, APFT Score: ${finalScore}`);
 
     // Save workout session data (Live Tracking)
     if (repCount > 0 && user) {
@@ -449,7 +460,7 @@ const SitupTracker: React.FC = () => {
           exercise_id: EXERCISE_ID,
           reps: repCount,
           duration: timer,
-          notes: `Tracked via webcam. State: ${situpState}`
+          notes: `Tracked via webcam. State: ${situpState}, APFT Score: ${finalScore}`
         };
         // Capture response to get grade
         const response: ExerciseResponse = await logExercise(exerciseData); 
@@ -511,6 +522,16 @@ const SitupTracker: React.FC = () => {
     return `${minutes}:${seconds}`;
   };
 
+  // Effect to update APFT score when rep count changes
+  useEffect(() => {
+    if (repCount > 0) {
+      const score = calculateSitupScore(repCount);
+      setSitupScore(score);
+    } else {
+      setSitupScore(0);
+    }
+  }, [repCount]);
+
   // --- JSX ---
   return (
     <div className="space-y-6">
@@ -544,9 +565,10 @@ const SitupTracker: React.FC = () => {
             {permissionGranted === false && !isModelLoading && !modelError && ( <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 p-4 text-center text-white"><VideoOff className="mb-2 size-12 text-destructive" /><p className="mb-1 font-semibold">Camera Access Issue</p><p className="text-sm">{cameraError || "Could not access camera."}</p></div> )}
           </div>
           {/* Stats Display */}
-          <div className="grid grid-cols-2 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-4 text-center">
             <div><p className="text-sm font-medium text-muted-foreground">Reps</p><p className="text-4xl font-bold text-foreground">{repCount}</p></div>
             <div><p className="text-sm font-medium text-muted-foreground">Time</p><p className="flex items-center justify-center text-4xl font-bold text-foreground"><Timer className="mr-1 inline-block size-6" />{formatTime(timer)}</p></div>
+            <div><p className="text-sm font-medium text-muted-foreground">APFT Score</p><p className="text-4xl font-bold text-foreground">{situpScore}</p></div>
           </div>
 
           {/* New Instructions Section */}
@@ -607,6 +629,30 @@ const SitupTracker: React.FC = () => {
             )}
         </CardFooter>
       </Card>
+
+      {isFinished && (
+        <div className="mt-4 w-full rounded-lg bg-muted p-4">
+          <h3 className="mb-2 text-lg font-semibold">Workout Summary</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Reps</p>
+              <p className="text-2xl font-semibold">{repCount}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Time</p>
+              <p className="text-2xl font-semibold">{formatTime(timer)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">APFT Score</p>
+              <p className="text-2xl font-semibold">{situpScore}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Rep-to-Score</p>
+              <p className="text-2xl font-semibold">{formatScoreDisplay(repCount, situpScore)}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

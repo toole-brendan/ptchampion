@@ -2,12 +2,13 @@
  * PushupTrackerViewModel.ts
  * 
  * ViewModel for pushup tracking session. 
- * Coordinates between PoseDetectorService, PushupGrader, and UI components.
+ * Coordinates between PoseDetectorService, PushupAnalyzer, and UI components.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NormalizedLandmark, PoseLandmarkerResult } from '@mediapipe/tasks-vision';
-import { ExerciseType, PushupGrader, GradingResult } from '../grading';
+import { ExerciseType } from '../grading';
+import { PushupAnalyzer, PushupFormAnalysis } from '../grading/PushupAnalyzer';
 import { poseDetectorService } from '../services/PoseDetectorService';
 import { logExercise } from '../lib/apiClient';
 import { LogExerciseRequest, ExerciseResponse } from '../lib/types';
@@ -19,12 +20,12 @@ import { BaseTrackerViewModel, ExerciseResult, SessionStatus, TrackerErrorType }
 export class PushupTrackerViewModel extends BaseTrackerViewModel {
   private videoRef: React.RefObject<HTMLVideoElement> | null = null;
   private canvasRef: React.RefObject<HTMLCanvasElement> | null = null;
-  private grader: PushupGrader;
+  private analyzer: PushupAnalyzer;
   private submitting: boolean = false;
 
   constructor() {
     super(ExerciseType.PUSHUP);
-    this.grader = new PushupGrader();
+    this.analyzer = new PushupAnalyzer();
   }
 
   /**
@@ -79,33 +80,52 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   private handlePoseResults = (result: PoseLandmarkerResult): void => {
     if (result.landmarks && result.landmarks.length > 0) {
       const landmarks = result.landmarks[0];
+      const timestamp = Date.now();
       
-      // Process the landmarks through the grader
-      const gradingResult = this.grader.processPose(landmarks);
+      // Process the landmarks through the analyzer
+      const analysis = this.analyzer.analyzePushupForm(landmarks, timestamp);
       
-      // Update rep count if a rep was completed
-      if (gradingResult.repIncrement > 0) {
-        this._repCount += gradingResult.repIncrement;
+      // Check if this is a completed rep
+      if (this.lastAnalysis && !this.lastAnalysis.isUpPosition && analysis.isUpPosition) {
+        // A rep is completed when transitioning from down to up position
+        if (analysis.isValidRep) {
+          this._repCount += 1;
+        }
       }
       
-      // Update form feedback if provided
-      if (gradingResult.formFault) {
-        this._formFeedback = gradingResult.formFault;
-        
-        // Clear feedback after 2 seconds
-        setTimeout(() => {
-          if (this._formFeedback === gradingResult.formFault) {
-            this._formFeedback = null;
-          }
-        }, 2000);
+      // Update form feedback if there are issues
+      if (analysis.isBodySagging) {
+        this._formFeedback = "Body sagging";
+      } else if (analysis.isBodyPiking) {
+        this._formFeedback = "Body piking";
+      } else if (analysis.isWorming) {
+        this._formFeedback = "Worming detected";
+      } else if (analysis.handsLiftedOff) {
+        this._formFeedback = "Hands lifted off ground";
+      } else if (analysis.feetLiftedOff) {
+        this._formFeedback = "Feet lifted off ground";
+      } else if (analysis.kneesTouchingGround) {
+        this._formFeedback = "Knees touching ground";
+      } else if (analysis.bodyTouchingGround) {
+        this._formFeedback = "Body touching ground";
+      } else if (analysis.isPaused) {
+        this._formFeedback = "Paused too long";
+      } else {
+        this._formFeedback = null;
       }
       
-      // Update form score if provided
-      if (gradingResult.formScore !== undefined) {
-        this._formScore = gradingResult.formScore;
-      }
+      // Update form score based on angles and position
+      const elbowAngle = Math.min(analysis.leftElbowAngle, analysis.rightElbowAngle);
+      const formScore = analysis.isValidRep ? 100 : 70;
+      this._formScore = formScore;
+      
+      // Store the last analysis for next comparison
+      this.lastAnalysis = analysis;
     }
   };
+
+  // Store the last analysis for rep counting
+  private lastAnalysis: PushupFormAnalysis | null = null;
 
   /**
    * Start or resume the tracking session
@@ -120,8 +140,9 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
       return;
     }
 
-    // Reset the grader to ensure clean state
-    this.grader.reset();
+    // Reset the analyzer to ensure clean state
+    this.analyzer.reset();
+    this.lastAnalysis = null;
 
     // Start pose detection with callback to process results
     const detectionStarted = poseDetectorService.startDetection(
@@ -239,7 +260,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
    */
   resetSession(): void {
     super.resetSession();
-    this.grader.reset();
+    this.analyzer.reset();
   }
 
   /**

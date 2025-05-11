@@ -91,4 +91,39 @@ export interface AuthState {
   token: string | null;
   loading: boolean;
   error: string | null;
+}
+
+// MediaPipe Holistic Types
+export interface NormalizedLandmark {
+  x: number;
+  y: number;
+  z: number;
+  visibility?: number;
+}
+
+export interface HolisticResults {
+  poseLandmarks: NormalizedLandmark[];
+  poseWorldLandmarks: NormalizedLandmark[];
+  faceLandmarks?: NormalizedLandmark[];
+  leftHandLandmarks?: NormalizedLandmark[];
+  rightHandLandmarks?: NormalizedLandmark[];
+  segmentationMask?: ImageBitmap;
+  image: HTMLCanvasElement | HTMLVideoElement | HTMLImageElement;
+}
+
+export interface CalibrationData {
+  poseLandmarks: NormalizedLandmark[];
+  poseWorldLandmarks: NormalizedLandmark[];
+  timestamp: number;
+  exerciseType: string;
+}
+
+export interface HolisticConfig {
+  modelComplexity?: 0 | 1 | 2;
+  smoothLandmarks?: boolean;
+  enableSegmentation?: boolean;
+  smoothSegmentation?: boolean;
+  refineFaceLandmarks?: boolean;
+  minDetectionConfidence?: number;
+  minTrackingConfidence?: number;
 } 
