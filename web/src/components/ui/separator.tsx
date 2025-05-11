@@ -16,7 +16,7 @@ const separatorVariants = cva(
         dark: "bg-deep-ops/10",
       },
       size: {
-        default: "h-[1px]",
+        default: "h-px",
         thin: "h-[0.5px]",
         thick: "h-[2px]",
       },
@@ -44,7 +44,7 @@ const Separator = React.forwardRef<
   ) => (
     <div className={cn("flex items-center w-full", orientation === "vertical" && "flex-col h-full")}>
       {label && orientation === "horizontal" ? (
-        <div className="flex items-center w-full gap-3">
+        <div className="flex w-full items-center gap-3">
           <SeparatorPrimitive.Root
             ref={ref}
             decorative={decorative}
@@ -56,7 +56,7 @@ const Separator = React.forwardRef<
             )}
             {...props}
           />
-          <span className="shrink-0 text-xs font-medium text-tactical-gray whitespace-nowrap">{label}</span>
+          <span className="shrink-0 whitespace-nowrap text-xs font-medium text-tactical-gray">{label}</span>
           <SeparatorPrimitive.Root
             decorative={decorative}
             orientation={orientation}

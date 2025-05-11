@@ -172,11 +172,17 @@ export const registerUser = (data: RegisterUserRequest): Promise<UserResponse> =
 
 export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
   console.log('loginUser function called');
-  const response = await apiRequest<any>('/auth/login', 'POST', data, false);
+  
+  // Define type for backend response which might be different from frontend
+  interface BackendLoginResponse {
+    access_token?: string;
+    user?: UserResponse;
+  }
+  
+  const response = await apiRequest<BackendLoginResponse>('/auth/login', 'POST', data, false);
   
   // Log the full response object
   console.log('LOGIN RESPONSE FULL DETAILS:', response);
-  console.log('response.token exists?', response && response.token ? true : false);
   console.log('response.access_token exists?', response && response.access_token ? true : false);
   console.log('response type:', typeof response);
   console.log('response keys:', response ? Object.keys(response) : 'null');
@@ -184,7 +190,7 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
   // Convert backend response format to frontend expected format
   const normalizedResponse: LoginResponse = {
     token: response?.access_token || '',
-    user: response?.user || null
+    user: response?.user || {} as UserResponse
   };
   
   // Store the token securely upon successful login
@@ -226,6 +232,37 @@ export const updateCurrentUser = (data: UpdateUserRequest): Promise<UserResponse
 };
 
 // --- Exercise Endpoints ---
+
+/**
+ * Helper function to retry API calls for transient errors
+ * @param fn The function to retry
+ * @param attempts Maximum number of retry attempts
+ * @returns Promise with the result of the function
+ */
+export const withRetry = async <T>(fn: () => Promise<T>, attempts: number = 3): Promise<T> => {
+  try {
+    return await fn();
+  } catch (error: unknown) {
+    // Only retry for server errors (5xx)
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (attempts > 1 && errorMessage.includes('HTTP error 5')) {
+      console.log(`Retrying API call, ${attempts - 1} attempts remaining`);
+      // Wait with exponential backoff before retrying
+      await new Promise(resolve => setTimeout(resolve, 1000 * (4 - attempts)));
+      return withRetry(fn, attempts - 1);
+    }
+    throw error;
+  }
+};
+
+/**
+ * Type-safe helper to log exercise results
+ * @param data Exercise result data
+ * @returns Promise with exercise response
+ */
+export const logExerciseResult = (data: LogExerciseRequest): Promise<ExerciseResponse> => {
+  return withRetry(() => apiRequest<ExerciseResponse>('/exercises', 'POST', data, true));
+};
 
 export const logExercise = (data: LogExerciseRequest): Promise<ExerciseResponse> => {
   return apiRequest<ExerciseResponse>('/exercises', 'POST', data, true);
@@ -329,7 +366,7 @@ export const checkServerHealth = async (): Promise<{ status: string, responseTim
   const startTime = performance.now();
   try {
     // Use a simple endpoint that should be fast to respond
-    await apiRequest<any>('/health', 'GET', null, false);
+    await apiRequest<{ status: string }>('/health', 'GET', null, false);
     const endTime = performance.now();
     return { 
       status: 'ok', 

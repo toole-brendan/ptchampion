@@ -29,7 +29,7 @@ const Switch = React.forwardRef<
     </SwitchPrimitives.Root>
     {(label || description) && (
       <div className="flex flex-col">
-        {label && <span className="text-sm font-semibold">{label}</span>}
+        {label && <span className="font-semibold text-sm">{label}</span>}
         {description && <span className="text-xs text-tactical-gray">{description}</span>}
       </div>
     )}

@@ -1,5 +1,4 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import { User, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../lib/authContext';
 import { useTheme } from '@/lib/themeContext';
@@ -22,24 +21,24 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between bg-deep-ops text-cream px-content shadow-medium">
+        <header className="flex h-16 items-center justify-between bg-deep-ops px-content text-cream shadow-medium">
           <div className="flex-1">
-            <h1 className="font-heading text-brass-gold text-xl font-bold flex items-center">
+            <h1 className="flex items-center font-heading text-xl text-brass-gold">
               {userName ? `Hello, ${userName}` : "PT Champion"}
               <SyncIndicator />
             </h1>
           </div>
-          <div className="md:flex items-center gap-2">
+          <div className="items-center gap-2 md:flex">
             {/* Theme toggle */}
             <button 
               onClick={toggleTheme} 
-              className="flex size-10 items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold hover:bg-brass-gold/30"
+              className="bg-brass-gold/20 hover:bg-brass-gold/30 flex size-10 items-center justify-center rounded-full text-brass-gold"
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             >
               {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
             {/* Profile Menu (Can be expanded later) */}
-            <div className="flex size-10 items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold hover:bg-brass-gold/30 cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-brass-gold focus:ring-opacity-50">
+            <div className="bg-brass-gold/20 hover:bg-brass-gold/30 focus:ring/50 flex size-10 cursor-pointer items-center justify-center rounded-full text-brass-gold transition-colors focus:outline-none focus:ring-2 focus:ring-brass-gold">
               <User size={20} />
             </div>
           </div>

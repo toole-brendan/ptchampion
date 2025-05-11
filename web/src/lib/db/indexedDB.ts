@@ -6,12 +6,17 @@
  */
 
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
+import { ExerciseResult } from '../../viewmodels/TrackerViewModel';
+import { ExerciseId } from '../../constants/exercises';
+import { LogExerciseRequest } from '../types';
 
 // Database name and version
 const DB_NAME = 'pt-champion-db';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Incrementing version for schema changes
 
 // Define structure for the value within the userData store
+// Used in the PTChampionDB interface below
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface UserDataValue {
   id: string;
   displayName: string;
@@ -25,6 +30,8 @@ interface UserDataValue {
 }
 
 // Define structure for the value within the workouts store
+// Used in the PTChampionDB interface below
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface WorkoutValue {
    id: string;
    exerciseType: string;
@@ -36,6 +43,19 @@ interface WorkoutValue {
    date: string;
    synced: boolean;
    createdAt: number;
+}
+
+// Define structure for the pendingExercises store
+export interface PendingExerciseValue {
+  id: string; // UUID
+  exerciseId: number; // From ExerciseId enum
+  reps?: number;
+  duration?: number;
+  distance?: number;
+  formScore?: number;
+  notes?: string;
+  createdAt: number;
+  syncAttempts: number;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -74,6 +94,14 @@ interface PTChampionDB extends DBSchema {
       lastSynced: number;
     };
   };
+  pendingExercises: {
+    key: string; // UUID
+    value: PendingExerciseValue;
+    indexes: {
+      'by-created': number;
+      'by-sync-attempts': number;
+    };
+  };
 }
 
 // Workout type alias for easier reference
@@ -89,7 +117,7 @@ let dbPromise: Promise<IDBPDatabase<PTChampionDB>> | null = null;
 const initDB = async (): Promise<IDBPDatabase<PTChampionDB>> => {
   if (!dbPromise) {
     dbPromise = openDB<PTChampionDB>(DB_NAME, DB_VERSION, {
-      upgrade(db: IDBPDatabase<PTChampionDB>) {
+      upgrade(db: IDBPDatabase<PTChampionDB>, oldVersion) {
         // Create workouts store
         if (!db.objectStoreNames.contains('workouts')) {
           const workoutStore = db.createObjectStore('workouts', { keyPath: 'id' });
@@ -101,6 +129,13 @@ const initDB = async (): Promise<IDBPDatabase<PTChampionDB>> => {
         // Create userData store
         if (!db.objectStoreNames.contains('userData')) {
           db.createObjectStore('userData', { keyPath: 'id' });
+        }
+        
+        // Add pendingExercises store in version 2
+        if (oldVersion < 2 && !db.objectStoreNames.contains('pendingExercises')) {
+          const pendingStore = db.createObjectStore('pendingExercises', { keyPath: 'id' });
+          pendingStore.createIndex('by-created', 'createdAt');
+          pendingStore.createIndex('by-sync-attempts', 'syncAttempts');
         }
       },
     });
@@ -262,15 +297,134 @@ export const clearAllData = async (): Promise<boolean> => {
     const db = await initDB();
     const tx1 = db.transaction('workouts', 'readwrite');
     const tx2 = db.transaction('userData', 'readwrite');
+    const tx3 = db.transaction('pendingExercises', 'readwrite');
     
     await tx1.objectStore('workouts').clear();
     await tx2.objectStore('userData').clear();
+    await tx3.objectStore('pendingExercises').clear();
     
     await tx1.done;
     await tx2.done;
+    await tx3.done;
     return true;
   } catch (error) {
     console.error('Error clearing all data from IndexedDB:', error);
+    return false;
+  }
+};
+
+/**
+ * Generate a unique ID (UUID v4-like)
+ */
+const generateUUID = (): string => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+/**
+ * Convert ExerciseResult to LogExerciseRequest format
+ */
+export const resultToRequestData = (result: ExerciseResult, exerciseId: ExerciseId): LogExerciseRequest => {
+  return {
+    exercise_id: exerciseId,
+    reps: result.repCount,
+    duration: result.duration,
+    distance: result.distance,
+    notes: result.formScore ? `Form Score: ${result.formScore.toFixed(0)}` : undefined
+  };
+};
+
+/**
+ * Store an offline exercise result
+ * @param result Exercise result to store
+ * @param exerciseId The ID of the exercise
+ * @returns Promise with boolean success indicator and the ID of the stored entry
+ */
+export const storeOfflineWorkout = async (
+  result: ExerciseResult,
+  exerciseId: ExerciseId
+): Promise<{ success: boolean; id: string }> => {
+  try {
+    const db = await initDB();
+    const tx = db.transaction('pendingExercises', 'readwrite');
+    const store = tx.objectStore('pendingExercises');
+    
+    const id = generateUUID();
+    const pendingExercise: PendingExerciseValue = {
+      id,
+      exerciseId,
+      reps: result.repCount,
+      duration: result.duration,
+      distance: result.distance,
+      formScore: result.formScore,
+      notes: result.formScore ? `Form Score: ${result.formScore.toFixed(0)}` : undefined,
+      createdAt: Date.now(),
+      syncAttempts: 0
+    };
+    
+    await store.add(pendingExercise);
+    await tx.done;
+    
+    return { success: true, id };
+  } catch (error) {
+    console.error('Error storing offline workout:', error);
+    return { success: false, id: '' };
+  }
+};
+
+/**
+ * Get all pending exercises that need to be synced
+ */
+export const getPendingExercises = async (): Promise<PendingExerciseValue[]> => {
+  try {
+    const db = await initDB();
+    return db.getAll('pendingExercises');
+  } catch (error) {
+    console.error('Error getting pending exercises:', error);
+    return [];
+  }
+};
+
+/**
+ * Update sync attempt count for a pending exercise
+ */
+export const incrementSyncAttempt = async (id: string): Promise<boolean> => {
+  try {
+    const db = await initDB();
+    const tx = db.transaction('pendingExercises', 'readwrite');
+    const store = tx.objectStore('pendingExercises');
+    
+    const exercise = await store.get(id);
+    if (exercise) {
+      exercise.syncAttempts += 1;
+      await store.put(exercise);
+    }
+    
+    await tx.done;
+    return true;
+  } catch (error) {
+    console.error('Error incrementing sync attempt count:', error);
+    return false;
+  }
+};
+
+/**
+ * Delete a pending exercise after successful sync
+ */
+export const deletePendingExercise = async (id: string): Promise<boolean> => {
+  try {
+    const db = await initDB();
+    const tx = db.transaction('pendingExercises', 'readwrite');
+    const store = tx.objectStore('pendingExercises');
+    
+    await store.delete(id);
+    await tx.done;
+    return true;
+  } catch (error) {
+    console.error('Error deleting pending exercise:', error);
     return false;
   }
 }; 

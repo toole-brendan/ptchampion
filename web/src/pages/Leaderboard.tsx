@@ -1,14 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // For user avatars
 import {
     Select,
@@ -35,24 +26,24 @@ import { AlertCircle, Loader2, Trophy, Medal, MapPin } from 'lucide-react';
 const MilitaryCorners: React.FC = () => (
   <>
     {/* Military corner cutouts - top left and right */}
-    <div className="absolute top-0 left-0 w-[15px] h-[15px] bg-background"></div>
-    <div className="absolute top-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute left-0 top-0 size-[15px] bg-background"></div>
+    <div className="absolute right-0 top-0 size-[15px] bg-background"></div>
     
     {/* Military corner cutouts - bottom left and right */}
-    <div className="absolute bottom-0 left-0 w-[15px] h-[15px] bg-background"></div>
-    <div className="absolute bottom-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute bottom-0 left-0 size-[15px] bg-background"></div>
+    <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
     
     {/* Diagonal lines for corners */}
-    <div className="absolute top-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-top-left"></div>
-    <div className="absolute top-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-top-right"></div>
-    <div className="absolute bottom-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-bottom-left"></div>
-    <div className="absolute bottom-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-bottom-right"></div>
+    <div className="bg-tactical-gray/50 absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45"></div>
   </>
 );
 
 // Header divider component
 const HeaderDivider: React.FC = () => (
-  <div className="h-[1px] w-16 bg-brass-gold mx-auto my-2"></div>
+  <div className="mx-auto my-2 h-px w-16 bg-brass-gold"></div>
 );
 
 const exerciseOptions = ['overall', 'pushup', 'situp', 'pullup', 'running'];
@@ -205,7 +196,7 @@ const Leaderboard: React.FC = () => {
 
   return (
     <div className="space-y-section">
-      <div className="relative overflow-hidden rounded-card bg-card-background p-content shadow-medium">
+      <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
         <MilitaryCorners />
         <div className="mb-4 text-center">
           <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
@@ -219,7 +210,7 @@ const Leaderboard: React.FC = () => {
       {/* Geolocation Alert - Show if needed */}
       {scopeFilter === scopeOptions[1] && geoState.error && (
         <Alert variant="destructive" className="rounded-card">
-          <AlertCircle className="h-5 w-5" />
+          <AlertCircle className="size-5" />
           <AlertTitle className="font-heading text-sm">Location Error</AlertTitle>
           <AlertDescription>
             {geoState.error}
@@ -237,8 +228,8 @@ const Leaderboard: React.FC = () => {
       
       {/* Location Status Alert - Only show when actively looking for location */}
       {geoState.isLoading && (
-        <Alert className="rounded-card bg-olive-mist/10 border-olive-mist">
-          <MapPin className="h-5 w-5 text-brass-gold" />
+        <Alert className="bg-olive-mist/10 rounded-card border-olive-mist">
+          <MapPin className="size-5 text-brass-gold" />
           <AlertTitle className="font-heading text-sm">Getting your location</AlertTitle>
           <AlertDescription>
             Please allow location access to view the local leaderboard.
@@ -249,7 +240,7 @@ const Leaderboard: React.FC = () => {
       {/* API Error Alert */}
       {isError && !geoState.isLoading && error instanceof Error && error.message !== 'Location permission required' && (
         <Alert variant="destructive" className="rounded-card">
-          <AlertCircle className="h-5 w-5" />
+          <AlertCircle className="size-5" />
           <AlertTitle className="font-heading text-sm">Error loading leaderboard</AlertTitle>
           <AlertDescription>
             {error.message}
@@ -266,12 +257,12 @@ const Leaderboard: React.FC = () => {
       )}
 
       {/* Leaderboard Filters */}
-      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
         <MilitaryCorners />
         <div className="rounded-t-card bg-deep-ops p-content">
           <div className="flex items-center">
             <Trophy className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
               {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Rankings
             </h2>
           </div>
@@ -286,9 +277,9 @@ const Leaderboard: React.FC = () => {
           {/* Filter Controls */}
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="exercise-filter" className="text-sm font-semibold uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
+              <Label htmlFor="exercise-filter" className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
-                <SelectTrigger id="exercise-filter" className="bg-cream border-army-tan/30">
+                <SelectTrigger id="exercise-filter" className="border-army-tan/30 bg-cream">
                   <SelectValue placeholder="Select Exercise" />
                 </SelectTrigger>
                 <SelectContent>
@@ -302,9 +293,9 @@ const Leaderboard: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="scope-filter" className="text-sm font-semibold uppercase tracking-wide text-tactical-gray">Leaderboard Scope</Label>
+              <Label htmlFor="scope-filter" className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Leaderboard Scope</Label>
               <Select value={scopeFilter} onValueChange={setScopeFilter}>
-                <SelectTrigger id="scope-filter" className="bg-cream border-army-tan/30">
+                <SelectTrigger id="scope-filter" className="border-army-tan/30 bg-cream">
                   <SelectValue placeholder="Select Scope" />
                 </SelectTrigger>
                 <SelectContent>
@@ -318,19 +309,19 @@ const Leaderboard: React.FC = () => {
 
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-12 w-12 animate-spin text-brass-gold" />
-              <p className="mt-4 text-center text-tactical-gray font-semibold">
+              <Loader2 className="size-12 animate-spin text-brass-gold" />
+              <p className="mt-4 text-center font-semibold text-tactical-gray">
                 Loading leaderboard data...
               </p>
             </div>
           ) : processedLeaderboard.length > 0 ? (
-            <div className="overflow-hidden rounded-card border border-olive-mist/20">
+            <div className="border-olive-mist/20 overflow-hidden rounded-card border">
               <Table className="w-full">
                 <TableHeader>
                   <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
-                    <TableHead className="w-[80px] font-heading uppercase text-tactical-gray text-xs tracking-wider">Rank</TableHead>
-                    <TableHead className="font-heading uppercase text-tactical-gray text-xs tracking-wider">User</TableHead>
-                    <TableHead className="text-right font-heading uppercase text-tactical-gray text-xs tracking-wider">Score</TableHead>
+                    <TableHead className="w-[80px] font-heading text-xs uppercase tracking-wider text-tactical-gray">Rank</TableHead>
+                    <TableHead className="font-heading text-xs uppercase tracking-wider text-tactical-gray">User</TableHead>
+                    <TableHead className="text-right font-heading text-xs uppercase tracking-wider text-tactical-gray">Score</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -353,7 +344,7 @@ const Leaderboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-3">
-                          <Avatar className="size-8 border-2 border-brass-gold/20">
+                          <Avatar className="border-brass-gold/20 size-8 border-2">
                             <AvatarImage src={user.avatar || undefined} alt={user.name} />
                             <AvatarFallback className="bg-army-tan/20 text-xs font-medium text-tactical-gray">
                               {getInitials(user.name)}
@@ -362,7 +353,7 @@ const Leaderboard: React.FC = () => {
                           <span className="font-semibold text-command-black">{user.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-heading tabular-nums text-brass-gold text-lg">{user.score}</TableCell>
+                      <TableCell className="text-right font-heading text-lg tabular-nums text-brass-gold">{user.score}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

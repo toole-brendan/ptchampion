@@ -8,13 +8,17 @@ interface HolisticCalibrationProps {
   onCalibrationComplete: (calibrationData: CalibrationData) => void;
 }
 
+interface CalibrationResults {
+  poseLandmarks: unknown[];
+  poseWorldLandmarks?: unknown[];
+}
+
 const HolisticCalibration: React.FC<HolisticCalibrationProps> = ({
   exerciseType,
   onCalibrationComplete,
 }) => {
-  const [isCalibrating, setIsCalibrating] = useState(false);
   const [calibrationInstructions, setCalibrationInstructions] = useState('');
-  const calibrationDataRef = useRef<any>(null);
+  const calibrationDataRef = useRef<CalibrationData | null>(null);
 
   // Set the appropriate instructions based on exercise type
   React.useEffect(() => {
@@ -37,7 +41,7 @@ const HolisticCalibration: React.FC<HolisticCalibrationProps> = ({
   }, [exerciseType]);
 
   // Handle calibration completion
-  const handleCalibrationComplete = (results: any) => {
+  const handleCalibrationComplete = (results: CalibrationResults) => {
     if (!results.poseLandmarks) {
       console.error('No pose landmarks detected during calibration');
       return;
@@ -51,35 +55,29 @@ const HolisticCalibration: React.FC<HolisticCalibrationProps> = ({
     };
     
     calibrationDataRef.current = calibrationData;
-    setIsCalibrating(false);
     
     onCalibrationComplete(calibrationData);
   };
 
-  // Start the calibration process
-  const startCalibration = () => {
-    setIsCalibrating(true);
-  };
-
   return (
-    <div className="flex flex-col items-center w-full">
-      <Card className="p-4 mb-4">
-        <div className="text-center mb-4">
-          <h3 className="text-xl font-semibold">Calibration for {exerciseType.toUpperCase()}</h3>
-          <p className="text-gray-600 mt-1">{calibrationInstructions}</p>
+    <div className="flex w-full flex-col items-center">
+      <Card className="mb-4 p-4">
+        <div className="mb-4 text-center">
+          <h3 className="font-semibold text-xl">Calibration for {exerciseType.toUpperCase()}</h3>
+          <p className="mt-1 text-gray-600">{calibrationInstructions}</p>
         </div>
       </Card>
       
-      <div className="w-full max-w-3xl relative aspect-video">
+      <div className="relative aspect-video w-full max-w-3xl">
         <MediaPipeHolisticSetup
           onCalibrationComplete={handleCalibrationComplete}
         />
       </div>
       
       {calibrationDataRef.current && (
-        <div className="mt-6 p-4 bg-green-100 border border-green-400 rounded-md w-full max-w-3xl">
-          <p className="text-green-800 font-medium">Calibration complete! You can now proceed with your exercise.</p>
-          <p className="text-sm text-green-700 mt-1">Captured {calibrationDataRef.current.poseLandmarks.length} landmarks at {new Date(calibrationDataRef.current.timestamp).toLocaleTimeString()}</p>
+        <div className="mt-6 w-full max-w-3xl rounded-md border border-green-400 bg-green-100 p-4">
+          <p className="font-medium text-green-800">Calibration complete! You can now proceed with your exercise.</p>
+          <p className="mt-1 text-sm text-green-700">Captured {calibrationDataRef.current.poseLandmarks.length} landmarks at {new Date(calibrationDataRef.current.timestamp).toLocaleTimeString()}</p>
         </div>
       )}
     </div>

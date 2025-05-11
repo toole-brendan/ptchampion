@@ -19,14 +19,14 @@ export default function UnsupportedFeature({
   return (
     <Card variant="default" className={`bg-cream-dark/50 ${className}`}>
       <CardContent className="pt-md">
-        <div className="flex flex-col items-center text-center space-y-4">
+        <div className="flex flex-col items-center space-y-4 text-center">
           {mobileOnly ? (
-            <div className="rounded-full bg-brass-gold/20 p-3">
-              <Smartphone className="h-6 w-6 text-brass-gold" />
+            <div className="bg-brass-gold/20 rounded-full p-3">
+              <Smartphone className="size-6 text-brass-gold" />
             </div>
           ) : (
-            <div className="rounded-full bg-warning/20 p-3">
-              <AlertCircle className="h-6 w-6 text-warning" />
+            <div className="bg-warning/20 rounded-full p-3">
+              <AlertCircle className="size-6 text-warning" />
             </div>
           )}
           
@@ -34,7 +34,7 @@ export default function UnsupportedFeature({
           <Text variant="body">{description}</Text>
           
           {mobileOnly && (
-            <div className="bg-brass-gold/10 rounded-md p-sm w-full">
+            <div className="bg-brass-gold/10 w-full rounded-md p-sm">
               <Text variant="small" weight="semibold">
                 This feature is available in our mobile app
               </Text>

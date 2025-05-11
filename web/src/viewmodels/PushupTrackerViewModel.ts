@@ -6,13 +6,15 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { NormalizedLandmark, PoseLandmarkerResult } from '@mediapipe/tasks-vision';
+import { PoseLandmarkerResult } from '@mediapipe/tasks-vision';
 import { ExerciseType } from '../grading';
 import { PushupAnalyzer, PushupFormAnalysis } from '../grading/PushupAnalyzer';
 import { poseDetectorService } from '../services/PoseDetectorService';
-import { logExercise } from '../lib/apiClient';
+import { logExerciseResult } from '../lib/apiClient';
 import { LogExerciseRequest, ExerciseResponse } from '../lib/types';
 import { BaseTrackerViewModel, ExerciseResult, SessionStatus, TrackerErrorType } from './TrackerViewModel';
+import { Subscription } from 'rxjs';
+import { ExerciseId } from '../constants/exercises';
 
 /**
  * Class implementation of PushupTrackerViewModel
@@ -22,6 +24,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   private canvasRef: React.RefObject<HTMLCanvasElement> | null = null;
   private analyzer: PushupAnalyzer;
   private submitting: boolean = false;
+  private poseSubscription: Subscription | null = null;
 
   constructor() {
     super(ExerciseType.PUSHUP);
@@ -81,10 +84,10 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     if (result.landmarks && result.landmarks.length > 0) {
       const landmarks = result.landmarks[0];
       const timestamp = Date.now();
-      
+
       // Process the landmarks through the analyzer
       const analysis = this.analyzer.analyzePushupForm(landmarks, timestamp);
-      
+
       // Check if this is a completed rep
       if (this.lastAnalysis && !this.lastAnalysis.isUpPosition && analysis.isUpPosition) {
         // A rep is completed when transitioning from down to up position
@@ -92,7 +95,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
           this._repCount += 1;
         }
       }
-      
+
       // Update form feedback if there are issues
       if (analysis.isBodySagging) {
         this._formFeedback = "Body sagging";
@@ -113,12 +116,10 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
       } else {
         this._formFeedback = null;
       }
-      
-      // Update form score based on angles and position
-      const elbowAngle = Math.min(analysis.leftElbowAngle, analysis.rightElbowAngle);
+
       const formScore = analysis.isValidRep ? 100 : 70;
       this._formScore = formScore;
-      
+
       // Store the last analysis for next comparison
       this.lastAnalysis = analysis;
     }
@@ -144,14 +145,20 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     this.analyzer.reset();
     this.lastAnalysis = null;
 
-    // Start pose detection with callback to process results
-    const detectionStarted = poseDetectorService.startDetection(
+    // Subscribe to the pose$ stream for continuous updates
+    this.poseSubscription = poseDetectorService.pose$.subscribe(this.handlePoseResults);
+
+    // Start pose detection
+    const detectionStarted = poseDetectorService.start(
       this.videoRef.current,
-      this.canvasRef?.current || null,
-      this.handlePoseResults
+      this.canvasRef?.current || null
     );
 
     if (!detectionStarted) {
+      if (this.poseSubscription) {
+        this.poseSubscription.unsubscribe();
+        this.poseSubscription = null;
+      }
       this.setError(TrackerErrorType.UNKNOWN, "Failed to start pose detection");
       return;
     }
@@ -171,7 +178,13 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     }
 
     // Stop pose detection
-    poseDetectorService.stopDetection();
+    poseDetectorService.stop();
+
+    // Unsubscribe from pose events
+    if (this.poseSubscription) {
+      this.poseSubscription.unsubscribe();
+      this.poseSubscription = null;
+    }
 
     // Pause timer
     this.stopTimer();
@@ -189,7 +202,14 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
 
     // Stop tracking if active
     if (this._status === SessionStatus.ACTIVE) {
-      poseDetectorService.stopDetection();
+      poseDetectorService.stop();
+      
+      // Unsubscribe from pose events
+      if (this.poseSubscription) {
+        this.poseSubscription.unsubscribe();
+        this.poseSubscription = null;
+      }
+      
       this.stopTimer();
     }
 
@@ -226,25 +246,94 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     try {
       // Prepare API request data
       const exerciseData: LogExerciseRequest = {
-        exercise_id: 1, // ID for pushups
+        exercise_id: ExerciseId.PUSHUP,
         reps: this._result.repCount || 0,
         duration: this._result.duration,
         notes: `Form Score: ${this._result.formScore?.toFixed(0)}`
       };
 
-      // Call the API
-      const response: ExerciseResponse = await logExercise(exerciseData);
+      // Check if we're online
+      const isOnline = navigator.onLine;
       
-      // Update result with grade and saved status
-      this._result.grade = response.grade;
-      this._result.saved = true;
-      
-      return true;
+      if (isOnline) {
+        try {
+          // Call the API with retry capability
+          const response: ExerciseResponse = await logExerciseResult(exerciseData);
+          
+          // Update result with grade and saved status
+          this._result.grade = response.grade;
+          this._result.saved = true;
+          
+          return true;
+        } catch (error) {
+          // If API call fails, fall back to offline queue
+          console.log("API call failed, falling back to offline queue", error);
+          return await this.saveOffline();
+        }
+      } else {
+        // We're offline, save to queue immediately
+        return await this.saveOffline();
+      }
     } catch (error) {
       console.error("Failed to save pushup results:", error);
+      
+      // Show toast notification to user 
+      if (typeof window !== 'undefined' && window.showToast) {
+        window.showToast({ 
+          title: 'Save Failed', 
+          description: 'Could not save exercise results. Will retry when online.', 
+          variant: 'destructive' 
+        });
+      }
+      
+      // Log to error monitoring service if available
+      if (typeof window !== 'undefined' && window.captureException) {
+        window.captureException(error);
+      }
+      
       return false;
     } finally {
       this.submitting = false;
+    }
+  }
+  
+  /**
+   * Save results to offline queue for later sync
+   */
+  private async saveOffline(): Promise<boolean> {
+    try {
+      // Import syncManager dynamically to avoid circular dependencies
+      const { syncManager } = await import('../lib/syncManager');
+      
+      // Queue the workout for background sync
+      const queued = await syncManager.queueWorkout(this._result!, ExerciseId.PUSHUP);
+      
+      if (queued) {
+        // Update local state to reflect that it's "saved" (but not yet synced to server)
+        this._result!.saved = true;
+        
+        // Show toast notification to user
+        if (typeof window !== 'undefined' && window.showToast) {
+          window.showToast({
+            title: 'Workout Saved Offline',
+            description: 'Your workout has been saved and will sync when you\'re back online.',
+            variant: 'success'
+          });
+        }
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("Failed to save pushup results offline:", error);
+      
+      // Log to error monitoring service if available
+      if (typeof window !== 'undefined' && window.captureException) {
+        window.captureException(error);
+      }
+      
+      return false;
     }
   }
 
@@ -269,14 +358,20 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   cleanup(): void {
     super.cleanup();
 
+    // Unsubscribe from pose events
+    if (this.poseSubscription) {
+      this.poseSubscription.unsubscribe();
+      this.poseSubscription = null;
+    }
+
     // Stop detection if running
-    poseDetectorService.stopDetection();
+    poseDetectorService.stop();
     
     // Stop camera stream
     poseDetectorService.stopCamera();
     
-    // Close pose landmarker
-    poseDetectorService.destroy();
+    // Release consumer reference
+    poseDetectorService.releaseConsumer();
   }
 }
 

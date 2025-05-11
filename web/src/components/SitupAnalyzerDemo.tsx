@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import MediaPipeHolisticSetup from './MediaPipeHolisticSetup';
-import { SitupAnalyzer, SitupFormAnalysis, SitupAnalyzerConfig } from '../grading/SitupAnalyzer';
+import { SitupAnalyzer, SitupAnalyzerConfig } from '../grading/SitupAnalyzer';
 import SitupFormVisualizer from './SitupFormVisualizer';
-import { NormalizedLandmark } from '../lib/types';
 
 /**
  * Demo component to showcase sit-up form analysis with MediaPipe Holistic
@@ -47,7 +46,7 @@ const SitupAnalyzerDemo: React.FC = () => {
   }, []);
 
   // Handle calibration completion
-  const handleCalibrationComplete = (calibrationData: any) => {
+  const handleCalibrationComplete = (calibrationData: unknown) => {
     console.log('Calibration complete:', calibrationData);
     
     // Set the calibration data
@@ -59,7 +58,7 @@ const SitupAnalyzerDemo: React.FC = () => {
   };
 
   // Process MediaPipe results with the situp analyzer
-  const handleMediaPipeResults = (results: any) => {
+  const handleMediaPipeResults = (results: unknown) => {
     if (!results.poseLandmarks || !situpAnalyzerRef.current) return;
     
     // Store landmarks for visualization
@@ -163,7 +162,7 @@ const SitupAnalyzerDemo: React.FC = () => {
                   Place your hands behind your head with fingers interlocked.
                   Make sure your device can see your full body from the side.
                 </p>
-                <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-gray-200">
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
                   <MediaPipeHolisticSetup
                     onCalibrationComplete={handleCalibrationComplete}
                     onResults={handleMediaPipeResults}
@@ -172,7 +171,7 @@ const SitupAnalyzerDemo: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-gray-200">
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
                   {/* Display the MediaPipe feed with visualization overlay */}
                   <MediaPipeHolisticSetup
                     onResults={handleMediaPipeResults}
@@ -192,9 +191,9 @@ const SitupAnalyzerDemo: React.FC = () => {
                 </div>
                 
                 {/* Controls and statistics */}
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div className="flex flex-col space-y-2">
-                    <div className="text-2xl font-bold">
+                    <div className="font-bold text-2xl">
                       {repCount} <span className="text-lg font-normal text-gray-600">reps</span>
                     </div>
                     {lastValidRepTime > 0 && (
@@ -207,7 +206,7 @@ const SitupAnalyzerDemo: React.FC = () => {
                   <div className="flex space-x-3">
                     <button
                       onClick={toggleAnalysis}
-                      className={`px-4 py-2 rounded-md font-medium ${
+                      className={`rounded-md px-4 py-2 font-medium ${
                         isAnalyzing
                           ? 'bg-red-600 text-white'
                           : 'bg-green-600 text-white'
@@ -218,7 +217,7 @@ const SitupAnalyzerDemo: React.FC = () => {
                     
                     <button
                       onClick={resetAnalysis}
-                      className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md font-medium"
+                      className="rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800"
                       disabled={isAnalyzing}
                     >
                       Reset
@@ -228,8 +227,8 @@ const SitupAnalyzerDemo: React.FC = () => {
                 
                 {/* Form feedback section */}
                 {formAnalysis && (
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold mb-2">Form Analysis</h3>
+                  <div className="rounded-lg border border-gray-200 p-4">
+                    <h3 className="mb-2 font-semibold text-lg">Form Analysis</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm font-medium">Trunk Angle:</p>
@@ -267,7 +266,7 @@ const SitupAnalyzerDemo: React.FC = () => {
                       formAnalysis.isPaused) && (
                       <div className="mt-4">
                         <p className="text-sm font-medium text-red-600">Form Issues:</p>
-                        <ul className="list-disc list-inside text-sm text-red-600">
+                        <ul className="list-inside list-disc text-sm text-red-600">
                           {!formAnalysis.isHandPositionCorrect && <li>Hands not properly positioned behind head</li>}
                           {!formAnalysis.isKneeAngleCorrect && <li>Incorrect knee angle (should be 70-110°)</li>}
                           {!formAnalysis.isShoulderBladeGrounded && formAnalysis.isDownPosition && <li>Shoulders not touching ground in down position</li>}

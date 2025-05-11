@@ -17,24 +17,24 @@ import { v4 as uuidv4 } from 'uuid';
 const MilitaryCorners: React.FC = () => (
   <>
     {/* Military corner cutouts - top left and right */}
-    <div className="absolute top-0 left-0 w-[15px] h-[15px] bg-background"></div>
-    <div className="absolute top-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute left-0 top-0 size-[15px] bg-background"></div>
+    <div className="absolute right-0 top-0 size-[15px] bg-background"></div>
     
     {/* Military corner cutouts - bottom left and right */}
-    <div className="absolute bottom-0 left-0 w-[15px] h-[15px] bg-background"></div>
-    <div className="absolute bottom-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute bottom-0 left-0 size-[15px] bg-background"></div>
+    <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
     
     {/* Diagonal lines for corners */}
-    <div className="absolute top-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-top-left"></div>
-    <div className="absolute top-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-top-right"></div>
-    <div className="absolute bottom-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-bottom-left"></div>
-    <div className="absolute bottom-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-bottom-right"></div>
+    <div className="bg-tactical-gray/50 absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45"></div>
   </>
 );
 
 // Header divider component
 const HeaderDivider: React.FC = () => (
-  <div className="h-[1px] w-16 bg-brass-gold mx-auto my-2"></div>
+  <div className="mx-auto my-2 h-px w-16 bg-brass-gold"></div>
 );
 
 export function PushupTracker() {
@@ -314,42 +314,38 @@ export function PushupTracker() {
   // Process landmark data to detect pushups
   useEffect(() => {
     if (!landmarks || landmarks.length === 0 || !isTracking) return;
-    
+
     const poseLandmarks = landmarks[0];
     if (!poseLandmarks) return;
-    
+
     // Get key body parts for a pushup
     const leftShoulder = poseLandmarks[PoseLandmarkIndex.LEFT_SHOULDER];
     const rightShoulder = poseLandmarks[PoseLandmarkIndex.RIGHT_SHOULDER];
     const leftElbow = poseLandmarks[PoseLandmarkIndex.LEFT_ELBOW];
     const rightElbow = poseLandmarks[PoseLandmarkIndex.RIGHT_ELBOW];
-    const leftWrist = poseLandmarks[PoseLandmarkIndex.LEFT_WRIST];
-    const rightWrist = poseLandmarks[PoseLandmarkIndex.RIGHT_WRIST];
     const leftHip = poseLandmarks[PoseLandmarkIndex.LEFT_HIP];
     const rightHip = poseLandmarks[PoseLandmarkIndex.RIGHT_HIP];
-    const leftKnee = poseLandmarks[PoseLandmarkIndex.LEFT_KNEE];
-    const rightKnee = poseLandmarks[PoseLandmarkIndex.RIGHT_KNEE];
-    
+
     // Calculate average shoulder and elbow heights (y-coordinate)
     const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
     const avgElbowY = (leftElbow.y + rightElbow.y) / 2;
-    
+
     setShoulderY(avgShoulderY);
     setElbowY(avgElbowY);
-    
+
     // Detect pushup phases based on shoulder position
     // Note: In normalized screen coordinates, smaller Y means higher up on screen
     const DOWN_THRESHOLD = 0.55; // Threshold for "down" position
     const UP_THRESHOLD = 0.4;    // Threshold for "up" position
-    
+
     // Check for proper form - back should be straight
     const backAngle = calculateBodyLineAngle(
       leftHip, rightHip, leftShoulder, rightShoulder
     );
-    
+
     // Check if back is straight (less than 15 degrees from vertical)
     const isBackStraight = backAngle <= 15;
-    
+
     if (!isBackStraight && formFeedback !== "Keep your back straight!") {
       setFormFeedback("Keep your back straight!");
       // Clear feedback after 2 seconds
@@ -357,7 +353,7 @@ export function PushupTracker() {
         setFormFeedback(null);
       }, 2000);
     }
-    
+
     // Determine current phase
     let newPhase = currentPhase;
     if (avgShoulderY > DOWN_THRESHOLD) {
@@ -365,7 +361,7 @@ export function PushupTracker() {
     } else if (avgShoulderY < UP_THRESHOLD) {
       newPhase = 'up';
     }
-    
+
     // Only count reps with good form
     if (newPhase === 'up' && lastPhase === 'down') {
       if (isBackStraight) {
@@ -375,13 +371,12 @@ export function PushupTracker() {
         setFormScore((score) => Math.max(0, score - 5));
       }
     }
-    
+
     // Update phase states
     if (newPhase !== currentPhase) {
       setLastPhase(currentPhase);
       setCurrentPhase(newPhase);
     }
-    
   }, [landmarks, isTracking, currentPhase, lastPhase, formFeedback]);
 
   // Calculate angle between body segments for form checking
@@ -431,14 +426,14 @@ export function PushupTracker() {
             navigate('/exercises');
           }
         }}
-        className="mb-4 border-tactical-gray text-tactical-gray hover:bg-tactical-gray/10"
+        className="hover:bg-tactical-gray/10 mb-4 border-tactical-gray text-tactical-gray"
       >
         <ChevronLeft className="mr-2 size-4" /> 
         {location.pathname.includes('/trackers') ? 'Back to Trackers' : 'Back to Exercises'}
       </Button>
       
       {/* Page title with military styling */}
-      <div className="relative overflow-hidden rounded-card bg-card-background p-content shadow-medium">
+      <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
         <MilitaryCorners />
         <div className="mb-4 text-center">
           <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
@@ -459,16 +454,16 @@ export function PushupTracker() {
         </Alert>
       )}
       
-      <Card className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+      <Card className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
         <MilitaryCorners />
         <CardHeader className="rounded-t-card bg-deep-ops">
-          <CardTitle className="font-heading text-xl text-cream tracking-wider uppercase">Live Tracking</CardTitle>
+          <CardTitle className="font-heading text-xl uppercase tracking-wider text-cream">Live Tracking</CardTitle>
           <CardDescription className="text-army-tan">
             Position yourself correctly and press Begin to start tracking
           </CardDescription>
         </CardHeader>
         
-        <CardContent className="p-content space-y-4">
+        <CardContent className="space-y-4 p-content">
           {errorMessage && (
             <Alert variant="destructive" className="mb-4 rounded-card">
               <InfoIcon className="size-4" />
@@ -497,13 +492,13 @@ export function PushupTracker() {
             {/* Countdown overlay */}
             {isCountingDown && (
               <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
-                <span className="text-8xl font-bold text-brass-gold">{countdown}</span>
+                <span className="font-bold text-8xl text-brass-gold">{countdown}</span>
               </div>
             )}
             
             {/* Form feedback message */}
             {formFeedback && (
-              <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md bg-destructive/80 px-4 py-2 text-sm font-semibold text-white">
+              <div className="bg-destructive/80 absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md px-4 py-2 font-semibold text-sm text-white">
                 {formFeedback}
               </div>
             )}
@@ -523,11 +518,11 @@ export function PushupTracker() {
           {/* Stats Display */}
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
-              <p className="text-sm font-medium text-tactical-gray uppercase tracking-wider">Repetitions</p>
+              <p className="text-sm font-medium uppercase tracking-wider text-tactical-gray">Repetitions</p>
               <p className="font-heading text-heading2 text-command-black">{repCount}</p>
             </div>
             <div>
-              <p className="text-sm font-medium text-tactical-gray uppercase tracking-wider">Time</p>
+              <p className="text-sm font-medium uppercase tracking-wider text-tactical-gray">Time</p>
               <p className="flex items-center justify-center font-heading text-heading2 text-command-black">
                 <Timer className="mr-1 inline-block size-5 text-brass-gold" />
                 {formatTime(elapsedTime)}
@@ -538,7 +533,7 @@ export function PushupTracker() {
           {/* Form Quality Indicator */}
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm font-semibold text-tactical-gray uppercase tracking-wider">Form Quality</span>
+              <span className="font-semibold text-sm uppercase tracking-wider text-tactical-gray">Form Quality</span>
               <span className="font-mono text-sm text-brass-gold">{formScore}%</span>
             </div>
             <Progress value={formScore} className="h-2" 
@@ -550,7 +545,7 @@ export function PushupTracker() {
           </div>
           
           {/* Instructions */}
-          <div className="rounded-card border border-olive-mist/20 p-content">
+          <div className="border-olive-mist/20 rounded-card border p-content">
             <h3 className="text-md mb-2 font-heading uppercase tracking-wider text-command-black">Form Requirements:</h3>
             <ul className="list-disc space-y-1 pl-5 text-sm text-tactical-gray">
               <li>
@@ -569,13 +564,13 @@ export function PushupTracker() {
           </div>
         </CardContent>
         
-        <CardFooter className="flex flex-wrap justify-center gap-4 border-t border-olive-mist/20 bg-background/50 p-content">
+        <CardFooter className="border-olive-mist/20 bg-background/50 flex flex-wrap justify-center gap-4 border-t p-content">
           {!isTracking ? (
             <>
               <Button 
                 onClick={startCountdown}
                 size="lg"
-                className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90 shadow-medium hover:shadow-large transition-all"
+                className="hover:bg-brass-gold/90 bg-brass-gold text-deep-ops shadow-medium transition-all hover:shadow-large"
                 disabled={!isDetectorReady || isCountingDown || !cameraPermission}
               >
                 <PlayIcon className="mr-2 size-5" />
@@ -586,7 +581,7 @@ export function PushupTracker() {
                 onClick={resetTracking}
                 size="lg"
                 variant="outline"
-                className="border-tactical-gray text-tactical-gray hover:bg-tactical-gray/10"
+                className="hover:bg-tactical-gray/10 border-tactical-gray text-tactical-gray"
                 disabled={repCount === 0 && !isTracking}
               >
                 <RefreshCw className="mr-2 size-5" />
@@ -609,7 +604,7 @@ export function PushupTracker() {
                 onClick={resetTracking}
                 size="lg"
                 variant="outline"
-                className="border-tactical-gray text-tactical-gray hover:bg-tactical-gray/10"
+                className="hover:bg-tactical-gray/10 border-tactical-gray text-tactical-gray"
               >
                 <RefreshCw className="mr-2 size-5" />
                 Reset
@@ -621,7 +616,7 @@ export function PushupTracker() {
       
       {/* Results Dialog with military styling */}
       <Dialog open={showResultModal} onOpenChange={setShowResultModal}>
-        <DialogContent className="relative overflow-hidden rounded-card bg-card-background shadow-large">
+        <DialogContent className="bg-card-background relative overflow-hidden rounded-card shadow-large">
           <MilitaryCorners />
           <DialogHeader>
             <DialogTitle className="text-center font-heading text-heading3 uppercase tracking-wider text-command-black">
@@ -646,32 +641,32 @@ export function PushupTracker() {
           </DialogHeader>
           
           <div className="grid grid-cols-2 gap-4 py-4">
-            <div className="rounded-card bg-cream/30 p-4 text-center">
-              <div className="mb-1 text-sm font-semibold text-tactical-gray uppercase tracking-wider">Repetitions</div>
+            <div className="bg-cream/30 rounded-card p-4 text-center">
+              <div className="mb-1 font-semibold text-sm uppercase tracking-wider text-tactical-gray">Repetitions</div>
               <div className="font-heading text-heading2 text-brass-gold">{repCount}</div>
             </div>
             
-            <div className="rounded-card bg-cream/30 p-4 text-center">
-              <div className="mb-1 text-sm font-semibold text-tactical-gray uppercase tracking-wider">Form Score</div>
+            <div className="bg-cream/30 rounded-card p-4 text-center">
+              <div className="mb-1 font-semibold text-sm uppercase tracking-wider text-tactical-gray">Form Score</div>
               <div className="font-heading text-heading2 text-brass-gold">{formScore}%</div>
             </div>
             
-            <div className="rounded-card bg-cream/30 p-4 text-center">
-              <div className="mb-1 text-sm font-semibold text-tactical-gray uppercase tracking-wider">Duration</div>
+            <div className="bg-cream/30 rounded-card p-4 text-center">
+              <div className="mb-1 font-semibold text-sm uppercase tracking-wider text-tactical-gray">Duration</div>
               <div className="font-heading text-heading3 text-brass-gold">{formatTime(sessionTime)}</div>
             </div>
             
-            <div className="rounded-card bg-cream/30 p-4 text-center">
-              <div className="mb-1 text-sm font-semibold text-tactical-gray uppercase tracking-wider">Grade</div>
+            <div className="bg-cream/30 rounded-card p-4 text-center">
+              <div className="mb-1 font-semibold text-sm uppercase tracking-wider text-tactical-gray">Grade</div>
               <div className="font-heading text-heading2 text-brass-gold">{scoreGrade}</div>
             </div>
           </div>
           
-          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-between pt-2">
+          <DialogFooter className="flex flex-col gap-2 pt-2 sm:flex-row sm:justify-between">
             {!submitSuccess && !savedOffline ? (
               <Button 
                 onClick={submitWorkout} 
-                className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90 shadow-medium hover:shadow-large transition-all"
+                className="hover:bg-brass-gold/90 bg-brass-gold text-deep-ops shadow-medium transition-all hover:shadow-large"
                 disabled={submitting}
               >
                 {submitting ? 'Saving...' : `Save Results${!isOnline ? ' Offline' : ''}`}
@@ -679,7 +674,7 @@ export function PushupTracker() {
             ) : (
               <Button
                 onClick={() => navigate('/history')}
-                className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90 shadow-medium hover:shadow-large transition-all"
+                className="hover:bg-brass-gold/90 bg-brass-gold text-deep-ops shadow-medium transition-all hover:shadow-large"
               >
                 View History
               </Button>
@@ -688,7 +683,7 @@ export function PushupTracker() {
             <Button 
               onClick={shareResults} 
               variant="outline" 
-              className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+              className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
             >
               <ShareIcon className="mr-2 size-4" />
               Share Results

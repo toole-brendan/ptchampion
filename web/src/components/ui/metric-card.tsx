@@ -1,6 +1,5 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
 
 type MetricCardProps = {
@@ -60,7 +59,7 @@ export function MetricCard({
             {value}
           </div>
           {unit && (
-            <span className="ml-1 text-sm font-semibold text-tactical-gray">{unit}</span>
+            <span className="ml-1 font-semibold text-sm text-tactical-gray">{unit}</span>
           )}
         </div>
         

@@ -9,7 +9,7 @@ const cardVariants = cva(
     variants: {
       variant: {
         default: "shadow-small",
-        interactive: "shadow-small hover:-translate-y-1 hover:shadow-medium cursor-pointer",
+        interactive: "cursor-pointer shadow-small hover:-translate-y-1 hover:shadow-medium",
         elevated: "shadow-medium",
         panel: "rounded-panel shadow-medium",
         flush: "rounded-none shadow-none",
@@ -116,7 +116,7 @@ function StatCard({
     <Card variant="interactive" className={cn("min-w-[150px]", className)} {...props}>
       <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-small uppercase text-text-secondary">{title}</CardTitle>
+          <CardTitle className="text-text-secondary text-small uppercase">{title}</CardTitle>
           {icon && <div className="text-brass-gold">{icon}</div>}
         </div>
       </CardHeader>
@@ -146,10 +146,10 @@ function QuickLinkCard({
       {...props}
     >
       <div className="flex flex-col items-center justify-center gap-2 py-md">
-        <div className="flex size-12 items-center justify-center rounded-full bg-brass-gold/10 text-brass-gold">
+        <div className="bg-brass-gold/10 flex size-12 items-center justify-center rounded-full text-brass-gold">
           {icon}
         </div>
-        <div className="font-semibold text-center">{title}</div>
+        <div className="text-center font-semibold">{title}</div>
       </div>
     </Card>
   )

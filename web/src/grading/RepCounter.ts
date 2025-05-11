@@ -215,7 +215,7 @@ export interface RepMetrics {
   shoulderWidth?: number;
   
   // Additional metrics can be added as needed
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**

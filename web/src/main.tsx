@@ -1,10 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import './index.css';
-import App from './App.tsx';
-import { unregisterServiceWorker } from './serviceWorkerRegistration';
+import App from './App';
+import { unregisterServiceWorker, registerServiceWorker } from './serviceWorkerRegistration';
 import { QueryClient } from '@tanstack/react-query';
 import config from './lib/config';
+import { syncManager } from './lib/syncManager';
 
 // For now, we'll unregister any existing service workers to avoid caching issues
 // This will help ensure users get the latest version of the app
@@ -42,6 +42,46 @@ const clearStaleTokens = () => {
 // Run token cleanup
 clearStaleTokens();
 
+/**
+ * Bootstrap sync process for browsers without SyncManager support
+ * This will flush any pending workouts when the app starts and we're online
+ */
+const appSyncBootstrap = async () => {
+  // Check if browser has SyncManager support
+  const hasSyncManager = 'serviceWorker' in navigator && 'SyncManager' in window;
+  
+  // If no sync manager but we're online, try to flush pending workouts
+  if (!hasSyncManager && navigator.onLine) {
+    console.log('No SyncManager support detected. Attempting to flush pending workouts.');
+    try {
+      // Wait a moment for auth to complete
+      setTimeout(async () => {
+        const syncedCount = await syncManager.flushPendingWorkouts(true);
+        if (syncedCount > 0) {
+          console.log(`Bootstrap sync completed: ${syncedCount} workouts synced.`);
+        }
+      }, 5000); // 5 second delay to allow auth to complete
+    } catch (error) {
+      console.error('Failed to flush pending workouts during bootstrap:', error);
+    }
+  }
+  
+  // Set up online listener for browsers without SyncManager
+  if (!hasSyncManager) {
+    window.addEventListener('online', async () => {
+      console.log('Device came online. Attempting to sync pending workouts.');
+      try {
+        await syncManager.flushPendingWorkouts();
+      } catch (error) {
+        console.error('Failed to flush pending workouts on online event:', error);
+      }
+    });
+  }
+};
+
+// Run sync bootstrap
+appSyncBootstrap();
+
 // Configure React Query default options
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -55,13 +95,13 @@ const queryClient = new QueryClient({
   },
 })
 
-// We'll re-enable service worker registration once we have it properly set up
-// if (import.meta.env.PROD) {
-//   // Only register in production to avoid development issues
-//   registerServiceWorker().catch(error => 
-//     console.error('Service worker registration failed:', error)
-//   );
-// }
+// We'll enable service worker registration
+if (import.meta.env.PROD) {
+  // Only register in production to avoid development issues
+  registerServiceWorker().catch(error => 
+    console.error('Service worker registration failed:', error)
+  );
+}
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

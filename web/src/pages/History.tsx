@@ -1,6 +1,5 @@
-import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { format } from "date-fns";
-import { DateRange } from "react-day-picker";
 import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award, ChevronLeft, ChevronRight, Loader2, History as HistoryIcon } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import { keepPreviousData } from '@tanstack/react-query';
@@ -17,11 +16,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getUserExercises } from '../lib/apiClient';
-import { PaginatedExercisesResponse, ExerciseResponse } from '../lib/types';
+import { ExerciseResponse } from '../lib/types';
 import { useAuth } from '../lib/authContext';
 import { formatTime, formatDistance } from '../lib/utils';
 
@@ -29,24 +27,24 @@ import { formatTime, formatDistance } from '../lib/utils';
 const MilitaryCorners: React.FC = () => (
   <>
     {/* Military corner cutouts - top left and right */}
-    <div className="absolute top-0 left-0 w-[15px] h-[15px] bg-background"></div>
-    <div className="absolute top-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute left-0 top-0 size-[15px] bg-background"></div>
+    <div className="absolute right-0 top-0 size-[15px] bg-background"></div>
     
     {/* Military corner cutouts - bottom left and right */}
-    <div className="absolute bottom-0 left-0 w-[15px] h-[15px] bg-background"></div>
-    <div className="absolute bottom-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute bottom-0 left-0 size-[15px] bg-background"></div>
+    <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
     
     {/* Diagonal lines for corners */}
-    <div className="absolute top-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-top-left"></div>
-    <div className="absolute top-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-top-right"></div>
-    <div className="absolute bottom-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-bottom-left"></div>
-    <div className="absolute bottom-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-bottom-right"></div>
+    <div className="bg-tactical-gray/50 absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45"></div>
+    <div className="bg-tactical-gray/50 absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45"></div>
   </>
 );
 
 // Header divider component
 const HeaderDivider: React.FC = () => (
-  <div className="h-[1px] w-16 bg-brass-gold mx-auto my-2"></div>
+  <div className="mx-auto my-2 h-px w-16 bg-brass-gold"></div>
 );
 
 // Helper to determine metric and unit for an exercise
@@ -243,7 +241,7 @@ const History: React.FC = () => {
       <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 size-10 animate-spin text-brass-gold"/>
-          <p className="text-lg font-heading uppercase">Loading history...</p>
+          <p className="font-heading text-lg uppercase">Loading history...</p>
         </div>
       </div>
     );
@@ -252,7 +250,7 @@ const History: React.FC = () => {
   if (error && !isFetching) {
     return (
       <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-        <div className="relative w-full max-w-md overflow-hidden rounded-card bg-card-background shadow-medium">
+        <div className="bg-card-background relative w-full max-w-md overflow-hidden rounded-card shadow-medium">
           <MilitaryCorners />
           <div className="p-content">
             <div className="mb-4 text-center">
@@ -266,7 +264,7 @@ const History: React.FC = () => {
               <Button 
                 onClick={() => refetch()} 
                 variant="outline"
-                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+                className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
               >
                 TRY AGAIN
               </Button>
@@ -280,7 +278,7 @@ const History: React.FC = () => {
   if (!isLoading && totalCount === 0) {
     return (
       <div className="space-y-section">
-        <div className="relative overflow-hidden rounded-card bg-card-background p-content shadow-medium">
+        <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
           <MilitaryCorners />
           <div className="mb-4 text-center">
             <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
@@ -291,10 +289,10 @@ const History: React.FC = () => {
           </div>
         </div>
         
-        <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium text-center">
+        <div className="bg-card-background relative overflow-hidden rounded-card text-center shadow-medium">
           <MilitaryCorners />
           <div className="p-content">
-            <h3 className="font-heading text-heading4 uppercase tracking-wider mb-4">No Workouts Found</h3>
+            <h3 className="mb-4 font-heading text-heading4 uppercase tracking-wider">No Workouts Found</h3>
             <p className="text-tactical-gray">You haven't logged any exercises yet.</p>
             <p className="mt-2 text-tactical-gray">Start tracking your workouts to see your progress here!</p>
           </div>
@@ -305,7 +303,7 @@ const History: React.FC = () => {
   
   return (
     <div className={cn("space-y-section", isFetching && "opacity-75 transition-opacity duration-300")}>
-      <div className="relative overflow-hidden rounded-card bg-card-background p-content shadow-medium">
+      <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
         <MilitaryCorners />
         <div className="mb-4 text-center">
           <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
@@ -316,20 +314,20 @@ const History: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
         <MilitaryCorners />
         <div className="rounded-t-card bg-deep-ops p-content">
           <div className="flex items-center">
             <HistoryIcon className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
               Filter Workouts
             </h2>
           </div>
         </div>
         <div className="p-content">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
+          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <label className="text-sm font-semibold uppercase tracking-wide text-tactical-gray">Date Range</label>
+              <label className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Date Range</label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -370,9 +368,9 @@ const History: React.FC = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-semibold uppercase tracking-wide text-tactical-gray">Exercise Type</label>
+              <label className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</label>
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
-                <SelectTrigger className="w-full bg-cream border-army-tan/30">
+                <SelectTrigger className="border-army-tan/30 w-full bg-cream">
                   <SelectValue placeholder="Filter by exercise..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -390,7 +388,7 @@ const History: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={() => { setDateRange(undefined); setExerciseFilter('All'); }} 
-              className="text-brass-gold border-brass-gold hover:bg-brass-gold/10 w-full"
+              className="hover:bg-brass-gold/10 w-full border-brass-gold text-brass-gold"
             >
               CLEAR FILTERS
             </Button>
@@ -405,27 +403,27 @@ const History: React.FC = () => {
           { title: 'TOTAL REPS', value: summaryStats.totalReps, icon: Repeat, unit: '' },
           { title: 'TOTAL DISTANCE', value: summaryStats.totalDistance, icon: TrendingUp, unit: 'km' },
         ].map((stat, index) => (
-          <div key={index} className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+          <div key={index} className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
             <MilitaryCorners />
             <div className="p-content">
               <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="text-xs font-semibold uppercase tracking-wider text-tactical-gray">{stat.title}</div>
+                <div className="font-semibold text-xs uppercase tracking-wider text-tactical-gray">{stat.title}</div>
                 <stat.icon className="size-5 text-brass-gold" />
               </div>
               <div className="font-heading text-heading3 text-command-black">
-                {stat.value} {stat.unit && <span className="text-sm font-semibold text-tactical-gray">{stat.unit}</span>}
+                {stat.value} {stat.unit && <span className="font-semibold text-sm text-tactical-gray">{stat.unit}</span>}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
         <MilitaryCorners />
         <div className="rounded-t-card bg-deep-ops p-content">
           <div className="flex items-center">
             <TrendingUp className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
               {exerciseFilter === 'All' ? 'Performance Trend' : `${exerciseFilter} Trend`}
             </h2>
           </div>
@@ -463,7 +461,7 @@ const History: React.FC = () => {
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-[300px] items-center justify-center p-4 text-center text-sm font-semibold text-tactical-gray">
+            <div className="flex h-[300px] items-center justify-center p-4 text-center font-semibold text-sm text-tactical-gray">
               {exerciseFilter === 'All'
                 ? 'Select an exercise filter above to display its trend chart.'
                 : `Not enough data points (minimum 2 required) for ${exerciseFilter} to display a trend chart.`}
@@ -472,12 +470,12 @@ const History: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
         <MilitaryCorners />
         <div className="rounded-t-card bg-deep-ops p-content">
           <div className="flex items-center">
             <Award className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
               Personal Records
             </h2>
           </div>
@@ -489,12 +487,12 @@ const History: React.FC = () => {
           {personalBests.length > 0 ? (
             <ul className="space-y-3">
               {personalBests.map((pb, index) => (
-                <li key={index} className="relative overflow-hidden rounded-card bg-cream/30 p-3 shadow-small border-l-4 border-brass-gold">
-                  <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
+                <li key={index} className="bg-cream/30 relative overflow-hidden rounded-card border-l-4 border-brass-gold p-3 shadow-small">
+                  <div className="bg-brass-gold/40 absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded"></div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                       <span className="font-heading text-sm uppercase text-command-black">{pb.exercise}</span>
-                      <span className="text-xs font-semibold text-tactical-gray">{pb.metric}</span>
+                      <span className="font-semibold text-xs text-tactical-gray">{pb.metric}</span>
                     </div>
                     <div className="text-right">
                       <p className="font-heading text-xl text-brass-gold">{pb.value}</p>
@@ -505,19 +503,19 @@ const History: React.FC = () => {
               ))}
             </ul>
           ) : (
-            <p className="py-4 text-center text-sm font-semibold text-tactical-gray">
+            <p className="py-4 text-center font-semibold text-sm text-tactical-gray">
               No personal bests found for the selected filters.
             </p>
           )}
         </div>
       </div>
 
-      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
         <MilitaryCorners />
         <div className="rounded-t-card bg-deep-ops p-content">
           <div className="flex items-center">
             <HistoryIcon className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
               Workout History
             </h2>
           </div>
@@ -526,20 +524,20 @@ const History: React.FC = () => {
           </p>
         </div>
         <div className="p-content">
-          <div className="overflow-hidden rounded-card border border-olive-mist/20">
+          <div className="border-olive-mist/20 overflow-hidden rounded-card border">
             <Table>
               <TableHeader>
                 <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
-                  <TableHead className="w-[130px] text-xs font-heading uppercase tracking-wider text-tactical-gray">Exercise</TableHead>
-                  <TableHead className="text-xs font-heading uppercase tracking-wider text-tactical-gray">Date</TableHead>
-                  <TableHead className="text-xs font-heading uppercase tracking-wider text-tactical-gray">Duration</TableHead>
-                  <TableHead className="text-right text-xs font-heading uppercase tracking-wider text-tactical-gray">Performance</TableHead>
+                  <TableHead className="w-[130px] font-heading text-xs uppercase tracking-wider text-tactical-gray">Exercise</TableHead>
+                  <TableHead className="font-heading text-xs uppercase tracking-wider text-tactical-gray">Date</TableHead>
+                  <TableHead className="font-heading text-xs uppercase tracking-wider text-tactical-gray">Duration</TableHead>
+                  <TableHead className="text-right font-heading text-xs uppercase tracking-wider text-tactical-gray">Performance</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredHistory.length > 0 ? (
                   filteredHistory.map((session) => (
-                    <TableRow key={session.id} className="border-b border-olive-mist/10 text-sm transition-colors hover:bg-brass-gold/5">
+                    <TableRow key={session.id} className="border-olive-mist/10 hover:bg-brass-gold/5 border-b text-sm transition-colors">
                       <TableCell className="font-semibold uppercase text-command-black">{session.exercise_type}</TableCell>
                       <TableCell className="text-tactical-gray">{format(new Date(session.created_at), "PP p")}</TableCell>
                       <TableCell className="text-tactical-gray">{session.time_in_seconds ? formatTime(session.time_in_seconds) : '-'}</TableCell>
@@ -554,7 +552,7 @@ const History: React.FC = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center text-sm font-semibold text-tactical-gray">
+                    <TableCell colSpan={4} className="h-24 text-center font-semibold text-sm text-tactical-gray">
                       {exercises.length > 0 
                         ? "No sessions found matching your current filters."
                         : "Loading sessions..."}
@@ -575,7 +573,7 @@ const History: React.FC = () => {
                 size="sm"
                 onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                 disabled={page <= 1 || isFetching}
-                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+                className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
               >
                 <ChevronLeft className="mr-1 size-4" /> PREV
               </Button>
@@ -584,7 +582,7 @@ const History: React.FC = () => {
                 size="sm"
                 onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={page >= totalPages || isFetching}
-                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+                className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
               >
                 NEXT <ChevronRight className="ml-1 size-4" />
               </Button>

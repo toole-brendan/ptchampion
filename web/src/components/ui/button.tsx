@@ -5,32 +5,32 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "../../lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-button text-sm font-medium uppercase transition-all focus-visible:ring-2 focus-visible:ring-brass-gold/50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 select-none",
+  "focus-visible:ring-brass-gold/50 inline-flex shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap rounded-button text-sm font-medium uppercase transition-all focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
   {
     variants: {
       variant: {
         default:
-          "bg-brass-gold text-cream shadow-small hover:-translate-y-1 hover:bg-brass-gold/90 hover:shadow-medium active:translate-y-0 active:shadow-small",
+          "hover:bg-brass-gold/90 bg-brass-gold text-cream shadow-small hover:-translate-y-1 hover:shadow-medium active:translate-y-0 active:shadow-small",
         destructive:
-          "bg-error text-white shadow-small hover:-translate-y-1 hover:bg-error/90 hover:shadow-medium active:translate-y-0 active:shadow-small",
+          "hover:bg-error/90 bg-error text-white shadow-small hover:-translate-y-1 hover:shadow-medium active:translate-y-0 active:shadow-small",
         outline:
-          "border border-brass-gold bg-transparent text-brass-gold shadow-small hover:-translate-y-1 hover:bg-brass-gold/10 hover:shadow-medium active:translate-y-0 active:shadow-small",
+          "hover:bg-brass-gold/10 border border-brass-gold bg-transparent text-brass-gold shadow-small hover:-translate-y-1 hover:shadow-medium active:translate-y-0 active:shadow-small",
         secondary:
-          "bg-army-tan text-command-black shadow-small hover:-translate-y-1 hover:bg-army-tan/80 hover:shadow-medium active:translate-y-0 active:shadow-small",
+          "hover:bg-army-tan/80 bg-army-tan text-command-black shadow-small hover:-translate-y-1 hover:shadow-medium active:translate-y-0 active:shadow-small",
         ghost:
-          "text-brass-gold hover:bg-brass-gold/10 hover:shadow-small",
+          "hover:bg-brass-gold/10 text-brass-gold hover:shadow-small",
         link: "text-brass-gold underline-offset-4 hover:underline",
         success: 
-          "bg-success text-white shadow-small hover:-translate-y-1 hover:bg-success/90 hover:shadow-medium active:translate-y-0 active:shadow-small",
+          "hover:bg-success/90 bg-success text-white shadow-small hover:-translate-y-1 hover:shadow-medium active:translate-y-0 active:shadow-small",
         warning:
-          "bg-warning text-deep-ops shadow-small hover:-translate-y-1 hover:bg-warning/90 hover:shadow-medium active:translate-y-0 active:shadow-small",
+          "hover:bg-warning/90 bg-warning text-deep-ops shadow-small hover:-translate-y-1 hover:shadow-medium active:translate-y-0 active:shadow-small",
         info:
-          "bg-info text-white shadow-small hover:-translate-y-1 hover:bg-info/90 hover:shadow-medium active:translate-y-0 active:shadow-small",
+          "hover:bg-info/90 bg-info text-white shadow-small hover:-translate-y-1 hover:shadow-medium active:translate-y-0 active:shadow-small",
       },
       size: {
-        default: "h-10 px-md py-sm text-sm font-semibold",
-        sm: "h-8 rounded-button px-sm py-xs text-xs font-semibold",
-        lg: "h-12 rounded-button px-lg py-md text-base font-semibold",
+        default: "h-10 px-md py-sm font-semibold text-sm",
+        sm: "h-8 rounded-button px-sm py-xs font-semibold text-xs",
+        lg: "h-12 rounded-button px-lg py-md font-semibold text-base",
         icon: "size-10",
       },
       fullWidth: {

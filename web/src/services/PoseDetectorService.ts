@@ -18,9 +18,12 @@ import {
   NormalizedLandmark,
   PoseLandmarkerResult
 } from "@mediapipe/tasks-vision";
+import { Subject } from 'rxjs';
+import { InitError, PoseDetectorError, RuntimeError } from './PoseDetectorError';
+import cameraManager, { CameraOptions } from './CameraManager';
 
 // Re-export landmark types for convenience
-export { NormalizedLandmark, PoseLandmarkerResult };
+export type { NormalizedLandmark, PoseLandmarkerResult };
 export { DrawingUtils };
 
 // Configuration options for the pose detector
@@ -34,12 +37,8 @@ export interface PoseDetectorOptions {
   minTrackingConfidence?: number;
 }
 
-// Camera configuration options
-export interface CameraOptions {
-  facingMode?: 'user' | 'environment';
-  width?: number;
-  height?: number;
-}
+// Re-export camera options
+export { CameraOptions };
 
 // Result callback function type
 export type PoseResultsCallback = (results: PoseLandmarkerResult) => void;
@@ -47,21 +46,69 @@ export type PoseResultsCallback = (results: PoseLandmarkerResult) => void;
 /**
  * Pose Detection Service for MediaPipe
  */
-export class PoseDetectorService {
+class PoseDetectorService {
   private poseLandmarker: PoseLandmarker | null = null;
   private isModelLoading: boolean = false;
   private modelError: string | null = null;
-  private stream: MediaStream | null = null;
   private videoElement: HTMLVideoElement | null = null;
   private canvasElement: HTMLCanvasElement | null = null;
   private requestAnimationId: number | null = null;
   private lastVideoTime: number = -1;
   private isPredicting: boolean = false;
   private resultsCallback: PoseResultsCallback | null = null;
+  private initialized: boolean = false;
+  private activeConsumers: number = 0;
   
   // Default options
   private defaultModelPath = '/models/pose_landmarker_lite.task';
   private defaultWasmPath = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm';
+  
+  // RxJS Subject for emitting pose frames
+  public pose$: Subject<PoseLandmarkerResult> = new Subject<PoseLandmarkerResult>();
+  
+  /**
+   * Check if the service is initialized
+   */
+  public isInitialized(): boolean {
+    return this.initialized && this.poseLandmarker !== null;
+  }
+  
+  /**
+   * Check if detection is running
+   */
+  public isRunning(): boolean {
+    return this.isPredicting;
+  }
+  
+  /**
+   * Check if camera requires a user gesture to play (iOS Safari)
+   */
+  public requiresUserGesture(): boolean {
+    return cameraManager.requiresUserGesture();
+  }
+  
+  /**
+   * Register a consumer of the service
+   * Used for reference counting to know when to release resources
+   */
+  public registerConsumer(): void {
+    this.activeConsumers++;
+  }
+  
+  /**
+   * Unregister a consumer of the service
+   * When no consumers remain, resources can be cleaned up
+   */
+  public releaseConsumer(): void {
+    this.activeConsumers = Math.max(0, this.activeConsumers - 1);
+    
+    // Auto-cleanup when no more consumers
+    if (this.activeConsumers === 0) {
+      this.stop();
+      // Don't destroy resources automatically to avoid reloading models
+      // Full cleanup must be called explicitly
+    }
+  }
   
   /**
    * Initialize the MediaPipe pose detection model
@@ -69,9 +116,15 @@ export class PoseDetectorService {
    * @returns Promise that resolves when the model is loaded
    */
   public async initialize(options: PoseDetectorOptions = {}): Promise<void> {
-    if (this.poseLandmarker) {
+    if (this.isInitialized()) {
       console.log("PoseDetectorService: Model already initialized");
-      return;
+      return Promise.resolve();
+    }
+    
+    if (this.isModelLoading) {
+      return Promise.reject(
+        new PoseDetectorError(InitError.ALREADY_INITIALIZED, "Model is currently loading")
+      );
     }
     
     this.isModelLoading = true;
@@ -98,12 +151,14 @@ export class PoseDetectorService {
         minTrackingConfidence: options.minTrackingConfidence || 0.5
       });
       
+      this.initialized = true;
       console.log("PoseDetectorService: Model initialized successfully");
       return Promise.resolve();
     } catch (err) {
       this.modelError = err instanceof Error ? err.message : String(err);
       console.error("PoseDetectorService: Failed to initialize model:", this.modelError);
-      return Promise.reject(this.modelError);
+      const error = new PoseDetectorError(InitError.MODEL_LOAD, this.modelError);
+      return Promise.reject(error);
     } finally {
       this.isModelLoading = false;
     }
@@ -111,6 +166,8 @@ export class PoseDetectorService {
   
   /**
    * Start the camera stream and connect it to a video element
+   * Uses the shared CameraManager for better lifecycle management
+   * 
    * @param videoElement HTML video element to attach the stream to
    * @param options Camera configuration options
    * @returns Promise that resolves with permission status when camera is started
@@ -121,37 +178,27 @@ export class PoseDetectorService {
   ): Promise<boolean> {
     this.videoElement = videoElement;
     
-    // Stop any existing camera stream first
-    if (this.stream) {
-      this.stopCamera();
-    }
-    
     try {
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: options.facingMode || 'user',
-          width: options.width ? { ideal: options.width } : { ideal: 640 },
-          height: options.height ? { ideal: options.height } : { ideal: 480 }
-        },
-        audio: false
-      };
+      const success = await cameraManager.startCamera(videoElement, options);
       
-      console.log("PoseDetectorService: Requesting camera access");
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      this.stream = stream;
-      
-      if (this.videoElement) {
-        this.videoElement.srcObject = stream;
-        console.log("PoseDetectorService: Camera started successfully");
+      if (!success) {
+        this.modelError = cameraManager.getError()?.message || "Failed to start camera";
       }
       
-      return true;
+      return success;
     } catch (err) {
-      console.error("PoseDetectorService: Error accessing camera:", err);
-      const errorMessage = this.getErrorMessageFromMediaDevicesError(err);
-      this.modelError = errorMessage;
+      console.error("PoseDetectorService: Error starting camera:", err);
+      this.modelError = err instanceof Error ? err.message : String(err);
       return false;
     }
+  }
+  
+  /**
+   * Resume the camera if it was paused
+   * Useful for iOS Safari which requires user gesture
+   */
+  public async resumeCamera(): Promise<boolean> {
+    return cameraManager.resumeStream();
   }
   
   /**
@@ -161,12 +208,12 @@ export class PoseDetectorService {
    * @param callback Function to call with pose detection results
    * @returns boolean indicating whether detection started successfully
    */
-  public startDetection(
+  public start(
     videoElement: HTMLVideoElement,
     canvasElement: HTMLCanvasElement | null = null,
-    callback: PoseResultsCallback
+    callback?: PoseResultsCallback
   ): boolean {
-    if (!this.poseLandmarker) {
+    if (!this.isInitialized()) {
       console.error("PoseDetectorService: Cannot start detection, model not initialized");
       return false;
     }
@@ -178,11 +225,12 @@ export class PoseDetectorService {
     
     this.videoElement = videoElement;
     this.canvasElement = canvasElement;
-    this.resultsCallback = callback;
+    this.resultsCallback = callback || null;
     this.isPredicting = true;
     this.lastVideoTime = -1;
     
     this.predictFrame();
+    this.registerConsumer();
     console.log("PoseDetectorService: Pose detection started");
     return true;
   }
@@ -190,27 +238,23 @@ export class PoseDetectorService {
   /**
    * Stop pose detection
    */
-  public stopDetection(): void {
+  public stop(): void {
     this.isPredicting = false;
     if (this.requestAnimationId) {
       cancelAnimationFrame(this.requestAnimationId);
       this.requestAnimationId = null;
     }
+    this.releaseConsumer();
     console.log("PoseDetectorService: Pose detection stopped");
   }
   
   /**
    * Stop and release the camera stream
+   * Uses the shared CameraManager
    */
   public stopCamera(): void {
-    if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
-      this.stream = null;
-    }
-    
-    if (this.videoElement) {
-      this.videoElement.srcObject = null;
-    }
+    cameraManager.removeConsumer();
+    this.videoElement = null;
     
     console.log("PoseDetectorService: Camera stopped");
   }
@@ -219,7 +263,7 @@ export class PoseDetectorService {
    * Clean up all resources
    */
   public destroy(): void {
-    this.stopDetection();
+    this.stop();
     this.stopCamera();
     
     if (this.poseLandmarker) {
@@ -230,6 +274,8 @@ export class PoseDetectorService {
     this.videoElement = null;
     this.canvasElement = null;
     this.resultsCallback = null;
+    this.initialized = false;
+    this.activeConsumers = 0;
     console.log("PoseDetectorService: Resources destroyed");
   }
   
@@ -248,13 +294,6 @@ export class PoseDetectorService {
   }
   
   /**
-   * Get current prediction status
-   */
-  public isPredicting(): boolean {
-    return this.isPredicting;
-  }
-  
-  /**
    * Create a DrawingUtils instance for the given canvas
    * @param canvas Canvas element to draw on
    * @returns DrawingUtils instance
@@ -262,7 +301,10 @@ export class PoseDetectorService {
   public createDrawingUtils(canvas: HTMLCanvasElement): DrawingUtils {
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      throw new Error("PoseDetectorService: Failed to get 2D context for canvas");
+      throw new PoseDetectorError(
+        RuntimeError.UNKNOWN,
+        "PoseDetectorService: Failed to get 2D context for canvas"
+      );
     }
     return new DrawingUtils(ctx);
   }
@@ -327,6 +369,9 @@ export class PoseDetectorService {
           }
         }
         
+        // Emit results to the subject
+        this.pose$.next(result);
+        
         // Invoke callback with results
         if (this.resultsCallback) {
           this.resultsCallback(result);
@@ -339,29 +384,10 @@ export class PoseDetectorService {
       this.requestAnimationId = requestAnimationFrame(() => this.predictFrame());
     }
   }
-  
-  /**
-   * Get a user-friendly error message from a MediaDevices error
-   */
-  private getErrorMessageFromMediaDevicesError(err: unknown): string {
-    if (err instanceof Error) {
-      switch (err.name) {
-        case 'NotAllowedError':
-        case 'PermissionDeniedError':
-          return "Camera permission denied. Please grant access in your browser settings.";
-        case 'NotFoundError':
-        case 'DevicesNotFoundError':
-          return "No camera found. Please ensure a camera is connected and enabled.";
-        default:
-          return `Error accessing camera: ${err.message}`;
-      }
-    }
-    return "An unknown error occurred while accessing the camera.";
-  }
 }
 
-// Create and export a singleton instance for convenient use
+// Create and export a singleton instance
 export const poseDetectorService = new PoseDetectorService();
 
-// Default export for cases where singleton is not desired
-export default PoseDetectorService; 
+// Export the singleton as default for convenience
+export default poseDetectorService; 

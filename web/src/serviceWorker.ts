@@ -142,7 +142,7 @@ async function networkFirstStrategy(request: Request) {
     cache.put(request, networkResponse.clone());
     
     return networkResponse;
-  } catch (error) {
+  } catch (_error) {
     console.log('[Service Worker] Network request failed, trying cache', request.url);
     
     // Try to get from cache
@@ -224,8 +224,12 @@ self.addEventListener('sync', (event) => {
     notifyClients({ type: 'SYNC_STATUS', status: 'syncing' });
     event.waitUntil(
       syncWorkouts()
-        .then(() => {
-          notifyClients({ type: 'SYNC_STATUS', status: 'success' });
+        .then((syncedCount) => {
+          notifyClients({ 
+            type: 'SYNC_STATUS', 
+            status: 'success',
+            data: { count: syncedCount }
+          });
         })
         .catch(error => {
           console.error('[Service Worker] Sync failed:', error);
@@ -259,17 +263,237 @@ self.addEventListener('message', (event) => {
 // Function to sync pending workout data when back online
 async function syncWorkouts() {
   try {
-    // This would normally use IndexedDB to store and retrieve pending workouts
-    // For now, this is a placeholder for the actual implementation
     console.log('[Service Worker] Syncing pending workouts');
     
-    // Implementation will be completed in the IndexedDB integration phase
-    return Promise.resolve();
+    // Open the database
+    const db = await openDatabase();
+    if (!db) {
+      console.error('[Service Worker] Failed to open database');
+      return 0;
+    }
+    
+    // Get all pending exercises
+    const pendingExercises = await getAllPendingExercises(db);
+    
+    if (pendingExercises.length === 0) {
+      console.log('[Service Worker] No pending workouts to sync');
+      return 0;
+    }
+    
+    let syncedCount = 0;
+    
+    // Process each pending exercise
+    for (const exercise of pendingExercises) {
+      try {
+        // Increment sync attempt counter
+        await incrementSyncAttempt(db, exercise.id);
+        
+        // Skip if too many attempts
+        if (exercise.syncAttempts > 5) {
+          console.warn(`[Service Worker] Skipping exercise ${exercise.id} after ${exercise.syncAttempts} failed attempts`);
+          continue;
+        }
+        
+        // Prepare request data
+        const requestData = {
+          exercise_id: exercise.exerciseId,
+          reps: exercise.reps,
+          duration: exercise.duration,
+          distance: exercise.distance,
+          notes: exercise.notes
+        };
+        
+        // Send to server
+        const response = await fetch('/api/v1/exercises', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${await getAuthToken()}`
+          },
+          body: JSON.stringify(requestData)
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
+        // If successful, remove from queue
+        await deletePendingExercise(db, exercise.id);
+        syncedCount++;
+      } catch (error) {
+        console.error(`[Service Worker] Failed to sync exercise ${exercise.id}:`, error);
+        // We don't throw here to allow other exercises to sync
+      }
+    }
+    
+    console.log(`[Service Worker] Successfully synced ${syncedCount} workouts`);
+    return syncedCount;
   } catch (error) {
     console.error('[Service Worker] Workout sync failed:', error);
-    return Promise.reject(error);
+    throw error;
   }
 }
 
+// Helper function to get auth token
+async function getAuthToken() {
+  try {
+    // Try to get token from localStorage
+    // Note: Service worker can't directly access localStorage, so we check IndexedDB or cache
+    const tokenCache = await caches.open('auth-token-cache');
+    const tokenResponse = await tokenCache.match('/auth-token');
+    
+    if (tokenResponse) {
+      const tokenData = await tokenResponse.json();
+      return tokenData.token;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('[Service Worker] Failed to get auth token:', error);
+    return null;
+  }
+}
+
+// IndexedDB helper functions
+async function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open('pt-champion-db', 2);
+    
+    request.onerror = () => {
+      console.error('[Service Worker] IndexedDB error');
+      reject(request.error);
+    };
+    
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+    
+    request.onupgradeneeded = (event) => {
+      const db = request.result;
+      
+      // Create stores if they don't exist
+      if (!db.objectStoreNames.contains('pendingExercises')) {
+        const pendingStore = db.createObjectStore('pendingExercises', { keyPath: 'id' });
+        pendingStore.createIndex('by-created', 'createdAt');
+        pendingStore.createIndex('by-sync-attempts', 'syncAttempts');
+      }
+    };
+  });
+}
+
+async function getAllPendingExercises(db) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('pendingExercises', 'readonly');
+    const store = transaction.objectStore('pendingExercises');
+    const request = store.getAll();
+    
+    request.onerror = () => {
+      reject(request.error);
+    };
+    
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+  });
+}
+
+async function incrementSyncAttempt(db, id) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('pendingExercises', 'readwrite');
+    const store = transaction.objectStore('pendingExercises');
+    const getRequest = store.get(id);
+    
+    getRequest.onerror = () => {
+      reject(getRequest.error);
+    };
+    
+    getRequest.onsuccess = () => {
+      const exercise = getRequest.result;
+      if (exercise) {
+        exercise.syncAttempts += 1;
+        const updateRequest = store.put(exercise);
+        
+        updateRequest.onerror = () => {
+          reject(updateRequest.error);
+        };
+        
+        updateRequest.onsuccess = () => {
+          resolve();
+        };
+      } else {
+        resolve();
+      }
+    };
+  });
+}
+
+async function deletePendingExercise(db, id) {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction('pendingExercises', 'readwrite');
+    const store = transaction.objectStore('pendingExercises');
+    const request = store.delete(id);
+    
+    request.onerror = () => {
+      reject(request.error);
+    };
+    
+    request.onsuccess = () => {
+      resolve();
+    };
+  });
+}
+
 // Empty export to make TypeScript treat this as a module
-export {}; 
+export {};
+
+// New code block
+fetch(e.request)
+  .then(response => response)
+  .catch(_error => {
+    console.log('Failed to fetch from network');
+    return caches.match(e.request);
+  });
+
+// New code block
+unregister: () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready
+      .then(registration => {
+        registration.unregister();
+      })
+      .catch(_error => {
+        console.log('Error unregistering service worker');
+      });
+  }
+}
+
+// New code block
+if (navigator.onLine) {
+  // Attempt to replace cache with fresh data
+  fetch(request.clone())
+    .then(response => {
+      if (!response || response.status !== 200 || response.type !== 'basic') {
+        return response;
+      }
+
+      const responseToCache = response.clone();
+      caches.open(CACHE_NAME)
+        .then(cache => {
+          cache.put(request, responseToCache);
+        })
+        .catch(_error => {
+          console.log('Failed to update cache');
+        });
+
+      return response;
+    })
+    .catch(() => {
+      console.log('Fetch failed, falling back to cache');
+      return cachedResponse;
+    });
+}
+
+// New code block
+function checkForUpdate(e: ExtendableEvent) {
+  // ... existing code ...
+} 

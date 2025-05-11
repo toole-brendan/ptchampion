@@ -1,0 +1,15 @@
+src/pages/exercises/PushupTracker.tsx:33:const PUSHUP_THRESHOLD_ANGLE_DOWN = 90; // Angle threshold for elbows down
+src/pages/exercises/PushupTracker.tsx:34:const PUSHUP_THRESHOLD_ANGLE_UP = 160; // Angle threshold for elbows up (full extension)
+src/pages/exercises/PushupTracker.tsx:35:const BACK_STRAIGHT_THRESHOLD_ANGLE = 165; // Min angle for shoulder-hip-knee (degrees)
+src/pages/exercises/PushupTracker.tsx:338:    const isBackStraight = bodyAngle >= BACK_STRAIGHT_THRESHOLD_ANGLE;
+src/pages/exercises/PushupTracker.tsx:339:    const isArmsExtended = elbowAngle >= PUSHUP_THRESHOLD_ANGLE_UP;
+src/pages/exercises/PushupTracker.tsx:340:    const isArmsBentDown = elbowAngle <= PUSHUP_THRESHOLD_ANGLE_DOWN;
+src/pages/exercises/PushupTracker.tsx:640:                (Angle &gt;= {BACK_STRAIGHT_THRESHOLD_ANGLE}°)
+src/pages/exercises/PushupTracker.tsx:644:                Lower until elbows bend to at least {PUSHUP_THRESHOLD_ANGLE_DOWN}°, 
+src/pages/exercises/PushupTracker.tsx:645:                then push up until arms are fully extended (elbow angle &gt;= {PUSHUP_THRESHOLD_ANGLE_UP}°).
+src/pages/exercises/SitupTracker.tsx:33:const SITUP_THRESHOLD_ANGLE_DOWN = 160; // Min hip angle (shoulder-hip-knee) when DOWN (closer to 180)
+src/pages/exercises/SitupTracker.tsx:34:const SITUP_THRESHOLD_ANGLE_UP = 80;  // Max hip angle (shoulder-hip-knee) when UP (more acute)
+src/pages/exercises/SitupTracker.tsx:333:    const isDown = hipAngle >= SITUP_THRESHOLD_ANGLE_DOWN;
+src/pages/exercises/SitupTracker.tsx:334:    const isUp = hipAngle <= SITUP_THRESHOLD_ANGLE_UP;
+src/pages/exercises/SitupTracker.tsx:595:                Sit up until hip angle &lt;= {SITUP_THRESHOLD_ANGLE_UP}° (upper body near vertical), 
+src/pages/exercises/SitupTracker.tsx:596:                then lie back down until hip angle &gt;= {SITUP_THRESHOLD_ANGLE_DOWN}° (nearly flat).

@@ -10,7 +10,7 @@ const progressVariants = cva(
     variants: {
       variant: {
         default: "bg-cream-dark",
-        ghost: "bg-transparent border border-brass-gold/20",
+        ghost: "border-brass-gold/20 border bg-transparent",
       },
       size: {
         default: "h-2",
@@ -81,12 +81,12 @@ const Progress = React.forwardRef<
       {(label || showValue) && (
         <div className="mb-1 flex justify-between">
           {label && (
-            <span className="text-sm font-semibold text-tactical-gray">
+            <span className="font-semibold text-sm text-tactical-gray">
               {label}
             </span>
           )}
           {showValue && (
-            <span className="text-sm font-mono text-command-black">
+            <span className="font-mono text-sm text-command-black">
               {formattedValue}
             </span>
           )}
