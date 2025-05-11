@@ -13,12 +13,20 @@ export * from './PullupGrader';
 export * from './SitupGrader';
 export * from './RunningGrader';
 
+// Export rep counting functionality
+export * from './RepCounter';
+export * from './RepCounterAdapter';
+
+// Export APFT scoring functionality
+export * from './APFTScoring';
+
 // Import concrete grader implementations for the factory
 import PushupGrader from './PushupGrader';
 import PullupGrader from './PullupGrader';
 import SitupGrader from './SitupGrader';
 import RunningGrader from './RunningGrader';
 import { ExerciseGrader } from './ExerciseGrader';
+import { createRepCounterAdapter, RepCounterAdapter } from './RepCounterAdapter';
 
 /**
  * Exercise types enum for use with the grader factory
@@ -60,6 +68,7 @@ export function createGrader(exerciseType: string | ExerciseType): ExerciseGrade
  */
 export class ExerciseGraderManager {
   private graders: Map<ExerciseType, ExerciseGrader>;
+  private repCounters: Map<ExerciseType, RepCounterAdapter<any>>;
   
   constructor() {
     this.graders = new Map();
@@ -68,6 +77,12 @@ export class ExerciseGraderManager {
     this.graders.set(ExerciseType.PULLUP, new PullupGrader());
     this.graders.set(ExerciseType.SITUP, new SitupGrader());
     this.graders.set(ExerciseType.RUNNING, new RunningGrader());
+    
+    // Initialize rep counters
+    this.repCounters = new Map();
+    this.repCounters.set(ExerciseType.PUSHUP, createRepCounterAdapter(ExerciseType.PUSHUP));
+    this.repCounters.set(ExerciseType.PULLUP, createRepCounterAdapter(ExerciseType.PULLUP));
+    this.repCounters.set(ExerciseType.SITUP, createRepCounterAdapter(ExerciseType.SITUP));
   }
   
   /**
@@ -84,10 +99,24 @@ export class ExerciseGraderManager {
   }
   
   /**
+   * Get a rep counter adapter for the specified exercise type
+   * @param exerciseType Type of exercise
+   * @returns RepCounterAdapter instance
+   */
+  getRepCounter(exerciseType: ExerciseType): RepCounterAdapter<any> {
+    const counter = this.repCounters.get(exerciseType);
+    if (!counter) {
+      throw new Error(`Rep counter for ${exerciseType} not initialized`);
+    }
+    return counter;
+  }
+  
+  /**
    * Reset all graders to their initial state
    */
   resetAll(): void {
     this.graders.forEach(grader => grader.reset());
+    this.repCounters.forEach(counter => counter.reset());
   }
 }
 

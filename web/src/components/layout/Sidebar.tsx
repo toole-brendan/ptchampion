@@ -7,12 +7,14 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
   LogOut as LogOutIcon,
-  X as XIcon
+  X as XIcon,
+  Camera as CameraIcon
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ptChampionLogo from '@/assets/pt_champion_logo.png';
+import { useFeatureFlags } from '@/lib/featureFlags';
 
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
@@ -73,6 +75,41 @@ export interface SidebarProps {
   onMobileClose?: () => void;
 }
 
+// Navigation items
+const NavItem = ({ to, icon, label, isCollapsed }: { to: string; icon: React.ReactNode; label: string; isCollapsed?: boolean }) => {
+  const location = useLocation();
+  const isActive = location.pathname === to;
+  
+  return (
+    <li>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            to={to}
+            className={cn(
+              "group flex h-11 items-center rounded-md transition-colors duration-150 ease-in-out",
+              isCollapsed ? 'justify-center px-0' : 'px-3',
+              isActive
+                ? 'bg-brass-gold/20 text-brass-gold font-medium'
+                : 'text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold'
+            )}
+          >
+            <div className={cn("flex-shrink-0", isCollapsed ? 'size-5' : 'mr-3 size-5')}>
+              {icon}
+            </div>
+            {!isCollapsed && <span className="text-sm font-sans">{label}</span>}
+          </Link>
+        </TooltipTrigger>
+        {isCollapsed && (
+          <TooltipContent side="right">
+            {label}
+          </TooltipContent>
+        )}
+      </Tooltip>
+    </li>
+  );
+};
+
 const Sidebar: React.FC<SidebarProps> = ({ 
   username, 
   onLogout, 
@@ -81,6 +118,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const { isEnabled } = useFeatureFlags();
   
   useEffect(() => {
     if (isMobileOpen && onMobileClose) {
@@ -164,32 +202,53 @@ const Sidebar: React.FC<SidebarProps> = ({
       <nav className="mt-4 grow overflow-y-auto">
         <ul className={cn("space-y-1", isCollapsed ? 'px-2' : 'px-4')}>
           {navItems.map((item) => (
-            <li key={item.path}>
-               <Tooltip>
-                 <TooltipTrigger asChild>
-                    <Link
-                      to={item.path}
-                      className={cn(
-                        "group flex h-11 items-center rounded-md transition-colors duration-150 ease-in-out",
-                        isCollapsed ? 'justify-center px-0' : 'px-3',
-                        isActive(item.path)
-                          ? 'bg-brass-gold/20 text-brass-gold font-medium'
-                          : 'text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold'
-                      )}
-                    >
-                      <item.icon className={cn("flex-shrink-0", isCollapsed ? 'size-5' : 'mr-3 size-5')} /> 
-                      {!isCollapsed && <span className="text-sm font-sans">{item.name}</span>}
-                    </Link>
-                 </TooltipTrigger>
-                 {isCollapsed && (
-                   <TooltipContent side="right">
-                     {item.name}
-                   </TooltipContent>
-                 )}
-               </Tooltip>
-            </li>
+            <NavItem 
+              key={item.path}
+              to={item.path}
+              icon={<item.icon className="size-5" />}
+              label={item.name}
+              isCollapsed={isCollapsed}
+            />
           ))}
         </ul>
+        
+        {/* Experimental Features Section */}
+        {isEnabled('experimental_features', false) && (
+          <div className="mt-6">
+            <h4 className={cn(
+              "text-xs text-gray-400 uppercase mb-2",
+              isCollapsed ? 'text-center' : 'px-4'
+            )}>
+              {!isCollapsed && 'Experimental'}
+            </h4>
+            <ul className={cn("space-y-1", isCollapsed ? 'px-2' : 'px-4')}>
+              <NavItem
+                to="/example/calibration"
+                icon={<CameraIcon className="size-5" />}
+                label="MediaPipe Calibration"
+                isCollapsed={isCollapsed}
+              />
+              <NavItem
+                to="/example/pushup-analyzer"
+                icon={<DumbbellIcon className="size-5" />}
+                label="Push-up Analyzer"
+                isCollapsed={isCollapsed}
+              />
+              <NavItem
+                to="/example/situp-analyzer"
+                icon={<DumbbellIcon className="size-5" />}
+                label="Sit-up Analyzer"
+                isCollapsed={isCollapsed}
+              />
+              <NavItem
+                to="/example/pullup-analyzer"
+                icon={<DumbbellIcon className="size-5" />}
+                label="Pull-up Analyzer"
+                isCollapsed={isCollapsed}
+              />
+            </ul>
+          </div>
+        )}
       </nav>
       
       {/* Bottom controls section */}

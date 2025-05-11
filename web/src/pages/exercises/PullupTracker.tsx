@@ -25,6 +25,9 @@ import {
   PoseLandmarkerResult
 } from "@mediapipe/tasks-vision";
 
+// --- APFT Scoring Import ---
+import { calculatePullupScore, formatScoreDisplay } from '../../grading/APFTScoring';
+
 // --- Pull-up specific logic constants (adjust as needed) ---
 const PULLUP_THRESHOLD_ELBOW_ANGLE_DOWN = 160; // Angle for fully extended arms at bottom
 const PULLUP_THRESHOLD_VISIBILITY = 0.6;      // Visibility threshold for landmarks
@@ -46,6 +49,9 @@ const PullupTracker: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // APFT scoring state
+  const [pullupScore, setPullupScore] = useState<number>(0);
 
   // Camera state
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -386,7 +392,11 @@ const PullupTracker: React.FC = () => {
     setIsFinished(true);
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
-    console.log(`Workout finished! Reps: ${repCount}, Time: ${formatTime(timer)}`);
+    // Calculate final APFT score
+    const finalScore = calculatePullupScore(repCount);
+    setPullupScore(finalScore);
+
+    console.log(`Workout finished! Reps: ${repCount}, Time: ${formatTime(timer)}, APFT Score: ${finalScore}`);
 
     if (repCount > 0 && user) {
         setIsSubmitting(true);
@@ -398,7 +408,7 @@ const PullupTracker: React.FC = () => {
                 exercise_id: EXERCISE_ID,
                 reps: repCount,
                 duration: timer,
-                notes: `Tracked via webcam. Final State: ${pullupState}`
+                notes: `Tracked via webcam. Final State: ${pullupState}, APFT Score: ${finalScore}`
             };
             // Capture response
             const response: ExerciseResponse = await logExercise(exerciseData); 
@@ -442,6 +452,7 @@ const PullupTracker: React.FC = () => {
     setSuccess(false);
     setIsSubmitting(false);
     setLoggedGrade(null); // Reset grade
+    setPullupScore(0);
     if (requestRef.current) cancelAnimationFrame(requestRef.current);
     console.log("Resetting MediaPipe state...");
   };
@@ -451,6 +462,16 @@ const PullupTracker: React.FC = () => {
     const seconds = (timeInSeconds % 60).toString().padStart(2, '0');
     return `${minutes}:${seconds}`;
   };
+
+  // Effect to update APFT score when rep count changes
+  useEffect(() => {
+    if (repCount > 0) {
+      const score = calculatePullupScore(repCount);
+      setPullupScore(score);
+    } else {
+      setPullupScore(0);
+    }
+  }, [repCount]);
 
   // --- JSX Structure (based on PushupTracker) ---
   return (
@@ -511,7 +532,7 @@ const PullupTracker: React.FC = () => {
           </div>
 
           {/* Stats Display */}
-          <div className="grid grid-cols-2 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Reps</p>
               <p className="text-4xl font-bold text-foreground">{repCount}</p>
@@ -521,6 +542,10 @@ const PullupTracker: React.FC = () => {
               <p className="flex items-center justify-center text-4xl font-bold text-foreground">
                 <Timer className="mr-1 inline-block size-6" />{formatTime(timer)}
               </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">APFT Score</p>
+              <p className="text-4xl font-bold text-foreground">{pullupScore}</p>
             </div>
           </div>
 
@@ -584,6 +609,30 @@ const PullupTracker: React.FC = () => {
             )}
         </CardFooter>
       </Card>
+
+      {isFinished && (
+        <div className="mt-4 w-full rounded-lg bg-muted p-4">
+          <h3 className="mb-2 text-lg font-semibold">Workout Summary</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Reps</p>
+              <p className="text-2xl font-semibold">{repCount}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Time</p>
+              <p className="text-2xl font-semibold">{formatTime(timer)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">APFT Score</p>
+              <p className="text-2xl font-semibold">{pullupScore}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Rep-to-Score</p>
+              <p className="text-2xl font-semibold">{formatScoreDisplay(repCount, pullupScore)}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

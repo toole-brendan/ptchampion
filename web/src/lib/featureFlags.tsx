@@ -7,6 +7,8 @@ export const FLAGS = {
   FINE_TUNED_PUSHUP_MODEL: 'fine_tuned_pushup_model',
   TEAM_CHALLENGES: 'team_challenges',
   DARK_MODE_DEFAULT: 'dark_mode_default',
+  EXPERIMENTAL_FEATURES: 'experimental_features',
+  MEDIAPIPE_HOLISTIC: 'mediapipe_holistic',
 };
 
 // API response type

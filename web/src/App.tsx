@@ -8,6 +8,10 @@ import { ThemeProvider } from './lib/themeContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import OfflineBanner from './components/OfflineBanner';
+import ExerciseCalibrationExample from './components/ExerciseCalibrationExample';
+import PushupAnalyzerDemo from './components/PushupAnalyzerDemo';
+import SitupAnalyzerDemo from './components/SitupAnalyzerDemo';
+import PullupAnalyzerDemo from './components/PullupAnalyzerDemo';
 
 // Lazy load pages for code-splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -105,6 +109,46 @@ function App({ queryClient }: AppProps) {
                       <Route path="exercises/pullups" element={<PullupTracker />} />
                       <Route path="exercises/situps" element={<SitupTracker />} />
                       <Route path="exercises/running" element={<RunningTracker />} />
+
+                      {/* Add route for the example component */}
+                      <Route 
+                        path="/example/calibration" 
+                        element={
+                          <ProtectedRoute>
+                            <ExerciseCalibrationExample />
+                          </ProtectedRoute>
+                        } 
+                      />
+
+                      {/* Add route for PushupAnalyzerDemo */}
+                      <Route 
+                        path="/example/pushup-analyzer" 
+                        element={
+                          <ProtectedRoute>
+                            <PushupAnalyzerDemo />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      {/* Add route for SitupAnalyzerDemo */}
+                      <Route 
+                        path="/example/situp-analyzer" 
+                        element={
+                          <ProtectedRoute>
+                            <SitupAnalyzerDemo />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      {/* Add route for PullupAnalyzerDemo */}
+                      <Route 
+                        path="/example/pullup-analyzer" 
+                        element={
+                          <ProtectedRoute>
+                            <PullupAnalyzerDemo />
+                          </ProtectedRoute>
+                        } 
+                      />
                     </Route>
                     
                     {/* Catch-all route - redirect to NotFound */}

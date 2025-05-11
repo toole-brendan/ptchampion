@@ -25,6 +25,9 @@ import {
   PoseLandmarkerResult
 } from "@mediapipe/tasks-vision";
 
+// --- APFT Scoring Import ---
+import { calculatePushupScore, formatScoreDisplay } from '../../grading/APFTScoring';
+
 // --- Push-up specific logic constants (can be tuned) ---
 const PUSHUP_THRESHOLD_ANGLE_DOWN = 90; // Angle threshold for elbows down
 const PUSHUP_THRESHOLD_ANGLE_UP = 160; // Angle threshold for elbows up (full extension)
@@ -43,6 +46,9 @@ const PushupTracker: React.FC = () => {
   const [isActive, setIsActive] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  // APFT scoring state
+  const [pushupScore, setPushupScore] = useState<number>(0);
 
   // Camera state
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -453,7 +459,11 @@ const PushupTracker: React.FC = () => {
       cancelAnimationFrame(requestRef.current);
     }
 
-    console.log(`Workout finished! Reps: ${repCount}, Time: ${formatTime(timer)}`);
+    // Calculate final APFT score
+    const finalScore = calculatePushupScore(repCount);
+    setPushupScore(finalScore);
+
+    console.log(`Workout finished! Reps: ${repCount}, Time: ${formatTime(timer)}, APFT Score: ${finalScore}`);
 
     // --- Save workout session data ---
     if (repCount > 0 && user) { // Only save if reps were counted and user is logged in
@@ -467,7 +477,7 @@ const PushupTracker: React.FC = () => {
                 exercise_id: EXERCISE_ID,
                 reps: repCount, // Use the counted reps
                 duration: timer, // Fixed: Use duration
-                notes: `Tracked via webcam. State: ${pushupState}` // Example note
+                notes: `Tracked via webcam. State: ${pushupState}, APFT Score: ${finalScore}` // Include APFT score
             };
             // Capture response
             const response: ExerciseResponse = await logExercise(exerciseData); // Call the API
@@ -524,6 +534,16 @@ const PushupTracker: React.FC = () => {
     const seconds = (timeInSeconds % 60).toString().padStart(2, '0');
     return `${minutes}:${seconds}`;
   };
+
+  // Effect to update APFT score when rep count changes
+  useEffect(() => {
+    if (repCount > 0) {
+      const score = calculatePushupScore(repCount);
+      setPushupScore(score);
+    } else {
+      setPushupScore(0);
+    }
+  }, [repCount]);
 
   return (
     <div className="space-y-6">
@@ -594,7 +614,7 @@ const PushupTracker: React.FC = () => {
           </div>
 
           {/* Stats Display */}
-          <div className="grid grid-cols-2 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Reps</p>
               <p className="text-4xl font-bold text-foreground">{repCount}</p>
@@ -605,6 +625,10 @@ const PushupTracker: React.FC = () => {
                 <Timer className="mr-1 inline-block size-6" />
                 {formatTime(timer)}
               </p>
+            </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">APFT Score</p>
+              <p className="text-4xl font-bold text-foreground">{pushupScore}</p>
             </div>
           </div>
 
@@ -664,6 +688,30 @@ const PushupTracker: React.FC = () => {
             )}
         </CardFooter>
       </Card>
+
+      {isFinished && (
+        <div className="mt-4 w-full rounded-lg bg-muted p-4">
+          <h3 className="mb-2 text-lg font-semibold">Workout Summary</h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Reps</p>
+              <p className="text-2xl font-semibold">{repCount}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Total Time</p>
+              <p className="text-2xl font-semibold">{formatTime(timer)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">APFT Score</p>
+              <p className="text-2xl font-semibold">{pushupScore}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Rep-to-Score</p>
+              <p className="text-2xl font-semibold">{formatScoreDisplay(repCount, pushupScore)}</p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
