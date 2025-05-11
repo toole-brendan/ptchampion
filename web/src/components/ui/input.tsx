@@ -3,19 +3,19 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const inputVariants = cva(
-  "flex w-full rounded-input border border-input bg-transparent px-md py-sm text-base shadow-small transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-tactical-gray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-gold focus-visible:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+  "border-input flex w-full rounded-input border bg-transparent px-md py-sm text-base shadow-small transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-tactical-gray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-gold focus-visible:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
   {
     variants: {
       variant: {
         default: "border-cream-dark",
         outline: "border-brass-gold/50",
-        filled: "bg-cream-dark border-transparent",
+        filled: "border-transparent bg-cream-dark",
         error: "border-error focus-visible:ring-error",
       },
       size: {
         default: "h-10",
-        sm: "h-8 text-sm px-sm py-xs rounded-input",
-        lg: "h-12 text-lg px-lg py-md rounded-input",
+        sm: "h-8 rounded-input px-sm py-xs text-sm",
+        lg: "h-12 rounded-input px-lg py-md text-lg",
       },
     },
     defaultVariants: {
@@ -54,13 +54,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="mb-xs block font-sans text-small font-semibold text-tactical-gray">
+          <label className="mb-xs block font-sans text-small text-tactical-gray">
             {label}
           </label>
         )}
         <div className="relative flex items-center">
           {leftIcon && (
-            <div className="absolute left-md pointer-events-none text-tactical-gray">
+            <div className="pointer-events-none absolute left-md text-tactical-gray">
               {leftIcon}
             </div>
           )}
@@ -77,7 +77,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {rightIcon && (
-            <div className="absolute right-md pointer-events-none text-tactical-gray">
+            <div className="pointer-events-none absolute right-md text-tactical-gray">
               {rightIcon}
             </div>
           )}

@@ -61,7 +61,7 @@ export const registerServiceWorker = async (config?: Config): Promise<void> => {
     // ADDED: First unregister any existing service workers to ensure users get the latest version
     console.log('Checking for existing service workers to unregister first...');
     const registrations = await navigator.serviceWorker.getRegistrations();
-    for(let registration of registrations) {
+    for(const registration of registrations) {
       console.log('Unregistering existing service worker to force update');
       await registration.unregister();
     }
@@ -163,7 +163,7 @@ export function register(config?: Config) {
  */
 function registerValidSW(swUrl: string, config?: Config) {
   navigator.serviceWorker.register(swUrl)
-    .then(registration => {
+    .then(_registration => {
       // Forward to our main registerServiceWorker implementation
       registerServiceWorker(config);
     })
@@ -300,12 +300,9 @@ export const registerBackgroundSync = async (tag: string = 'sync-workouts'): Pro
   try {
     const registration = await navigator.serviceWorker.ready;
     
-    // Type assertion to avoid type errors
-    const anyRegistration = registration as any;
-    
-    // Check if background sync is supported
-    if ('sync' in anyRegistration) {
-      await anyRegistration.sync.register(tag);
+    // Check if sync is available on registration
+    if (registration.sync) {
+      await registration.sync.register(tag);
       console.log(`Background sync registered: ${tag}`);
     } else {
       console.log('Background Sync is not supported in this browser');

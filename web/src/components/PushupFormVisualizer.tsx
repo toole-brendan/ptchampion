@@ -45,7 +45,7 @@ const PushupFormVisualizer: React.FC<PushupFormVisualizerProps> = ({
     }
 
     // Draw feedback indicators
-    drawFeedbackIndicators(ctx, formAnalysis, width, height);
+    drawFeedbackIndicators(ctx, formAnalysis, width);
 
   }, [landmarks, formAnalysis, width, height, showAngles, showJoints]);
 
@@ -222,8 +222,7 @@ function drawJointAngles(
 function drawFeedbackIndicators(
   ctx: CanvasRenderingContext2D,
   analysis: PushupFormAnalysis,
-  width: number,
-  height: number
+  width: number
 ) {
   const indicators = [];
 

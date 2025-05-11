@@ -3,6 +3,13 @@ import { Link } from 'react-router-dom';
 import { RegisterUserRequest } from '../../lib/types';
 import config from '../../lib/config';
 
+interface DebugInfo {
+  status: number;
+  statusText: string;
+  headers: Record<string, string>;
+  data: unknown;
+}
+
 const RegisterDebug: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -10,7 +17,7 @@ const RegisterDebug: React.FC = () => {
   const [displayName, setDisplayName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [debugInfo, setDebugInfo] = useState<any>(null);
+  const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
   
   // Show the configured API URL for debugging
   const apiUrl = config.api.baseUrl;
@@ -42,7 +49,7 @@ const RegisterDebug: React.FC = () => {
     const userData: RegisterUserRequest = { 
       username, 
       password,
-      display_name: displayName || undefined
+      displayName: displayName || undefined
     };
     
     try {
@@ -83,10 +90,10 @@ const RegisterDebug: React.FC = () => {
   return (
     <div className="flex min-h-screen flex-col justify-center bg-gray-100 py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+        <h2 className="mt-6 text-center font-bold text-3xl tracking-tight text-gray-900">
           PT Champion (Debug)
         </h2>
-        <h3 className="mt-2 text-center text-2xl font-semibold text-gray-700">
+        <h3 className="mt-2 text-center font-semibold text-2xl text-gray-700">
           Create your account
         </h3>
       </div>
@@ -191,7 +198,7 @@ const RegisterDebug: React.FC = () => {
 
           {debugInfo && (
             <div className="mt-6 overflow-auto rounded-md bg-gray-50 p-3">
-              <h4 className="mb-2 text-sm font-semibold">API Response:</h4>
+              <h4 className="mb-2 font-semibold text-sm">API Response:</h4>
               <pre className="text-xs">{JSON.stringify(debugInfo, null, 2)}</pre>
             </div>
           )}

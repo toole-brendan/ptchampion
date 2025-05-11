@@ -36,7 +36,7 @@ describe('Leaderboard Component', () => {
   };
 
   beforeEach(() => {
-    // @ts-ignore
+    // @ts-expect-error - Mocking navigator.geolocation which is readonly
     global.navigator.geolocation = mockGeolocation;
   });
 
@@ -109,7 +109,7 @@ describe('Leaderboard Component', () => {
   it('shows empty state when no results', async () => {
     // Mock implementation to return empty data
     vi.mock('../Leaderboard', async (importOriginal) => {
-      const mod = await importOriginal() as any;
+      const mod = await importOriginal() as { default: React.ComponentType<unknown>; mockLeaderboard?: unknown[] };
       return {
         ...mod,
         mockLeaderboard: [],

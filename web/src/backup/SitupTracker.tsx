@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { usePoseDetector, PoseLandmarkIndex, Landmark } from '@/lib/hooks/usePoseDetector';
+import { usePoseDetector, PoseLandmarkIndex } from '@/lib/hooks/usePoseDetector';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { InfoIcon, PlayIcon, PauseIcon, RefreshCw, ShareIcon, CheckCircle, CloudOff } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -263,10 +263,10 @@ export function SitupTracker() {
   // Process landmark data to detect sit-ups
   useEffect(() => {
     if (!landmarks || landmarks.length === 0 || !isTracking) return;
-    
+
     const poseLandmarks = landmarks[0];
     if (!poseLandmarks) return;
-    
+
     // Get key body parts for a sit-up
     const leftShoulder = poseLandmarks[PoseLandmarkIndex.LEFT_SHOULDER];
     const rightShoulder = poseLandmarks[PoseLandmarkIndex.RIGHT_SHOULDER];
@@ -274,28 +274,20 @@ export function SitupTracker() {
     const rightHip = poseLandmarks[PoseLandmarkIndex.RIGHT_HIP];
     const leftKnee = poseLandmarks[PoseLandmarkIndex.LEFT_KNEE];
     const rightKnee = poseLandmarks[PoseLandmarkIndex.RIGHT_KNEE];
-    
+
     // Calculate average shoulder and hip heights (y-coordinate)
     const avgShoulderY = (leftShoulder.y + rightShoulder.y) / 2;
     const avgHipY = (leftHip.y + rightHip.y) / 2;
     const avgKneeY = (leftKnee.y + rightKnee.y) / 2;
-    
+
     setShoulderY(avgShoulderY);
     setHipY(avgHipY);
-    
-    // Detect sit-up phases based on shoulder-hip-knee angle
-    // For a sit-up, we need to measure the angle between shoulders and hips
-    const shoulderHipAngle = calculateAngle(
-      { x: avgShoulderY, y: 0 } as Point,
-      { x: avgHipY, y: 0 } as Point,
-      { x: avgKneeY, y: 0 } as Point
-    );
-    
+
     // Determine current phase based on shoulder position relative to hip
     // In a sit-up, when shoulders rise, shoulderY decreases (moves up in the image)
     const UP_THRESHOLD = 0.1; // Threshold for "up" position - shoulders above a certain point
     const DOWN_THRESHOLD = 0.2; // Threshold for "down" position - shoulders below a certain point
-    
+
     // Determine current phase
     let newPhase = currentPhase;
     if (avgShoulderY > avgHipY - DOWN_THRESHOLD) {
@@ -303,7 +295,7 @@ export function SitupTracker() {
     } else if (avgShoulderY < avgHipY - UP_THRESHOLD) {
       newPhase = 'up'; // User has sat up
     }
-    
+
     // Check for rep completion
     if (newPhase === 'down' && lastPhase === 'up') {
       setRepCount((count) => count + 1);
@@ -320,13 +312,12 @@ export function SitupTracker() {
         setFormScore((score) => Math.max(0, score - 5));
       }
     }
-    
+
     // Update phase states
     if (newPhase !== currentPhase) {
       setLastPhase(currentPhase);
       setCurrentPhase(newPhase);
     }
-    
   }, [landmarks, isTracking, currentPhase, lastPhase]);
 
   // Define a Point type for angle calculations
@@ -406,7 +397,7 @@ export function SitupTracker() {
             {/* Countdown overlay */}
             {isCountingDown && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-8xl font-bold text-brass-gold">{countdown}</span>
+                <span className="font-bold text-8xl text-brass-gold">{countdown}</span>
               </div>
             )}
             
@@ -460,11 +451,11 @@ export function SitupTracker() {
           </div>
         </CardContent>
         
-        <CardFooter className="flex justify-between border-t border-border p-4">
+        <CardFooter className="border-border flex justify-between border-t p-4">
           {!isTracking ? (
             <Button 
               onClick={startCountdown} 
-              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
+              className="hover:bg-brass-gold/90 bg-brass-gold text-deep-ops"
               disabled={!isDetectorReady || isCountingDown}
               size="lg"
             >
@@ -475,7 +466,7 @@ export function SitupTracker() {
             <Button 
               onClick={stopTracking} 
               variant="outline" 
-              className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+              className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
               size="lg"
             >
               <PauseIcon className="mr-2 size-5" />
@@ -543,7 +534,7 @@ export function SitupTracker() {
             {!submitSuccess && !savedOffline ? (
               <Button 
                 onClick={submitWorkout} 
-                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
+                className="hover:bg-brass-gold/90 w-full bg-brass-gold text-deep-ops sm:w-auto"
                 disabled={submitting}
               >
                 {submitting ? 'Saving...' : `Save Results${!isOnline ? ' Offline' : ''}`}
@@ -551,7 +542,7 @@ export function SitupTracker() {
             ) : (
               <Button
                 onClick={() => navigate('/history')}
-                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
+                className="hover:bg-brass-gold/90 w-full bg-brass-gold text-deep-ops sm:w-auto"
               >
                 View History
               </Button>
@@ -560,7 +551,7 @@ export function SitupTracker() {
             <Button 
               onClick={shareResults} 
               variant="outline" 
-              className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10 sm:w-auto"
+              className="hover:bg-brass-gold/10 w-full border-brass-gold text-brass-gold sm:w-auto"
             >
               <ShareIcon className="mr-2 size-4" />
               Share Results

@@ -22,7 +22,7 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   route?: string;
   routePath?: string;
   authenticated?: boolean;
-  user?: Record<string, any>;
+  user?: Record<string, unknown>;
   queryClient?: QueryClient;
 }
 

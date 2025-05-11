@@ -91,10 +91,8 @@ const RegisterPage: React.FC = () => {
         <div className="mb-8 flex flex-col items-center">
           <div className="relative mb-4">
             <LogoIcon className="relative z-10" />
-            <div className="absolute bottom-0 left-0 right-0 h-8 bg-brass-gold/10 blur-md"></div>
+            <div className="bg-brass-gold/10 absolute inset-x-0 bottom-0 h-8 blur-md"></div>
           </div>
-          <h1 className="font-heading text-heading2 uppercase text-command-black tracking-wider mb-2">PT Champion</h1>
-          <p className="text-tactical-gray font-semibold text-sm uppercase tracking-wider">Fitness Evaluation System</p>
         </div>
 
         {(error || validationError) && (
@@ -104,30 +102,30 @@ const RegisterPage: React.FC = () => {
           </Alert>
         )}
 
-        <div className="bg-card-background rounded-card shadow-medium overflow-hidden relative">
+        <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
           {/* Military corner cutouts - top left and right */}
-          <div className="absolute top-0 left-0 w-[15px] h-[15px] bg-background"></div>
-          <div className="absolute top-0 right-0 w-[15px] h-[15px] bg-background"></div>
+          <div className="absolute left-0 top-0 size-[15px] bg-background"></div>
+          <div className="absolute right-0 top-0 size-[15px] bg-background"></div>
           
           {/* Military corner cutouts - bottom left and right */}
-          <div className="absolute bottom-0 left-0 w-[15px] h-[15px] bg-background"></div>
-          <div className="absolute bottom-0 right-0 w-[15px] h-[15px] bg-background"></div>
+          <div className="absolute bottom-0 left-0 size-[15px] bg-background"></div>
+          <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
           
           {/* Diagonal lines for corners */}
-          <div className="absolute top-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-top-left"></div>
-          <div className="absolute top-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-top-right"></div>
-          <div className="absolute bottom-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-bottom-left"></div>
-          <div className="absolute bottom-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-bottom-right"></div>
+          <div className="bg-tactical-gray/50 absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45"></div>
+          <div className="bg-tactical-gray/50 absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45"></div>
+          <div className="bg-tactical-gray/50 absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45"></div>
+          <div className="bg-tactical-gray/50 absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45"></div>
 
           <form onSubmit={handleSubmit} className="space-y-6 p-content">
             <div className="mb-2">
-              <h2 className="font-heading text-heading4 text-center uppercase mb-2">Create Account</h2>
-              <div className="h-[1px] w-24 bg-brass-gold mx-auto"></div>
+              <h2 className="mb-2 text-center font-heading text-heading4 uppercase">Create Account</h2>
+              <div className="mx-auto h-px w-24 bg-brass-gold"></div>
             </div>
           
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="firstName" className="block text-sm font-semibold text-tactical-gray uppercase tracking-wide">
+                <label htmlFor="firstName" className="block font-semibold text-sm uppercase tracking-wide text-tactical-gray">
                   First Name
                 </label>
                 <Input
@@ -135,13 +133,13 @@ const RegisterPage: React.FC = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="w-full rounded-input border border-army-tan/50 bg-cream p-3 font-mono"
+                  className="border-army-tan/50 w-full rounded-input border bg-cream p-3 font-mono"
                   placeholder="John"
                 />
               </div>
               
               <div className="space-y-2">
-                <label htmlFor="lastName" className="block text-sm font-semibold text-tactical-gray uppercase tracking-wide">
+                <label htmlFor="lastName" className="block font-semibold text-sm uppercase tracking-wide text-tactical-gray">
                   Last Name
                 </label>
                 <Input
@@ -149,14 +147,14 @@ const RegisterPage: React.FC = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  className="w-full rounded-input border border-army-tan/50 bg-cream p-3 font-mono"
+                  className="border-army-tan/50 w-full rounded-input border bg-cream p-3 font-mono"
                   placeholder="Doe"
                 />
               </div>
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="email" className="block text-sm font-semibold text-tactical-gray uppercase tracking-wide">
+              <label htmlFor="email" className="block font-semibold text-sm uppercase tracking-wide text-tactical-gray">
                 Email
               </label>
               <Input
@@ -165,14 +163,14 @@ const RegisterPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded-input border border-army-tan/50 bg-cream p-3 font-mono"
+                className="border-army-tan/50 w-full rounded-input border bg-cream p-3 font-mono"
                 placeholder="you@example.com"
                 autoComplete="email"
               />
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="username" className="block text-sm font-semibold text-tactical-gray uppercase tracking-wide">
+              <label htmlFor="username" className="block font-semibold text-sm uppercase tracking-wide text-tactical-gray">
                 Username
               </label>
               <Input
@@ -180,14 +178,14 @@ const RegisterPage: React.FC = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full rounded-input border border-army-tan/50 bg-cream p-3 font-mono"
+                className="border-army-tan/50 w-full rounded-input border bg-cream p-3 font-mono"
                 placeholder="username"
                 autoComplete="username"
               />
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="password" className="block text-sm font-semibold text-tactical-gray uppercase tracking-wide">
+              <label htmlFor="password" className="block font-semibold text-sm uppercase tracking-wide text-tactical-gray">
                 Password
               </label>
               <Input
@@ -196,14 +194,14 @@ const RegisterPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded-input border border-army-tan/50 bg-cream p-3 font-mono"
+                className="border-army-tan/50 w-full rounded-input border bg-cream p-3 font-mono"
                 placeholder="••••••••"
                 autoComplete="new-password"
               />
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="confirmPassword" className="block text-sm font-semibold text-tactical-gray uppercase tracking-wide">
+              <label htmlFor="confirmPassword" className="block font-semibold text-sm uppercase tracking-wide text-tactical-gray">
                 Confirm Password
               </label>
               <Input
@@ -212,7 +210,7 @@ const RegisterPage: React.FC = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full rounded-input border border-army-tan/50 bg-cream p-3 font-mono"
+                className="border-army-tan/50 w-full rounded-input border bg-cream p-3 font-mono"
                 placeholder="••••••••"
                 autoComplete="new-password"
               />
@@ -220,7 +218,7 @@ const RegisterPage: React.FC = () => {
             
             <Button 
               type="submit" 
-              className="w-full shadow-medium hover:shadow-large transition-all font-heading" 
+              className="w-full font-heading shadow-medium transition-all hover:shadow-large" 
               disabled={isLoading}
             >
               {isLoading ? (
@@ -238,7 +236,7 @@ const RegisterPage: React.FC = () => {
         <div className="mt-6 text-center">
           <p className="text-tactical-gray">
             Already have an account?{' '}
-            <Link to="/login" className="text-brass-gold hover:underline font-semibold">
+            <Link to="/login" className="font-semibold text-brass-gold hover:underline">
               Sign in
             </Link>
           </p>

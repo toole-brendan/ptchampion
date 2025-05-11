@@ -101,18 +101,18 @@ const Profile: React.FC = () => {
         <div className="h-8 w-1/2 rounded bg-muted"></div> {/* Header placeholder */}
         {[1, 2, 3].map((i) => ( // Card placeholders
           <div key={i} className="space-y-4 rounded-lg bg-muted p-6">
-            <div className="h-6 w-1/3 rounded bg-muted-foreground/20"></div>
-            <div className="h-4 w-2/3 rounded bg-muted-foreground/10"></div>
+            <div className="bg-muted-foreground/20 h-6 w-1/3 rounded"></div>
+            <div className="bg-muted-foreground/10 h-4 w-2/3 rounded"></div>
             <div className="space-y-2 pt-2">
-              <div className="h-4 w-1/4 rounded bg-muted-foreground/10"></div>
-              <div className="h-10 rounded bg-muted-foreground/20"></div>
+              <div className="bg-muted-foreground/10 h-4 w-1/4 rounded"></div>
+              <div className="bg-muted-foreground/20 h-10 rounded"></div>
             </div>
             <div className="space-y-2 pt-2">
-              <div className="h-4 w-1/4 rounded bg-muted-foreground/10"></div>
-              <div className="h-10 rounded bg-muted-foreground/20"></div>
+              <div className="bg-muted-foreground/10 h-4 w-1/4 rounded"></div>
+              <div className="bg-muted-foreground/20 h-10 rounded"></div>
             </div>
-             <div className="border-t border-border/50 pt-4">
-               <div className="h-10 w-1/4 rounded bg-muted-foreground/20"></div>
+             <div className="border-border/50 border-t pt-4">
+               <div className="bg-muted-foreground/20 h-10 w-1/4 rounded"></div>
              </div>
           </div>
         ))}
@@ -123,7 +123,7 @@ const Profile: React.FC = () => {
   if (!user) {
     return (
       <div className="mx-auto max-w-3xl space-y-6"> {/* Consistent layout */}
-        <h1 className="text-2xl font-semibold text-foreground">Profile & Settings</h1>
+        <h1 className="font-semibold text-2xl text-foreground">Profile & Settings</h1>
         <Card>
           <CardContent className="pt-6 text-center text-muted-foreground">
              Please log in to view and edit your profile.
@@ -136,12 +136,12 @@ const Profile: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6"> {/* Reduced space, kept max-width */}
-      <h1 className="text-2xl font-semibold text-foreground">Profile & Settings</h1>
+      <h1 className="font-semibold text-2xl text-foreground">Profile & Settings</h1>
 
       {/* Edit Profile Section */}
       <Card className="transition-shadow hover:shadow-md"> {/* Hover effect */}
         <CardHeader>
-          <CardTitle className="flex items-center text-lg font-semibold"> {/* Standardized */}
+          <CardTitle className="flex items-center font-semibold text-lg"> {/* Standardized */}
               <UserCircle className="mr-2 size-5 text-muted-foreground" /> {/* Muted icon */}
               Edit Profile
           </CardTitle>
@@ -187,7 +187,7 @@ const Profile: React.FC = () => {
               {formData.profile_picture_url && (
                 <img 
                   src={formData.profile_picture_url} alt="Preview" 
-                  className="mt-2 size-16 rounded-full border border-border object-cover" // Adjusted size/style
+                  className="border-border mt-2 size-16 rounded-full border object-cover" // Adjusted size/style
                   onError={(e) => { e.currentTarget.style.display = 'none'; }} // Hide on error
                 />
               )}
@@ -214,7 +214,7 @@ const Profile: React.FC = () => {
       {/* Settings Section (Simplified Example) */}
       <Card className="transition-shadow hover:shadow-md"> {/* Hover effect */}
         <CardHeader>
-          <CardTitle className="flex items-center text-lg font-semibold"> {/* Standardized */}
+          <CardTitle className="flex items-center font-semibold text-lg"> {/* Standardized */}
               <Settings className="mr-2 size-5 text-muted-foreground" /> {/* Muted icon */}
               App Settings
           </CardTitle>
@@ -255,7 +255,7 @@ const Profile: React.FC = () => {
       {/* Account Actions Section */}
       <Card className="border-destructive/50 transition-shadow hover:shadow-md"> {/* Destructive border hint */}
         <CardHeader>
-          <CardTitle className="flex items-center text-lg font-semibold text-destructive"> {/* Destructive color */}
+          <CardTitle className="flex items-center font-semibold text-lg text-destructive"> {/* Destructive color */}
               Account Actions
           </CardTitle>
           <CardDescription>Manage your account.</CardDescription>

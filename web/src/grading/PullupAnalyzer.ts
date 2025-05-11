@@ -1,5 +1,5 @@
 import { NormalizedLandmark } from '../lib/types';
-import { calculateAngle, calculateDistance } from './mathUtils';
+import { calculateAngle } from './mathUtils';
 
 // Import the landmark indices
 export const PoseLandmarkIndex = {

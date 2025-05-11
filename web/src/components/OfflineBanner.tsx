@@ -23,9 +23,9 @@ export default function OfflineBanner() {
   return (
     <Alert 
       variant="warning"
-      className="fixed top-16 left-0 right-0 z-50 mx-auto max-w-md shadow-medium border border-warning/20"
+      className="border-warning/20 fixed inset-x-0 top-16 z-50 mx-auto max-w-md border shadow-medium"
     >
-      <WifiOff className="h-4 w-4" />
+      <WifiOff className="size-4" />
       <span className="ml-2 text-small">You're currently offline. Changes will sync when connection is restored.</span>
     </Alert>
   );

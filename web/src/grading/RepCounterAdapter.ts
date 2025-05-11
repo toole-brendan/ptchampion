@@ -62,7 +62,7 @@ export interface SetSummaryAnalysis {
 /**
  * Factory function to create the appropriate adapter for an exercise type
  */
-export function createRepCounterAdapter(exerciseType: ExerciseType): RepCounterAdapter<any> {
+export function createRepCounterAdapter(exerciseType: ExerciseType): RepCounterAdapter<PushupFormAnalysis | PullupFormAnalysis | SitupFormAnalysis> {
   switch (exerciseType) {
     case ExerciseType.PUSHUP:
       return new PushupRepCounterAdapter();
@@ -448,78 +448,77 @@ export class PullupRepCounterAdapter extends BaseRepCounterAdapter<PullupFormAna
       const maxElbowAngle = metrics.maxElbowAngle || 0;
       const normalizedHorizontalDisplacement = metrics.normalizedHorizontalDisplacement || 0;
       const maxKneeAngleChange = metrics.maxKneeAngleChange || 0;
-      const chinClearsBar = metrics.chinClearsBar as boolean;
+      const _chinClearsBar = metrics.chinClearsBar as boolean;
       const chinY = metrics.chinY || 0;
       const barHeight = metrics.barHeight || 0;
       const chinBarProximity = metrics.chinBarProximity || 0;
-      const isKipping = metrics.isKipping as boolean;
-      const isSwinging = metrics.isSwinging as boolean;
-      
+      const _isKipping = metrics.isKipping as boolean;
+      const _isSwinging = metrics.isSwinging as boolean;
+
       // Define thresholds based on APFT standards
       const MIN_DEAD_HANG_ANGLE = 160; // Minimum elbow angle for dead hang
       const MAX_HORIZONTAL_SWING = 0.07; // 7% of body width as max allowable swing
       const MAX_KNEE_ANGLE_CHANGE = 20; // Maximum knee angle change before considered kipping
-      const MIN_CHIN_BAR_CLEARANCE = 0.02; // Minimum distance chin should clear bar
       const MIN_CHIN_BAR_PROXIMITY = 0.01; // Chin-bar proximity that suggests contact/assistance
-      
+
       // Validate form criteria
-      
+
       // 4C.1. Chin Must Clear Bar
       // Check if chin (nose or mouth) clears the bar
       const chinClearsBarHeight = chinY < barHeight;
-      
+
       // 4C.2. Must Return to Dead Hang
       // Check if elbows fully extend at bottom
       const returnsToDeadHang = maxElbowAngle >= MIN_DEAD_HANG_ANGLE;
-      
+
       // 4C.3. No Kipping, Swinging, or Bouncing
       // Check for excessive horizontal movement or knee angle changes
       const noExcessiveSwinging = normalizedHorizontalDisplacement <= MAX_HORIZONTAL_SWING;
       const noKipping = maxKneeAngleChange <= MAX_KNEE_ANGLE_CHANGE;
-      
+
       // 4C.4. Bar Contact or Assistance (Optional)
       // Check if chin is suspiciously close to bar, suggesting contact/assistance
       const noBarAssistance = chinBarProximity > MIN_CHIN_BAR_PROXIMITY;
-      
+
       // Calculate form score (0-100)
       let formScore = 100;
-      
+
       // Penalize for insufficient chin height
       if (!chinClearsBarHeight) {
         formScore -= 40; // Severe penalty for not clearing the bar
       }
-      
+
       // Penalize for incomplete dead hang
       if (!returnsToDeadHang) {
         // Penalty proportional to how far from proper extension
         formScore -= Math.min(30, (MIN_DEAD_HANG_ANGLE - maxElbowAngle) * 1.5);
       }
-      
+
       // Penalize for excessive swinging
       if (!noExcessiveSwinging) {
         // Penalty proportional to excessive swing
         const excessSwing = normalizedHorizontalDisplacement - MAX_HORIZONTAL_SWING;
         formScore -= Math.min(30, excessSwing * 300); // Scale penalty for visibility
       }
-      
+
       // Penalize for kipping
       if (!noKipping) {
         // Penalty proportional to excessive knee movement
         const excessKneeMovement = maxKneeAngleChange - MAX_KNEE_ANGLE_CHANGE;
         formScore -= Math.min(30, excessKneeMovement * 2);
       }
-      
+
       // Penalize for bar assistance
       if (!noBarAssistance) {
         formScore -= 20; // Penalty for apparent bar contact
       }
-      
+
       // Ensure score is in range 0-100
       formScore = Math.max(0, Math.min(100, formScore));
-      
+
       // Determine if the rep is valid (all critical criteria must be met)
       const isValid = chinClearsBarHeight && returnsToDeadHang && noExcessiveSwinging && noKipping;
-      
+
       // Provide specific reason if invalid
       let reason;
       if (!chinClearsBarHeight) {
@@ -533,7 +532,7 @@ export class PullupRepCounterAdapter extends BaseRepCounterAdapter<PullupFormAna
       } else if (!noBarAssistance && !isValid) {
         reason = "Bar contact/assistance detected";
       }
-      
+
       return {
         isValid,
         reason,
@@ -628,76 +627,75 @@ export class SitupRepCounterAdapter extends BaseRepCounterAdapter<SitupFormAnaly
       // Extract situp-specific metrics
       const maxTrunkAngle = metrics.maxTrunkAngle || 0;
       const isHandPositionCorrect = metrics.isHandPositionCorrect as boolean;
-      const isShoulderBladeGrounded = metrics.isShoulderBladeGrounded as boolean;
+      const _isShoulderBladeGrounded = metrics.isShoulderBladeGrounded as boolean;
       const isHipStable = metrics.isHipStable as boolean;
-      const isKneeAngleCorrect = metrics.isKneeAngleCorrect as boolean;
+      const _isKneeAngleCorrect = metrics.isKneeAngleCorrect as boolean;
       const noseY = metrics.noseY || 0;
       const hipY = metrics.hipY || 0;
       const shoulderDiffFromGround = metrics.shoulderDiffFromGround || 0;
       const hipLift = metrics.hipLift || 0;
       const wristDistance = metrics.wristDistance || 0;
       const isPaused = metrics.isPaused as boolean;
-      
+
       // Define validation thresholds
       const MAX_SHOULDER_GROUND_DIFF = 0.03; // Maximum shoulder distance from ground
       const MAX_HIP_LIFT = 0.03; // Maximum hip lift from ground
       const MAX_WRIST_DISTANCE = 0.1; // Maximum distance between wrists
       const MIN_HIP_ANGLE_UP = 90; // Minimum hip angle at up position
-      const MAX_HIP_ANGLE_DOWN = 150; // Maximum hip angle at down position
-      
+
       // Validate specific criteria based on APFT standards
-      
+
       // 4B.1. Must Reach "Vertical" Up Position
       // Check if neck/shoulders rose above hips or hip angle < 90°
       const reachedVerticalPosition = noseY < hipY || maxTrunkAngle < MIN_HIP_ANGLE_UP;
-      
+
       // 4B.2. Must Lower Fully
       // Check if shoulders returned to ground level
       const loweredFully = shoulderDiffFromGround < MAX_SHOULDER_GROUND_DIFF;
-      
+
       // 4B.3. Hands Must Stay Interlocked Behind Head
       // Check if hands stayed together behind head
       const handsStayedInterlocked = isHandPositionCorrect && wristDistance < MAX_WRIST_DISTANCE;
-      
+
       // 4B.4. Butt Must Remain on Ground
       // Check if hips remained on ground
       const buttStayedOnGround = hipLift < MAX_HIP_LIFT && isHipStable;
-      
+
       // Calculate form score (0-100)
       let formScore = 100;
-      
+
       // Penalize for not reaching vertical up position
       if (!reachedVerticalPosition) {
         formScore -= 30;
       }
-      
+
       // Penalize for not lowering fully
       if (!loweredFully) {
         formScore -= 25;
       }
-      
+
       // Penalize for incorrect hand position
       if (!handsStayedInterlocked) {
         formScore -= 25;
       }
-      
+
       // Penalize for hips lifting off ground
       if (!buttStayedOnGround) {
         formScore -= 20;
       }
-      
+
       // Penalize for pausing during the rep
       if (isPaused) {
         formScore -= 15;
       }
-      
+
       // Ensure score is in range 0-100
       formScore = Math.max(0, Math.min(100, formScore));
-      
+
       // Determine if the rep is valid (all critical criteria must be met)
       const isValid = reachedVerticalPosition && loweredFully && 
                      handsStayedInterlocked && buttStayedOnGround && !isPaused;
-      
+
       // Provide specific reason if invalid
       let reason;
       if (!reachedVerticalPosition) {
@@ -711,7 +709,7 @@ export class SitupRepCounterAdapter extends BaseRepCounterAdapter<SitupFormAnaly
       } else if (isPaused) {
         reason = "No pausing during the rep";
       }
-      
+
       return {
         isValid,
         reason,

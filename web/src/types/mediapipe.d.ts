@@ -1,16 +1,16 @@
 declare module '@mediapipe/holistic' {
   export class Holistic {
-    constructor(options?: any);
-    setOptions(options: any): void;
-    onResults(callback: (results: any) => void): void;
+    constructor(options?: unknown);
+    setOptions(options: unknown): void;
+    onResults(callback: (results: unknown) => void): void;
     initialize(): Promise<void>;
     send(options: { image: HTMLVideoElement }): Promise<void>;
     close(): void;
   }
   
-  export const POSE_CONNECTIONS: any;
-  export const HAND_CONNECTIONS: any;
-  export const FACEMESH_TESSELATION: any;
+  export const POSE_CONNECTIONS: unknown;
+  export const HAND_CONNECTIONS: unknown;
+  export const FACEMESH_TESSELATION: unknown;
 }
 
 declare module '@mediapipe/camera_utils' {
@@ -31,14 +31,14 @@ declare module '@mediapipe/camera_utils' {
 declare module '@mediapipe/drawing_utils' {
   export function drawConnectors(
     canvasCtx: CanvasRenderingContext2D,
-    landmarks: any[],
-    connections: any,
+    landmarks: unknown[],
+    connections: unknown,
     options?: { color?: string; lineWidth?: number }
   ): void;
   
   export function drawLandmarks(
     canvasCtx: CanvasRenderingContext2D,
-    landmarks: any[],
+    landmarks: unknown[],
     options?: { color?: string; lineWidth?: number }
   ): void;
 } 

@@ -3,7 +3,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { InfoIcon, PlayIcon, PauseIcon, RefreshCw, ShareIcon, CheckCircle, CloudOff, MapPin, Watch } from 'lucide-react';
+import {
+  InfoIcon,
+  PlayIcon,
+  PauseIcon,
+  RefreshCw,
+  ShareIcon,
+  CheckCircle,
+  CloudOff,
+  MapPin,
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
@@ -393,7 +402,7 @@ export function RunningTracker() {
           )}
           
           <div className="relative mb-6 flex aspect-video flex-col items-center justify-center overflow-hidden rounded-lg bg-muted">
-            <div className="font-mono text-8xl font-bold text-brass-gold">
+            <div className="font-mono text-8xl text-brass-gold">
               {formatTime(elapsedTime)}
             </div>
             <div className="mt-4 font-mono text-2xl text-deep-ops">
@@ -406,7 +415,7 @@ export function RunningTracker() {
             {!locationPermission && geolocationAvailable && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70">
                 <MapPin className="mb-3 size-12 text-destructive" />
-                <p className="text-lg font-semibold text-white">Location Access Required</p>
+                <p className="font-semibold text-lg text-white">Location Access Required</p>
                 <p className="mt-2 max-w-xs text-center text-white/80">Please allow location access to track your runs.</p>
               </div>
             )}
@@ -414,7 +423,7 @@ export function RunningTracker() {
             {!geolocationAvailable && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70">
                 <MapPin className="mb-3 size-12 text-destructive" />
-                <p className="text-lg font-semibold text-white">Geolocation Not Available</p>
+                <p className="font-semibold text-lg text-white">Geolocation Not Available</p>
                 <p className="mt-2 max-w-xs text-center text-white/80">Your browser doesn't support location tracking.</p>
               </div>
             )}
@@ -455,11 +464,11 @@ export function RunningTracker() {
           </div>
         </CardContent>
         
-        <CardFooter className="flex justify-between border-t border-border p-4">
+        <CardFooter className="border-border flex justify-between border-t p-4">
           {!isTracking ? (
             <Button 
               onClick={startTracking} 
-              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
+              className="hover:bg-brass-gold/90 bg-brass-gold text-deep-ops"
               disabled={!locationPermission || !geolocationAvailable}
               size="lg"
             >
@@ -470,7 +479,7 @@ export function RunningTracker() {
             <Button 
               onClick={stopTracking} 
               variant="outline" 
-              className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+              className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
               size="lg"
             >
               <PauseIcon className="mr-2 size-5" />
@@ -538,7 +547,7 @@ export function RunningTracker() {
             {!submitSuccess && !savedOffline ? (
               <Button 
                 onClick={submitWorkout} 
-                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
+                className="hover:bg-brass-gold/90 w-full bg-brass-gold text-deep-ops sm:w-auto"
                 disabled={submitting}
               >
                 {submitting ? 'Saving...' : `Save Results${!isOnline ? ' Offline' : ''}`}
@@ -546,7 +555,7 @@ export function RunningTracker() {
             ) : (
               <Button
                 onClick={() => navigate('/history')}
-                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
+                className="hover:bg-brass-gold/90 w-full bg-brass-gold text-deep-ops sm:w-auto"
               >
                 View History
               </Button>
@@ -555,7 +564,7 @@ export function RunningTracker() {
             <Button 
               onClick={shareResults} 
               variant="outline" 
-              className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10 sm:w-auto"
+              className="hover:bg-brass-gold/10 w-full border-brass-gold text-brass-gold sm:w-auto"
             >
               <ShareIcon className="mr-2 size-4" />
               Share Results

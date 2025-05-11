@@ -1,16 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend
-} from 'recharts';
+import React, { useState, useEffect, useCallback } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { format, subDays, addDays, isWithinInterval } from 'date-fns';
+import { format, subDays, isWithinInterval } from 'date-fns';
 
 // Types for our workout data
 interface WorkoutDataPoint {
@@ -35,7 +26,7 @@ export default function WorkoutChart({
   timeframe = 'week',
   className
 }: WorkoutChartProps) {
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<Array<Record<string, string | number>>>([]);
   const [activeTimeframe, setActiveTimeframe] = useState(timeframe);
   
   // Generate chart colors based on workout type (matching iOS)
@@ -83,10 +74,10 @@ export default function WorkoutChart({
     // Format actual data
     const formattedData = formatDataForTimeframe(data, activeTimeframe);
     setChartData(formattedData);
-  }, [data, activeTimeframe]);
+  }, [data, activeTimeframe, formatDataForTimeframe, generateEmptyData]);
   
   // Generate empty placeholder data for the chart
-  const generateEmptyData = (timeframe: string) => {
+  const generateEmptyData = useCallback((timeframe: string) => {
     const today = new Date();
     const result = [];
     
@@ -123,10 +114,10 @@ export default function WorkoutChart({
     }
     
     return result;
-  };
+  }, []);
   
   // Format data based on the selected timeframe
-  const formatDataForTimeframe = (data: WorkoutDataPoint[], timeframe: string) => {
+  const formatDataForTimeframe = useCallback((data: WorkoutDataPoint[], timeframe: string) => {
     const today = new Date();
     let startDate: Date;
     let formatString: string;
@@ -191,10 +182,10 @@ export default function WorkoutChart({
     
     // Convert map back to array and sort by date
     return Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
-  };
+  }, [generateEmptyData]);
   
   // Custom tooltip that matches iOS design
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: unknown) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       
@@ -218,7 +209,7 @@ export default function WorkoutChart({
         <div className="flex space-x-2">
           <button
             onClick={() => setActiveTimeframe('week')}
-            className={`rounded-button px-2 py-1 text-xs font-semibold ${
+            className={`rounded-button px-2 py-1 font-semibold text-xs ${
               activeTimeframe === 'week' 
                 ? 'bg-brass-gold text-cream' 
                 : 'bg-cream-dark text-tactical-gray'
@@ -228,7 +219,7 @@ export default function WorkoutChart({
           </button>
           <button
             onClick={() => setActiveTimeframe('month')}
-            className={`rounded-button px-2 py-1 text-xs font-semibold ${
+            className={`rounded-button px-2 py-1 font-semibold text-xs ${
               activeTimeframe === 'month' 
                 ? 'bg-brass-gold text-cream' 
                 : 'bg-cream-dark text-tactical-gray'
@@ -238,7 +229,7 @@ export default function WorkoutChart({
           </button>
           <button
             onClick={() => setActiveTimeframe('year')}
-            className={`rounded-button px-2 py-1 text-xs font-semibold ${
+            className={`rounded-button px-2 py-1 font-semibold text-xs ${
               activeTimeframe === 'year' 
                 ? 'bg-brass-gold text-cream' 
                 : 'bg-cream-dark text-tactical-gray'

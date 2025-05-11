@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import MediaPipeHolisticSetup from './MediaPipeHolisticSetup';
-import { PullupAnalyzer, PullupFormAnalysis, PullupAnalyzerConfig } from '../grading/PullupAnalyzer';
+import { PullupAnalyzer, PullupAnalyzerConfig } from '../grading/PullupAnalyzer';
 import PullupFormVisualizer from './PullupFormVisualizer';
-import { NormalizedLandmark } from '../lib/types';
 
 /**
  * Demo component to showcase pull-up form analysis with MediaPipe Holistic
@@ -44,7 +43,7 @@ const PullupAnalyzerDemo: React.FC = () => {
   }, []);
 
   // Handle calibration completion
-  const handleCalibrationComplete = (calibrationData: any) => {
+  const handleCalibrationComplete = (calibrationData: unknown) => {
     console.log('Calibration complete:', calibrationData);
     
     // Set the calibration data
@@ -56,7 +55,7 @@ const PullupAnalyzerDemo: React.FC = () => {
   };
 
   // Process MediaPipe results with the pullup analyzer
-  const handleMediaPipeResults = (results: any) => {
+  const handleMediaPipeResults = (results: unknown) => {
     if (!results.poseLandmarks || !pullupAnalyzerRef.current) return;
     
     // Store landmarks for visualization
@@ -160,7 +159,7 @@ const PullupAnalyzerDemo: React.FC = () => {
                   Hang from the bar with arms fully extended in the starting position.
                   Make sure your device can see your full body.
                 </p>
-                <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-gray-200">
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
                   <MediaPipeHolisticSetup
                     onCalibrationComplete={handleCalibrationComplete}
                     onResults={handleMediaPipeResults}
@@ -169,7 +168,7 @@ const PullupAnalyzerDemo: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-6">
-                <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-gray-200">
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg border border-gray-200">
                   {/* Display the MediaPipe feed with visualization overlay */}
                   <MediaPipeHolisticSetup
                     onResults={handleMediaPipeResults}
@@ -189,9 +188,9 @@ const PullupAnalyzerDemo: React.FC = () => {
                 </div>
                 
                 {/* Controls and statistics */}
-                <div className="flex justify-between items-center">
+                <div className="flex items-center justify-between">
                   <div className="flex flex-col space-y-2">
-                    <div className="text-2xl font-bold">
+                    <div className="font-bold text-2xl">
                       {repCount} <span className="text-lg font-normal text-gray-600">reps</span>
                     </div>
                     {lastValidRepTime > 0 && (
@@ -204,7 +203,7 @@ const PullupAnalyzerDemo: React.FC = () => {
                   <div className="flex space-x-3">
                     <button
                       onClick={toggleAnalysis}
-                      className={`px-4 py-2 rounded-md font-medium ${
+                      className={`rounded-md px-4 py-2 font-medium ${
                         isAnalyzing
                           ? 'bg-red-600 text-white'
                           : 'bg-green-600 text-white'
@@ -215,7 +214,7 @@ const PullupAnalyzerDemo: React.FC = () => {
                     
                     <button
                       onClick={resetAnalysis}
-                      className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md font-medium"
+                      className="rounded-md bg-gray-200 px-4 py-2 font-medium text-gray-800"
                       disabled={isAnalyzing}
                     >
                       Reset
@@ -225,8 +224,8 @@ const PullupAnalyzerDemo: React.FC = () => {
                 
                 {/* Form feedback section */}
                 {formAnalysis && (
-                  <div className="border border-gray-200 rounded-lg p-4">
-                    <h3 className="text-lg font-semibold mb-2">Form Analysis</h3>
+                  <div className="rounded-lg border border-gray-200 p-4">
+                    <h3 className="mb-2 font-semibold text-lg">Form Analysis</h3>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm font-medium">Elbow Angles:</p>
@@ -262,7 +261,7 @@ const PullupAnalyzerDemo: React.FC = () => {
                       formAnalysis.isPaused) && (
                       <div className="mt-4">
                         <p className="text-sm font-medium text-red-600">Form Issues:</p>
-                        <ul className="list-disc list-inside text-sm text-red-600">
+                        <ul className="list-inside list-disc text-sm text-red-600">
                           {!formAnalysis.isElbowLocked && formAnalysis.isDownPosition && 
                             <li>Elbows not fully locked out in dead hang position</li>}
                           {formAnalysis.isSwinging && 
@@ -276,9 +275,9 @@ const PullupAnalyzerDemo: React.FC = () => {
                     )}
                     
                     {/* Requirements for valid rep */}
-                    <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                    <div className="mt-4 rounded-md bg-gray-50 p-3">
                       <p className="text-xs font-medium text-gray-700">For a valid rep:</p>
-                      <ul className="list-disc list-inside text-xs text-gray-600 mt-1">
+                      <ul className="mt-1 list-inside list-disc text-xs text-gray-600">
                         <li className={formAnalysis.isElbowLocked ? 'text-green-600' : ''}>
                           Start with elbows fully locked (dead hang)
                         </li>

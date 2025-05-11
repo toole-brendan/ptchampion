@@ -19,9 +19,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getExerciseById } from '@/lib/apiClient';
 import { formatTime, formatDistance } from '@/lib/utils';
 
-// Use ExerciseResponse type when fetching workout for stronger typings
-import { ExerciseResponse } from '@/lib/types';
-
 export function HistoryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -239,8 +236,8 @@ export function HistoryDetail() {
             </div>
           </div>
           
-          <div className="rounded-lg bg-muted/30 p-4">
-            <h3 className="mb-2 text-sm font-semibold">Device Information</h3>
+          <div className="bg-muted/30 rounded-lg p-4">
+            <h3 className="mb-2 font-semibold text-sm">Device Information</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Platform:</span>

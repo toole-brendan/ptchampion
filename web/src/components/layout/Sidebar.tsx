@@ -78,7 +78,9 @@ export interface SidebarProps {
 // Navigation items
 const NavItem = ({ to, icon, label, isCollapsed }: { to: string; icon: React.ReactNode; label: string; isCollapsed?: boolean }) => {
   const location = useLocation();
-  const isActive = location.pathname === to;
+  const isActive = to === '/' 
+    ? location.pathname === to
+    : location.pathname.startsWith(to);
   
   return (
     <li>
@@ -97,7 +99,7 @@ const NavItem = ({ to, icon, label, isCollapsed }: { to: string; icon: React.Rea
             <div className={cn("flex-shrink-0", isCollapsed ? 'size-5' : 'mr-3 size-5')}>
               {icon}
             </div>
-            {!isCollapsed && <span className="text-sm font-sans">{label}</span>}
+            {!isCollapsed && <span className="font-sans text-sm">{label}</span>}
           </Link>
         </TooltipTrigger>
         {isCollapsed && (
@@ -119,15 +121,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { isEnabled } = useFeatureFlags();
-  
+
   useEffect(() => {
     if (isMobileOpen && onMobileClose) {
       onMobileClose();
     }
   }, [location.pathname, isMobileOpen, onMobileClose]);
-  
-  const isActive = (path: string) => location.pathname === path;
-  
+
   const navItems = [
     { name: 'Dashboard', path: '/', icon: HomeIcon },
     { name: 'Exercises', path: '/exercises', icon: DumbbellIcon },
@@ -139,9 +139,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   const toggleSidebarCollapse = () => {
     setIsCollapsed(!isCollapsed);
   };
-  
+
   const userInitial = username ? username.charAt(0).toUpperCase() : '?';
-  
+
   const sidebarContent = (
     <aside 
       className={cn(
@@ -159,7 +159,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold"
+            className="hover:bg-olive-mist/10 text-army-tan hover:text-brass-gold"
             onClick={onMobileClose}
           >
             <XIcon className="size-5" />
@@ -168,8 +168,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {/* Logo section - properly centered */}
-      <div className="flex justify-center items-center p-4 py-6 border-b border-cream/10">
-        <LogoIcon className={isCollapsed ? "h-12 w-12" : "h-14 w-14"} />
+      <div className="border-cream/10 flex items-center justify-center border-b p-4 py-6">
+        <LogoIcon className={isCollapsed ? "size-12" : "size-14"} />
       </div>
       
       {/* User profile section */}
@@ -180,7 +180,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <Tooltip>
           <TooltipTrigger asChild>
             <div className={cn("flex items-center", isCollapsed ? 'justify-center' : '')}>
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brass-gold text-sm font-semibold text-deep-ops">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brass-gold font-semibold text-sm text-deep-ops">
                 {userInitial}
               </div>
               {!isCollapsed && (

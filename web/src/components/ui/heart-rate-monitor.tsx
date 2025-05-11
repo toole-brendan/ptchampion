@@ -59,6 +59,8 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
   
   // Render different content based on connection status
   let content;
+  let zoneColor = 'bg-green-500';
+  let zoneName = 'Resting';
   
   switch (state.status) {
     case 'idle':
@@ -103,9 +105,6 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
       // 80-90% (hard): 152-170 bpm
       // 90-100% (maximum): 171-190 bpm
       // Based on average max HR of 190 for illustration
-      let zoneColor = 'bg-green-500';
-      let zoneName = 'Resting';
-      
       if (state.heartRate) {
         if (state.heartRate < 94) {
           zoneColor = 'bg-blue-500';
@@ -131,7 +130,7 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
       content = (
         <div className="p-4">
           <div className="flex flex-col items-center">
-            <div className="mb-2 font-mono text-4xl font-bold text-brass-gold">
+            <div className="mb-2 font-mono text-4xl text-brass-gold">
               {state.heartRate || '--'}
               <span className="ml-1 text-sm text-tactical-gray">BPM</span>
             </div>
@@ -191,7 +190,7 @@ export function HeartRateMonitor({ onHeartRateChange, className = '' }: HeartRat
   return (
     <Card className={`overflow-hidden shadow-md ${className}`}>
       <div className="flex items-center justify-between bg-deep-ops px-4 py-2 text-cream">
-        <h3 className="text-sm font-semibold uppercase">Heart Rate Monitor</h3>
+        <h3 className="font-semibold text-sm uppercase">Heart Rate Monitor</h3>
         <button 
           onClick={() => setExpanded(false)}
           className="text-cream/70 hover:text-cream"

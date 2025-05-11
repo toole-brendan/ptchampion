@@ -1,0 +1,4 @@
+src/lib/hooks/usePoseDetector.ts:103:export function usePoseDetector(
+src/backup/PushupTracker.tsx:111:  } = usePoseDetector(videoRef, canvasRef, {
+src/backup/SitupTracker.tsx:66:  } = usePoseDetector(videoRef, canvasRef, {
+src/backup/PullupTracker.tsx:71:  } = usePoseDetector(videoRef, canvasRef, {

@@ -1,10 +1,11 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './lib/authContext';
 import { FeatureFlagProvider } from './lib/featureFlags';
 import { HeaderProvider } from './dashboard-message-context';
 import { ThemeProvider } from './lib/themeContext';
+import { PoseProvider } from './lib/contexts/PoseContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import OfflineBanner from './components/OfflineBanner';
@@ -12,6 +13,10 @@ import ExerciseCalibrationExample from './components/ExerciseCalibrationExample'
 import PushupAnalyzerDemo from './components/PushupAnalyzerDemo';
 import SitupAnalyzerDemo from './components/SitupAnalyzerDemo';
 import PullupAnalyzerDemo from './components/PullupAnalyzerDemo';
+import CameraPermissionDialog from './components/ui/CameraPermissionDialog';
+import poseDetectorService from './services/PoseDetectorService';
+import { ToastProvider } from './components/ui/toast-provider';
+import { ErrorReporter } from './components/ErrorReporter';
 
 // Lazy load pages for code-splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -24,10 +29,7 @@ const HistoryDetail = lazy(() => import('./pages/HistoryDetail').then(module => 
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 
-// Import the trackers index
-const TrackerIndex = lazy(() => import('./pages/trackers/index'));
-
-// Import exercise trackers from a single source - using the exercises directory as canonical
+// Import exercise trackers from exercises directory as canonical source
 const PushupTracker = lazy(() => import('./pages/exercises/PushupTracker'));
 const PullupTracker = lazy(() => import('./pages/exercises/PullupTracker'));
 const SitupTracker = lazy(() => import('./pages/exercises/SitupTracker'));
@@ -43,11 +45,11 @@ const Loading = () => (
 // Not found page
 const NotFound = () => (
   <div className="flex h-screen flex-col items-center justify-center gap-4 bg-cream">
-    <h1 className="text-3xl font-bold text-brass-gold">404 - Page Not Found</h1>
+    <h1 className="font-bold text-3xl text-brass-gold">404 - Page Not Found</h1>
     <p className="text-tactical-gray">The page you're looking for does not exist.</p>
     <button 
       onClick={() => window.location.href = '/'}
-      className="mt-4 rounded-lg bg-brass-gold px-4 py-2 text-white hover:bg-brass-gold/90 transition-colors"
+      className="hover:bg-brass-gold/90 mt-4 rounded-lg bg-brass-gold px-4 py-2 text-white transition-colors"
     >
       Return Home
     </button>
@@ -73,89 +75,112 @@ function App({ queryClient }: AppProps) {
     },
   });
 
+  // Initialize and log errors for pose detection service
+  useEffect(() => {
+    // Pre-initialize the pose detector service
+    poseDetectorService.initialize().catch(err => {
+      // Log to Sentry or console
+      console.error('Failed to initialize pose detector:', err);
+      // If we had Sentry: Sentry.captureException(err);
+    });
+
+    // Cleanup on unmount
+    return () => {
+      poseDetectorService.destroy();
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={qclient}>
       <ThemeProvider>
         <AuthProvider>
           <FeatureFlagProvider>
             <HeaderProvider>
-              <Router>
-                <OfflineBanner />
-                <Suspense fallback={<Loading />}>
-                  <Routes>
-                    {/* Public routes */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    
-                    {/* Protected routes - require authentication */}
-                    <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                      <Route index element={<Dashboard />} />
-                      <Route path="dashboard" element={<Dashboard />} />
-                      <Route path="exercises" element={<Exercises />} />
-                      <Route path="history" element={<History />} />
-                      <Route path="history/:id" element={<HistoryDetail />} />
-                      <Route path="leaderboard" element={<Leaderboard />} />
-                      <Route path="profile" element={<Profile />} />
+              <PoseProvider>
+                <ToastProvider>
+                  {/* Add ErrorReporter to initialize error reporting */}
+                  <ErrorReporter />
+                  <Router>
+                    <OfflineBanner />
+                    {/* Camera permission dialog that will show when needed */}
+                    <CameraPermissionDialog />
+                    <Suspense fallback={<Loading />}>
+                      <Routes>
+                      {/* Public routes */}
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
                       
-                      {/* Tracker routes - both paths point to the same components */}
-                      <Route path="trackers" element={<TrackerIndex />} />
-                      <Route path="trackers/pushups" element={<PushupTracker />} />
-                      <Route path="trackers/pullups" element={<PullupTracker />} />
-                      <Route path="trackers/situps" element={<SitupTracker />} />
-                      <Route path="trackers/running" element={<RunningTracker />} />
-                      
-                      {/* Exercise tracking routes - use the same components */}
-                      <Route path="exercises/pushups" element={<PushupTracker />} />
-                      <Route path="exercises/pullups" element={<PullupTracker />} />
-                      <Route path="exercises/situps" element={<SitupTracker />} />
-                      <Route path="exercises/running" element={<RunningTracker />} />
+                      {/* Protected routes - require authentication */}
+                      <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                        <Route index element={<Dashboard />} />
+                        <Route path="dashboard" element={<Dashboard />} />
+                        <Route path="exercises" element={<Exercises />} />
+                        <Route path="history" element={<History />} />
+                        <Route path="history/:id" element={<HistoryDetail />} />
+                        <Route path="leaderboard" element={<Leaderboard />} />
+                        <Route path="profile" element={<Profile />} />
+                        
+                        {/* Exercise tracking routes - canonical source of truth */}
+                        <Route path="exercises/pushups" element={<PushupTracker />} />
+                        <Route path="exercises/pullups" element={<PullupTracker />} />
+                        <Route path="exercises/situps" element={<SitupTracker />} />
+                        <Route path="exercises/running" element={<RunningTracker />} />
 
-                      {/* Add route for the example component */}
-                      <Route 
-                        path="/example/calibration" 
-                        element={
-                          <ProtectedRoute>
-                            <ExerciseCalibrationExample />
-                          </ProtectedRoute>
-                        } 
-                      />
+                        {/* Redirect from trackers paths to exercises paths */}
+                        <Route path="trackers/*" element={<Navigate to="/exercises" replace />} />
+                        <Route path="trackers/pushups" element={<Navigate to="/exercises/pushups" replace />} />
+                        <Route path="trackers/pullups" element={<Navigate to="/exercises/pullups" replace />} />
+                        <Route path="trackers/situps" element={<Navigate to="/exercises/situps" replace />} />
+                        <Route path="trackers/running" element={<Navigate to="/exercises/running" replace />} />
 
-                      {/* Add route for PushupAnalyzerDemo */}
-                      <Route 
-                        path="/example/pushup-analyzer" 
-                        element={
-                          <ProtectedRoute>
-                            <PushupAnalyzerDemo />
-                          </ProtectedRoute>
-                        } 
-                      />
+                        {/* Add route for the example component */}
+                        <Route 
+                          path="/example/calibration" 
+                          element={
+                            <ProtectedRoute>
+                              <ExerciseCalibrationExample />
+                            </ProtectedRoute>
+                          } 
+                        />
+
+                        {/* Add route for PushupAnalyzerDemo */}
+                        <Route 
+                          path="/example/pushup-analyzer" 
+                          element={
+                            <ProtectedRoute>
+                              <PushupAnalyzerDemo />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        {/* Add route for SitupAnalyzerDemo */}
+                        <Route 
+                          path="/example/situp-analyzer" 
+                          element={
+                            <ProtectedRoute>
+                              <SitupAnalyzerDemo />
+                            </ProtectedRoute>
+                          } 
+                        />
+                        
+                        {/* Add route for PullupAnalyzerDemo */}
+                        <Route 
+                          path="/example/pullup-analyzer" 
+                          element={
+                            <ProtectedRoute>
+                              <PullupAnalyzerDemo />
+                            </ProtectedRoute>
+                          } 
+                        />
+                      </Route>
                       
-                      {/* Add route for SitupAnalyzerDemo */}
-                      <Route 
-                        path="/example/situp-analyzer" 
-                        element={
-                          <ProtectedRoute>
-                            <SitupAnalyzerDemo />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
-                      {/* Add route for PullupAnalyzerDemo */}
-                      <Route 
-                        path="/example/pullup-analyzer" 
-                        element={
-                          <ProtectedRoute>
-                            <PullupAnalyzerDemo />
-                          </ProtectedRoute>
-                        } 
-                      />
-                    </Route>
-                    
-                    {/* Catch-all route - redirect to NotFound */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </Router>
+                      {/* Catch-all route - redirect to NotFound */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </Router>
+              </ToastProvider>
+              </PoseProvider>
             </HeaderProvider>
           </FeatureFlagProvider>
         </AuthProvider>

@@ -52,7 +52,7 @@ const ExerciseCalibrationExample: React.FC = () => {
               <div className="flex justify-center">
                 <button
                   onClick={startCalibration}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md font-medium"
+                  className="rounded-md bg-blue-600 px-4 py-2 font-medium text-white"
                 >
                   Start {exerciseType.charAt(0).toUpperCase() + exerciseType.slice(1)} Calibration
                 </button>
@@ -65,9 +65,9 @@ const ExerciseCalibrationExample: React.FC = () => {
             )}
 
             {calibrationData && (
-              <div className="mt-6 p-4 bg-gray-100 rounded-md">
-                <h3 className="text-lg font-semibold mb-2">Calibration Data</h3>
-                <pre className="bg-black text-green-400 p-3 rounded text-xs overflow-auto max-h-60">
+              <div className="mt-6 rounded-md bg-gray-100 p-4">
+                <h3 className="mb-2 font-semibold text-lg">Calibration Data</h3>
+                <pre className="max-h-60 overflow-auto rounded bg-black p-3 text-xs text-green-400">
                   {JSON.stringify({
                     exerciseType: calibrationData.exerciseType,
                     timestamp: new Date(calibrationData.timestamp).toLocaleString(),

@@ -28,7 +28,7 @@ export function PullupTracker() {
   const [formScore, setFormScore] = useState(100);
   const [currentPhase, setCurrentPhase] = useState<'up' | 'down' | 'unknown'>('unknown');
   const [lastPhase, setLastPhase] = useState<'up' | 'down' | 'unknown'>('unknown');
-  const [cameraPermission, setCameraPermission] = useState<boolean | null>(null);
+  const [, setCameraPermission] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
@@ -65,7 +65,6 @@ export function PullupTracker() {
   const { 
     landmarks, 
     isDetectorReady, 
-    isRunning, 
     startDetection, 
     stopDetection 
   } = usePoseDetector(videoRef, canvasRef, {
@@ -99,7 +98,8 @@ export function PullupTracker() {
     // Cleanup function to stop camera stream
     return () => {
       if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
+        const video = videoRef.current;
+        const stream = video.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
       }
     };
@@ -126,7 +126,7 @@ export function PullupTracker() {
     }, 1000);
     
     return () => clearTimeout(timer);
-  }, [isCountingDown, countdown]);
+  }, [isCountingDown, countdown, startTracking]);
 
   // Start pose tracking
   const startTracking = () => {
@@ -228,7 +228,7 @@ export function PullupTracker() {
           // Register for background sync if available
           try {
             await registerBackgroundSync('sync-workouts');
-          } catch (e) {
+          } catch (error) {
             console.log('Background sync registration failed, but data is saved offline');
           }
         } else {
@@ -450,13 +450,13 @@ export function PullupTracker() {
             {/* Countdown overlay */}
             {isCountingDown && (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-8xl font-bold text-brass-gold">{countdown}</span>
+                <span className="font-bold text-8xl text-brass-gold">{countdown}</span>
               </div>
             )}
             
             {/* Form fault message overlay */}
             {formFaultMessage && (
-              <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md bg-destructive/80 px-4 py-2 text-sm font-semibold text-white">
+              <div className="bg-destructive/80 absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md px-4 py-2 font-semibold text-sm text-white">
                 {formFaultMessage}
               </div>
             )}
@@ -511,11 +511,11 @@ export function PullupTracker() {
           </div>
         </CardContent>
         
-        <CardFooter className="flex justify-between border-t border-border p-4">
+        <CardFooter className="border-border flex justify-between border-t p-4">
           {!isTracking ? (
             <Button 
               onClick={startCountdown} 
-              className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
+              className="hover:bg-brass-gold/90 bg-brass-gold text-deep-ops"
               disabled={!isDetectorReady || isCountingDown}
               size="lg"
             >
@@ -526,7 +526,7 @@ export function PullupTracker() {
             <Button 
               onClick={stopTracking} 
               variant="outline" 
-              className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+              className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
               size="lg"
             >
               <PauseIcon className="mr-2 size-5" />
@@ -594,7 +594,7 @@ export function PullupTracker() {
             {!submitSuccess && !savedOffline ? (
               <Button 
                 onClick={submitWorkout} 
-                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
+                className="hover:bg-brass-gold/90 w-full bg-brass-gold text-deep-ops sm:w-auto"
                 disabled={submitting}
               >
                 {submitting ? 'Saving...' : `Save Results${!isOnline ? ' Offline' : ''}`}
@@ -602,7 +602,7 @@ export function PullupTracker() {
             ) : (
               <Button
                 onClick={() => navigate('/history')}
-                className="w-full bg-brass-gold text-deep-ops hover:bg-brass-gold/90 sm:w-auto"
+                className="hover:bg-brass-gold/90 w-full bg-brass-gold text-deep-ops sm:w-auto"
               >
                 View History
               </Button>
@@ -611,7 +611,7 @@ export function PullupTracker() {
             <Button 
               onClick={shareResults} 
               variant="outline" 
-              className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10 sm:w-auto"
+              className="hover:bg-brass-gold/10 w-full border-brass-gold text-brass-gold sm:w-auto"
             >
               <ShareIcon className="mr-2 size-4" />
               Share Results
