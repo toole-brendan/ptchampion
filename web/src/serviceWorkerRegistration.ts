@@ -163,7 +163,7 @@ export function register(config?: Config) {
  */
 function registerValidSW(swUrl: string, config?: Config) {
   navigator.serviceWorker.register(swUrl)
-    .then(_registration => {
+    .then(() => {
       // Forward to our main registerServiceWorker implementation
       registerServiceWorker(config);
     })

@@ -142,7 +142,10 @@ async function networkFirstStrategy(request: Request) {
     cache.put(request, networkResponse.clone());
     
     return networkResponse;
-  } catch (_error) {
+  } catch (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _error
+  ) {
     console.log('[Service Worker] Network request failed, trying cache', request.url);
     
     // Try to get from cache
@@ -174,7 +177,10 @@ async function cacheFirstStrategy(request: Request) {
     const cache = await caches.open(DYNAMIC_CACHE_NAME);
     cache.put(request, networkResponse.clone());
     return networkResponse;
-  } catch (error) {
+  } catch (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _error
+  ) {
     console.log('[Service Worker] Both cache and network failed', request.url);
     
     // If both cache and network fail, return a basic offline response
@@ -199,7 +205,11 @@ async function staleWhileRevalidateStrategy(request: Request) {
         caches.open(DYNAMIC_CACHE_NAME)
           .then(cache => {
             cache.put(request, networkResponse);
-          });
+          })
+          .catch(
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            _error => console.log('[Service Worker] Failed to update cache')
+          );
       })
       .catch(() => console.log('[Service Worker] Background refresh failed'));
     
@@ -212,7 +222,10 @@ async function staleWhileRevalidateStrategy(request: Request) {
     const cache = await caches.open(DYNAMIC_CACHE_NAME);
     cache.put(request, networkResponse.clone());
     return networkResponse;
-  } catch (error) {
+  } catch (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _error
+  ) {
     console.log('[Service Worker] Network request failed with no cache entry', request.url);
     return new Response('Not available offline', { status: 404 });
   }
@@ -250,7 +263,9 @@ function notifyClients(message: unknown) {
 }
 
 // Listen for messages from the client
-self.addEventListener('message', (event) => {
+self.addEventListener('message', 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  event => {
   if (event.data && event.data.type === 'SYNC_STATUS_UPDATE') {
     // Broadcast the sync status to all other clients
     notifyClients({ 
@@ -259,6 +274,18 @@ self.addEventListener('message', (event) => {
     });
   }
 });
+
+// Define types for pending exercises
+interface PendingExercise {
+  id: string;
+  exerciseId: string;
+  reps: number;
+  duration: number;
+  distance?: number;
+  notes?: string;
+  syncAttempts: number;
+  createdAt: number;
+}
 
 // Function to sync pending workout data when back online
 async function syncWorkouts() {
@@ -355,8 +382,8 @@ async function getAuthToken() {
 }
 
 // IndexedDB helper functions
-async function openDatabase() {
-  return new Promise((resolve, reject) => {
+async function openDatabase(): Promise<IDBDatabase | null> {
+  return new Promise<IDBDatabase | null>((resolve, reject) => {
     const request = indexedDB.open('pt-champion-db', 2);
     
     request.onerror = () => {
@@ -368,7 +395,10 @@ async function openDatabase() {
       resolve(request.result);
     };
     
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = (
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      event
+    ) => {
       const db = request.result;
       
       // Create stores if they don't exist
@@ -381,8 +411,8 @@ async function openDatabase() {
   });
 }
 
-async function getAllPendingExercises(db) {
-  return new Promise((resolve, reject) => {
+async function getAllPendingExercises(db: IDBDatabase): Promise<PendingExercise[]> {
+  return new Promise<PendingExercise[]>((resolve, reject) => {
     const transaction = db.transaction('pendingExercises', 'readonly');
     const store = transaction.objectStore('pendingExercises');
     const request = store.getAll();
@@ -392,13 +422,13 @@ async function getAllPendingExercises(db) {
     };
     
     request.onsuccess = () => {
-      resolve(request.result);
+      resolve(request.result as PendingExercise[]);
     };
   });
 }
 
-async function incrementSyncAttempt(db, id) {
-  return new Promise((resolve, reject) => {
+async function incrementSyncAttempt(db: IDBDatabase, id: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     const transaction = db.transaction('pendingExercises', 'readwrite');
     const store = transaction.objectStore('pendingExercises');
     const getRequest = store.get(id);
@@ -408,7 +438,7 @@ async function incrementSyncAttempt(db, id) {
     };
     
     getRequest.onsuccess = () => {
-      const exercise = getRequest.result;
+      const exercise = getRequest.result as PendingExercise | undefined;
       if (exercise) {
         exercise.syncAttempts += 1;
         const updateRequest = store.put(exercise);
@@ -427,8 +457,8 @@ async function incrementSyncAttempt(db, id) {
   });
 }
 
-async function deletePendingExercise(db, id) {
-  return new Promise((resolve, reject) => {
+async function deletePendingExercise(db: IDBDatabase, id: string): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
     const transaction = db.transaction('pendingExercises', 'readwrite');
     const store = transaction.objectStore('pendingExercises');
     const request = store.delete(id);
@@ -444,56 +474,4 @@ async function deletePendingExercise(db, id) {
 }
 
 // Empty export to make TypeScript treat this as a module
-export {};
-
-// New code block
-fetch(e.request)
-  .then(response => response)
-  .catch(_error => {
-    console.log('Failed to fetch from network');
-    return caches.match(e.request);
-  });
-
-// New code block
-unregister: () => {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready
-      .then(registration => {
-        registration.unregister();
-      })
-      .catch(_error => {
-        console.log('Error unregistering service worker');
-      });
-  }
-}
-
-// New code block
-if (navigator.onLine) {
-  // Attempt to replace cache with fresh data
-  fetch(request.clone())
-    .then(response => {
-      if (!response || response.status !== 200 || response.type !== 'basic') {
-        return response;
-      }
-
-      const responseToCache = response.clone();
-      caches.open(CACHE_NAME)
-        .then(cache => {
-          cache.put(request, responseToCache);
-        })
-        .catch(_error => {
-          console.log('Failed to update cache');
-        });
-
-      return response;
-    })
-    .catch(() => {
-      console.log('Fetch failed, falling back to cache');
-      return cachedResponse;
-    });
-}
-
-// New code block
-function checkForUpdate(e: ExtendableEvent) {
-  // ... existing code ...
-} 
+export {}; 
