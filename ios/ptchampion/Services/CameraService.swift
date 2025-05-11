@@ -154,17 +154,19 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
     }
 
     func stopSession(sync: Bool = false) {
-
         // --------  synchronous path (used only from deinit)  --------
         if sync {
             if session.isRunning {
+                // First, clear the video output delegate to prevent further callbacks
+                videoOutput.setSampleBufferDelegate(nil, queue: nil)
+                
                 // execute on the session queue if we are not already on it
                 if DispatchQueue.getSpecific(key: sessionQueueKey) == nil {
                     sessionQueue.sync { session.stopRunning() }
                 } else {
                     session.stopRunning()
                 }
-                print("CameraService: Session stopped.")
+                print("CameraService: Session stopped (sync).")
             } else {
                 print("CameraService: Session already stopped.")
             }
@@ -178,8 +180,12 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
                 print("CameraService: Session already stopped.")
                 return
             }
+            
+            // Clear the video output delegate to prevent further callbacks
+            self.videoOutput.setSampleBufferDelegate(nil, queue: nil)
+            
             self.session.stopRunning()
-            print("CameraService: Session stopped.")
+            print("CameraService: Session stopped with delegate cleared.")
         }
     }
 

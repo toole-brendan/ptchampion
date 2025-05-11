@@ -10,7 +10,12 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject {
     private let visionQueue = DispatchQueue(label: "com.ptchampion.posedetector.visionqueue", qos: .userInitiated)
     private var requestHandler: VNImageRequestHandler?
     lazy private var bodyPoseRequest: VNDetectHumanBodyPoseRequest = {
-        VNDetectHumanBodyPoseRequest(completionHandler: handlePoseDetectionResults)
+        // Use [weak self] to avoid strong reference cycle
+        let request = VNDetectHumanBodyPoseRequest { [weak self] request, error in
+            self?.handlePoseDetectionResults(request: request, error: error)
+        }
+        
+        return request
     }()
 
     // Combine Publishers
@@ -67,14 +72,22 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject {
             return self.imageOrientation(from: sampleBuffer)
         }
 
-        visionQueue.async {
+        // Use weak self in async block to avoid strong capture
+        visionQueue.async { [weak self] in
+            guard let self = self else { 
+                print("PoseDetectorService: Self was nil during frame processing - skipping")
+                return 
+            }
+            
             // Create a request handler for the current frame
             self.requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: orientation, options: [:])
             do {
                 // Perform the body pose request
                 try self.requestHandler?.perform([self.bodyPoseRequest])
             } catch {
-                 DispatchQueue.main.async { // Publish error on main thread
+                 // Use weak self in nested async block
+                 DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
                     self.errorSubject.send(PoseDetectorError.visionRequestFailed(error))
                  }
                 print("PoseDetectorService: Failed to perform Vision request: \(error.localizedDescription)")
@@ -87,7 +100,9 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject {
     // Completion handler for the Vision request
     private func handlePoseDetectionResults(request: VNRequest, error: Error?) {
         if let error = error {
-             DispatchQueue.main.async {
+             // Use weak self in async block
+             DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.errorSubject.send(PoseDetectorError.visionRequestFailed(error))
              }
             print("PoseDetectorService: Vision request failed with error: \(error.localizedDescription)")
@@ -96,7 +111,11 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject {
 
         guard let results = request.results as? [VNHumanBodyPoseObservation], let observation = results.first else {
             // No body detected or error in results, publish nil
-             DispatchQueue.main.async { self.detectedBodySubject.send(nil) }
+             // Use weak self in async block
+             DispatchQueue.main.async { [weak self] in 
+                guard let self = self else { return }
+                self.detectedBodySubject.send(nil) 
+             }
             // print("PoseDetectorService: No body pose detected or invalid results.")
             return
         }
@@ -127,15 +146,22 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject {
             let overallConfidence = pointCount > 0 ? totalConfidence / Float(pointCount) : 0
             
             let detectedBody = DetectedBody(points: pointsDict, confidence: overallConfidence)
-            DispatchQueue.main.async { // Publish result on main thread
+            // Use weak self in async block
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.detectedBodySubject.send(detectedBody)
             }
         } catch {
-            DispatchQueue.main.async {
+            // Use weak self in async blocks
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.errorSubject.send(PoseDetectorError.processingFailed("Failed to process recognized points: \(error.localizedDescription)"))
             }
             print("PoseDetectorService: Error processing recognized points: \(error.localizedDescription)")
-            DispatchQueue.main.async { self.detectedBodySubject.send(nil) }
+            DispatchQueue.main.async { [weak self] in 
+                guard let self = self else { return }
+                self.detectedBodySubject.send(nil) 
+            }
         }
     }
 
@@ -188,6 +214,13 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject {
     }
 
     deinit {
+        // Cancel any pending requests
+        bodyPoseRequest.cancel()
+        requestHandler = nil
+        
+        // Clear references
+        detectedBodySubject.send(nil)
+        
         print("PoseDetectorService deinitialized.")
     }
 } 
