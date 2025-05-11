@@ -12,6 +12,11 @@ type MetricCardProps = {
   unit?: string;
   trend?: 'up' | 'down' | 'neutral';
   className?: string;
+  iconClassName?: string;
+  valueClassName?: string;
+  titleClassName?: string;
+  descriptionClassName?: string;
+  cornerElements?: React.ReactNode;
   onClick?: () => void;
 }
 
@@ -24,42 +29,52 @@ export function MetricCard({
   unit,
   trend = 'neutral',
   className,
+  iconClassName,
+  valueClassName,
+  titleClassName,
+  descriptionClassName,
+  cornerElements,
   onClick
 }: MetricCardProps) {
   return (
-    <Card 
+    <div 
       className={cn(
-        "h-full bg-white shadow-sm transition-all", 
+        "relative h-full bg-card-background overflow-hidden rounded-card p-content shadow-medium", 
         onClick && "cursor-pointer",
         className
       )}
       onClick={onClick}
     >
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0 pt-4">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-tactical-gray">{title}</CardTitle>
-        {Icon && <Icon className="size-5 text-brass-gold" />}
-      </CardHeader>
-      <CardContent className="flex flex-col justify-center p-4">
+      {cornerElements}
+      
+      <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <div className={cn("text-xs font-semibold uppercase tracking-wider text-tactical-gray", titleClassName)}>
+          {title}
+        </div>
+        {Icon && <Icon className={cn("size-5 text-brass-gold", iconClassName)} />}
+      </div>
+      
+      <div className="flex flex-col justify-center">
         <div className="flex items-baseline">
-          <div className="font-mono text-2xl font-medium text-command-black">
+          <div className={cn("font-heading text-heading3 text-command-black", valueClassName)}>
             {value}
           </div>
           {unit && (
-            <span className="ml-1 text-xs font-medium text-tactical-gray">{unit}</span>
+            <span className="ml-1 text-sm font-semibold text-tactical-gray">{unit}</span>
           )}
         </div>
         
         {description && (
-          <p className="mt-1 text-xs text-tactical-gray">
+          <p className={cn("mt-1 text-xs text-tactical-gray", descriptionClassName)}>
             {description}
           </p>
         )}
         
         {change !== undefined && (
           <div className={cn(
-            "mt-2 flex items-center text-xs",
-            trend === 'up' && "text-green-600",
-            trend === 'down' && "text-red-600"
+            "mt-2 flex items-center text-xs font-semibold",
+            trend === 'up' && "text-success",
+            trend === 'down' && "text-error"
           )}>
             {trend === 'up' && <span className="mr-1">↑</span>}
             {trend === 'down' && <span className="mr-1">↓</span>}
@@ -68,7 +83,7 @@ export function MetricCard({
             </span>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 } 

@@ -1,3 +1,13 @@
+/**
+ * Pushup Tracker - Canonical Component
+ * 
+ * This is the canonical source for push-up tracking used by both:
+ * - /exercises/pushups
+ * - /trackers/pushups
+ * 
+ * Any modifications should be made to this file only.
+ */
+
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

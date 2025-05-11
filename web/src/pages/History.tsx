@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { format } from "date-fns";
 import { DateRange } from "react-day-picker";
-import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award, ChevronLeft, ChevronRight, Loader2, History as HistoryIcon } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import { keepPreviousData } from '@tanstack/react-query';
 
@@ -24,6 +24,30 @@ import { getUserExercises } from '../lib/apiClient';
 import { PaginatedExercisesResponse, ExerciseResponse } from '../lib/types';
 import { useAuth } from '../lib/authContext';
 import { formatTime, formatDistance } from '../lib/utils';
+
+// Military-style corner component
+const MilitaryCorners: React.FC = () => (
+  <>
+    {/* Military corner cutouts - top left and right */}
+    <div className="absolute top-0 left-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute top-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    
+    {/* Military corner cutouts - bottom left and right */}
+    <div className="absolute bottom-0 left-0 w-[15px] h-[15px] bg-background"></div>
+    <div className="absolute bottom-0 right-0 w-[15px] h-[15px] bg-background"></div>
+    
+    {/* Diagonal lines for corners */}
+    <div className="absolute top-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-top-left"></div>
+    <div className="absolute top-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-top-right"></div>
+    <div className="absolute bottom-0 left-0 w-[15px] h-[1px] bg-tactical-gray/50 -rotate-45 origin-bottom-left"></div>
+    <div className="absolute bottom-0 right-0 w-[15px] h-[1px] bg-tactical-gray/50 rotate-45 origin-bottom-right"></div>
+  </>
+);
+
+// Header divider component
+const HeaderDivider: React.FC = () => (
+  <div className="h-[1px] w-16 bg-brass-gold mx-auto my-2"></div>
+);
 
 // Helper to determine metric and unit for an exercise
 const getExerciseMetric = (exercise: string): { metric: 'reps' | 'distance' | null, unit: string } => {
@@ -217,9 +241,9 @@ const History: React.FC = () => {
   if (isLoading && !paginatedData) {
     return (
       <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-        <div className="text-center text-muted-foreground">
-          <Loader2 className="mx-auto mb-2 size-8 animate-spin"/>
-          <p className="text-lg">Loading history...</p>
+        <div className="text-center">
+          <Loader2 className="mx-auto mb-4 size-10 animate-spin text-brass-gold"/>
+          <p className="text-lg font-heading uppercase">Loading history...</p>
         </div>
       </div>
     );
@@ -228,85 +252,127 @@ const History: React.FC = () => {
   if (error && !isFetching) {
     return (
       <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-        <Card className="w-full max-w-md border-destructive/50 bg-destructive/10">
-          <CardHeader>
-            <CardTitle className="text-center text-destructive">Error Loading History</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p className="text-sm text-destructive">{error instanceof Error ? error.message : String(error)}</p>
-            <Button onClick={() => refetch()} variant="destructive">
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="relative w-full max-w-md overflow-hidden rounded-card bg-card-background shadow-medium">
+          <MilitaryCorners />
+          <div className="p-content">
+            <div className="mb-4 text-center">
+              <h2 className="font-heading text-heading3 uppercase tracking-wider text-error">
+                Error Loading History
+              </h2>
+              <HeaderDivider />
+            </div>
+            <div className="space-y-4 text-center">
+              <p className="text-sm text-tactical-gray">{error instanceof Error ? error.message : String(error)}</p>
+              <Button 
+                onClick={() => refetch()} 
+                variant="outline"
+                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+              >
+                TRY AGAIN
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!isLoading && totalCount === 0) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-semibold text-foreground">Training History</h1>
-        <Card className="text-center">
-            <CardHeader>
-                <CardTitle>No History Yet</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">You haven't logged any exercises.</p>
-              <p className="mt-2 text-muted-foreground">Start tracking your workouts to see your progress here!</p>
-            </CardContent>
-        </Card>
+      <div className="space-y-section">
+        <div className="relative overflow-hidden rounded-card bg-card-background p-content shadow-medium">
+          <MilitaryCorners />
+          <div className="mb-4 text-center">
+            <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
+              Training History
+            </h2>
+            <HeaderDivider />
+            <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Track your progress over time</p>
+          </div>
+        </div>
+        
+        <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium text-center">
+          <MilitaryCorners />
+          <div className="p-content">
+            <h3 className="font-heading text-heading4 uppercase tracking-wider mb-4">No Workouts Found</h3>
+            <p className="text-tactical-gray">You haven't logged any exercises yet.</p>
+            <p className="mt-2 text-tactical-gray">Start tracking your workouts to see your progress here!</p>
+          </div>
+        </div>
       </div>
     );
   }
   
   return (
-    <div className={cn("space-y-6", isFetching && "opacity-75 transition-opacity duration-300")}>
-      <h1 className="text-2xl font-semibold text-foreground">Training History</h1>
+    <div className={cn("space-y-section", isFetching && "opacity-75 transition-opacity duration-300")}>
+      <div className="relative overflow-hidden rounded-card bg-card-background p-content shadow-medium">
+        <MilitaryCorners />
+        <div className="mb-4 text-center">
+          <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
+            Training History
+          </h2>
+          <HeaderDivider />
+          <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Track your progress over time</p>
+        </div>
+      </div>
 
-      <Card>
-        <CardContent className="flex flex-col gap-3 pt-6 sm:flex-row">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                id="date"
-                variant={"outline"}
-                className={cn(
-                  "w-full sm:w-[280px] justify-start text-left font-normal",
-                  !dateRange && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 size-4" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "LLL dd, y")}
-                      {" - "}
-                      {format(dateRange.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(dateRange.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Pick a date range</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={setDateRange}
-                numberOfMonths={2}
-              />
-            </PopoverContent>
-          </Popover>
+      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+        <MilitaryCorners />
+        <div className="rounded-t-card bg-deep-ops p-content">
+          <div className="flex items-center">
+            <HistoryIcon className="mr-2 size-5 text-brass-gold" />
+            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+              Filter Workouts
+            </h2>
+          </div>
+        </div>
+        <div className="p-content">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-4">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold uppercase tracking-wide text-tactical-gray">Date Range</label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    id="date"
+                    variant={"outline"}
+                    className={cn(
+                      "w-full justify-start text-left font-normal bg-cream border-army-tan/30",
+                      !dateRange && "text-tactical-gray"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 size-4" />
+                    {dateRange?.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "LLL dd, y")}
+                          {" - "}
+                          {format(dateRange.to, "LLL dd, y")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "LLL dd, y")
+                      )
+                    ) : (
+                      <span>Pick a date range</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange?.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-          <div className="w-full grow sm:w-auto sm:max-w-[240px]">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold uppercase tracking-wide text-tactical-gray">Exercise Type</label>
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full bg-cream border-army-tan/30">
                   <SelectValue placeholder="Filter by exercise..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -317,181 +383,215 @@ const History: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
           </div>
+          
           {(dateRange || exerciseFilter !== 'All') && (
-            <Button variant="ghost" onClick={() => { setDateRange(undefined); setExerciseFilter('All'); }} className="text-muted-foreground">
-              Clear Filters
+            <Button 
+              variant="outline" 
+              onClick={() => { setDateRange(undefined); setExerciseFilter('All'); }} 
+              className="text-brass-gold border-brass-gold hover:bg-brass-gold/10 w-full"
+            >
+              CLEAR FILTERS
             </Button>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-card-gap md:grid-cols-2 lg:grid-cols-4">
         {[
-          { title: 'Total Workouts', value: summaryStats.totalWorkouts, icon: Dumbbell, unit: '' },
-          { title: 'Total Time', value: summaryStats.totalTime, icon: Clock, unit: '' },
-          { title: 'Total Reps', value: summaryStats.totalReps, icon: Repeat, unit: '' },
-          { title: 'Total Distance', value: summaryStats.totalDistance, icon: TrendingUp, unit: 'km' },
+          { title: 'TOTAL WORKOUTS', value: summaryStats.totalWorkouts, icon: Dumbbell, unit: '' },
+          { title: 'TOTAL TIME', value: summaryStats.totalTime, icon: Clock, unit: '' },
+          { title: 'TOTAL REPS', value: summaryStats.totalReps, icon: Repeat, unit: '' },
+          { title: 'TOTAL DISTANCE', value: summaryStats.totalDistance, icon: TrendingUp, unit: 'km' },
         ].map((stat, index) => (
-          <Card key={index} className="transition-shadow hover:shadow-md">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle>
-                  <stat.icon className="size-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                  <div className="text-2xl font-bold text-foreground">{stat.value} <span className="text-sm font-normal text-muted-foreground">{stat.unit}</span></div>
-              </CardContent>
-          </Card>
+          <div key={index} className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+            <MilitaryCorners />
+            <div className="p-content">
+              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div className="text-xs font-semibold uppercase tracking-wider text-tactical-gray">{stat.title}</div>
+                <stat.icon className="size-5 text-brass-gold" />
+              </div>
+              <div className="font-heading text-heading3 text-command-black">
+                {stat.value} {stat.unit && <span className="text-sm font-semibold text-tactical-gray">{stat.unit}</span>}
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
-      <Card className="transition-shadow hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">
-            {exerciseFilter === 'All' ? 'Performance Trend' : `${exerciseFilter} Trend`}
-          </CardTitle>
-          <CardDescription>
+      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+        <MilitaryCorners />
+        <div className="rounded-t-card bg-deep-ops p-content">
+          <div className="flex items-center">
+            <TrendingUp className="mr-2 size-5 text-brass-gold" />
+            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+              {exerciseFilter === 'All' ? 'Performance Trend' : `${exerciseFilter} Trend`}
+            </h2>
+          </div>
+          <p className="text-sm text-army-tan">
             {exerciseFilter === 'All'
               ? 'Select an exercise filter to visualize its trend over time.'
               : `Performance trend for ${exerciseFilter.toLowerCase()}.`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pl-0 pr-4">
+          </p>
+        </div>
+        <div className="p-content">
           {exerciseFilter !== 'All' && chartData.length > 1 ? (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border)) / 0.5" />
-                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-olive-mist)" opacity={0.3} />
+                <XAxis dataKey="date" stroke="var(--color-tactical-gray)" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis
-                  stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false}
+                  stroke="var(--color-tactical-gray)" fontSize={11} tickLine={false} axisLine={false}
                   allowDecimals={yAxisLabel.includes('km')}
                   width={40}
-                  label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', offset: 0, style: { textAnchor: 'middle', fontSize: '11px', fill: 'hsl(var(--muted-foreground))' } }}
+                  label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', offset: 0, style: { textAnchor: 'middle', fontSize: '11px', fill: 'var(--color-tactical-gray)' } }}
                 />
                 <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)', fontSize: '12px' }}
-                    cursor={{ stroke: 'hsl(var(--primary))' , strokeWidth: 1, strokeDasharray: '3 3' }}
+                    contentStyle={{ backgroundColor: 'var(--color-cream)', border: '1px solid var(--color-army-tan)', borderRadius: 'var(--radius-card)', fontSize: '12px' }}
+                    cursor={{ stroke: 'var(--color-brass-gold)' , strokeWidth: 1, strokeDasharray: '3 3' }}
                     formatter={(value: number) => [`${value} ${yAxisLabel.includes('km') ? 'km' : (yAxisLabel || '')}`, metricName.replace(exerciseFilter + ' ', '')]}
                     labelFormatter={(label: string) => `Date: ${format(new Date(label), 'PP')}`}
                 />
                 <Line
                   type="monotone" dataKey="value" name={metricName}
-                  stroke="hsl(var(--primary))" strokeWidth={2}
-                  activeDot={{ r: 6, fill: 'hsl(var(--primary))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                  dot={{ r: 3, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
+                  stroke="var(--color-brass-gold)" strokeWidth={2}
+                  activeDot={{ r: 6, fill: 'var(--color-brass-gold)', stroke: 'var(--color-cream)', strokeWidth: 2 }}
+                  dot={{ r: 3, fill: 'var(--color-brass-gold)', strokeWidth: 0 }}
                   connectNulls
                  />
               </LineChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-[300px] items-center justify-center p-4 text-center text-sm text-muted-foreground">
+            <div className="flex h-[300px] items-center justify-center p-4 text-center text-sm font-semibold text-tactical-gray">
               {exerciseFilter === 'All'
                 ? 'Select an exercise filter above to display its trend chart.'
                 : `Not enough data points (minimum 2 required) for ${exerciseFilter} to display a trend chart.`}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="transition-shadow hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="flex items-center text-lg font-semibold">
-            <Award className="mr-2 size-5 text-yellow-500" /> Personal Bests
-          </CardTitle>
-          <CardDescription>Your top performance records based on current filters.</CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+        <MilitaryCorners />
+        <div className="rounded-t-card bg-deep-ops p-content">
+          <div className="flex items-center">
+            <Award className="mr-2 size-5 text-brass-gold" />
+            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+              Personal Records
+            </h2>
+          </div>
+          <p className="text-sm text-army-tan">
+            Your top performance records based on current filters.
+          </p>
+        </div>
+        <div className="p-content">
           {personalBests.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {personalBests.map((pb, index) => (
-                <li key={index} className="flex items-center justify-between rounded-md bg-muted/50 p-3 text-sm transition-colors hover:bg-muted">
-                  <div className="flex items-center gap-2">
-                     <span className="font-medium capitalize text-foreground">{pb.exercise}</span>
-                     <span className="text-xs text-muted-foreground">({pb.metric})</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-primary">{pb.value}</p>
-                    <p className="text-xs text-muted-foreground">on {pb.date}</p>
+                <li key={index} className="relative overflow-hidden rounded-card bg-cream/30 p-3 shadow-small border-l-4 border-brass-gold">
+                  <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col">
+                      <span className="font-heading text-sm uppercase text-command-black">{pb.exercise}</span>
+                      <span className="text-xs font-semibold text-tactical-gray">{pb.metric}</span>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-heading text-xl text-brass-gold">{pb.value}</p>
+                      <p className="text-xs text-tactical-gray">on {pb.date}</p>
+                    </div>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="py-4 text-center text-sm text-muted-foreground">
+            <p className="py-4 text-center text-sm font-semibold text-tactical-gray">
               No personal bests found for the selected filters.
             </p>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="overflow-hidden transition-shadow hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">Filtered Sessions</CardTitle>
-          <CardDescription> Detailed log of workouts matching your filters. </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-b border-border/50 hover:bg-transparent">
-                <TableHead className="w-[130px] text-xs font-medium uppercase tracking-wider text-muted-foreground">Exercise</TableHead>
-                <TableHead className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</TableHead>
-                <TableHead className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Duration</TableHead>
-                <TableHead className="text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">Performance</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredHistory.length > 0 ? (
-                filteredHistory.map((session) => (
-                  <TableRow key={session.id} className="text-sm transition-colors hover:bg-muted/50">
-                    <TableCell className="font-medium capitalize text-foreground">{session.exercise_type}</TableCell>
-                    <TableCell className="text-muted-foreground">{format(new Date(session.created_at), "PP p")}</TableCell>
-                    <TableCell className="text-muted-foreground">{session.time_in_seconds ? formatTime(session.time_in_seconds) : '-'}</TableCell>
-                    <TableCell className="text-right font-medium text-foreground">
-                      {session.reps !== undefined && session.reps !== null
-                        ? `${session.reps} reps`
-                        : session.distance !== undefined && session.distance !== null
-                          ? formatDistance(session.distance)
-                          : '-'}
+      <div className="relative overflow-hidden rounded-card bg-card-background shadow-medium">
+        <MilitaryCorners />
+        <div className="rounded-t-card bg-deep-ops p-content">
+          <div className="flex items-center">
+            <HistoryIcon className="mr-2 size-5 text-brass-gold" />
+            <h2 className="font-heading text-heading4 text-cream uppercase tracking-wider">
+              Workout History
+            </h2>
+          </div>
+          <p className="text-sm text-army-tan">
+            Detailed log of workouts matching your filters.
+          </p>
+        </div>
+        <div className="p-content">
+          <div className="overflow-hidden rounded-card border border-olive-mist/20">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
+                  <TableHead className="w-[130px] text-xs font-heading uppercase tracking-wider text-tactical-gray">Exercise</TableHead>
+                  <TableHead className="text-xs font-heading uppercase tracking-wider text-tactical-gray">Date</TableHead>
+                  <TableHead className="text-xs font-heading uppercase tracking-wider text-tactical-gray">Duration</TableHead>
+                  <TableHead className="text-right text-xs font-heading uppercase tracking-wider text-tactical-gray">Performance</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredHistory.length > 0 ? (
+                  filteredHistory.map((session) => (
+                    <TableRow key={session.id} className="border-b border-olive-mist/10 text-sm transition-colors hover:bg-brass-gold/5">
+                      <TableCell className="font-semibold uppercase text-command-black">{session.exercise_type}</TableCell>
+                      <TableCell className="text-tactical-gray">{format(new Date(session.created_at), "PP p")}</TableCell>
+                      <TableCell className="text-tactical-gray">{session.time_in_seconds ? formatTime(session.time_in_seconds) : '-'}</TableCell>
+                      <TableCell className="text-right font-heading text-brass-gold">
+                        {session.reps !== undefined && session.reps !== null
+                          ? `${session.reps} reps`
+                          : session.distance !== undefined && session.distance !== null
+                            ? formatDistance(session.distance)
+                            : '-'}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center text-sm font-semibold text-tactical-gray">
+                      {exercises.length > 0 
+                        ? "No sessions found matching your current filters."
+                        : "Loading sessions..."}
                     </TableCell>
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center text-sm text-muted-foreground">
-                    {exercises.length > 0 
-                      ? "No sessions found matching your current filters."
-                      : "Loading sessions..."}
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                )}
+              </TableBody>
+            </Table>
+          </div>
           
-           <div className="flex items-center justify-between border-t border-border/50 p-4">
-              <div className="text-sm text-muted-foreground">
-                Page {page} of {totalPages} ({totalCount} total records)
-              </div>
-              <div className="space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                  disabled={page <= 1 || isFetching}
-                >
-                  <ChevronLeft className="mr-1 size-4" /> Previous
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={page >= totalPages || isFetching}
-                >
-                  Next <ChevronRight className="ml-1 size-4" />
-                </Button>
-              </div>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="text-sm text-tactical-gray">
+              Page {page} of {totalPages} ({totalCount} total records)
             </div>
-        </CardContent>
-      </Card>
+            <div className="space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                disabled={page <= 1 || isFetching}
+                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+              >
+                <ChevronLeft className="mr-1 size-4" /> PREV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={page >= totalPages || isFetching}
+                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+              >
+                NEXT <ChevronRight className="ml-1 size-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
