@@ -7,8 +7,9 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import poseDetectorService from '../../services/PoseDetectorService';
-import { PoseDetectorError } from '../../services/PoseDetectorError';
+import poseDetectorService from '@/services/PoseDetectorService';
+import { PoseDetectorError } from '@/services/PoseDetectorError';
+import type { PoseDetectorOptions } from '@/services/PoseDetectorService';
 
 interface PoseContextType {
   // Service status
@@ -23,7 +24,7 @@ interface PoseContextType {
   // Camera
   needsUserGesture: boolean;
   resumeCamera: () => Promise<boolean>;
-  retryInitialization: (options?: unknown) => Promise<void>;
+  retryInitialization: (options?: PoseDetectorOptions) => Promise<void>;
 }
 
 const PoseContext = createContext<PoseContextType | undefined>(undefined);
@@ -44,7 +45,7 @@ export const PoseProvider: React.FC<PoseProviderProps> = ({ children }) => {
   const resetError = () => setError(null);
   
   // Function to retry initialization
-  const retryInitialization = async (options?: unknown) => {
+  const retryInitialization = async (options?: PoseDetectorOptions) => {
     setIsInitializing(true);
     setError(null);
     
