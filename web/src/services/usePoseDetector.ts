@@ -20,22 +20,24 @@ export function usePoseDetector(model: "lite" | "full" | "heavy" = "full") {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
-        tick(); // kick render loop
+        tickRef.current!(); // kick render loop
       }
     })();
     return () => {
-      videoRef.current?.srcObject &&
+      if (videoRef.current?.srcObject) {
         (videoRef.current.srcObject as MediaStream)
           .getTracks()
           .forEach((t) => t.stop());
+      }
     };
   }, [model]);
 
   // 2. frame loop
-  const tick = () => {
+  const tickRef = useRef<() => void>();
+  tickRef.current = () => {
     const det = detectorRef.current?.detect(videoRef.current!);
     if (det) setResult(det);
-    requestAnimationFrame(tick);
+    requestAnimationFrame(tickRef.current!);
   };
 
   return { videoRef, pose: result };

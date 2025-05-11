@@ -17,8 +17,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 // Import the SitupGrader
 import { createGrader } from '../grading';
 import { ExerciseId } from '../constants/exercises';
-import { PoseDetector, PoseDetectorResult } from '../services/poseDetector';
-import { NormalizedLandmark } from '@mediapipe/tasks-vision';
+import { PoseDetector } from '../services/poseDetector';
 
 /**
  * Class implementation of SitupTrackerViewModel
