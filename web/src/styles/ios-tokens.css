@@ -1,0 +1,85 @@
+/* 
+ * PT Champion Design Tokens
+ * Manually extracted from iOS AppTheme+Generated.swift
+ * DO NOT MODIFY - Update iOS tokens source and regenerate
+ */
+
+:root {
+  /* Base Colors */
+  --color-cream: #F4F1E6;
+  --color-cream-dark: #EDE9DB;
+  --color-deep-ops: #1E241E;
+  --color-brass-gold: #BFA24D;
+  --color-army-tan: #E0D4A6;
+  --color-olive-mist: #C9CCA6;
+  --color-command-black: #1E1E1E;
+  --color-tactical-gray: #4E5A48;
+  --color-success: #4CAF50;
+  --color-warning: #FF9800;
+  --color-error: #F44336;
+  --color-info: #2196F3;
+
+  /* Semantic Colors */
+  --color-primary: var(--color-brass-gold);
+  --color-secondary: var(--color-army-tan);
+  --color-accent: var(--color-brass-gold);
+  --color-background: var(--color-cream);
+  --color-card-background: var(--color-cream-dark);
+  --color-text-primary: var(--color-command-black);
+  --color-text-secondary: var(--color-tactical-gray);
+  --color-text-tertiary: var(--color-tactical-gray);
+  --color-text-on-primary: var(--color-cream);
+  --color-background-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Typography Sizes */
+  --font-size-heading1: 40px;
+  --font-size-heading2: 32px;
+  --font-size-heading3: 26px;
+  --font-size-heading4: 22px;
+  --font-size-body: 16px;
+  --font-size-small: 14px;
+  --font-size-tiny: 12px;
+
+  /* Font Families */
+  --font-heading: 'Montserrat-Bold', system-ui, sans-serif;
+  --font-body: 'Montserrat-Regular', system-ui, sans-serif;
+  --font-body-bold: 'Montserrat-Bold', system-ui, sans-serif;
+  --font-body-semibold: 'Montserrat-SemiBold', system-ui, sans-serif;
+  --font-mono: 'RobotoMono-Medium', monospace;
+
+  /* Border Radius */
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-button: 8px;
+  --radius-input: 8px;
+  --radius-small: 4px;
+  --radius-medium: 8px;
+  --radius-large: 12px;
+  --radius-full: 9999px;
+  --radius-badge: 4px;
+
+  /* Spacing */
+  --spacing-section: 32px;
+  --spacing-card-gap: 16px;
+  --spacing-content-padding: 16px;
+  --spacing-item: 8px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+
+  /* Shadows */
+  --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-large: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+/* Dark Mode Overrides */
+.dark {
+  --color-background: var(--color-deep-ops);
+  --color-card-background: #212821; /* Slightly lighter than deep-ops */
+  --color-text-primary: var(--color-cream);
+  --color-text-secondary: var(--color-olive-mist);
+  --color-text-tertiary: #8A9186; /* Muted gray */
+  --color-text-on-primary: var(--color-deep-ops);
+} 
