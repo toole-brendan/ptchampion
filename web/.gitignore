@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 *storybook.log
+
+# MediaPipe model files (large binaries)
+public/models/*.task
+public/models/*.tflite
+public/models/*.bin
