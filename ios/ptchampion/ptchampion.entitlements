@@ -8,5 +8,10 @@
 	<array>
 		<string>health-records</string>
 	</array>
+	<key>com.apple.developer.background-modes</key>
+	<array>
+		<string>fetch</string>
+		<string>processing</string>
+	</array>
 </dict>
 </plist> 

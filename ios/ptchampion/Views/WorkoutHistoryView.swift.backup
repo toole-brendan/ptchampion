@@ -1,0 +1,173 @@
+import SwiftUI
+import SwiftData
+
+struct WorkoutHistoryView: View {
+    @EnvironmentObject private var viewModel: WorkoutHistoryViewModel
+    @EnvironmentObject private var networkMonitor: NetworkMonitorService
+    
+    // Query to fetch all SwiftData workout records for sync status
+    @Query private var swiftDataWorkouts: [WorkoutResultSwiftData]
+    
+    // Count of pending sync workouts (for UI indicators)
+    private var pendingSyncCount: Int {
+        swiftDataWorkouts.filter { 
+            $0.syncStatusEnum != .synced 
+        }.count
+    }
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                // Add offline sync status view at the top when offline or syncing needed
+                if !networkMonitor.isConnected || pendingSyncCount > 0 {
+                    OfflineSyncStatusView(pendingSyncCount: pendingSyncCount)
+                        .padding(.bottom, 8)
+                }
+                
+                // Existing workout history content
+                if viewModel.workouts.isEmpty {
+                    emptyStateView
+                } else {
+                    workoutListView
+                }
+            }
+            .navigationTitle("Workout History")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        viewModel.refreshWorkouts()
+                        if pendingSyncCount > 0 && networkMonitor.isConnected {
+                            // Also trigger sync if we have pending items
+                            NotificationCenter.default.post(name: .connectivityRestored, object: nil)
+                        }
+                    }) {
+                        // Show indicator badge if there are pending syncs
+                        if pendingSyncCount > 0 {
+                            Image(systemName: "arrow.clockwise")
+                                .overlay(
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color.red)
+                                            .frame(width: 14, height: 14)
+                                        
+                                        Text("\(pendingSyncCount)")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(.white)
+                                    }
+                                    .offset(x: 10, y: -10),
+                                    alignment: .topTrailing
+                                )
+                        } else {
+                            Image(systemName: "arrow.clockwise")
+                        }
+                    }
+                }
+            }
+            .onAppear {
+                viewModel.refreshWorkouts()
+            }
+            // Alert for error messages
+            .alert(isPresented: $viewModel.showError) {
+                Alert(
+                    title: Text("Sync Error"),
+                    message: Text(viewModel.errorMessage),
+                    dismissButton: .default(Text("OK"))
+                )
+            }
+        }
+    }
+    
+    // Empty state view when no workouts
+    private var emptyStateView: some View {
+        ContentUnavailableView(
+            "No Workouts Yet",
+            systemImage: "figure.run",
+            description: Text("Complete a workout to see it in your history.")
+        )
+    }
+    
+    // Workout list when workouts exist
+    private var workoutListView: some View {
+        List {
+            ForEach(viewModel.workouts) { workout in
+                WorkoutHistoryItemView(
+                    workout: workout,
+                    viewModel: viewModel,
+                    swiftDataWorkout: findSwiftDataWorkout(for: workout.id)
+                )
+            }
+            .onDelete(perform: viewModel.deleteWorkout)
+        }
+        .listStyle(.plain)
+        .refreshable {
+            viewModel.refreshWorkouts()
+            if pendingSyncCount > 0 && networkMonitor.isConnected {
+                // Also trigger sync if we have pending items
+                NotificationCenter.default.post(name: .connectivityRestored, object: nil)
+            }
+        }
+    }
+    
+    // Helper to find the SwiftData workout for a given workout history item
+    private func findSwiftDataWorkout(for id: String?) -> WorkoutResultSwiftData? {
+        guard let id = id, let uuid = UUID(uuidString: id) else { return nil }
+        return swiftDataWorkouts.first { $0.id == uuid }
+    }
+}
+
+// Define a simple workout history item preview model
+struct WorkoutPreview: Identifiable {
+    var id = UUID()
+    var type: String
+    var date: Date
+    var reps: Int?
+    var distance: Double?
+    var duration: TimeInterval
+}
+
+// Extend OfflineSyncStatusView to accept pendingSyncCount
+extension OfflineSyncStatusView {
+    init(pendingSyncCount: Int = 0) {
+        self._pendingSyncCount = State(initialValue: pendingSyncCount)
+    }
+}
+
+struct WorkoutHistoryView_Previews: PreviewProvider {
+    static var previews: some View {
+        // Create a mock view model
+        let mockViewModel = WorkoutHistoryViewModel()
+        
+        // Add some sample data
+        mockViewModel.workouts = [
+            WorkoutHistory(
+                id: "1",
+                exerciseType: "pushup",
+                reps: 25,
+                distance: nil,
+                duration: 120,
+                date: Date().addingTimeInterval(-3600)
+            ),
+            WorkoutHistory(
+                id: "2",
+                exerciseType: "situp",
+                reps: 30,
+                distance: nil,
+                duration: 180,
+                date: Date().addingTimeInterval(-86400)
+            ),
+            WorkoutHistory(
+                id: "3",
+                exerciseType: "run",
+                reps: nil,
+                distance: 3.1, // 5k in miles
+                duration: 1800, // 30 minutes
+                date: Date().addingTimeInterval(-86400 * 2)
+            )
+        ]
+        
+        return WorkoutHistoryView()
+            .environmentObject(mockViewModel)
+            .environmentObject(NetworkMonitorService())
+            .modelContainer(createPreviewModelContainer())
+    }
+} 

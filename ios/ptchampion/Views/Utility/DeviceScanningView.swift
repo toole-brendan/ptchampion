@@ -95,7 +95,7 @@ struct DeviceScanningView: View {
             
             HStack(spacing: 20) {
                 if viewModel.heartRate > 0 {
-                    MetricView(
+                    DeviceMetricView(
                         value: viewModel.formattedHeartRate(),
                         title: "Heart Rate",
                         systemImage: "heart.fill"
@@ -103,7 +103,7 @@ struct DeviceScanningView: View {
                 }
                 
                 if viewModel.currentPace.metersPerSecond > 0 {
-                    MetricView(
+                    DeviceMetricView(
                         value: viewModel.formattedPace(useImperial: useImperialUnits),
                         title: useImperialUnits ? "min/mile" : "min/km",
                         systemImage: "figure.run"
@@ -111,7 +111,7 @@ struct DeviceScanningView: View {
                 }
                 
                 if viewModel.currentCadence.stepsPerMinute > 0 {
-                    MetricView(
+                    DeviceMetricView(
                         value: viewModel.formattedCadence(),
                         title: "Cadence",
                         systemImage: "metronome"
@@ -238,7 +238,7 @@ struct DeviceScanningView: View {
 }
 
 // Helper components
-struct MetricView: View {
+struct DeviceMetricView: View {
     let value: String
     let title: String
     let systemImage: String

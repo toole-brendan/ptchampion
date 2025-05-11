@@ -56,7 +56,6 @@
 		BF63E44B2DB1EB980037CD02 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4332DB1EB980037CD02 /* LoginView.swift */; };
 		BF63E44C2DB1EB980037CD02 /* RunWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4452DB1EB980037CD02 /* RunWorkoutView.swift */; };
 		BF63E44D2DB1EB980037CD02 /* PoseOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4442DB1EB980037CD02 /* PoseOverlayView.swift */; };
-		BF63E44F2DB1EB980037CD02 /* WorkoutHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4382DB1EB980037CD02 /* WorkoutHistoryView.swift */; };
 		BF63E4502DB1EB980037CD02 /* WorkoutSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4472DB1EB980037CD02 /* WorkoutSessionView.swift */; };
 		BF63E4512DB1EB980037CD02 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E43C2DB1EB980037CD02 /* ProgressView.swift */; };
 		BF63E4522DB1EB980037CD02 /* RegistrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4342DB1EB980037CD02 /* RegistrationView.swift */; };
@@ -128,6 +127,11 @@
 		BFADF9C62DC93E0A0016AF0B /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9C02DC93E0A0016AF0B /* NetworkService.swift */; };
 		BFADF9C72DC93E0A0016AF0B /* FeatureFlagService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9BF2DC93E0A0016AF0B /* FeatureFlagService.swift */; };
 		BFADF9C82DC93E0A0016AF0B /* UnifiedNetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9C12DC93E0A0016AF0B /* UnifiedNetworkService.swift */; };
+		BFB1EDB32DD0E38E00AC9653 /* OfflineSyncStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB1EDB02DD0E38E00AC9653 /* OfflineSyncStatusView.swift */; };
+		BFB1EDB52DD0E38E00AC9653 /* WorkoutHistoryItemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB1EDB12DD0E38E00AC9653 /* WorkoutHistoryItemView.swift */; };
+		BFB1EDB82DD0E3A400AC9653 /* SynchronizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB1EDB72DD0E3A400AC9653 /* SynchronizationService.swift */; };
+		BFB1EDB92DD0E3A400AC9653 /* NetworkMonitorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFB1EDB62DD0E3A400AC9653 /* NetworkMonitorService.swift */; };
+		BFB1EDBA2DD0F33D00AC9653 /* WorkoutHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4382DB1EB980037CD02 /* WorkoutHistoryView.swift */; };
 		BFBF2EC22DCFE59500FFCF4F /* WorkoutSessionViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2EC02DCFE59500FFCF4F /* WorkoutSessionViewModel.swift */; };
 		BFBF2EC32DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2EC12DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift */; };
 		BFBF2EC52DCFE5A700FFCF4F /* LocationPermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2EC42DCFE5A700FFCF4F /* LocationPermissionRequestView.swift */; };
@@ -278,6 +282,10 @@
 		BFADF9C12DC93E0A0016AF0B /* UnifiedNetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnifiedNetworkService.swift; sourceTree = "<group>"; };
 		BFADF9C22DC93E0A0016AF0B /* WasmerGrading.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WasmerGrading.swift; sourceTree = "<group>"; };
 		BFADF9C32DC93E0A0016AF0B /* WorkoutPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutPersistenceService.swift; sourceTree = "<group>"; };
+		BFB1EDB02DD0E38E00AC9653 /* OfflineSyncStatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfflineSyncStatusView.swift; sourceTree = "<group>"; };
+		BFB1EDB12DD0E38E00AC9653 /* WorkoutHistoryItemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryItemView.swift; sourceTree = "<group>"; };
+		BFB1EDB62DD0E3A400AC9653 /* NetworkMonitorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkMonitorService.swift; sourceTree = "<group>"; };
+		BFB1EDB72DD0E3A400AC9653 /* SynchronizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizationService.swift; sourceTree = "<group>"; };
 		BFBF2EC02DCFE59500FFCF4F /* WorkoutSessionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSessionViewModel.swift; sourceTree = "<group>"; };
 		BFBF2EC12DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutViewModelProtocol.swift; sourceTree = "<group>"; };
 		BFBF2EC42DCFE5A700FFCF4F /* LocationPermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationPermissionRequestView.swift; sourceTree = "<group>"; };
@@ -344,7 +352,7 @@
 		BF63E3B02DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
-				BF63E3BB2DB1C84E0037CD02 /*  */,
+				BF63E3BB2DB1C84E0037CD02,
 				BF63E3BA2DB1C84E0037CD02 /* Products */,
 				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
@@ -363,7 +371,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BF63E3BB2DB1C84E0037CD02 /*  */ = {
+		BF63E3BB2DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
 				BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */,
@@ -459,6 +467,8 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BFB1EDB62DD0E3A400AC9653 /* NetworkMonitorService.swift */,
+				BFB1EDB72DD0E3A400AC9653 /* SynchronizationService.swift */,
 				BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */,
 				BF199EB82DCE225200E23EFF /* MockUserService.swift */,
 				BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */,
@@ -592,6 +602,8 @@
 		BF63E44A2DB1EB980037CD02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BFB1EDB02DD0E38E00AC9653 /* OfflineSyncStatusView.swift */,
+				BFB1EDB12DD0E38E00AC9653 /* WorkoutHistoryItemView.swift */,
 				BF25ED332DCE323700620C84 /* LoadingView.swift */,
 				BF37B0562DCC2CD600EC4D58 /* Profile */,
 				BF89EB462DC98E6A003F8FE3 /* Modifiers */,
@@ -767,7 +779,7 @@
 			mainGroup = BF63E3B02DB1C84E0037CD02;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */,
+				BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BF63E3BA2DB1C84E0037CD02 /* Products */;
@@ -865,7 +877,6 @@
 				BF63E4722DB1F3910037CD02 /* WorkoutHistoryRow.swift in Sources */,
 				BF63E44D2DB1EB980037CD02 /* PoseOverlayView.swift in Sources */,
 				BFBF2ECD2DCFF6F100FFCF4F /* HealthKitService.swift in Sources */,
-				BF63E44F2DB1EB980037CD02 /* WorkoutHistoryView.swift in Sources */,
 				BF63E4502DB1EB980037CD02 /* WorkoutSessionView.swift in Sources */,
 				BF63E4512DB1EB980037CD02 /* ProgressView.swift in Sources */,
 				BF63E4522DB1EB980037CD02 /* RegistrationView.swift in Sources */,
@@ -883,6 +894,8 @@
 				BF7960F02DCFD96400B03835 /* MoreActionsView.swift in Sources */,
 				BF7960F12DCFD96400B03835 /* AccountActionsView.swift in Sources */,
 				BF63E4222DB1EB830037CD02 /* NetworkClient.swift in Sources */,
+				BFB1EDB82DD0E3A400AC9653 /* SynchronizationService.swift in Sources */,
+				BFB1EDB92DD0E3A400AC9653 /* NetworkMonitorService.swift in Sources */,
 				BF63E4232DB1EB830037CD02 /* BluetoothServiceProtocol.swift in Sources */,
 				BF63E4242DB1EB830037CD02 /* PoseDetectorService.swift in Sources */,
 				BF63E4252DB1EB830037CD02 /* CameraService.swift in Sources */,
@@ -913,6 +926,8 @@
 				BF7960DD2DCFCCD300B03835 /* ActivityFeedItem.swift in Sources */,
 				BF63E46C2DB1EBAF0037CD02 /* ExerciseGraderProtocol.swift in Sources */,
 				BF7960D72DCFAC9500B03835 /* MilitaryStyleShowcase.swift in Sources */,
+				BFB1EDB32DD0E38E00AC9653 /* OfflineSyncStatusView.swift in Sources */,
+				BFB1EDB52DD0E38E00AC9653 /* WorkoutHistoryItemView.swift in Sources */,
 				BF89EB512DC9A18C003F8FE3 /* ValidationStateExtension.swift in Sources */,
 				BF7960E32DCFCE9F00B03835 /* ExerciseFilterBarView.swift in Sources */,
 				BF7960E42DCFCE9F00B03835 /* WorkoutChartView.swift in Sources */,
@@ -954,6 +969,7 @@
 				BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */,
 				BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */,
 				BF8F67962DC931190065A2D7 /* DashboardViewModel.swift in Sources */,
+				BFB1EDBA2DD0F33D00AC9653 /* WorkoutHistoryView.swift in Sources */,
 				BF8F67972DC931190065A2D7 /* WorkoutHistoryViewModel.swift in Sources */,
 				BF63E40C2DB1CF5A0037CD02 /* PoseModels.swift in Sources */,
 			);
@@ -1308,7 +1324,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */ = {
+		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../PTDesignSystem;
 		};
@@ -1317,22 +1333,22 @@
 /* Begin XCSwiftPackageProductDependency section */
 		BF5D31802DC7F6C40042EE65 /* Components */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = Components;
 		};
 		BF5D31822DC7F6C40042EE65 /* DesignTokens */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = DesignTokens;
 		};
 		BF5D31842DC7F6C40042EE65 /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = PTDesignSystem;
 		};
 		BF60DF352DC7C8D0003487DB /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = PTDesignSystem;
 		};
 /* End XCSwiftPackageProductDependency section */
