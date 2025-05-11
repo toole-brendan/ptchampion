@@ -444,16 +444,14 @@ export class PullupRepCounterAdapter extends BaseRepCounterAdapter<PullupFormAna
   protected createFormValidationFn(): FormValidationFn {
     return (metrics: RepMetrics) => {
       // Extract pullup-specific metrics
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const minElbowAngle = metrics.minElbowAngle || 180;
       const maxElbowAngle = metrics.maxElbowAngle || 0;
       const normalizedHorizontalDisplacement = metrics.normalizedHorizontalDisplacement || 0;
       const maxKneeAngleChange = metrics.maxKneeAngleChange || 0;
-      const _chinClearsBar = metrics.chinClearsBar as boolean;
       const chinY = metrics.chinY || 0;
       const barHeight = metrics.barHeight || 0;
       const chinBarProximity = metrics.chinBarProximity || 0;
-      const _isKipping = metrics.isKipping as boolean;
-      const _isSwinging = metrics.isSwinging as boolean;
 
       // Define thresholds based on APFT standards
       const MIN_DEAD_HANG_ANGLE = 160; // Minimum elbow angle for dead hang
@@ -627,9 +625,10 @@ export class SitupRepCounterAdapter extends BaseRepCounterAdapter<SitupFormAnaly
       // Extract situp-specific metrics
       const maxTrunkAngle = metrics.maxTrunkAngle || 0;
       const isHandPositionCorrect = metrics.isHandPositionCorrect as boolean;
-      const _isShoulderBladeGrounded = metrics.isShoulderBladeGrounded as boolean;
+      // Remove or prefix unused variables with underscore
+      // const _isShoulderBladeGrounded = metrics.isShoulderBladeGrounded as boolean;
       const isHipStable = metrics.isHipStable as boolean;
-      const _isKneeAngleCorrect = metrics.isKneeAngleCorrect as boolean;
+      // const _isKneeAngleCorrect = metrics.isKneeAngleCorrect as boolean;
       const noseY = metrics.noseY || 0;
       const hipY = metrics.hipY || 0;
       const shoulderDiffFromGround = metrics.shoulderDiffFromGround || 0;
