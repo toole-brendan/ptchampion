@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BarChart2, Award, User, Dumbbell } from 'lucide-react';
+import { Home, BarChart2, Award, User, Dumbbell, Sun, Moon } from 'lucide-react';
 import { useHeaderContext } from '@/dashboard-message-context';
+import { useTheme } from '@/lib/themeContext';
+import SyncIndicator from '@/components/SyncIndicator';
 import ptChampionLogo from '@/assets/pt_champion_logo.png';
 
 // Logo component using the actual logo image
@@ -18,36 +20,44 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const location = useLocation();
   const currentPath = location.pathname;
   const { userName } = useHeaderContext();
+  const { theme, toggleTheme } = useTheme();
 
   const navItems = [
-    { to: '/', label: 'Home', icon: <Home size={20} /> },
-    { to: '/exercises', label: 'Exercises', icon: <Dumbbell size={20} /> },
-    { to: '/progress', label: 'Progress', icon: <BarChart2 size={20} /> },
-    { to: '/leaderboard', label: 'Leaderboard', icon: <Award size={20} /> },
-    { to: '/profile', label: 'Profile', icon: <User size={20} /> },
+    { to: '/', label: 'Home', icon: <Home size={22} /> },
+    { to: '/exercises', label: 'Exercises', icon: <Dumbbell size={22} /> },
+    { to: '/progress', label: 'Progress', icon: <BarChart2 size={22} /> },
+    { to: '/leaderboard', label: 'Leaderboard', icon: <Award size={22} /> },
+    { to: '/profile', label: 'Profile', icon: <User size={22} /> },
   ];
 
   return (
-    <div className="flex min-h-screen flex-col bg-cream pb-[60px]">
-      <header className="flex h-16 items-center justify-between bg-gradient-to-r from-deep-ops/5 to-brass-gold/10 p-4 border-b border-brass-gold/20 shadow-sm">
+    <div className="flex min-h-screen flex-col bg-background pb-[60px]">
+      <header className="flex h-16 items-center justify-between bg-deep-ops text-cream px-content shadow-medium">
         <div className="flex flex-col">
-          <h1 className="font-heading text-sm tracking-wide text-command-black">
-            {userName || "Welcome"}
+          <h1 className="font-heading text-brass-gold text-xl font-bold flex items-center">
+            {userName ? `Hello, ${userName}` : "PT Champion"}
+            <SyncIndicator />
           </h1>
-          <div className="h-px w-0 animate-[expand_300ms_ease-out_forwards] bg-brass-gold motion-reduce:w-16 motion-reduce:animate-none"></div>
         </div>
-        <div className="flex items-center">
-          <div className="flex size-8 items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold">
-            <User size={16} />
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={toggleTheme} 
+            className="flex size-10 items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold"
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <div className="flex size-10 items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold">
+            <User size={20} />
           </div>
         </div>
       </header>
       
-      <main className="mx-auto w-full max-w-5xl flex-1 p-5">
+      <main className="mx-auto w-full flex-1 px-content py-md">
         {children}
       </main>
       
-      <nav className="bottom-nav z-10">
+      <nav className="bottom-nav">
         {navItems.map((item) => (
           <Link
             key={item.to}

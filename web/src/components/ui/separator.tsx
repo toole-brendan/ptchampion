@@ -1,27 +1,87 @@
 import * as React from "react"
 import * as SeparatorPrimitive from "@radix-ui/react-separator"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+const separatorVariants = cva(
+  "shrink-0 transition-colors",
+  {
+    variants: {
+      variant: {
+        default: "bg-cream-dark",
+        subtle: "bg-cream-dark/50",
+        accent: "bg-brass-gold/20",
+        accent2: "bg-army-tan/30",
+        dark: "bg-deep-ops/10",
+      },
+      size: {
+        default: "h-[1px]",
+        thin: "h-[0.5px]",
+        thick: "h-[2px]",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    }
+  }
+);
+
+export interface SeparatorProps 
+  extends React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>,
+    VariantProps<typeof separatorVariants> {
+  label?: string;
+}
+
 const Separator = React.forwardRef<
   React.ElementRef<typeof SeparatorPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof SeparatorPrimitive.Root>
+  SeparatorProps
 >(
   (
-    { className, orientation = "horizontal", decorative = true, ...props },
+    { className, orientation = "horizontal", decorative = true, variant, size, label, ...props },
     ref
   ) => (
-    <SeparatorPrimitive.Root
-      ref={ref}
-      decorative={decorative}
-      orientation={orientation}
-      className={cn(
-        "shrink-0 bg-border",
-        orientation === "horizontal" ? "h-[1px] w-full" : "h-full w-[1px]",
-        className
+    <div className={cn("flex items-center w-full", orientation === "vertical" && "flex-col h-full")}>
+      {label && orientation === "horizontal" ? (
+        <div className="flex items-center w-full gap-3">
+          <SeparatorPrimitive.Root
+            ref={ref}
+            decorative={decorative}
+            orientation={orientation}
+            className={cn(
+              separatorVariants({ variant, size }),
+              orientation === "horizontal" ? "w-full" : "h-full w-[1px]",
+              className
+            )}
+            {...props}
+          />
+          <span className="shrink-0 text-xs font-medium text-tactical-gray whitespace-nowrap">{label}</span>
+          <SeparatorPrimitive.Root
+            decorative={decorative}
+            orientation={orientation}
+            className={cn(
+              separatorVariants({ variant, size }),
+              orientation === "horizontal" ? "w-full" : "h-full w-[1px]",
+              className
+            )}
+            {...props}
+          />
+        </div>
+      ) : (
+        <SeparatorPrimitive.Root
+          ref={ref}
+          decorative={decorative}
+          orientation={orientation}
+          className={cn(
+            separatorVariants({ variant, size }),
+            orientation === "horizontal" ? "w-full" : "h-full w-[1px]",
+            className
+          )}
+          {...props}
+        />
       )}
-      {...props}
-    />
+    </div>
   )
 )
 Separator.displayName = SeparatorPrimitive.Root.displayName

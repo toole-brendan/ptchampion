@@ -5,16 +5,46 @@
  * which enables offline capabilities for the app.
  */
 
+import { updateSyncStatus } from './lib/syncManager';
+
 // Check if service workers are supported by the browser
 const isServiceWorkerSupported = 'serviceWorker' in navigator;
 
 // URL of the service worker script
 const SW_URL = '/serviceWorker.js';
 
+// For localhost detection
+const isLocalhost = Boolean(
+  window.location.hostname === 'localhost' ||
+    // [::1] is the IPv6 localhost address.
+    window.location.hostname === '[::1]' ||
+    // 127.0.0.0/8 are considered localhost for IPv4.
+    window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+);
+
+// Configuration for registration callbacks
+type Config = {
+  onSuccess?: (registration: ServiceWorkerRegistration) => void;
+  onUpdate?: (registration: ServiceWorkerRegistration) => void;
+  onMessage?: (event: MessageEvent) => void;
+};
+
+// Define the SyncManager type
+interface SyncManager {
+  register(tag: string): Promise<void>;
+}
+
+// Declare this interface since TypeScript doesn't include it yet
+declare global {
+  interface ServiceWorkerRegistration {
+    sync?: SyncManager;
+  }
+}
+
 /**
  * Register the service worker for the application
  */
-export const registerServiceWorker = async (): Promise<void> => {
+export const registerServiceWorker = async (config?: Config): Promise<void> => {
   if (!isServiceWorkerSupported) {
     console.log('Service Workers are not supported in this browser.');
     return;
@@ -42,6 +72,19 @@ export const registerServiceWorker = async (): Promise<void> => {
       scope: '/',
     });
 
+    // Setup message handling for sync status updates
+    if (config && config.onMessage) {
+      navigator.serviceWorker.addEventListener('message', config.onMessage);
+    }
+    
+    // Default message handler for sync status updates
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'SYNC_STATUS') {
+        // Update sync status in the app
+        updateSyncStatus(event.data.status);
+      }
+    });
+
     // Log the service worker registration status
     if (registration.active) {
       console.log('Service Worker is active!');
@@ -58,9 +101,25 @@ export const registerServiceWorker = async (): Promise<void> => {
 
       // Track the state of the installing service worker
       newWorker.addEventListener('statechange', () => {
-        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // There's a new service worker available - show refresh UI to user
-          showUpdateAvailableMessage();
+        if (newWorker.state === 'installed') {
+          if (navigator.serviceWorker.controller) {
+            // There's a new service worker available - show refresh UI to user
+            console.log('New content is available and will be used when all tabs for this page are closed.');
+            showUpdateAvailableMessage();
+            
+            // Execute callback
+            if (config && config.onUpdate) {
+              config.onUpdate(registration);
+            }
+          } else {
+            // At this point, everything has been precached
+            console.log('Content is cached for offline use.');
+            
+            // Execute callback
+            if (config && config.onSuccess) {
+              config.onSuccess(registration);
+            }
+          }
         }
       });
     });
@@ -68,6 +127,77 @@ export const registerServiceWorker = async (): Promise<void> => {
     console.error('Service Worker registration failed:', error);
   }
 };
+
+/**
+ * Legacy registration method for compatibility with existing code
+ */
+export function register(config?: Config) {
+  if (process.env.NODE_ENV === 'production' && isServiceWorkerSupported) {
+    // The URL constructor is available in all browsers that support SW.
+    const publicUrl = new URL(import.meta.env.BASE_URL, window.location.href);
+    if (publicUrl.origin !== window.location.origin) {
+      // Our service worker won't work if PUBLIC_URL is on a different origin
+      return;
+    }
+
+    window.addEventListener('load', () => {
+      const swUrl = `${import.meta.env.BASE_URL}service-worker.js`;
+      if (isLocalhost) {
+        // Running on localhost
+        checkValidServiceWorker(swUrl, config);
+        
+        // Log additional information for developers
+        navigator.serviceWorker.ready.then(() => {
+          console.log('This web app is being served cache-first by a service worker');
+        });
+      } else {
+        // Not localhost - just register service worker
+        registerValidSW(swUrl, config);
+      }
+    });
+  }
+}
+
+/**
+ * Legacy helper function for service worker registration
+ */
+function registerValidSW(swUrl: string, config?: Config) {
+  navigator.serviceWorker.register(swUrl)
+    .then(registration => {
+      // Forward to our main registerServiceWorker implementation
+      registerServiceWorker(config);
+    })
+    .catch(error => {
+      console.error('Error during service worker registration:', error);
+    });
+}
+
+/**
+ * Legacy helper to check if a service worker exists
+ */
+function checkValidServiceWorker(swUrl: string, config?: Config) {
+  fetch(swUrl, { headers: { 'Service-Worker': 'script' } })
+    .then(response => {
+      const contentType = response.headers.get('content-type');
+      if (
+        response.status === 404 ||
+        (contentType != null && contentType.indexOf('javascript') === -1)
+      ) {
+        // No service worker found - reload the page
+        navigator.serviceWorker.ready.then(registration => {
+          registration.unregister().then(() => {
+            window.location.reload();
+          });
+        });
+      } else {
+        // Service worker found
+        registerValidSW(swUrl, config);
+      }
+    })
+    .catch(() => {
+      console.log('No internet connection. App is running in offline mode.');
+    });
+}
 
 /**
  * Unregister the service worker
@@ -88,6 +218,21 @@ export const unregisterServiceWorker = async (): Promise<void> => {
     console.error('Error unregistering Service Worker:', error);
   }
 };
+
+/**
+ * Legacy unregister function for compatibility
+ */
+export function unregister() {
+  if (isServiceWorkerSupported) {
+    navigator.serviceWorker.ready
+      .then(registration => {
+        registration.unregister();
+      })
+      .catch(error => {
+        console.error(error.message);
+      });
+  }
+}
 
 /**
  * Show a message to the user that an update is available
@@ -155,9 +300,12 @@ export const registerBackgroundSync = async (tag: string = 'sync-workouts'): Pro
   try {
     const registration = await navigator.serviceWorker.ready;
     
+    // Type assertion to avoid type errors
+    const anyRegistration = registration as any;
+    
     // Check if background sync is supported
-    if ('sync' in registration) {
-      await registration.sync.register(tag);
+    if ('sync' in anyRegistration) {
+      await anyRegistration.sync.register(tag);
       console.log(`Background sync registered: ${tag}`);
     } else {
       console.log('Background Sync is not supported in this browser');

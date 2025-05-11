@@ -46,6 +46,10 @@
   src: url('https://fonts.gstatic.com/s/robotomono/v22/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_7Pq_ROW4AJi8SJQt.woff2') format('woff2');
 }
 
+/* Import iOS design tokens */
+@import './styles/ios-tokens.css';
+@import './styles/fonts.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -61,22 +65,39 @@
     padding: 0;
   }
   
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading uppercase tracking-wide text-command-black;
+  h1 {
+    @apply font-heading text-heading1 font-bold tracking-wide text-command-black;
+  }
+  
+  h2 {
+    @apply font-heading text-heading2 font-bold tracking-wide text-command-black;
+  }
+  
+  h3 {
+    @apply font-heading text-heading3 font-bold tracking-wide text-command-black;
+  }
+  
+  h4 {
+    @apply font-heading text-heading4 font-bold tracking-wide text-command-black;
+  }
+  
+  p {
+    @apply font-sans text-body text-foreground;
   }
   
   .stat-number {
-    @apply font-mono text-xl font-medium text-command-black md:text-2xl;
+    @apply font-mono text-heading4 font-medium text-command-black;
   }
   
   .label {
-    @apply font-sans text-xs font-medium uppercase tracking-wide text-tactical-gray;
+    @apply font-sans text-small font-semibold uppercase tracking-wide text-tactical-gray;
   }
 }
 
 @layer components {
+  /* Bottom Navigation */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around border-t border-deep-ops/10 bg-deep-ops px-4 shadow-lg;
+    @apply fixed bottom-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around border-t border-deep-ops/10 bg-deep-ops px-4 shadow-medium;
   }
   
   .bottom-nav-item {
@@ -88,42 +109,63 @@
   }
   
   .bottom-nav-label {
-    @apply mt-1 font-sans text-[10px] uppercase tracking-wide;
+    @apply mt-1 font-sans text-tiny uppercase tracking-wide;
   }
   
-  .metric-card {
-    @apply rounded-card bg-card p-4 shadow-sm text-card-foreground transition-all hover:-translate-y-1 hover:shadow-md;
+  /* Card Components */
+  .card {
+    @apply rounded-card bg-card p-md shadow-small text-card-foreground transition-all;
   }
   
-  .card-panel {
-    @apply rounded-panel bg-cream p-6 shadow-sm transition-all hover:shadow-md;
+  .card-interactive {
+    @apply card hover:-translate-y-1 hover:shadow-medium cursor-pointer;
   }
   
+  .panel {
+    @apply rounded-panel bg-cream p-lg shadow-medium;
+  }
+
+  /* Button Variants */
+  .btn-primary {
+    @apply bg-brass-gold text-cream font-semibold py-sm px-md rounded-button shadow-small hover:shadow-medium transition-all;
+  }
+  
+  .btn-secondary {
+    @apply bg-army-tan text-command-black font-semibold py-sm px-md rounded-button shadow-small hover:shadow-medium transition-all;
+  }
+
+  .btn-outline {
+    @apply border border-brass-gold text-brass-gold font-semibold py-sm px-md rounded-button hover:bg-brass-gold/10 transition-all;
+  }
+  
+  /* Animation Utilities */
   .count-up-animation {
     @apply font-mono transition-all duration-1000;
     counter-reset: count attr(data-count);
     animation: count-up 2s ease-out forwards;
   }
   
-  @keyframes count-up {
-    from {
-      counter-increment: count 0;
-    }
-    to {
-      counter-increment: count attr(data-count number);
-    }
+  .shimmer {
+    @apply relative overflow-hidden;
+    background: linear-gradient(90deg, 
+      var(--color-cream-dark) 0%, 
+      var(--color-cream) 50%, 
+      var(--color-cream-dark) 100%);
+    background-size: 700px 100%;
+    animation: shimmer 2s infinite linear;
   }
-  
-  .count-up-animation::after {
-    content: counter(count);
-  }
+}
 
-  @keyframes expand {
-    from {
-      width: 0;
-    }
-    to {
-      width: 6rem; /* w-24 = 6rem */
-    }
+/* Animations */
+@keyframes count-up {
+  from {
+    counter-increment: count 0;
   }
+  to {
+    counter-increment: count attr(data-count number);
+  }
+}
+
+.count-up-animation::after {
+  content: counter(count);
 }

@@ -1,5 +1,22 @@
+/// <reference lib="webworker" />
+
 // PT Champion Service Worker
 // This service worker handles caching strategies for the PWA
+
+// Tell TypeScript this file is a service worker
+declare const self: ServiceWorkerGlobalScope;
+
+// Define SyncEvent interface that TypeScript is missing
+interface SyncEvent extends ExtendableEvent {
+  tag: string;
+}
+
+// Extend the ServiceWorkerGlobalScope interface to include sync events
+declare global {
+  interface ServiceWorkerGlobalScopeEventMap {
+    sync: SyncEvent;
+  }
+}
 
 // Cache names with versioning to allow for controlled updates
 const STATIC_CACHE_NAME = 'pt-champion-static-v1';
@@ -26,7 +43,7 @@ const APP_SHELL_ASSETS = [
 ];
 
 // Install event - cache app shell assets
-self.addEventListener('install', (event: ExtendableEvent) => {
+self.addEventListener('install', (event) => {
   console.log('[Service Worker] Installing');
   
   // Skip waiting to ensure the new service worker activates immediately
@@ -42,7 +59,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
 });
 
 // Activate event - clean up old caches
-self.addEventListener('activate', (event: ExtendableEvent) => {
+self.addEventListener('activate', (event) => {
   console.log('[Service Worker] Activating');
   
   event.waitUntil(
@@ -59,6 +76,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
               console.log('[Service Worker] Removing old cache', key);
               return caches.delete(key);
             }
+            return Promise.resolve();
           })
         );
       })
@@ -68,7 +86,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
 });
 
 // Fetch event - handle network requests with appropriate caching strategies
-self.addEventListener('fetch', (event: FetchEvent) => {
+self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
   
@@ -95,11 +113,17 @@ self.addEventListener('fetch', (event: FetchEvent) => {
   // For HTML navigation requests - use a Network First strategy with offline fallback
   if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
-      fetch(request)
-        .catch(() => {
-          console.log('[Service Worker] Serving offline page for navigation');
-          return caches.match('/offline.html');
-        })
+      // FIX: Ensure we always return a Response by handling undefined case
+      fetch(request).catch(() => {
+        console.log('[Service Worker] Serving offline page for navigation');
+        // Return offline.html from the cache or a fallback response if not found
+        return caches.match('/offline.html').then(response => {
+          return response || new Response('Offline page not found', {
+            status: 503,
+            headers: { 'Content-Type': 'text/plain' }
+          });
+        });
+      })
     );
     return;
   }
@@ -195,9 +219,40 @@ async function staleWhileRevalidateStrategy(request: Request) {
 }
 
 // Background sync for offline form submissions
-self.addEventListener('sync', (event: SyncEvent) => {
-  if (event.tag === 'sync-workouts') {
-    event.waitUntil(syncWorkouts());
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-workouts' || event.tag === 'pt-champion-sync') {
+    notifyClients({ type: 'SYNC_STATUS', status: 'syncing' });
+    event.waitUntil(
+      syncWorkouts()
+        .then(() => {
+          notifyClients({ type: 'SYNC_STATUS', status: 'success' });
+        })
+        .catch(error => {
+          console.error('[Service Worker] Sync failed:', error);
+          notifyClients({ type: 'SYNC_STATUS', status: 'error' });
+        })
+    );
+  }
+});
+
+// Function to notify all clients about sync status
+function notifyClients(message: unknown) {
+  self.clients.matchAll()
+    .then(clients => {
+      clients.forEach(client => {
+        client.postMessage(message);
+      });
+    });
+}
+
+// Listen for messages from the client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SYNC_STATUS_UPDATE') {
+    // Broadcast the sync status to all other clients
+    notifyClients({ 
+      type: 'SYNC_STATUS', 
+      status: event.data.status 
+    });
   }
 });
 
@@ -216,19 +271,5 @@ async function syncWorkouts() {
   }
 }
 
-// TypeScript interface declarations for the service worker
-interface ExtendableEvent extends Event {
-  waitUntil(fn: Promise<any>): void;
-}
-
-interface FetchEvent extends ExtendableEvent {
-  request: Request;
-  respondWith(response: Promise<Response> | Response): void;
-}
-
-interface SyncEvent extends ExtendableEvent {
-  tag: string;
-}
-
-// Make TypeScript aware of the service worker scope
-declare const self: ServiceWorkerGlobalScope; 
+// Empty export to make TypeScript treat this as a module
+export {}; 

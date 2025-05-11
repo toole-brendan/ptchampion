@@ -4,8 +4,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './lib/authContext';
 import { FeatureFlagProvider } from './lib/featureFlags';
 import { HeaderProvider } from './dashboard-message-context';
+import { ThemeProvider } from './lib/themeContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import OfflineBanner from './components/OfflineBanner';
 
 // Lazy load pages for code-splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -68,41 +70,44 @@ function App({ queryClient }: AppProps) {
 
   return (
     <QueryClientProvider client={clientToUse}>
-      <AuthProvider>
-        <FeatureFlagProvider>
-          <HeaderProvider>
-            <Router>
-              <Suspense fallback={<Loading />}>
-                <Routes>
-                  {/* Public routes - accessible without authentication */}
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  
-                  {/* Protected routes - using nested route pattern */}
-                  <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                    <Route index element={<Dashboard />} />
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="exercises" element={<Exercises />} />
-                    <Route path="history" element={<History />} />
-                    <Route path="history/:id" element={<HistoryDetail />} />
-                    <Route path="leaderboard" element={<Leaderboard />} />
-                    <Route path="profile" element={<Profile />} />
+      <ThemeProvider>
+        <AuthProvider>
+          <FeatureFlagProvider>
+            <HeaderProvider>
+              <Router>
+                <OfflineBanner />
+                <Suspense fallback={<Loading />}>
+                  <Routes>
+                    {/* Public routes - accessible without authentication */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
                     
-                    {/* Exercise tracking routes */}
-                    <Route path="exercises/pushups" element={<PushupTracker />} />
-                    <Route path="exercises/pullups" element={<PullupTracker />} />
-                    <Route path="exercises/situps" element={<SitupTracker />} />
-                    <Route path="exercises/running" element={<RunningTracker />} />
-                  </Route>
-                  
-                  {/* Catch-all route - redirect to login instead of home to prevent auth loops */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </Router>
-          </HeaderProvider>
-        </FeatureFlagProvider>
-      </AuthProvider>
+                    {/* Protected routes - using nested route pattern */}
+                    <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+                      <Route index element={<Dashboard />} />
+                      <Route path="dashboard" element={<Dashboard />} />
+                      <Route path="exercises" element={<Exercises />} />
+                      <Route path="history" element={<History />} />
+                      <Route path="history/:id" element={<HistoryDetail />} />
+                      <Route path="leaderboard" element={<Leaderboard />} />
+                      <Route path="profile" element={<Profile />} />
+                      
+                      {/* Exercise tracking routes */}
+                      <Route path="exercises/pushups" element={<PushupTracker />} />
+                      <Route path="exercises/pullups" element={<PullupTracker />} />
+                      <Route path="exercises/situps" element={<SitupTracker />} />
+                      <Route path="exercises/running" element={<RunningTracker />} />
+                    </Route>
+                    
+                    {/* Catch-all route - redirect to login instead of home to prevent auth loops */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </Router>
+            </HeaderProvider>
+          </FeatureFlagProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

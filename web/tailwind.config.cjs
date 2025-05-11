@@ -10,67 +10,89 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Montserrat', ...defaultTheme.fontFamily.sans],
-        heading: ['Bebas Neue', 'sans-serif'],
-        mono: ['Roboto Mono', 'monospace'],
+        sans: ['Montserrat-Regular', ...defaultTheme.fontFamily.sans],
+        semibold: ['Montserrat-SemiBold', 'sans-serif'],
+        bold: ['Montserrat-Bold', 'sans-serif'],
+        heading: ['Montserrat-Bold', 'sans-serif'],
+        mono: ['RobotoMono-Medium', 'monospace'],
       },
       colors: {
-        // PT Champion Style Guide V2 colors using CSS variables
-        'cream': 'hsl(var(--color-cream))',
-        'cream-dark': 'hsl(var(--color-cream-dark))',
-        'deep-ops': 'hsl(var(--color-deep-ops))',
-        'brass-gold': 'hsl(var(--color-brass-gold))',
-        'army-tan': 'hsl(var(--color-army-tan))',
-        'olive-mist': 'hsl(var(--color-olive-mist))',
-        'command-black': 'hsl(var(--color-command-black))',
-        'tactical-gray': 'hsl(var(--color-tactical-gray))',
+        // Base PT Champion colors from iOS
+        'cream': 'var(--color-cream)',
+        'cream-dark': 'var(--color-cream-dark)',
+        'deep-ops': 'var(--color-deep-ops)',
+        'brass-gold': 'var(--color-brass-gold)',
+        'army-tan': 'var(--color-army-tan)',
+        'olive-mist': 'var(--color-olive-mist)',
+        'command-black': 'var(--color-command-black)',
+        'tactical-gray': 'var(--color-tactical-gray)',
+        'success': 'var(--color-success)',
+        'warning': 'var(--color-warning)',
+        'error': 'var(--color-error)',
+        'info': 'var(--color-info)',
         
-        // shadcn/ui theme colors (mapped to CSS variables)
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        // Semantic colors matching iOS AppTheme
+        background: "var(--color-background)",
+        foreground: "var(--color-text-primary)",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "var(--color-primary)",
+          foreground: "var(--color-text-on-primary)",
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: "var(--color-secondary)",
+          foreground: "var(--color-text-primary)",
         },
         destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+          DEFAULT: "var(--color-error)",
+          foreground: "white",
         },
         muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
+          DEFAULT: "var(--color-olive-mist)",
+          foreground: "var(--color-text-secondary)",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
+          DEFAULT: "var(--color-accent)",
+          foreground: "var(--color-text-on-primary)",
         },
         card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
+          DEFAULT: "var(--color-card-background)",
+          foreground: "var(--color-text-primary)",
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-        card: '12px',
-        panel: '16px',
+        lg: "var(--radius-large)",
+        md: "var(--radius-medium)",
+        sm: "var(--radius-small)",
+        card: 'var(--radius-card)',
+        panel: 'var(--radius-panel)',
+        button: 'var(--radius-button)',
+        input: 'var(--radius-input)',
+        badge: 'var(--radius-badge)',
+        full: 'var(--radius-full)',
       },
       boxShadow: {
-        'card': '0 2px 4px rgba(0, 0, 0, 0.05)',
-        'card-md': '0 4px 6px rgba(0, 0, 0, 0.07)',
-        'card-lg': '0 6px 12px rgba(0, 0, 0, 0.1)',
+        'small': 'var(--shadow-small)',
+        'medium': 'var(--shadow-medium)',
+        'large': 'var(--shadow-large)',
+      },
+      fontSize: {
+        'heading1': 'var(--font-size-heading1)',
+        'heading2': 'var(--font-size-heading2)',
+        'heading3': 'var(--font-size-heading3)',
+        'heading4': 'var(--font-size-heading4)',
+        'body': 'var(--font-size-body)',
+        'small': 'var(--font-size-small)',
+        'tiny': 'var(--font-size-tiny)',
+      },
+      spacing: {
+        'xs': 'var(--spacing-xs)',
+        'sm': 'var(--spacing-sm)',
+        'md': 'var(--spacing-md)',
+        'lg': 'var(--spacing-lg)',
+        'section': 'var(--spacing-section)',
+        'card-gap': 'var(--spacing-card-gap)',
+        'content': 'var(--spacing-content-padding)',
+        'item': 'var(--spacing-item)',
       },
       keyframes: {
         "accordion-down": {
@@ -84,22 +106,23 @@ module.exports = {
         "count-up": {
           from: { opacity: 0.2, transform: 'translateY(4px)' },
           to: { opacity: 1, transform: 'translateY(0)' }
+        },
+        "shimmer": {
+          "0%": { backgroundPosition: "-700px 0" },
+          "100%": { backgroundPosition: "700px 0" }
         }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "count-up": "count-up 1s ease-out forwards",
+        "shimmer": "shimmer 2s infinite linear"
       },
       textShadow: {
         sm: '0 1px 2px var(--tw-shadow-color)',
         DEFAULT: '0 2px 4px var(--tw-shadow-color)',
         lg: '0 8px 16px var(--tw-shadow-color)',
         none: 'none',
-      },
-      spacing: {
-        'section': '2rem',
-        'card-gap': '1rem',
       },
     },
   },

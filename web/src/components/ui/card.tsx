@@ -1,15 +1,34 @@
 import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+const cardVariants = cva(
+  "flex flex-col gap-md rounded-card bg-card text-card-foreground transition-all",
+  {
+    variants: {
+      variant: {
+        default: "shadow-small",
+        interactive: "shadow-small hover:-translate-y-1 hover:shadow-medium cursor-pointer",
+        elevated: "shadow-medium",
+        panel: "rounded-panel shadow-medium",
+        flush: "rounded-none shadow-none",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
+
+interface CardProps extends React.ComponentProps<"div">, 
+  VariantProps<typeof cardVariants> {}
+
+function Card({ className, variant, ...props }: CardProps) {
   return (
     <div
       data-slot="card"
-      className={cn(
-        "flex flex-col gap-4 rounded-panel border bg-card text-card-foreground shadow-sm transition-all",
-        className
-      )}
+      className={cn(cardVariants({ variant, className }))}
       {...props}
     />
   )
@@ -20,7 +39,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 py-4 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        "grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 p-md has-data-[slot=card-action]:grid-cols-[1fr_auto]",
         className
       )}
       {...props}
@@ -32,7 +51,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("font-heading text-xl leading-none", className)}
+      className={cn("font-heading text-heading4 font-bold leading-none", className)}
       {...props}
     />
   )
@@ -42,7 +61,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn("text-small text-text-secondary", className)}
       {...props}
     />
   )
@@ -65,7 +84,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("px-6 pb-6", className)}
+      className={cn("p-md pt-0", className)}
       {...props}
     />
   )
@@ -75,9 +94,64 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-footer"
-      className={cn("flex items-center px-6 py-4 [.border-t]:pt-6", className)}
+      className={cn("flex items-center p-md pt-0", className)}
       {...props}
     />
+  )
+}
+
+// Composite components for quick use
+function StatCard({ 
+  title, 
+  value, 
+  icon, 
+  className, 
+  ...props 
+}: { 
+  title: React.ReactNode; 
+  value: React.ReactNode; 
+  icon?: React.ReactNode;
+} & Omit<CardProps, 'children'>) {
+  return (
+    <Card variant="interactive" className={cn("min-w-[150px]", className)} {...props}>
+      <CardHeader className="pb-0">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-small uppercase text-text-secondary">{title}</CardTitle>
+          {icon && <div className="text-brass-gold">{icon}</div>}
+        </div>
+      </CardHeader>
+      <CardContent className="pt-sm">
+        <div className="font-mono text-heading3 font-medium text-command-black">{value}</div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function QuickLinkCard({ 
+  title, 
+  icon, 
+  onClick,
+  className, 
+  ...props 
+}: { 
+  title: React.ReactNode; 
+  icon: React.ReactNode;
+  onClick?: () => void;
+} & Omit<CardProps, 'children' | 'variant'>) {
+  return (
+    <Card 
+      variant="interactive" 
+      className={cn("p-md", className)} 
+      onClick={onClick} 
+      {...props}
+    >
+      <div className="flex flex-col items-center justify-center gap-2 py-md">
+        <div className="flex size-12 items-center justify-center rounded-full bg-brass-gold/10 text-brass-gold">
+          {icon}
+        </div>
+        <div className="font-semibold text-center">{title}</div>
+      </div>
+    </Card>
   )
 }
 
@@ -89,4 +163,7 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+  StatCard,
+  QuickLinkCard,
+  cardVariants
 }
