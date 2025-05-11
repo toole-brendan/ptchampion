@@ -49,6 +49,7 @@ struct WorkoutSessionView: View {
                 elapsedTimeFormatted: viewModel.elapsedTimeFormatted,
                 isPaused: $viewModel.isPaused,
                 isSoundEnabled: $viewModel.isSoundEnabled,
+                showControls: viewModel.workoutState != .ready,
                 togglePauseAction: { viewModel.togglePause() },
                 toggleSoundAction: { viewModel.toggleSound() }
             )
@@ -56,11 +57,13 @@ struct WorkoutSessionView: View {
             // Start Button Overlay (shown only when in ready state)
             if viewModel.workoutState == .ready && countdown == nil {
                 startButtonOverlay()
+                    .zIndex(1)
             }
             
             // Countdown Overlay (shown during countdown)
             if let currentCount = countdown {
                 countdownOverlay(count: currentCount)
+                    .zIndex(2)
             }
             
             // Camera Permission Request View
@@ -73,13 +76,13 @@ struct WorkoutSessionView: View {
                         dismiss()
                     }
                 )
-                .zIndex(2) // Ensure it's on top
+                .zIndex(2)
             }
             
             // Permission Denied View
             if viewModel.workoutState == .permissionDenied {
                 permissionDeniedOverlay()
-                    .zIndex(1)
+                    .zIndex(2)
             }
         }
         .onAppear {
@@ -187,8 +190,12 @@ struct WorkoutSessionView: View {
                     .background(.ultraThinMaterial)
                     .cornerRadius(AppTheme.GeneratedRadius.medium)
             }
-            .padding(.bottom, 120)
+            // Use a more appropriate bottom padding that works across device sizes
+            .padding(.bottom, 80)
         }
+        // Add margin to ensure the button stays within safe viewing area
+        .padding(.horizontal)
+        .padding(.bottom, 20)
     }
     
     // MARK: - Countdown Overlay
