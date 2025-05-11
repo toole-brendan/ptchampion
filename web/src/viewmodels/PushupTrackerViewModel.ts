@@ -3,18 +3,21 @@
  * 
  * ViewModel for pushup tracking session. 
  * Coordinates between PoseDetectorService, PushupAnalyzer, and UI components.
+ * Now updated to support both legacy PoseDetectorService and new BlazePose Full model.
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PoseLandmarkerResult } from '@mediapipe/tasks-vision';
 import { ExerciseType } from '../grading';
 import { PushupAnalyzer, PushupFormAnalysis } from '../grading/PushupAnalyzer';
-import { poseDetectorService } from '../services/PoseDetectorService';
+import { poseDetectorService } from '@/services/PoseDetectorService';
 import { logExerciseResult } from '../lib/apiClient';
 import { LogExerciseRequest, ExerciseResponse } from '../lib/types';
 import { BaseTrackerViewModel, ExerciseResult, SessionStatus, TrackerErrorType } from './TrackerViewModel';
 import { Subscription } from 'rxjs';
 import { ExerciseId } from '../constants/exercises';
+import { PoseDetector, PoseDetectorResult } from '../services/poseDetector';
+import { NormalizedLandmark } from '@mediapipe/tasks-vision';
 
 /**
  * Class implementation of PushupTrackerViewModel
@@ -25,10 +28,16 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   private analyzer: PushupAnalyzer;
   private submitting: boolean = false;
   private poseSubscription: Subscription | null = null;
+  
+  // New BlazePose detector properties
+  private useNewPoseDetector: boolean = false;
+  private poseDetector: PoseDetector | null = null;
+  private animationFrameId: number | null = null;
 
-  constructor() {
+  constructor(useNewPoseDetector = false) {
     super(ExerciseType.PUSHUP);
     this.analyzer = new PushupAnalyzer();
+    this.useNewPoseDetector = useNewPoseDetector;
   }
 
   /**
@@ -47,24 +56,36 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     this.canvasRef = canvasRef || null;
 
     try {
-      // Initialize MediaPipe pose detection
-      await poseDetectorService.initialize({
-        minPoseDetectionConfidence: 0.7,
-        minPosePresenceConfidence: 0.7
-      });
-
-      // Start camera
-      if (this.videoRef?.current) {
-        const cameraStarted = await poseDetectorService.startCamera(this.videoRef.current);
+      if (this.useNewPoseDetector) {
+        // Initialize the new BlazePose detector
+        this.poseDetector = new PoseDetector();
+        await this.poseDetector.init('/models/pose_landmarker_full.task');
         
-        if (!cameraStarted) {
-          const errorMessage = poseDetectorService.getModelError() || "Failed to start camera";
-          this.setError(TrackerErrorType.CAMERA_PERMISSION, errorMessage);
+        // Camera will be started when session starts through the PoseDetector
+        if (!this.videoRef?.current) {
+          this.setError(TrackerErrorType.UNKNOWN, "Video element not available");
           return;
         }
       } else {
-        this.setError(TrackerErrorType.UNKNOWN, "Video element not available");
-        return;
+        // Legacy initialization - Use MediaPipe pose detection
+        await poseDetectorService.initialize({
+          minPoseDetectionConfidence: 0.7,
+          minPosePresenceConfidence: 0.7
+        });
+
+        // Start camera
+        if (this.videoRef?.current) {
+          const cameraStarted = await poseDetectorService.startCamera(this.videoRef.current);
+          
+          if (!cameraStarted) {
+            const errorMessage = poseDetectorService.getModelError() || "Failed to start camera";
+            this.setError(TrackerErrorType.CAMERA_PERMISSION, errorMessage);
+            return;
+          }
+        } else {
+          this.setError(TrackerErrorType.UNKNOWN, "Video element not available");
+          return;
+        }
       }
 
       this._status = SessionStatus.READY;
@@ -78,52 +99,85 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   }
 
   /**
-   * Handle pose detection results
+   * Handle pose detection results from legacy PoseDetectorService
    */
   private handlePoseResults = (result: PoseLandmarkerResult): void => {
     if (result.landmarks && result.landmarks.length > 0) {
       const landmarks = result.landmarks[0];
       const timestamp = Date.now();
-
-      // Process the landmarks through the analyzer
-      const analysis = this.analyzer.analyzePushupForm(landmarks, timestamp);
-
-      // Check if this is a completed rep
-      if (this.lastAnalysis && !this.lastAnalysis.isUpPosition && analysis.isUpPosition) {
-        // A rep is completed when transitioning from down to up position
-        if (analysis.isValidRep) {
-          this._repCount += 1;
-        }
-      }
-
-      // Update form feedback if there are issues
-      if (analysis.isBodySagging) {
-        this._formFeedback = "Body sagging";
-      } else if (analysis.isBodyPiking) {
-        this._formFeedback = "Body piking";
-      } else if (analysis.isWorming) {
-        this._formFeedback = "Worming detected";
-      } else if (analysis.handsLiftedOff) {
-        this._formFeedback = "Hands lifted off ground";
-      } else if (analysis.feetLiftedOff) {
-        this._formFeedback = "Feet lifted off ground";
-      } else if (analysis.kneesTouchingGround) {
-        this._formFeedback = "Knees touching ground";
-      } else if (analysis.bodyTouchingGround) {
-        this._formFeedback = "Body touching ground";
-      } else if (analysis.isPaused) {
-        this._formFeedback = "Paused too long";
-      } else {
-        this._formFeedback = null;
-      }
-
-      const formScore = analysis.isValidRep ? 100 : 70;
-      this._formScore = formScore;
-
-      // Store the last analysis for next comparison
-      this.lastAnalysis = analysis;
+      this.processPoseData(landmarks, timestamp);
     }
   };
+
+  /**
+   * Process frame from new BlazePose detector
+   */
+  private processPoseFrame = (): void => {
+    if (!this.poseDetector || !this.videoRef?.current || this._status !== SessionStatus.ACTIVE) {
+      this.animationFrameId = null;
+      return;
+    }
+    
+    const result = this.poseDetector.detect(this.videoRef.current);
+    
+    if (result && result.landmarks) {
+      this.processPoseData(result.landmarks, result.timestamp);
+      
+      // Optional drawing on canvas if available
+      if (this.canvasRef?.current && result.landmarks) {
+        PoseDetector.draw(
+          this.canvasRef.current,
+          this.videoRef.current,
+          result.landmarks
+        );
+      }
+    }
+    
+    this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
+  };
+
+  /**
+   * Common processing of pose data from either source
+   */
+  private processPoseData(landmarks: NormalizedLandmark[], timestamp: number): void {
+    // Process the landmarks through the analyzer
+    const analysis = this.analyzer.analyzePushupForm(landmarks, timestamp);
+
+    // Check if this is a completed rep
+    if (this.lastAnalysis && !this.lastAnalysis.isUpPosition && analysis.isUpPosition) {
+      // A rep is completed when transitioning from down to up position
+      if (analysis.isValidRep) {
+        this._repCount += 1;
+      }
+    }
+
+    // Update form feedback if there are issues
+    if (analysis.isBodySagging) {
+      this._formFeedback = "Body sagging";
+    } else if (analysis.isBodyPiking) {
+      this._formFeedback = "Body piking";
+    } else if (analysis.isWorming) {
+      this._formFeedback = "Worming detected";
+    } else if (analysis.handsLiftedOff) {
+      this._formFeedback = "Hands lifted off ground";
+    } else if (analysis.feetLiftedOff) {
+      this._formFeedback = "Feet lifted off ground";
+    } else if (analysis.kneesTouchingGround) {
+      this._formFeedback = "Knees touching ground";
+    } else if (analysis.bodyTouchingGround) {
+      this._formFeedback = "Body touching ground";
+    } else if (analysis.isPaused) {
+      this._formFeedback = "Paused too long";
+    } else {
+      this._formFeedback = null;
+    }
+
+    const formScore = analysis.isValidRep ? 100 : 70;
+    this._formScore = formScore;
+
+    // Store the last analysis for next comparison
+    this.lastAnalysis = analysis;
+  }
 
   // Store the last analysis for rep counting
   private lastAnalysis: PushupFormAnalysis | null = null;
@@ -145,22 +199,27 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     this.analyzer.reset();
     this.lastAnalysis = null;
 
-    // Subscribe to the pose$ stream for continuous updates
-    this.poseSubscription = poseDetectorService.pose$.subscribe(this.handlePoseResults);
+    if (this.useNewPoseDetector) {
+      // Start the animation frame loop for the new detector
+      this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
+    } else {
+      // Subscribe to the pose$ stream for continuous updates with legacy detector
+      this.poseSubscription = poseDetectorService.pose$.subscribe(this.handlePoseResults);
 
-    // Start pose detection
-    const detectionStarted = poseDetectorService.start(
-      this.videoRef.current,
-      this.canvasRef?.current || null
-    );
+      // Start pose detection
+      const detectionStarted = poseDetectorService.start(
+        this.videoRef.current,
+        this.canvasRef?.current || null
+      );
 
-    if (!detectionStarted) {
-      if (this.poseSubscription) {
-        this.poseSubscription.unsubscribe();
-        this.poseSubscription = null;
+      if (!detectionStarted) {
+        if (this.poseSubscription) {
+          this.poseSubscription.unsubscribe();
+          this.poseSubscription = null;
+        }
+        this.setError(TrackerErrorType.UNKNOWN, "Failed to start pose detection");
+        return;
       }
-      this.setError(TrackerErrorType.UNKNOWN, "Failed to start pose detection");
-      return;
     }
 
     // Start timer to track duration
@@ -177,13 +236,21 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
       return; // Not active
     }
 
-    // Stop pose detection
-    poseDetectorService.stop();
+    if (this.useNewPoseDetector) {
+      // Cancel the animation frame loop
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+    } else {
+      // Stop pose detection
+      poseDetectorService.stop();
 
-    // Unsubscribe from pose events
-    if (this.poseSubscription) {
-      this.poseSubscription.unsubscribe();
-      this.poseSubscription = null;
+      // Unsubscribe from pose events
+      if (this.poseSubscription) {
+        this.poseSubscription.unsubscribe();
+        this.poseSubscription = null;
+      }
     }
 
     // Pause timer
@@ -202,12 +269,20 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
 
     // Stop tracking if active
     if (this._status === SessionStatus.ACTIVE) {
-      poseDetectorService.stop();
-      
-      // Unsubscribe from pose events
-      if (this.poseSubscription) {
-        this.poseSubscription.unsubscribe();
-        this.poseSubscription = null;
+      if (this.useNewPoseDetector) {
+        // Cancel the animation frame loop
+        if (this.animationFrameId !== null) {
+          cancelAnimationFrame(this.animationFrameId);
+          this.animationFrameId = null;
+        }
+      } else {
+        poseDetectorService.stop();
+        
+        // Unsubscribe from pose events
+        if (this.poseSubscription) {
+          this.poseSubscription.unsubscribe();
+          this.poseSubscription = null;
+        }
       }
       
       this.stopTimer();
@@ -358,29 +433,37 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   cleanup(): void {
     super.cleanup();
 
-    // Unsubscribe from pose events
-    if (this.poseSubscription) {
-      this.poseSubscription.unsubscribe();
-      this.poseSubscription = null;
-    }
+    if (this.useNewPoseDetector) {
+      // Cancel any pending animation frames
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+    } else {
+      // Unsubscribe from pose events
+      if (this.poseSubscription) {
+        this.poseSubscription.unsubscribe();
+        this.poseSubscription = null;
+      }
 
-    // Stop detection if running
-    poseDetectorService.stop();
-    
-    // Stop camera stream
-    poseDetectorService.stopCamera();
-    
-    // Release consumer reference
-    poseDetectorService.releaseConsumer();
+      // Stop detection if running
+      poseDetectorService.stop();
+      
+      // Stop camera stream
+      poseDetectorService.stopCamera();
+      
+      // Release consumer reference
+      poseDetectorService.releaseConsumer();
+    }
   }
 }
 
 /**
  * React hook that provides the PushupTrackerViewModel
  */
-export function usePushupTrackerViewModel() {
+export function usePushupTrackerViewModel(useNewPoseDetector = true) {
   // State to hold the ViewModel and trigger re-renders on changes
-  const [viewModel] = useState<PushupTrackerViewModel>(() => new PushupTrackerViewModel());
+  const [viewModel] = useState<PushupTrackerViewModel>(() => new PushupTrackerViewModel(useNewPoseDetector));
   
   // Refs to hold latest values for use in callbacks
   const repCountRef = useRef(viewModel.repCount);

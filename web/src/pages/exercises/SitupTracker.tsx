@@ -20,6 +20,10 @@ import { calculateSitupScore, formatScoreDisplay } from '../../grading/APFTScori
 import { useSitupTrackerViewModel } from '../../viewmodels/SitupTrackerViewModel';
 import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewModel';
 
+// Add a constant to enable the new BlazePose model
+// Set to true to use the new BlazePose detector, false to use legacy
+const USE_BLAZEPOSE_DETECTOR = true;
+
 const SitupTracker: React.FC = () => {
   const navigate = useNavigate();
   const auth = useAuth();
@@ -44,7 +48,7 @@ const SitupTracker: React.FC = () => {
     finishSession,
     resetSession,
     saveResults
-  } = useSitupTrackerViewModel();
+  } = useSitupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
 
   // Marking unused variables with eslint disable comments
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

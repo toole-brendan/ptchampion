@@ -93,7 +93,10 @@ export interface AuthState {
   error: string | null;
 }
 
-// MediaPipe Holistic Types
+/**
+ * MediaPipe Normalized Landmark
+ * Representation of a point in 3D space with visibility
+ */
 export interface NormalizedLandmark {
   x: number;
   y: number;
@@ -101,29 +104,26 @@ export interface NormalizedLandmark {
   visibility?: number;
 }
 
-export interface HolisticResults {
-  poseLandmarks: NormalizedLandmark[];
-  poseWorldLandmarks: NormalizedLandmark[];
-  faceLandmarks?: NormalizedLandmark[];
-  leftHandLandmarks?: NormalizedLandmark[];
-  rightHandLandmarks?: NormalizedLandmark[];
-  segmentationMask?: ImageBitmap;
-  image: HTMLCanvasElement | HTMLVideoElement | HTMLImageElement;
-}
-
+/**
+ * Exercise calibration data
+ */
 export interface CalibrationData {
   poseLandmarks: NormalizedLandmark[];
   poseWorldLandmarks: NormalizedLandmark[];
   timestamp: number;
-  exerciseType: string;
+  exerciseType: 'pushup' | 'situp' | 'pullup' | 'running';
 }
 
-export interface HolisticConfig {
-  modelComplexity?: 0 | 1 | 2;
-  smoothLandmarks?: boolean;
-  enableSegmentation?: boolean;
-  smoothSegmentation?: boolean;
-  refineFaceLandmarks?: boolean;
-  minDetectionConfidence?: number;
-  minTrackingConfidence?: number;
-} 
+/**
+ * Basic form analysis components that all exercise analyzers share
+ */
+export interface BaseFormAnalysis {
+  isUpPosition: boolean;
+  isDownPosition: boolean;
+  repProgress: number;
+  isValidRep: boolean;
+  timestamp: number;
+}
+
+// Note: HolisticResults and HolisticConfig interfaces have been removed
+// as we're now using the PoseDetector service with the BlazePose model 

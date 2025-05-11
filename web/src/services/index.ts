@@ -6,11 +6,11 @@
  */
 
 // Export PoseDetectorService
-export * from './PoseDetectorService';
-import PoseDetectorService from './PoseDetectorService';
+export * from '@/services/PoseDetectorService';
+import PoseDetectorService from '@/services/PoseDetectorService';
 export { PoseDetectorService };
 
 // Export PoseLandmarkIndex and helper functions
-export * from './PoseLandmarkIndex';
-import PoseLandmarkIndex from './PoseLandmarkIndex';
+export * from '@/services/PoseLandmarkIndex';
+import PoseLandmarkIndex from '@/services/PoseLandmarkIndex';
 export { PoseLandmarkIndex }; 

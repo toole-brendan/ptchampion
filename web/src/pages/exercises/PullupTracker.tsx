@@ -25,6 +25,10 @@ const PULLUP_THRESHOLD_ELBOW_ANGLE_DOWN = 160; // Angle for fully extended arms 
 const CHIN_OVER_BAR_VERTICAL_THRESHOLD = 0.05; // For UI display only
 const KIPPING_VERTICAL_THRESHOLD = 0.15; // For UI display only
 
+// Add a constant to enable the new BlazePose model
+// Set to true to use the new BlazePose detector, false to use legacy
+const USE_BLAZEPOSE_DETECTOR = true;
+
 const PullupTracker: React.FC = () => {
   const navigate = useNavigate();
   const auth = useAuth();
@@ -49,7 +53,7 @@ const PullupTracker: React.FC = () => {
     finishSession,
     resetSession,
     saveResults
-  } = usePullupTrackerViewModel();
+  } = usePullupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
 
   // Mark unused variables with eslint disable comments
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

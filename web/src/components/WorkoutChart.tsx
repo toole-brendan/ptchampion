@@ -62,20 +62,6 @@ export default function WorkoutChart({
   
   const colors = getChartColors();
   
-  // Format data for the chart based on timeframe
-  useEffect(() => {
-    if (!data || data.length === 0) {
-      // Generate empty data for the selected timeframe
-      const emptyData = generateEmptyData(activeTimeframe);
-      setChartData(emptyData);
-      return;
-    }
-    
-    // Format actual data
-    const formattedData = formatDataForTimeframe(data, activeTimeframe);
-    setChartData(formattedData);
-  }, [data, activeTimeframe, formatDataForTimeframe, generateEmptyData]);
-  
   // Generate empty placeholder data for the chart
   const generateEmptyData = useCallback((timeframe: string) => {
     const today = new Date();
@@ -184,8 +170,30 @@ export default function WorkoutChart({
     return Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
   }, [generateEmptyData]);
   
+  // Format data for the chart based on timeframe - MOVED AFTER function declarations
+  useEffect(() => {
+    if (!data || data.length === 0) {
+      // Generate empty data for the selected timeframe
+      const emptyData = generateEmptyData(activeTimeframe);
+      setChartData(emptyData);
+      return;
+    }
+    
+    // Format actual data
+    const formattedData = formatDataForTimeframe(data, activeTimeframe);
+    setChartData(formattedData);
+  }, [data, activeTimeframe, formatDataForTimeframe, generateEmptyData]);
+  
+  // Fix CustomTooltip type definition
+  interface TooltipProps {
+    active?: boolean;
+    payload?: Array<{
+      payload: Record<string, string | number>;
+    }>;
+  }
+  
   // Custom tooltip that matches iOS design
-  const CustomTooltip = ({ active, payload }: unknown) => {
+  const CustomTooltip = ({ active, payload }: TooltipProps) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       
@@ -193,7 +201,7 @@ export default function WorkoutChart({
         <div className="rounded-md bg-deep-ops p-2 text-cream shadow-medium">
           <p className="font-semibold">{data.display}</p>
           <p>{`${type.charAt(0).toUpperCase() + type.slice(1)}: ${data.count}`}</p>
-          {data.duration && <p>{`Duration: ${Math.floor(data.duration / 60)}:${(data.duration % 60).toString().padStart(2, '0')}`}</p>}
+          {data.duration && <p>{`Duration: ${Math.floor(data.duration as number / 60)}:${((data.duration as number) % 60).toString().padStart(2, '0')}`}</p>}
           {data.calories && <p>{`Calories: ${data.calories}`}</p>}
         </div>
       );

@@ -9,12 +9,8 @@ import { PoseProvider } from './lib/contexts/PoseContext';
 import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import OfflineBanner from './components/OfflineBanner';
-import ExerciseCalibrationExample from './components/ExerciseCalibrationExample';
-import PushupAnalyzerDemo from './components/PushupAnalyzerDemo';
-import SitupAnalyzerDemo from './components/SitupAnalyzerDemo';
-import PullupAnalyzerDemo from './components/PullupAnalyzerDemo';
 import CameraPermissionDialog from './components/ui/CameraPermissionDialog';
-import poseDetectorService from './services/PoseDetectorService';
+import poseDetectorService from '@/services/PoseDetectorService';
 import { ToastProvider } from './components/ui/toast-provider';
 import { ErrorReporter } from './components/ErrorReporter';
 
@@ -132,46 +128,6 @@ function App({ queryClient }: AppProps) {
                         <Route path="trackers/pullups" element={<Navigate to="/exercises/pullups" replace />} />
                         <Route path="trackers/situps" element={<Navigate to="/exercises/situps" replace />} />
                         <Route path="trackers/running" element={<Navigate to="/exercises/running" replace />} />
-
-                        {/* Add route for the example component */}
-                        <Route 
-                          path="/example/calibration" 
-                          element={
-                            <ProtectedRoute>
-                              <ExerciseCalibrationExample />
-                            </ProtectedRoute>
-                          } 
-                        />
-
-                        {/* Add route for PushupAnalyzerDemo */}
-                        <Route 
-                          path="/example/pushup-analyzer" 
-                          element={
-                            <ProtectedRoute>
-                              <PushupAnalyzerDemo />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        
-                        {/* Add route for SitupAnalyzerDemo */}
-                        <Route 
-                          path="/example/situp-analyzer" 
-                          element={
-                            <ProtectedRoute>
-                              <SitupAnalyzerDemo />
-                            </ProtectedRoute>
-                          } 
-                        />
-                        
-                        {/* Add route for PullupAnalyzerDemo */}
-                        <Route 
-                          path="/example/pullup-analyzer" 
-                          element={
-                            <ProtectedRoute>
-                              <PullupAnalyzerDemo />
-                            </ProtectedRoute>
-                          } 
-                        />
                       </Route>
                       
                       {/* Catch-all route - redirect to NotFound */}

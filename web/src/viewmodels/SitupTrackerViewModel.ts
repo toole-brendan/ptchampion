@@ -3,12 +3,13 @@
  * 
  * ViewModel for situp tracking session. 
  * Coordinates between PoseDetectorService, SitupAnalyzer, and UI components.
+ * Now updated to support both legacy PoseDetectorService and new BlazePose Full model.
  */
 
 import { PoseLandmarkerResult } from '@mediapipe/tasks-vision';
 import { ExerciseType } from '../grading';
 import { SitupAnalyzer, SitupFormAnalysis } from '../grading/SitupAnalyzer';
-import { poseDetectorService } from '../services/PoseDetectorService';
+import { poseDetectorService } from '@/services/PoseDetectorService';
 import { logExerciseResult } from '../lib/apiClient';
 import { LogExerciseRequest, ExerciseResponse } from '../lib/types';
 import { BaseTrackerViewModel, ExerciseResult, SessionStatus, TrackerErrorType } from './TrackerViewModel';
@@ -16,6 +17,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 // Import the SitupGrader
 import { createGrader } from '../grading';
 import { ExerciseId } from '../constants/exercises';
+import { PoseDetector, PoseDetectorResult } from '../services/poseDetector';
+import { NormalizedLandmark } from '@mediapipe/tasks-vision';
 
 /**
  * Class implementation of SitupTrackerViewModel
@@ -26,11 +29,17 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
   private analyzer: SitupAnalyzer;
   private grader: ReturnType<typeof createGrader>; // Using any temporarily until we have proper typing
   private submitting: boolean = false;
+  
+  // New BlazePose detector properties
+  private useNewPoseDetector: boolean = false;
+  private poseDetector: PoseDetector | null = null;
+  private animationFrameId: number | null = null;
 
-  constructor() {
+  constructor(useNewPoseDetector = false) {
     super(ExerciseType.SITUP);
     this.analyzer = new SitupAnalyzer();
     this.grader = createGrader(ExerciseType.SITUP);
+    this.useNewPoseDetector = useNewPoseDetector;
   }
 
   /**
@@ -50,10 +59,18 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
     this.canvasRef = canvasRef || null;
 
     try {
-      // Initialize pose detector with the provided video element
-      await poseDetectorService.initialize();
-      this._status = SessionStatus.READY;
-      this._error = null;
+      if (this.useNewPoseDetector) {
+        // Initialize the new BlazePose detector
+        this.poseDetector = new PoseDetector();
+        await this.poseDetector.init('/models/pose_landmarker_full.task');
+        this._status = SessionStatus.READY;
+        this._error = null;
+      } else {
+        // Initialize pose detector with the provided video element
+        await poseDetectorService.initialize();
+        this._status = SessionStatus.READY;
+        this._error = null;
+      }
     } catch (error) {
       console.error("Failed to initialize pose detector:", error);
       this.setError(
@@ -79,12 +96,17 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
       return;
     }
 
-    // Start pose detection with callback to handle results
-    poseDetectorService.startDetection(
-      this.videoRef.current,
-      this.canvasRef?.current || undefined,
-      this.handlePoseResults
-    );
+    if (this.useNewPoseDetector) {
+      // Start the animation frame loop for the new detector
+      this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
+    } else {
+      // Start pose detection with callback to handle results
+      poseDetectorService.start(
+        this.videoRef.current,
+        this.canvasRef?.current || undefined,
+        this.handlePoseResults
+      );
+    }
 
     // Start timer
     this.startTimer();
@@ -93,7 +115,48 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
   }
 
   /**
-   * Handle pose detection results
+   * Process frame from new BlazePose detector
+   */
+  private processPoseFrame = (): void => {
+    if (!this.poseDetector || !this.videoRef?.current || this._status !== SessionStatus.ACTIVE) {
+      this.animationFrameId = null;
+      return;
+    }
+    
+    const result = this.poseDetector.detect(this.videoRef.current);
+    
+    if (result && result.landmarks) {
+      // Process the landmarks through the grader instead of analyzer
+      const gradingResult = this.grader.processPose(result.landmarks);
+      
+      // Update state based on grading result
+      if (gradingResult.repIncrement > 0) {
+        this._repCount += gradingResult.repIncrement;
+      }
+      
+      // Update form feedback
+      this._formFeedback = gradingResult.formFault || null;
+      
+      // Update form score
+      if (gradingResult.formScore !== undefined) {
+        this._formScore = gradingResult.formScore;
+      }
+      
+      // Optional drawing on canvas if available
+      if (this.canvasRef?.current && result.landmarks) {
+        PoseDetector.draw(
+          this.canvasRef.current,
+          this.videoRef.current,
+          result.landmarks
+        );
+      }
+    }
+    
+    this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
+  };
+
+  /**
+   * Handle pose detection results from legacy PoseDetectorService
    */
   private handlePoseResults = (result: PoseLandmarkerResult): void => {
     if (result.landmarks && result.landmarks.length > 0) {
@@ -127,7 +190,16 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
    * Clean up resources when component unmounts
    */
   cleanup(): void {
-    poseDetectorService.stopDetection();
+    if (this.useNewPoseDetector) {
+      // Cancel any pending animation frames
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+    } else {
+      poseDetectorService.stop();
+      poseDetectorService.releaseConsumer();
+    }
     this.stopTimer();
   }
 
@@ -139,8 +211,16 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
       return; // Not active
     }
 
-    // Stop pose detection
-    poseDetectorService.stopDetection();
+    if (this.useNewPoseDetector) {
+      // Cancel the animation frame loop
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
+    } else {
+      // Stop pose detection
+      poseDetectorService.stop();
+    }
 
     // Pause timer
     this.stopTimer();
@@ -158,7 +238,15 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
 
     // Stop tracking if active
     if (this._status === SessionStatus.ACTIVE) {
-      poseDetectorService.stopDetection();
+      if (this.useNewPoseDetector) {
+        // Cancel the animation frame loop
+        if (this.animationFrameId !== null) {
+          cancelAnimationFrame(this.animationFrameId);
+          this.animationFrameId = null;
+        }
+      } else {
+        poseDetectorService.stop();
+      }
       this.stopTimer();
     }
 
@@ -306,9 +394,9 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
 /**
  * React hook that provides the SitupTrackerViewModel
  */
-export function useSitupTrackerViewModel() {
+export function useSitupTrackerViewModel(useNewPoseDetector = true) {
   // State to hold the ViewModel and trigger re-renders on changes
-  const [viewModel] = useState<SitupTrackerViewModel>(() => new SitupTrackerViewModel());
+  const [viewModel] = useState<SitupTrackerViewModel>(() => new SitupTrackerViewModel(useNewPoseDetector));
   
   // Refs to hold latest values for use in callbacks
   const repCountRef = useRef(viewModel.repCount);

@@ -19,8 +19,8 @@ import {
   PoseLandmarkerResult
 } from "@mediapipe/tasks-vision";
 import { Subject } from 'rxjs';
-import { InitError, PoseDetectorError, RuntimeError } from './PoseDetectorError';
-import cameraManager, { CameraOptions } from './CameraManager';
+import { InitError, PoseDetectorError, RuntimeError } from '@/services/PoseDetectorError';
+import cameraManager, { CameraOptions } from '@/services/CameraManager';
 
 // Re-export landmark types for convenience
 export type { NormalizedLandmark, PoseLandmarkerResult };
@@ -38,7 +38,7 @@ export interface PoseDetectorOptions {
 }
 
 // Re-export camera options
-export { CameraOptions };
+export type { CameraOptions };
 
 // Result callback function type
 export type PoseResultsCallback = (results: PoseLandmarkerResult) => void;
@@ -65,6 +65,9 @@ class PoseDetectorService {
   
   // RxJS Subject for emitting pose frames
   public pose$: Subject<PoseLandmarkerResult> = new Subject<PoseLandmarkerResult>();
+  
+  // Track initialization with a Promise to handle concurrent initialization requests
+  private initPromise: Promise<void> | null = null;
   
   /**
    * Check if the service is initialized
@@ -116,15 +119,15 @@ class PoseDetectorService {
    * @returns Promise that resolves when the model is loaded
    */
   public async initialize(options: PoseDetectorOptions = {}): Promise<void> {
+    // If already initialized, resolve immediately
     if (this.isInitialized()) {
       console.log("PoseDetectorService: Model already initialized");
       return Promise.resolve();
     }
     
-    if (this.isModelLoading) {
-      return Promise.reject(
-        new PoseDetectorError(InitError.ALREADY_INITIALIZED, "Model is currently loading")
-      );
+    // If initialization is in progress, return the existing promise
+    if (this.initPromise) {
+      return this.initPromise;
     }
     
     this.isModelLoading = true;
@@ -135,32 +138,44 @@ class PoseDetectorService {
     const runningMode = options.runningMode || 'VIDEO';
     const numPoses = options.numPoses || 1;
     
+    // Create a new initialization promise
+    this.initPromise = (async () => {
+      try {
+        console.log(`PoseDetectorService: Initializing model from ${modelPath}`);
+        const vision = await FilesetResolver.forVisionTasks(this.defaultWasmPath);
+        
+        this.poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: modelPath,
+            delegate: delegate
+          },
+          runningMode: runningMode,
+          numPoses: numPoses,
+          minPoseDetectionConfidence: options.minPoseDetectionConfidence || 0.5,
+          minPosePresenceConfidence: options.minPosePresenceConfidence || 0.5,
+          minTrackingConfidence: options.minTrackingConfidence || 0.5
+        });
+        
+        this.initialized = true;
+        console.log("PoseDetectorService: Model initialized successfully");
+        return Promise.resolve();
+      } catch (err) {
+        this.modelError = err instanceof Error ? err.message : String(err);
+        console.error("PoseDetectorService: Failed to initialize model:", this.modelError);
+        const error = new PoseDetectorError(InitError.MODEL_LOAD, this.modelError);
+        return Promise.reject(error);
+      } finally {
+        this.isModelLoading = false;
+      }
+    })();
+    
     try {
-      console.log(`PoseDetectorService: Initializing model from ${modelPath}`);
-      const vision = await FilesetResolver.forVisionTasks(this.defaultWasmPath);
-      
-      this.poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
-        baseOptions: {
-          modelAssetPath: modelPath,
-          delegate: delegate
-        },
-        runningMode: runningMode,
-        numPoses: numPoses,
-        minPoseDetectionConfidence: options.minPoseDetectionConfidence || 0.5,
-        minPosePresenceConfidence: options.minPosePresenceConfidence || 0.5,
-        minTrackingConfidence: options.minTrackingConfidence || 0.5
-      });
-      
-      this.initialized = true;
-      console.log("PoseDetectorService: Model initialized successfully");
+      await this.initPromise;
       return Promise.resolve();
-    } catch (err) {
-      this.modelError = err instanceof Error ? err.message : String(err);
-      console.error("PoseDetectorService: Failed to initialize model:", this.modelError);
-      const error = new PoseDetectorError(InitError.MODEL_LOAD, this.modelError);
+    } catch (error) {
+      // Clear the promise on failure so future calls can retry
+      this.initPromise = null;
       return Promise.reject(error);
-    } finally {
-      this.isModelLoading = false;
     }
   }
   
@@ -244,7 +259,6 @@ class PoseDetectorService {
       cancelAnimationFrame(this.requestAnimationId);
       this.requestAnimationId = null;
     }
-    this.releaseConsumer();
     console.log("PoseDetectorService: Pose detection stopped");
   }
   

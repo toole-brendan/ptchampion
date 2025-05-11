@@ -8,7 +8,7 @@
  * Any modifications should be made to this file only.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } from 'lucide-react';
@@ -24,6 +24,10 @@ import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewMod
 const PUSHUP_THRESHOLD_ANGLE_DOWN = 90; // Angle threshold for elbows down
 const PUSHUP_THRESHOLD_ANGLE_UP = 160; // Angle threshold for elbows up (full extension)
 const BACK_STRAIGHT_THRESHOLD_ANGLE = 165; // Min angle for shoulder-hip-knee (degrees)
+
+// Boolean flag to select between new BlazePose detector and legacy detector
+// Set to true to use the new BlazePose detector, false to use legacy
+const USE_BLAZEPOSE_DETECTOR = true;
 
 const PushupTracker: React.FC = () => {
   const navigate = useNavigate();
@@ -49,7 +53,7 @@ const PushupTracker: React.FC = () => {
     finishSession,
     resetSession,
     saveResults
-  } = usePushupTrackerViewModel();
+  } = usePushupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
   
   // Marking unused variables with eslint disable comments
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

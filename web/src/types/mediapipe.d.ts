@@ -1,17 +1,4 @@
-declare module '@mediapipe/holistic' {
-  export class Holistic {
-    constructor(options?: unknown);
-    setOptions(options: unknown): void;
-    onResults(callback: (results: unknown) => void): void;
-    initialize(): Promise<void>;
-    send(options: { image: HTMLVideoElement }): Promise<void>;
-    close(): void;
-  }
-  
-  export const POSE_CONNECTIONS: unknown;
-  export const HAND_CONNECTIONS: unknown;
-  export const FACEMESH_TESSELATION: unknown;
-}
+// Note: @mediapipe/holistic module declaration removed as we're using @mediapipe/tasks-vision now
 
 declare module '@mediapipe/camera_utils' {
   export class Camera {

@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import poseDetectorService from '../../services/PoseDetectorService';
+import poseDetectorService from '@/services/PoseDetectorService';
 import { PoseLandmarkerResult } from '@mediapipe/tasks-vision';
-import { PoseLandmarkIndex } from '../../services/PoseLandmarkIndex';
+import { PoseLandmarkIndex as ImportedPoseLandmarkIndex } from '@/services/PoseLandmarkIndex';
 
-// Re-export the landmark index enum for backward compatibility
-export { PoseLandmarkIndex };
+// Re-export the imported landmark index
+export { ImportedPoseLandmarkIndex as PoseLandmarkIndex };
 
-// Pose landmark indices based on MediaPipe's pose landmark model
-// https://developers.google.com/mediapipe/solutions/vision/pose_landmarker#pose_landmarker_model
-export enum PoseLandmarkIndex {
+// Local copy of pose landmark indices for internal use
+// This should match the exported enum from PoseLandmarkIndex.ts
+enum LocalPoseLandmarkIndex {
   NOSE = 0,
   // Eyes
   LEFT_EYE_INNER = 1,
