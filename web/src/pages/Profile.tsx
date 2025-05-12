@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, UserCircle, LogOut, AlertTriangle } from 'lucide-react';
+import { Loader2, UserCircle, LogOut, AlertTriangle, KeyRound } from 'lucide-react';
 import { updateCurrentUser, deleteCurrentUser } from '../lib/apiClient';
 import { useAuth } from '../lib/authContext';
 import { UpdateUserRequest } from '../lib/types';
@@ -37,9 +37,15 @@ const Profile: React.FC = () => {
   const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState<ProfileFormData>({});
+  const [passwordData, setPasswordData] = useState<{password: string, confirmPassword: string}>({
+    password: '',
+    confirmPassword: ''
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [passwordMessage, setPasswordMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
 
   // Message auto-dismiss timer
@@ -53,6 +59,17 @@ const Profile: React.FC = () => {
     }
   }, [message]);
 
+  // Password message auto-dismiss timer
+  useEffect(() => {
+    if (passwordMessage) {
+      const timer = setTimeout(() => {
+        setPasswordMessage(null);
+      }, 5000); // 5 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [passwordMessage]);
+
   // Initialize form with user data when it's available
   useEffect(() => {
     if (user) {
@@ -60,21 +77,19 @@ const Profile: React.FC = () => {
         username: user.username,
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        email: user.email || '',
-        password: '',
-        confirmPassword: ''
+        email: user.email || ''
       });
     }
   }, [user]);
 
   // Check if passwords match whenever password or confirmPassword changes
   useEffect(() => {
-    if (formData.password || formData.confirmPassword) {
-      setPasswordsMatch(formData.password === formData.confirmPassword);
+    if (passwordData.password || passwordData.confirmPassword) {
+      setPasswordsMatch(passwordData.password === passwordData.confirmPassword);
     } else {
       setPasswordsMatch(true); // If both fields are empty, they technically match
     }
-  }, [formData.password, formData.confirmPassword]);
+  }, [passwordData.password, passwordData.confirmPassword]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -82,15 +97,14 @@ const Profile: React.FC = () => {
     setMessage(null); // Clear message on change
   };
 
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({ ...prev, [name]: value }));
+    setPasswordMessage(null); // Clear message on change
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate passwords match if attempting to change password
-    if (formData.password && !passwordsMatch) {
-      setMessage({ text: 'Passwords do not match', type: 'error' });
-      return;
-    }
-    
     const changes = getChangedFields();
     if (Object.keys(changes).length === 0) {
       setMessage({ text: 'No changes to save', type: 'error' });
@@ -138,13 +152,6 @@ const Profile: React.FC = () => {
       // Update the user in the React Query cache
       queryClient.setQueryData(['currentUser'], updated);
       
-      // Reset password fields after successful update
-      setFormData(prev => ({
-        ...prev,
-        password: '',
-        confirmPassword: ''
-      }));
-      
       toast({
         title: "Profile Updated",
         description: "Your profile has been successfully updated.",
@@ -159,6 +166,83 @@ const Profile: React.FC = () => {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validate passwords match if attempting to change password
+    if (!passwordData.password) {
+      setPasswordMessage({ text: 'Please enter a new password', type: 'error' });
+      return;
+    }
+    
+    if (!passwordsMatch) {
+      setPasswordMessage({ text: 'Passwords do not match', type: 'error' });
+      return;
+    }
+    
+    // In dev mode with auth bypass, just simulate a successful update
+    if (DEV_AUTH_BYPASS) {
+      setIsChangingPassword(true);
+      setPasswordMessage(null);
+      
+      // Simulate API delay
+      setTimeout(() => {
+        setPasswordMessage({ text: 'Password updated successfully (Dev Mode)', type: 'success' });
+        setIsChangingPassword(false);
+        
+        // Reset password fields
+        setPasswordData({
+          password: '',
+          confirmPassword: ''
+        });
+        
+        toast({
+          title: "Password Updated",
+          description: "Your password has been successfully updated (Dev Mode).",
+          variant: "default",
+        });
+      }, 500);
+      
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    setPasswordMessage(null);
+    
+    try {
+      const changes: UpdateUserRequest = {
+        password: passwordData.password
+      };
+      
+      const updated = await updateCurrentUser(changes);
+      setPasswordMessage({ text: 'Password updated successfully', type: 'success' });
+      
+      // Update the user in the React Query cache
+      queryClient.setQueryData(['currentUser'], updated);
+      
+      // Reset password fields
+      setPasswordData({
+        password: '',
+        confirmPassword: ''
+      });
+      
+      toast({
+        title: "Password Updated",
+        description: "Your password has been successfully updated.",
+        variant: "default",
+      });
+    } catch (error) {
+      setPasswordMessage({ text: error instanceof Error ? error.message : 'Failed to update password', type: 'error' });
+      toast({
+        title: "Password Update Failed",
+        description: error instanceof Error ? error.message : 'Failed to update password',
+        variant: "destructive",
+      });
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -212,8 +296,7 @@ const Profile: React.FC = () => {
       formData.username !== user.username ||
       formData.first_name !== (user.first_name || '') ||
       formData.last_name !== (user.last_name || '') ||
-      formData.email !== (user.email || '') ||
-      Boolean(formData.password)
+      formData.email !== (user.email || '')
     );
   };
   
@@ -237,10 +320,6 @@ const Profile: React.FC = () => {
     
     if (formData.email !== (user.email || '')) {
       changedFields.email = formData.email;
-    }
-    
-    if (formData.password && passwordsMatch) {
-      changedFields.password = formData.password;
     }
     
     return changedFields;
@@ -348,41 +427,11 @@ const Profile: React.FC = () => {
                 disabled={isSubmitting}
               />
             </div>
-            
-            {/* Password fields section */}
-            <div className="space-y-4 rounded-md border p-4">
-              <div className="text-sm font-medium">Password Management</div>
-              <div className="space-y-1.5">
-                <Label htmlFor="password">New Password</Label>
-                <Input 
-                  id="password" name="password"
-                  type="password"
-                  value={formData.password || ''} onChange={handleChange} 
-                  placeholder="Leave blank to keep current password"
-                  disabled={isSubmitting}
-                  className={!passwordsMatch && Boolean(formData.password) ? "border-destructive" : ""}
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                <Input 
-                  id="confirmPassword" name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword || ''} onChange={handleChange} 
-                  placeholder="Confirm your new password"
-                  disabled={isSubmitting}
-                  className={!passwordsMatch && Boolean(formData.confirmPassword) ? "border-destructive" : ""}
-                />
-                {!passwordsMatch && Boolean(formData.password) && (
-                  <p className="mt-1 text-xs text-destructive">Passwords do not match</p>
-                )}
-              </div>
-            </div>
           </CardContent>
           <CardFooter className="border-t pt-4"> {/* Adjusted padding */}
             <Button 
               type="submit" 
-              disabled={isSubmitting || !formDataHasChanges() || (formData.password && !passwordsMatch)}
+              disabled={isSubmitting || !formDataHasChanges()}
               className="bg-brass-gold hover:bg-brass-gold/90"
             >
               {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
@@ -391,8 +440,66 @@ const Profile: React.FC = () => {
           </CardFooter>
         </form>
       </Card>
-
-
+      
+      {/* Password Management Section */}
+      <Card className="transition-shadow hover:shadow-md">
+        <CardHeader>
+          <CardTitle className="flex items-center font-semibold text-lg">
+              <KeyRound className="mr-2 size-5 text-muted-foreground" />
+              Password Management
+          </CardTitle>
+          <CardDescription>Update your password.</CardDescription>
+        </CardHeader>
+        <form onSubmit={handlePasswordSubmit}>
+          <CardContent className="space-y-4">
+            {/* Password Message Display */}
+            {passwordMessage && (
+              <Alert variant={passwordMessage.type === 'error' ? 'destructive' : 'default'} className="transition-opacity duration-300">
+                <AlertTitle>{passwordMessage.type === 'success' ? 'Success' : 'Error'}</AlertTitle>
+                <AlertDescription>{passwordMessage.text}</AlertDescription>
+              </Alert>
+            )}
+            
+            <div className="space-y-1.5">
+              <Label htmlFor="password">New Password</Label>
+              <Input 
+                id="password" name="password"
+                type="password"
+                value={passwordData.password} 
+                onChange={handlePasswordChange} 
+                placeholder="Enter your new password"
+                disabled={isChangingPassword}
+                className={!passwordsMatch && Boolean(passwordData.password) ? "border-destructive" : ""}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+              <Input 
+                id="confirmPassword" name="confirmPassword"
+                type="password"
+                value={passwordData.confirmPassword} 
+                onChange={handlePasswordChange} 
+                placeholder="Confirm your new password"
+                disabled={isChangingPassword}
+                className={!passwordsMatch && Boolean(passwordData.confirmPassword) ? "border-destructive" : ""}
+              />
+              {!passwordsMatch && Boolean(passwordData.password) && (
+                <p className="mt-1 text-xs text-destructive">Passwords do not match</p>
+              )}
+            </div>
+          </CardContent>
+          <CardFooter className="border-t pt-4">
+            <Button 
+              type="submit" 
+              disabled={isChangingPassword || !passwordData.password || !passwordsMatch}
+              className="bg-brass-gold hover:bg-brass-gold/90"
+            >
+              {isChangingPassword ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+              {isChangingPassword ? 'Updating...' : 'Update Password'}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
 
       {/* Account Actions Section */}
       <Card className="border-destructive/50 transition-shadow hover:shadow-md"> {/* Destructive border hint */}

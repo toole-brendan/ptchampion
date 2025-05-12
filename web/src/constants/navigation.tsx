@@ -4,6 +4,7 @@ import {
   User,
   Award,
   Settings,
+  History,
 } from 'lucide-react';
 
 // Custom Icons
@@ -31,27 +32,10 @@ const DumbbellIcon: React.FC<IconProps> = (props) => (
   </svg>
 );
 
-const HistoryIcon: React.FC<IconProps> = (props) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    {...props}
-  >
-    <path d="M3 3v18h18" />
-    <path d="M12 12H3V3" />
-    <path d="M16 16v-4h-4" />
-  </svg>
-);
-
 export const NAV_ITEMS = [
   { name: 'Dashboard', path: '/', icon: Home },
   { name: 'Exercises', path: '/exercises', icon: DumbbellIcon },
-  { name: 'History', path: '/history', icon: HistoryIcon },
+  { name: 'History', path: '/history', icon: History },
   { name: 'Leaderboard', path: '/leaderboard', icon: Award },
   { name: 'Profile', path: '/profile', icon: User },
   { name: 'Settings', path: '/settings', icon: Settings },
