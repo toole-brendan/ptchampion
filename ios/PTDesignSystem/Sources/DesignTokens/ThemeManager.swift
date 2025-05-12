@@ -91,4 +91,62 @@ public extension Font {
     static func militaryMonospaced(size: CGFloat = AppTheme.GeneratedTypography.body) -> Font {
         return .system(size: size, weight: .medium, design: .monospaced)
     }
+}
+
+// Extension for web design system support
+public extension ThemeManager {
+    // Helper to detect if the web theme should be used
+    static var useWebTheme: Bool {
+        // If FeatureFlagService exists, check the flag
+        #if canImport(ptchampion)
+        if let featureFlagType = NSClassFromString("ptchampion.FeatureFlagService") as? NSObject.Type,
+           let sharedInstance = featureFlagType.value(forKey: "shared") as? NSObject,
+           let isEnabled = sharedInstance.perform(NSSelectorFromString("isEnabled:defaultValue:"), 
+                                              with: "design_system_v2", 
+                                              with: false)?.takeUnretainedValue() as? Bool {
+            return isEnabled
+        }
+        #endif
+        
+        // For direct development in the PTDesignSystem package, allow a debug setting
+        #if DEBUG
+        return UserDefaults.standard.bool(forKey: "useWebTheme")
+        #else
+        return false
+        #endif
+    }
+    
+    // For components to programmatically choose between design systems
+    static func shadowStyle(legacy: AppTheme.GeneratedShadows.Type, web: AppTheme.Shadow) -> Shadow {
+        if useWebTheme {
+            return web
+        } else {
+            // Convert the legacy shadow type to actual Shadow
+            switch legacy {
+            case AppTheme.GeneratedShadows.small.self:
+                return AppTheme.GeneratedShadows.small
+            case AppTheme.GeneratedShadows.medium.self:
+                return AppTheme.GeneratedShadows.medium
+            case AppTheme.GeneratedShadows.large.self:
+                return AppTheme.GeneratedShadows.large
+            default:
+                return AppTheme.GeneratedShadows.small
+            }
+        }
+    }
+    
+    // For components to programmatically choose between design systems
+    static func colorStyle(legacy: Color, web: Color) -> Color {
+        return useWebTheme ? web : legacy
+    }
+    
+    // For components to programmatically choose between design systems
+    static func fontStyle(legacy: Font, web: Font) -> Font {
+        return useWebTheme ? web : legacy
+    }
+    
+    // For components to programmatically choose between design systems
+    static func radiusValue(legacy: CGFloat, web: CGFloat) -> CGFloat {
+        return useWebTheme ? web : legacy
+    }
 } 

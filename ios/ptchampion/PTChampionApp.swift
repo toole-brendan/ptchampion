@@ -295,6 +295,11 @@ struct PTChampionApp: App {
     }()
 
     init() {
+        // Check fonts in debug mode
+        #if DEBUG
+        FontRegistryChecker.checkFonts()
+        #endif
+        
         // Initialize FontManager first (doesn't depend on self)
         FontManager.shared.registerFonts()
         #if DEBUG
@@ -494,6 +499,11 @@ struct PTChampionApp: App {
                     // This allows for a visual loading state before auto-navigating
                     print("App launched, starting with loading screen")
                 }
+                
+                // Check fonts in debug mode
+                #if DEBUG
+                FontRegistryChecker.checkFonts()
+                #endif
             }
             .task {
                 // Fix for missing generic parameter R by using explicit type annotation

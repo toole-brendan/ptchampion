@@ -51,6 +51,9 @@ public struct PTTextField: View {
         self.keyboardType = keyboardType
     }
     
+    // Add state for focus tracking
+    @State private var isFocused: Bool = false
+    
     // Helper to create a standard text field with introspection
     @ViewBuilder
     private func standardTextField() -> some View {
@@ -65,6 +68,20 @@ public struct PTTextField: View {
 
                 if textField.inputAccessoryView == nil {
                     textField.inputAccessoryView = UIView(frame: .zero)
+                }
+                
+                // Track focus state
+                textField.addTarget(self, action: #selector(UITextField.textFieldDidBeginEditing(_:)), for: .editingDidBegin)
+                textField.addTarget(self, action: #selector(UITextField.textFieldDidEndEditing(_:)), for: .editingDidEnd)
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { notification in
+                if let textField = notification.object as? UITextField {
+                    isFocused = true
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidEndEditingNotification)) { notification in
+                if let textField = notification.object as? UITextField {
+                    isFocused = false
                 }
             }
     }
@@ -111,8 +128,10 @@ public struct PTTextField: View {
             // Label at the top
             if !text.isEmpty || label != nil {
                 Text(label ?? placeholder)
-                    .font(.caption)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .font(ThemeManager.useWebTheme ? AppTheme.Typography.label : .caption)
+                    .foregroundColor(ThemeManager.useWebTheme ? 
+                        AppTheme.Color.textSubtle : 
+                        AppTheme.GeneratedColors.textSecondary)
             }
             
             HStack {
@@ -133,16 +152,33 @@ public struct PTTextField: View {
                 
                 // Add optional icon
                 if let icon = icon {
-                    icon.foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    icon.foregroundColor(ThemeManager.useWebTheme ?
+                        AppTheme.Color.textSubtle :
+                        AppTheme.GeneratedColors.textSecondary)
                 }
             }
             .padding(12)
-            .background(AppTheme.GeneratedColors.cardBackground)
-            .cornerRadius(8)
+            .background(ThemeManager.useWebTheme ? 
+                AppTheme.Color.surface : 
+                AppTheme.GeneratedColors.cardBackground)
+            .cornerRadius(ThemeManager.useWebTheme ? 
+                AppTheme.Radius.md : 
+                AppTheme.GeneratedRadius.input)
             .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(AppTheme.GeneratedColors.textSecondary.opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: ThemeManager.useWebTheme ? 
+                    AppTheme.Radius.md : 
+                    AppTheme.GeneratedRadius.input)
+                    .stroke(ThemeManager.useWebTheme ? 
+                        AppTheme.Color.borderDefault : 
+                        AppTheme.GeneratedColors.textSecondary.opacity(0.3), 
+                        lineWidth: 1)
             )
+            // Add focus state highlight for web theme
+            .overlay(
+                RoundedRectangle(cornerRadius: ThemeManager.useWebTheme ? 
+                    AppTheme.Radius.md : 
+                    AppTheme.GeneratedRadius.input)
+                    .stroke(ThemeManager.useWebTheme ? 
         }
     }
 }

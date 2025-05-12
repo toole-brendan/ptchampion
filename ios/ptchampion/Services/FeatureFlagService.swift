@@ -8,6 +8,7 @@ enum FeatureFlag: String {
     case fineTunedPushupModel = "fine_tuned_pushup_model"
     case teamChallenges = "team_challenges"
     case darkModeDefault = "dark_mode_default"
+    case designSystemV2 = "design_system_v2"  // New flag for web design parity
 }
 
 /// Feature flag service response type

@@ -109,15 +109,20 @@ public struct PTCard<Content: View>: View {
     private var backgroundView: some View {
         switch style {
         case .standard, .elevated, .flat, .highlight, .interactive:
-            // Gradient background for more dimension
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    AppTheme.GeneratedColors.cardBackground,
-                    AppTheme.GeneratedColors.cardBackground.opacity(0.97)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
+            // Use web theme if enabled
+            if ThemeManager.useWebTheme {
+                AppTheme.Color.surface
+            } else {
+                // Gradient background for more dimension
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        AppTheme.GeneratedColors.cardBackground,
+                        AppTheme.GeneratedColors.cardBackground.opacity(0.97)
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
         case .custom(let backgroundColor, _, _, _, _):
             backgroundColor
         }
@@ -139,67 +144,126 @@ public struct PTCard<Content: View>: View {
         case .custom(_, let radius, _, _, _):
             return radius
         default:
-            return AppTheme.GeneratedRadius.card
+            // Use web theme radius if enabled
+            return ThemeManager.useWebTheme ? 
+                AppTheme.Radius.lg : 
+                AppTheme.GeneratedRadius.card
         }
     }
     
     // Shadow color based on style
     private var shadowColor: Color {
-        switch style {
-        case .standard, .interactive:
-            return Color.black.opacity(0.1)
-        case .elevated:
-            return Color.black.opacity(0.15)
-        case .flat, .highlight:
-            return Color.clear
-        case .custom(_, _, _, _, _):
-            return Color.black.opacity(0.1)
+        if ThemeManager.useWebTheme {
+            switch style {
+            case .standard, .interactive:
+                return AppTheme.Shadow.card.color
+            case .elevated:
+                return AppTheme.Shadow.md.color
+            case .flat, .highlight:
+                return Color.clear
+            case .custom(_, _, _, _, _):
+                return AppTheme.Shadow.card.color
+            }
+        } else {
+            switch style {
+            case .standard, .interactive:
+                return Color.black.opacity(0.1)
+            case .elevated:
+                return Color.black.opacity(0.15)
+            case .flat, .highlight:
+                return Color.clear
+            case .custom(_, _, _, _, _):
+                return Color.black.opacity(0.1)
+            }
         }
     }
     
     // Shadow radius based on style
     private var shadowRadius: CGFloat {
-        switch style {
-        case .standard, .interactive:
-            return 4
-        case .elevated:
-            return 8
-        case .flat, .highlight:
-            return 0
-        case .custom(_, _, let radius, _, _):
-            return radius
+        if ThemeManager.useWebTheme {
+            switch style {
+            case .standard, .interactive:
+                return AppTheme.Shadow.card.radius
+            case .elevated:
+                return AppTheme.Shadow.md.radius
+            case .flat, .highlight:
+                return 0
+            case .custom(_, _, let radius, _, _):
+                return radius
+            }
+        } else {
+            switch style {
+            case .standard, .interactive:
+                return 4
+            case .elevated:
+                return 8
+            case .flat, .highlight:
+                return 0
+            case .custom(_, _, let radius, _, _):
+                return radius
+            }
         }
     }
     
     // Shadow Y offset
     private var shadowY: CGFloat {
-        switch style {
-        case .standard, .interactive:
-            return 2
-        case .elevated:
-            return 4
-        case .flat, .highlight:
-            return 0
-        case .custom(_, _, _, _, _):
-            return 2
+        if ThemeManager.useWebTheme {
+            switch style {
+            case .standard, .interactive:
+                return AppTheme.Shadow.card.y
+            case .elevated:
+                return AppTheme.Shadow.md.y
+            case .flat, .highlight:
+                return 0
+            case .custom(_, _, _, _, _):
+                return AppTheme.Shadow.card.y
+            }
+        } else {
+            switch style {
+            case .standard, .interactive:
+                return 2
+            case .elevated:
+                return 4
+            case .flat, .highlight:
+                return 0
+            case .custom(_, _, _, _, _):
+                return 2
+            }
         }
     }
     
     // Border color based on style
     private var borderColor: Color {
-        switch style {
-        case .flat:
-            return AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
-        case .highlight:
-            return AppTheme.GeneratedColors.brassGold
-        case .interactive:
-            return isPressed ? 
-                AppTheme.GeneratedColors.brassGold.opacity(0.3) : 
-                AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
-        case .custom(_, _, _, let color, _):
-            return color ?? Color.clear
-        default:
-            return Color.clear
+        if ThemeManager.useWebTheme {
+            switch style {
+            case .flat:
+                return AppTheme.Color.borderDefault
+            case .highlight:
+                return AppTheme.Color.brand500
+            case .interactive:
+                return isPressed ? 
+                    AppTheme.Color.brand500.opacity(0.3) : 
+                    AppTheme.Color.borderDefault
+            case .custom(_, _, _, let color, _):
+                return color ?? Color.clear
+            default:
+                return Color.clear
+            }
+        } else {
+            switch style {
+            case .flat:
+                return AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
+            case .highlight:
+                return AppTheme.GeneratedColors.brassGold
+            case .interactive:
+                return isPressed ? 
+                    AppTheme.GeneratedColors.brassGold.opacity(0.3) : 
+                    AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
+            case .custom(_, _, _, let color, _):
+                return color ?? Color.clear
+            default:
+                return Color.clear
+            }
         }
     }
     

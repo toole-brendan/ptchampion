@@ -40,11 +40,14 @@
 	<string>PT Champion will save your workout data to HealthKit to keep your fitness history up to date.</string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Montserrat-Regular.ttf</string>
 		<string>Montserrat-Bold.ttf</string>
+		<string>Montserrat-Regular.ttf</string>
 		<string>Montserrat-SemiBold.ttf</string>
-		<string>RobotoMono-Bold.ttf</string>
 		<string>RobotoMono-Medium.ttf</string>
+		<string>FuturaPT-Book.ttf</string>
+		<string>FuturaPT-Medium.ttf</string>
+		<string>FuturaPT-Demi.ttf</string>
+		<string>FuturaPT-Bold.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
