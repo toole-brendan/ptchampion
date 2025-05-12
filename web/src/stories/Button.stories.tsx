@@ -7,6 +7,12 @@ const meta: Meta<typeof Button> = {
   component: Button,
   parameters: {
     layout: 'centered',
+    backgrounds: {
+      default: 'cream',
+      values: [
+        { name: 'cream', value: '#F4F1E6' },
+      ],
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -19,6 +25,13 @@ const meta: Meta<typeof Button> = {
       options: ['default', 'sm', 'lg', 'icon'],
     },
   },
+  decorators: [
+    (Story) => (
+      <div className="bg-cream p-6 min-h-[200px] flex items-center justify-center">
+        <Story />
+      </div>
+    ),
+  ],
 };
 
 export default meta;

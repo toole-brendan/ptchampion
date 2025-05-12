@@ -20,6 +20,8 @@ import { useHeaderContext } from '@/dashboard-message-context';
 import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/lib/apiClient';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Card, CardHeader, CardTitle, CardContent, QuickLinkCard, SectionCard } from '@/components/ui/card';
+import { CornerDecor } from '@/components/ui/corner-decor';
 
 // Import the exercise PNG images
 import pushupImage from '@/assets/pushup.png';
@@ -231,167 +233,138 @@ const Dashboard: React.FC = () => {
     dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
 
   return (
-    <div className="space-y-12">
-      {/* Welcome Card */}
-      <div className="card animate-fade-in">
-        <MilitaryCorners alwaysVisible />
-        <div className="mb-4 text-center">
-          <h2 className="font-heading text-heading3 uppercase tracking-wider text-brass-gold">
-            PT Champion
-          </h2>
-          <HeaderDivider />
-          <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Fitness Evaluation System</p>
-        </div>
-        
-        {/* User profile summary */}
-        <div className="mt-4 rounded-card bg-cream-dark p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-heading text-heading4 uppercase">{formatDisplayName()}</h3>
-              <p className="text-sm text-tactical-gray">
-                {dashboardMetrics.totalWorkouts} total workouts completed
-              </p>
+    <div className="mx-auto max-w-7xl px-4 py-section lg:px-8">
+      <div className="space-y-section">
+        {/* Welcome Card */}
+        <Card withCorners className="animate-fade-in">
+          <div className="mb-4 text-center p-md">
+            <h2 className="font-heading text-heading3 uppercase tracking-wider text-brass-gold">
+              PT Champion
+            </h2>
+            <HeaderDivider />
+            <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Fitness Evaluation System</p>
+          </div>
+          
+          {/* User profile summary */}
+          <div className="rounded-card bg-cream-dark p-4 mx-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-heading text-heading4 uppercase">{formatDisplayName()}</h3>
+                <p className="text-sm text-tactical-gray">
+                  {dashboardMetrics.totalWorkouts} total workouts completed
+                </p>
+              </div>
+              <Button 
+                onClick={() => navigate('/profile')}
+                variant="outline"
+              >
+                View Profile
+              </Button>
             </div>
-            <Button 
-              onClick={() => navigate('/profile')}
-              variant="outline"
-              className="border-brass-gold text-brass-gold hover:bg-brass-gold hover:bg-opacity-10"
-            >
-              View Profile
-            </Button>
+          </div>
+        </Card>
+
+        {/* Metrics Section - 2x2 Grid with enhanced styling */}
+        <div className="animate-fade-in animation-delay-100 grid gap-card-gap md:grid-cols-2">
+          <div className="grid gap-card-gap md:grid-cols-2">
+            <MetricCard
+              title="TOTAL WORKOUTS"
+              value={dashboardMetrics.totalWorkouts}
+              icon={Flame}
+              onClick={() => navigate('/history')}
+              iconClassName="text-brass-gold"
+              valueClassName="font-heading text-heading2 text-command-black"
+              index={0}
+            />
+            
+            <MetricCard
+              title="LAST ACTIVITY"
+              value={dashboardMetrics.lastWorkoutType ? 
+                dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Running' : 
+                dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
+                dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
+                dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :
+                dashboardMetrics.lastWorkoutType : 'None'
+              }
+              description={dashboardMetrics.lastWorkoutDate ? 
+                `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
+                'No workouts yet'
+              }
+              icon={CalendarClock}
+              onClick={() => dashboardMetrics.lastWorkoutDate && navigate('/history')}
+              iconClassName="text-brass-gold"
+              valueClassName="font-heading text-heading4 text-command-black"
+              index={1}
+            />
+          </div>
+          
+          <div className="grid gap-card-gap md:grid-cols-2">
+            <MetricCard
+              title="TOTAL REPETITIONS"
+              value={dashboardMetrics.totalReps}
+              icon={Repeat}
+              unit="reps"
+              onClick={() => navigate('/history')}
+              iconClassName="text-brass-gold"
+              valueClassName="font-heading text-heading2 text-command-black"
+              index={2}
+            />
+            
+            <MetricCard
+              title="TOTAL DISTANCE"
+              value={(dashboardMetrics.totalDistance / 1000).toFixed(1)}
+              unit="km"
+              icon={Route}
+              onClick={() => navigate('/history')}
+              iconClassName="text-brass-gold"
+              valueClassName="font-heading text-heading2 text-command-black"
+              index={3}
+            />
           </div>
         </div>
-      </div>
 
-      {/* Metrics Section - 2x2 Grid with enhanced styling */}
-      <div className="animate-fade-in animation-delay-100 grid gap-card-gap md:grid-cols-2">
-        <div className="grid gap-card-gap md:grid-cols-2">
-          <MetricCard
-            title="TOTAL WORKOUTS"
-            value={dashboardMetrics.totalWorkouts}
-            icon={Flame}
-            onClick={() => navigate('/history')}
-            className="transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_12px_rgba(0,0,0,.12)]"
-            iconClassName="text-brass-gold"
-            valueClassName="font-heading text-heading2 text-command-black"
-            cornerElements={<MilitaryCorners alwaysVisible />}
-            index={0}
-          />
-          
-          <MetricCard
-            title="LAST ACTIVITY"
-            value={dashboardMetrics.lastWorkoutType ? 
-              dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Running' : 
-              dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
-              dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
-              dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :
-              dashboardMetrics.lastWorkoutType : 'None'
-            }
-            description={dashboardMetrics.lastWorkoutDate ? 
-              `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
-              'No workouts yet'
-            }
-            icon={CalendarClock}
-            onClick={() => dashboardMetrics.lastWorkoutDate && navigate('/history')}
-            className="transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_12px_rgba(0,0,0,.12)]"
-            iconClassName="text-brass-gold"
-            valueClassName="font-heading text-heading4 text-command-black"
-            cornerElements={<MilitaryCorners alwaysVisible />}
-            index={1}
-          />
-        </div>
-        
-        <div className="grid gap-card-gap md:grid-cols-2">
-          <MetricCard
-            title="TOTAL REPETITIONS"
-            value={dashboardMetrics.totalReps}
-            icon={Repeat}
-            unit="reps"
-            onClick={() => navigate('/history')}
-            className="transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_12px_rgba(0,0,0,.12)]"
-            iconClassName="text-brass-gold"
-            valueClassName="font-heading text-heading2 text-command-black"
-            cornerElements={<MilitaryCorners alwaysVisible />}
-            index={2}
-          />
-          
-          <MetricCard
-            title="TOTAL DISTANCE"
-            value={(dashboardMetrics.totalDistance / 1000).toFixed(1)}
-            unit="km"
-            icon={Route}
-            onClick={() => navigate('/history')}
-            className="transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_12px_rgba(0,0,0,.12)]"
-            iconClassName="text-brass-gold"
-            valueClassName="font-heading text-heading2 text-command-black"
-            cornerElements={<MilitaryCorners alwaysVisible />}
-            index={3}
-          />
-        </div>
-      </div>
-
-      {/* Enhanced Start Tracking Section */}
-      <div className="animate-fade-in animation-delay-200 relative overflow-hidden rounded-card shadow-[var(--shadow-card)]">
-        <MilitaryCorners alwaysVisible />
-        <div className="section-header">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="font-heading text-heading3 uppercase tracking-wider text-cream">
-                Start Tracking
-              </h2>
-              <p className="text-sm text-army-tan">
-                Choose an exercise to begin a new session
-              </p>
-            </div>
+        {/* Enhanced Start Tracking Section */}
+        <SectionCard
+          title="Start Tracking"
+          description="Choose an exercise to begin a new session"
+          icon={<Play className="size-5" />}
+          className="animate-fade-in animation-delay-200"
+          headerClassName="flex items-center justify-between"
+        >
+          <div className="flex justify-end mb-4">
             <Button 
-              className="bg-brass-gold text-deep-ops shadow-small transition-all hover:bg-brass-gold hover:bg-opacity-90 hover:shadow-medium"
+              className="bg-brass-gold text-deep-ops shadow-small"
               onClick={() => navigate('/exercises')}
             >
               <Play className="mr-2 size-4" />
               START SESSION
             </Button>
           </div>
-        </div>
-        <div className="grid grid-cols-2 gap-item bg-cream-dark p-content lg:grid-cols-4">
-          {exerciseLinks.map((exercise, idx) => (
-            <div
-              key={exercise.name}
-              className="group relative cursor-pointer overflow-hidden rounded-card 
-                        border border-brass-gold border-opacity-30 
-                        bg-cream-dark p-4 transition-all hover:-translate-y-px hover:animate-card-hover hover:border-brass-gold 
-                        hover:shadow-[0_4px_8px_rgba(0,0,0,.08)] focus-visible:outline-none focus-visible:ring-[var(--ring-focus)]"
-              onClick={() => navigate(exercise.path)}
-              tabIndex={0}
-              style={{ animationDelay: `${idx * 100 + 200}ms` }}
-            >
-              <MilitaryCorners />
-              <div className="absolute inset-0 bg-gradient-to-b from-brass-gold to-brass-gold opacity-5 transition-all group-hover:opacity-10"></div>
-              <div className="relative z-10 flex flex-col items-center justify-center">
-                <img 
+          
+          <div className="grid grid-cols-2 gap-item lg:grid-cols-4">
+            {exerciseLinks.map((exercise, idx) => (
+              <QuickLinkCard
+                key={exercise.name}
+                title={exercise.name}
+                icon={<img 
                   src={exercise.image} 
                   alt={exercise.name} 
-                  className="mb-3 h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-110" 
-                />
-                <span className="font-heading text-sm uppercase tracking-wider text-tactical-gray transition-colors group-hover:text-command-black">{exercise.name}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+                  className="h-10 w-auto object-contain" 
+                />}
+                onClick={() => navigate(exercise.path)}
+                className="bg-cream p-4"
+              />
+            ))}
+          </div>
+        </SectionCard>
 
-      {/* Progress Section with design-system styling */}
-      <div className="animate-fade-in animation-delay-300 relative overflow-hidden rounded-card shadow-[var(--shadow-card)]">
-        <MilitaryCorners alwaysVisible />
-        <div className="section-header">
-          <h2 className="flex items-center font-heading text-heading3 uppercase tracking-wider text-cream">
-            <AreaChart className="mr-2 size-5" />
-            Progress Summary
-          </h2>
-          <p className="text-sm text-army-tan">
-            Your training overview at a glance
-          </p>
-        </div>
-        <div className="bg-cream-dark p-content">
+        {/* Progress Section with design-system styling */}
+        <SectionCard
+          title="Progress Summary"
+          description="Your training overview at a glance"
+          icon={<AreaChart className="size-5" />}
+          className="animate-fade-in animation-delay-300"
+        >
           {leaderboardError && (
             <Alert variant="default" className="mb-4 border-olive-mist bg-olive-mist bg-opacity-10">
               <AlertCircle className="size-5 text-tactical-gray" />
@@ -403,30 +376,35 @@ const Dashboard: React.FC = () => {
           )}
 
           <div className="grid grid-cols-1 gap-card-gap md:grid-cols-3">
-            {/* These boxes get animation classes and better styling */}
-            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream-dark p-content text-center shadow-[var(--shadow-card)]" style={{ animationDelay: "100ms" }}>
-              <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                <Clock className="mb-2 size-10 text-brass-gold" />
+            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream p-content text-center shadow-small" style={{ animationDelay: "100ms" }}>
+              <div className="flex items-center justify-center mb-2">
+                <div className="flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
+                  <Clock className="size-6 text-brass-gold" />
+                </div>
               </div>
               <span className="font-heading text-heading3 text-command-black">
                 {Math.floor(dashboardMetrics.totalDuration / 3600)}h {Math.floor((dashboardMetrics.totalDuration % 3600) / 60)}m
               </span>
-              <span className="font-semibold text-xs uppercase tracking-wider text-olive-mist">Total Training Time</span>
+              <p className="font-semibold text-xs uppercase tracking-wider text-olive-mist mt-1">Total Training Time</p>
             </div>
             
-            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream-dark p-content text-center shadow-[var(--shadow-card)]" style={{ animationDelay: "200ms" }}>
-              <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                <Flame className="mb-2 size-10 text-brass-gold" />
+            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream p-content text-center shadow-small" style={{ animationDelay: "200ms" }}>
+              <div className="flex items-center justify-center mb-2">
+                <div className="flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
+                  <Flame className="size-6 text-brass-gold" />
+                </div>
               </div>
               <span className="font-heading text-heading3 text-command-black">
                 {Math.floor(dashboardMetrics.totalDuration / 60 * 7)}
               </span>
-              <span className="font-semibold text-xs uppercase tracking-wider text-olive-mist">Est. Calories Burned</span>
+              <p className="font-semibold text-xs uppercase tracking-wider text-olive-mist mt-1">Est. Calories Burned</p>
             </div>
             
-            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream-dark p-content text-center shadow-[var(--shadow-card)]" style={{ animationDelay: "300ms" }}>
-              <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                <Trophy className="mb-2 size-10 text-brass-gold" />
+            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream p-content text-center shadow-small" style={{ animationDelay: "300ms" }}>
+              <div className="flex items-center justify-center mb-2">
+                <div className="flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
+                  <Trophy className="size-6 text-brass-gold" />
+                </div>
               </div>
               <span className="font-heading text-heading3 text-command-black">
                 {isLeaderboardLoading ? (
@@ -437,35 +415,28 @@ const Dashboard: React.FC = () => {
                   'Unranked'
                 )}
               </span>
-              <span className="font-semibold text-xs uppercase tracking-wider text-olive-mist">Global Leaderboard Rank</span>
+              <p className="font-semibold text-xs uppercase tracking-wider text-olive-mist mt-1">Global Leaderboard Rank</p>
             </div>
           </div>
           
           <div className="mt-6 flex justify-center">
             <Button 
-              className="bg-brass-gold font-heading text-deep-ops shadow-medium transition-all hover:-translate-y-px hover:bg-brass-gold hover:bg-opacity-90 hover:shadow-[0_4px_8px_rgba(0,0,0,.12)] focus-visible:outline-none focus-visible:ring-[var(--ring-focus)]"
+              className="bg-brass-gold text-deep-ops shadow-medium"
               onClick={() => navigate('/history')}
             >
               <ArrowRight className="mr-2 size-4" />
               VIEW DETAILED PROGRESS
             </Button>
           </div>
-        </div>
-      </div>
+        </SectionCard>
 
-      {/* Recent Activity Section */}
-      <div className="animate-fade-in animation-delay-400 relative overflow-hidden rounded-card shadow-[var(--shadow-card)]">
-        <MilitaryCorners alwaysVisible />
-        <div className="section-header">
-          <h2 className="flex items-center font-heading text-heading3 uppercase tracking-wider text-cream">
-            <CalendarClock className="mr-2 size-5" />
-            Recent Activity
-          </h2>
-          <p className="text-sm text-army-tan">
-            Your latest workout sessions
-          </p>
-        </div>
-        <div className="bg-cream-dark p-content">
+        {/* Recent Activity Section */}
+        <SectionCard
+          title="Recent Activity"
+          description="Your latest workout sessions"
+          icon={<CalendarClock className="size-5" />}
+          className="animate-fade-in animation-delay-400"
+        >
           {(exerciseHistory?.items?.length ?? 0) > 0 ? (
             <div className="divide-y divide-tactical-gray divide-opacity-20">
               {exerciseHistory?.items?.slice(0, 5).map((workout, index) => (
@@ -501,38 +472,45 @@ const Dashboard: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="font-heading text-heading4 text-brass-gold">
-                      {workout.exercise_type === 'RUNNING' 
-                        ? `${((workout.distance || 0) / 1000).toFixed(2)} km` 
-                        : `${workout.reps || 0} reps`}
-                    </span>
-                    <p className="text-xs text-tactical-gray">
-                      {Math.floor((workout.time_in_seconds || 0) / 60)}m {(workout.time_in_seconds || 0) % 60}s
-                    </p>
+                  <div className="flex-shrink-0 font-heading text-heading4 text-brass-gold">
+                    {workout.exercise_type === 'RUNNING' 
+                      ? `${((workout.distance || 0) / 1000).toFixed(2)} km` 
+                      : `${workout.reps || 0}`}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center">
-              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                <CalendarClock className="size-8 text-brass-gold" />
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <div className="mb-4 rounded-full bg-brass-gold bg-opacity-10 p-4">
+                <Flame className="size-8 text-brass-gold" />
               </div>
-              <h3 className="font-heading text-heading4 text-brass-gold">No Activity Yet</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm text-tactical-gray">
-                Start tracking your first workout to see your activity history here.
+              <h3 className="mb-2 font-heading text-heading4">No Workouts Yet</h3>
+              <p className="text-tactical-gray">
+                Start your fitness journey by completing your first workout.
               </p>
-              <Button 
-                className="mt-4 bg-brass-gold font-heading text-deep-ops shadow-small transition-all hover:-translate-y-px hover:bg-brass-gold hover:bg-opacity-90 hover:shadow-[0_4px_8px_rgba(0,0,0,.12)] focus-visible:outline-none focus-visible:ring-[var(--ring-focus)]"
+              <Button
+                variant="default"
+                className="mt-4 bg-brass-gold text-deep-ops"
                 onClick={() => navigate('/exercises')}
               >
                 <Play className="mr-2 size-4" />
-                START YOUR FIRST WORKOUT
+                Start First Workout
               </Button>
             </div>
           )}
-        </div>
+          
+          {(exerciseHistory?.total_count ?? 0) > 5 && (
+            <div className="mt-4 flex justify-center">
+              <Button
+                variant="outline"
+                onClick={() => navigate('/history')}
+              >
+                View All Workouts
+              </Button>
+            </div>
+          )}
+        </SectionCard>
       </div>
     </div>
   );

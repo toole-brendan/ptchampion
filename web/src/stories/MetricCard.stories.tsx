@@ -1,13 +1,26 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { MetricCard } from '../components/ui/metric-card';
-import { Award, TrendingUp, Timer, Users } from 'lucide-react';
+import { Award, Clock, Map } from 'lucide-react';
 
 const meta: Meta<typeof MetricCard> = {
   title: 'Components/MetricCard',
   component: MetricCard,
   parameters: {
     layout: 'centered',
+    backgrounds: {
+      default: 'cream',
+      values: [
+        { name: 'cream', value: '#F4F1E6' },
+      ],
+    },
   },
+  decorators: [
+    (Story) => (
+      <div className="bg-cream p-6 min-h-[200px] w-full max-w-md flex items-center justify-center">
+        <Story />
+      </div>
+    ),
+  ],
   tags: ['autodocs'],
 };
 
@@ -16,60 +29,35 @@ type Story = StoryObj<typeof MetricCard>;
 
 export const Default: Story = {
   args: {
-    label: 'TOTAL PUSH-UPS',
-    value: '245',
+    title: 'Reps',
+    value: '24',
+    icon: Award,
   },
 };
 
 export const WithIcon: Story = {
   args: {
-    label: 'LEADERBOARD RANK',
-    value: '#12',
-    icon: <Award size={24} />,
+    title: 'Distance',
+    value: '2.5 mi',
+    icon: Map,
   },
 };
 
-export const WithPositiveTrend: Story = {
+export const WithDescription: Story = {
   args: {
-    label: 'PROGRESS RATE',
-    value: '87%',
-    icon: <TrendingUp size={24} />,
-    trend: {
-      value: 5.3,
-      isPositive: true,
-    },
+    title: 'Time',
+    value: '12:34',
+    description: 'min:sec',
+    icon: Clock,
   },
 };
 
-export const WithNegativeTrend: Story = {
+export const WithTrend: Story = {
   args: {
-    label: 'COMPLETION TIME',
-    value: '2:23',
-    icon: <Timer size={24} />,
-    trend: {
-      value: 12,
-      isPositive: false,
-    },
+    title: 'Weekly Progress',
+    value: 42,
+    description: 'Total workouts', 
+    change: 15,
+    trend: 'up',
   },
-};
-
-export const Grid: Story = {
-  render: () => (
-    <div className="grid max-w-xl grid-cols-2 gap-4">
-      <MetricCard label="TOTAL PUSH-UPS" value="245" icon={<TrendingUp size={24} />} />
-      <MetricCard label="LEADERBOARD RANK" value="#12" icon={<Award size={24} />} />
-      <MetricCard 
-        label="ACTIVE USERS" 
-        value="1,294" 
-        icon={<Users size={24} />}
-        trend={{ value: 12.5, isPositive: true }}
-      />
-      <MetricCard 
-        label="COMPLETION TIME" 
-        value="2:23" 
-        icon={<Timer size={24} />}
-        trend={{ value: 8, isPositive: false }}
-      />
-    </div>
-  ),
 }; 
