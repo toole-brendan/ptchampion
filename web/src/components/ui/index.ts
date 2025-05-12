@@ -16,4 +16,7 @@ export * from "./popover";
 export * from "./select";
 export * from "./table";
 export * from "./tooltip";
-export * from "./heart-rate-monitor"; 
+export * from "./heart-rate-monitor";
+export * from "./corner-decor";
+export * from "./section";
+export * from "./modal"; 

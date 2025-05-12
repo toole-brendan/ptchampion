@@ -1,36 +1,52 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
-
 import { cn } from "@/lib/utils"
+import { CornerDecor } from "./corner-decor"
 
 const cardVariants = cva(
-  "flex flex-col gap-md rounded-card bg-card text-card-foreground transition-all",
+  "relative flex flex-col group gap-md rounded-card bg-card text-card-foreground transition-all border border-brass-gold border-opacity-20",
   {
     variants: {
       variant: {
         default: "shadow-small",
-        interactive: "cursor-pointer shadow-small hover:-translate-y-1 hover:shadow-medium",
+        interactive: "cursor-pointer shadow-small hover:-translate-y-1 hover:shadow-medium hover:border-brass-gold hover:border-opacity-40",
         elevated: "shadow-medium",
-        panel: "rounded-panel shadow-medium",
-        flush: "rounded-none shadow-none",
+        panel: "rounded-panel shadow-medium bg-cream-dark p-md",
+        flush: "rounded-none shadow-none border-none",
       },
+      withCorners: {
+        true: "",
+      }
     },
     defaultVariants: {
       variant: "default",
+      withCorners: false,
     },
   }
 )
 
 interface CardProps extends React.ComponentProps<"div">, 
-  VariantProps<typeof cardVariants> {}
+  VariantProps<typeof cardVariants> {
+  withCorners?: boolean;
+  cornerProps?: React.ComponentProps<typeof CornerDecor>;
+}
 
-function Card({ className, variant, ...props }: CardProps) {
+function Card({ 
+  className, 
+  variant, 
+  withCorners,
+  cornerProps,
+  ...props 
+}: CardProps) {
   return (
     <div
       data-slot="card"
-      className={cn(cardVariants({ variant, className }))}
+      className={cn(cardVariants({ variant, withCorners, className }))}
       {...props}
-    />
+    >
+      {withCorners && <CornerDecor {...cornerProps} />}
+      {props.children}
+    </div>
   )
 }
 
@@ -61,7 +77,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-description"
-      className={cn("text-small text-text-secondary", className)}
+      className={cn("text-small text-tactical-gray", className)}
       {...props}
     />
   )
@@ -113,10 +129,15 @@ function StatCard({
   icon?: React.ReactNode;
 } & Omit<CardProps, 'children'>) {
   return (
-    <Card variant="interactive" className={cn("min-w-[150px]", className)} {...props}>
+    <Card 
+      variant="interactive" 
+      className={cn("min-w-[150px]", className)} 
+      withCorners
+      {...props}
+    >
       <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-text-secondary text-small uppercase">{title}</CardTitle>
+          <CardTitle className="text-small text-tactical-gray uppercase">{title}</CardTitle>
           {icon && <div className="text-brass-gold">{icon}</div>}
         </div>
       </CardHeader>
@@ -142,16 +163,58 @@ function QuickLinkCard({
     <Card 
       variant="interactive" 
       className={cn("p-md", className)} 
-      onClick={onClick} 
+      onClick={onClick}
+      withCorners
       {...props}
     >
       <div className="flex flex-col items-center justify-center gap-2 py-md">
-        <div className="flex items-start gap-3">
-          <div className="flex size-12 items-center justify-center rounded-full bg-brass-gold bg-opacity-10 text-brass-gold">
-            {icon}
-          </div>
+        <div className="flex size-12 items-center justify-center rounded-full bg-brass-gold bg-opacity-10 text-brass-gold">
+          {icon}
         </div>
         <div className="text-center font-semibold">{title}</div>
+      </div>
+    </Card>
+  )
+}
+
+// Panel with section header - useful for dashboard sections
+function SectionCard({
+  title,
+  description,
+  icon,
+  children,
+  className,
+  headerClassName,
+  ...props
+}: {
+  title: React.ReactNode;
+  description?: React.ReactNode;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+  headerClassName?: string;
+} & Omit<CardProps, 'children'>) {
+  return (
+    <Card
+      variant="default"
+      className={cn("overflow-hidden", className)}
+      withCorners
+      {...props}
+    >
+      <div className={cn("section-header p-content", headerClassName)}>
+        <div className="flex items-center">
+          {icon && <span className="mr-2">{icon}</span>}
+          <h2 className="font-heading text-heading3 uppercase tracking-wider text-cream">
+            {title}
+          </h2>
+        </div>
+        {description && (
+          <p className="text-sm text-army-tan">
+            {description}
+          </p>
+        )}
+      </div>
+      <div className="bg-cream-dark p-content">
+        {children}
       </div>
     </Card>
   )
@@ -193,5 +256,6 @@ export {
   CardContent,
   StatCard,
   QuickLinkCard,
+  SectionCard,
   cardVariants
 }

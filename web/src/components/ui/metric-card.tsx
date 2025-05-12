@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
+import { CornerDecor } from './corner-decor';
 
 type MetricCardProps = {
   title: string;
@@ -18,6 +19,8 @@ type MetricCardProps = {
   cornerElements?: React.ReactNode;
   onClick?: () => void;
   index?: number;
+  withCorners?: boolean;
+  cornerProps?: React.ComponentProps<typeof CornerDecor>;
 }
 
 // Simple hook for counting up numbers
@@ -85,7 +88,9 @@ export function MetricCard({
   descriptionClassName,
   cornerElements,
   onClick,
-  index = 0
+  index = 0,
+  withCorners = true,
+  cornerProps
 }: MetricCardProps) {
   // For number values, use the count-up animation
   const numericValue = typeof value === 'number' ? value : 0;
@@ -96,14 +101,15 @@ export function MetricCard({
   return (
     <div 
       className={cn(
-        "relative h-full metric-card overflow-hidden rounded-card p-content shadow-[var(--shadow-card)] animate-slide-up border border-brass-gold border-opacity-20 hover:border-brass-gold hover:border-opacity-40", 
-        onClick && "cursor-pointer focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:-translate-y-[1px] hover:shadow-[0_4px_8px_rgba(0,0,0,.08)] transition-all",
+        "group relative h-full overflow-hidden rounded-card p-content shadow-card animate-slide-up border border-brass-gold border-opacity-20 bg-cream-dark", 
+        onClick && "cursor-pointer focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:-translate-y-[1px] hover:shadow-medium hover:border-brass-gold hover:border-opacity-40 transition-all",
         className
       )}
       onClick={onClick}
       style={{ animationDelay: `${index * 100}ms` }}
       tabIndex={onClick ? 0 : undefined}
     >
+      {withCorners && <CornerDecor {...cornerProps} />}
       {cornerElements}
       
       <div className="flex flex-row items-center justify-between space-y-0 pb-2">

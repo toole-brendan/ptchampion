@@ -1,7 +1,6 @@
 /* 
  * PT Champion Design Tokens
- * Manually extracted from iOS AppTheme+Generated.swift
- * DO NOT MODIFY - Update iOS tokens source and regenerate
+ * Cinematic "Brass & Cream" Design System 
  */
 
 :root {
@@ -41,10 +40,10 @@
   --font-size-tiny: 12px;
 
   /* Font Families */
-  --font-heading: 'Montserrat-Bold', system-ui, sans-serif;
-  --font-body: 'Montserrat-Regular', system-ui, sans-serif;
-  --font-body-bold: 'Montserrat-Bold', system-ui, sans-serif;
-  --font-body-semibold: 'Montserrat-SemiBold', system-ui, sans-serif;
+  --font-heading: 'Futura', system-ui, sans-serif;
+  --font-body: 'Futura', system-ui, sans-serif;
+  --font-body-bold: 'Futura', system-ui, sans-serif;
+  --font-body-semibold: 'Futura', system-ui, sans-serif;
   --font-mono: 'RobotoMono-Medium', monospace;
 
   /* Border Radius */
@@ -72,6 +71,8 @@
   --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
   --shadow-large: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-card: var(--shadow-small);
+  --ring-focus: 0 0 0 2px var(--color-brass-gold);
 }
 
  

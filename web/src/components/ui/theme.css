@@ -1,4 +1,4 @@
-/* Theme configuration for shadcn/ui components based on PT Champion Style Guide V2 */
+/* Theme configuration for shadcn/ui components based on PT Champion "Brass & Cream" Design System */
 
 @layer base {
   :root {
@@ -11,6 +11,14 @@
     --color-olive-mist: #C9CCA6; /* Chart Fill */
     --color-command-black: #1E1E1E; /* Primary Text */
     --color-tactical-gray: #4E5A48; /* Secondary Text */
+    --color-hunter-green: #355E3B; /* Deep green-ish text */
+
+    /* Shadow variables */
+    --shadow-card: 0 2px 4px rgba(0,0,0,.06);
+    --shadow-card-light: 0 4px 8px rgba(0, 0, 0, 0.08);
+    --shadow-small: 0 1px 2px rgba(0,0,0,.04);
+    --shadow-medium: 0 4px 6px rgba(0,0,0,.1);
+    --shadow-large: 0 10px 15px rgba(0,0,0,.1);
     
     /* shadcn/ui variable mapping for light mode */
     --background: var(--color-cream);
@@ -27,7 +35,7 @@
     --muted-foreground: var(--color-tactical-gray);
     --accent: var(--color-brass-gold);
     --accent-foreground: var(--color-deep-ops);
-    --destructive: #F44336;
+    --destructive: var(--color-error);
     --destructive-foreground: #FFFFFF;
     --border: #E2D9C2;
     --input: var(--color-cream);

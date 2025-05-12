@@ -37,4 +37,35 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
+}
+
+@font-face {
+  font-family: 'Futura';
+  src: url('/fonts/futura/FuturaPT-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Futura';
+  src: url('/fonts/futura/FuturaPT-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Futura';
+  src: url('/fonts/futura/FuturaPT-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Fallback fonts */
+@font-face {
+  font-family: 'Futura Fallback';
+  src: local('Helvetica Neue'), local('Arial');
+  font-display: swap;
 } 

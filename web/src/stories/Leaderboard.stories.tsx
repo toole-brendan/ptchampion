@@ -268,4 +268,61 @@ export const LocalLeaderboard: Story = {
       ],
     },
   },
+};
+
+const mockUsers = [
+  { id: '1', name: 'John Smith', rank: 1, avatar: '/path/to/avatar1.jpg', score: 245, unit: 'pts' },
+  { id: '2', name: 'Jane Doe', rank: 2, avatar: '/path/to/avatar2.jpg', score: 230, unit: 'pts' },
+  { id: '3', name: 'Robert Johnson', rank: 3, avatar: '/path/to/avatar3.jpg', score: 215, unit: 'pts' },
+  { id: '4', name: 'Emily Davis', rank: 4, avatar: '/path/to/avatar4.jpg', score: 200, unit: 'pts' },
+  { id: '5', name: 'William Brown', rank: 5, avatar: '/path/to/avatar5.jpg', score: 185, unit: 'pts' },
+  { id: '6', name: 'Sarah Lee', rank: 6, avatar: '/path/to/avatar6.jpg', score: 170, unit: 'pts' },
+  { id: '7', name: 'David Miller', rank: 7, avatar: '/path/to/avatar7.jpg', score: 155, unit: 'pts' },
+  { id: '8', name: 'Laura Wilson', rank: 8, avatar: '/path/to/avatar8.jpg', score: 140, unit: 'pts' },
+  { id: '9', name: 'Michael Taylor', rank: 9, avatar: '/path/to/avatar9.jpg', score: 125, unit: 'pts' },
+  { id: '10', name: 'Jennifer Anderson', rank: 10, avatar: '/path/to/avatar10.jpg', score: 110, unit: 'pts' },
+];
+
+export const PushupLeaderboard: Story = {
+  args: {
+    exercise: 'pushups',
+    timeframe: 'week',
+    users: mockUsers,
+    loading: false,
+    userRank: 6,
+  },
+};
+
+export const SitupLeaderboard: Story = {
+  args: {
+    exercise: 'situps',
+    timeframe: 'month',
+    users: mockUsers,
+    loading: false,
+    userRank: 3,
+  },
+};
+
+export const RunningLeaderboard: Story = {
+  args: {
+    exercise: 'running',
+    timeframe: 'year',
+    users: mockUsers.map(user => ({
+      ...user,
+      score: user.rank * 1.5,
+      unit: 'mi'
+    })),
+    loading: false,
+    userRank: 10,
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    exercise: 'pushups',
+    timeframe: 'week',
+    users: [],
+    loading: true,
+    userRank: null,
+  },
 }; 

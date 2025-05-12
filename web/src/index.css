@@ -40,31 +40,31 @@ html {
 
 @layer base {
   * {
-    @apply transition-colors duration-100;
+    @apply transition-colors duration-200;
+  }
+
+  html {
+    @apply bg-cream text-deep-ops antialiased;
   }
   
   body {
-    @apply bg-background text-foreground;
-    margin: 0;
-    padding: 0;
+    @apply bg-cream text-deep-ops font-sans text-base leading-relaxed m-0 p-0;
   }
   
   h1 {
-    @apply font-heading text-heading1 font-bold tracking-wide text-foreground;
+    @apply font-heading text-heading1 font-bold tracking-wide text-brass-gold;
   }
   
   h2 {
-    @apply font-heading text-heading2 font-bold tracking-wide text-foreground;
+    @apply font-heading text-heading2 font-bold tracking-wide text-brass-gold;
   }
   
   h3 {
-    @apply font-heading text-heading3 font-bold tracking-wide text-foreground;
-    @apply mb-xs;
+    @apply font-heading text-heading3 font-bold tracking-wide text-brass-gold mb-xs;
   }
   
   h4 {
-    @apply font-heading text-heading4 font-bold tracking-wide text-foreground;
-    @apply mb-xs;
+    @apply font-heading text-heading4 font-bold tracking-wide text-brass-gold mb-xs;
   }
   
   p + h3 {
@@ -72,7 +72,7 @@ html {
   }
 
   p {
-    @apply font-sans text-body text-foreground;
+    @apply font-sans text-body text-tactical-gray;
   }
   
   .stat-number {
@@ -89,6 +89,21 @@ html {
   :root {
     --shadow-card: 0 2px 4px rgba(0,0,0,.06);
     --ring-focus: 0 0 0 2px var(--color-brass-gold);
+  }
+
+  /* Initial Loader */
+  .loader-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid transparent;
+    border-top-color: var(--color-brass-gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
   /* Bottom Navigation */
@@ -114,11 +129,11 @@ html {
   
   /* Card Components */
   .card {
-    @apply rounded-card bg-card p-md shadow-[var(--shadow-card)] text-card-foreground transition-all border border-brass-gold border-opacity-20;
+    @apply rounded-card bg-card p-md shadow-card text-card-foreground transition-all border border-brass-gold border-opacity-20;
   }
   
   .card-interactive {
-    @apply card hover:-translate-y-[1px] hover:shadow-[0_4px_8px_rgba(0,0,0,.08)] cursor-pointer focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:border-brass-gold hover:border-opacity-40;
+    @apply card hover:-translate-y-[1px] hover:shadow-medium cursor-pointer focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:border-brass-gold hover:border-opacity-40;
   }
 
   .metric-card {
@@ -186,16 +201,53 @@ html {
   }
 }
 
-/* Animations */
-@keyframes count-up {
-  from {
-    counter-increment: count 0;
+@layer utilities {
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out forwards;
   }
-  to {
-    counter-increment: count attr(data-count number);
-  }
-}
 
-.count-up-animation::after {
-  content: counter(count);
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .shimmer {
+    @apply relative overflow-hidden;
+    background: linear-gradient(90deg, 
+      var(--color-cream-dark) 0%, 
+      var(--color-cream) 50%, 
+      var(--color-cream-dark) 100%);
+    background-size: 700px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -700px 0; }
+    100% { background-position: 700px 0; }
+  }
+
+  .count-up-animation {
+    @apply font-mono transition-all duration-1000;
+    counter-reset: count attr(data-count);
+    animation: count-up 2s ease-out forwards;
+  }
+  
+  @keyframes count-up {
+    from {
+      counter-increment: count 0;
+    }
+    to {
+      counter-increment: count attr(data-count number);
+    }
+  }
+  
+  .count-up-animation::after {
+    content: counter(count);
+  }
 }

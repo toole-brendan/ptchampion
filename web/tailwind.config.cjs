@@ -10,10 +10,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Helvetica Neue', 'Arial', ...defaultTheme.fontFamily.sans],
-        semibold: ['Helvetica Neue', 'Arial', 'sans-serif'],
-        bold: ['Helvetica Neue Bold', 'Arial Bold', 'sans-serif'],
-        heading: ['Arial Black', 'Impact', 'Helvetica Neue Bold', 'sans-serif'],
+        sans: ['Futura', 'Futura Fallback', ...defaultTheme.fontFamily.sans],
+        semibold: ['Futura', 'Futura Fallback', 'sans-serif'],
+        bold: ['Futura', 'Futura Fallback', 'sans-serif'],
+        heading: ['Futura', 'Futura Fallback', 'sans-serif'],
         mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
       },
       colors: {
@@ -26,6 +26,7 @@ module.exports = {
         'olive-mist': '#C9CCA6',
         'command-black': '#1E1E1E',
         'tactical-gray': '#4E5A48',
+        'hunter-green': '#355E3B',
         'success': '#4CAF50',
         'warning': '#FF9800',
         'error': '#F44336',
@@ -74,6 +75,7 @@ module.exports = {
         'small': 'var(--shadow-small)',
         'medium': 'var(--shadow-medium)',
         'large': 'var(--shadow-large)',
+        'card': '0 4px 8px rgba(0, 0, 0, 0.08)',
       },
       fontSize: {
         'heading1': 'var(--font-size-heading1)',
