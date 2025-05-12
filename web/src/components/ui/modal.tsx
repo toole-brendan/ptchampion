@@ -2,7 +2,6 @@ import React, { forwardRef, useEffect, useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
-import { CornerDecor } from './corner-decor';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -14,7 +13,6 @@ export interface ModalProps {
   className?: string;
   contentClassName?: string;
   showCloseButton?: boolean;
-  withCorners?: boolean;
 }
 
 export const Modal = forwardRef<HTMLDivElement, ModalProps>(({
@@ -27,7 +25,6 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(({
   className,
   contentClassName,
   showCloseButton = true,
-  withCorners = false,
 }, ref) => {
   const [isClosing, setIsClosing] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -120,8 +117,6 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(({
         )}
         onClick={(e) => e.stopPropagation()}
       >
-        {withCorners && <CornerDecor alwaysVisible />}
-
         {/* Close button (top-right) */}
         {showCloseButton && (
           <Button

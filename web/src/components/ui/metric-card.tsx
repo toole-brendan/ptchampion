@@ -18,8 +18,6 @@ type MetricCardProps = {
   descriptionClassName?: string;
   onClick?: () => void;
   index?: number;
-  withCorners?: boolean;
-  cornerStyle?: "always" | "hover" | "none";
 }
 
 // Simple hook for counting up numbers
@@ -87,8 +85,6 @@ export function MetricCard({
   descriptionClassName,
   onClick,
   index = 0,
-  withCorners = true,
-  cornerStyle = "hover"
 }: MetricCardProps) {
   // For number values, use the count-up animation
   const numericValue = typeof value === 'number' ? value : 0;
@@ -98,7 +94,7 @@ export function MetricCard({
   
   return (
     <Card 
-      variant={onClick ? "interactive" : "default"}
+      variant="interactive"
       className={cn(
         "h-full overflow-hidden animate-slide-up",
         className
@@ -106,8 +102,6 @@ export function MetricCard({
       onClick={onClick}
       style={{ animationDelay: `${index * 100}ms` }}
       tabIndex={onClick ? 0 : undefined}
-      withCorners={withCorners}
-      cornerStyle={cornerStyle}
     >
       <div className="p-content">
         <div className="flex flex-row items-center justify-between space-y-0 pb-2">
