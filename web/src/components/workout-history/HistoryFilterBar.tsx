@@ -1,143 +1,53 @@
 import React from 'react';
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
-import { Calendar as CalendarIcon, X } from 'lucide-react';
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
+import { DateRange as DayPickerDateRange } from 'react-day-picker';
 
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-export type DateRange = {
-  from: Date;
-  to?: Date;
-};
+// Export DateRange type for use in parent components
+export type DateRange = DayPickerDateRange;
 
 interface HistoryFilterBarProps {
   exerciseFilter: string;
   dateRange: DateRange | undefined;
   exerciseTypes: string[];
   onExerciseFilterChange: (value: string) => void;
-  onDateRangeChange: (value: DateRange | undefined) => void;
+  onDateRangeChange: (range: DateRange | undefined) => void;
   onClearFilters: () => void;
 }
 
-export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
+const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
   exerciseFilter,
   dateRange,
   exerciseTypes,
   onExerciseFilterChange,
   onDateRangeChange,
-  onClearFilters,
+  onClearFilters
 }) => {
-  const currentDate = new Date();
+  const filtersActive = exerciseFilter !== 'All' || !!dateRange;
   
-  // Preset date range handlers
-  const setWeekRange = () => {
-    const startDay = startOfWeek(currentDate, { weekStartsOn: 1 }); // Start on Monday
-    const endDay = endOfWeek(currentDate, { weekStartsOn: 1 });
-    onDateRangeChange({ from: startDay, to: endDay });
-  };
-  
-  const setMonthRange = () => {
-    const startDay = startOfMonth(currentDate);
-    const endDay = endOfMonth(currentDate);
-    onDateRangeChange({ from: startDay, to: endDay });
-  };
-  
-  const setYearRange = () => {
-    const startDay = startOfYear(currentDate);
-    const endDay = endOfYear(currentDate);
-    onDateRangeChange({ from: startDay, to: endDay });
-  };
-  
-  const isCustomRange = dateRange && !(
-    // Not week range
-    (dateRange.from.getTime() === startOfWeek(currentDate, { weekStartsOn: 1 }).getTime() &&
-     dateRange.to?.getTime() === endOfWeek(currentDate, { weekStartsOn: 1 }).getTime()) ||
-    // Not month range
-    (dateRange.from.getTime() === startOfMonth(currentDate).getTime() &&
-     dateRange.to?.getTime() === endOfMonth(currentDate).getTime()) ||
-    // Not year range
-    (dateRange.from.getTime() === startOfYear(currentDate).getTime() &&
-     dateRange.to?.getTime() === endOfYear(currentDate).getTime())
-  );
-
   return (
-    <div className="space-y-4">
-      {/* Time period tabs */}
-      <div className="flex w-full items-center justify-between border-b border-olive-mist/20 font-medium">
-        <nav className="flex flex-1 items-center">
-          <Button
-            variant="link"
-            className={cn(
-              "pb-3 text-sm font-medium uppercase tracking-wider",
-              !dateRange 
-                ? "border-b-2 border-brass-gold text-brass-gold" 
-                : "text-muted-foreground"
-            )}
-            onClick={() => onDateRangeChange(undefined)}
-          >
-            All Time
-          </Button>
-          <Button
-            variant="link"
-            className={cn(
-              "pb-3 text-sm font-medium uppercase tracking-wider",
-              dateRange?.from?.getTime() === startOfWeek(currentDate, { weekStartsOn: 1 }).getTime() &&
-              dateRange?.to?.getTime() === endOfWeek(currentDate, { weekStartsOn: 1 }).getTime()
-                ? "border-b-2 border-brass-gold text-brass-gold" 
-                : "text-muted-foreground"
-            )}
-            onClick={setWeekRange}
-          >
-            This Week
-          </Button>
-          <Button
-            variant="link"
-            className={cn(
-              "pb-3 text-sm font-medium uppercase tracking-wider",
-              dateRange?.from?.getTime() === startOfMonth(currentDate).getTime() &&
-              dateRange?.to?.getTime() === endOfMonth(currentDate).getTime()
-                ? "border-b-2 border-brass-gold text-brass-gold" 
-                : "text-muted-foreground"
-            )}
-            onClick={setMonthRange}
-          >
-            This Month
-          </Button>
-          <Button
-            variant="link"
-            className={cn(
-              "pb-3 text-sm font-medium uppercase tracking-wider",
-              dateRange?.from?.getTime() === startOfYear(currentDate).getTime() &&
-              dateRange?.to?.getTime() === endOfYear(currentDate).getTime()
-                ? "border-b-2 border-brass-gold text-brass-gold" 
-                : "text-muted-foreground"
-            )}
-            onClick={setYearRange}
-          >
-            This Year
-          </Button>
-        </nav>
-      </div>
-      
-      <div className="flex flex-col gap-4 sm:flex-row">
-        {/* Custom date range picker */}
-        <div className="space-y-2 sm:w-1/2">
-          <label className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Custom Date Range</label>
+    <div className="mb-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="min-w-[140px] space-y-2">
+          <Label htmlFor="date-range" className="font-semibold text-xs uppercase tracking-wide text-tactical-gray">Date Range</Label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
-                id="date"
+                id="date-range"
                 variant={"outline"}
                 className={cn(
                   "w-full justify-start text-left font-normal bg-cream border-army-tan/30",
-                  !isCustomRange && "text-tactical-gray"
+                  !dateRange && "text-tactical-gray"
                 )}
               >
                 <CalendarIcon className="mr-2 size-4" />
-                {isCustomRange && dateRange?.from ? (
+                {dateRange?.from ? (
                   dateRange.to ? (
                     <>
                       {format(dateRange.from, "LLL dd, y")}
@@ -148,7 +58,7 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
                     format(dateRange.from, "LLL dd, y")
                   )
                 ) : (
-                  <span>Pick a custom range</span>
+                  <span>Pick a date range</span>
                 )}
               </Button>
             </PopoverTrigger>
@@ -157,7 +67,7 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
                 initialFocus
                 mode="range"
                 defaultMonth={dateRange?.from}
-                selected={isCustomRange ? dateRange : undefined}
+                selected={dateRange}
                 onSelect={onDateRangeChange}
                 numberOfMonths={2}
               />
@@ -165,11 +75,14 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
           </Popover>
         </div>
 
-        {/* Exercise type filter */}
-        <div className="space-y-2 sm:w-1/2">
-          <label className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</label>
+        <div className="min-w-[140px] space-y-2">
+          <Label htmlFor="exercise-filter" className="font-semibold text-xs uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
           <Select value={exerciseFilter} onValueChange={onExerciseFilterChange}>
-            <SelectTrigger className="w-full border-army-tan/30 bg-cream">
+            <SelectTrigger 
+              id="exercise-filter" 
+              className="border-army-tan/30 bg-cream"
+              aria-label="Select exercise type"
+            >
               <SelectValue placeholder="Filter by exercise..." />
             </SelectTrigger>
             <SelectContent>
@@ -183,14 +96,13 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
         </div>
       </div>
       
-      {/* Clear filters button */}
-      {(dateRange || exerciseFilter !== 'All') && (
+      {filtersActive && (
         <Button 
           variant="outline" 
-          onClick={onClearFilters}
+          onClick={onClearFilters} 
           className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10"
         >
-          <X className="mr-2 size-4" /> CLEAR FILTERS
+          CLEAR FILTERS
         </Button>
       )}
     </div>
