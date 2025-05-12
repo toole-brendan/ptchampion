@@ -45,8 +45,8 @@ describe('Navigation Flow', () => {
     // Start at the dashboard
     cy.visit('/dashboard');
     
-    // Click on Exercises in the sidebar
-    cy.contains('Exercises').click();
+    // Click on Exercises in the nav
+    cy.get('nav').contains('Exercises').click();
     
     // Verify we're on the exercises page
     cy.url().should('include', '/exercises');
@@ -58,8 +58,8 @@ describe('Navigation Flow', () => {
     cy.url().should('include', '/exercises/pushups');
     cy.contains('Push-ups Exercise').should('be.visible');
     
-    // Navigate to history using the sidebar
-    cy.contains('History').click();
+    // Navigate to history using the nav
+    cy.get('nav').contains('History').click();
     
     // Verify we're on the history page
     cy.url().should('include', '/history');
@@ -90,8 +90,8 @@ describe('Navigation Flow', () => {
     // Verify correct page loads
     cy.contains('Sit-ups Exercise').should('be.visible');
     
-    // Test that sidebar navigation works from here
-    cy.contains('Leaderboard').click();
+    // Test that navigation works from here
+    cy.get('nav').contains('Leaderboard').click();
     
     // Verify navigation to leaderboard works
     cy.url().should('include', '/leaderboard');
@@ -111,5 +111,31 @@ describe('Navigation Flow', () => {
     // Verify redirection
     cy.url().should('include', '/exercises/running');
     cy.contains('Running Exercise').should('be.visible');
+  });
+
+  it('should navigate to profile and settings from the user menu', () => {
+    // Start at the dashboard
+    cy.visit('/dashboard');
+    
+    // Click on the user avatar to open the menu
+    cy.get('.bg-brass-gold.bg-opacity-20').first().click();
+    
+    // Click on Profile in the dropdown
+    cy.contains('Profile').click();
+    
+    // Verify we're on the profile page
+    cy.url().should('include', '/profile');
+    
+    // Go back to dashboard
+    cy.get('nav').contains('Dashboard').click();
+    
+    // Open user menu again
+    cy.get('.bg-brass-gold.bg-opacity-20').first().click();
+    
+    // Click on Settings
+    cy.contains('Settings').click();
+    
+    // Verify we're on the settings page
+    cy.url().should('include', '/settings');
   });
 }); 

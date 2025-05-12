@@ -17,6 +17,11 @@ import { cn } from "@/lib/utils";
 import ptChampionLogo from '@/assets/pt_champion_logo.png';
 import { useFeatureFlags } from '@/lib/featureFlags';
 
+/**
+ * @deprecated This component is deprecated and will be removed in a future release.
+ * Use TopNavBar component instead for navigation. 
+ */
+
 interface IconProps extends React.SVGProps<SVGSVGElement> {
   size?: number;
 }
