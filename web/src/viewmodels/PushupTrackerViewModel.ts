@@ -18,6 +18,7 @@ import { Subscription } from 'rxjs';
 import { ExerciseId } from '../constants/exercises';
 import { PoseDetector } from '../services/poseDetector';
 import { NormalizedLandmark } from '@mediapipe/tasks-vision';
+import cameraManager, { CameraOptions } from '@/services/CameraManager';
 
 /**
  * Class implementation of PushupTrackerViewModel
@@ -33,6 +34,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   private useNewPoseDetector: boolean = false;
   private poseDetector: PoseDetector | null = null;
   private animationFrameId: number | null = null;
+  private facingMode: 'user' | 'environment' = 'environment';
 
   constructor(useNewPoseDetector = false) {
     super(ExerciseType.PUSHUP);
@@ -61,9 +63,21 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
         this.poseDetector = new PoseDetector();
         await this.poseDetector.init('/models/pose_landmarker_full.task');
         
-        // Camera will be started when session starts through the PoseDetector
+        // Start camera using CameraManager for new detector approach
         if (!this.videoRef?.current) {
           this.setError(TrackerErrorType.UNKNOWN, "Video element not available");
+          return;
+        }
+        
+        // Start the camera with appropriate configuration
+        const cameraStarted = await cameraManager.startCamera(this.videoRef.current, { 
+          facingMode: 'environment' // Use back camera for better pose tracking
+        });
+        
+        if (!cameraStarted) {
+          // Get error reason from camera manager
+          const errorMessage = cameraManager.getError()?.message || "Failed to start camera";
+          this.setError(TrackerErrorType.CAMERA_PERMISSION, errorMessage);
           return;
         }
       } else {
@@ -115,6 +129,15 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   private processPoseFrame = (): void => {
     if (!this.poseDetector || !this.videoRef?.current || this._status !== SessionStatus.ACTIVE) {
       this.animationFrameId = null;
+      return;
+    }
+    
+    const video = this.videoRef.current;
+    
+    // Guard against uninitialized video or zero-dimension frames
+    if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+      // Schedule next frame but don't process this one
+      this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
       return;
     }
     
@@ -200,6 +223,12 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     this.lastAnalysis = null;
 
     if (this.useNewPoseDetector) {
+      // Ensure canvas dimensions match video before starting detection
+      if (this.canvasRef?.current && this.videoRef.current) {
+        this.canvasRef.current.width = this.videoRef.current.videoWidth;
+        this.canvasRef.current.height = this.videoRef.current.videoHeight;
+      }
+      
       // Start the animation frame loop for the new detector
       this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
     } else {
@@ -439,6 +468,9 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
       }
+      
+      // Release camera resources for the new detector approach
+      cameraManager.removeConsumer();
     } else {
       // Unsubscribe from pose events
       if (this.poseSubscription) {
@@ -454,6 +486,23 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
       
       // Release consumer reference
       poseDetectorService.releaseConsumer();
+    }
+  }
+
+  /**
+   * Flip between front and rear cameras (mobile only)
+   */
+  async flipCamera(): Promise<void> {
+    if (!this.videoRef?.current) return;
+    try {
+      const success = await cameraManager.switchFacing();
+      if (success) {
+        this.facingMode = cameraManager.getFacingMode();
+      }
+    } catch (err) {
+      console.error('Failed to switch camera', err);
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      this.setError(TrackerErrorType.CAMERA_PERMISSION, msg);
     }
   }
 }
@@ -559,6 +608,10 @@ export function usePushupTrackerViewModel(useNewPoseDetector = true) {
     return await viewModel.saveResults();
   }, [viewModel]);
   
+  const flipCamera = useCallback(async () => {
+    await viewModel.flipCamera();
+  }, [viewModel]);
+  
   // Return the state and methods
   return {
     // State
@@ -579,7 +632,8 @@ export function usePushupTrackerViewModel(useNewPoseDetector = true) {
     pauseSession,
     finishSession,
     resetSession,
-    saveResults
+    saveResults,
+    flipCamera
   };
 }
 

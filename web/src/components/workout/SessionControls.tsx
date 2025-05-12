@@ -9,6 +9,8 @@ export interface SessionControlsProps {
   disabled: boolean;
   repCount: number;
   isSubmitting?: boolean;
+  showFlip?: boolean;
+  onFlipCamera?: () => void;
   onStartPause: () => void;
   onReset: () => void;
   onFinish: () => void;
@@ -20,6 +22,8 @@ const SessionControls: React.FC<SessionControlsProps> = ({
   disabled,
   repCount,
   isSubmitting = false,
+  showFlip = false,
+  onFlipCamera,
   onStartPause,
   onReset,
   onFinish
@@ -47,6 +51,19 @@ const SessionControls: React.FC<SessionControlsProps> = ({
                 <Play className="size-6" />
             }
           </Button>
+          
+          {/* Flip camera button (mobile only) */}
+          {showFlip && (
+            <Button
+              size="lg"
+              variant="secondary"
+              className="flex size-14 items-center justify-center rounded-full p-0"
+              onClick={onFlipCamera}
+              disabled={disabled || isModelLoading}
+            >
+              <RotateCcw className="size-6 transform rotate-90" />
+            </Button>
+          )}
           
           {/* Reset button */}
           <Button 

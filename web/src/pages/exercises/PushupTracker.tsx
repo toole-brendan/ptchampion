@@ -15,6 +15,7 @@ import { ArrowLeft, Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } f
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import { calculatePushupScore } from '../../grading/APFTScoring';
+import { useDeviceCapabilities } from '@/lib/hooks/useDeviceCapabilities';
 
 // Import our ViewModel hook
 import { usePushupTrackerViewModel } from '../../viewmodels/PushupTrackerViewModel';
@@ -56,7 +57,8 @@ const PushupTracker: React.FC = () => {
     pauseSession,
     finishSession,
     resetSession,
-    saveResults
+    saveResults,
+    flipCamera
   } = usePushupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
   
   // Derived state
@@ -76,6 +78,9 @@ const PushupTracker: React.FC = () => {
   
   // Constants for this exercise
   const EXERCISE_NAME = 'Push-ups';
+
+  const capabilities = useDeviceCapabilities();
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // Handle back navigation
   const handleBackNavigation = () => {
@@ -347,6 +352,8 @@ const PushupTracker: React.FC = () => {
           disabled={!permissionGranted || !!cameraError || !!modelError}
           repCount={repCount}
           isSubmitting={isSubmitting}
+          showFlip={isMobile}
+          onFlipCamera={flipCamera}
           onStartPause={handleStartPause}
           onReset={handleReset}
           onFinish={handleFinish}

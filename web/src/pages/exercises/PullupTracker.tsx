@@ -15,6 +15,7 @@ import { ArrowLeft, Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } f
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import { calculatePullupScore } from '../../grading/APFTScoring';
+import { useDeviceCapabilities } from '@/lib/hooks/useDeviceCapabilities';
 
 // Import our ViewModel hook
 import { usePullupTrackerViewModel } from '../../viewmodels/PullupTrackerViewModel';
@@ -56,7 +57,8 @@ const PullupTracker: React.FC = () => {
     pauseSession,
     finishSession,
     resetSession,
-    saveResults
+    saveResults,
+    flipCamera
   } = usePullupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
 
   // Derived state
@@ -76,6 +78,9 @@ const PullupTracker: React.FC = () => {
 
   // Constants for this exercise
   const EXERCISE_NAME = 'Pull-ups';
+
+  const capabilities = useDeviceCapabilities();
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // Handle back navigation
   const handleBackNavigation = () => {
@@ -344,6 +349,8 @@ const PullupTracker: React.FC = () => {
           disabled={!permissionGranted || !!cameraError || !!modelError}
           repCount={repCount}
           isSubmitting={isSubmitting}
+          showFlip={isMobile}
+          onFlipCamera={flipCamera}
           onStartPause={handleStartPause}
           onReset={handleReset}
           onFinish={handleFinish}

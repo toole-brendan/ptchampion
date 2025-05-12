@@ -15,6 +15,7 @@ import { ArrowLeft, Play, Pause, RotateCcw, Timer, VideoOff, Loader2, Camera } f
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import { calculateSitupScore } from '../../grading/APFTScoring';
+import { useDeviceCapabilities } from '@/lib/hooks/useDeviceCapabilities';
 
 // Import our ViewModel hook
 import { useSitupTrackerViewModel } from '../../viewmodels/SitupTrackerViewModel';
@@ -51,7 +52,8 @@ const SitupTracker: React.FC = () => {
     pauseSession,
     finishSession,
     resetSession,
-    saveResults
+    saveResults,
+    flipCamera
   } = useSitupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
 
   // Derived state
@@ -73,6 +75,9 @@ const SitupTracker: React.FC = () => {
   const EXERCISE_NAME = 'Sit-ups';
   const SITUP_THRESHOLD_ANGLE_DOWN = 160; // Get from analyzer in the future
   const SITUP_THRESHOLD_ANGLE_UP = 80;  // Get from analyzer in the future
+
+  const capabilities = useDeviceCapabilities();
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
   // Handle back navigation
   const handleBackNavigation = () => {
@@ -305,6 +310,8 @@ const SitupTracker: React.FC = () => {
           disabled={!permissionGranted || !!cameraError || !!modelError}
           repCount={repCount}
           isSubmitting={isSubmitting}
+          showFlip={isMobile}
+          onFlipCamera={flipCamera}
           onStartPause={handleStartPause}
           onReset={handleReset}
           onFinish={handleFinish}
