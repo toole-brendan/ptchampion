@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './lib/authContext';
 import { FeatureFlagProvider } from './lib/featureFlags';
 import { HeaderProvider } from './dashboard-message-context';
-import { ThemeProvider } from './lib/themeContext';
+
 import { PoseProvider } from './lib/contexts/PoseContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import OfflineBanner from './components/OfflineBanner';
@@ -87,8 +87,7 @@ function App({ queryClient }: AppProps) {
 
   return (
     <QueryClientProvider client={qclient}>
-      <ThemeProvider>
-        <AuthProvider>
+      <AuthProvider>
           <FeatureFlagProvider>
             <HeaderProvider>
               <PoseProvider>
@@ -140,7 +139,6 @@ function App({ queryClient }: AppProps) {
             </HeaderProvider>
           </FeatureFlagProvider>
         </AuthProvider>
-      </ThemeProvider>
     </QueryClientProvider>
   );
 }

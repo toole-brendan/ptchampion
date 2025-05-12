@@ -11,7 +11,8 @@ import {
   Flame,
   AreaChart,
   AlertCircle,
-  Play
+  Play,
+  Route
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
@@ -35,21 +36,21 @@ const exerciseLinks = [
 ];
 
 // Military-style corner component
-const MilitaryCorners: React.FC = () => (
+const MilitaryCorners: React.FC<{ alwaysVisible?: boolean }> = ({ alwaysVisible = false }) => (
   <>
     {/* Military corner cutouts - top left and right */}
-    <div className="absolute left-0 top-0 size-[15px] bg-background"></div>
-    <div className="absolute right-0 top-0 size-[15px] bg-background"></div>
+    <div className="absolute left-0 top-0 size-[10px] bg-background"></div>
+    <div className="absolute right-0 top-0 size-[10px] bg-background"></div>
     
     {/* Military corner cutouts - bottom left and right */}
-    <div className="absolute bottom-0 left-0 size-[15px] bg-background"></div>
-    <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
+    <div className="absolute bottom-0 left-0 size-[10px] bg-background"></div>
+    <div className="absolute bottom-0 right-0 size-[10px] bg-background"></div>
     
     {/* Diagonal lines for corners */}
-    <div className="bg-tactical-gray/50 absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45"></div>
+    <div className={`bg-brass-gold absolute left-0 top-0 h-[1px] w-[10px] origin-top-left rotate-45 opacity-25 pointer-events-none ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
+    <div className={`bg-brass-gold absolute right-0 top-0 h-[1px] w-[10px] origin-top-right -rotate-45 opacity-25 pointer-events-none ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
+    <div className={`bg-brass-gold absolute bottom-0 left-0 h-[1px] w-[10px] origin-bottom-left -rotate-45 opacity-25 pointer-events-none ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
+    <div className={`bg-brass-gold absolute bottom-0 right-0 h-[1px] w-[10px] origin-bottom-right rotate-45 opacity-25 pointer-events-none ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
   </>
 );
 
@@ -183,7 +184,10 @@ const Dashboard: React.FC = () => {
       // Properly capitalize the first name (e.g., "john" → "John")
       firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
       
-      setUserName(`Welcome Back, ${firstName}`);
+      // Log what we're setting for debugging
+      console.log('Setting header username:', `Hello, ${firstName}`, 'from user:', user);
+      
+      setUserName(`Hello, ${firstName}`);
     }
   }, [user, setUserName]);
   
@@ -227,12 +231,12 @@ const Dashboard: React.FC = () => {
     dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
 
   return (
-    <div className="space-y-section">
+    <div className="space-y-12">
       {/* Welcome Card */}
-      <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
-        <MilitaryCorners />
+      <div className="card animate-fade-in">
+        <MilitaryCorners alwaysVisible />
         <div className="mb-4 text-center">
-          <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
+          <h2 className="font-heading text-heading3 uppercase tracking-wider text-brass-gold">
             PT Champion
           </h2>
           <HeaderDivider />
@@ -240,7 +244,7 @@ const Dashboard: React.FC = () => {
         </div>
         
         {/* User profile summary */}
-        <div className="bg-cream/30 mt-4 rounded-card p-4">
+        <div className="bg-cream-dark mt-4 rounded-card p-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-heading text-heading4 uppercase">{formatDisplayName()}</h3>
@@ -251,7 +255,7 @@ const Dashboard: React.FC = () => {
             <Button 
               onClick={() => navigate('/profile')}
               variant="outline"
-              className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
+              className="hover:bg-brass-gold hover:bg-opacity-10 border-brass-gold text-brass-gold"
             >
               View Profile
             </Button>
@@ -260,17 +264,18 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Metrics Section - 2x2 Grid with enhanced styling */}
-      <div className="grid gap-card-gap md:grid-cols-2">
+      <div className="grid gap-card-gap md:grid-cols-2 animate-fade-in animation-delay-100">
         <div className="grid gap-card-gap md:grid-cols-2">
           <MetricCard
             title="TOTAL WORKOUTS"
             value={dashboardMetrics.totalWorkouts}
             icon={Flame}
             onClick={() => navigate('/history')}
-            className="bg-card-background relative overflow-hidden rounded-card shadow-medium transition-all hover:shadow-large"
+            className="transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_12px_rgba(0,0,0,.12)]"
             iconClassName="text-brass-gold"
             valueClassName="font-heading text-heading2 text-command-black"
-            cornerElements={<MilitaryCorners />}
+            cornerElements={<MilitaryCorners alwaysVisible />}
+            index={0}
           />
           
           <MetricCard
@@ -288,10 +293,11 @@ const Dashboard: React.FC = () => {
             }
             icon={CalendarClock}
             onClick={() => dashboardMetrics.lastWorkoutDate && navigate('/history')}
-            className="bg-card-background relative overflow-hidden rounded-card shadow-medium transition-all hover:shadow-large"
+            className="transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_12px_rgba(0,0,0,.12)]"
             iconClassName="text-brass-gold"
             valueClassName="font-heading text-heading4 text-command-black"
-            cornerElements={<MilitaryCorners />}
+            cornerElements={<MilitaryCorners alwaysVisible />}
+            index={1}
           />
         </div>
         
@@ -302,30 +308,32 @@ const Dashboard: React.FC = () => {
             icon={Repeat}
             unit="reps"
             onClick={() => navigate('/history')}
-            className="bg-card-background relative overflow-hidden rounded-card shadow-medium transition-all hover:shadow-large"
+            className="transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_12px_rgba(0,0,0,.12)]"
             iconClassName="text-brass-gold"
             valueClassName="font-heading text-heading2 text-command-black"
-            cornerElements={<MilitaryCorners />}
+            cornerElements={<MilitaryCorners alwaysVisible />}
+            index={2}
           />
           
           <MetricCard
             title="TOTAL DISTANCE"
             value={(dashboardMetrics.totalDistance / 1000).toFixed(1)}
             unit="km"
-            icon={Flame}
+            icon={Route}
             onClick={() => navigate('/history')}
-            className="bg-card-background relative overflow-hidden rounded-card shadow-medium transition-all hover:shadow-large"
+            className="transition-all hover:-translate-y-[2px] hover:shadow-[0_6px_12px_rgba(0,0,0,.12)]"
             iconClassName="text-brass-gold"
             valueClassName="font-heading text-heading2 text-command-black"
-            cornerElements={<MilitaryCorners />}
+            cornerElements={<MilitaryCorners alwaysVisible />}
+            index={3}
           />
         </div>
       </div>
 
       {/* Enhanced Start Tracking Section */}
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <MilitaryCorners />
-        <div className="rounded-t-card bg-deep-ops p-content">
+      <div className="relative overflow-hidden rounded-card shadow-[var(--shadow-card)] animate-fade-in animation-delay-200">
+        <MilitaryCorners alwaysVisible />
+        <div className="section-header">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="font-heading text-heading3 uppercase tracking-wider text-cream">
@@ -336,7 +344,7 @@ const Dashboard: React.FC = () => {
               </p>
             </div>
             <Button 
-              className="hover:bg-brass-gold/90 bg-brass-gold text-deep-ops shadow-small transition-all hover:shadow-medium"
+              className="hover:bg-brass-gold hover:bg-opacity-90 bg-brass-gold text-deep-ops shadow-small transition-all hover:shadow-medium"
               onClick={() => navigate('/exercises')}
             >
               <Play className="mr-2 size-4" />
@@ -344,19 +352,27 @@ const Dashboard: React.FC = () => {
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-item p-content lg:grid-cols-4">
-          {exerciseLinks.map((exercise) => (
+        <div className="grid grid-cols-2 gap-item p-content lg:grid-cols-4 bg-cream-dark">
+          {exerciseLinks.map((exercise, idx) => (
             <div
               key={exercise.name}
-              className="bg-cream/50 active:bg-brass-gold/10 group relative overflow-hidden rounded-card 
-                        p-4 transition-all hover:-translate-y-1 
-                        hover:border-brass-gold hover:shadow-medium"
+              className="bg-cream-dark group relative overflow-hidden rounded-card 
+                        p-4 transition-all hover:-translate-y-[1px] 
+                        hover:border-brass-gold hover:shadow-[0_4px_8px_rgba(0,0,0,.08)] border border-brass-gold border-opacity-30 cursor-pointer 
+                        focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:animate-card-hover"
               onClick={() => navigate(exercise.path)}
+              tabIndex={0}
+              style={{ animationDelay: `${idx * 100 + 200}ms` }}
             >
-              <div className="to-brass-gold/5 group-hover:to-brass-gold/10 absolute inset-0 bg-gradient-to-b from-transparent transition-all"></div>
+              <MilitaryCorners />
+              <div className="absolute inset-0 bg-gradient-to-b from-brass-gold to-brass-gold opacity-5 group-hover:opacity-10 transition-all"></div>
               <div className="relative z-10 flex flex-col items-center justify-center">
-                <img src={exercise.image} alt={exercise.name} className="mb-3 h-16 w-auto object-contain" />
-                <span className="font-heading text-sm uppercase tracking-wider text-tactical-gray">{exercise.name}</span>
+                <img 
+                  src={exercise.image} 
+                  alt={exercise.name} 
+                  className="mb-3 h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-110" 
+                />
+                <span className="font-heading text-sm uppercase tracking-wider text-tactical-gray group-hover:text-command-black transition-colors">{exercise.name}</span>
               </div>
             </div>
           ))}
@@ -364,9 +380,9 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Progress Section with design-system styling */}
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <MilitaryCorners />
-        <div className="rounded-t-card bg-deep-ops p-content">
+      <div className="relative overflow-hidden rounded-card shadow-[var(--shadow-card)] animate-fade-in animation-delay-300">
+        <MilitaryCorners alwaysVisible />
+        <div className="section-header">
           <h2 className="flex items-center font-heading text-heading3 uppercase tracking-wider text-cream">
             <AreaChart className="mr-2 size-5" />
             Progress Summary
@@ -375,9 +391,9 @@ const Dashboard: React.FC = () => {
             Your training overview at a glance
           </p>
         </div>
-        <div className="p-content">
+        <div className="p-content bg-cream-dark">
           {leaderboardError && (
-            <Alert variant="default" className="bg-olive-mist/10 mb-4 border-olive-mist">
+            <Alert variant="default" className="bg-olive-mist bg-opacity-10 mb-4 border-olive-mist">
               <AlertCircle className="size-5 text-tactical-gray" />
               <AlertTitle className="font-heading text-sm">Leaderboard data unavailable</AlertTitle>
               <AlertDescription className="text-tactical-gray">
@@ -387,49 +403,135 @@ const Dashboard: React.FC = () => {
           )}
 
           <div className="grid grid-cols-1 gap-card-gap md:grid-cols-3">
-            <div className="bg-cream/30 relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-small">
-              <div className="bg-brass-gold/40 absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded"></div>
-              <Clock className="mb-2 size-10 text-brass-gold" />
+            {/* These boxes get animation classes and better styling */}
+            <div className="bg-cream-dark relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-[var(--shadow-card)] animate-slide-up" style={{ animationDelay: "100ms" }}>
+              <div className="bg-brass-gold bg-opacity-10 mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+                <Clock className="mb-2 size-10 text-brass-gold" />
+              </div>
               <span className="font-heading text-heading3 text-command-black">
                 {Math.floor(dashboardMetrics.totalDuration / 3600)}h {Math.floor((dashboardMetrics.totalDuration % 3600) / 60)}m
               </span>
-              <span className="font-semibold text-xs uppercase tracking-wider text-tactical-gray">Total Training Time</span>
+              <span className="font-semibold text-xs uppercase tracking-wider text-olive-mist">Total Training Time</span>
             </div>
             
-            <div className="bg-cream/30 relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-small">
-              <div className="bg-brass-gold/40 absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded"></div>
-              <Flame className="mb-2 size-10 text-brass-gold" />
+            <div className="bg-cream-dark relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-[var(--shadow-card)] animate-slide-up" style={{ animationDelay: "200ms" }}>
+              <div className="bg-brass-gold bg-opacity-10 mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+                <Flame className="mb-2 size-10 text-brass-gold" />
+              </div>
               <span className="font-heading text-heading3 text-command-black">
                 {Math.floor(dashboardMetrics.totalDuration / 60 * 7)}
               </span>
-              <span className="font-semibold text-xs uppercase tracking-wider text-tactical-gray">Est. Calories Burned</span>
+              <span className="font-semibold text-xs uppercase tracking-wider text-olive-mist">Est. Calories Burned</span>
             </div>
             
-            <div className="bg-cream/30 relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-small">
-              <div className="bg-brass-gold/40 absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded"></div>
-              <Trophy className="mb-2 size-10 text-brass-gold" />
+            <div className="bg-cream-dark relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-[var(--shadow-card)] animate-slide-up" style={{ animationDelay: "300ms" }}>
+              <div className="bg-brass-gold bg-opacity-10 mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+                <Trophy className="mb-2 size-10 text-brass-gold" />
+              </div>
               <span className="font-heading text-heading3 text-command-black">
                 {isLeaderboardLoading ? (
-                  <Loader2 className="text-brass-gold/70 mx-auto size-6 animate-spin" />
+                  <Loader2 className="text-brass-gold opacity-70 mx-auto size-6 animate-spin" />
                 ) : dashboardMetrics.userRank > 0 ? (
                   `#${dashboardMetrics.userRank}` 
                 ) : (
                   'Unranked'
                 )}
               </span>
-              <span className="font-semibold text-xs uppercase tracking-wider text-tactical-gray">Global Leaderboard Rank</span>
+              <span className="font-semibold text-xs uppercase tracking-wider text-olive-mist">Global Leaderboard Rank</span>
             </div>
           </div>
           
           <div className="mt-6 flex justify-center">
             <Button 
-              className="hover:bg-brass-gold/90 bg-brass-gold font-heading text-deep-ops shadow-medium transition-all hover:-translate-y-1 hover:shadow-large"
+              className="hover:bg-brass-gold hover:bg-opacity-90 bg-brass-gold font-heading text-deep-ops shadow-medium transition-all hover:-translate-y-[1px] hover:shadow-[0_4px_8px_rgba(0,0,0,.12)] focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none"
               onClick={() => navigate('/history')}
             >
               <ArrowRight className="mr-2 size-4" />
               VIEW DETAILED PROGRESS
             </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Recent Activity Section */}
+      <div className="relative overflow-hidden rounded-card shadow-[var(--shadow-card)] animate-fade-in animation-delay-400">
+        <MilitaryCorners alwaysVisible />
+        <div className="section-header">
+          <h2 className="flex items-center font-heading text-heading3 uppercase tracking-wider text-cream">
+            <CalendarClock className="mr-2 size-5" />
+            Recent Activity
+          </h2>
+          <p className="text-sm text-army-tan">
+            Your latest workout sessions
+          </p>
+        </div>
+        <div className="p-content bg-cream-dark">
+          {(exerciseHistory?.items?.length ?? 0) > 0 ? (
+            <div className="divide-tactical-gray divide-opacity-20 divide-y">
+              {exerciseHistory?.items?.slice(0, 5).map((workout, index) => (
+                <div 
+                  key={workout.id || index} 
+                  className="hover:bg-brass-gold hover:bg-opacity-5 flex items-center justify-between py-3 px-2 transition-colors rounded-card animate-slide-up focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none"
+                  onClick={() => navigate(`/history/${workout.id}`)}
+                  tabIndex={0}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex items-center">
+                    <div className="bg-brass-gold bg-opacity-10 mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+                      {workout.exercise_type === 'PUSHUP' && <img src={pushupImage} alt="Push-ups" className="size-6" />}
+                      {workout.exercise_type === 'PULLUP' && <img src={pullupImage} alt="Pull-ups" className="size-6" />}
+                      {workout.exercise_type === 'SITUP' && <img src={situpImage} alt="Sit-ups" className="size-6" />}
+                      {workout.exercise_type === 'RUNNING' && <img src={runningImage} alt="Running" className="size-6" />}
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-sm uppercase text-command-black mb-0">
+                        {workout.exercise_type === 'PUSHUP' ? 'Push-ups' : 
+                         workout.exercise_type === 'PULLUP' ? 'Pull-ups' :
+                         workout.exercise_type === 'SITUP' ? 'Sit-ups' :
+                         workout.exercise_type === 'RUNNING' ? 'Running' : 
+                         workout.exercise_type}
+                      </h3>
+                      <p className="text-xs text-tactical-gray">
+                        {new Date(workout.created_at).toLocaleDateString(undefined, {
+                          month: 'short', 
+                          day: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-heading text-heading4 text-brass-gold">
+                      {workout.exercise_type === 'RUNNING' 
+                        ? `${((workout.distance || 0) / 1000).toFixed(2)} km` 
+                        : `${workout.reps || 0} reps`}
+                    </span>
+                    <p className="text-xs text-tactical-gray">
+                      {Math.floor((workout.time_in_seconds || 0) / 60)}m {(workout.time_in_seconds || 0) % 60}s
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 text-center">
+              <div className="bg-brass-gold bg-opacity-10 mx-auto mb-4 flex size-16 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+                <CalendarClock className="size-8 text-brass-gold" />
+              </div>
+              <h3 className="font-heading text-heading4 text-brass-gold">No Activity Yet</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm text-tactical-gray">
+                Start tracking your first workout to see your activity history here.
+              </p>
+              <Button 
+                className="hover:bg-brass-gold hover:bg-opacity-90 mt-4 bg-brass-gold font-heading text-deep-ops shadow-small transition-all hover:-translate-y-[1px] hover:shadow-[0_4px_8px_rgba(0,0,0,.12)] focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none"
+                onClick={() => navigate('/exercises')}
+              >
+                <Play className="mr-2 size-4" />
+                START YOUR FIRST WORKOUT
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

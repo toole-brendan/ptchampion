@@ -9,6 +9,8 @@
 /* Use system fonts instead of downloading potentially corrupt files */
 html {
   font-family: 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 @font-face {
@@ -56,12 +58,18 @@ html {
   
   h3 {
     @apply font-heading text-heading3 font-bold tracking-wide text-foreground;
+    @apply mb-xs;
   }
   
   h4 {
     @apply font-heading text-heading4 font-bold tracking-wide text-foreground;
+    @apply mb-xs;
   }
   
+  p + h3 {
+    @apply mt-lg;
+  }
+
   p {
     @apply font-sans text-body text-foreground;
   }
@@ -71,22 +79,32 @@ html {
   }
   
   .label {
-    @apply font-sans text-small font-semibold uppercase tracking-wide text-tactical-gray dark:text-olive-mist;
+    @apply font-sans text-small font-semibold uppercase tracking-wide text-olive-mist;
   }
 }
 
 @layer components {
+  /* Shadow Variables */
+  :root {
+    --shadow-card: 0 2px 4px rgba(0,0,0,.06);
+    --ring-focus: 0 0 0 2px var(--color-brass-gold);
+  }
+
   /* Bottom Navigation */
   .bottom-nav {
     @apply fixed bottom-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around border-t border-deep-ops border-opacity-10 bg-deep-ops px-4 shadow-medium;
   }
   
   .bottom-nav-item {
-    @apply flex flex-col items-center text-olive-mist transition-all hover:-translate-y-1;
+    @apply flex flex-col items-center text-olive-mist opacity-80 transition-all hover:-translate-y-1;
   }
   
   .bottom-nav-item.active {
     @apply text-brass-gold;
+  }
+
+  .bottom-nav-item:hover {
+    @apply text-brass-gold opacity-90;
   }
   
   .bottom-nav-label {
@@ -95,11 +113,15 @@ html {
   
   /* Card Components */
   .card {
-    @apply rounded-card bg-card p-md shadow-small text-card-foreground transition-all;
+    @apply rounded-card bg-card p-md shadow-[var(--shadow-card)] text-card-foreground transition-all border border-brass-gold border-opacity-20;
   }
   
   .card-interactive {
-    @apply card hover:-translate-y-1 hover:shadow-medium cursor-pointer;
+    @apply card hover:-translate-y-[1px] hover:shadow-[0_4px_8px_rgba(0,0,0,.08)] cursor-pointer focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:border-brass-gold hover:border-opacity-40;
+  }
+
+  .metric-card {
+    @apply border-t border-brass-gold border-opacity-40 bg-cream-dark;
   }
   
   .panel {
@@ -108,15 +130,26 @@ html {
 
   /* Button Variants */
   .btn-primary {
-    @apply bg-brass-gold text-cream font-semibold py-sm px-md rounded-button shadow-small hover:shadow-medium transition-all;
+    @apply bg-brass-gold text-cream font-semibold py-sm px-md rounded-button shadow-small hover:shadow-medium transition-all focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none;
   }
   
   .btn-secondary {
-    @apply bg-army-tan text-command-black font-semibold py-sm px-md rounded-button shadow-small hover:shadow-medium transition-all;
+    @apply bg-army-tan text-command-black font-semibold py-sm px-md rounded-button shadow-small hover:shadow-medium transition-all focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none;
   }
 
   .btn-outline {
-    @apply border border-brass-gold text-brass-gold font-semibold py-sm px-md rounded-button hover:bg-brass-gold/10 transition-all;
+    @apply border border-brass-gold text-brass-gold font-semibold py-sm px-md rounded-button hover:bg-brass-gold hover:bg-opacity-10 transition-all focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none;
+  }
+
+  /* Section Headers */
+  .section-header {
+    @apply bg-deep-ops p-content relative rounded-t-card border-l-2 border-l-brass-gold border-opacity-40;
+    background-image: repeating-linear-gradient(45deg, rgba(191, 162, 77, 0.05), rgba(191, 162, 77, 0.05) 10px, transparent 10px, transparent 20px);
+  }
+
+  .section-header::after {
+    content: '';
+    @apply absolute bottom-0 left-0 right-0 h-1 bg-brass-gold;
   }
   
   /* Animation Utilities */
@@ -134,6 +167,21 @@ html {
       var(--color-cream-dark) 100%);
     background-size: 700px 100%;
     animation: shimmer 2s infinite linear;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out forwards;
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
 

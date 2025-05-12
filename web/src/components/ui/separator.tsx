@@ -10,10 +10,10 @@ const separatorVariants = cva(
     variants: {
       variant: {
         default: "bg-cream-dark",
-        subtle: "bg-cream-dark/50",
-        accent: "bg-brass-gold/20",
-        accent2: "bg-army-tan/30",
-        dark: "bg-deep-ops/10",
+        subtle: "bg-cream-dark opacity-50",
+        accent: "bg-brass-gold bg-opacity-20",
+        accent2: "bg-army-tan opacity-30",
+        muted: "bg-deep-ops opacity-10",
       },
       size: {
         default: "h-px",

@@ -146,14 +146,42 @@ function QuickLinkCard({
       {...props}
     >
       <div className="flex flex-col items-center justify-center gap-2 py-md">
-        <div className="bg-brass-gold/10 flex size-12 items-center justify-center rounded-full text-brass-gold">
-          {icon}
+        <div className="flex items-start gap-3">
+          <div className="bg-brass-gold bg-opacity-10 flex size-12 items-center justify-center rounded-full text-brass-gold">
+            {icon}
+          </div>
         </div>
         <div className="text-center font-semibold">{title}</div>
       </div>
     </Card>
   )
 }
+
+// Icon footer - useful for tutorial cards, feature cards, etc.
+export const IconFooter = React.forwardRef<
+  React.ElementRef<typeof CardFooter>,
+  React.ComponentPropsWithoutRef<typeof CardFooter> & {
+    icon: React.ReactNode;
+    title: string;
+    subtitle?: string;
+  }
+>(({ className, icon, title, subtitle, ...props }, ref) => (
+  <CardFooter
+    ref={ref}
+    className={cn(className)}
+    {...props}
+  >
+    <div className="flex flex-col items-center justify-center gap-2 py-md">
+      <div className="bg-brass-gold bg-opacity-10 flex size-12 items-center justify-center rounded-full text-brass-gold">
+        {icon}
+      </div>
+      <div className="text-center font-semibold">{title}</div>
+      {subtitle && (
+        <div className="text-center text-sm text-tactical-gray">{subtitle}</div>
+      )}
+    </div>
+  </CardFooter>
+));
 
 export {
   Card,
