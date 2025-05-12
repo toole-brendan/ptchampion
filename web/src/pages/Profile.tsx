@@ -5,14 +5,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Loader2, UserCircle, Settings, LogOut, AlertTriangle } from 'lucide-react';
+import { Loader2, UserCircle, LogOut, AlertTriangle } from 'lucide-react';
 import { updateCurrentUser, deleteCurrentUser } from '../lib/apiClient';
 import { useAuth } from '../lib/authContext';
 import { UpdateUserRequest } from '../lib/types';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { cn } from "@/lib/utils";
-import { useSettings } from '@/lib/SettingsContext';
 import { useToast } from "@/components/ui/use-toast";
 import { 
   Dialog,
@@ -28,17 +25,22 @@ import {
 // Check if dev auth bypass is enabled
 const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
 
+// Extended form data interface that includes password confirmation
+interface ProfileFormData extends UpdateUserRequest {
+  confirmPassword?: string;
+}
+
 const Profile: React.FC = () => {
   const { user, logout, isLoading: authLoading } = useAuth();
-  const { settings, updateSetting } = useSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-  const [formData, setFormData] = useState<UpdateUserRequest>({});
+  const [formData, setFormData] = useState<ProfileFormData>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [passwordsMatch, setPasswordsMatch] = useState(true);
 
   // Message auto-dismiss timer
   useEffect(() => {
@@ -56,12 +58,23 @@ const Profile: React.FC = () => {
     if (user) {
       setFormData({
         username: user.username,
-        display_name: user.display_name || '',
-        profile_picture_url: user.profile_picture_url || '',
-        location: user.location || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
+        email: user.email || '',
+        password: '',
+        confirmPassword: ''
       });
     }
   }, [user]);
+
+  // Check if passwords match whenever password or confirmPassword changes
+  useEffect(() => {
+    if (formData.password || formData.confirmPassword) {
+      setPasswordsMatch(formData.password === formData.confirmPassword);
+    } else {
+      setPasswordsMatch(true); // If both fields are empty, they technically match
+    }
+  }, [formData.password, formData.confirmPassword]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -71,6 +84,13 @@ const Profile: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate passwords match if attempting to change password
+    if (formData.password && !passwordsMatch) {
+      setMessage({ text: 'Passwords do not match', type: 'error' });
+      return;
+    }
+    
     const changes = getChangedFields();
     if (Object.keys(changes).length === 0) {
       setMessage({ text: 'No changes to save', type: 'error' });
@@ -117,6 +137,13 @@ const Profile: React.FC = () => {
       
       // Update the user in the React Query cache
       queryClient.setQueryData(['currentUser'], updated);
+      
+      // Reset password fields after successful update
+      setFormData(prev => ({
+        ...prev,
+        password: '',
+        confirmPassword: ''
+      }));
       
       toast({
         title: "Profile Updated",
@@ -175,71 +202,7 @@ const Profile: React.FC = () => {
     }
   };
 
-  // Handle geolocation toggle
-  const handleGeolocationToggle = (enabled: boolean) => {
-    if (enabled) {
-      // Request geolocation permission
-      navigator.geolocation.getCurrentPosition(
-        // Success callback
-        () => {
-          // Store geolocation setting
-          updateSetting('geolocation', true);
-          toast({
-            title: "Location Access Granted",
-            description: "Location services are now enabled for tracking.",
-            variant: "default",
-          });
-        },
-        // Error callback
-        () => {
-          toast({
-            title: "Location Access Denied",
-            description: "Please enable location access in your browser settings.",
-            variant: "destructive",
-          });
-          updateSetting('geolocation', false);
-        }
-      );
-    } else {
-      // User turned off geolocation
-      updateSetting('geolocation', false);
-    }
-  };
 
-  // Handle notifications toggle
-  const handleNotificationsToggle = async (enabled: boolean) => {
-    if (enabled) {
-      try {
-        // Request notification permission
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          updateSetting('notifications', true);
-          toast({
-            title: "Notifications Enabled",
-            description: "You will now receive workout reminders and updates.",
-            variant: "default",
-          });
-        } else {
-          toast({
-            title: "Notification Permission Denied",
-            description: "Please enable notifications in your browser settings.",
-            variant: "destructive",
-          });
-          updateSetting('notifications', false);
-        }
-      } catch {
-        toast({
-          title: "Notification Error",
-          description: "Your browser may not support notifications.",
-          variant: "destructive",
-        });
-        updateSetting('notifications', false);
-      }
-    } else {
-      // User turned off notifications
-      updateSetting('notifications', false);
-    }
-  };
   
   // Compares formData with original user data to see if anything changed
   const formDataHasChanges = (): boolean => {
@@ -247,9 +210,10 @@ const Profile: React.FC = () => {
     
     return (
       formData.username !== user.username ||
-      formData.display_name !== (user.display_name || '') ||
-      formData.profile_picture_url !== (user.profile_picture_url || '') ||
-      formData.location !== (user.location || '')
+      formData.first_name !== (user.first_name || '') ||
+      formData.last_name !== (user.last_name || '') ||
+      formData.email !== (user.email || '') ||
+      Boolean(formData.password)
     );
   };
   
@@ -263,16 +227,20 @@ const Profile: React.FC = () => {
       changedFields.username = formData.username;
     }
     
-    if (formData.display_name !== (user.display_name || '')) {
-      changedFields.display_name = formData.display_name;
+    if (formData.first_name !== (user.first_name || '')) {
+      changedFields.first_name = formData.first_name;
     }
     
-    if (formData.profile_picture_url !== (user.profile_picture_url || '')) {
-      changedFields.profile_picture_url = formData.profile_picture_url;
+    if (formData.last_name !== (user.last_name || '')) {
+      changedFields.last_name = formData.last_name;
     }
     
-    if (formData.location !== (user.location || '')) {
-      changedFields.location = formData.location;
+    if (formData.email !== (user.email || '')) {
+      changedFields.email = formData.email;
+    }
+    
+    if (formData.password && passwordsMatch) {
+      changedFields.password = formData.password;
     }
     
     return changedFields;
@@ -307,7 +275,7 @@ const Profile: React.FC = () => {
   if (!user && !DEV_AUTH_BYPASS) {
     return (
       <div className="mx-auto max-w-3xl space-y-6"> {/* Consistent layout */}
-        <h1 className="font-semibold text-2xl text-foreground">Profile & Settings</h1>
+        <h1 className="font-semibold text-2xl text-foreground">Profile</h1>
         <Card>
           <CardContent className="pt-6 text-center text-muted-foreground">
              Please log in to view and edit your profile.
@@ -322,7 +290,7 @@ const Profile: React.FC = () => {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6"> {/* Reduced space, kept max-width */}
-      <h1 className="font-semibold text-2xl text-foreground">Profile & Settings</h1>
+      <h1 className="font-semibold text-2xl text-foreground">Profile</h1>
 
       {/* Edit Profile Section */}
       <Card className="transition-shadow hover:shadow-md"> {/* Hover effect */}
@@ -344,54 +312,77 @@ const Profile: React.FC = () => {
              )}
             
             <div className="space-y-1.5"> {/* Reduced space */}
+              <Label htmlFor="first_name">First Name</Label>
+              <Input 
+                id="first_name" name="first_name"
+                value={formData.first_name || ''} onChange={handleChange} 
+                placeholder="Your first name"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="last_name">Last Name</Label>
+              <Input 
+                id="last_name" name="last_name"
+                value={formData.last_name || ''} onChange={handleChange} 
+                placeholder="Your last name"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="space-y-1.5">
               <Label htmlFor="username">Username</Label>
               <Input 
-                id="username" name="username" // Added name attribute
+                id="username" name="username"
                 value={formData.username || ''} onChange={handleChange} 
                 placeholder="Your unique username"
-                disabled={isSubmitting} required // Add required
+                disabled={isSubmitting} required
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="display_name">Display Name</Label>
+              <Label htmlFor="email">Email</Label>
               <Input 
-                id="display_name" name="display_name" // Added name attribute
-                value={formData.display_name || ''} onChange={handleChange} 
-                placeholder="How your name appears"
+                id="email" name="email"
+                type="email"
+                value={formData.email || ''} onChange={handleChange} 
+                placeholder="Your email address"
                 disabled={isSubmitting}
               />
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="profile_picture_url">Profile Picture URL</Label>
-              <Input 
-                id="profile_picture_url" name="profile_picture_url" // Added name attribute
-                type="url" // Use URL type
-                value={formData.profile_picture_url || ''} onChange={handleChange} 
-                placeholder="https://... (optional)"
-                disabled={isSubmitting}
-              />
-              {formData.profile_picture_url && (
-                <img 
-                  src={formData.profile_picture_url} alt="Preview" 
-                  className="border-border mt-2 size-16 rounded-full border object-cover" // Adjusted size/style
-                  onError={(e) => { e.currentTarget.style.display = 'none'; }} // Hide on error
+            
+            {/* Password fields section */}
+            <div className="space-y-4 rounded-md border p-4">
+              <div className="text-sm font-medium">Password Management</div>
+              <div className="space-y-1.5">
+                <Label htmlFor="password">New Password</Label>
+                <Input 
+                  id="password" name="password"
+                  type="password"
+                  value={formData.password || ''} onChange={handleChange} 
+                  placeholder="Leave blank to keep current password"
+                  disabled={isSubmitting}
+                  className={!passwordsMatch && Boolean(formData.password) ? "border-destructive" : ""}
                 />
-              )}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="location">Location</Label>
-              <Input 
-                id="location" name="location" // Added name attribute
-                value={formData.location || ''} onChange={handleChange} 
-                placeholder="City, Country (optional)"
-                disabled={isSubmitting}
-              />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                <Input 
+                  id="confirmPassword" name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword || ''} onChange={handleChange} 
+                  placeholder="Confirm your new password"
+                  disabled={isSubmitting}
+                  className={!passwordsMatch && Boolean(formData.confirmPassword) ? "border-destructive" : ""}
+                />
+                {!passwordsMatch && Boolean(formData.password) && (
+                  <p className="mt-1 text-xs text-destructive">Passwords do not match</p>
+                )}
+              </div>
             </div>
           </CardContent>
           <CardFooter className="border-t pt-4"> {/* Adjusted padding */}
             <Button 
               type="submit" 
-              disabled={isSubmitting || !formDataHasChanges()}
+              disabled={isSubmitting || !formDataHasChanges() || (formData.password && !passwordsMatch)}
               className="bg-brass-gold hover:bg-brass-gold/90"
             >
               {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
@@ -401,69 +392,7 @@ const Profile: React.FC = () => {
         </form>
       </Card>
 
-      {/* Settings Section */}
-      <Card className="transition-shadow hover:shadow-md"> {/* Hover effect */}
-        <CardHeader>
-          <CardTitle className="flex items-center font-semibold text-lg"> {/* Standardized */}
-              <Settings className="mr-2 size-5 text-muted-foreground" /> {/* Muted icon */}
-              App Settings
-          </CardTitle>
-          <CardDescription>Configure application preferences.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Geolocation Setting */}
-          <div className={cn(
-             "flex items-center justify-between space-x-3 rounded-lg border p-4", // Use standard border/padding
-             "transition-colors hover:bg-muted/50" // Hover effect
-          )}>
-            <div className="space-y-0.5">
-              <Label htmlFor="geolocation-switch" className="text-base"> {/* Slightly larger label */}
-                Geolocation Tracking
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Allow location tracking for runs and local leaderboards.
-              </p>
-            </div>
-            <Switch
-              id="geolocation-switch"
-              checked={settings.geolocation}
-              onCheckedChange={handleGeolocationToggle}
-            />
-          </div>
 
-          {/* Notifications Setting */}
-          <div className={cn(
-             "flex items-center justify-between space-x-3 rounded-lg border p-4",
-             "transition-colors hover:bg-muted/50"
-          )}>
-            <div className="space-y-0.5">
-              <Label htmlFor="notifications-switch" className="text-base">
-                Notifications
-              </Label>
-              <p className="text-sm text-muted-foreground">
-                Receive reminders and updates about your workouts.
-              </p>
-            </div>
-            <Switch
-              id="notifications-switch"
-              checked={settings.notifications}
-              onCheckedChange={handleNotificationsToggle}
-            />
-          </div>
-          
-          {/* Link to Settings page for more options */}
-          <div className="pt-2 text-center">
-            <Button 
-              variant="outline" 
-              onClick={() => navigate('/settings')}
-              className="w-full"
-            >
-              <Settings className="mr-2 size-4" />
-              More Settings
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Account Actions Section */}
       <Card className="border-destructive/50 transition-shadow hover:shadow-md"> {/* Destructive border hint */}

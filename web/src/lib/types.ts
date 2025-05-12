@@ -4,11 +4,10 @@
 export interface RegisterUserRequest {
   username: string;
   password: string;
-  displayName?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
   profilePictureUrl?: string;
-  location?: string;
-  latitude?: string;
-  longitude?: string;
 }
 
 export interface LoginRequest {
@@ -25,11 +24,10 @@ export interface LoginResponse {
 export interface UserResponse {
   id: number;
   username: string;
-  display_name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
   profile_picture_url?: string;
-  location?: string;
-  latitude?: number;
-  longitude?: number;
   last_synced_at?: string;
   created_at: string;
   updated_at: string;
@@ -37,11 +35,11 @@ export interface UserResponse {
 
 export interface UpdateUserRequest {
   username?: string;
-  display_name?: string;
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+  password?: string;
   profile_picture_url?: string;
-  location?: string;
-  latitude?: number;
-  longitude?: number;
 }
 
 // Exercise types
@@ -71,7 +69,8 @@ export interface ExerciseResponse {
 export interface LeaderboardEntry {
   user_id: number;
   username: string;
-  display_name?: string;
+  first_name?: string;
+  last_name?: string;
   profile_picture_url?: string;
   max_grade: number;
   last_attempt_date: string; // Assuming ISO string format
