@@ -1,4 +1,4 @@
-import { ExerciseType } from './index';
+import { ExerciseType } from './ExerciseType';
 import { RepCounter, RepCountResult, RepMetrics, FormValidationFn, SetSummaryReport } from './RepCounter';
 import { NormalizedLandmark } from '../lib/types';
 import { PushupAnalyzer, PushupFormAnalysis } from './PushupAnalyzer';
