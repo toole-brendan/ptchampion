@@ -11,7 +11,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } from 'lucide-react';
+import { ArrowLeft, Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import { calculatePullupScore, formatScoreDisplay } from '../../grading/APFTScoring';
@@ -19,6 +19,10 @@ import { calculatePullupScore, formatScoreDisplay } from '../../grading/APFTScor
 // Import our ViewModel hook
 import { usePullupTrackerViewModel } from '../../viewmodels/PullupTrackerViewModel';
 import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewModel';
+
+// Import new UI components
+import HUD from '@/components/workout/HUD';
+import SessionControls from '@/components/workout/SessionControls';
 
 // --- Pull-up specific logic constants (adjust as needed for UI display) ---
 const PULLUP_THRESHOLD_ELBOW_ANGLE_DOWN = 160; // Angle for fully extended arms at bottom
@@ -54,12 +58,6 @@ const PullupTracker: React.FC = () => {
     resetSession,
     saveResults
   } = usePullupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
-
-  // Mark unused variables with eslint disable comments
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const unusedTimer = timer;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const unusedFormScore = formScore;
 
   // Derived state
   const isActive = status === SessionStatus.ACTIVE;
@@ -144,6 +142,13 @@ const PullupTracker: React.FC = () => {
         if (saved && result.grade !== undefined) {
           setSuccess(true);
           setLoggedGrade(typeof result.grade === 'number' ? result.grade : null);
+          
+          // Navigate to workout complete page with result data
+          navigate('/complete', { state: { 
+            ...result, 
+            grade: result.grade,
+            saved: saved
+          }});
         } else {
           throw new Error("Failed to save results");
         }
@@ -177,7 +182,7 @@ const PullupTracker: React.FC = () => {
   return (
     <div className="space-y-6">
       <Button variant="outline" onClick={handleBackNavigation} className="mb-4">
-        &larr; Back
+        <ArrowLeft className="mr-2 size-4" /> Back
       </Button>
       <h1 className="text-3xl font-semibold text-foreground">{EXERCISE_NAME} Exercise</h1>
 
@@ -199,14 +204,19 @@ const PullupTracker: React.FC = () => {
             />
             <canvas
               ref={canvasRef}
-              className="absolute left-0 top-0 size-full"
+              className="absolute inset-0 size-full pointer-events-none"
             />
-            {/* Form Fault Message Overlay */} 
-            {formFeedback && (
-              <div className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md bg-destructive/80 px-4 py-2 text-sm font-semibold text-white">
-                {formFeedback}
-              </div>
+            
+            {/* HUD Component */}
+            {isActive && permissionGranted && !modelError && !isModelLoading && (
+              <HUD 
+                repCount={repCount} 
+                formattedTime={formattedTime} 
+                formFeedback={formFeedback}
+                exerciseColor="text-brass-gold" 
+              />
             )}
+            
             {/* Overlay messages (Loading, Errors, Permissions) */}
             {isModelLoading && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 text-white">
@@ -307,6 +317,20 @@ const PullupTracker: React.FC = () => {
             )}
         </CardFooter>
       </Card>
+      
+      {/* Session controls overlay */}
+      {!isFinished && (
+        <SessionControls
+          status={status}
+          isModelLoading={isModelLoading}
+          disabled={!permissionGranted || !!cameraError || !!modelError}
+          repCount={repCount}
+          isSubmitting={isSubmitting}
+          onStartPause={handleStartPause}
+          onReset={handleReset}
+          onFinish={handleFinish}
+        />
+      )}
 
       {isFinished && (
         <div className="mt-4 w-full rounded-lg bg-muted p-4">
