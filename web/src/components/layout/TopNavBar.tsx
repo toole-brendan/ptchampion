@@ -1,12 +1,18 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LogOut, User, ChevronDown, Settings } from 'lucide-react';
-import { NAV_ITEMS } from '@/constants/navigation';
+import { NAV_ITEMS } from '../../constants/navigation';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
 import SyncIndicator from '@/components/SyncIndicator';
 import ptChampionLogo from '@/assets/pt_champion_logo.png';
-import { useFeatureFlags } from '@/lib/featureFlags';
+
+// Define a type for navigation items
+type NavItem = {
+  name: string;
+  path: string;
+  icon: React.ComponentType<{ className?: string; size?: number }>;
+};
 
 interface TopNavBarProps {
   username: string;
@@ -25,7 +31,6 @@ const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
   const location = useLocation();
-  const { isEnabled } = useFeatureFlags();
   const userInitial = username ? username.charAt(0).toUpperCase() : '?';
   
   // Helper function to check if a nav item is active
@@ -46,7 +51,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
 
       {/* Center - Nav Items (exclude Profile and Settings) */}
       <nav className="mx-auto hidden md:flex items-center gap-6">
-        {NAV_ITEMS.filter(item => item.name !== 'Profile' && item.name !== 'Settings').map((item) => {
+        {NAV_ITEMS.filter(item => item.name !== 'Profile' && item.name !== 'Settings').map(item => {
           const isActive = isNavItemActive(item.path);
           return (
             <Link
@@ -59,7 +64,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
                   : 'text-olive-mist opacity-80 hover:text-brass-gold hover:opacity-90'
               )}
             >
-              <div className="mr-2 flex-shrink-0 size-5">
+              <div className="mr-2 shrink-0 size-5">
                 <item.icon className="size-5" />
               </div>
               <span className="font-sans text-sm">{item.name}</span>

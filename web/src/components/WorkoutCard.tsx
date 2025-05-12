@@ -1,3 +1,7 @@
+/**
+ * @deprecated This component is deprecated. 
+ * Please use the version in src/components/workout-history/WorkoutCard.tsx instead.
+ */
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';

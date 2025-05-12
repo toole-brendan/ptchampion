@@ -224,13 +224,13 @@ export function DeveloperMenu({ onClose, isOpen, visible }: Props) {
                         {key}
                       </Label>
                       <div className="text-xs text-tactical-gray">
-                        {Boolean(value) ? <ToggleRight className="inline mr-1 size-3 text-success" /> : <ToggleLeft className="inline mr-1 size-3 text-tactical-gray" />}
-                        {Boolean(value) ? 'Enabled' : 'Disabled'}
+                        {value ? <ToggleRight className="inline mr-1 size-3 text-success" /> : <ToggleLeft className="inline mr-1 size-3 text-tactical-gray" />}
+                        {value ? 'Enabled' : 'Disabled'}
                       </div>
                     </div>
                     <Switch
                       id={key}
-                      checked={Boolean(value)}
+                      checked={!!value}
                       onCheckedChange={(checked) => setFlag(key, checked)}
                     />
                   </div>

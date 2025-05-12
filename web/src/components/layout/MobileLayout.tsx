@@ -6,14 +6,13 @@ import { useAuth } from '@/lib/authContext';
 import SyncIndicator from '@/components/SyncIndicator';
 import OfflineBanner from '@/components/OfflineBanner';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { LogOut, Settings, ChevronDown } from 'lucide-react';
+import { LogOut, Settings } from 'lucide-react';
 
 const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   const { userName } = useHeaderContext();
   const { logout } = useAuth();
-  const userInitial = userName ? userName.charAt(0).toUpperCase() : '?';
 
   const navItems = [
     { to: '/', label: 'Home', icon: <Home size={22} /> },

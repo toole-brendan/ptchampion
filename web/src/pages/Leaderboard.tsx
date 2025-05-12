@@ -23,29 +23,11 @@ import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Loader2, Trophy, Medal, MapPin } from 'lucide-react';
 import { SkeletonRow } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
-
-// Military-style corner component
-const MilitaryCorners: React.FC = () => (
-  <>
-    {/* Military corner cutouts - top left and right */}
-    <div className="absolute left-0 top-0 size-[15px] bg-background"></div>
-    <div className="absolute right-0 top-0 size-[15px] bg-background"></div>
-    
-    {/* Military corner cutouts - bottom left and right */}
-    <div className="absolute bottom-0 left-0 size-[15px] bg-background"></div>
-    <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
-    
-    {/* Diagonal lines for corners */}
-    <div className="absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45 bg-tactical-gray/50"></div>
-    <div className="absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45 bg-tactical-gray/50"></div>
-    <div className="absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45 bg-tactical-gray/50"></div>
-    <div className="absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45 bg-tactical-gray/50"></div>
-  </>
-);
+import { SectionCard, CardDivider } from "@/components/ui/card"; // Import card components from design system
 
 // Header divider component
 const HeaderDivider: React.FC = () => (
-  <div className="mx-auto my-2 h-px w-16 bg-brass-gold"></div>
+  <CardDivider className="mx-auto" />
 );
 
 const exerciseOptions = ['overall', 'pushup', 'situp', 'pullup', 'running'];
@@ -206,89 +188,88 @@ const Leaderboard: React.FC = () => {
   }, [leaderboardData, exerciseFilter]);
 
   return (
-    <div className="mx-auto max-w-[720px] space-y-section">
-      <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
-        <MilitaryCorners />
-        <div className="mb-4 text-center">
-          <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
-            Leaderboard
-          </h2>
-          <HeaderDivider />
-          <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Compare your performance</p>
-        </div>
-      </div>
-      
-      {/* Geolocation Alert - Show if needed */}
-      {scopeFilter === scopeOptions[1] && geoState.error && (
-        <Alert variant="destructive" className="rounded-card">
-          <AlertCircle className="size-5" />
-          <AlertTitle className="font-heading text-sm">Location Error</AlertTitle>
-          <AlertDescription>
-            {geoState.error}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2 border-brass-gold text-brass-gold" 
-              onClick={requestGeolocation}
-            >
-              TRY AGAIN
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {/* Location Status Alert - Only show when actively looking for location */}
-      {geoState.isLoading && (
-        <Alert className="rounded-card border-olive-mist bg-olive-mist/10">
-          <MapPin className="size-5 text-brass-gold" />
-          <AlertTitle className="font-heading text-sm">Getting your location</AlertTitle>
-          <AlertDescription>
-            Please allow location access to view the local leaderboard.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* API Error Alert */}
-      {isError && !geoState.isLoading && error instanceof Error && error.message !== 'Location permission required' && (
-        <Alert variant="destructive" className="rounded-card">
-          <AlertCircle className="size-5" />
-          <AlertTitle className="font-heading text-sm">Error loading leaderboard</AlertTitle>
-          <AlertDescription>
-            {error.message}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="mt-2 border-brass-gold text-brass-gold" 
-              onClick={() => refetch()}
-            >
-              RETRY
-            </Button>
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Leaderboard Filters */}
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <MilitaryCorners />
-        <div className="rounded-t-card bg-deep-ops p-content">
-          <div className="flex items-center">
-            <Trophy className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
-              {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Rankings
-            </h2>
+    <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
+      <div className="flex flex-col space-y-section max-w-7xl mx-auto">
+        {/* Header Section Card */}
+        <SectionCard
+          title="Leaderboard"
+          description="Compare your performance"
+          icon={<Trophy className="size-5" />}
+          className="animate-fade-in"
+          showDivider
+        >
+          <div className="flex flex-col items-center">
+            <HeaderDivider />
+            <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">
+              Track your progress against other athletes
+            </p>
           </div>
-          <p className="text-sm text-army-tan">
-            {scopeFilter === scopeOptions[1] 
-              ? 'See how you compare to athletes in your area'
-              : 'See how you measure up against the global competition'}
-          </p>
-        </div>
+        </SectionCard>
         
-        <div className="p-content">
+        {/* Geolocation Alert - Show if needed */}
+        {scopeFilter === scopeOptions[1] && geoState.error && (
+          <Alert variant="destructive" className="rounded-card">
+            <AlertCircle className="size-5" />
+            <AlertTitle className="font-heading text-sm">Location Error</AlertTitle>
+            <AlertDescription>
+              {geoState.error}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 border-brass-gold text-brass-gold" 
+                onClick={requestGeolocation}
+              >
+                TRY AGAIN
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {/* Location Status Alert - Only show when actively looking for location */}
+        {geoState.isLoading && (
+          <Alert className="rounded-card border-olive-mist bg-olive-mist/10">
+            <MapPin className="size-5 text-brass-gold" />
+            <AlertTitle className="font-heading text-sm">Getting your location</AlertTitle>
+            <AlertDescription>
+              Please allow location access to view the local leaderboard.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* API Error Alert */}
+        {isError && !geoState.isLoading && error instanceof Error && error.message !== 'Location permission required' && (
+          <Alert variant="destructive" className="rounded-card">
+            <AlertCircle className="size-5" />
+            <AlertTitle className="font-heading text-sm">Error loading leaderboard</AlertTitle>
+            <AlertDescription>
+              {error.message}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="mt-2 border-brass-gold text-brass-gold" 
+                onClick={() => refetch()}
+              >
+                RETRY
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Main Leaderboard Section Card */}
+        <SectionCard
+          title={`${exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Rankings`}
+          description={scopeFilter === scopeOptions[1] 
+            ? 'See how you compare to athletes in your area'
+            : 'See how you measure up against the global competition'
+          }
+          icon={<Trophy className="size-5" />}
+          className="animate-fade-in animation-delay-100"
+          showDivider
+        >
           {/* Filter Controls - Improved for responsiveness */}
           <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="min-w-[140px] space-y-2">
-              <Label htmlFor="exercise-filter" className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
+              <Label htmlFor="exercise-filter" className="font-semibold text-xs uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
                 <SelectTrigger 
                   id="exercise-filter" 
@@ -308,7 +289,7 @@ const Leaderboard: React.FC = () => {
             </div>
             
             <div className="min-w-[140px] space-y-2">
-              <Label htmlFor="scope-filter" className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Leaderboard Scope</Label>
+              <Label htmlFor="scope-filter" className="font-semibold text-xs uppercase tracking-wide text-tactical-gray">Leaderboard Scope</Label>
               <Select value={scopeFilter} onValueChange={setScopeFilter}>
                 <SelectTrigger 
                   id="scope-filter" 
@@ -328,7 +309,7 @@ const Leaderboard: React.FC = () => {
 
           {isLoading ? (
             // Skeleton loading state
-            <div className="overflow-hidden rounded-card border border-olive-mist/20">
+            <div className="relative overflow-hidden rounded-card border border-olive-mist/20">
               <Table className="w-full">
                 <TableHeader>
                   <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
@@ -429,7 +410,7 @@ const Leaderboard: React.FC = () => {
           <div className="mt-4 text-center text-xs text-tactical-gray">
             <p>Rankings reset weekly. Complete exercises to improve your position.</p>
           </div>
-        </div>
+        </SectionCard>
       </div>
     </div>
   );

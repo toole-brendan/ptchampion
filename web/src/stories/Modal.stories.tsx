@@ -1,8 +1,7 @@
-import React, { useState, ReactNode } from 'react';
+import { useState, ReactNode } from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { Modal, ModalFooter, ModalProps } from '../components/ui/modal';
 import { Button, PrimaryButton, SecondaryButton } from '../components/ui/button';
-import { X } from 'lucide-react';
 
 const meta: Meta<typeof Modal> = {
   title: 'UI/Modal',
