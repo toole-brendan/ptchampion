@@ -20,7 +20,15 @@ import { useHeaderContext } from '@/dashboard-message-context';
 import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/lib/apiClient';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Card, CardHeader, CardTitle, CardContent, QuickLinkCard, SectionCard } from '@/components/ui/card';
+import { 
+  Card, 
+  CardHeader, 
+  CardTitle, 
+  CardContent, 
+  QuickLinkCard, 
+  SectionCard, 
+  WelcomeCard 
+} from '@/components/ui/card';
 import { CornerDecor } from '@/components/ui/corner-decor';
 
 // Import the exercise PNG images
@@ -36,30 +44,6 @@ const exerciseLinks = [
   { name: "SIT-UPS", image: situpImage, path: '/exercises/situps' },
   { name: "RUNNING", image: runningImage, path: '/exercises/running' },
 ];
-
-// Military-style corner component
-const MilitaryCorners: React.FC<{ alwaysVisible?: boolean }> = ({ alwaysVisible = false }) => (
-  <>
-    {/* Military corner cutouts - top left and right */}
-    <div className="absolute left-0 top-0 size-[10px] bg-background"></div>
-    <div className="absolute right-0 top-0 size-[10px] bg-background"></div>
-    
-    {/* Military corner cutouts - bottom left and right */}
-    <div className="absolute bottom-0 left-0 size-[10px] bg-background"></div>
-    <div className="absolute bottom-0 right-0 size-[10px] bg-background"></div>
-    
-    {/* Diagonal lines for corners */}
-    <div className={`pointer-events-none absolute left-0 top-0 h-px w-[10px] origin-top-left rotate-45 bg-brass-gold opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
-    <div className={`pointer-events-none absolute right-0 top-0 h-px w-[10px] origin-top-right -rotate-45 bg-brass-gold opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
-    <div className={`pointer-events-none absolute bottom-0 left-0 h-px w-[10px] origin-bottom-left -rotate-45 bg-brass-gold opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
-    <div className={`pointer-events-none absolute bottom-0 right-0 h-px w-[10px] origin-bottom-right rotate-45 bg-brass-gold opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
-  </>
-);
-
-// Header divider component
-const HeaderDivider: React.FC = () => (
-  <div className="mx-auto my-2 h-px w-16 bg-brass-gold"></div>
-);
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -232,21 +216,59 @@ const Dashboard: React.FC = () => {
   const formattedLastWorkoutDate = dashboardMetrics.lastWorkoutDate ? 
     dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
 
+  // Define metrics for grid
+  const metrics = [
+    {
+      title: "TOTAL WORKOUTS",
+      value: dashboardMetrics.totalWorkouts,
+      icon: Flame,
+      iconClassName: "text-brass-gold",
+      valueClassName: "font-heading text-heading2 text-command-black",
+      onClick: () => navigate('/history')
+    },
+    {
+      title: "LAST ACTIVITY",
+      value: dashboardMetrics.lastWorkoutType ? 
+        dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Running' : 
+        dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
+        dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
+        dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :
+        dashboardMetrics.lastWorkoutType : 'None',
+      description: dashboardMetrics.lastWorkoutDate ? 
+        `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
+        'No workouts yet',
+      icon: CalendarClock,
+      iconClassName: "text-brass-gold",
+      valueClassName: "font-heading text-heading4 text-command-black",
+      onClick: () => dashboardMetrics.lastWorkoutDate && navigate('/history')
+    },
+    {
+      title: "TOTAL REPETITIONS",
+      value: dashboardMetrics.totalReps,
+      icon: Repeat,
+      unit: "reps",
+      iconClassName: "text-brass-gold",
+      valueClassName: "font-heading text-heading2 text-command-black",
+      onClick: () => navigate('/history')
+    },
+    {
+      title: "TOTAL DISTANCE",
+      value: (dashboardMetrics.totalDistance / 1000).toFixed(1),
+      unit: "km",
+      icon: Route,
+      iconClassName: "text-brass-gold",
+      valueClassName: "font-heading text-heading2 text-command-black",
+      onClick: () => navigate('/history')
+    }
+  ];
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-section lg:px-8">
-      <div className="space-y-section">
+    <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
+      <div className="flex flex-col space-y-section max-w-7xl mx-auto">
         {/* Welcome Card */}
-        <Card withCorners className="animate-fade-in">
-          <div className="mb-4 text-center p-md">
-            <h2 className="font-heading text-heading3 uppercase tracking-wider text-brass-gold">
-              PT Champion
-            </h2>
-            <HeaderDivider />
-            <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Fitness Evaluation System</p>
-          </div>
-          
-          {/* User profile summary */}
-          <div className="rounded-card bg-cream-dark p-4 mx-4 mb-4">
+        <WelcomeCard
+          className="animate-fade-in"
+          profileSection={
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-heading text-heading4 uppercase">{formatDisplayName()}</h3>
@@ -261,66 +283,18 @@ const Dashboard: React.FC = () => {
                 View Profile
               </Button>
             </div>
-          </div>
-        </Card>
+          }
+        />
 
-        {/* Metrics Section - 2x2 Grid with enhanced styling */}
-        <div className="animate-fade-in animation-delay-100 grid gap-card-gap md:grid-cols-2">
-          <div className="grid gap-card-gap md:grid-cols-2">
+        {/* Metrics Section - Flattened grid with responsive columns */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-card-gap animate-fade-in animation-delay-100">
+          {metrics.map((metric, index) => (
             <MetricCard
-              title="TOTAL WORKOUTS"
-              value={dashboardMetrics.totalWorkouts}
-              icon={Flame}
-              onClick={() => navigate('/history')}
-              iconClassName="text-brass-gold"
-              valueClassName="font-heading text-heading2 text-command-black"
-              index={0}
+              key={metric.title}
+              {...metric}
+              index={index}
             />
-            
-            <MetricCard
-              title="LAST ACTIVITY"
-              value={dashboardMetrics.lastWorkoutType ? 
-                dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Running' : 
-                dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
-                dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
-                dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :
-                dashboardMetrics.lastWorkoutType : 'None'
-              }
-              description={dashboardMetrics.lastWorkoutDate ? 
-                `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
-                'No workouts yet'
-              }
-              icon={CalendarClock}
-              onClick={() => dashboardMetrics.lastWorkoutDate && navigate('/history')}
-              iconClassName="text-brass-gold"
-              valueClassName="font-heading text-heading4 text-command-black"
-              index={1}
-            />
-          </div>
-          
-          <div className="grid gap-card-gap md:grid-cols-2">
-            <MetricCard
-              title="TOTAL REPETITIONS"
-              value={dashboardMetrics.totalReps}
-              icon={Repeat}
-              unit="reps"
-              onClick={() => navigate('/history')}
-              iconClassName="text-brass-gold"
-              valueClassName="font-heading text-heading2 text-command-black"
-              index={2}
-            />
-            
-            <MetricCard
-              title="TOTAL DISTANCE"
-              value={(dashboardMetrics.totalDistance / 1000).toFixed(1)}
-              unit="km"
-              icon={Route}
-              onClick={() => navigate('/history')}
-              iconClassName="text-brass-gold"
-              valueClassName="font-heading text-heading2 text-command-black"
-              index={3}
-            />
-          </div>
+          ))}
         </div>
 
         {/* Enhanced Start Tracking Section */}
@@ -330,6 +304,7 @@ const Dashboard: React.FC = () => {
           icon={<Play className="size-5" />}
           className="animate-fade-in animation-delay-200"
           headerClassName="flex items-center justify-between"
+          showDivider
         >
           <div className="flex justify-end mb-4">
             <Button 
@@ -341,7 +316,7 @@ const Dashboard: React.FC = () => {
             </Button>
           </div>
           
-          <div className="grid grid-cols-2 gap-item lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
             {exerciseLinks.map((exercise, idx) => (
               <QuickLinkCard
                 key={exercise.name}
@@ -364,6 +339,7 @@ const Dashboard: React.FC = () => {
           description="Your training overview at a glance"
           icon={<AreaChart className="size-5" />}
           className="animate-fade-in animation-delay-300"
+          showDivider
         >
           {leaderboardError && (
             <Alert variant="default" className="mb-4 border-olive-mist bg-olive-mist bg-opacity-10">
@@ -436,6 +412,7 @@ const Dashboard: React.FC = () => {
           description="Your latest workout sessions"
           icon={<CalendarClock className="size-5" />}
           className="animate-fade-in animation-delay-400"
+          showDivider
         >
           {(exerciseHistory?.items?.length ?? 0) > 0 ? (
             <div className="divide-y divide-tactical-gray divide-opacity-20">
@@ -499,21 +476,10 @@ const Dashboard: React.FC = () => {
               </Button>
             </div>
           )}
-          
-          {(exerciseHistory?.total_count ?? 0) > 5 && (
-            <div className="mt-4 flex justify-center">
-              <Button
-                variant="outline"
-                onClick={() => navigate('/history')}
-              >
-                View All Workouts
-              </Button>
-            </div>
-          )}
         </SectionCard>
       </div>
     </div>
   );
-};
+}
 
 export default Dashboard; 

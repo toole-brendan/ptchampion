@@ -1,4 +1,6 @@
 import './index.css';
+import './styles/ios-tokens.css';
+import './styles/fonts.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
@@ -103,6 +105,9 @@ if (import.meta.env.PROD) {
     console.error('Service worker registration failed:', error)
   );
 }
+
+// Ensure body has background color
+document.body.classList.add('bg-cream', 'text-command-black');
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -7,6 +7,8 @@ type CornerDecorProps = {
   cornerSize?: number;
   cornerColor?: string;
   lineColor?: string;
+  opacity?: number;
+  lineThickness?: number;
 }
 
 /**
@@ -17,8 +19,10 @@ export function CornerDecor({
   alwaysVisible = false,
   className = '',
   cornerSize = 10,
-  cornerColor = 'var(--color-background)',
-  lineColor = 'var(--color-brass-gold)'
+  cornerColor = 'var(--color-background, #F4F1E6)',
+  lineColor = 'var(--color-brass-gold, #BFA24D)',
+  opacity = 0.4,
+  lineThickness = 1
 }: CornerDecorProps) {
   return (
     <div className={cn("pointer-events-none absolute inset-0", className)}>
@@ -32,20 +36,40 @@ export function CornerDecor({
       
       {/* Diagonal lines for corners */}
       <div 
-        className={`absolute left-0 top-0 h-px origin-top-left rotate-45 opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}
-        style={{ width: cornerSize, background: lineColor }}
+        className={`absolute left-0 top-0 origin-top-left rotate-45 transition-opacity ${!alwaysVisible ? 'opacity-0 group-hover:opacity-100' : ''}`}
+        style={{ 
+          width: cornerSize, 
+          height: lineThickness, 
+          background: lineColor,
+          opacity: alwaysVisible ? opacity : undefined 
+        }}
       ></div>
       <div 
-        className={`absolute right-0 top-0 h-px origin-top-right -rotate-45 opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`} 
-        style={{ width: cornerSize, background: lineColor }}
+        className={`absolute right-0 top-0 origin-top-right -rotate-45 transition-opacity ${!alwaysVisible ? 'opacity-0 group-hover:opacity-100' : ''}`} 
+        style={{ 
+          width: cornerSize, 
+          height: lineThickness, 
+          background: lineColor,
+          opacity: alwaysVisible ? opacity : undefined 
+        }}
       ></div>
       <div 
-        className={`absolute bottom-0 left-0 h-px origin-bottom-left -rotate-45 opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}
-        style={{ width: cornerSize, background: lineColor }}
+        className={`absolute bottom-0 left-0 origin-bottom-left -rotate-45 transition-opacity ${!alwaysVisible ? 'opacity-0 group-hover:opacity-100' : ''}`}
+        style={{ 
+          width: cornerSize, 
+          height: lineThickness, 
+          background: lineColor,
+          opacity: alwaysVisible ? opacity : undefined 
+        }}
       ></div>
       <div 
-        className={`absolute bottom-0 right-0 h-px origin-bottom-right rotate-45 opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}
-        style={{ width: cornerSize, background: lineColor }}
+        className={`absolute bottom-0 right-0 origin-bottom-right rotate-45 transition-opacity ${!alwaysVisible ? 'opacity-0 group-hover:opacity-100' : ''}`}
+        style={{ 
+          width: cornerSize, 
+          height: lineThickness, 
+          background: lineColor,
+          opacity: alwaysVisible ? opacity : undefined 
+        }}
       ></div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { LucideIcon } from 'lucide-react';
-import { CornerDecor } from './corner-decor';
+import { Card } from './card';
 
 type MetricCardProps = {
   title: string;
@@ -16,11 +16,10 @@ type MetricCardProps = {
   valueClassName?: string;
   titleClassName?: string;
   descriptionClassName?: string;
-  cornerElements?: React.ReactNode;
   onClick?: () => void;
   index?: number;
   withCorners?: boolean;
-  cornerProps?: React.ComponentProps<typeof CornerDecor>;
+  cornerStyle?: "always" | "hover" | "none";
 }
 
 // Simple hook for counting up numbers
@@ -86,11 +85,10 @@ export function MetricCard({
   valueClassName,
   titleClassName,
   descriptionClassName,
-  cornerElements,
   onClick,
   index = 0,
   withCorners = true,
-  cornerProps
+  cornerStyle = "hover"
 }: MetricCardProps) {
   // For number values, use the count-up animation
   const numericValue = typeof value === 'number' ? value : 0;
@@ -99,56 +97,57 @@ export function MetricCard({
   const displayValue = isNumeric ? animatedValue : value;
   
   return (
-    <div 
+    <Card 
+      variant={onClick ? "interactive" : "default"}
       className={cn(
-        "group relative h-full overflow-hidden rounded-card p-content shadow-card animate-slide-up border border-brass-gold border-opacity-20 bg-cream-dark", 
-        onClick && "cursor-pointer focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:-translate-y-[1px] hover:shadow-medium hover:border-brass-gold hover:border-opacity-40 transition-all",
+        "h-full overflow-hidden animate-slide-up",
         className
       )}
       onClick={onClick}
       style={{ animationDelay: `${index * 100}ms` }}
       tabIndex={onClick ? 0 : undefined}
+      withCorners={withCorners}
+      cornerStyle={cornerStyle}
     >
-      {withCorners && <CornerDecor {...cornerProps} />}
-      {cornerElements}
-      
-      <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className={cn("text-xs font-semibold uppercase tracking-wider text-olive-mist", titleClassName)}>
-          {title}
-        </div>
-        {Icon && <Icon className={cn("size-5 text-brass-gold", iconClassName)} />}
-      </div>
-      
-      <div className="flex flex-col justify-center">
-        <div className="flex items-baseline">
-          <div className={cn("font-heading text-heading3 text-command-black", valueClassName)}>
-            {displayValue}
+      <div className="p-content">
+        <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className={cn("text-xs font-semibold uppercase tracking-wider text-olive-mist", titleClassName)}>
+            {title}
           </div>
-          {unit && (
-            <span className="ml-1 font-semibold text-sm text-tactical-gray">{unit}</span>
+          {Icon && <Icon className={cn("size-5 text-brass-gold", iconClassName)} />}
+        </div>
+        
+        <div className="flex flex-col justify-center">
+          <div className="flex items-baseline">
+            <div className={cn("font-heading text-heading3 text-command-black", valueClassName)}>
+              {displayValue}
+            </div>
+            {unit && (
+              <span className="ml-1 font-semibold text-sm text-tactical-gray">{unit}</span>
+            )}
+          </div>
+          
+          {description && (
+            <p className={cn("mt-1 text-xs text-tactical-gray", descriptionClassName)}>
+              {description}
+            </p>
+          )}
+          
+          {change !== undefined && (
+            <div className={cn(
+              "mt-2 flex items-center text-xs font-semibold",
+              trend === 'up' && "text-success",
+              trend === 'down' && "text-error"
+            )}>
+              {trend === 'up' && <span className="mr-1">↑</span>}
+              {trend === 'down' && <span className="mr-1">↓</span>}
+              <span>
+                {change > 0 ? '+' : ''}{change}% from last period
+              </span>
+            </div>
           )}
         </div>
-        
-        {description && (
-          <p className={cn("mt-1 text-xs text-tactical-gray", descriptionClassName)}>
-            {description}
-          </p>
-        )}
-        
-        {change !== undefined && (
-          <div className={cn(
-            "mt-2 flex items-center text-xs font-semibold",
-            trend === 'up' && "text-success",
-            trend === 'down' && "text-error"
-          )}>
-            {trend === 'up' && <span className="mr-1">↑</span>}
-            {trend === 'down' && <span className="mr-1">↓</span>}
-            <span>
-              {change > 0 ? '+' : ''}{change}% from last period
-            </span>
-          </div>
-        )}
       </div>
-    </div>
+    </Card>
   );
 } 

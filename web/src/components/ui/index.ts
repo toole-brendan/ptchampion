@@ -19,4 +19,20 @@ export * from "./tooltip";
 export * from "./heart-rate-monitor";
 export * from "./corner-decor";
 export * from "./section";
-export * from "./modal"; 
+export * from "./modal";
+
+// Card exports
+export { 
+  Card, 
+  CardHeader, 
+  CardFooter, 
+  CardTitle, 
+  CardDescription, 
+  CardContent, 
+  CardAction, 
+  CardDivider,
+  StatCard,
+  QuickLinkCard,
+  SectionCard,
+  WelcomeCard
+} from './card'; 

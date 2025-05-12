@@ -20,6 +20,7 @@ module.exports = {
         // Base PT Champion colors from iOS
         'cream': '#F4F1E6',
         'cream-dark': '#EDE9DB',
+        'cream-light': '#FAF8F1',
         'deep-ops': '#1E241E',
         'brass-gold': '#BFA24D',
         'army-tan': '#E0D4A6',
@@ -56,7 +57,7 @@ module.exports = {
           foreground: "#1E241E",
         },
         card: {
-          DEFAULT: "#EDE9DB",
+          DEFAULT: "#F4F1E6",
           foreground: "#1E1E1E",
         },
       },
@@ -64,18 +65,19 @@ module.exports = {
         lg: "var(--radius-large)",
         md: "var(--radius-medium)",
         sm: "var(--radius-small)",
-        card: 'var(--radius-card)',
-        panel: 'var(--radius-panel)',
+        card: 'var(--radius-card, 0.75rem)',
+        panel: 'var(--radius-panel, 0.5rem)',
         button: 'var(--radius-button)',
         input: 'var(--radius-input)',
         badge: 'var(--radius-badge)',
         full: 'var(--radius-full)',
       },
       boxShadow: {
-        'small': 'var(--shadow-small)',
-        'medium': 'var(--shadow-medium)',
-        'large': 'var(--shadow-large)',
-        'card': '0 4px 8px rgba(0, 0, 0, 0.08)',
+        'small': 'var(--shadow-small, 0 2px 4px rgba(0, 0, 0, 0.05))',
+        'medium': 'var(--shadow-medium, 0 4px 8px rgba(0, 0, 0, 0.1))',
+        'large': 'var(--shadow-large, 0 10px 15px rgba(0, 0, 0, 0.1))',
+        'card': 'var(--shadow-card, 0 4px 8px rgba(0, 0, 0, 0.08))',
+        'card-hover': 'var(--shadow-card-hover, 0 6px 12px rgba(0, 0, 0, 0.1))',
       },
       fontSize: {
         'heading1': 'var(--font-size-heading1)',
@@ -121,6 +123,10 @@ module.exports = {
           "0%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.1)" },
           "100%": { transform: "scale(1)" }
+        },
+        "float-up": {
+          "0%": { transform: "translateY(0)" },
+          "100%": { transform: "translateY(-4px)" }
         }
       },
       animation: {
@@ -129,7 +135,8 @@ module.exports = {
         "count-up": "count-up 1s ease-out forwards",
         "shimmer": "shimmer 2s infinite linear",
         "card-hover": "card-hover 0.3s ease-out forwards",
-        "pop": "pop 0.3s ease-out"
+        "pop": "pop 0.3s ease-out",
+        "float-up": "float-up 0.3s ease-out forwards"
       },
       textShadow: {
         sm: '0 1px 2px var(--tw-shadow-color)',
