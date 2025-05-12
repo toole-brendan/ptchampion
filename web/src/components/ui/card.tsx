@@ -147,7 +147,7 @@ function QuickLinkCard({
     >
       <div className="flex flex-col items-center justify-center gap-2 py-md">
         <div className="flex items-start gap-3">
-          <div className="bg-brass-gold bg-opacity-10 flex size-12 items-center justify-center rounded-full text-brass-gold">
+          <div className="flex size-12 items-center justify-center rounded-full bg-brass-gold bg-opacity-10 text-brass-gold">
             {icon}
           </div>
         </div>
@@ -172,7 +172,7 @@ export const IconFooter = React.forwardRef<
     {...props}
   >
     <div className="flex flex-col items-center justify-center gap-2 py-md">
-      <div className="bg-brass-gold bg-opacity-10 flex size-12 items-center justify-center rounded-full text-brass-gold">
+      <div className="flex size-12 items-center justify-center rounded-full bg-brass-gold bg-opacity-10 text-brass-gold">
         {icon}
       </div>
       <div className="text-center font-semibold">{title}</div>

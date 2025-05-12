@@ -56,28 +56,28 @@ export const WorkoutSummary: React.FC<WorkoutSummaryProps> = ({
   return (
     <Card className="bg-card shadow-lg">
       <CardHeader className="bg-primary/10 pb-6">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-2xl font-semibold">Workout Completed!</CardTitle>
+            <CardTitle className="font-semibold text-2xl">Workout Completed!</CardTitle>
             <CardDescription>{getExerciseName(exerciseType)} session - {formatDate(date)}</CardDescription>
           </div>
-          <div className="bg-primary text-primary-foreground rounded-full p-3">
+          <div className="rounded-full bg-primary p-3 text-primary-foreground">
             <Award className="size-7" />
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="py-6">
-        <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-6">
           {isRunning ? (
             // Running specific metrics
             <>
               {/* Distance */}
-              <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Distance</p>
+              <div className="flex flex-col items-center justify-center rounded-lg bg-muted p-4">
+                <p className="mb-1 text-sm text-muted-foreground">Distance</p>
                 <div className="flex items-center">
                   <MapPin className="mr-1.5 size-5 text-muted-foreground" />
-                  <p className="text-4xl font-bold">{formatDistance(distance)}</p>
+                  <p className="font-bold text-4xl">{formatDistance(distance)}</p>
                 </div>
               </div>
             </>
@@ -85,34 +85,34 @@ export const WorkoutSummary: React.FC<WorkoutSummaryProps> = ({
             // Rep-based exercise metrics
             <>
               {/* Reps */}
-              <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-                <p className="text-sm text-muted-foreground mb-1">Total Reps</p>
-                <p className="text-4xl font-bold">{repCount}</p>
+              <div className="flex flex-col items-center justify-center rounded-lg bg-muted p-4">
+                <p className="mb-1 text-sm text-muted-foreground">Total Reps</p>
+                <p className="font-bold text-4xl">{repCount}</p>
               </div>
             </>
           )}
 
           {/* Time */}
-          <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-1">Duration</p>
+          <div className="flex flex-col items-center justify-center rounded-lg bg-muted p-4">
+            <p className="mb-1 text-sm text-muted-foreground">Duration</p>
             <div className="flex items-center">
               <Clock className="mr-1.5 size-5 text-muted-foreground" />
-              <p className="text-4xl font-bold">{formatTime(duration)}</p>
+              <p className="font-bold text-4xl">{formatTime(duration)}</p>
             </div>
           </div>
 
           {/* APFT Score or Form Score */}
-          <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-1">{isRunning ? 'Pace' : 'APFT Score'}</p>
-            <p className="text-4xl font-bold">{isRunning ? pace : grade || '--'}</p>
+          <div className="flex flex-col items-center justify-center rounded-lg bg-muted p-4">
+            <p className="mb-1 text-sm text-muted-foreground">{isRunning ? 'Pace' : 'APFT Score'}</p>
+            <p className="font-bold text-4xl">{isRunning ? pace : grade || '--'}</p>
           </div>
 
           {/* Rep-to-Score Ratio or Pace */}
-          <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-            <p className="text-sm text-muted-foreground mb-1">{isRunning ? 'Performance' : 'Form Score'}</p>
+          <div className="flex flex-col items-center justify-center rounded-lg bg-muted p-4">
+            <p className="mb-1 text-sm text-muted-foreground">{isRunning ? 'Performance' : 'Form Score'}</p>
             <div className="flex items-center">
               <BarChart className="mr-1.5 size-5 text-muted-foreground" />
-              <p className="text-4xl font-bold">
+              <p className="font-bold text-4xl">
                 {formScore !== undefined ? `${formScore}%` : '--'}
               </p>
             </div>
@@ -131,9 +131,9 @@ export const WorkoutSummary: React.FC<WorkoutSummaryProps> = ({
         )}
 
         {/* Sync Status */}
-        <div className="mt-6 p-3 rounded-md bg-background/80 border flex items-center justify-between">
+        <div className="mt-6 flex items-center justify-between rounded-md border bg-background/80 p-3">
           <span>Workout {saved ? 'saved' : 'pending sync'}</span>
-          <span className={`px-2 py-0.5 rounded-full text-xs ${saved ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+          <span className={`rounded-full px-2 py-0.5 text-xs ${saved ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
             {saved ? 'Synced' : 'Will sync when online'}
           </span>
         </div>

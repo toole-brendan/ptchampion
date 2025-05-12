@@ -116,7 +116,7 @@ const WorkoutHistoryView: React.FC = () => {
               <Button 
                 onClick={() => refetch()} 
                 variant="outline"
-                className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
+                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
               >
                 TRY AGAIN
               </Button>
@@ -238,8 +238,8 @@ const WorkoutHistoryView: React.FC = () => {
                 const date = format(new Date(pb.created_at), 'MMM dd, yyyy');
                 
                 return (
-                  <li key={index} className="bg-cream/30 relative overflow-hidden rounded-card border-l-4 border-brass-gold p-3 shadow-small">
-                    <div className="bg-brass-gold/40 absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded"></div>
+                  <li key={index} className="relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream/30 p-3 shadow-small">
+                    <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <span className="font-heading text-sm uppercase text-command-black">{pb.exercise_type}</span>

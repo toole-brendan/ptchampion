@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode } from 'react';
 import { AppSettings, loadSettings, saveSettings } from './userSettings';
 
 // Define the shape of the settings context

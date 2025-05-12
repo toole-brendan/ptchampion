@@ -47,9 +47,9 @@ export const DeveloperMenu: React.FC<DeveloperMenuProps> = ({ isOpen, onClose })
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
       <div 
-        className="relative w-full max-w-md border-4 border-brass-gold rounded-lg shadow-2xl m-4 overflow-auto max-h-[90vh] text-white"
+        className="relative m-4 max-h-[90vh] w-full max-w-md overflow-auto rounded-lg border-4 border-brass-gold text-white shadow-2xl"
         style={{ 
           backgroundColor: '#1a1a1a', 
           boxShadow: '0 0 15px 5px rgba(205, 180, 130, 0.3)'
@@ -58,17 +58,17 @@ export const DeveloperMenu: React.FC<DeveloperMenuProps> = ({ isOpen, onClose })
         {/* Close button */}
         <button 
           onClick={onClose}
-          className="absolute right-4 top-4 text-brass-gold hover:text-white rounded-full p-1 border border-brass-gold/50 hover:bg-brass-gold/20"
+          className="absolute right-4 top-4 rounded-full border border-brass-gold/50 p-1 text-brass-gold hover:bg-brass-gold/20 hover:text-white"
         >
           <X size={24} />
         </button>
         
         {/* Header */}
         <div 
-          className="p-4 border-b-2 border-brass-gold" 
+          className="border-b-2 border-brass-gold p-4" 
           style={{ backgroundColor: 'rgba(205, 180, 130, 0.2)' }}
         >
-          <h2 className="text-center font-heading text-2xl uppercase text-brass-gold font-bold">
+          <h2 className="text-center font-heading text-2xl uppercase text-brass-gold">
             Developer Options
           </h2>
         </div>
@@ -85,14 +85,14 @@ export const DeveloperMenu: React.FC<DeveloperMenuProps> = ({ isOpen, onClose })
           
           {/* Authentication Bypass */}
           <div className="space-y-3">
-            <h3 className="font-heading text-xl uppercase text-brass-gold font-bold pb-1 border-b border-brass-gold/30">
+            <h3 className="border-b border-brass-gold/30 pb-1 font-heading text-xl uppercase text-brass-gold">
               Bypass Authentication
             </h3>
             <p className="text-sm text-white">Jump directly to authenticated pages without login:</p>
             <div className="grid grid-cols-2 gap-3">
               <Button 
                 variant="default"
-                className="bg-brass-gold text-base font-bold text-black hover:bg-brass-gold/90 py-3"
+                className="bg-brass-gold py-3 font-bold text-base text-black hover:bg-brass-gold/90"
                 onClick={() => bypassAuthAndNavigate('/')}
               >
                 Go to Dashboard
@@ -100,7 +100,7 @@ export const DeveloperMenu: React.FC<DeveloperMenuProps> = ({ isOpen, onClose })
               
               <Button 
                 variant="outline" 
-                className="border-2 border-brass-gold bg-transparent text-base font-bold text-brass-gold hover:bg-brass-gold/10 py-3"
+                className="border-2 border-brass-gold bg-transparent py-3 font-bold text-base text-brass-gold hover:bg-brass-gold/10"
                 onClick={() => bypassAuthAndNavigate('/exercises')}
               >
                 Go to Exercises
@@ -110,13 +110,13 @@ export const DeveloperMenu: React.FC<DeveloperMenuProps> = ({ isOpen, onClose })
           
           {/* Storage Options */}
           <div className="space-y-3">
-            <h3 className="font-heading text-xl uppercase text-brass-gold font-bold pb-1 border-b border-brass-gold/30">
+            <h3 className="border-b border-brass-gold/30 pb-1 font-heading text-xl uppercase text-brass-gold">
               Storage & App
             </h3>
             <div className="grid grid-cols-2 gap-3">
               <Button 
                 variant="destructive" 
-                className="text-base font-bold py-3"
+                className="py-3 font-bold text-base"
                 onClick={clearAllStorage}
               >
                 Clear Storage
@@ -124,7 +124,7 @@ export const DeveloperMenu: React.FC<DeveloperMenuProps> = ({ isOpen, onClose })
               
               <Button 
                 variant="secondary" 
-                className="bg-army-tan text-base font-bold text-deep-ops py-3"
+                className="bg-army-tan py-3 font-bold text-base text-deep-ops"
                 onClick={() => {
                   setApiInfo('Refreshing...');
                   window.location.reload();

@@ -222,7 +222,7 @@ const PushupTracker: React.FC = () => {
             />
             <canvas
               ref={canvasRef}
-              className="absolute inset-0 size-full pointer-events-none"
+              className="pointer-events-none absolute inset-0 size-full"
             />
             
             {/* HUD Component */}
@@ -243,7 +243,7 @@ const PushupTracker: React.FC = () => {
               </div>
             )}
             {!isModelLoading && modelError && (
-               <div className="bg-destructive/80 absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center text-white">
+               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-destructive/80 p-4 text-center text-white">
                 <VideoOff className="mb-2 size-12" />
                 <p className="mb-1 font-semibold">Model Loading Failed</p>
                 <p className="text-sm">{modelError}</p>
@@ -285,7 +285,7 @@ const PushupTracker: React.FC = () => {
 
           {/* Instructions Section */}
           <div className="border-t pt-4">
-            <h3 className="mb-2 text-base font-semibold text-foreground">Form Requirements for Rep Count:</h3>
+            <h3 className="mb-2 font-semibold text-base text-foreground">Form Requirements for Rep Count:</h3>
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>
                 <strong>Camera:</strong> Place side-on to capture your full body clearly.
@@ -305,7 +305,7 @@ const PushupTracker: React.FC = () => {
             </ul>
           </div>
         </CardContent>
-        <CardFooter className="bg-background/50 flex flex-wrap justify-center gap-4 border-t px-6 py-4">
+        <CardFooter className="flex flex-wrap justify-center gap-4 border-t bg-background/50 px-6 py-4">
             {!isFinished ? (
               <>
                 <Button size="lg" onClick={handleStartPause} disabled={isFinished || !permissionGranted || !!cameraError || isModelLoading || !!modelError}>

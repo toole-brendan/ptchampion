@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Clock, Award, BarChart, Share2, Clipboard, Check, Trash2 } from 'lucide-react';
+import { ArrowLeft, Share2, Clipboard, Check, Trash2 } from 'lucide-react';
 import { ExerciseResult } from '@/viewmodels/TrackerViewModel';
-import { formatScoreDisplay } from '@/grading/APFTScoring';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/use-toast';
 import { 
@@ -134,39 +132,11 @@ const WorkoutComplete: React.FC = () => {
     return null; // Return early while redirecting
   }
 
-  // Helper function to get human-readable exercise name
-  const getExerciseName = (type: string): string => {
-    // Map to proper display name
-    const exerciseNames: Record<string, string> = {
-      'PUSHUP': 'Push-ups',
-      'PULLUP': 'Pull-ups',
-      'SITUP': 'Sit-ups',
-      'RUNNING': 'Running'
-    };
-    return exerciseNames[type] || type;
-  };
 
-  // Format timestamp to readable date/time
-  const formatDate = (date: Date): string => {
-    return new Intl.DateTimeFormat('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: 'numeric',
-      minute: 'numeric'
-    }).format(date);
-  };
-
-  // Format time in seconds to mm:ss
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   return (
-    <div className="container mx-auto max-w-lg py-12 px-4">
-      <div className="flex items-center justify-between mb-8">
+    <div className="container mx-auto max-w-lg px-4 py-12">
+      <div className="mb-8 flex items-center justify-between">
         <Button variant="outline" onClick={() => navigate('/exercises')}>
           <ArrowLeft className="mr-2 size-4" /> Back to Exercises
         </Button>
@@ -174,7 +144,7 @@ const WorkoutComplete: React.FC = () => {
 
       {/* Display notification if workout not saved yet */}
       {!result.saved && (
-        <Alert className="mb-6 bg-amber-50 text-amber-800 border-amber-200">
+        <Alert className="mb-6 border-amber-200 bg-amber-50 text-amber-800">
           <AlertDescription>
             This workout hasn't been saved yet. It will sync automatically when you go back online.
           </AlertDescription>
@@ -228,7 +198,7 @@ const WorkoutComplete: React.FC = () => {
           <DialogTrigger asChild>
             <Button 
               variant="ghost" 
-              className="w-full text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+              className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive/90"
               disabled={isDeleting}
             >
               <Trash2 className="mr-2 size-4" />

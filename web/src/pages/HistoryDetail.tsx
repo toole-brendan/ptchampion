@@ -334,7 +334,7 @@ export function HistoryDetail() {
           {chartData && (
             <div className="space-y-4 rounded-lg bg-white/50 p-4">
               <div className="flex items-center justify-between">
-                <div className="text-sm font-medium text-muted-foreground flex items-center">
+                <div className="flex items-center text-sm font-medium text-muted-foreground">
                   <LineChartIcon className="mr-2 size-4 text-brass-gold" />
                   Performance Chart
                 </div>
@@ -381,11 +381,11 @@ export function HistoryDetail() {
                 <FileText className="mr-2 size-4 text-brass-gold" />
                 <span className="text-sm font-medium text-muted-foreground">Workout Notes</span>
               </div>
-              <p className="text-sm text-tactical-gray whitespace-pre-line">{workout.notes}</p>
+              <p className="whitespace-pre-line text-sm text-tactical-gray">{workout.notes}</p>
             </div>
           )}
           
-          <div className="bg-muted/30 rounded-lg p-4">
+          <div className="rounded-lg bg-muted/30 p-4">
             <h3 className="mb-2 font-semibold text-sm">Device Information</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>

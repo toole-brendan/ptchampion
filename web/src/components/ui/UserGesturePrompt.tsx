@@ -44,7 +44,7 @@ const UserGesturePrompt: React.FC<UserGesturePromptProps> = ({
       <p className="mb-3 text-sm">{message}</p>
       <Button
         onClick={resumeCamera}
-        className="hover:bg-primary/90 bg-primary"
+        className="bg-primary hover:bg-primary/90"
         size="sm"
       >
         Enable Camera

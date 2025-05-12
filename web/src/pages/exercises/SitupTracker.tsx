@@ -213,7 +213,7 @@ const SitupTracker: React.FC = () => {
           {/* Camera Feed Section */}
           <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
             <video ref={videoRef} autoPlay playsInline className="size-full object-cover" muted onLoadedMetadata={() => console.log("Video metadata loaded.")} />
-            <canvas ref={canvasRef} className="absolute inset-0 size-full pointer-events-none" />
+            <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 size-full" />
             
             {/* HUD Component */}
             {isActive && permissionGranted && !modelError && !isModelLoading && (
@@ -227,7 +227,7 @@ const SitupTracker: React.FC = () => {
             
             {/* Overlays */}
             {isModelLoading && ( <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 text-white"><Loader2 className="mb-3 size-10 animate-spin" /><span>Loading AI Model...</span></div> )}
-            {!isModelLoading && modelError && ( <div className="bg-destructive/80 absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center text-white"><VideoOff className="mb-2 size-12" /><p className="mb-1 font-semibold">Model Loading Failed</p><p className="text-sm">{modelError}</p></div> )}
+            {!isModelLoading && modelError && ( <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-destructive/80 p-4 text-center text-white"><VideoOff className="mb-2 size-12" /><p className="mb-1 font-semibold">Model Loading Failed</p><p className="text-sm">{modelError}</p></div> )}
             {status === SessionStatus.INITIALIZING && !modelError && ( <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white"><Camera className="mr-2 size-8 animate-pulse" /><span>Requesting camera access...</span></div> )}
             {!permissionGranted && !isModelLoading && !modelError && ( <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 p-4 text-center text-white"><VideoOff className="mb-2 size-12 text-destructive" /><p className="mb-1 font-semibold">Camera Access Issue</p><p className="text-sm">{cameraError || "Could not access camera."}</p></div> )}
           </div>
@@ -240,7 +240,7 @@ const SitupTracker: React.FC = () => {
 
           {/* Instructions Section */}
           <div className="border-t pt-4">
-            <h3 className="mb-2 text-base font-semibold text-foreground">Form Requirements for Rep Count:</h3>
+            <h3 className="mb-2 font-semibold text-base text-foreground">Form Requirements for Rep Count:</h3>
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>
                 <strong>Camera:</strong> Place side-on to capture your full body clearly.
@@ -262,7 +262,7 @@ const SitupTracker: React.FC = () => {
             </ul>
           </div>
         </CardContent>
-        <CardFooter className="bg-background/50 flex flex-wrap justify-center gap-4 border-t px-6 py-4">
+        <CardFooter className="flex flex-wrap justify-center gap-4 border-t bg-background/50 px-6 py-4">
             {!isFinished ? (
               <>
                 <Button size="lg" onClick={handleStartPause} disabled={isFinished || !permissionGranted || !!cameraError || isModelLoading || !!modelError}>

@@ -42,58 +42,62 @@ export const buildShareText = (summary: WorkoutSummaryProps): string => {
 };
 
 /**
- * Shares workout text using Web Share API if available, or falls back to clipboard
+ * Custom hook for sharing workouts
+ * Returns a function that shares workouts using Web Share API or clipboard
  */
-export const shareWorkout = async (
-  shareText: string, 
-  setSuccess?: (value: boolean) => void, 
-  setSharing?: (value: boolean) => void,
-  setCopied?: (value: boolean) => void
-): Promise<boolean> => {
-  // If no hooks provided, create a default toast function (component needs to use useToast hooks)
-  const toast = useToast().toast;
+export const useShareWorkout = () => {
+  const { toast } = useToast();
   
-  try {
-    if (setSharing) setSharing(true);
-    
-    if (navigator.share) {
-      // Use Web Share API if available
-      await navigator.share({
-        title: 'PT Champion Workout',
-        text: shareText,
-        url: window.location.href,
-      });
-      if (setSuccess) setSuccess(true);
-      return true;
-    } else {
-      // Fall back to clipboard copy
-      await navigator.clipboard.writeText(shareText);
-      if (setCopied) setCopied(true);
-      toast({
-        title: "Copied to clipboard",
-        description: "Workout details copied to clipboard"
-      });
+  const shareWorkout = async (
+    shareText: string, 
+    setSuccess?: (value: boolean) => void, 
+    setSharing?: (value: boolean) => void,
+    setCopied?: (value: boolean) => void
+  ): Promise<boolean> => {
+    try {
+      if (setSharing) setSharing(true);
       
-      // Reset copied state after 3 seconds
-      if (setCopied) {
-        setTimeout(() => {
-          setCopied(false);
-        }, 3000);
+      if (navigator.share) {
+        // Use Web Share API if available
+        await navigator.share({
+          title: 'PT Champion Workout',
+          text: shareText,
+          url: window.location.href,
+        });
+        if (setSuccess) setSuccess(true);
+        return true;
+      } else {
+        // Fall back to clipboard copy
+        await navigator.clipboard.writeText(shareText);
+        if (setCopied) setCopied(true);
+        toast({
+          title: "Copied to clipboard",
+          description: "Workout details copied to clipboard"
+        });
+        
+        // Reset copied state after 3 seconds
+        if (setCopied) {
+          setTimeout(() => {
+            setCopied(false);
+          }, 3000);
+        }
+        
+        if (setSuccess) setSuccess(true);
+        return true;
       }
-      
-      if (setSuccess) setSuccess(true);
-      return true;
+    } catch (err) {
+      console.error('Error sharing:', err);
+      toast({
+        title: "Sharing failed",
+        description: "Could not share your workout",
+        variant: "destructive",
+      });
+      if (setSuccess) setSuccess(false);
+      return false;
+    } finally {
+      if (setSharing) setSharing(false);
     }
-  } catch (err) {
-    console.error('Error sharing:', err);
-    toast({
-      title: "Sharing failed",
-      description: "Could not share your workout",
-      variant: "destructive",
-    });
-    if (setSuccess) setSuccess(false);
-    return false;
-  } finally {
-    if (setSharing) setSharing(false);
-  }
+  };
+  
+  return shareWorkout;
 }; 

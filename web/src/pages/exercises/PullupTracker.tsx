@@ -202,7 +202,7 @@ const PullupTracker: React.FC = () => {
       <Button variant="outline" onClick={handleBackNavigation} className="mb-4">
         <ArrowLeft className="mr-2 size-4" /> Back
       </Button>
-      <h1 className="text-3xl font-semibold text-foreground">{EXERCISE_NAME} Exercise</h1>
+      <h1 className="font-semibold text-3xl text-foreground">{EXERCISE_NAME} Exercise</h1>
 
       <Card className="overflow-hidden rounded-lg bg-card shadow-sm">
         <CardHeader>
@@ -222,7 +222,7 @@ const PullupTracker: React.FC = () => {
             />
             <canvas
               ref={canvasRef}
-              className="absolute inset-0 size-full pointer-events-none"
+              className="pointer-events-none absolute inset-0 size-full"
             />
             
             {/* HUD Component */}
@@ -262,23 +262,23 @@ const PullupTracker: React.FC = () => {
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Reps</p>
-              <p className="text-4xl font-bold text-foreground">{repCount}</p>
+              <p className="font-bold text-4xl text-foreground">{repCount}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">Time</p>
-              <p className="flex items-center justify-center text-4xl font-bold text-foreground">
+              <p className="flex items-center justify-center font-bold text-4xl text-foreground">
                 <Timer className="mr-1 inline-block size-6" />{formattedTime}
               </p>
             </div>
             <div>
               <p className="text-sm font-medium text-muted-foreground">APFT Score</p>
-              <p className="text-4xl font-bold text-foreground">{pullupScore}</p>
+              <p className="font-bold text-4xl text-foreground">{pullupScore}</p>
             </div>
           </div>
 
           {/* New Instructions Section for Pull-ups */}
           <div className="border-t pt-4">
-            <h3 className="mb-2 text-base font-semibold text-foreground">Form Requirements for Rep Count:</h3>
+            <h3 className="mb-2 font-semibold text-base text-foreground">Form Requirements for Rep Count:</h3>
             <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
               <li>
                 <strong>Camera:</strong> Place ideally side-on or front-on, ensuring your full body and the bar are visible.

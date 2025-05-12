@@ -22,7 +22,7 @@ export function SkeletonRow({ cols = 3, className }: SkeletonRowProps) {
     <tr className={cn("border-b border-olive-mist/10", className)}>
       {Array.from({ length: cols }).map((_, i) => (
         <td key={i} className="p-2">
-          <div className="h-4 w-full rounded bg-army-tan/20 animate-pulse" />
+          <div className="h-4 w-full animate-pulse rounded bg-army-tan/20" />
         </td>
       ))}
     </tr>

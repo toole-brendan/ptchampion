@@ -1,5 +1,5 @@
 import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
+import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const inputVariants = cva(
@@ -10,7 +10,7 @@ const inputVariants = cva(
         default: "border-cream-dark !bg-white",
         outline: "border-brass-gold/50 !bg-white",
         filled: "border-transparent !bg-white",
-        error: "border-error focus-visible:ring-error !bg-white",
+        error: "border-error !bg-white focus-visible:ring-error",
       },
       inputSize: {
         default: "h-10",
