@@ -1,4 +1,4 @@
-import { ExerciseType } from './index';
+import { ExerciseType } from './ExerciseType';
 
 /**
  * Definition of possible exercise states

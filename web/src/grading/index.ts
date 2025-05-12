@@ -14,6 +14,9 @@ export * from './RepCounterAdapter';
 // Export APFT scoring functionality
 export * from './APFTScoring';
 
+// Export ExerciseType enum
+export { ExerciseType } from './ExerciseType';
+
 // Selectively export analyzer types
 export type { PushupFormAnalysis } from './PushupAnalyzer';
 export type { PullupFormAnalysis } from './PullupAnalyzer';
@@ -26,16 +29,7 @@ import { createRepCounterAdapter, RepCounterAdapter } from './RepCounterAdapter'
 import { PushupFormAnalysis } from './PushupAnalyzer';
 import { PullupFormAnalysis } from './PullupAnalyzer';
 import { SitupFormAnalysis } from './SitupAnalyzer';
-
-/**
- * Exercise types enum for use with the grader factory
- */
-export enum ExerciseType {
-  PUSHUP = 'PUSHUP',
-  PULLUP = 'PULLUP',
-  SITUP = 'SITUP',
-  RUNNING = 'RUNNING'
-}
+import { ExerciseType } from './ExerciseType';
 
 /**
  * Simple concrete implementation of ExerciseGrader for types without specific implementations
