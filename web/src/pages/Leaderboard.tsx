@@ -9,7 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"; // For filtering
 import { Label } from "@/components/ui/label"; // For filter labels
-import { cn } from "@/lib/utils"; // Import cn utility
+import { cn, formatLeaderboardScore } from "@/lib/utils"; // Import utilities
 import { Button } from "@/components/ui/button";
 import { 
   Alert,
@@ -21,6 +21,8 @@ import { Player } from '@lottiefiles/react-lottie-player'; // Import Lottie play
 import emptyLeaderboardAnimation from '@/assets/empty-leaderboard.json';
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, Loader2, Trophy, Medal, MapPin } from 'lucide-react';
+import { SkeletonRow } from '@/components/ui/skeleton';
+import { useToast } from '@/components/ui/use-toast';
 
 // Military-style corner component
 const MilitaryCorners: React.FC = () => (
@@ -83,6 +85,7 @@ interface GeolocationState {
 
 const Leaderboard: React.FC = () => {
   const api = useApi();
+  const { toast } = useToast();
   const [exerciseFilter, setExerciseFilter] = useState<string>(exerciseOptions[0]); // Default to overall
   const [scopeFilter, setScopeFilter] = useState<string>(scopeOptions[0]); // Default to Global
   
@@ -115,6 +118,13 @@ const Leaderboard: React.FC = () => {
             longitude: position.coords.longitude
           },
           error: null
+        });
+        
+        // Show success toast when location is acquired
+        toast({
+          title: "Location access granted",
+          description: "You can now view the local leaderboard in your area.",
+          duration: 3000,
         });
       },
       (error) => {
@@ -190,12 +200,13 @@ const Leaderboard: React.FC = () => {
       username: entry.username,
       userId: entry.user_id,
       score: entry.max_grade !== undefined ? entry.max_grade : 0,
-      avatar: null // API doesn't provide avatars yet
+      formattedScore: formatLeaderboardScore(exerciseFilter, entry.max_grade || 0),
+      avatar: entry.profile_picture_url || null // Use profile pic if available
     }));
-  }, [leaderboardData]);
+  }, [leaderboardData, exerciseFilter]);
 
   return (
-    <div className="space-y-section">
+    <div className="space-y-section max-w-[720px] mx-auto">
       <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
         <MilitaryCorners />
         <div className="mb-4 text-center">
@@ -274,12 +285,16 @@ const Leaderboard: React.FC = () => {
         </div>
         
         <div className="p-content">
-          {/* Filter Controls */}
-          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+          {/* Filter Controls - Improved for responsiveness */}
+          <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2 min-w-[140px]">
               <Label htmlFor="exercise-filter" className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
-                <SelectTrigger id="exercise-filter" className="border-army-tan/30 bg-cream">
+                <SelectTrigger 
+                  id="exercise-filter" 
+                  className="border-army-tan/30 bg-cream"
+                  aria-label="Select exercise type"
+                >
                   <SelectValue placeholder="Select Exercise" />
                 </SelectTrigger>
                 <SelectContent>
@@ -292,10 +307,14 @@ const Leaderboard: React.FC = () => {
               </Select>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-2 min-w-[140px]">
               <Label htmlFor="scope-filter" className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Leaderboard Scope</Label>
               <Select value={scopeFilter} onValueChange={setScopeFilter}>
-                <SelectTrigger id="scope-filter" className="border-army-tan/30 bg-cream">
+                <SelectTrigger 
+                  id="scope-filter" 
+                  className="border-army-tan/30 bg-cream"
+                  aria-label="Select leaderboard scope"
+                >
                   <SelectValue placeholder="Select Scope" />
                 </SelectTrigger>
                 <SelectContent>
@@ -308,15 +327,36 @@ const Leaderboard: React.FC = () => {
           </div>
 
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="size-12 animate-spin text-brass-gold" />
-              <p className="mt-4 text-center font-semibold text-tactical-gray">
-                Loading leaderboard data...
-              </p>
-            </div>
-          ) : processedLeaderboard.length > 0 ? (
+            // Skeleton loading state
             <div className="border-olive-mist/20 overflow-hidden rounded-card border">
               <Table className="w-full">
+                <TableHeader>
+                  <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
+                    <TableHead className="w-[80px] font-heading text-xs uppercase tracking-wider text-tactical-gray">Rank</TableHead>
+                    <TableHead className="font-heading text-xs uppercase tracking-wider text-tactical-gray">User</TableHead>
+                    <TableHead className="text-right font-heading text-xs uppercase tracking-wider text-tactical-gray">Score</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <SkeletonRow key={i} />
+                  ))}
+                </TableBody>
+              </Table>
+              
+              {/* Floating loading indicator */}
+              <div className="absolute inset-0 flex items-center justify-center bg-background/30">
+                <div className="bg-card-background rounded-md p-3 shadow-lg">
+                  <Loader2 className="size-6 animate-spin text-brass-gold" />
+                </div>
+              </div>
+            </div>
+          ) : processedLeaderboard.length > 0 ? (
+            <div className="border-olive-mist/20 overflow-hidden rounded-card border relative">
+              <Table className="w-full">
+                <caption className="sr-only">
+                  {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Leaderboard - {scopeFilter}
+                </caption>
                 <TableHeader>
                   <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
                     <TableHead className="w-[80px] font-heading text-xs uppercase tracking-wider text-tactical-gray">Rank</TableHead>
@@ -344,7 +384,11 @@ const Leaderboard: React.FC = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-3">
-                          <Avatar className="border-brass-gold/20 size-8 border-2">
+                          <Avatar className={cn(
+                            "border-brass-gold/20 size-8 border-2",
+                            // Add shadow highlight to top 3
+                            user.rank <= 3 && "shadow-md shadow-brass-gold/20"
+                          )}>
                             <AvatarImage src={user.avatar || undefined} alt={user.name} />
                             <AvatarFallback className="bg-army-tan/20 text-xs font-medium text-tactical-gray">
                               {getInitials(user.name)}
@@ -353,7 +397,9 @@ const Leaderboard: React.FC = () => {
                           <span className="font-semibold text-command-black">{user.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-heading text-lg tabular-nums text-brass-gold">{user.score}</TableCell>
+                      <TableCell className="text-right font-heading text-lg tabular-nums text-brass-gold">
+                        {user.formattedScore}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

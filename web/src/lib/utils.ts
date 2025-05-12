@@ -1,5 +1,6 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { LeaderboardEntry } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -181,3 +182,25 @@ export function formatDistance(meters: number, unit: 'km' | 'mi' = 'km'): string
     return (meters / 1609.34).toFixed(2) + ' mi';
   }
 }
+
+/**
+ * Format leaderboard score based on exercise type
+ */
+export const formatLeaderboardScore = (
+  exercise: string,
+  score: number
+): string => {
+  if (exercise === "running") {
+    // Convert seconds to minutes:seconds format
+    const minutes = Math.floor(score / 60);
+    const seconds = Math.round(score % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+  
+  if (exercise === "overall") {
+    return `${score} pts`;
+  }
+  
+  // pushup, situp, pullup
+  return `${score} reps`;
+};

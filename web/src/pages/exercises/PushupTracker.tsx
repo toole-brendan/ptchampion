@@ -130,7 +130,21 @@ const PushupTracker: React.FC = () => {
     
     console.log(`Workout finished! Reps: ${repCount}, Time: ${formattedTime}, APFT Score: ${finalScore}`);
 
-    // Save workout session data
+    // Create the workout summary object
+    const workoutSummary = {
+      exerciseType: 'PUSHUP',
+      repCount,
+      duration: timer,
+      formScore: formScore,
+      grade: finalScore,
+      date: new Date(),
+      saved: false
+    };
+
+    // Navigate to workout complete page with initial "not saved" state
+    navigate('/complete', { state: workoutSummary });
+
+    // Save workout session data in background
     if (repCount > 0 && user) {
       setIsSubmitting(true);
       setApiError(null);
@@ -144,12 +158,16 @@ const PushupTracker: React.FC = () => {
           // Use type assertion to handle the potential string or number grade
           setLoggedGrade(typeof result.grade === 'number' ? result.grade : null);
           
-          // Navigate to workout complete page with result data
-          navigate('/complete', { state: { 
-            ...result, 
-            grade: result.grade,
-            saved: saved
-          }});
+          // Update the page with saved status
+          navigate('/complete', { 
+            state: { 
+              ...workoutSummary, 
+              grade: result.grade,
+              saved: saved,
+              id: result.id
+            },
+            replace: true
+          });
         } else {
           throw new Error("Failed to save results");
         }
@@ -333,30 +351,6 @@ const PushupTracker: React.FC = () => {
           onReset={handleReset}
           onFinish={handleFinish}
         />
-      )}
-
-      {isFinished && (
-        <div className="mt-4 w-full rounded-lg bg-muted p-4">
-          <h3 className="mb-2 font-semibold text-lg">Workout Summary</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Reps</p>
-              <p className="font-semibold text-2xl">{repCount}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Time</p>
-              <p className="font-semibold text-2xl">{formattedTime}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">APFT Score</p>
-              <p className="font-semibold text-2xl">{pushupScore}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Rep-to-Score</p>
-              <p className="font-semibold text-2xl">{formatScoreDisplay(repCount, pushupScore)}</p>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

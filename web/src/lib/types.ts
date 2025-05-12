@@ -36,6 +36,7 @@ export interface UserResponse {
 }
 
 export interface UpdateUserRequest {
+  username?: string;
   display_name?: string;
   profile_picture_url?: string;
   location?: string;

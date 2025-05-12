@@ -8,7 +8,8 @@ import {
   ChevronRight as ChevronRightIcon,
   LogOut as LogOutIcon,
   X as XIcon,
-  Camera as CameraIcon
+  Camera as CameraIcon,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
@@ -134,6 +135,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { name: 'History', path: '/history', icon: HistoryIcon },
     { name: 'Leaderboard', path: '/leaderboard', icon: TrophyIcon },
     { name: 'Profile', path: '/profile', icon: UserIcon },
+    { name: 'Settings', path: '/settings', icon: SettingsIcon },
   ];
 
   const toggleSidebarCollapse = () => {

@@ -354,6 +354,10 @@ export const updateCurrentUser = (data: UpdateUserRequest): Promise<UserResponse
   return apiRequest<UserResponse>('/users/me', 'PATCH', data, true);
 };
 
+export const deleteCurrentUser = (): Promise<null> => {
+  return apiRequest<null>('/users/me', 'DELETE', null, true);
+};
+
 // --- Exercise Endpoints ---
 
 /**
@@ -502,5 +506,31 @@ export const checkServerHealth = async (): Promise<{ status: string, responseTim
       status: 'error', 
       responseTime: Math.round(endTime - startTime) 
     };
+  }
+};
+
+/**
+ * Delete an exercise record by ID
+ * @param id The exercise ID to delete
+ * @returns Promise resolving to true if successful
+ */
+export const deleteExercise = async (id: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/exercises/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${await getToken()}`
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete exercise');
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting exercise:', error);
+    throw error;
   }
 }; 

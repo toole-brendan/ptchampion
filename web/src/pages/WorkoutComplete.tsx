@@ -1,23 +1,137 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Clock, Award, BarChart } from 'lucide-react';
+import { ArrowLeft, Clock, Award, BarChart, Share2, Clipboard, Check, Trash2 } from 'lucide-react';
 import { ExerciseResult } from '@/viewmodels/TrackerViewModel';
 import { formatScoreDisplay } from '@/grading/APFTScoring';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
+import WorkoutSummary from '@/components/WorkoutSummary';
+import { deleteExercise } from '@/lib/apiClient';
+import { buildShareText } from '@/lib/share';
 
 const WorkoutComplete: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const result = location.state as ExerciseResult;
+  const { toast } = useToast();
   
-  // If no result data, redirect to exercises page
-  if (!result) {
-    // Use useEffect to avoid React warnings about navigation during render
-    React.useEffect(() => {
+  const [result, setResult] = useState<ExerciseResult | null>(null);
+  const [shareText, setShareText] = useState<string>('');
+  const [isSharing, setIsSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [canUseShareApi, setCanUseShareApi] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
+  // Check if Web Share API is available
+  useEffect(() => {
+    setCanUseShareApi(typeof navigator.share === 'function');
+  }, []);
+  
+  // Extract result from location state
+  useEffect(() => {
+    const resultData = location.state as ExerciseResult;
+    if (resultData) {
+      setResult(resultData);
+      // Build share text
+      if (resultData.exerciseType) {
+        setShareText(buildShareText(resultData));
+      }
+    } else {
+      // If no result data, redirect to exercises page
       navigate('/exercises', { replace: true });
-    }, [navigate]);
-    return null;
+    }
+  }, [location.state, navigate]);
+
+  // Reset copied state when navigating away
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (copied) {
+      timeout = setTimeout(() => {
+        setCopied(false);
+      }, 3000);
+    }
+    return () => clearTimeout(timeout);
+  }, [copied]);
+
+  // Share workout to social media or copy to clipboard
+  const handleShare = async () => {
+    if (!shareText) return;
+    
+    setIsSharing(true);
+    
+    try {
+      if (canUseShareApi) {
+        // Use Web Share API if available
+        await navigator.share({
+          title: 'PT Champion Workout',
+          text: shareText,
+          url: window.location.href,
+        });
+      } else {
+        // Fall back to clipboard copy
+        await navigator.clipboard.writeText(shareText);
+        setCopied(true);
+        toast({
+          title: "Copied to clipboard",
+          description: "Workout details copied to clipboard",
+        });
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+      toast({
+        title: "Sharing failed",
+        description: "Could not share your workout",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  // Handle discard/delete workout
+  const handleDiscard = async () => {
+    if (!result) return;
+    
+    setIsDeleting(true);
+    setDialogOpen(false);
+    
+    try {
+      // If saved and has an ID, call delete API
+      if (result.saved && result.id) {
+        await deleteExercise(result.id);
+        toast({
+          title: "Workout discarded",
+          description: "Your workout has been deleted",
+        });
+      }
+      
+      // Navigate back to exercises page
+      navigate('/exercises');
+    } catch (err) {
+      console.error('Error discarding workout:', err);
+      toast({
+        title: "Error discarding workout",
+        description: "Could not delete workout. Please try again.",
+        variant: "destructive",
+      });
+      setIsDeleting(false);
+    }
+  };
+
+  if (!result) {
+    return null; // Return early while redirecting
   }
 
   // Helper function to get human-readable exercise name
@@ -58,83 +172,88 @@ const WorkoutComplete: React.FC = () => {
         </Button>
       </div>
 
-      <Card className="bg-card shadow-lg">
-        <CardHeader className="bg-primary/10 pb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <CardTitle className="text-2xl font-semibold">Workout Completed!</CardTitle>
-              <CardDescription>{getExerciseName(result.exerciseType)} session - {formatDate(result.date)}</CardDescription>
-            </div>
-            <div className="bg-primary text-primary-foreground rounded-full p-3">
-              <Award className="size-7" />
-            </div>
-          </div>
-        </CardHeader>
+      {/* Display notification if workout not saved yet */}
+      {!result.saved && (
+        <Alert className="mb-6 bg-amber-50 text-amber-800 border-amber-200">
+          <AlertDescription>
+            This workout hasn't been saved yet. It will sync automatically when you go back online.
+          </AlertDescription>
+        </Alert>
+      )}
 
-        <CardContent className="py-6">
-          <div className="grid grid-cols-2 gap-y-6 gap-x-4">
-            {/* Reps */}
-            <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-1">Total Reps</p>
-              <p className="text-4xl font-bold">{result.repCount}</p>
-            </div>
+      {/* Workout Summary Card */}
+      <WorkoutSummary
+        exerciseType={result.exerciseType}
+        date={result.date}
+        repCount={result.repCount}
+        distance={result.distance}
+        duration={result.duration}
+        pace={result.pace}
+        formScore={result.formScore}
+        grade={result.grade}
+        saved={result.saved}
+      />
 
-            {/* Time */}
-            <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-1">Duration</p>
-              <div className="flex items-center">
-                <Clock className="mr-1.5 size-5 text-muted-foreground" />
-                <p className="text-4xl font-bold">{formatTime(result.duration)}</p>
-              </div>
-            </div>
-
-            {/* APFT Score */}
-            <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-1">APFT Score</p>
-              <p className="text-4xl font-bold">{result.grade || '--'}</p>
-            </div>
-
-            {/* Rep-to-Score Ratio */}
-            <div className="flex flex-col items-center justify-center p-4 bg-muted rounded-lg">
-              <p className="text-sm text-muted-foreground mb-1">Rep-to-Score</p>
-              <div className="flex items-center">
-                <BarChart className="mr-1.5 size-5 text-muted-foreground" />
-                <p className="text-4xl font-bold">
-                  {typeof result.grade === 'number' 
-                    ? formatScoreDisplay(result.repCount || 0, result.grade) 
-                    : '--'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Sync Status */}
-          <div className="mt-6 p-3 rounded-md bg-background/80 border flex items-center justify-between">
-            <span>Workout {result.saved ? 'saved' : 'pending sync'}</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs ${result.saved ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-              {result.saved ? 'Synced' : 'Will sync when online'}
-            </span>
-          </div>
-        </CardContent>
-
-        <CardFooter className="flex flex-col gap-3 pt-2 pb-6">
-          <Button className="w-full" onClick={() => navigate('/history')}>
-            View Workout History
-          </Button>
-          <Button variant="outline" className="w-full" onClick={() => {
-            // Navigate back to the specific exercise page
-            const exerciseRoutes: Record<string, string> = {
-              'PUSHUP': '/exercises/pushups',
-              'PULLUP': '/exercises/pullups',
-              'SITUP': '/exercises/situps',
-              'RUNNING': '/exercises/running'
-            };
-            navigate(exerciseRoutes[result.exerciseType] || '/exercises');
-          }}>
-            Start New Session
-          </Button>
-        </CardFooter>
-      </Card>
+      {/* Action Buttons */}
+      <div className="mt-6 space-y-3">
+        <Button className="w-full" onClick={() => navigate('/dashboard')}>
+          Done
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="w-full" 
+          onClick={handleShare}
+          disabled={isSharing}
+        >
+          {copied ? (
+            <>
+              <Check className="mr-2 size-4" />
+              Copied to Clipboard
+            </>
+          ) : (
+            <>
+              {canUseShareApi ? (
+                <Share2 className="mr-2 size-4" />
+              ) : (
+                <Clipboard className="mr-2 size-4" />
+              )}
+              {isSharing ? 'Sharing...' : 'Share Workout'}
+            </>
+          )}
+        </Button>
+        
+        {/* Discard Button with Confirmation Dialog */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="ghost" 
+              className="w-full text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+              disabled={isDeleting}
+            >
+              <Trash2 className="mr-2 size-4" />
+              {isDeleting ? 'Discarding...' : 'Discard Workout'}
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Are you sure?</DialogTitle>
+              <DialogDescription>
+                This will permanently delete this workout record. This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button 
+                onClick={handleDiscard}
+                variant="destructive"
+              >
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   );
 };
