@@ -13,8 +13,7 @@ import DeveloperMenu from '../../components/ui/DeveloperMenu';
 // Get token storage key from config to ensure consistency
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 
-// Is this a development build?
-const IS_DEV = true; // Always enable for testing
+// Development mode is controlled by environment config
 
 // Real logo component
 const LogoIcon: React.FC<{ className?: string; onClick?: () => void }> = ({ className, onClick }) => (

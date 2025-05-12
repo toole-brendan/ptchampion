@@ -128,7 +128,7 @@ const Profile: React.FC = () => {
       // Request geolocation permission
       navigator.geolocation.getCurrentPosition(
         // Success callback
-        (position) => {
+        () => {
           // Store geolocation setting
           updateSetting('geolocation', true);
           toast({
@@ -138,7 +138,7 @@ const Profile: React.FC = () => {
           });
         },
         // Error callback
-        (error) => {
+        () => {
           toast({
             title: "Location Access Denied",
             description: "Please enable location access in your browser settings.",
@@ -174,7 +174,7 @@ const Profile: React.FC = () => {
           });
           updateSetting('notifications', false);
         }
-      } catch (error) {
+      } catch {
         toast({
           title: "Notification Error",
           description: "Your browser may not support notifications.",
