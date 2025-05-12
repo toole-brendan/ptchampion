@@ -7,6 +7,9 @@ import Layout from '../layout/Layout';
 // Get token storage key from config to ensure consistency
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 
+// Check if dev auth bypass is enabled via environment variable
+const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
+
 interface ProtectedRouteProps {
   children?: React.ReactNode;
   redirectPath?: string;
@@ -30,6 +33,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // Additional check to ensure we don't have partially loaded states
   useEffect(() => {
+    // Skip this check if DEV_AUTH_BYPASS is enabled
+    if (DEV_AUTH_BYPASS) {
+      return;
+    }
+    
     // If we detect a stale token in localStorage but no auth in memory,
     // refresh the page to trigger a clean auth check
     const hasLocalToken = localStorage.getItem(TOKEN_STORAGE_KEY) !== null;
@@ -38,6 +46,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       window.location.reload();
     }
   }, [isLoading, token]);
+
+  // If dev auth bypass is enabled and we're in development, always render the protected content
+  if (DEV_AUTH_BYPASS) {
+    console.log('DEV_AUTH_BYPASS enabled, bypassing authentication check');
+    return children ? <>{children}</> : <Layout />;
+  }
 
   // Show a loading state while checking authentication
   if (isLoading) {
