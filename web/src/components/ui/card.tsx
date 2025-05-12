@@ -194,6 +194,7 @@ function SectionCard({
   className,
   headerClassName,
   showDivider = true,
+  descriptionClassName,
   ...props
 }: {
   title: React.ReactNode;
@@ -202,6 +203,7 @@ function SectionCard({
   children: React.ReactNode;
   headerClassName?: string;
   showDivider?: boolean;
+  descriptionClassName?: string;
 } & Omit<CardProps, 'children'>) {
   return (
     <Card
@@ -218,7 +220,10 @@ function SectionCard({
         </div>
         {showDivider && <CardDivider />}
         {description && (
-          <p className="text-sm text-tactical-gray uppercase tracking-wide">
+          <p className={cn(
+            "text-sm uppercase tracking-wide text-brass-gold",
+            descriptionClassName
+          )}>
             {description}
           </p>
         )}
