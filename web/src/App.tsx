@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './lib/authContext';
 import { FeatureFlagProvider } from './lib/featureFlags';
 import { HeaderProvider } from './dashboard-message-context';
+import { SettingsProvider } from './lib/SettingsContext';
 
 import { PoseProvider } from './lib/contexts/PoseContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -24,6 +25,7 @@ const WorkoutHistoryView = lazy(() => import('./pages/WorkoutHistoryView'));
 const HistoryDetail = lazy(() => import('./pages/HistoryDetail').then(module => ({ default: module.HistoryDetail })));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const Profile = lazy(() => import('./pages/Profile'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 // Import exercise trackers from exercises directory as canonical source
 const PushupTracker = lazy(() => import('./pages/exercises/PushupTracker'));
@@ -92,6 +94,7 @@ function App({ queryClient }: AppProps) {
   return (
     <QueryClientProvider client={qclient}>
       <AuthProvider>
+        <SettingsProvider>
           <FeatureFlagProvider>
             <HeaderProvider>
               <PoseProvider>
@@ -115,6 +118,7 @@ function App({ queryClient }: AppProps) {
                           <Route path="history/:id" element={<HistoryDetail />} />
                           <Route path="leaderboard" element={<Leaderboard />} />
                           <Route path="profile" element={<Profile />} />
+                          <Route path="settings" element={<Settings />} />
                           
                           {/* Exercise tracking routes - canonical source of truth */}
                           <Route path="exercises/pushups" element={<PushupTracker />} />
@@ -146,7 +150,8 @@ function App({ queryClient }: AppProps) {
               </PoseProvider>
             </HeaderProvider>
           </FeatureFlagProvider>
-        </AuthProvider>
+        </SettingsProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

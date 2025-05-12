@@ -51,6 +51,8 @@ export interface ExerciseResult {
   grade?: string | number;   // Grade (if available)
   date: Date;                // Timestamp
   saved: boolean;            // Whether results were saved to backend
+  id?: string;               // ID of the saved exercise (if available)
+  pace?: string;             // Pace for running (e.g. "8:30 /mi")
 }
 
 /**

@@ -130,7 +130,21 @@ const PullupTracker: React.FC = () => {
     
     console.log(`Workout finished! Reps: ${repCount}, Time: ${formattedTime}, APFT Score: ${finalScore}`);
 
-    // Save workout session data
+    // Create the workout summary object
+    const workoutSummary = {
+      exerciseType: 'PULLUP',
+      repCount,
+      duration: timer,
+      formScore: formScore,
+      grade: finalScore,
+      date: new Date(),
+      saved: false
+    };
+
+    // Navigate to workout complete page with initial "not saved" state
+    navigate('/complete', { state: workoutSummary });
+
+    // Save workout session data in background
     if (repCount > 0 && user) {
       setIsSubmitting(true);
       setApiError(null);
@@ -143,12 +157,16 @@ const PullupTracker: React.FC = () => {
           setSuccess(true);
           setLoggedGrade(typeof result.grade === 'number' ? result.grade : null);
           
-          // Navigate to workout complete page with result data
-          navigate('/complete', { state: { 
-            ...result, 
-            grade: result.grade,
-            saved: saved
-          }});
+          // Update the page with saved status
+          navigate('/complete', { 
+            state: { 
+              ...workoutSummary, 
+              grade: result.grade,
+              saved: saved,
+              id: result.id
+            },
+            replace: true
+          });
         } else {
           throw new Error("Failed to save results");
         }
@@ -330,30 +348,6 @@ const PullupTracker: React.FC = () => {
           onReset={handleReset}
           onFinish={handleFinish}
         />
-      )}
-
-      {isFinished && (
-        <div className="mt-4 w-full rounded-lg bg-muted p-4">
-          <h3 className="mb-2 text-lg font-semibold">Workout Summary</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Reps</p>
-              <p className="text-2xl font-semibold">{repCount}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Time</p>
-              <p className="text-2xl font-semibold">{formattedTime}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">APFT Score</p>
-              <p className="text-2xl font-semibold">{pullupScore}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Rep-to-Score</p>
-              <p className="text-2xl font-semibold">{formatScoreDisplay(repCount, pullupScore)}</p>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

@@ -1,22 +1,52 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch"; // Added Switch import
-import { Loader2, UserCircle, Settings, LogOut } from 'lucide-react'; // Removed MapPin, added more icons
-import { updateCurrentUser } from '../lib/apiClient';
+import { Switch } from "@/components/ui/switch";
+import { Loader2, UserCircle, Settings, LogOut, AlertTriangle } from 'lucide-react';
+import { updateCurrentUser, deleteCurrentUser } from '../lib/apiClient';
 import { useAuth } from '../lib/authContext';
-import { UpdateUserRequest } from '../lib/types'; // Removed UserResponse
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Import Alert
-import { cn } from "@/lib/utils"; // Import cn
+import { UpdateUserRequest } from '../lib/types';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { cn } from "@/lib/utils";
+import { useSettings } from '@/lib/SettingsContext';
+import { useToast } from "@/components/ui/use-toast";
+import { 
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Profile: React.FC = () => {
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, logout, isLoading: authLoading } = useAuth();
+  const { settings, updateSetting } = useSettings();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState<UpdateUserRequest>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Message auto-dismiss timer
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage(null);
+      }, 5000); // 5 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   // Initialize form with user data when it's available
   useEffect(() => {
@@ -48,13 +78,113 @@ const Profile: React.FC = () => {
     setMessage(null);
     
     try {
-      await updateCurrentUser(changes);
+      const updated = await updateCurrentUser(changes);
       setMessage({ text: 'Profile updated successfully', type: 'success' });
-      // Consider updating the user context here if needed, depends on useAuth implementation
+      
+      // Update the user in the React Query cache
+      queryClient.setQueryData(['currentUser'], updated);
+      
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+        variant: "default",
+      });
     } catch (error) {
       setMessage({ text: error instanceof Error ? error.message : 'Failed to update profile', type: 'error' });
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : 'Failed to update profile',
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    try {
+      await deleteCurrentUser();
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+        variant: "default",
+      });
+      logout();
+      navigate('/login');
+    } catch (error) {
+      toast({
+        title: "Deletion Failed",
+        description: error instanceof Error ? error.message : 'Failed to delete account',
+        variant: "destructive",
+      });
+      setIsDeletingAccount(false);
+    }
+  };
+
+  // Handle geolocation toggle
+  const handleGeolocationToggle = (enabled: boolean) => {
+    if (enabled) {
+      // Request geolocation permission
+      navigator.geolocation.getCurrentPosition(
+        // Success callback
+        (position) => {
+          // Store geolocation setting
+          updateSetting('geolocation', true);
+          toast({
+            title: "Location Access Granted",
+            description: "Location services are now enabled for tracking.",
+            variant: "default",
+          });
+        },
+        // Error callback
+        (error) => {
+          toast({
+            title: "Location Access Denied",
+            description: "Please enable location access in your browser settings.",
+            variant: "destructive",
+          });
+          updateSetting('geolocation', false);
+        }
+      );
+    } else {
+      // User turned off geolocation
+      updateSetting('geolocation', false);
+    }
+  };
+
+  // Handle notifications toggle
+  const handleNotificationsToggle = async (enabled: boolean) => {
+    if (enabled) {
+      try {
+        // Request notification permission
+        const permission = await Notification.requestPermission();
+        if (permission === 'granted') {
+          updateSetting('notifications', true);
+          toast({
+            title: "Notifications Enabled",
+            description: "You will now receive workout reminders and updates.",
+            variant: "default",
+          });
+        } else {
+          toast({
+            title: "Notification Permission Denied",
+            description: "Please enable notifications in your browser settings.",
+            variant: "destructive",
+          });
+          updateSetting('notifications', false);
+        }
+      } catch (error) {
+        toast({
+          title: "Notification Error",
+          description: "Your browser may not support notifications.",
+          variant: "destructive",
+        });
+        updateSetting('notifications', false);
+      }
+    } else {
+      // User turned off notifications
+      updateSetting('notifications', false);
     }
   };
   
@@ -127,7 +257,9 @@ const Profile: React.FC = () => {
         <Card>
           <CardContent className="pt-6 text-center text-muted-foreground">
              Please log in to view and edit your profile.
-             {/* Maybe add a login button/link here */}
+             <Button onClick={() => navigate('/login')} className="mt-4">
+               Login
+             </Button>
           </CardContent>
         </Card>
       </div>
@@ -203,7 +335,11 @@ const Profile: React.FC = () => {
             </div>
           </CardContent>
           <CardFooter className="border-t pt-4"> {/* Adjusted padding */}
-            <Button type="submit" disabled={isSubmitting || !formDataHasChanges()}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || !formDataHasChanges()}
+              className="bg-brass-gold hover:bg-brass-gold/90"
+            >
               {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
               {isSubmitting ? 'Saving...' : 'Save Changes'}
             </Button>
@@ -211,7 +347,7 @@ const Profile: React.FC = () => {
         </form>
       </Card>
 
-      {/* Settings Section (Simplified Example) */}
+      {/* Settings Section */}
       <Card className="transition-shadow hover:shadow-md"> {/* Hover effect */}
         <CardHeader>
           <CardTitle className="flex items-center font-semibold text-lg"> {/* Standardized */}
@@ -236,20 +372,43 @@ const Profile: React.FC = () => {
             </div>
             <Switch
               id="geolocation-switch"
-              // Add state and handler here based on actual implementation
-              // checked={geolocationEnabled} 
-              // onCheckedChange={setGeolocationEnabled}
+              checked={settings.geolocation}
+              onCheckedChange={handleGeolocationToggle}
             />
           </div>
-          {/* Placeholder for more settings */}
-           <p className="pt-2 text-center text-sm text-muted-foreground">
-             More settings coming soon.
-           </p>
+
+          {/* Notifications Setting */}
+          <div className={cn(
+             "flex items-center justify-between space-x-3 rounded-lg border p-4",
+             "transition-colors hover:bg-muted/50"
+          )}>
+            <div className="space-y-0.5">
+              <Label htmlFor="notifications-switch" className="text-base">
+                Notifications
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Receive reminders and updates about your workouts.
+              </p>
+            </div>
+            <Switch
+              id="notifications-switch"
+              checked={settings.notifications}
+              onCheckedChange={handleNotificationsToggle}
+            />
+          </div>
+          
+          {/* Link to Settings page for more options */}
+          <div className="pt-2 text-center">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/settings')}
+              className="w-full"
+            >
+              <Settings className="mr-2 size-4" />
+              More Settings
+            </Button>
+          </div>
         </CardContent>
-         {/* Remove footer if no save action needed for settings yet */}
-         {/* <CardFooter className="border-t pt-4">
-           <Button disabled>Save Settings</Button>
-         </CardFooter> */}
       </Card>
 
       {/* Account Actions Section */}
@@ -260,11 +419,40 @@ const Profile: React.FC = () => {
           </CardTitle>
           <CardDescription>Manage your account.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
             <Button variant="destructive" onClick={logout} className="w-full sm:w-auto"> {/* Use context logout */}
               <LogOut className="mr-2 size-4" /> Logout
             </Button>
-            {/* Add Delete Account button here later if needed */}
+            
+            {/* Delete Account button with confirmation dialog */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10 w-full sm:w-auto ml-0 sm:ml-2">
+                  <AlertTriangle className="mr-2 size-4" /> Delete Account
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Delete Your Account?</DialogTitle>
+                  <DialogDescription>
+                    This will permanently remove your account and all associated data. This action cannot be undone.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <Button 
+                    onClick={handleDeleteAccount}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isDeletingAccount}
+                  >
+                    {isDeletingAccount && <Loader2 className="mr-2 size-4 animate-spin" />}
+                    {isDeletingAccount ? 'Deleting...' : 'Delete Account'}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
         </CardContent>
       </Card>
     </div>

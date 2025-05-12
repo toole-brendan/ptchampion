@@ -11,7 +11,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, Timer, MapPin } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Play, Pause, RotateCcw, Timer, MapPin, Flag, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 // Import mapping components
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
@@ -19,7 +20,11 @@ import L from 'leaflet'; // Import Leaflet library itself for icon customization
 
 // Import our ViewModel hook
 import { useRunningTrackerViewModel } from '../../viewmodels/RunningTrackerViewModel';
-import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewModel';
+import { SessionStatus, TrackerErrorType, ExerciseResult } from '../../viewmodels/TrackerViewModel';
+import { ExerciseType } from '@/grading';
+
+// Import HUD component
+import HUD from '@/components/workout/HUD';
 
 // Fix leaflet's default icon path issue with bundlers like Vite
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -28,6 +33,25 @@ L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
   iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+});
+
+// Create custom colored markers for start and end points
+const startIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const endIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
 });
 
 // Placeholder type for coordinates
@@ -45,8 +69,10 @@ const RunningTracker: React.FC = () => {
     status,
     coordinates, // Fixed: use coordinates from the ViewModel
     currentPosition,
+    pace,
     error,
     formattedTime,
+    initialize,
     startSession,
     pauseSession,
     finishSession,
@@ -74,6 +100,12 @@ const RunningTracker: React.FC = () => {
   
   // Constants for this exercise
   const EXERCISE_NAME = '2-Mile Run';
+
+  // Initialize the geolocation on component mount
+  useEffect(() => {
+    initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle back navigation
   const handleBackNavigation = () => {
@@ -117,9 +149,63 @@ const RunningTracker: React.FC = () => {
       pauseSession();
     }
     
-    await finishSession();
+    const result = await finishSession() as ExerciseResult;
     
     console.log(`Run finished! Distance: ${distanceMiles.toFixed(2)} miles, Time: ${formattedTime}`);
+    
+    // Create workout summary object
+    const workoutSummary = {
+      exerciseType: 'RUNNING',
+      distance: distanceMiles,
+      duration: timer,
+      pace: pace,
+      date: new Date(),
+      saved: false
+    };
+
+    // Navigate to workout complete page with initial "not saved" state
+    navigate('/complete', { state: workoutSummary });
+    
+    // Save workout session data in background
+    if (distanceMiles > 0) {
+      setIsSubmitting(true);
+      setApiError(null);
+      setSuccess(false);
+      setLoggedGrade(null);
+      
+      try {
+        const saved = await saveResults();
+        if (saved) {
+          setSuccess(true);
+          
+          // Use type assertion to handle the potential string or number grade
+          setLoggedGrade(typeof result.grade === 'number' ? result.grade : null);
+          
+          // Update the page with saved status
+          navigate('/complete', { 
+            state: { 
+              ...workoutSummary, 
+              grade: result.grade,
+              saved: saved,
+              id: result.id
+            },
+            replace: true
+          });
+        } else {
+          throw new Error("Failed to save results");
+        }
+      } catch (err) {
+        console.error("Failed to log exercise:", err);
+        setApiError(err instanceof Error ? err.message : 'Failed to save workout session');
+        setSuccess(false);
+        setLoggedGrade(null);
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else if (distanceMiles === 0 && isFinished) {
+      console.log("No distance tracked, session not saved.");
+      handleReset();
+    }
   };
 
   const handleReset = () => {
@@ -168,6 +254,18 @@ const RunningTracker: React.FC = () => {
     return `${displayMinutes}:${displaySeconds}`;
   };
   
+  // Helper to calculate pace from time and distance
+  const calculatePace = (seconds: number, miles: number): string => {
+    if (miles <= 0) return "--:--";
+    
+    const paceSeconds = Math.round(seconds / miles);
+    const paceMinutes = Math.floor(paceSeconds / 60);
+    const paceRemainder = paceSeconds % 60;
+    
+    return `${paceMinutes}:${paceRemainder.toString().padStart(2, '0')}`;
+  };
+
+  // For the form submission in RunningTracker
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -181,6 +279,21 @@ const RunningTracker: React.FC = () => {
       return;
     }
     
+    // Create workout summary object for manual entry
+    const workoutSummary = {
+      exerciseType: 'RUNNING' as ExerciseType,
+      distance: formDistance,
+      duration: totalSeconds,
+      // Calculate pace based on time and distance
+      pace: calculatePace(totalSeconds, formDistance),
+      notes: notes,
+      date: new Date(),
+      saved: false
+    };
+    
+    // Navigate immediately to complete page
+    navigate('/complete', { state: workoutSummary });
+    
     setIsSubmitting(true);
     setApiError(null);
     setSuccess(false);
@@ -192,14 +305,20 @@ const RunningTracker: React.FC = () => {
         setSuccess(true);
         
         // Exercise result might have a grade property
-        const grade = typeof result === 'object' && 'grade' in result && 
-                      typeof result.grade === 'number' ? result.grade : null;
+        const resultObject = result as unknown as { grade?: number, id?: string };
+        const grade = typeof resultObject.grade === 'number' ? resultObject.grade : null;
         setLoggedGrade(grade);
         
-        // After 2 seconds, redirect to the history page
-        setTimeout(() => {
-          navigate('/history'); 
-        }, 2000);
+        // Update the completion page with saved status
+        navigate('/complete', { 
+          state: { 
+            ...workoutSummary,
+            grade: grade,
+            saved: true,
+            id: resultObject.id
+          },
+          replace: true
+        });
       } else {
         throw new Error("Failed to save results");
       }
@@ -212,12 +331,26 @@ const RunningTracker: React.FC = () => {
     }
   };
 
+  // Get start and end points for markers
+  const startPoint = coordinates.length > 0 ? coordinates[0] : null;
+  const endPoint = isFinished && coordinates.length > 1 ? coordinates[coordinates.length - 1] : null;
+
   return (
     <div className="space-y-6">
       <Button variant="outline" onClick={handleBackNavigation} className="mb-4">
         &larr; Back
       </Button>
       <h1 className="font-semibold text-3xl text-foreground">Running Exercise</h1>
+
+      {/* Display error alert if geolocation permission denied */}
+      {geoError && !isActive && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertTitle>Location Access Denied</AlertTitle>
+          <AlertDescription>
+            {geoError || "Cannot track your run without location access. Please enable location services and reload the page."}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card className="overflow-hidden rounded-lg bg-card shadow-sm">
         <CardHeader>
@@ -226,7 +359,7 @@ const RunningTracker: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Map Integration */}
-          <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
+          <div className="relative h-64 md:h-80 w-full overflow-hidden rounded-md bg-muted">
             <MapContainer 
               ref={mapRef}
               center={currentPosition || [51.505, -0.09]} // Default center if no position yet
@@ -239,14 +372,45 @@ const RunningTracker: React.FC = () => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               {coordinates.length > 0 && (
-                <Polyline pathOptions={{ color: 'blue' }} positions={coordinates as unknown as LatLngTuple[]} />
+                <Polyline pathOptions={{ color: 'blue', weight: 4 }} positions={coordinates as unknown as LatLngTuple[]} />
               )}
-              {currentPosition && (
+              {currentPosition && !isFinished && (
                 <Marker position={currentPosition as unknown as LatLngTuple}>
                   <Popup>Current Location</Popup>
                 </Marker>
               )}
+              {/* Start marker */}
+              {startPoint && (
+                <Marker 
+                  position={[startPoint.lat, startPoint.lng] as unknown as LatLngTuple} 
+                  icon={startIcon}
+                >
+                  <Popup>Start Point</Popup>
+                </Marker>
+              )}
+              {/* End marker */}
+              {endPoint && (
+                <Marker 
+                  position={[endPoint.lat, endPoint.lng] as unknown as LatLngTuple}
+                  icon={endIcon}
+                >
+                  <Popup>End Point</Popup>
+                </Marker>
+              )}
             </MapContainer>
+
+            {/* Use the HUD component for running */}
+            {isActive && permissionGranted && (
+              <HUD 
+                repCount={0}
+                formattedTime={formattedTime}
+                formFeedback={null}
+                pace={pace}
+                distance={distanceMiles}
+                isRunning={true}
+              />
+            )}
+            
             {/* Show overlay if permission denied */} 
             {!permissionGranted && !isActive && (
                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/70 p-4 text-center text-white">
@@ -258,7 +422,7 @@ const RunningTracker: React.FC = () => {
           </div>
 
           {/* Stats Display */}
-          <div className="grid grid-cols-2 gap-4 text-center">
+          <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Distance</p>
               <p className="font-bold text-4xl text-foreground">
@@ -272,27 +436,48 @@ const RunningTracker: React.FC = () => {
                 {formattedTime}
               </p>
             </div>
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">Pace</p>
+              <p className="font-bold text-4xl text-foreground">
+                {pace}
+              </p>
+            </div>
           </div>
         </CardContent>
         <CardFooter className="bg-background/50 flex justify-center space-x-4 border-t px-6 py-4">
             {!isFinished ? (
               <>
-                <Button size="lg" onClick={handleStartPause} disabled={isFinished || (isActive && !permissionGranted)}>
+                <Button 
+                  size="lg" 
+                  onClick={handleStartPause} 
+                  disabled={isFinished || (isActive && !permissionGranted) || !permissionGranted}
+                >
                   {isActive ? <Pause className="mr-2 size-5" /> : <Play className="mr-2 size-5" />}
                   {isActive ? 'Pause' : 'Start'}
                 </Button>
-                <Button size="lg" variant="secondary" onClick={handleReset} disabled={isActive || isFinished || timer > 0 || distance > 0}>
+                <Button 
+                  size="lg" 
+                  variant="secondary" 
+                  onClick={handleReset} 
+                  disabled={isActive || isFinished || (timer === 0 && distance === 0)}
+                >
                   <RotateCcw className="mr-2 size-5" />
                   Reset
                 </Button>
-                <Button size="lg" variant="outline" onClick={handleFinish} disabled={(!isActive && timer === 0) || isFinished}>
-                  Finish Session
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  onClick={handleFinish} 
+                  disabled={(!isActive && timer === 0) || isFinished || distance === 0}
+                >
+                  <Flag className="mr-2 size-5" />
+                  Finish Run
                 </Button>
               </>
             ) : (
               <Button size="lg" variant="secondary" onClick={handleReset}>
                 <RotateCcw className="mr-2 size-5" />
-                Start New Session
+                Start New Run
               </Button>
             )}
           </CardFooter>
@@ -318,7 +503,7 @@ const RunningTracker: React.FC = () => {
           <div className="mb-6 rounded-md bg-green-50 p-4 text-green-800">
             Exercise logged successfully! 
             {loggedGrade !== null && ` Grade: ${loggedGrade}. `} 
-            Redirecting to history...
+            Redirecting to summary...
           </div>
         )}
         
@@ -415,6 +600,7 @@ const RunningTracker: React.FC = () => {
                 disabled={isSubmitting || getTotalSecondsFromForm() <= 0 || formDistance <= 0 || success}
                 className="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
               >
+                {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
                 {isSubmitting ? 'Logging...' : 'Log Exercise'}
               </button>
             </div>
