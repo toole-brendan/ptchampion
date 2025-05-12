@@ -4,23 +4,30 @@ import { cn } from "@/lib/utils"
 import { CornerDecor } from "./corner-decor"
 
 const cardVariants = cva(
-  "relative flex flex-col group gap-md rounded-card bg-card text-card-foreground transition-all border border-brass-gold border-opacity-20",
+  "relative flex flex-col group gap-md rounded-card bg-cream text-card-foreground transition-all border",
   {
     variants: {
       variant: {
-        default: "shadow-small",
-        interactive: "cursor-pointer shadow-small hover:-translate-y-1 hover:shadow-medium hover:border-brass-gold hover:border-opacity-40",
-        elevated: "shadow-medium",
-        panel: "rounded-panel shadow-medium bg-cream-dark p-md",
+        default: "shadow-card border-transparent",
+        interactive: "cursor-pointer shadow-card hover:-translate-y-1 hover:shadow-card-hover hover:border-brass-gold hover:border-opacity-40 border-brass-gold border-opacity-20",
+        elevated: "shadow-medium border-transparent",
+        panel: "rounded-panel shadow-small bg-cream-dark p-content border-transparent",
         flush: "rounded-none shadow-none border-none",
       },
       withCorners: {
         true: "",
-      }
+        false: "",
+      },
+      cornerStyle: {
+        always: "",
+        hover: "",
+        none: "",
+      },
     },
     defaultVariants: {
       variant: "default",
       withCorners: false,
+      cornerStyle: "none",
     },
   }
 )
@@ -28,6 +35,7 @@ const cardVariants = cva(
 interface CardProps extends React.ComponentProps<"div">, 
   VariantProps<typeof cardVariants> {
   withCorners?: boolean;
+  cornerStyle?: "always" | "hover" | "none";
   cornerProps?: React.ComponentProps<typeof CornerDecor>;
 }
 
@@ -35,16 +43,17 @@ function Card({
   className, 
   variant, 
   withCorners,
+  cornerStyle = "none",
   cornerProps,
   ...props 
 }: CardProps) {
   return (
     <div
       data-slot="card"
-      className={cn(cardVariants({ variant, withCorners, className }))}
+      className={cn(cardVariants({ variant, withCorners, cornerStyle, className }))}
       {...props}
     >
-      {withCorners && <CornerDecor {...cornerProps} />}
+      {withCorners && <CornerDecor alwaysVisible={cornerStyle === "always"} {...cornerProps} />}
       {props.children}
     </div>
   )
@@ -55,7 +64,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card-header"
       className={cn(
-        "grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 p-md has-data-[slot=card-action]:grid-cols-[1fr_auto]",
+        "grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 p-content has-data-[slot=card-action]:grid-cols-[1fr_auto]",
         className
       )}
       {...props}
@@ -67,7 +76,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-title"
-      className={cn("font-heading text-heading4 font-bold leading-none", className)}
+      className={cn("font-heading text-heading4 tracking-wider uppercase", className)}
       {...props}
     />
   )
@@ -100,7 +109,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-content"
-      className={cn("p-md pt-0", className)}
+      className={cn("p-content pt-0", className)}
       {...props}
     />
   )
@@ -110,7 +119,17 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="card-footer"
-      className={cn("flex items-center p-md pt-0", className)}
+      className={cn("flex items-center p-content pt-0", className)}
+      {...props}
+    />
+  )
+}
+
+function CardDivider({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-divider"
+      className={cn("h-px w-16 bg-brass-gold my-2", className)}
       {...props}
     />
   )
@@ -133,16 +152,17 @@ function StatCard({
       variant="interactive" 
       className={cn("min-w-[150px]", className)} 
       withCorners
+      cornerStyle="hover"
       {...props}
     >
       <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-small text-tactical-gray uppercase">{title}</CardTitle>
+          <CardTitle className="text-xs text-tactical-gray uppercase tracking-wider">{title}</CardTitle>
           {icon && <div className="text-brass-gold">{icon}</div>}
         </div>
       </CardHeader>
       <CardContent className="pt-sm">
-        <div className="font-mono text-heading3 font-medium text-command-black">{value}</div>
+        <div className="font-heading text-heading3 text-command-black">{value}</div>
       </CardContent>
     </Card>
   )
@@ -162,9 +182,10 @@ function QuickLinkCard({
   return (
     <Card 
       variant="interactive" 
-      className={cn("p-md", className)} 
+      className={cn("p-content", className)} 
       onClick={onClick}
       withCorners
+      cornerStyle="hover"
       {...props}
     >
       <div className="flex flex-col items-center justify-center gap-2 py-md">
@@ -185,6 +206,7 @@ function SectionCard({
   children,
   className,
   headerClassName,
+  showDivider = true,
   ...props
 }: {
   title: React.ReactNode;
@@ -192,23 +214,26 @@ function SectionCard({
   icon?: React.ReactNode;
   children: React.ReactNode;
   headerClassName?: string;
+  showDivider?: boolean;
 } & Omit<CardProps, 'children'>) {
   return (
     <Card
       variant="default"
       className={cn("overflow-hidden", className)}
       withCorners
+      cornerStyle="always"
       {...props}
     >
       <div className={cn("section-header p-content", headerClassName)}>
         <div className="flex items-center">
-          {icon && <span className="mr-2">{icon}</span>}
-          <h2 className="font-heading text-heading3 uppercase tracking-wider text-cream">
+          {icon && <span className="mr-2 text-brass-gold">{icon}</span>}
+          <h2 className="font-heading text-heading3 uppercase tracking-wider text-brass-gold">
             {title}
           </h2>
         </div>
+        {showDivider && <CardDivider />}
         {description && (
-          <p className="text-sm text-army-tan">
+          <p className="text-sm text-tactical-gray uppercase tracking-wide">
             {description}
           </p>
         )}
@@ -216,6 +241,43 @@ function SectionCard({
       <div className="bg-cream-dark p-content">
         {children}
       </div>
+    </Card>
+  )
+}
+
+// Welcome Card for the dashboard
+function WelcomeCard({
+  title = "PT Champion",
+  subtitle = "Fitness Evaluation System",
+  profileSection,
+  className,
+  ...props
+}: {
+  title?: React.ReactNode;
+  subtitle?: React.ReactNode;
+  profileSection?: React.ReactNode;
+} & Omit<CardProps, 'children'>) {
+  return (
+    <Card
+      variant="default"
+      className={cn("p-content text-center", className)}
+      withCorners
+      cornerStyle="always"
+      {...props}
+    >
+      <h2 className="font-heading text-3xl md:text-4xl text-brass-gold tracking-wider uppercase">
+        {title}
+      </h2>
+      <CardDivider className="mx-auto" />
+      <p className="text-sm uppercase tracking-wide text-tactical-gray">
+        {subtitle}
+      </p>
+      
+      {profileSection && (
+        <div className="bg-cream-dark rounded-md p-4 mt-6 text-left">
+          {profileSection}
+        </div>
+      )}
     </Card>
   )
 }
@@ -254,8 +316,10 @@ export {
   CardAction,
   CardDescription,
   CardContent,
+  CardDivider,
   StatCard,
   QuickLinkCard,
   SectionCard,
+  WelcomeCard,
   cardVariants
 }

@@ -1,63 +1,80 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import { MetricCard } from '../components/ui/metric-card';
-import { Award, Clock, Map } from 'lucide-react';
+import { MetricCard } from "@/components/ui/metric-card";
+import { Activity, Clock, Users } from "lucide-react";
+import type { Meta, StoryObj } from "@storybook/react";
 
-const meta: Meta<typeof MetricCard> = {
-  title: 'Components/MetricCard',
+const meta = {
+  title: "Components/MetricCard",
   component: MetricCard,
   parameters: {
-    layout: 'centered',
-    backgrounds: {
-      default: 'cream',
-      values: [
-        { name: 'cream', value: '#F4F1E6' },
-      ],
-    },
+    layout: "centered",
   },
-  decorators: [
-    (Story) => (
-      <div className="bg-cream p-6 min-h-[200px] w-full max-w-md flex items-center justify-center">
-        <Story />
-      </div>
-    ),
-  ],
-  tags: ['autodocs'],
-};
+  tags: ["autodocs"],
+} satisfies Meta<typeof MetricCard>;
 
 export default meta;
-type Story = StoryObj<typeof MetricCard>;
+type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    title: 'Reps',
-    value: '24',
-    icon: Award,
+    title: "Total Users",
+    value: 14298,
+    withCorners: true,
+    cornerStyle: "always"
   },
 };
 
 export const WithIcon: Story = {
   args: {
-    title: 'Distance',
-    value: '2.5 mi',
-    icon: Map,
+    title: "Active Sessions",
+    value: 42,
+    icon: Activity,
+    withCorners: true,
+    cornerStyle: "always"
+  },
+};
+
+export const WithUnit: Story = {
+  args: {
+    title: "Average Session",
+    value: 24,
+    unit: "min",
+    icon: Clock,
+    withCorners: true,
+    cornerStyle: "hover"
   },
 };
 
 export const WithDescription: Story = {
   args: {
-    title: 'Time',
-    value: '12:34',
-    description: 'min:sec',
-    icon: Clock,
+    title: "Total Users",
+    value: 3720,
+    description: "25% new users this month",
+    icon: Users,
+    withCorners: true,
+    cornerStyle: "hover"
   },
 };
 
 export const WithTrend: Story = {
   args: {
-    title: 'Weekly Progress',
-    value: 42,
-    description: 'Total workouts', 
-    change: 15,
-    trend: 'up',
+    title: "Conversion Rate",
+    value: 12.8,
+    unit: "%",
+    change: 2.3,
+    trend: "up",
+    withCorners: true,
+    cornerStyle: "always"
+  },
+};
+
+export const NegativeTrend: Story = {
+  args: {
+    title: "Churn Rate",
+    value: 4.6,
+    unit: "%",
+    change: -1.2,
+    trend: "down",
+    withCorners: true,
+    cornerStyle: "always"
   },
 }; 

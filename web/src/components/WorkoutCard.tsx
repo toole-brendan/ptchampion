@@ -1,48 +1,25 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
-import { AreaChart, Flame, Clock, Award } from 'lucide-react';
+import { Flame, Clock, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { formatTime as formatDuration, formatDistance } from '@/lib/utils';
 
-// Icons mapped to exercise types
-const exerciseIcons: Record<string, React.ReactNode> = {
-  'PUSHUP': <Flame className="h-4 w-4 text-brass-gold" />,
-  'PULLUP': <Flame className="h-4 w-4 text-brass-gold" />,
-  'SITUP': <Flame className="h-4 w-4 text-brass-gold" />,
-  'RUNNING': <AreaChart className="h-4 w-4 text-brass-gold" />,
-};
-
-// Activity type definition
-type ActivityType = 'PUSHUP' | 'PULLUP' | 'SITUP' | 'RUNNING';
-
-// Format exercise type for display
-const formatExerciseType = (type: string): string => {
-  switch (type.toUpperCase()) {
-    case 'PUSHUP': return 'Push-ups';
-    case 'PULLUP': return 'Pull-ups';
-    case 'SITUP': return 'Sit-ups';
-    case 'RUNNING': return 'Running';
-    default: return type;
-  }
-};
-
-type WorkoutCardProps = {
+export interface WorkoutCardProps {
   id: string;
-  exerciseType: ActivityType;
-  count?: number;
+  exerciseType: string;
+  reps?: number;
   distance?: number;
   duration: number;
   date: Date;
   score?: number;
   onClick?: (id: string) => void;
   className?: string;
-};
+}
 
 export function WorkoutCard({
   id,
   exerciseType,
-  count,
+  reps,
   distance,
   duration,
   date,
@@ -50,12 +27,33 @@ export function WorkoutCard({
   onClick,
   className
 }: WorkoutCardProps) {
+  // Format exercise type for display
+  const formatExerciseType = (type: string): string => {
+    switch (type.toUpperCase()) {
+      case 'PUSHUP': return 'Push-ups';
+      case 'PULLUP': return 'Pull-ups';
+      case 'SITUP': return 'Sit-ups';
+      case 'RUNNING': return 'Running';
+      default: return type;
+    }
+  };
+
+  // Format duration in a readable format
+  const formatDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`;
+    }
+    return `${seconds}s`;
+  };
+
   // Format the time ago in a readable format (e.g., "2 days ago")
   const timeAgo = formatDistanceToNow(date, { addSuffix: true });
-  
-  // Get the icon for the exercise type
-  const icon = exerciseIcons[exerciseType] || <Flame className="h-4 w-4 text-brass-gold" />;
-  
+
   return (
     <Card 
       variant="interactive"
@@ -79,23 +77,23 @@ export function WorkoutCard({
         </div>
         
         <div className="grid grid-cols-3 gap-2 p-4 text-center">
-          {exerciseType !== 'RUNNING' && count !== undefined && (
+          {exerciseType.toUpperCase() !== 'RUNNING' && reps !== undefined && (
             <div className="flex flex-col items-center">
               <div className="flex size-8 items-center justify-center rounded-full bg-brass-gold bg-opacity-10">
                 <Flame className="size-4 text-brass-gold" />
               </div>
-              <span className="mt-1 font-heading text-heading4 text-command-black">{count}</span>
+              <span className="mt-1 font-heading text-heading4 text-command-black">{reps}</span>
               <span className="text-xs text-tactical-gray">Reps</span>
             </div>
           )}
           
-          {exerciseType === 'RUNNING' && distance !== undefined && (
+          {exerciseType.toUpperCase() === 'RUNNING' && distance !== undefined && (
             <div className="flex flex-col items-center">
               <div className="flex size-8 items-center justify-center rounded-full bg-brass-gold bg-opacity-10">
-                <AreaChart className="size-4 text-brass-gold" />
+                <Flame className="size-4 text-brass-gold" />
               </div>
               <span className="mt-1 font-heading text-heading4 text-command-black">
-                {formatDistance(distance).split(' ')[0]}
+                {(distance / 1000).toFixed(1)}
               </span>
               <span className="text-xs text-tactical-gray">km</span>
             </div>
