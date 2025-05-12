@@ -35,10 +35,6 @@ const meta: Meta<typeof Modal> = {
       control: 'boolean',
       description: 'Whether to show the close button in the top-right corner',
     },
-    withCorners: {
-      control: 'boolean',
-      description: 'Whether to show corner decorations',
-    },
   },
 };
 
@@ -157,25 +153,5 @@ export const OverflowingContent: Story = {
     title: 'Scrollable Content',
     description: 'This modal has content that exceeds the viewport height',
     showCloseButton: true,
-  },
-};
-
-export const WithCornerDecor: Story = {
-  render: (args) => (
-    <ModalWrapper {...args}>
-      <p className="text-tactical-gray">
-        This modal demonstrates the military-style corner decorations.
-      </p>
-      <p className="text-tactical-gray mt-2">
-        These corner elements add an additional visual element to the UI, 
-        though they are off by default in modals to keep the interface clean.
-      </p>
-    </ModalWrapper>
-  ),
-  args: {
-    title: 'With Corner Decoration',
-    description: 'Optional military-style corner elements',
-    showCloseButton: true,
-    withCorners: true,
   },
 }; 

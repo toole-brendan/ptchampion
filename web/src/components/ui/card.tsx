@@ -1,7 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
-import { CornerDecor } from "./corner-decor"
 
 const cardVariants = cva(
   "relative flex flex-col group gap-md rounded-card bg-cream text-card-foreground transition-all border",
@@ -9,51 +8,43 @@ const cardVariants = cva(
     variants: {
       variant: {
         default: "shadow-card border-transparent",
-        interactive: "cursor-pointer shadow-card hover:-translate-y-1 hover:shadow-card-hover hover:border-brass-gold hover:border-opacity-40 border-brass-gold border-opacity-20",
+        interactive: 
+          "shadow-card transition-transform duration-150 " +
+          "hover:-translate-y-1 hover:shadow-card-hover " +
+          "hover:border-brass-gold hover:border-opacity-40 " +
+          "border-transparent",
         elevated: "shadow-medium border-transparent",
         panel: "rounded-panel shadow-small bg-cream-dark p-content border-transparent",
         flush: "rounded-none shadow-none border-none",
       },
-      withCorners: {
-        true: "",
-        false: "",
-      },
-      cornerStyle: {
-        always: "",
-        hover: "",
-        none: "",
-      },
     },
     defaultVariants: {
       variant: "default",
-      withCorners: false,
-      cornerStyle: "none",
     },
   }
 )
 
 interface CardProps extends React.ComponentProps<"div">, 
   VariantProps<typeof cardVariants> {
-  withCorners?: boolean;
-  cornerStyle?: "always" | "hover" | "none";
-  cornerProps?: React.ComponentProps<typeof CornerDecor>;
 }
 
 function Card({ 
   className, 
   variant, 
-  withCorners,
-  cornerStyle = "none",
-  cornerProps,
   ...props 
 }: CardProps) {
+  // Only add cursor-pointer when onClick is provided
+  const isClickable = !!props.onClick;
+  
   return (
     <div
       data-slot="card"
-      className={cn(cardVariants({ variant, withCorners, cornerStyle, className }))}
+      className={cn(
+        cardVariants({ variant, className }),
+        isClickable && 'cursor-pointer'
+      )}
       {...props}
     >
-      {withCorners && <CornerDecor alwaysVisible={cornerStyle === "always"} {...cornerProps} />}
       {props.children}
     </div>
   )
@@ -151,8 +142,6 @@ function StatCard({
     <Card 
       variant="interactive" 
       className={cn("min-w-[150px]", className)} 
-      withCorners
-      cornerStyle="hover"
       {...props}
     >
       <CardHeader className="pb-0">
@@ -184,8 +173,6 @@ function QuickLinkCard({
       variant="interactive" 
       className={cn("p-content", className)} 
       onClick={onClick}
-      withCorners
-      cornerStyle="hover"
       {...props}
     >
       <div className="flex flex-col items-center justify-center gap-2 py-md">
@@ -220,8 +207,6 @@ function SectionCard({
     <Card
       variant="default"
       className={cn("overflow-hidden", className)}
-      withCorners
-      cornerStyle="always"
       {...props}
     >
       <div className={cn("section-header p-content", headerClassName)}>
@@ -261,8 +246,6 @@ function WelcomeCard({
     <Card
       variant="default"
       className={cn("p-content text-center", className)}
-      withCorners
-      cornerStyle="always"
       {...props}
     >
       <h2 className="font-heading text-3xl md:text-4xl text-brass-gold tracking-wider uppercase">

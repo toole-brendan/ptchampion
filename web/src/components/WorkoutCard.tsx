@@ -59,8 +59,6 @@ export function WorkoutCard({
       variant="interactive"
       className={cn("overflow-hidden", className)}
       onClick={() => onClick?.(id)}
-      withCorners
-      cornerStyle="hover"
     >
       <CardContent className="p-0">
         <div className="bg-deep-ops p-3 text-cream">

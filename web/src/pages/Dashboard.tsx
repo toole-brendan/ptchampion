@@ -29,7 +29,6 @@ import {
   SectionCard, 
   WelcomeCard 
 } from '@/components/ui/card';
-import { CornerDecor } from '@/components/ui/corner-decor';
 
 // Import the exercise PNG images
 import pushupImage from '@/assets/pushup.png';
@@ -262,6 +261,33 @@ const Dashboard: React.FC = () => {
     }
   ];
 
+  // Progress summary metrics
+  const progressMetrics = [
+    {
+      title: "TOTAL TRAINING TIME",
+      value: `${Math.floor(dashboardMetrics.totalDuration / 3600)}h ${Math.floor((dashboardMetrics.totalDuration % 3600) / 60)}m`,
+      icon: Clock,
+      iconClassName: "text-brass-gold",
+      valueClassName: "font-heading text-heading3 text-command-black",
+      index: 0
+    },
+    {
+      title: "EST. CALORIES BURNED",
+      value: Math.floor(dashboardMetrics.totalDuration / 60 * 7),
+      icon: Flame,
+      iconClassName: "text-brass-gold",
+      valueClassName: "font-heading text-heading3 text-command-black",
+      index: 1
+    }
+  ];
+
+  // Get the rank display value as a string
+  const rankDisplayValue = isLeaderboardLoading 
+    ? "Loading..." 
+    : dashboardMetrics.userRank > 0 
+      ? `#${dashboardMetrics.userRank}` 
+      : 'Unranked';
+
   return (
     <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
       <div className="flex flex-col space-y-section max-w-7xl mx-auto">
@@ -352,47 +378,20 @@ const Dashboard: React.FC = () => {
           )}
 
           <div className="grid grid-cols-1 gap-card-gap md:grid-cols-3">
-            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream p-content text-center shadow-small" style={{ animationDelay: "100ms" }}>
-              <div className="flex items-center justify-center mb-2">
-                <div className="flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                  <Clock className="size-6 text-brass-gold" />
-                </div>
-              </div>
-              <span className="font-heading text-heading3 text-command-black">
-                {Math.floor(dashboardMetrics.totalDuration / 3600)}h {Math.floor((dashboardMetrics.totalDuration % 3600) / 60)}m
-              </span>
-              <p className="font-semibold text-xs uppercase tracking-wider text-olive-mist mt-1">Total Training Time</p>
-            </div>
-            
-            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream p-content text-center shadow-small" style={{ animationDelay: "200ms" }}>
-              <div className="flex items-center justify-center mb-2">
-                <div className="flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                  <Flame className="size-6 text-brass-gold" />
-                </div>
-              </div>
-              <span className="font-heading text-heading3 text-command-black">
-                {Math.floor(dashboardMetrics.totalDuration / 60 * 7)}
-              </span>
-              <p className="font-semibold text-xs uppercase tracking-wider text-olive-mist mt-1">Est. Calories Burned</p>
-            </div>
-            
-            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream p-content text-center shadow-small" style={{ animationDelay: "300ms" }}>
-              <div className="flex items-center justify-center mb-2">
-                <div className="flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                  <Trophy className="size-6 text-brass-gold" />
-                </div>
-              </div>
-              <span className="font-heading text-heading3 text-command-black">
-                {isLeaderboardLoading ? (
-                  <Loader2 className="mx-auto size-6 animate-spin text-brass-gold opacity-70" />
-                ) : dashboardMetrics.userRank > 0 ? (
-                  `#${dashboardMetrics.userRank}` 
-                ) : (
-                  'Unranked'
-                )}
-              </span>
-              <p className="font-semibold text-xs uppercase tracking-wider text-olive-mist mt-1">Global Leaderboard Rank</p>
-            </div>
+            {progressMetrics.map((metric) => (
+              <MetricCard
+                key={metric.title}
+                {...metric}
+              />
+            ))}
+            <MetricCard
+              title="GLOBAL LEADERBOARD RANK"
+              value={rankDisplayValue}
+              icon={Trophy}
+              iconClassName="text-brass-gold"
+              valueClassName="font-heading text-heading3 text-command-black"
+              index={2}
+            />
           </div>
           
           <div className="mt-6 flex justify-center">
