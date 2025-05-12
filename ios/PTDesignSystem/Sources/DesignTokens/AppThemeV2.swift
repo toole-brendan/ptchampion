@@ -1,4 +1,5 @@
 import SwiftUI
+import DesignTokens
 
 // WebUI-aligned extension to AppTheme
 public extension AppTheme {
@@ -6,17 +7,17 @@ public extension AppTheme {
     // Color tokens matching web UI
     enum Color {
         // Brand palette
-        public static let brand50 = Color(hex: "f0f9ff")
-        public static let brand100 = Color(hex: "e0f2fe")
-        public static let brand200 = Color(hex: "bae6fd")
-        public static let brand300 = Color(hex: "7dd3fc")
-        public static let brand400 = Color(hex: "38bdf8")
-        public static let brand500 = Color(hex: "0ea5e9")
-        public static let brand600 = Color(hex: "0284c7")
-        public static let brand700 = Color(hex: "0369a1")
-        public static let brand800 = Color(hex: "075985")
-        public static let brand900 = Color(hex: "0c4a6e")
-        public static let brand950 = Color(hex: "082f49")
+        public static let brand50 = SwiftUI.Color(hex: "f0f9ff")
+        public static let brand100 = SwiftUI.Color(hex: "e0f2fe")
+        public static let brand200 = SwiftUI.Color(hex: "bae6fd")
+        public static let brand300 = SwiftUI.Color(hex: "7dd3fc")
+        public static let brand400 = SwiftUI.Color(hex: "38bdf8")
+        public static let brand500 = SwiftUI.Color(hex: "0ea5e9")
+        public static let brand600 = SwiftUI.Color(hex: "0284c7")
+        public static let brand700 = SwiftUI.Color(hex: "0369a1")
+        public static let brand800 = SwiftUI.Color(hex: "075985")
+        public static let brand900 = SwiftUI.Color(hex: "0c4a6e")
+        public static let brand950 = SwiftUI.Color(hex: "082f49")
         
         // Success palette
         public static let success50 = Color(hex: "f0fdf4")
@@ -157,64 +158,64 @@ public extension AppTheme {
     // Shadow tokens matching web UI
     enum Shadow {
         // Web shadows converted to SwiftUI format
-        public static let sm = Shadow(
-            color: Color.black.opacity(0.05),
+        public static let sm = DSShadow(
+            color: SwiftUI.Color.black.opacity(0.05),
             radius: 1,
             x: 0,
             y: 1
         )
         
-        public static let md = Shadow(
-            color: Color.black.opacity(0.1),
+        public static let md = DSShadow(
+            color: SwiftUI.Color.black.opacity(0.1),
             radius: 4,
             x: 0,
             y: 2
         )
         
-        public static let lg = Shadow(
-            color: Color.black.opacity(0.1),
+        public static let lg = DSShadow(
+            color: SwiftUI.Color.black.opacity(0.1),
             radius: 10,
             x: 0,
             y: 4
         )
         
-        public static let xl = Shadow(
-            color: Color.black.opacity(0.1),
+        public static let xl = DSShadow(
+            color: SwiftUI.Color.black.opacity(0.1),
             radius: 20,
             x: 0,
             y: 10
         )
         
-        public static let xxl = Shadow(
-            color: Color.black.opacity(0.25),
+        public static let xxl = DSShadow(
+            color: SwiftUI.Color.black.opacity(0.25),
             radius: 25,
             x: 0,
             y: 12
         )
         
-        public static let inner = Shadow(
-            color: Color.black.opacity(0.06),
+        public static let inner = DSShadow(
+            color: SwiftUI.Color.black.opacity(0.06),
             radius: 2,
             x: 0,
             y: 2
         )
         
-        public static let card = Shadow(
-            color: Color.black.opacity(0.06),
+        public static let card = DSShadow(
+            color: SwiftUI.Color.black.opacity(0.06),
             radius: 1,
             x: 0,
             y: 1
         )
         
-        public static let button = Shadow(
-            color: Color.black.opacity(0.05),
+        public static let button = DSShadow(
+            color: SwiftUI.Color.black.opacity(0.05),
             radius: 1,
             x: 0,
             y: 1
         )
         
-        public static let none = Shadow(
-            color: Color.clear,
+        public static let none = DSShadow(
+            color: SwiftUI.Color.clear,
             radius: 0,
             x: 0,
             y: 0
@@ -260,7 +261,7 @@ public extension AppTheme {
 }
 
 // Helper extension to create colors from hex strings
-extension Color {
+extension SwiftUI.Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
@@ -288,21 +289,16 @@ extension Color {
 }
 
 // Convenience extensions for applying web styles
-public extension View {
+public extension SwiftUI.View {
     // Card styling with web style
     func webCardStyle(
-        shadowStyle: AppTheme.Shadow = AppTheme.Shadow.card,
+        shadowStyle: AppTheme.Shadow.sm.type = AppTheme.Shadow.card,
         cornerRadius: CGFloat = AppTheme.Radius.lg
     ) -> some View {
         self
             .background(AppTheme.Color.surface)
             .cornerRadius(cornerRadius)
-            .shadow(
-                color: shadowStyle.color,
-                radius: shadowStyle.radius,
-                x: shadowStyle.x,
-                y: shadowStyle.y
-            )
+            .withDSShadow(shadowStyle)
     }
     
     // Add standard spacing around content using web spacing

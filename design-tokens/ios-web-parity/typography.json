@@ -1,0 +1,122 @@
+{
+  "fontSizes": {
+    "xs": "0.75rem",
+    "sm": "0.875rem",
+    "base": "1rem",
+    "lg": "1.125rem",
+    "xl": "1.25rem",
+    "2xl": "1.5rem",
+    "3xl": "1.875rem",
+    "4xl": "2.25rem",
+    "5xl": "3rem",
+    "6xl": "3.75rem"
+  },
+  "fontWeights": {
+    "normal": "400",
+    "medium": "500",
+    "semibold": "600",
+    "bold": "700"
+  },
+  "lineHeights": {
+    "none": "1",
+    "tight": "1.25",
+    "snug": "1.375",
+    "normal": "1.5",
+    "relaxed": "1.625",
+    "loose": "2"
+  },
+  "letterSpacing": {
+    "tighter": "-0.05em",
+    "tight": "-0.025em",
+    "normal": "0",
+    "wide": "0.025em",
+    "wider": "0.05em",
+    "widest": "0.1em"
+  },
+  "typography": {
+    "h1": {
+      "fontSize": "2.25rem",
+      "lineHeight": "2.5rem",
+      "fontWeight": "700",
+      "letterSpacing": "-0.025em",
+      "fontFamily": "Futura PT"
+    },
+    "h2": {
+      "fontSize": "1.875rem",
+      "lineHeight": "2.25rem",
+      "fontWeight": "700",
+      "letterSpacing": "-0.025em",
+      "fontFamily": "Futura PT"
+    },
+    "h3": {
+      "fontSize": "1.5rem",
+      "lineHeight": "2rem",
+      "fontWeight": "600",
+      "letterSpacing": "-0.025em",
+      "fontFamily": "Futura PT"
+    },
+    "h4": {
+      "fontSize": "1.25rem", 
+      "lineHeight": "1.75rem",
+      "fontWeight": "600",
+      "letterSpacing": "-0.025em",
+      "fontFamily": "Futura PT"
+    },
+    "h5": {
+      "fontSize": "1.125rem",
+      "lineHeight": "1.75rem",
+      "fontWeight": "600",
+      "letterSpacing": "-0.025em",
+      "fontFamily": "Futura PT"
+    },
+    "h6": {
+      "fontSize": "1rem",
+      "lineHeight": "1.5rem",
+      "fontWeight": "600",
+      "letterSpacing": "-0.025em",
+      "fontFamily": "Futura PT"
+    },
+    "body-lg": {
+      "fontSize": "1.125rem",
+      "lineHeight": "1.75rem",
+      "fontWeight": "400",
+      "fontFamily": "Futura PT"
+    },
+    "body": {
+      "fontSize": "1rem",
+      "lineHeight": "1.5rem",
+      "fontWeight": "400",
+      "fontFamily": "Futura PT"
+    },
+    "body-sm": {
+      "fontSize": "0.875rem",
+      "lineHeight": "1.25rem",
+      "fontWeight": "400",
+      "fontFamily": "Futura PT"
+    },
+    "caption": {
+      "fontSize": "0.75rem",
+      "lineHeight": "1rem",
+      "fontWeight": "400",
+      "fontFamily": "Futura PT"
+    },
+    "label": {
+      "fontSize": "0.875rem",
+      "lineHeight": "1.25rem",
+      "fontWeight": "500",
+      "fontFamily": "Futura PT"
+    },
+    "button": {
+      "fontSize": "0.875rem",
+      "lineHeight": "1.25rem",
+      "fontWeight": "600",
+      "fontFamily": "Futura PT"
+    },
+    "monospace": {
+      "fontSize": "0.875rem",
+      "lineHeight": "1.25rem",
+      "fontWeight": "400",
+      "fontFamily": "SFMono-Regular, Menlo, Monaco, Consolas, monospace"
+    }
+  }
+} 

@@ -111,13 +111,13 @@ public struct PTCard<Content: View>: View {
         case .standard, .elevated, .flat, .highlight, .interactive:
             // Use web theme if enabled
             if ThemeManager.useWebTheme {
-                AppTheme.Color.surface
+                PTDesignSystem.AppTheme.Color.surface
             } else {
                 // Gradient background for more dimension
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        AppTheme.GeneratedColors.cardBackground,
-                        AppTheme.GeneratedColors.cardBackground.opacity(0.97)
+                        PTDesignSystem.AppTheme.GeneratedColors.cardBackground,
+                        PTDesignSystem.AppTheme.GeneratedColors.cardBackground.opacity(0.97)
                     ]),
                     startPoint: .top,
                     endPoint: .bottom
@@ -210,13 +210,13 @@ public struct PTCard<Content: View>: View {
         if ThemeManager.useWebTheme {
             switch style {
             case .standard, .interactive:
-                return AppTheme.Shadow.card.y
+                return PTDesignSystem.AppTheme.Shadow.card.y
             case .elevated:
-                return AppTheme.Shadow.md.y
+                return PTDesignSystem.AppTheme.Shadow.md.y
             case .flat, .highlight:
                 return 0
             case .custom(_, _, _, _, _):
-                return AppTheme.Shadow.card.y
+                return PTDesignSystem.AppTheme.Shadow.card.y
             }
         } else {
             switch style {
@@ -237,13 +237,13 @@ public struct PTCard<Content: View>: View {
         if ThemeManager.useWebTheme {
             switch style {
             case .flat:
-                return AppTheme.Color.borderDefault
+                return PTDesignSystem.AppTheme.Color.borderDefault
             case .highlight:
-                return AppTheme.Color.brand500
+                return PTDesignSystem.AppTheme.Color.brand500
             case .interactive:
                 return isPressed ? 
-                    AppTheme.Color.brand500.opacity(0.3) : 
-                    AppTheme.Color.borderDefault
+                    PTDesignSystem.AppTheme.Color.brand500.opacity(0.3) : 
+                    PTDesignSystem.AppTheme.Color.borderDefault
             case .custom(_, _, _, let color, _):
                 return color ?? Color.clear
             default:
@@ -252,13 +252,13 @@ public struct PTCard<Content: View>: View {
         } else {
             switch style {
             case .flat:
-                return AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
+                return PTDesignSystem.AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
             case .highlight:
-                return AppTheme.GeneratedColors.brassGold
+                return PTDesignSystem.AppTheme.GeneratedColors.brassGold
             case .interactive:
                 return isPressed ? 
-                    AppTheme.GeneratedColors.brassGold.opacity(0.3) : 
-                    AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
+                    PTDesignSystem.AppTheme.GeneratedColors.brassGold.opacity(0.3) : 
+                    PTDesignSystem.AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
             case .custom(_, _, _, let color, _):
                 return color ?? Color.clear
             default:

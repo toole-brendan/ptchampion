@@ -117,31 +117,31 @@ public extension ThemeManager {
     }
     
     // For components to programmatically choose between design systems
-    static func shadowStyle(legacy: AppTheme.GeneratedShadows.Type, web: AppTheme.Shadow) -> Shadow {
+    static func shadowStyle(legacy: PTDesignSystem.AppTheme.GeneratedShadows.Type, web: PTDesignSystem.AppTheme.Shadow) -> PTDesignSystem.Shadow {
         if useWebTheme {
             return web
         } else {
             // Convert the legacy shadow type to actual Shadow
             switch legacy {
-            case AppTheme.GeneratedShadows.small.self:
-                return AppTheme.GeneratedShadows.small
-            case AppTheme.GeneratedShadows.medium.self:
-                return AppTheme.GeneratedShadows.medium
-            case AppTheme.GeneratedShadows.large.self:
-                return AppTheme.GeneratedShadows.large
+            case PTDesignSystem.AppTheme.GeneratedShadows.small.self:
+                return PTDesignSystem.AppTheme.GeneratedShadows.small
+            case PTDesignSystem.AppTheme.GeneratedShadows.medium.self:
+                return PTDesignSystem.AppTheme.GeneratedShadows.medium
+            case PTDesignSystem.AppTheme.GeneratedShadows.large.self:
+                return PTDesignSystem.AppTheme.GeneratedShadows.large
             default:
-                return AppTheme.GeneratedShadows.small
+                return PTDesignSystem.AppTheme.GeneratedShadows.small
             }
         }
     }
     
     // For components to programmatically choose between design systems
-    static func colorStyle(legacy: Color, web: Color) -> Color {
+    static func colorStyle(legacy: SwiftUI.Color, web: SwiftUI.Color) -> SwiftUI.Color {
         return useWebTheme ? web : legacy
     }
     
     // For components to programmatically choose between design systems
-    static func fontStyle(legacy: Font, web: Font) -> Font {
+    static func fontStyle(legacy: SwiftUI.Font, web: SwiftUI.Font) -> SwiftUI.Font {
         return useWebTheme ? web : legacy
     }
     

@@ -1,0 +1,30 @@
+{
+  "fontFamilies": {
+    "primary": "Futura PT",
+    "mono": "SFMono-Regular"
+  },
+  "fonts": {
+    "futuraPT": {
+      "book": {
+        "family": "Futura PT",
+        "weight": "400",
+        "fileName": "FuturaPT-Book.ttf"
+      },
+      "medium": {
+        "family": "Futura PT",
+        "weight": "500",
+        "fileName": "FuturaPT-Medium.ttf"
+      },
+      "demi": {
+        "family": "Futura PT",
+        "weight": "600",
+        "fileName": "FuturaPT-Demi.ttf"
+      },
+      "bold": {
+        "family": "Futura PT",
+        "weight": "700",
+        "fileName": "FuturaPT-Bold.ttf"
+      }
+    }
+  }
+} 

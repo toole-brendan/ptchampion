@@ -128,10 +128,10 @@ public struct PTTextField: View {
             // Label at the top
             if !text.isEmpty || label != nil {
                 Text(label ?? placeholder)
-                    .font(ThemeManager.useWebTheme ? AppTheme.Typography.label : .caption)
+                    .font(ThemeManager.useWebTheme ? PTDesignSystem.AppTheme.Typography.label : .caption)
                     .foregroundColor(ThemeManager.useWebTheme ? 
-                        AppTheme.Color.textSubtle : 
-                        AppTheme.GeneratedColors.textSecondary)
+                        PTDesignSystem.AppTheme.Color.textSubtle : 
+                        PTDesignSystem.AppTheme.GeneratedColors.textSecondary)
             }
             
             HStack {
@@ -153,32 +153,36 @@ public struct PTTextField: View {
                 // Add optional icon
                 if let icon = icon {
                     icon.foregroundColor(ThemeManager.useWebTheme ?
-                        AppTheme.Color.textSubtle :
-                        AppTheme.GeneratedColors.textSecondary)
+                        PTDesignSystem.AppTheme.Color.textSubtle :
+                        PTDesignSystem.AppTheme.GeneratedColors.textSecondary)
                 }
             }
             .padding(12)
             .background(ThemeManager.useWebTheme ? 
-                AppTheme.Color.surface : 
-                AppTheme.GeneratedColors.cardBackground)
+                PTDesignSystem.AppTheme.Color.surface : 
+                PTDesignSystem.AppTheme.GeneratedColors.cardBackground)
             .cornerRadius(ThemeManager.useWebTheme ? 
-                AppTheme.Radius.md : 
-                AppTheme.GeneratedRadius.input)
+                PTDesignSystem.AppTheme.Radius.md : 
+                PTDesignSystem.AppTheme.GeneratedRadius.input)
             .overlay(
                 RoundedRectangle(cornerRadius: ThemeManager.useWebTheme ? 
-                    AppTheme.Radius.md : 
-                    AppTheme.GeneratedRadius.input)
+                    PTDesignSystem.AppTheme.Radius.md : 
+                    PTDesignSystem.AppTheme.GeneratedRadius.input)
                     .stroke(ThemeManager.useWebTheme ? 
-                        AppTheme.Color.borderDefault : 
-                        AppTheme.GeneratedColors.textSecondary.opacity(0.3), 
+                        PTDesignSystem.AppTheme.Color.borderDefault : 
+                        PTDesignSystem.AppTheme.GeneratedColors.textSecondary.opacity(0.3), 
                         lineWidth: 1)
             )
             // Add focus state highlight for web theme
             .overlay(
                 RoundedRectangle(cornerRadius: ThemeManager.useWebTheme ? 
-                    AppTheme.Radius.md : 
-                    AppTheme.GeneratedRadius.input)
+                    PTDesignSystem.AppTheme.Radius.md : 
+                    PTDesignSystem.AppTheme.GeneratedRadius.input)
                     .stroke(ThemeManager.useWebTheme ? 
+                        PTDesignSystem.AppTheme.Color.borderDefault : 
+                        PTDesignSystem.AppTheme.GeneratedColors.textSecondary.opacity(0.3), 
+                        lineWidth: 1)
+            )
         }
     }
 }

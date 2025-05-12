@@ -6,10 +6,22 @@ public struct AppTheme {
 }
 
 // Shadow type definition for use by GeneratedShadows
-public typealias Shadow = DSShadow
+public struct Shadow {
+    public let color: Color
+    public let radius: CGFloat
+    public let x: CGFloat
+    public let y: CGFloat
+    
+    public init(color: Color, radius: CGFloat, x: CGFloat, y: CGFloat) {
+        self.color = color
+        self.radius = radius
+        self.x = x
+        self.y = y
+    }
+}
 
 // Shadow sizes for convenience
-public enum DSShadowSize {
+public enum ShadowSize {
     case small
     case medium
     case large
@@ -26,8 +38,13 @@ public enum CardStyle {
 
 // Extension to apply shadow
 public extension View {
-    func withShadow(_ shadow: DSShadow) -> some View {
-        self.withDSShadow(shadow)
+    func withShadow(_ shadow: Shadow) -> some View {
+        self.shadow(
+            color: shadow.color,
+            radius: shadow.radius,
+            x: shadow.x,
+            y: shadow.y
+        )
     }
     
     /// Applies standard card styling using the design system tokens
@@ -49,8 +66,8 @@ public extension View {
     }
     
     /// Applies a shadow based on the design system tokens
-    func standardShadow(size: DSShadowSize = .medium) -> some View {
-        let shadow: DSShadow
+    func standardShadow(size: ShadowSize = .medium) -> some View {
+        let shadow: Shadow
         
         switch size {
         case .small:
@@ -61,7 +78,12 @@ public extension View {
             shadow = AppTheme.GeneratedShadows.large
         }
         
-        return self.withDSShadow(shadow)
+        return self.shadow(
+            color: shadow.color,
+            radius: shadow.radius,
+            x: shadow.x,
+            y: shadow.y
+        )
     }
     
     /// Applies a standard badge style

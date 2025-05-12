@@ -98,62 +98,70 @@ public struct PTButton: View {
     
     public var body: some View {
         Button(action: {
-            withAnimation(.easeInOut(duration: 0.1)) {
-                isPressed = true
-            }
-            
-            // Add haptic feedback
-            let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-            impactGenerator.impactOccurred()
-            
-            // Short delay to show press animation
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.easeInOut(duration: 0.1)) {
-                    isPressed = false
-                }
+            if !isLoading {
+                hapticFeedback(style: .light)
                 action()
             }
         }) {
             HStack(spacing: 8) {
-                // Show icon if provided
-                if let icon = icon, !isLoading {
+                if let icon = icon, style.shouldShowLeadingIcon {
                     icon
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: size.fontSize, height: size.fontSize)
-                        .foregroundColor(foregroundColor)
+                        .font(.system(size: style.iconSize))
+                        .foregroundColor(isEnabled ? style.foregroundColor : style.disabledColor)
                 }
-                
-                // Keep original label invisible while loading to avoid width-jump
-                Text(title)
-                    .opacity(isLoading ? 0 : 1)
-                    .font(.system(size: size.fontSize, weight: .semibold))
-                    .foregroundColor(foregroundColor)
                 
                 if isLoading {
-                    // Use ProgressView as a spinner
                     ProgressView()
-                        .progressViewStyle(.circular)
-                        .tintCompat(foregroundColor)
+                        .progressViewStyle(CircularProgressViewStyle(
+                            tint: style.foregroundColor)
+                        )
                         .scaleEffect(0.8)
+                } else {
+                    Text(title)
+                        .font(ThemeManager.useWebTheme ? PTDesignSystem.AppTheme.Typography.button : PTDesignSystem.AppTheme.GeneratedTypography.bodySemibold())
+                        .foregroundColor(isEnabled ? style.foregroundColor : style.disabledColor)
+                        .lineLimit(1)
+                }
+                
+                if let trailingIcon = trailingIcon {
+                    trailingIcon
+                        .font(.system(size: style.iconSize))
+                        .foregroundColor(isEnabled ? style.foregroundColor : style.disabledColor)
                 }
             }
-            .padding(.horizontal, size.padding.horizontal)
-            .padding(.vertical, size.padding.vertical)
-            .frame(maxWidth: fullWidth ? .infinity : nil)
+            .padding(style.contentPadding)
+            .frame(minWidth: style.minimumWidth, maxWidth: fullWidth ? .infinity : nil)
             .background(
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                    .fill(backgroundColor)
+                isEnabled 
+                ? style.backgroundColor 
+                : style.disabledBackgroundColor
             )
+            .cornerRadius(ThemeManager.useWebTheme ? 
+                PTDesignSystem.AppTheme.Radius.md : 
+                PTDesignSystem.AppTheme.GeneratedRadius.button)
             .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                    .stroke(style == .secondary ? AppTheme.GeneratedColors.tacticalGray.opacity(0.3) : Color.clear, lineWidth: 1)
+                RoundedRectangle(cornerRadius: ThemeManager.useWebTheme ? 
+                    PTDesignSystem.AppTheme.Radius.md : 
+                    PTDesignSystem.AppTheme.GeneratedRadius.button)
+                    .stroke(style.borderColor, lineWidth: style.borderWidth)
             )
-            .scaleEffect(isPressed && !reduceMotion ? 0.97 : 1.0)
-            .shadow(color: backgroundColor.opacity(style == .primary ? 0.3 : 0), radius: 4, x: 0, y: 2)
+            .shadow(
+                color: style.useShadow ? (ThemeManager.useWebTheme ? 
+                    PTDesignSystem.AppTheme.Shadow.button.color : 
+                    Color.black.opacity(0.1)) : Color.clear,
+                radius: style.useShadow ? (ThemeManager.useWebTheme ? 
+                    PTDesignSystem.AppTheme.Shadow.button.radius : 
+                    4) : 0,
+                x: style.useShadow ? (ThemeManager.useWebTheme ? 
+                    PTDesignSystem.AppTheme.Shadow.button.x : 
+                    0) : 0,
+                y: style.useShadow ? (ThemeManager.useWebTheme ? 
+                    PTDesignSystem.AppTheme.Shadow.button.y : 
+                    2) : 0
+            )
         }
-        .disabled(isLoading)  // prevent taps while busy
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isLoading)
+        .opacity(isEnabled ? 1.0 : 0.6)
+        .disabled(!isEnabled || isLoading)
     }
     
     private var backgroundColor: Color {

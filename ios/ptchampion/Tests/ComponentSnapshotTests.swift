@@ -52,6 +52,35 @@ class ComponentSnapshotTests: XCTestCase {
         // This is just a simplified version for demonstration
     }
     
+    // Test typography components
+    func testTypographySnapshots() {
+        // Typography samples - Light mode
+        snapshotTest("Typography", view: 
+            TypographySamples()
+                .padding()
+                .background(Color.background)
+                .previewLayout(.sizeThatFits)
+        )
+        
+        // Typography samples - Dark mode
+        snapshotTest("Typography", view: 
+            TypographySamples()
+                .padding()
+                .background(Color.background)
+                .previewLayout(.sizeThatFits),
+            colorScheme: .dark
+        )
+        
+        // Typography with dynamic type - Large text
+        snapshotTest("TypographyLargeText", view: 
+            TypographySamples()
+                .padding()
+                .background(Color.background)
+                .environment(\.sizeCategory, .accessibilityExtraLarge)
+                .previewLayout(.sizeThatFits)
+        )
+    }
+    
     // Test button component snapshots in both light and dark mode
     func testButtonSnapshots() {
         // Primary button - Light mode
@@ -120,6 +149,25 @@ class ComponentSnapshotTests: XCTestCase {
         )
     }
     
+    // Test container layouts for responsive design
+    func testContainerSnapshots() {
+        // Standard container - Phone
+        snapshotTest("ContainerPhone", view:
+            ContainerDemo()
+                .frame(width: 375)
+                .background(Color.background)
+                .previewLayout(.sizeThatFits)
+        )
+        
+        // Standard container - iPad
+        snapshotTest("ContainerIPad", view:
+            ContainerDemo()
+                .frame(width: 768)
+                .background(Color.background)
+                .previewLayout(.sizeThatFits)
+        )
+    }
+    
     // Test text field snapshots in both light and dark mode
     func testTextFieldSnapshots() {
         // Standard text field - Light mode
@@ -173,6 +221,23 @@ class ComponentSnapshotTests: XCTestCase {
     
     // Test card components in both light and dark mode
     func testCardSnapshots() {
+        // Card variants - Light mode
+        snapshotTest("CardVariants", view:
+            CardVariantsDemo()
+                .padding()
+                .background(Color.background)
+                .previewLayout(.sizeThatFits)
+        )
+        
+        // Card variants - Dark mode
+        snapshotTest("CardVariants", view:
+            CardVariantsDemo()
+                .padding()
+                .background(Color.background)
+                .previewLayout(.sizeThatFits),
+            colorScheme: .dark
+        )
+        
         // Metric card - Light mode
         snapshotTest("MetricCard", view:
             MetricCard(
@@ -255,6 +320,101 @@ class ComponentSnapshotTests: XCTestCase {
                 .padding()
                 .previewLayout(.sizeThatFits)
         )
+    }
+}
+
+// MARK: - Helper Views for Snapshots
+
+struct TypographySamples: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Heading 1").heading1()
+            Text("Heading 2").heading2()
+            Text("Heading 3").heading3()
+            Text("Heading 4").heading4()
+            
+            Text("Body text - Regular").body()
+            Text("Body text - Bold").bodyBold()
+            Text("Body text - Semibold").bodySemibold()
+            
+            Text("Small text - Regular").small()
+            Text("Small text - Semibold").smallSemibold()
+            
+            Text("Caption text").caption()
+            Text("LABEL TEXT").label()
+            
+            Text("1,234").metric()
+            Text("code sample").code()
+        }
+        .background(Color.background)
+    }
+}
+
+struct ContainerDemo: View {
+    var body: some View {
+        VStack(spacing: 32) {
+            Text("Standard Container")
+                .heading2()
+            
+            Text("This container applies the standard horizontal padding and respects the max width constraint. On larger devices like iPads, the padding increases automatically.")
+                .body()
+                .padding(.bottom, 16)
+            
+            VStack(spacing: 8) {
+                ForEach(0..<3) { _ in
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.muted)
+                        .frame(height: 48)
+                }
+            }
+        }
+        .container()
+        .background(Color.card)
+    }
+}
+
+struct CardVariantsDemo: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Card Variants").heading3()
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            VStack(spacing: 16) {
+                // Default card
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Default Card").bodySemibold()
+                    Text("Standard card style").small()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .card()
+                
+                // Interactive card
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Interactive Card").bodySemibold()
+                    Text("Has hover/press states").small()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .interactiveCard()
+                
+                // Elevated card
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Elevated Card").bodySemibold()
+                    Text("More pronounced shadow").small()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .elevatedCard()
+                
+                // Panel card
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Panel Card").bodySemibold()
+                    Text("Darker background, smaller radius").small()
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .panelCard()
+            }
+        }
+        .padding()
+        .background(Color.background)
     }
 }
 
