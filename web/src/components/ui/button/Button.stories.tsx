@@ -15,7 +15,7 @@ const meta = {
   argTypes: {
     variant: {
       control: 'select',
-      options: ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'],
+      options: ['default', 'primary', 'destructive', 'outline', 'secondary', 'secondary-fill', 'ghost', 'link'],
       description: 'The variant style of the button',
     },
     size: {
@@ -35,14 +35,19 @@ const meta = {
       control: 'boolean',
       description: 'Whether to render as a child element instead of a button',
     },
+    uppercase: {
+      control: 'boolean',
+      description: 'Whether to use uppercase text (default: true)',
+    },
   },
   args: {
     // More on args: https://storybook.js.org/docs/writing-stories/args
     children: 'Button',
-    variant: 'default',
+    variant: 'primary',
     size: 'default',
     disabled: false,
     asChild: false,
+    uppercase: true,
   },
 } satisfies Meta<typeof Button>;
 
@@ -50,16 +55,31 @@ export default meta;
 type Story = StoryObj<typeof Button>;
 
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Primary',
+  },
+};
+
 export const Default: Story = {
   args: {
-    children: 'Button',
+    variant: 'default',
+    children: 'Default (Primary)',
   },
 };
 
 export const Secondary: Story = {
   args: {
-    variant: 'secondary',
-    children: 'Secondary',
+    variant: 'outline',
+    children: 'Secondary (Outline)',
+  },
+};
+
+export const SecondaryFill: Story = {
+  args: {
+    variant: 'secondary-fill',
+    children: 'Secondary Fill',
   },
 };
 
@@ -117,6 +137,13 @@ export const Disabled: Story = {
   args: {
     disabled: true,
     children: 'Disabled Button',
+  },
+};
+
+export const LowercaseText: Story = {
+  args: {
+    uppercase: false,
+    children: 'Lowercase Text',
   },
 };
 
