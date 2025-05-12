@@ -18,6 +18,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { createGrader } from '../grading';
 import { ExerciseId } from '../constants/exercises';
 import { PoseDetector } from '../services/poseDetector';
+import cameraManager from '@/services/CameraManager';
 
 /**
  * Class implementation of PullupTrackerViewModel
@@ -33,6 +34,7 @@ export class PullupTrackerViewModel extends BaseTrackerViewModel {
   private useNewPoseDetector: boolean = false;
   private poseDetector: PoseDetector | null = null;
   private animationFrameId: number | null = null;
+  private facingMode: 'user' | 'environment' = 'environment';
 
   constructor(useNewPoseDetector = false) {
     super(ExerciseType.PULLUP);
@@ -62,6 +64,19 @@ export class PullupTrackerViewModel extends BaseTrackerViewModel {
         // Initialize the new BlazePose detector
         this.poseDetector = new PoseDetector();
         await this.poseDetector.init('/models/pose_landmarker_full.task');
+        // Start rear camera by default
+        if (!this.videoRef?.current) {
+          this.setError(TrackerErrorType.UNKNOWN, 'Video element not available');
+          return;
+        }
+
+        const camOk = await cameraManager.startCamera(this.videoRef.current, { facingMode: 'environment' });
+        if (!camOk) {
+          const errMsg = cameraManager.getError()?.message || 'Failed to start camera';
+          this.setError(TrackerErrorType.CAMERA_PERMISSION, errMsg);
+          return;
+        }
+
         this._status = SessionStatus.READY;
         this._error = null;
       } else {
@@ -97,6 +112,10 @@ export class PullupTrackerViewModel extends BaseTrackerViewModel {
 
     if (this.useNewPoseDetector) {
       // Start the animation frame loop for the new detector
+      if (this.canvasRef?.current && this.videoRef?.current) {
+        this.canvasRef.current.width = this.videoRef.current.videoWidth;
+        this.canvasRef.current.height = this.videoRef.current.videoHeight;
+      }
       this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
     } else {
       // Start pose detection with callback to handle results
@@ -195,6 +214,7 @@ export class PullupTrackerViewModel extends BaseTrackerViewModel {
         cancelAnimationFrame(this.animationFrameId);
         this.animationFrameId = null;
       }
+      cameraManager.removeConsumer();
     } else {
       poseDetectorService.stop();
       poseDetectorService.releaseConsumer();
@@ -388,6 +408,18 @@ export class PullupTrackerViewModel extends BaseTrackerViewModel {
     this.analyzer.reset();
     this.grader.reset(); // Reset the grader as well
   }
+
+  /** Flip camera */
+  async flipCamera(): Promise<void> {
+    if (!this.videoRef?.current) return;
+    try {
+      const ok = await cameraManager.switchFacing();
+      if (ok) this.facingMode = cameraManager.getFacingMode();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unknown error';
+      this.setError(TrackerErrorType.CAMERA_PERMISSION, msg);
+    }
+  }
 }
 
 /**
@@ -489,6 +521,10 @@ export function usePullupTrackerViewModel(useNewPoseDetector = true) {
     return await viewModel.saveResults();
   }, [viewModel]);
   
+  const flipCamera = useCallback(async () => {
+    await viewModel.flipCamera();
+  }, [viewModel]);
+  
   // Return the state and methods
   return {
     // State
@@ -509,7 +545,8 @@ export function usePullupTrackerViewModel(useNewPoseDetector = true) {
     pauseSession,
     finishSession,
     resetSession,
-    saveResults
+    saveResults,
+    flipCamera
   };
 }
 

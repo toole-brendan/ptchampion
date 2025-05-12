@@ -21,6 +21,7 @@ export class CameraManager {
   private lastError: Error | null = null;
   private paused: boolean = false;
   private needsUserGestureForResume: boolean = false;
+  private currentFacing: 'user' | 'environment' = 'user';
   
   /**
    * Start the camera and attach it to a video element
@@ -50,9 +51,11 @@ export class CameraManager {
     
     try {
       // Configure camera constraints
+      const facingMode = options.facingMode || 'user';
+      this.currentFacing = facingMode;
       const constraints: MediaStreamConstraints = {
         video: {
-          facingMode: options.facingMode || 'user',
+          facingMode: { ideal: facingMode },
           width: options.width ? { ideal: options.width } : { ideal: 640 },
           height: options.height ? { ideal: options.height } : { ideal: 480 },
           frameRate: options.frameRate ? { ideal: options.frameRate } : { ideal: 30 }
@@ -221,6 +224,43 @@ export class CameraManager {
     
     // Try to play - this may throw on iOS if no user gesture occurred
     await this.videoElement.play();
+  }
+
+  /**
+   * Switch between front (user) and rear (environment) cameras.
+   * Works by stopping current tracks and requesting a new stream with the opposite facingMode.
+   */
+  public async switchFacing(): Promise<boolean> {
+    if (!this.videoElement) {
+      console.warn('CameraManager: No video element to switch camera');
+      return false;
+    }
+
+    const newMode: 'user' | 'environment' = this.currentFacing === 'user' ? 'environment' : 'user';
+
+    // Preserve reference before stopping
+    const targetVideo = this.videoElement;
+
+    // Stop existing stream but keep video element reference
+    if (this.stream) {
+      this.stream.getTracks().forEach(track => track.stop());
+      targetVideo.srcObject = null;
+      this.stream = null;
+    }
+
+    // Start camera again with new mode
+    const success = await this.startCamera(targetVideo, {
+      facingMode: newMode
+    });
+
+    return success;
+  }
+
+  /**
+   * Get current facing mode.
+   */
+  public getFacingMode(): 'user' | 'environment' {
+    return this.currentFacing;
   }
 }
 

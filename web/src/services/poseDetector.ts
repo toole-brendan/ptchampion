@@ -15,6 +15,7 @@ export interface PoseDetectorResult {
 export class PoseDetector {
   private landmarker?: PoseLandmarker;
   private lastVideoTime = -1;
+  private lastErrorLogged = 0; // Timestamp of last error logged
 
   async init(modelPath = "/models/pose_landmarker_full.task") {
     const vision = await FilesetResolver.forVisionTasks(
@@ -33,6 +34,12 @@ export class PoseDetector {
   /** Caller pumps frames in a `requestAnimationFrame` loop */
   detect(video: HTMLVideoElement): PoseDetectorResult | null {
     if (!this.landmarker) return null;
+    
+    // Guard against empty or invalid video frames
+    if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
+      return null; // Skip detection on invalid/uninitialized frames
+    }
+    
     if (video.currentTime === this.lastVideoTime) return null; // same frame
     this.lastVideoTime = video.currentTime;
 
@@ -41,10 +48,20 @@ export class PoseDetector {
     // Create a temporary result variable
     let resultValue: PoseLandmarkerResult | undefined;
     
-    // Call detectForVideo synchronously with a callback
-    this.landmarker.detectForVideo(video, now, (detectionResult) => {
-      resultValue = detectionResult;
-    });
+    try {
+      // Call detectForVideo synchronously with a callback
+      this.landmarker.detectForVideo(video, now, (detectionResult) => {
+        resultValue = detectionResult;
+      });
+    } catch (error) {
+      // Rate-limit error logging to avoid flooding the console
+      const currentTime = Date.now();
+      if (currentTime - this.lastErrorLogged > 5000) { // Log at most once per 5 seconds
+        console.error('MediaPipe detection error:', error);
+        this.lastErrorLogged = currentTime;
+      }
+      return null; // Return null on error
+    }
     
     // If no results or no landmarks detected, return null
     if (!resultValue || !resultValue.landmarks || resultValue.landmarks.length === 0) {
