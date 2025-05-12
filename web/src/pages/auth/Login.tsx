@@ -102,17 +102,17 @@ const LoginPage: React.FC = () => {
         <div className="mb-4 flex flex-col items-center">
           <div className="relative mb-2">
             <div 
-              className="cursor-pointer flex flex-col items-center" 
+              className="flex cursor-pointer flex-col items-center" 
               onClick={handleLogoClick}
               style={{ position: 'relative' }}
             >
               <LogoIcon className="relative z-10" />
               {logoTaps > 0 && (
-                <div className="absolute top-0 right-0 bg-brass-gold text-white rounded-full w-8 h-8 flex items-center justify-center z-20">
+                <div className="absolute right-0 top-0 z-20 flex size-8 items-center justify-center rounded-full bg-brass-gold text-white">
                   {logoTaps}
                 </div>
               )}
-              <div className="text-xs text-center mt-1 text-brass-gold font-semibold">
+              <div className="mt-1 text-center font-semibold text-xs text-brass-gold">
                 Tap for developer menu ({logoTaps}/5)
               </div>
               <div className="absolute inset-x-0 bottom-0 h-4 bg-brass-gold/10 blur-md"></div>
@@ -127,7 +127,7 @@ const LoginPage: React.FC = () => {
           </Alert>
         )}
 
-        <div className="relative overflow-hidden rounded-md border border-army-tan/30 bg-card-background shadow-md">
+        <div className="bg-card-background relative overflow-hidden rounded-md border border-army-tan/30 shadow-md">
           <form onSubmit={handleSubmit} className="space-y-4 p-5">
             <div className="mb-2">
               <h2 className="mb-2 text-center font-heading text-xl uppercase text-foreground">Welcome Back</h2>

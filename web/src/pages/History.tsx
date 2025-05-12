@@ -35,10 +35,10 @@ const MilitaryCorners: React.FC = () => (
     <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
     
     {/* Diagonal lines for corners */}
-    <div className="bg-tactical-gray/50 absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45"></div>
+    <div className="absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45 bg-tactical-gray/50"></div>
+    <div className="absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45 bg-tactical-gray/50"></div>
+    <div className="absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45 bg-tactical-gray/50"></div>
+    <div className="absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45 bg-tactical-gray/50"></div>
   </>
 );
 
@@ -264,7 +264,7 @@ const History: React.FC = () => {
               <Button 
                 onClick={() => refetch()} 
                 variant="outline"
-                className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
+                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
               >
                 TRY AGAIN
               </Button>
@@ -370,7 +370,7 @@ const History: React.FC = () => {
             <div className="space-y-2">
               <label className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</label>
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
-                <SelectTrigger className="border-army-tan/30 w-full bg-cream">
+                <SelectTrigger className="w-full border-army-tan/30 bg-cream">
                   <SelectValue placeholder="Filter by exercise..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -388,7 +388,7 @@ const History: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={() => { setDateRange(undefined); setExerciseFilter('All'); }} 
-              className="hover:bg-brass-gold/10 w-full border-brass-gold text-brass-gold"
+              className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10"
             >
               CLEAR FILTERS
             </Button>
@@ -487,8 +487,8 @@ const History: React.FC = () => {
           {personalBests.length > 0 ? (
             <ul className="space-y-3">
               {personalBests.map((pb, index) => (
-                <li key={index} className="bg-cream/30 relative overflow-hidden rounded-card border-l-4 border-brass-gold p-3 shadow-small">
-                  <div className="bg-brass-gold/40 absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded"></div>
+                <li key={index} className="relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream/30 p-3 shadow-small">
+                  <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
                       <span className="font-heading text-sm uppercase text-command-black">{pb.exercise}</span>
@@ -524,7 +524,7 @@ const History: React.FC = () => {
           </p>
         </div>
         <div className="p-content">
-          <div className="border-olive-mist/20 overflow-hidden rounded-card border">
+          <div className="overflow-hidden rounded-card border border-olive-mist/20">
             <Table>
               <TableHeader>
                 <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
@@ -537,7 +537,7 @@ const History: React.FC = () => {
               <TableBody>
                 {filteredHistory.length > 0 ? (
                   filteredHistory.map((session) => (
-                    <TableRow key={session.id} className="border-olive-mist/10 hover:bg-brass-gold/5 border-b text-sm transition-colors">
+                    <TableRow key={session.id} className="border-b border-olive-mist/10 text-sm transition-colors hover:bg-brass-gold/5">
                       <TableCell className="font-semibold uppercase text-command-black">{session.exercise_type}</TableCell>
                       <TableCell className="text-tactical-gray">{format(new Date(session.created_at), "PP p")}</TableCell>
                       <TableCell className="text-tactical-gray">{session.time_in_seconds ? formatTime(session.time_in_seconds) : '-'}</TableCell>
@@ -573,7 +573,7 @@ const History: React.FC = () => {
                 size="sm"
                 onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                 disabled={page <= 1 || isFetching}
-                className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
+                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
               >
                 <ChevronLeft className="mr-1 size-4" /> PREV
               </Button>
@@ -582,7 +582,7 @@ const History: React.FC = () => {
                 size="sm"
                 onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={page >= totalPages || isFetching}
-                className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
+                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
               >
                 NEXT <ChevronRight className="ml-1 size-4" />
               </Button>

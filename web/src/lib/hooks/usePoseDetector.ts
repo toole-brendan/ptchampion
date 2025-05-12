@@ -110,7 +110,7 @@ export function usePoseDetector(
       // Don't destroy the service as it may be used by other components
       poseDetectorService.releaseConsumer();
     };
-  }, [options]);
+  }, [options, isRunning]);
   
   // Subscribe to pose events
   useEffect(() => {

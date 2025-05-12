@@ -359,7 +359,7 @@ const RunningTracker: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Map Integration */}
-          <div className="relative h-64 md:h-80 w-full overflow-hidden rounded-md bg-muted">
+          <div className="relative h-64 w-full overflow-hidden rounded-md bg-muted md:h-80">
             <MapContainer 
               ref={mapRef}
               center={currentPosition || [51.505, -0.09]} // Default center if no position yet
@@ -444,7 +444,7 @@ const RunningTracker: React.FC = () => {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="bg-background/50 flex justify-center space-x-4 border-t px-6 py-4">
+        <CardFooter className="flex justify-center space-x-4 border-t bg-background/50 px-6 py-4">
             {!isFinished ? (
               <>
                 <Button 

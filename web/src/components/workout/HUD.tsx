@@ -23,15 +23,15 @@ const HUD: React.FC<HUDProps> = ({
   // Render for running workout (distance, time, pace)
   if (isRunning) {
     return (
-      <div className="absolute top-2 left-2 grid gap-2 pointer-events-none">
+      <div className="pointer-events-none absolute left-2 top-2 grid gap-2">
         <span className="rounded bg-black/60 px-3 py-1 text-xs text-white">
           Distance: {distance?.toFixed(2) || '0.00'} mi
         </span>
-        <span className="rounded bg-black/60 px-3 py-1 text-xs text-white flex items-center">
+        <span className="flex items-center rounded bg-black/60 px-3 py-1 text-xs text-white">
           <Timer className="mr-1 size-3" /> {formattedTime}
         </span>
         {pace && (
-          <span className="rounded bg-black/60 px-3 py-1 text-xs text-white flex items-center">
+          <span className="flex items-center rounded bg-black/60 px-3 py-1 text-xs text-white">
             <Gauge className="mr-1 size-3" /> Pace: {pace}
           </span>
         )}
@@ -41,21 +41,21 @@ const HUD: React.FC<HUDProps> = ({
 
   // Original HUD for rep-based exercises
   return (
-    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center pointer-events-none text-white">
+    <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center text-white">
       {/* Rep Count - Large centered display */}
-      <div className={`text-7xl lg:text-8xl font-bold mb-2 ${exerciseColor} animate-pop`}>
+      <div className={`mb-2 font-bold text-7xl lg:text-8xl ${exerciseColor} animate-pop`}>
         {repCount}
       </div>
       
       {/* Timer */}
-      <div className="flex items-center justify-center text-xl font-medium opacity-90 mb-4">
+      <div className="mb-4 flex items-center justify-center text-xl font-medium opacity-90">
         <Timer className="mr-1.5 size-5" />
         {formattedTime}
       </div>
       
       {/* Form Feedback - Floating pill at bottom */}
       {formFeedback && (
-        <div className="absolute bottom-16 px-4 py-2 bg-destructive/80 rounded-md text-sm font-semibold mx-auto">
+        <div className="absolute bottom-16 mx-auto rounded-md bg-destructive/80 px-4 py-2 font-semibold text-sm">
           {formFeedback}
         </div>
       )}

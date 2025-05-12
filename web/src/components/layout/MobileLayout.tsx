@@ -36,7 +36,7 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="bg-brass-gold bg-opacity-20 flex size-10 items-center justify-center rounded-full text-brass-gold">
+          <div className="flex size-10 items-center justify-center rounded-full bg-brass-gold bg-opacity-20 text-brass-gold">
             <User size={20} />
           </div>
         </div>

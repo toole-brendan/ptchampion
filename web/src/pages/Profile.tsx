@@ -231,18 +231,18 @@ const Profile: React.FC = () => {
         <div className="h-8 w-1/2 rounded bg-muted"></div> {/* Header placeholder */}
         {[1, 2, 3].map((i) => ( // Card placeholders
           <div key={i} className="space-y-4 rounded-lg bg-muted p-6">
-            <div className="bg-muted-foreground/20 h-6 w-1/3 rounded"></div>
-            <div className="bg-muted-foreground/10 h-4 w-2/3 rounded"></div>
+            <div className="h-6 w-1/3 rounded bg-muted-foreground/20"></div>
+            <div className="h-4 w-2/3 rounded bg-muted-foreground/10"></div>
             <div className="space-y-2 pt-2">
-              <div className="bg-muted-foreground/10 h-4 w-1/4 rounded"></div>
-              <div className="bg-muted-foreground/20 h-10 rounded"></div>
+              <div className="h-4 w-1/4 rounded bg-muted-foreground/10"></div>
+              <div className="h-10 rounded bg-muted-foreground/20"></div>
             </div>
             <div className="space-y-2 pt-2">
-              <div className="bg-muted-foreground/10 h-4 w-1/4 rounded"></div>
-              <div className="bg-muted-foreground/20 h-10 rounded"></div>
+              <div className="h-4 w-1/4 rounded bg-muted-foreground/10"></div>
+              <div className="h-10 rounded bg-muted-foreground/20"></div>
             </div>
              <div className="border-border/50 border-t pt-4">
-               <div className="bg-muted-foreground/20 h-10 w-1/4 rounded"></div>
+               <div className="h-10 w-1/4 rounded bg-muted-foreground/20"></div>
              </div>
           </div>
         ))}
@@ -427,7 +427,7 @@ const Profile: React.FC = () => {
             {/* Delete Account button with confirmation dialog */}
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="outline" className="border-destructive text-destructive hover:bg-destructive/10 w-full sm:w-auto ml-0 sm:ml-2">
+                <Button variant="outline" className="ml-0 w-full border-destructive text-destructive hover:bg-destructive/10 sm:ml-2 sm:w-auto">
                   <AlertTriangle className="mr-2 size-4" /> Delete Account
                 </Button>
               </DialogTrigger>

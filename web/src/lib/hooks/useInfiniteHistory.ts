@@ -115,7 +115,7 @@ export const useInfiniteHistory = ({
 
   // Calculate summary stats from filtered items
   const summaryStats = useMemo(() => {
-    let totalWorkouts = dateFilteredItems.length;
+    const totalWorkouts = dateFilteredItems.length;
     let totalReps = 0;
     let totalSeconds = 0;
     let totalDistance = 0;

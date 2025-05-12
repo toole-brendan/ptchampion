@@ -50,7 +50,7 @@ const NotFound = () => (
     <p className="text-tactical-gray">The page you're looking for does not exist.</p>
     <button 
       onClick={() => window.location.href = '/'}
-      className="hover:bg-brass-gold/90 mt-4 rounded-lg bg-brass-gold px-4 py-2 text-white transition-colors"
+      className="mt-4 rounded-lg bg-brass-gold px-4 py-2 text-white transition-colors hover:bg-brass-gold/90"
     >
       Return Home
     </button>

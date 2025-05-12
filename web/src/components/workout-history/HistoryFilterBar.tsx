@@ -1,6 +1,6 @@
 import React from 'react';
-import { format, subDays, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
-import { Calendar as CalendarIcon, Filter, X } from 'lucide-react';
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import { Calendar as CalendarIcon, X } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -169,7 +169,7 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
         <div className="space-y-2 sm:w-1/2">
           <label className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</label>
           <Select value={exerciseFilter} onValueChange={onExerciseFilterChange}>
-            <SelectTrigger className="border-army-tan/30 w-full bg-cream">
+            <SelectTrigger className="w-full border-army-tan/30 bg-cream">
               <SelectValue placeholder="Filter by exercise..." />
             </SelectTrigger>
             <SelectContent>
@@ -188,7 +188,7 @@ export const HistoryFilterBar: React.FC<HistoryFilterBarProps> = ({
         <Button 
           variant="outline" 
           onClick={onClearFilters}
-          className="hover:bg-brass-gold/10 w-full border-brass-gold text-brass-gold"
+          className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10"
         >
           <X className="mr-2 size-4" /> CLEAR FILTERS
         </Button>

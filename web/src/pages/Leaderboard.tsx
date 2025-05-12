@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // For user avatars
 import {
@@ -36,10 +36,10 @@ const MilitaryCorners: React.FC = () => (
     <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
     
     {/* Diagonal lines for corners */}
-    <div className="bg-tactical-gray/50 absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45"></div>
-    <div className="bg-tactical-gray/50 absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45"></div>
+    <div className="absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45 bg-tactical-gray/50"></div>
+    <div className="absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45 bg-tactical-gray/50"></div>
+    <div className="absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45 bg-tactical-gray/50"></div>
+    <div className="absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45 bg-tactical-gray/50"></div>
   </>
 );
 
@@ -98,8 +98,8 @@ const Leaderboard: React.FC = () => {
     error: null
   });
 
-  // Request geolocation permission
-  const requestGeolocation = () => {
+  // Request geolocation permission - wrapped in useCallback to avoid frequent regeneration
+  const requestGeolocation = useCallback(() => {
     if (!geoState.isSupported) {
       setGeoState(prev => ({ ...prev, error: "Geolocation is not supported by your browser" }));
       return;
@@ -142,7 +142,7 @@ const Leaderboard: React.FC = () => {
         maximumAge: 0
       }
     );
-  };
+  }, [geoState.isSupported, toast]);
 
   // Use React Query to fetch leaderboard data
   const { 
@@ -187,7 +187,7 @@ const Leaderboard: React.FC = () => {
       // If local scope selected but no coordinates, request them
       requestGeolocation();
     }
-  }, [scopeFilter]);
+  }, [scopeFilter, geoState.coordinates, geoState.error, requestGeolocation]);
 
   // Process the leaderboard data for display
   const processedLeaderboard = useMemo(() => {
@@ -206,7 +206,7 @@ const Leaderboard: React.FC = () => {
   }, [leaderboardData, exerciseFilter]);
 
   return (
-    <div className="space-y-section max-w-[720px] mx-auto">
+    <div className="mx-auto max-w-[720px] space-y-section">
       <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
         <MilitaryCorners />
         <div className="mb-4 text-center">
@@ -239,7 +239,7 @@ const Leaderboard: React.FC = () => {
       
       {/* Location Status Alert - Only show when actively looking for location */}
       {geoState.isLoading && (
-        <Alert className="bg-olive-mist/10 rounded-card border-olive-mist">
+        <Alert className="rounded-card border-olive-mist bg-olive-mist/10">
           <MapPin className="size-5 text-brass-gold" />
           <AlertTitle className="font-heading text-sm">Getting your location</AlertTitle>
           <AlertDescription>
@@ -286,8 +286,8 @@ const Leaderboard: React.FC = () => {
         
         <div className="p-content">
           {/* Filter Controls - Improved for responsiveness */}
-          <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2 min-w-[140px]">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="min-w-[140px] space-y-2">
               <Label htmlFor="exercise-filter" className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
                 <SelectTrigger 
@@ -307,7 +307,7 @@ const Leaderboard: React.FC = () => {
               </Select>
             </div>
             
-            <div className="space-y-2 min-w-[140px]">
+            <div className="min-w-[140px] space-y-2">
               <Label htmlFor="scope-filter" className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Leaderboard Scope</Label>
               <Select value={scopeFilter} onValueChange={setScopeFilter}>
                 <SelectTrigger 
@@ -328,7 +328,7 @@ const Leaderboard: React.FC = () => {
 
           {isLoading ? (
             // Skeleton loading state
-            <div className="border-olive-mist/20 overflow-hidden rounded-card border">
+            <div className="overflow-hidden rounded-card border border-olive-mist/20">
               <Table className="w-full">
                 <TableHeader>
                   <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
@@ -352,7 +352,7 @@ const Leaderboard: React.FC = () => {
               </div>
             </div>
           ) : processedLeaderboard.length > 0 ? (
-            <div className="border-olive-mist/20 overflow-hidden rounded-card border relative">
+            <div className="relative overflow-hidden rounded-card border border-olive-mist/20">
               <Table className="w-full">
                 <caption className="sr-only">
                   {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Leaderboard - {scopeFilter}

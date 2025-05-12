@@ -29,7 +29,7 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           </div>
           <div className="items-center gap-2 md:flex">
             {/* Profile Menu (Can be expanded later) */}
-            <div className="bg-brass-gold bg-opacity-20 hover:bg-brass-gold hover:bg-opacity-30 focus:ring/50 flex size-10 cursor-pointer items-center justify-center rounded-full text-brass-gold transition-colors focus:outline-none focus:ring-2 focus:ring-brass-gold">
+            <div className="focus:ring/50 flex size-10 cursor-pointer items-center justify-center rounded-full bg-brass-gold/20 text-brass-gold transition-colors hover:bg-brass-gold/30 focus:outline-none focus:ring-2 focus:ring-brass-gold">
               <User size={20} />
             </div>
           </div>

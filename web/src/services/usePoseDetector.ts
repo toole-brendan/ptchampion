@@ -23,9 +23,12 @@ export function usePoseDetector(model: "lite" | "full" | "heavy" = "full") {
         tickRef.current!(); // kick render loop
       }
     })();
+    
     return () => {
-      if (videoRef.current?.srcObject) {
-        (videoRef.current.srcObject as MediaStream)
+      // Store video ref in local variable to avoid stale ref in cleanup
+      const video = videoRef.current;
+      if (video?.srcObject) {
+        (video.srcObject as MediaStream)
           .getTracks()
           .forEach((t) => t.stop());
       }

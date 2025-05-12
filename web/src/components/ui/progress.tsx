@@ -10,7 +10,7 @@ const progressVariants = cva(
     variants: {
       variant: {
         default: "bg-cream-dark",
-        ghost: "border-brass-gold/20 border bg-transparent",
+        ghost: "border border-brass-gold/20 bg-transparent",
       },
       size: {
         default: "h-2",

@@ -116,8 +116,9 @@ export function useBluetoothHRM(): [BluetoothHRMState, BluetoothHRMActions] {
     }
   }, []);
 
-  // Clean up function for disconnection
-  const cleanUp = useCallback(() => {
+  // Handle device disconnection
+  const onDisconnected = useCallback(() => {
+    // Clean up Bluetooth connections
     if (heartRateChar) {
       try {
         heartRateChar.removeEventListener('characteristicvaluechanged', handleHeartRateChanged);
@@ -138,11 +139,6 @@ export function useBluetoothHRM(): [BluetoothHRMState, BluetoothHRMActions] {
       heartRate: null 
     }));
   }, [device, heartRateChar, handleHeartRateChanged]);
-
-  // Handle device disconnection
-  const onDisconnected = useCallback(() => {
-    cleanUp();
-  }, [cleanUp]);
 
   // Connect to HRM device
   const connect = useCallback(async () => {
@@ -205,17 +201,17 @@ export function useBluetoothHRM(): [BluetoothHRMState, BluetoothHRMActions] {
         status: 'error', 
         error: error instanceof Error ? error : new Error(String(error)) 
       }));
-      cleanUp();
+      onDisconnected();
     }
-  }, [isSupported, onDisconnected, handleHeartRateChanged, cleanUp]);
+  }, [isSupported, onDisconnected, handleHeartRateChanged]);
 
   // Disconnect from device
   const disconnect = useCallback(() => {
     if (server && server.connected) {
       server.disconnect();
     }
-    cleanUp();
-  }, [server, cleanUp]);
+    onDisconnected();
+  }, [server, onDisconnected]);
 
   // Cleanup on unmount
   useEffect(() => {

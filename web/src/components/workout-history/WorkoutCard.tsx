@@ -15,9 +15,6 @@ const getExerciseInfo = (exerciseType: string): {
 } => {
   const typeLower = exerciseType.toLowerCase();
   const isRunning = typeLower.includes('run');
-  const isPushup = typeLower.includes('push');
-  const isSitup = typeLower.includes('sit');
-  const isPullup = typeLower.includes('pull');
 
   if (isRunning) {
     return {
@@ -50,7 +47,7 @@ const GradeBadge: React.FC<{ grade: number }> = ({ grade }) => {
   }
   
   return (
-    <div className={`${color} px-2 py-0.5 rounded-md text-white text-xs font-semibold uppercase`}>
+    <div className={`${color} rounded-md px-2 py-0.5 font-semibold text-xs uppercase text-white`}>
       {grade}%
     </div>
   );

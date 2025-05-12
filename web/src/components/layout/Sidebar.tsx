@@ -162,7 +162,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="hover:bg-olive-mist hover:bg-opacity-10 text-army-tan hover:text-brass-gold"
+            className="text-army-tan hover:bg-olive-mist hover:bg-opacity-10 hover:text-brass-gold"
             onClick={onMobileClose}
           >
             <XIcon className="size-5" />
@@ -171,7 +171,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {/* Logo section - properly centered */}
-      <div className="border-cream border-opacity-10 flex items-center justify-center border-b p-4 py-6">
+      <div className="flex items-center justify-center border-b border-cream border-opacity-10 p-4 py-6">
         <LogoIcon className={isCollapsed ? "size-12" : "size-14"} />
       </div>
       

@@ -58,7 +58,7 @@ export const InfiniteScrollSentinel: React.FC<InfiniteScrollSentinelProps> = ({
         <Button 
           variant="outline" 
           onClick={onLoadMore}
-          className="hover:bg-brass-gold/10 border-brass-gold text-brass-gold"
+          className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
         >
           Load More
         </Button>

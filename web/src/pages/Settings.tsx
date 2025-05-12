@@ -173,12 +173,12 @@ const Settings: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex justify-between items-center">
+            <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <Heart className="mr-2 size-4 text-brass-gold" />
                 <span className="text-sm">App Version</span>
               </div>
-              <span className="text-sm font-mono text-muted-foreground">{APP_VERSION}</span>
+              <span className="font-mono text-sm text-muted-foreground">{APP_VERSION}</span>
             </div>
             
             <Separator />
@@ -186,7 +186,7 @@ const Settings: React.FC = () => {
             <div className="flex flex-col space-y-2">
               <div className="flex items-center">
                 <Shield className="mr-2 size-4 text-brass-gold" />
-                <span className="text-sm font-semibold">Legal Documents</span>
+                <span className="font-semibold text-sm">Legal Documents</span>
               </div>
               
               <div className="ml-6 space-y-2">
@@ -209,7 +209,7 @@ const Settings: React.FC = () => {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="text-center text-xs text-muted-foreground border-t pt-4">
+        <CardFooter className="border-t pt-4 text-center text-xs text-muted-foreground">
           © {new Date().getFullYear()} PT Champion. All rights reserved.
         </CardFooter>
       </Card>

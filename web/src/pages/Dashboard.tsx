@@ -47,10 +47,10 @@ const MilitaryCorners: React.FC<{ alwaysVisible?: boolean }> = ({ alwaysVisible 
     <div className="absolute bottom-0 right-0 size-[10px] bg-background"></div>
     
     {/* Diagonal lines for corners */}
-    <div className={`bg-brass-gold absolute left-0 top-0 h-[1px] w-[10px] origin-top-left rotate-45 opacity-25 pointer-events-none ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
-    <div className={`bg-brass-gold absolute right-0 top-0 h-[1px] w-[10px] origin-top-right -rotate-45 opacity-25 pointer-events-none ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
-    <div className={`bg-brass-gold absolute bottom-0 left-0 h-[1px] w-[10px] origin-bottom-left -rotate-45 opacity-25 pointer-events-none ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
-    <div className={`bg-brass-gold absolute bottom-0 right-0 h-[1px] w-[10px] origin-bottom-right rotate-45 opacity-25 pointer-events-none ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
+    <div className={`pointer-events-none absolute left-0 top-0 h-px w-[10px] origin-top-left rotate-45 bg-brass-gold opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
+    <div className={`pointer-events-none absolute right-0 top-0 h-px w-[10px] origin-top-right -rotate-45 bg-brass-gold opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
+    <div className={`pointer-events-none absolute bottom-0 left-0 h-px w-[10px] origin-bottom-left -rotate-45 bg-brass-gold opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
+    <div className={`pointer-events-none absolute bottom-0 right-0 h-px w-[10px] origin-bottom-right rotate-45 bg-brass-gold opacity-25 ${!alwaysVisible ? 'hidden group-hover:block' : ''}`}></div>
   </>
 );
 
@@ -244,7 +244,7 @@ const Dashboard: React.FC = () => {
         </div>
         
         {/* User profile summary */}
-        <div className="bg-cream-dark mt-4 rounded-card p-4">
+        <div className="mt-4 rounded-card bg-cream-dark p-4">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-heading text-heading4 uppercase">{formatDisplayName()}</h3>
@@ -255,7 +255,7 @@ const Dashboard: React.FC = () => {
             <Button 
               onClick={() => navigate('/profile')}
               variant="outline"
-              className="hover:bg-brass-gold hover:bg-opacity-10 border-brass-gold text-brass-gold"
+              className="border-brass-gold text-brass-gold hover:bg-brass-gold hover:bg-opacity-10"
             >
               View Profile
             </Button>
@@ -264,7 +264,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Metrics Section - 2x2 Grid with enhanced styling */}
-      <div className="grid gap-card-gap md:grid-cols-2 animate-fade-in animation-delay-100">
+      <div className="animate-fade-in animation-delay-100 grid gap-card-gap md:grid-cols-2">
         <div className="grid gap-card-gap md:grid-cols-2">
           <MetricCard
             title="TOTAL WORKOUTS"
@@ -331,7 +331,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Enhanced Start Tracking Section */}
-      <div className="relative overflow-hidden rounded-card shadow-[var(--shadow-card)] animate-fade-in animation-delay-200">
+      <div className="animate-fade-in animation-delay-200 relative overflow-hidden rounded-card shadow-[var(--shadow-card)]">
         <MilitaryCorners alwaysVisible />
         <div className="section-header">
           <div className="flex items-center justify-between">
@@ -344,7 +344,7 @@ const Dashboard: React.FC = () => {
               </p>
             </div>
             <Button 
-              className="hover:bg-brass-gold hover:bg-opacity-90 bg-brass-gold text-deep-ops shadow-small transition-all hover:shadow-medium"
+              className="bg-brass-gold text-deep-ops shadow-small transition-all hover:bg-brass-gold hover:bg-opacity-90 hover:shadow-medium"
               onClick={() => navigate('/exercises')}
             >
               <Play className="mr-2 size-4" />
@@ -352,27 +352,27 @@ const Dashboard: React.FC = () => {
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-item p-content lg:grid-cols-4 bg-cream-dark">
+        <div className="grid grid-cols-2 gap-item bg-cream-dark p-content lg:grid-cols-4">
           {exerciseLinks.map((exercise, idx) => (
             <div
               key={exercise.name}
-              className="bg-cream-dark group relative overflow-hidden rounded-card 
-                        p-4 transition-all hover:-translate-y-[1px] 
-                        hover:border-brass-gold hover:shadow-[0_4px_8px_rgba(0,0,0,.08)] border border-brass-gold border-opacity-30 cursor-pointer 
-                        focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:animate-card-hover"
+              className="group relative cursor-pointer overflow-hidden rounded-card 
+                        border border-brass-gold border-opacity-30 
+                        bg-cream-dark p-4 transition-all hover:-translate-y-px hover:animate-card-hover hover:border-brass-gold 
+                        hover:shadow-[0_4px_8px_rgba(0,0,0,.08)] focus-visible:outline-none focus-visible:ring-[var(--ring-focus)]"
               onClick={() => navigate(exercise.path)}
               tabIndex={0}
               style={{ animationDelay: `${idx * 100 + 200}ms` }}
             >
               <MilitaryCorners />
-              <div className="absolute inset-0 bg-gradient-to-b from-brass-gold to-brass-gold opacity-5 group-hover:opacity-10 transition-all"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-brass-gold to-brass-gold opacity-5 transition-all group-hover:opacity-10"></div>
               <div className="relative z-10 flex flex-col items-center justify-center">
                 <img 
                   src={exercise.image} 
                   alt={exercise.name} 
                   className="mb-3 h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-110" 
                 />
-                <span className="font-heading text-sm uppercase tracking-wider text-tactical-gray group-hover:text-command-black transition-colors">{exercise.name}</span>
+                <span className="font-heading text-sm uppercase tracking-wider text-tactical-gray transition-colors group-hover:text-command-black">{exercise.name}</span>
               </div>
             </div>
           ))}
@@ -380,7 +380,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Progress Section with design-system styling */}
-      <div className="relative overflow-hidden rounded-card shadow-[var(--shadow-card)] animate-fade-in animation-delay-300">
+      <div className="animate-fade-in animation-delay-300 relative overflow-hidden rounded-card shadow-[var(--shadow-card)]">
         <MilitaryCorners alwaysVisible />
         <div className="section-header">
           <h2 className="flex items-center font-heading text-heading3 uppercase tracking-wider text-cream">
@@ -391,9 +391,9 @@ const Dashboard: React.FC = () => {
             Your training overview at a glance
           </p>
         </div>
-        <div className="p-content bg-cream-dark">
+        <div className="bg-cream-dark p-content">
           {leaderboardError && (
-            <Alert variant="default" className="bg-olive-mist bg-opacity-10 mb-4 border-olive-mist">
+            <Alert variant="default" className="mb-4 border-olive-mist bg-olive-mist bg-opacity-10">
               <AlertCircle className="size-5 text-tactical-gray" />
               <AlertTitle className="font-heading text-sm">Leaderboard data unavailable</AlertTitle>
               <AlertDescription className="text-tactical-gray">
@@ -404,8 +404,8 @@ const Dashboard: React.FC = () => {
 
           <div className="grid grid-cols-1 gap-card-gap md:grid-cols-3">
             {/* These boxes get animation classes and better styling */}
-            <div className="bg-cream-dark relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-[var(--shadow-card)] animate-slide-up" style={{ animationDelay: "100ms" }}>
-              <div className="bg-brass-gold bg-opacity-10 mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream-dark p-content text-center shadow-[var(--shadow-card)]" style={{ animationDelay: "100ms" }}>
+              <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
                 <Clock className="mb-2 size-10 text-brass-gold" />
               </div>
               <span className="font-heading text-heading3 text-command-black">
@@ -414,8 +414,8 @@ const Dashboard: React.FC = () => {
               <span className="font-semibold text-xs uppercase tracking-wider text-olive-mist">Total Training Time</span>
             </div>
             
-            <div className="bg-cream-dark relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-[var(--shadow-card)] animate-slide-up" style={{ animationDelay: "200ms" }}>
-              <div className="bg-brass-gold bg-opacity-10 mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream-dark p-content text-center shadow-[var(--shadow-card)]" style={{ animationDelay: "200ms" }}>
+              <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
                 <Flame className="mb-2 size-10 text-brass-gold" />
               </div>
               <span className="font-heading text-heading3 text-command-black">
@@ -424,13 +424,13 @@ const Dashboard: React.FC = () => {
               <span className="font-semibold text-xs uppercase tracking-wider text-olive-mist">Est. Calories Burned</span>
             </div>
             
-            <div className="bg-cream-dark relative overflow-hidden rounded-card border-l-4 border-brass-gold p-content text-center shadow-[var(--shadow-card)] animate-slide-up" style={{ animationDelay: "300ms" }}>
-              <div className="bg-brass-gold bg-opacity-10 mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+            <div className="animate-slide-up relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream-dark p-content text-center shadow-[var(--shadow-card)]" style={{ animationDelay: "300ms" }}>
+              <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
                 <Trophy className="mb-2 size-10 text-brass-gold" />
               </div>
               <span className="font-heading text-heading3 text-command-black">
                 {isLeaderboardLoading ? (
-                  <Loader2 className="text-brass-gold opacity-70 mx-auto size-6 animate-spin" />
+                  <Loader2 className="mx-auto size-6 animate-spin text-brass-gold opacity-70" />
                 ) : dashboardMetrics.userRank > 0 ? (
                   `#${dashboardMetrics.userRank}` 
                 ) : (
@@ -443,7 +443,7 @@ const Dashboard: React.FC = () => {
           
           <div className="mt-6 flex justify-center">
             <Button 
-              className="hover:bg-brass-gold hover:bg-opacity-90 bg-brass-gold font-heading text-deep-ops shadow-medium transition-all hover:-translate-y-[1px] hover:shadow-[0_4px_8px_rgba(0,0,0,.12)] focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none"
+              className="bg-brass-gold font-heading text-deep-ops shadow-medium transition-all hover:-translate-y-px hover:bg-brass-gold hover:bg-opacity-90 hover:shadow-[0_4px_8px_rgba(0,0,0,.12)] focus-visible:outline-none focus-visible:ring-[var(--ring-focus)]"
               onClick={() => navigate('/history')}
             >
               <ArrowRight className="mr-2 size-4" />
@@ -454,7 +454,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Recent Activity Section */}
-      <div className="relative overflow-hidden rounded-card shadow-[var(--shadow-card)] animate-fade-in animation-delay-400">
+      <div className="animate-fade-in animation-delay-400 relative overflow-hidden rounded-card shadow-[var(--shadow-card)]">
         <MilitaryCorners alwaysVisible />
         <div className="section-header">
           <h2 className="flex items-center font-heading text-heading3 uppercase tracking-wider text-cream">
@@ -465,26 +465,26 @@ const Dashboard: React.FC = () => {
             Your latest workout sessions
           </p>
         </div>
-        <div className="p-content bg-cream-dark">
+        <div className="bg-cream-dark p-content">
           {(exerciseHistory?.items?.length ?? 0) > 0 ? (
-            <div className="divide-tactical-gray divide-opacity-20 divide-y">
+            <div className="divide-y divide-tactical-gray divide-opacity-20">
               {exerciseHistory?.items?.slice(0, 5).map((workout, index) => (
                 <div 
                   key={workout.id || index} 
-                  className="hover:bg-brass-gold hover:bg-opacity-5 flex items-center justify-between py-3 px-2 transition-colors rounded-card animate-slide-up focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none"
+                  className="animate-slide-up flex items-center justify-between rounded-card px-2 py-3 transition-colors hover:bg-brass-gold hover:bg-opacity-5 focus-visible:outline-none focus-visible:ring-[var(--ring-focus)]"
                   onClick={() => navigate(`/history/${workout.id}`)}
                   tabIndex={0}
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-center">
-                    <div className="bg-brass-gold bg-opacity-10 mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+                    <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
                       {workout.exercise_type === 'PUSHUP' && <img src={pushupImage} alt="Push-ups" className="size-6" />}
                       {workout.exercise_type === 'PULLUP' && <img src={pullupImage} alt="Pull-ups" className="size-6" />}
                       {workout.exercise_type === 'SITUP' && <img src={situpImage} alt="Sit-ups" className="size-6" />}
                       {workout.exercise_type === 'RUNNING' && <img src={runningImage} alt="Running" className="size-6" />}
                     </div>
                     <div>
-                      <h3 className="font-heading text-sm uppercase text-command-black mb-0">
+                      <h3 className="mb-0 font-heading text-sm uppercase text-command-black">
                         {workout.exercise_type === 'PUSHUP' ? 'Push-ups' : 
                          workout.exercise_type === 'PULLUP' ? 'Pull-ups' :
                          workout.exercise_type === 'SITUP' ? 'Sit-ups' :
@@ -516,7 +516,7 @@ const Dashboard: React.FC = () => {
             </div>
           ) : (
             <div className="py-8 text-center">
-              <div className="bg-brass-gold bg-opacity-10 mx-auto mb-4 flex size-16 items-center justify-center rounded-full border border-brass-gold border-opacity-30">
+              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
                 <CalendarClock className="size-8 text-brass-gold" />
               </div>
               <h3 className="font-heading text-heading4 text-brass-gold">No Activity Yet</h3>
@@ -524,7 +524,7 @@ const Dashboard: React.FC = () => {
                 Start tracking your first workout to see your activity history here.
               </p>
               <Button 
-                className="hover:bg-brass-gold hover:bg-opacity-90 mt-4 bg-brass-gold font-heading text-deep-ops shadow-small transition-all hover:-translate-y-[1px] hover:shadow-[0_4px_8px_rgba(0,0,0,.12)] focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none"
+                className="mt-4 bg-brass-gold font-heading text-deep-ops shadow-small transition-all hover:-translate-y-px hover:bg-brass-gold hover:bg-opacity-90 hover:shadow-[0_4px_8px_rgba(0,0,0,.12)] focus-visible:outline-none focus-visible:ring-[var(--ring-focus)]"
                 onClick={() => navigate('/exercises')}
               >
                 <Play className="mr-2 size-4" />
