@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
-import { calculatePullupScore, formatScoreDisplay } from '../../grading/APFTScoring';
+import { calculatePullupScore } from '../../grading/APFTScoring';
 
 // Import our ViewModel hook
 import { usePullupTrackerViewModel } from '../../viewmodels/PullupTrackerViewModel';

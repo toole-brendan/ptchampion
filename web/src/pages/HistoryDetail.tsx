@@ -23,22 +23,35 @@ import { useToast } from '@/components/ui/use-toast';
 
 import { getExerciseById } from '@/lib/apiClient';
 import { formatTime, formatDistance } from '@/lib/utils';
+import { ExerciseResponse } from '@/lib/types';
 
-// Check if workout has pace or rep series data
-const hasSeriesData = (workout: any): boolean => {
-  return workout && 
-    (Array.isArray(workout.rep_series) && workout.rep_series.length > 0) || 
-    (Array.isArray(workout.pace_series) && workout.pace_series.length > 0);
-};
+// Define workout type
+interface Workout extends ExerciseResponse {
+  rep_series?: number[];
+  pace_series?: number[];
+}
+
+// Chart data interface
+interface ChartDataPoint {
+  time: number;
+  value: number;
+}
+
+interface ChartData {
+  data: ChartDataPoint[];
+  label: string;
+  unit: string;
+  color: string;
+}
 
 // Format chart data from workout
-const getChartData = (workout: any) => {
+const getChartData = (workout: Workout): ChartData | null => {
   const isRunning = workout.exercise_type.toLowerCase().includes('run');
   
   if (isRunning && Array.isArray(workout.pace_series) && workout.pace_series.length > 0) {
     // Format pace series for running workouts
     return {
-      data: workout.pace_series.map((point: any, index: number) => ({
+      data: workout.pace_series.map((point: number, index: number) => ({
         time: index,
         value: point,
       })),
@@ -49,7 +62,7 @@ const getChartData = (workout: any) => {
   } else if (Array.isArray(workout.rep_series) && workout.rep_series.length > 0) {
     // Format rep series for other workouts
     return {
-      data: workout.rep_series.map((point: any, index: number) => ({
+      data: workout.rep_series.map((point: number, index: number) => ({
         time: index,
         value: point,
       })),

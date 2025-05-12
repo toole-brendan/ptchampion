@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, RotateCcw, Timer, VideoOff, Loader2, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
-import { calculateSitupScore, formatScoreDisplay } from '../../grading/APFTScoring';
+import { calculateSitupScore } from '../../grading/APFTScoring';
 
 // Import our ViewModel hook
 import { useSitupTrackerViewModel } from '../../viewmodels/SitupTrackerViewModel';

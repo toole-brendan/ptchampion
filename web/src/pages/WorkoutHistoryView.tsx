@@ -26,7 +26,7 @@ const HeaderDivider: React.FC = () => (
 );
 
 const WorkoutHistoryView: React.FC = () => {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const mainRef = useRef<HTMLDivElement>(null);
