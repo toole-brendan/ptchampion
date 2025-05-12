@@ -5,6 +5,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "02:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
     labels:
       - "dependencies"
@@ -17,6 +20,9 @@ updates:
     directory: "/web"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "02:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
     groups:
       react:
@@ -38,7 +44,10 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "monthly"
+      interval: "weekly"
+      day: "sunday"
+      time: "02:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -49,6 +58,9 @@ updates:
     directory: "/ios/ptchampion"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "02:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
@@ -61,6 +73,9 @@ updates:
     directory: "/android"
     schedule:
       interval: "weekly"
+      day: "sunday"
+      time: "02:00"
+      timezone: "UTC"
     open-pull-requests-limit: 5
     labels:
       - "dependencies"
