@@ -4,6 +4,7 @@ import { Home, BarChart2, Award, User, Dumbbell, Sun, Moon } from 'lucide-react'
 import { useHeaderContext } from '@/dashboard-message-context';
 import { useTheme } from '@/lib/themeContext';
 import SyncIndicator from '@/components/SyncIndicator';
+import OfflineBanner from '@/components/OfflineBanner';
 
 const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -19,12 +20,20 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     { to: '/profile', label: 'Profile', icon: <User size={22} /> },
   ];
 
+  // Helper function to determine if a nav item is active
+  const isNavItemActive = (itemPath: string) => {
+    if (itemPath === '/') {
+      return currentPath === '/' || currentPath === '/dashboard';
+    }
+    return currentPath.startsWith(itemPath);
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background pb-[60px]">
-      <header className="flex h-16 items-center justify-between bg-deep-ops px-content text-cream shadow-medium">
+      <header className="sticky top-0 z-40 flex h-16 items-center justify-between bg-deep-ops px-content text-cream shadow-medium">
         <div className="flex flex-col">
           <h1 className="flex items-center font-heading text-xl text-brass-gold">
-            {userName ? `Hello, ${userName}` : "PT Champion"}
+            {userName ? `${userName}` : "PT Champion"}
             <SyncIndicator />
           </h1>
         </div>
@@ -42,6 +51,11 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
         </div>
       </header>
       
+      {/* Offline Banner positioned below header */}
+      <div className="relative z-30">
+        <OfflineBanner />
+      </div>
+      
       <main className="mx-auto w-full flex-1 px-content py-md">
         {children}
       </main>
@@ -51,13 +65,7 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           <Link
             key={item.to}
             to={item.to}
-            className={`bottom-nav-item ${
-              item.to === '/' 
-                ? currentPath === item.to 
-                : currentPath.startsWith(item.to) 
-                  ? 'active' 
-                  : ''
-            }`}
+            className={`bottom-nav-item ${isNavItemActive(item.to) ? 'active' : ''}`}
           >
             {item.icon}
             <span className="bottom-nav-label">{item.label}</span>

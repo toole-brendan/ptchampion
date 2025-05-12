@@ -14,14 +14,14 @@ import DeveloperMenu from '../../components/ui/DeveloperMenu';
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 
 // Is this a development build?
-const IS_DEV = import.meta.env.MODE === 'development';
+const IS_DEV = true; // Always enable for testing
 
 // Real logo component
 const LogoIcon: React.FC<{ className?: string; onClick?: () => void }> = ({ className, onClick }) => (
   <img 
     src={logoImage} 
     alt="PT Champion Logo" 
-    className={`${className} max-h-48 w-auto cursor-pointer`} 
+    className={`${className} max-h-80 w-auto cursor-pointer`} 
     onClick={onClick}
   />
 );
@@ -50,27 +50,30 @@ const LoginPage: React.FC = () => {
 
   // Clear error on unmount and check for stale tokens on mount
   useEffect(() => {
-    // Clear any potential stale token when login page is loaded
-    if (localStorage.getItem(TOKEN_STORAGE_KEY) && !isAuthenticated) {
-      console.log('Found potential stale token on login page, clearing all tokens');
+    // Clear any potential stale token only when actively on the login page
+    // and auth context has not yet confirmed authentication.
+    // This helps prevent clearing tokens set by dev bypass immediately after a redirect.
+    if (location.pathname === '/login' && localStorage.getItem(TOKEN_STORAGE_KEY) && !isAuthenticated) {
+      console.log('Found potential stale token on login page (active path), clearing all tokens');
       cleanAuthStorage();
     }
     
     return () => {
       clearError();
     };
-  }, [clearError, isAuthenticated]);
+  }, [clearError, isAuthenticated, location.pathname]); // Added location.pathname to dependencies
 
   const handleLogoClick = () => {
-    if (IS_DEV) {
-      const newCount = logoTaps + 1;
-      setLogoTaps(newCount);
-      
-      // Show developer menu after 5 taps
-      if (newCount >= 5) {
-        setShowDevMenu(true);
-        setLogoTaps(0);
-      }
+    // Increment tap counter regardless of dev mode
+    const newCount = logoTaps + 1;
+    setLogoTaps(newCount);
+    console.log(`Logo tapped ${newCount} times`);
+    
+    // Show developer menu after 5 taps
+    if (newCount >= 5) {
+      console.log('Activating developer menu');
+      setShowDevMenu(true);
+      setLogoTaps(0);
     }
   };
 
@@ -98,8 +101,22 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="mb-4 flex flex-col items-center">
           <div className="relative mb-2">
-            <LogoIcon className="relative z-10" onClick={handleLogoClick} />
-            <div className="absolute inset-x-0 bottom-0 h-4 bg-brass-gold/10 blur-md"></div>
+            <div 
+              className="cursor-pointer flex flex-col items-center" 
+              onClick={handleLogoClick}
+              style={{ position: 'relative' }}
+            >
+              <LogoIcon className="relative z-10" />
+              {logoTaps > 0 && (
+                <div className="absolute top-0 right-0 bg-brass-gold text-white rounded-full w-8 h-8 flex items-center justify-center z-20">
+                  {logoTaps}
+                </div>
+              )}
+              <div className="text-xs text-center mt-1 text-brass-gold font-semibold">
+                Tap for developer menu ({logoTaps}/5)
+              </div>
+              <div className="absolute inset-x-0 bottom-0 h-4 bg-brass-gold/10 blur-md"></div>
+            </div>
           </div>
         </div>
 
@@ -127,7 +144,7 @@ const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
                 placeholder="you@example.com"
                 autoComplete="email"
                 aria-label="Email"
@@ -149,7 +166,7 @@ const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
                 placeholder="••••••••"
                 autoComplete="current-password"
                 aria-label="Password"

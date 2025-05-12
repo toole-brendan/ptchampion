@@ -14,6 +14,8 @@ import {
   UserResponse,
   LoginResponse,
 } from './types';
+// Import the dev mock token constant
+import { DEV_MOCK_TOKEN } from '../components/ui/DeveloperMenu';
 
 // Define the shape of the authentication context
 interface AuthContextType {
@@ -40,15 +42,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // We now initialize from the sync getter, but will update asynchronously
   const [token, setToken] = useState<string | null>(getSyncToken());
   const [mutationError, setMutationError] = useState<string | null>(null);
+  
+  // Check if we have a developer mock token
+  const isDevToken = token === DEV_MOCK_TOKEN;
+  
+  // If we have a dev token, get the mock user from localStorage
+  const [mockUser, setMockUser] = useState<UserResponse | null>(() => {
+    if (isDevToken) {
+      try {
+        // Get the mock user data from localStorage
+        const storedUser = localStorage.getItem('pt_auth_user');
+        if (storedUser) {
+          return JSON.parse(storedUser);
+        }
+      } catch (e) {
+        console.error('Failed to parse mock user:', e);
+      }
+    }
+    return null;
+  });
 
-  // Query to fetch the current user data - enabled only if a token exists
+  // Query to fetch the current user data - enabled only if a token exists and it's not a dev token
   const { data: user, isLoading: isLoadingUser, error: userError } = useQuery<
     UserResponse,
     Error // Explicitly type Error
   >({ // Pass options object directly
     queryKey: userQueryKey,
     queryFn: getCurrentUser,
-    enabled: !!token, // Only run query if token is truthy
+    enabled: !!token && !isDevToken, // Only run query if we have a real token
     staleTime: Infinity, // User data is generally stable, refetch manually on updates
     gcTime: Infinity, // Keep user data cached indefinitely while authenticated (use gcTime)
     retry: 1, // Retry fetching user once on failure
@@ -56,9 +77,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Effect to update isAuthenticated state when token changes
   useEffect(() => {
-    console.log('Auth context token effect triggered:', { hasToken: !!token, hasUser: !!user });
+    console.log('Auth context token effect triggered:', { 
+      hasToken: !!token, 
+      hasUser: !!user, 
+      isDevToken 
+    });
     
-    // Check for token asynchronously on mount and token state changes
+    // If we have a dev token, we can skip the API call and just use the mock user
+    if (isDevToken) {
+      console.log('Using dev mock token with mock user:', mockUser);
+      return;
+    }
+    
+    // Normal token validation logic for real tokens
     async function validateTokenAndUser() {
       try {
         if (token) {
@@ -94,8 +125,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
     }
     
-    validateTokenAndUser();
-  }, [token, user, queryClient]);
+    // Only validate real tokens
+    if (!isDevToken) {
+      validateTokenAndUser();
+    }
+  }, [token, user, queryClient, isDevToken, mockUser]);
 
   // --- Mutations --- //
 
@@ -175,6 +209,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = useCallback(() => {
     clearToken(); // Clear token from storage
     setToken(null); // Clear token state
+    setMockUser(null); // Clear any mock user
     queryClient.removeQueries({ queryKey: userQueryKey }); // Use correct signature
     setMutationError(null); // Clear any lingering mutation errors
   }, [queryClient]);
@@ -188,15 +223,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Loading is true if we don't have a token yet but are initializing (handled by token state),
   // or if we have a token but are fetching the user (isLoadingUser),
   // or if a login/registration mutation is in progress (isPending...).
-  const isLoading = isLoadingUser || isLoggingIn || isRegistering;
+  // Dev tokens are never in a loading state.
+  const isLoading = isDevToken ? false : (isLoadingUser || isLoggingIn || isRegistering);
 
   // Determine overall error state (prefer mutation errors over user fetch errors)
   const error = mutationError || (userError ? userError.message : null);
 
+  // For dev tokens, we use the mock user instead of the API-fetched user
+  const effectiveUser = isDevToken ? mockUser : user;
+
   // Create the context value object
   const contextValue: AuthContextType = {
-    isAuthenticated: !!token && !!user, // Authenticated if token exists AND user data loaded
-    user: user ?? null, // User data from the query, default to null if undefined
+    isAuthenticated: isDevToken ? true : (!!token && !!user), // Dev tokens are always authenticated
+    user: effectiveUser ?? null, // Use mock user for dev tokens
     token: token,
     isLoading: isLoading,
     error: error,
@@ -207,9 +246,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   console.log('Auth context state:', { 
-    isAuthenticated: !!token && !!user,
+    isAuthenticated: contextValue.isAuthenticated,
     hasToken: !!token,
-    hasUser: !!user,
+    isDevToken,
+    hasUser: !!effectiveUser,
     isLoading
   });
 

@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import config from '../../lib/config';
+import Layout from '../layout/Layout';
 
 // Get token storage key from config to ensure consistency
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   redirectPath?: string;
 }
 
@@ -62,8 +63,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to={`${redirectPath}?returnUrl=${returnUrl}`} replace />;
   }
 
-  // If authenticated, render the protected content
-  return <>{children}</>;
+  // If authenticated, render the Layout component with Outlet if children is not provided
+  return children ? <>{children}</> : <Layout />;
 };
 
 export default ProtectedRoute; 

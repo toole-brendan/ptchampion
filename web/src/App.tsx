@@ -6,7 +6,6 @@ import { FeatureFlagProvider } from './lib/featureFlags';
 import { HeaderProvider } from './dashboard-message-context';
 import { ThemeProvider } from './lib/themeContext';
 import { PoseProvider } from './lib/contexts/PoseContext';
-import Layout from './components/layout/Layout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import OfflineBanner from './components/OfflineBanner';
 import CameraPermissionDialog from './components/ui/CameraPermissionDialog';
@@ -97,45 +96,46 @@ function App({ queryClient }: AppProps) {
                   {/* Add ErrorReporter to initialize error reporting */}
                   <ErrorReporter />
                   <Router>
+                    <Suspense fallback={<Loading />}>
+                      <Routes>
+                        {/* Public routes */}
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/register" element={<Register />} />
+                        
+                        {/* Protected routes - require authentication */}
+                        <Route path="/" element={<ProtectedRoute />}>
+                          <Route index element={<Dashboard />} />
+                          <Route path="dashboard" element={<Dashboard />} />
+                          <Route path="exercises" element={<Exercises />} />
+                          <Route path="history" element={<History />} />
+                          <Route path="history/:id" element={<HistoryDetail />} />
+                          <Route path="leaderboard" element={<Leaderboard />} />
+                          <Route path="profile" element={<Profile />} />
+                          
+                          {/* Exercise tracking routes - canonical source of truth */}
+                          <Route path="exercises/pushups" element={<PushupTracker />} />
+                          <Route path="exercises/pullups" element={<PullupTracker />} />
+                          <Route path="exercises/situps" element={<SitupTracker />} />
+                          <Route path="exercises/running" element={<RunningTracker />} />
+
+                          {/* Redirect from trackers paths to exercises paths */}
+                          <Route path="trackers/*" element={<Navigate to="/exercises" replace />} />
+                          <Route path="trackers/pushups" element={<Navigate to="/exercises/pushups" replace />} />
+                          <Route path="trackers/pullups" element={<Navigate to="/exercises/pullups" replace />} />
+                          <Route path="trackers/situps" element={<Navigate to="/exercises/situps" replace />} />
+                          <Route path="trackers/running" element={<Navigate to="/exercises/running" replace />} />
+                        </Route>
+                        
+                        {/* Catch-all route - redirect to NotFound */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </Suspense>
+                    {/* OfflineBanner moved outside of Routes but inside Router */}
                     <OfflineBanner />
                     {/* Camera permission dialog that will show when needed */}
                     <CameraPermissionDialog />
-                    <Suspense fallback={<Loading />}>
-                      <Routes>
-                      {/* Public routes */}
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      
-                      {/* Protected routes - require authentication */}
-                      <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-                        <Route index element={<Dashboard />} />
-                        <Route path="dashboard" element={<Dashboard />} />
-                        <Route path="exercises" element={<Exercises />} />
-                        <Route path="history" element={<History />} />
-                        <Route path="history/:id" element={<HistoryDetail />} />
-                        <Route path="leaderboard" element={<Leaderboard />} />
-                        <Route path="profile" element={<Profile />} />
-                        
-                        {/* Exercise tracking routes - canonical source of truth */}
-                        <Route path="exercises/pushups" element={<PushupTracker />} />
-                        <Route path="exercises/pullups" element={<PullupTracker />} />
-                        <Route path="exercises/situps" element={<SitupTracker />} />
-                        <Route path="exercises/running" element={<RunningTracker />} />
-
-                        {/* Redirect from trackers paths to exercises paths */}
-                        <Route path="trackers/*" element={<Navigate to="/exercises" replace />} />
-                        <Route path="trackers/pushups" element={<Navigate to="/exercises/pushups" replace />} />
-                        <Route path="trackers/pullups" element={<Navigate to="/exercises/pullups" replace />} />
-                        <Route path="trackers/situps" element={<Navigate to="/exercises/situps" replace />} />
-                        <Route path="trackers/running" element={<Navigate to="/exercises/running" replace />} />
-                      </Route>
-                      
-                      {/* Catch-all route - redirect to NotFound */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                </Router>
-              </ToastProvider>
+                  </Router>
+                </ToastProvider>
               </PoseProvider>
             </HeaderProvider>
           </FeatureFlagProvider>

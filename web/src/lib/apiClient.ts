@@ -10,12 +10,15 @@ import {
 } from './types';
 import config from './config';
 import { secureGet, secureSet, secureRemove } from './secureStorage';
+// Import the dev mock token constant
+import { DEV_MOCK_TOKEN } from '../components/ui/DeveloperMenu';
 
 // Get the configured API base URL
 const getApiBaseUrl = (): string => config.api.baseUrl; // Example: "http://localhost:8080/api/v1"
 
 // Token storage key
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
+const USER_STORAGE_KEY = config.auth.storageKeys.user;
 
 // Helper function to get the JWT token from storage
 // This is now an async function that uses secure storage
@@ -96,6 +99,126 @@ const apiRequest = async <T>(
 
   if (requiresAuth) {
     const token = await getToken();
+    
+    // Special handling for dev mock token
+    if (token === DEV_MOCK_TOKEN) {
+      console.log('Using dev mock token, bypassing actual API call');
+      
+      // Handle specific endpoints with mock data
+      if (endpoint === '/users/me') {
+        // Get mock user from localStorage
+        try {
+          const mockUserStr = localStorage.getItem(USER_STORAGE_KEY);
+          if (mockUserStr) {
+            const mockUser = JSON.parse(mockUserStr);
+            console.log('Returning mock user:', mockUser);
+            return mockUser as T;
+          }
+        } catch (e) {
+          console.error('Error parsing mock user:', e);
+        }
+        
+        // Fallback mock user if none in localStorage
+        const fallbackUser: UserResponse = {
+          id: 9999,
+          username: 'devuser',
+          display_name: 'Developer',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        return fallbackUser as T;
+      }
+      
+      // Mock response for exercises endpoint
+      if (endpoint.startsWith('/exercises')) {
+        if (method === 'POST') {
+          // Mock exercise logging
+          const mockExercise: ExerciseResponse = {
+            id: 9999,
+            user_id: 9999,
+            exercise_id: (body as LogExerciseRequest)?.exercise_id || 1,
+            exercise_name: 'Mock Exercise',
+            exercise_type: 'pushup',
+            reps: (body as LogExerciseRequest)?.reps || 0,
+            time_in_seconds: (body as LogExerciseRequest)?.duration || 0,
+            notes: (body as LogExerciseRequest)?.notes || '',
+            created_at: new Date().toISOString(),
+            grade: 90,
+          };
+          console.log('Returning mock exercise:', mockExercise);
+          return mockExercise as T;
+        } else if (method === 'GET') {
+          // Return mock exercise list
+          const mockExercises: PaginatedExercisesResponse = {
+            items: [
+              {
+                id: 9001,
+                user_id: 9999,
+                exercise_id: 1,
+                exercise_name: 'Push-ups',
+                exercise_type: 'pushup',
+                reps: 20,
+                time_in_seconds: 60,
+                notes: 'Mock exercise 1',
+                created_at: new Date().toISOString(),
+                grade: 95,
+              },
+              {
+                id: 9002,
+                user_id: 9999,
+                exercise_id: 2,
+                exercise_name: 'Pull-ups',
+                exercise_type: 'pullup',
+                reps: 15,
+                time_in_seconds: 45,
+                notes: 'Mock exercise 2',
+                created_at: new Date().toISOString(),
+                grade: 85,
+              }
+            ],
+            total_count: 2,
+            page: 1,
+            page_size: 10
+          };
+          console.log('Returning mock exercises:', mockExercises);
+          return mockExercises as T;
+        }
+      }
+      
+      // Mock leaderboard data
+      if (endpoint.startsWith('/leaderboard')) {
+        const mockLeaderboard: LeaderboardEntry[] = [
+          {
+            user_id: 9999,
+            username: 'devuser',
+            display_name: 'Developer',
+            max_grade: 100,
+            last_attempt_date: new Date().toISOString(),
+          },
+          {
+            user_id: 9998,
+            username: 'user2',
+            display_name: 'Mock User 2',
+            max_grade: 90,
+            last_attempt_date: new Date().toISOString(),
+          },
+          {
+            user_id: 9997,
+            username: 'user3',
+            display_name: 'Mock User 3',
+            max_grade: 80,
+            last_attempt_date: new Date().toISOString(),
+          }
+        ];
+        console.log('Returning mock leaderboard:', mockLeaderboard);
+        return mockLeaderboard as T;
+      }
+      
+      // Default mock response for any other endpoint
+      console.log('No specific mock data for endpoint, returning generic response');
+      return {} as T;
+    }
+    
     if (!token) {
       // Should ideally not happen if routing/UI checks are correct,
       // but throw error if auth is required and token is missing.

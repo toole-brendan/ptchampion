@@ -10,11 +10,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Montserrat-Regular', ...defaultTheme.fontFamily.sans],
-        semibold: ['Montserrat-SemiBold', 'sans-serif'],
-        bold: ['Montserrat-Bold', 'sans-serif'],
-        heading: ['Montserrat-Bold', 'sans-serif'],
-        mono: ['RobotoMono-Medium', 'monospace'],
+        sans: ['Helvetica Neue', 'Arial', ...defaultTheme.fontFamily.sans],
+        semibold: ['Helvetica Neue', 'Arial', 'sans-serif'],
+        bold: ['Helvetica Neue Bold', 'Arial Bold', 'sans-serif'],
+        heading: ['Arial Black', 'Impact', 'Helvetica Neue Bold', 'sans-serif'],
+        mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
       },
       colors: {
         // Base PT Champion colors from iOS

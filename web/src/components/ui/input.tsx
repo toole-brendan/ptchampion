@@ -3,16 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const inputVariants = cva(
-  "border-input flex w-full rounded-input border bg-transparent px-md py-sm text-base shadow-small transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-tactical-gray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-gold focus-visible:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+  "border-input flex w-full rounded-input border !bg-white px-md py-sm text-base shadow-small transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-tactical-gray focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-gold focus-visible:ring-opacity-50 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
   {
     variants: {
       variant: {
-        default: "border-cream-dark",
-        outline: "border-brass-gold/50",
-        filled: "border-transparent bg-cream-dark",
-        error: "border-error focus-visible:ring-error",
+        default: "border-cream-dark !bg-white",
+        outline: "border-brass-gold/50 !bg-white",
+        filled: "border-transparent !bg-white",
+        error: "border-error focus-visible:ring-error !bg-white",
       },
-      size: {
+      inputSize: {
         default: "h-10",
         sm: "h-8 rounded-input px-sm py-xs text-sm",
         lg: "h-12 rounded-input px-lg py-md text-lg",
@@ -20,19 +20,20 @@ const inputVariants = cva(
     },
     defaultVariants: {
       variant: "default",
-      size: "default",
+      inputSize: "default",
     },
   }
 )
 
-export interface InputProps 
-  extends React.InputHTMLAttributes<HTMLInputElement>,
-    VariantProps<typeof inputVariants> {
+export interface InputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   leftIcon?: React.ReactNode
   rightIcon?: React.ReactNode
   error?: boolean
   label?: string
   helperText?: string
+  variant?: "default" | "outline" | "filled" | "error"
+  inputSize?: "default" | "sm" | "lg"
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -40,7 +41,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     className, 
     type, 
     variant, 
-    size,
+    inputSize,
     leftIcon, 
     rightIcon, 
     error, 
@@ -67,13 +68,24 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <input
             type={type}
             className={cn(
-              inputVariants({ variant: inputVariant, size }),
+              inputVariants({ 
+                variant: inputVariant, 
+                inputSize 
+              }),
               leftIcon && "pl-10",
               rightIcon && "pr-10",
+              "!bg-white",
               className
             )}
             ref={ref}
             aria-invalid={error}
+            style={{ 
+              backgroundColor: "white !important", 
+              background: "white !important",
+              backgroundImage: "none !important",
+              backgroundClip: "padding-box !important",
+              opacity: 1
+            }}
             {...props}
           />
           {rightIcon && (
