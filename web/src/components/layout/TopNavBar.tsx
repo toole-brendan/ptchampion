@@ -38,13 +38,10 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 w-full items-center bg-deep-ops px-content text-cream shadow-medium">
-      {/* Left - Logo/Title */}
+      {/* Left - Logo only */}
       <div className="flex items-center">
-        <LogoIcon className="size-10 mr-4" />
-        <h1 className="flex items-center font-heading text-xl text-brass-gold">
-          {username ? `${username}` : "PT Champion"}
-          <SyncIndicator />
-        </h1>
+        <LogoIcon className="size-10" />
+        <SyncIndicator />
       </div>
 
       {/* Center - Nav Items (exclude Profile and Settings) */}
