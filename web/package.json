@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:auth": "VITE_DEV_AUTH_BYPASS=true vite",
     "build": "vite build",
     "build:original": "tsc && vite build",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings 1000",

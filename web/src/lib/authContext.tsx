@@ -16,6 +16,7 @@ import {
 } from './types';
 // Import the dev mock token constant
 import { DEV_MOCK_TOKEN } from '../components/ui/DeveloperMenu';
+import config from './config';
 
 // Define the shape of the authentication context
 interface AuthContextType {
@@ -33,6 +34,12 @@ interface AuthContextType {
 // Query key for the current user data
 const userQueryKey = ['currentUser'];
 
+// ENV-based dev bypass settings
+const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
+const DEV_AUTH_USER = import.meta.env.VITE_DEV_AUTH_USER 
+  ? JSON.parse(import.meta.env.VITE_DEV_AUTH_USER as string) 
+  : null;
+
 // Create the context with undefined default value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -40,18 +47,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const queryClient = useQueryClient();
   // We now initialize from the sync getter, but will update asynchronously
-  const [token, setToken] = useState<string | null>(getSyncToken());
+  const [token, setToken] = useState<string | null>(() => {
+    // If DEV_AUTH_BYPASS is true, set the token to DEV_MOCK_TOKEN automatically
+    if (DEV_AUTH_BYPASS) {
+      localStorage.setItem(config.auth.storageKeys.token, DEV_MOCK_TOKEN);
+      console.log('Using dev auth bypass from environment variables');
+      return DEV_MOCK_TOKEN;
+    }
+    return getSyncToken();
+  });
   const [mutationError, setMutationError] = useState<string | null>(null);
   
   // Check if we have a developer mock token
   const isDevToken = token === DEV_MOCK_TOKEN;
   
-  // If we have a dev token, get the mock user from localStorage
+  // If we have a dev token, get the mock user from localStorage or env var
   const [mockUser, setMockUser] = useState<UserResponse | null>(() => {
     if (isDevToken) {
       try {
-        // Get the mock user data from localStorage
-        const storedUser = localStorage.getItem('pt_auth_user');
+        // First try to use the environment variable mock user if available
+        if (DEV_AUTH_BYPASS && DEV_AUTH_USER) {
+          console.log('Using mock user from environment variables');
+          // Also update localStorage for consistency
+          localStorage.setItem(config.auth.storageKeys.user, JSON.stringify(DEV_AUTH_USER));
+          return DEV_AUTH_USER;
+        }
+        
+        // If not, try to get from localStorage
+        const storedUser = localStorage.getItem(config.auth.storageKeys.user);
         if (storedUser) {
           return JSON.parse(storedUser);
         }
@@ -80,7 +103,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     console.log('Auth context token effect triggered:', { 
       hasToken: !!token, 
       hasUser: !!user, 
-      isDevToken 
+      isDevToken,
+      isDevBypass: DEV_AUTH_BYPASS
     });
     
     // If we have a dev token, we can skip the API call and just use the mock user
@@ -250,7 +274,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     hasToken: !!token,
     isDevToken,
     hasUser: !!effectiveUser,
-    isLoading
+    isLoading,
+    isDevBypass: DEV_AUTH_BYPASS
   });
 
   return (

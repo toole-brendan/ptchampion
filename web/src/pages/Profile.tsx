@@ -25,6 +25,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+// Check if dev auth bypass is enabled
+const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
+
 const Profile: React.FC = () => {
   const { user, logout, isLoading: authLoading } = useAuth();
   const { settings, updateSetting } = useSettings();
@@ -74,6 +77,37 @@ const Profile: React.FC = () => {
       return;
     }
     
+    // In dev mode with auth bypass, just simulate a successful update
+    if (DEV_AUTH_BYPASS) {
+      setIsSubmitting(true);
+      setMessage(null);
+      
+      // Simulate API delay
+      setTimeout(() => {
+        // Update the mock user with the new data
+        const updatedUser = { ...user, ...changes };
+        
+        // Update the user in the React Query cache
+        queryClient.setQueryData(['currentUser'], updatedUser);
+        
+        // Also update localStorage mock user for consistency
+        if (user) {
+          localStorage.setItem('userData', JSON.stringify(updatedUser));
+        }
+        
+        setMessage({ text: 'Profile updated successfully (Dev Mode)', type: 'success' });
+        setIsSubmitting(false);
+        
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been successfully updated (Dev Mode).",
+          variant: "default",
+        });
+      }, 500);
+      
+      return;
+    }
+    
     setIsSubmitting(true);
     setMessage(null);
     
@@ -102,6 +136,25 @@ const Profile: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
+    // In dev mode with auth bypass, just simulate account deletion
+    if (DEV_AUTH_BYPASS) {
+      setIsDeletingAccount(true);
+      
+      // Simulate API delay
+      setTimeout(() => {
+        toast({
+          title: "Account Deleted",
+          description: "Your account has been permanently deleted (Dev Mode).",
+          variant: "default",
+        });
+        
+        logout();
+        navigate('/login');
+      }, 1000);
+      
+      return;
+    }
+    
     setIsDeletingAccount(true);
     try {
       await deleteCurrentUser();
@@ -250,7 +303,8 @@ const Profile: React.FC = () => {
     );
   }
 
-  if (!user) {
+  // If no user data and we're not bypassing auth, show the login prompt
+  if (!user && !DEV_AUTH_BYPASS) {
     return (
       <div className="mx-auto max-w-3xl space-y-6"> {/* Consistent layout */}
         <h1 className="font-semibold text-2xl text-foreground">Profile & Settings</h1>
