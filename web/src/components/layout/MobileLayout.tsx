@@ -1,8 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BarChart2, Award, User, Dumbbell, Sun, Moon } from 'lucide-react';
+import { Home, BarChart2, Award, User, Dumbbell } from 'lucide-react';
 import { useHeaderContext } from '@/dashboard-message-context';
-import { useTheme } from '@/lib/themeContext';
 import SyncIndicator from '@/components/SyncIndicator';
 import OfflineBanner from '@/components/OfflineBanner';
 
@@ -10,7 +9,6 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   const location = useLocation();
   const currentPath = location.pathname;
   const { userName } = useHeaderContext();
-  const { theme, toggleTheme } = useTheme();
 
   const navItems = [
     { to: '/', label: 'Home', icon: <Home size={22} /> },
@@ -29,7 +27,7 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-[60px]">
+    <div className="flex min-h-screen flex-col bg-cream pb-[60px]">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between bg-deep-ops px-content text-cream shadow-medium">
         <div className="flex flex-col">
           <h1 className="flex items-center font-heading text-xl text-brass-gold">
@@ -38,14 +36,7 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <button 
-            onClick={toggleTheme} 
-            className="bg-brass-gold/20 flex size-10 items-center justify-center rounded-full text-brass-gold"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          <div className="bg-brass-gold/20 flex size-10 items-center justify-center rounded-full text-brass-gold">
+          <div className="bg-brass-gold bg-opacity-20 flex size-10 items-center justify-center rounded-full text-brass-gold">
             <User size={20} />
           </div>
         </div>

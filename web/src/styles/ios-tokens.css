@@ -74,12 +74,4 @@
   --shadow-large: 0 8px 16px rgba(0, 0, 0, 0.2);
 }
 
-/* Dark Mode Overrides */
-.dark {
-  --color-background: var(--color-deep-ops);
-  --color-card-background: #212821; /* Slightly lighter than deep-ops */
-  --color-text-primary: var(--color-cream);
-  --color-text-secondary: var(--color-olive-mist);
-  --color-text-tertiary: #8A9186; /* Muted gray */
-  --color-text-on-primary: var(--color-deep-ops);
-} 
+ 

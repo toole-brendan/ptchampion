@@ -89,11 +89,11 @@ const NavItem = ({ to, icon, label, isCollapsed }: { to: string; icon: React.Rea
           <Link
             to={to}
             className={cn(
-              "group flex h-11 items-center rounded-md transition-colors duration-150 ease-in-out",
+              "group flex h-11 items-center rounded-md transition-colors duration-150 ease-in-out focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none",
               isCollapsed ? 'justify-center px-0' : 'px-3',
               isActive
-                ? 'bg-brass-gold/20 text-brass-gold font-medium'
-                : 'text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold'
+                ? 'bg-brass-gold bg-opacity-20 text-brass-gold font-medium'
+                : 'text-olive-mist opacity-80 hover:bg-olive-mist hover:bg-opacity-10 hover:text-brass-gold hover:opacity-90'
             )}
           >
             <div className={cn("flex-shrink-0", isCollapsed ? 'size-5' : 'mr-3 size-5')}>
@@ -145,12 +145,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const sidebarContent = (
     <aside 
       className={cn(
-        "bg-deep-ops text-cream transition-all duration-300 ease-in-out flex flex-col",
-        "h-screen",
-        "fixed inset-y-0 left-0 z-40",
-        "md:static md:z-auto md:inset-auto md:translate-x-0",
-        isMobileOpen ? "translate-x-0" : "-translate-x-full",
-        isCollapsed ? 'w-20 md:w-20' : 'w-64 md:w-64'
+        "bg-deep-ops text-cream flex flex-col transition-all duration-300 ease-in-out",
+        "h-screen overflow-y-auto flex-shrink-0",
+        "md:sticky md:top-0",
+        isMobileOpen 
+          ? "fixed inset-y-0 left-0 z-40 translate-x-0" 
+          : "md:translate-x-0 -translate-x-full",
+        isCollapsed ? 'w-20' : 'w-64'
       )}
       aria-label="Sidebar"
     >
@@ -159,7 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           <Button 
             variant="ghost" 
             size="icon" 
-            className="hover:bg-olive-mist/10 text-army-tan hover:text-brass-gold"
+            className="hover:bg-olive-mist hover:bg-opacity-10 text-army-tan hover:text-brass-gold"
             onClick={onMobileClose}
           >
             <XIcon className="size-5" />
@@ -168,13 +169,13 @@ const Sidebar: React.FC<SidebarProps> = ({
       )}
 
       {/* Logo section - properly centered */}
-      <div className="border-cream/10 flex items-center justify-center border-b p-4 py-6">
+      <div className="border-cream border-opacity-10 flex items-center justify-center border-b p-4 py-6">
         <LogoIcon className={isCollapsed ? "size-12" : "size-14"} />
       </div>
       
       {/* User profile section */}
       <div className={cn(
-        "border-b border-cream/10 transition-all duration-300",
+        "border-b border-cream border-opacity-10 transition-all duration-300",
         isCollapsed ? 'py-4 px-2' : 'py-4 px-4'
       )}>
         <Tooltip>
@@ -199,7 +200,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
       
       {/* Navigation items */}
-      <nav className="mt-4 grow overflow-y-auto">
+      <nav className="mt-4">
         <ul className={cn("space-y-1", isCollapsed ? 'px-2' : 'px-4')}>
           {navItems.map((item) => (
             <NavItem 
@@ -221,7 +222,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}>
               {!isCollapsed && 'Experimental'}
             </h4>
-            <ul className={cn("space-y-1", isCollapsed ? 'px-2' : 'px-4')}>
+            <ul className={cn("space-y-1 mb-6", isCollapsed ? 'px-2' : 'px-4')}>
               <NavItem
                 to="/example/calibration"
                 icon={<CameraIcon className="size-5" />}
@@ -253,7 +254,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       
       {/* Bottom controls section */}
       <div className={cn(
-        "mt-auto border-t border-cream/10 transition-all duration-300 space-y-3",
+        "border-t border-cream border-opacity-10 transition-all duration-300 space-y-3 pt-3 mt-auto",
         isCollapsed ? 'px-2 py-3' : 'px-4 py-3'
       )}>
         {/* Toggle button moved here */}
@@ -262,7 +263,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             <button 
               onClick={toggleSidebarCollapse}
               className={cn(
-                "flex w-full items-center rounded-md py-2.5 text-army-tan hover:bg-olive-mist/10 hover:text-brass-gold border border-cream/10",
+                "flex w-full items-center rounded-md py-2.5 text-olive-mist opacity-80 border border-cream border-opacity-10 transition-all",
+                "focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none",
+                "hover:bg-brass-gold hover:bg-opacity-20 hover:text-cream hover:border-brass-gold hover:border-opacity-40",
                 isCollapsed ? 'justify-center px-0' : 'px-3 justify-center'
               )}
               aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -284,7 +287,9 @@ const Sidebar: React.FC<SidebarProps> = ({
             <button 
               onClick={onLogout}
               className={cn(
-                "group flex h-11 w-full items-center rounded-md text-sm transition-colors duration-150 ease-in-out text-army-tan hover:bg-red-800/50 hover:text-red-300",
+                "group flex h-11 w-full items-center rounded-md text-sm transition-colors duration-150 ease-in-out",
+                "text-olive-mist opacity-80 hover:bg-red-800 hover:bg-opacity-50 hover:text-red-300",
+                "focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none",
                 isCollapsed ? 'justify-center px-0' : 'px-3'
               )}
             >
