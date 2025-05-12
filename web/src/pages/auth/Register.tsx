@@ -114,8 +114,22 @@ const RegisterPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="mb-4 flex flex-col items-center">
           <div className="relative mb-2">
-            <LogoIcon className="relative z-10" onClick={handleLogoClick} />
-            <div className="absolute inset-x-0 bottom-0 h-4 bg-brass-gold/10 blur-md"></div>
+            <div 
+              className="cursor-pointer flex flex-col items-center" 
+              onClick={handleLogoClick}
+              style={{ position: 'relative' }}
+            >
+              <LogoIcon className="relative z-10" />
+              {logoTaps > 0 && (
+                <div className="absolute top-0 right-0 bg-brass-gold text-white rounded-full w-8 h-8 flex items-center justify-center z-20">
+                  {logoTaps}
+                </div>
+              )}
+              <div className="text-xs text-center mt-1 text-brass-gold font-semibold">
+                Tap for developer menu ({logoTaps}/5)
+              </div>
+              <div className="absolute inset-x-0 bottom-0 h-4 bg-brass-gold/10 blur-md"></div>
+            </div>
           </div>
         </div>
 
@@ -143,7 +157,7 @@ const RegisterPage: React.FC = () => {
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                   required
-                  className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
+                  className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
                   placeholder="John"
                   aria-label="First Name"
                 />
@@ -158,7 +172,7 @@ const RegisterPage: React.FC = () => {
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                   required
-                  className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
+                  className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
                   placeholder="Doe"
                   aria-label="Last Name"
                 />
@@ -175,7 +189,7 @@ const RegisterPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
                 placeholder="you@example.com"
                 autoComplete="email"
                 aria-label="Email"
@@ -191,7 +205,7 @@ const RegisterPage: React.FC = () => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
                 placeholder="username"
                 autoComplete="username"
                 aria-label="Username"
@@ -208,7 +222,7 @@ const RegisterPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
                 placeholder="••••••••"
                 autoComplete="new-password"
                 aria-label="Password"
@@ -225,7 +239,7 @@ const RegisterPage: React.FC = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 bg-white p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
                 placeholder="••••••••"
                 autoComplete="new-password"
                 aria-label="Confirm Password"

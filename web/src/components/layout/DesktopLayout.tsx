@@ -4,6 +4,7 @@ import { useAuth } from '../../lib/authContext';
 import { useTheme } from '@/lib/themeContext';
 import { useHeaderContext } from '@/dashboard-message-context';
 import SyncIndicator from '@/components/SyncIndicator';
+import OfflineBanner from '@/components/OfflineBanner';
 import Sidebar from './Sidebar';
 
 const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -21,10 +22,10 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       
       {/* Main Content */}
       <div className="flex flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between bg-deep-ops px-content text-cream shadow-medium">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between bg-deep-ops px-content text-cream shadow-medium">
           <div className="flex-1">
             <h1 className="flex items-center font-heading text-xl text-brass-gold">
-              {userName ? `Hello, ${userName}` : "PT Champion"}
+              {userName ? `${userName}` : "PT Champion"}
               <SyncIndicator />
             </h1>
           </div>
@@ -43,6 +44,11 @@ const DesktopLayout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             </div>
           </div>
         </header>
+        
+        {/* Offline Banner positioned below header */}
+        <div className="relative z-30">
+          <OfflineBanner />
+        </div>
         
         <main className="mx-auto w-full max-w-7xl flex-1 p-section">
           {children}

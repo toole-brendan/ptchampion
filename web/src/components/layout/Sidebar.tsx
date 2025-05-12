@@ -79,7 +79,7 @@ export interface SidebarProps {
 const NavItem = ({ to, icon, label, isCollapsed }: { to: string; icon: React.ReactNode; label: string; isCollapsed?: boolean }) => {
   const location = useLocation();
   const isActive = to === '/' 
-    ? location.pathname === to
+    ? location.pathname === '/' || location.pathname === '/dashboard'
     : location.pathname.startsWith(to);
   
   return (

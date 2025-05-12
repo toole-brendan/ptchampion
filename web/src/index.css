@@ -1,55 +1,38 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import './components/ui/theme.css';
 @import './styles/ios-tokens.css';
 @import './styles/fonts.css';
 
-/* Import fonts from Google Fonts */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Use system fonts instead of downloading potentially corrupt files */
+html {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+}
+
 @font-face {
-  font-family: 'Bebas Neue';
+  font-family: 'Heading Font';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
-  src: url('https://fonts.gstatic.com/s/bebasneue/v9/JTUSjIg69CK48gW7PXoo9Wdhyzbi.woff2') format('woff2');
+  src: local('Arial Black'), local('Impact'), local('Helvetica Neue Bold');
 }
 
 @font-face {
-  font-family: 'Montserrat';
+  font-family: 'Body Font';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
-  src: url('https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtr6Hw5aXp-p7K4KLg.woff2') format('woff2');
+  src: local('Helvetica Neue'), local('Arial');
 }
 
 @font-face {
-  font-family: 'Montserrat';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
-  src: url('https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCu173w5aXp-p7K4KLg.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto Mono';
+  font-family: 'Mono Font';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap');
-  src: url('https://fonts.gstatic.com/s/robotomono/v22/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_3vq_ROW4AJi8SJQt.woff2') format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@500&display=swap');
-  src: url('https://fonts.gstatic.com/s/robotomono/v22/L0xuDF4xlVMF-BfR8bXMIhJHg45mwgGEFl0_7Pq_ROW4AJi8SJQt.woff2') format('woff2');
+  src: local('Courier New'), local('Monaco'), local('Consolas');
 }
 
 @layer base {
@@ -64,19 +47,19 @@
   }
   
   h1 {
-    @apply font-heading text-heading1 font-bold tracking-wide text-command-black;
+    @apply font-heading text-heading1 font-bold tracking-wide text-foreground;
   }
   
   h2 {
-    @apply font-heading text-heading2 font-bold tracking-wide text-command-black;
+    @apply font-heading text-heading2 font-bold tracking-wide text-foreground;
   }
   
   h3 {
-    @apply font-heading text-heading3 font-bold tracking-wide text-command-black;
+    @apply font-heading text-heading3 font-bold tracking-wide text-foreground;
   }
   
   h4 {
-    @apply font-heading text-heading4 font-bold tracking-wide text-command-black;
+    @apply font-heading text-heading4 font-bold tracking-wide text-foreground;
   }
   
   p {
@@ -84,11 +67,11 @@
   }
   
   .stat-number {
-    @apply font-mono text-heading4 font-medium text-command-black;
+    @apply font-mono text-heading4 font-medium text-foreground;
   }
   
   .label {
-    @apply font-sans text-small font-semibold uppercase tracking-wide text-tactical-gray;
+    @apply font-sans text-small font-semibold uppercase tracking-wide text-tactical-gray dark:text-olive-mist;
   }
 }
 
