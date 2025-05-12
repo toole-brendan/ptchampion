@@ -11,7 +11,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, Timer, VideoOff, Loader2, Camera } from 'lucide-react';
+import { ArrowLeft, Play, Pause, RotateCcw, Timer, VideoOff, Loader2, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import { calculateSitupScore, formatScoreDisplay } from '../../grading/APFTScoring';
@@ -19,6 +19,10 @@ import { calculateSitupScore, formatScoreDisplay } from '../../grading/APFTScori
 // Import our ViewModel hook
 import { useSitupTrackerViewModel } from '../../viewmodels/SitupTrackerViewModel';
 import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewModel';
+
+// Import new UI components
+import HUD from '@/components/workout/HUD';
+import SessionControls from '@/components/workout/SessionControls';
 
 // Add a constant to enable the new BlazePose model
 // Set to true to use the new BlazePose detector, false to use legacy
@@ -49,12 +53,6 @@ const SitupTracker: React.FC = () => {
     resetSession,
     saveResults
   } = useSitupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
-
-  // Marking unused variables with eslint disable comments
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const unusedTimer = timer;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const unusedFormScore = formScore;
 
   // Derived state
   const isActive = status === SessionStatus.ACTIVE;
@@ -141,6 +139,13 @@ const SitupTracker: React.FC = () => {
         if (saved && result.grade !== undefined) {
           setSuccess(true);
           setLoggedGrade(typeof result.grade === 'number' ? result.grade : null);
+          
+          // Navigate to workout complete page with result data
+          navigate('/complete', { state: { 
+            ...result, 
+            grade: result.grade,
+            saved: saved
+          }});
         } else {
           throw new Error("Failed to save results");
         }
@@ -174,7 +179,7 @@ const SitupTracker: React.FC = () => {
   return (
     <div className="space-y-6">
       <Button variant="outline" onClick={handleBackNavigation} className="mb-4">
-        &larr; Back
+        <ArrowLeft className="mr-2 size-4" /> Back
       </Button>
       <h1 className="font-semibold text-3xl text-foreground">{EXERCISE_NAME} Exercise</h1>
 
@@ -190,13 +195,19 @@ const SitupTracker: React.FC = () => {
           {/* Camera Feed Section */}
           <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
             <video ref={videoRef} autoPlay playsInline className="size-full object-cover" muted onLoadedMetadata={() => console.log("Video metadata loaded.")} />
-            <canvas ref={canvasRef} className="absolute left-0 top-0 size-full" />
-            {/* Overlays */}
-            {formFeedback && (
-              <div className="bg-destructive/80 absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-md px-4 py-2 font-semibold text-sm text-white">
-                {formFeedback}
-              </div>
+            <canvas ref={canvasRef} className="absolute inset-0 size-full pointer-events-none" />
+            
+            {/* HUD Component */}
+            {isActive && permissionGranted && !modelError && !isModelLoading && (
+              <HUD 
+                repCount={repCount} 
+                formattedTime={formattedTime} 
+                formFeedback={formFeedback}
+                exerciseColor="text-brass-gold" 
+              />
             )}
+            
+            {/* Overlays */}
             {isModelLoading && ( <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/60 text-white"><Loader2 className="mb-3 size-10 animate-spin" /><span>Loading AI Model...</span></div> )}
             {!isModelLoading && modelError && ( <div className="bg-destructive/80 absolute inset-0 z-10 flex flex-col items-center justify-center p-4 text-center text-white"><VideoOff className="mb-2 size-12" /><p className="mb-1 font-semibold">Model Loading Failed</p><p className="text-sm">{modelError}</p></div> )}
             {status === SessionStatus.INITIALIZING && !modelError && ( <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white"><Camera className="mr-2 size-8 animate-pulse" /><span>Requesting camera access...</span></div> )}
@@ -267,6 +278,20 @@ const SitupTracker: React.FC = () => {
             )}
         </CardFooter>
       </Card>
+      
+      {/* Session controls overlay */}
+      {!isFinished && (
+        <SessionControls
+          status={status}
+          isModelLoading={isModelLoading}
+          disabled={!permissionGranted || !!cameraError || !!modelError}
+          repCount={repCount}
+          isSubmitting={isSubmitting}
+          onStartPause={handleStartPause}
+          onReset={handleReset}
+          onFinish={handleFinish}
+        />
+      )}
 
       {isFinished && (
         <div className="mt-4 w-full rounded-lg bg-muted p-4">

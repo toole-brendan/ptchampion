@@ -114,6 +114,11 @@ module.exports = {
         "card-hover": {
           "0%": { borderColor: "rgba(191, 162, 77, 0.2)" },
           "100%": { borderColor: "rgba(191, 162, 77, 0.5)" }
+        },
+        "pop": {
+          "0%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.1)" },
+          "100%": { transform: "scale(1)" }
         }
       },
       animation: {
@@ -121,7 +126,8 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "count-up": "count-up 1s ease-out forwards",
         "shimmer": "shimmer 2s infinite linear",
-        "card-hover": "card-hover 0.3s ease-out forwards"
+        "card-hover": "card-hover 0.3s ease-out forwards",
+        "pop": "pop 0.3s ease-out"
       },
       textShadow: {
         sm: '0 1px 2px var(--tw-shadow-color)',

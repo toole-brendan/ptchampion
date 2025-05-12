@@ -30,6 +30,9 @@ const PullupTracker = lazy(() => import('./pages/exercises/PullupTracker'));
 const SitupTracker = lazy(() => import('./pages/exercises/SitupTracker'));
 const RunningTracker = lazy(() => import('./pages/exercises/RunningTracker'));
 
+// Import workout completion page
+const WorkoutComplete = lazy(() => import('./pages/WorkoutComplete'));
+
 // Loading component for suspense
 const Loading = () => (
   <div className="flex h-screen items-center justify-center bg-cream">
@@ -116,6 +119,9 @@ function App({ queryClient }: AppProps) {
                           <Route path="exercises/pullups" element={<PullupTracker />} />
                           <Route path="exercises/situps" element={<SitupTracker />} />
                           <Route path="exercises/running" element={<RunningTracker />} />
+                          
+                          {/* Workout completion page */}
+                          <Route path="complete" element={<WorkoutComplete />} />
 
                           {/* Redirect from trackers paths to exercises paths */}
                           <Route path="trackers/*" element={<Navigate to="/exercises" replace />} />
