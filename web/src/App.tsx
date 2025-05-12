@@ -18,7 +18,8 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const Exercises = lazy(() => import('./pages/Exercises'));
-const History = lazy(() => import('./pages/History'));
+// Replace the old History with the new WorkoutHistoryView
+const WorkoutHistoryView = lazy(() => import('./pages/WorkoutHistoryView'));
 // Fix for HistoryDetail not having a default export
 const HistoryDetail = lazy(() => import('./pages/HistoryDetail').then(module => ({ default: module.HistoryDetail })));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
@@ -109,7 +110,8 @@ function App({ queryClient }: AppProps) {
                           <Route index element={<Dashboard />} />
                           <Route path="dashboard" element={<Dashboard />} />
                           <Route path="exercises" element={<Exercises />} />
-                          <Route path="history" element={<History />} />
+                          {/* Use the new WorkoutHistoryView component */}
+                          <Route path="history" element={<WorkoutHistoryView />} />
                           <Route path="history/:id" element={<HistoryDetail />} />
                           <Route path="leaderboard" element={<Leaderboard />} />
                           <Route path="profile" element={<Profile />} />

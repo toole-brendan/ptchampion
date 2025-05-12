@@ -1,38 +1,98 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { 
-  // Removed unused icons to avoid linter warnings
   Calendar, 
   Loader2, 
   ChevronLeft,
-  Share2
+  Share2,
+  Clipboard,
+  Check,
+  LineChart as LineChartIcon,
+  FileText
 } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/components/ui/use-toast';
 
 import { getExerciseById } from '@/lib/apiClient';
 import { formatTime, formatDistance } from '@/lib/utils';
 
+// Check if workout has pace or rep series data
+const hasSeriesData = (workout: any): boolean => {
+  return workout && 
+    (Array.isArray(workout.rep_series) && workout.rep_series.length > 0) || 
+    (Array.isArray(workout.pace_series) && workout.pace_series.length > 0);
+};
+
+// Format chart data from workout
+const getChartData = (workout: any) => {
+  const isRunning = workout.exercise_type.toLowerCase().includes('run');
+  
+  if (isRunning && Array.isArray(workout.pace_series) && workout.pace_series.length > 0) {
+    // Format pace series for running workouts
+    return {
+      data: workout.pace_series.map((point: any, index: number) => ({
+        time: index,
+        value: point,
+      })),
+      label: 'Pace',
+      unit: 'min/km',
+      color: 'var(--color-brass-gold)'
+    };
+  } else if (Array.isArray(workout.rep_series) && workout.rep_series.length > 0) {
+    // Format rep series for other workouts
+    return {
+      data: workout.rep_series.map((point: any, index: number) => ({
+        time: index,
+        value: point,
+      })),
+      label: 'Reps',
+      unit: '',
+      color: 'var(--color-brass-gold)'
+    };
+  }
+  
+  return null;
+};
+
 export function HistoryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { toast } = useToast();
   const [isSharing, setIsSharing] = useState(false);
+  const [copied, setCopied] = useState(false);
   
   const { 
     data: workout, 
     isLoading, 
     error 
-  } = useQuery<ExerciseResponse, Error>({
+  } = useQuery({
     queryKey: ['workout', id],
     queryFn: () => getExerciseById(id as string),
     enabled: !!id,
   });
+
+  // Chart data
+  const chartData = workout ? getChartData(workout) : null;
+
+  // Reset copied state when navigating away
+  useEffect(() => {
+    let timeout: NodeJS.Timeout;
+    if (copied) {
+      timeout = setTimeout(() => {
+        setCopied(false);
+      }, 3000);
+    }
+    return () => clearTimeout(timeout);
+  }, [copied]);
 
   // Share workout to social media or copy to clipboard
   const shareWorkout = async () => {
@@ -57,14 +117,27 @@ export function HistoryDetail() {
         });
       } else {
         await navigator.clipboard.writeText(shareText);
-        // Ideally use a toast component; fallback to alert
-        alert('Results copied to clipboard!');
+        setCopied(true);
+        toast({
+          title: "Copied to clipboard",
+          description: "Workout details copied to clipboard",
+        });
       }
     } catch (err) {
       console.error('Error sharing:', err);
+      toast({
+        title: "Sharing failed",
+        description: "Could not share your workout",
+        variant: "destructive",
+      });
     } finally {
       setIsSharing(false);
     }
+  };
+
+  const handleBack = () => {
+    // Return to history page, maintaining scroll position
+    navigate('/history', { state: location.state });
   };
   
   if (isLoading) {
@@ -84,7 +157,7 @@ export function HistoryDetail() {
         <Button 
           variant="ghost" 
           className="flex items-center text-muted-foreground" 
-          onClick={() => navigate('/history')}
+          onClick={handleBack}
         >
           <ChevronLeft className="mr-1 size-4" />
           Back to History
@@ -106,7 +179,7 @@ export function HistoryDetail() {
         <Button 
           variant="ghost" 
           className="flex items-center text-muted-foreground" 
-          onClick={() => navigate('/history')}
+          onClick={handleBack}
         >
           <ChevronLeft className="mr-1 size-4" />
           Back to History
@@ -120,7 +193,7 @@ export function HistoryDetail() {
             </CardDescription>
           </CardHeader>
           <CardFooter>
-            <Button onClick={() => navigate('/history')}>Go Back to History</Button>
+            <Button onClick={handleBack}>Go Back to History</Button>
           </CardFooter>
         </Card>
       </div>
@@ -149,26 +222,47 @@ export function HistoryDetail() {
 
   return (
     <div className="space-y-6">
-      <Button 
-        variant="ghost" 
-        className="flex items-center text-muted-foreground" 
-        onClick={() => navigate('/history')}
-      >
-        <ChevronLeft className="mr-1 size-4" />
-        Back to History
-      </Button>
+      {/* Sticky header with back button and share */}
+      <div className="sticky top-0 z-10 -mx-4 bg-background/95 px-4 py-2 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="flex items-center justify-between">
+          <Button 
+            variant="ghost" 
+            className="flex items-center text-muted-foreground" 
+            onClick={handleBack}
+          >
+            <ChevronLeft className="mr-1 size-4" />
+            Back to History
+          </Button>
+          
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={shareWorkout}
+              disabled={isSharing}
+            >
+              {copied ? (
+                <>
+                  <Check className="mr-2 size-4" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  {typeof navigator.share === 'function' ? (
+                    <Share2 className="mr-2 size-4" />
+                  ) : (
+                    <Clipboard className="mr-2 size-4" />
+                  )}
+                  {isSharing ? 'Sharing...' : 'Share'}
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
       
-      <div className="flex items-center justify-between">
+      <div>
         <h1 className="font-heading text-2xl tracking-wide">Workout Details</h1>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={shareWorkout}
-          disabled={isSharing}
-        >
-          <Share2 className="mr-2 size-4" />
-          {isSharing ? 'Sharing...' : 'Share'}
-        </Button>
       </div>
       
       <Card className="bg-cream">
@@ -235,6 +329,61 @@ export function HistoryDetail() {
               </div>
             </div>
           </div>
+          
+          {/* Performance chart (if data available) */}
+          {chartData && (
+            <div className="space-y-4 rounded-lg bg-white/50 p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-medium text-muted-foreground flex items-center">
+                  <LineChartIcon className="mr-2 size-4 text-brass-gold" />
+                  Performance Chart
+                </div>
+              </div>
+              <div className="h-64 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData.data}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-olive-mist)" opacity={0.3} />
+                    <XAxis 
+                      dataKey="time" 
+                      label={{ value: 'Time', position: 'insideBottom', offset: -5 }}
+                      tickFormatter={(value) => `${value}m`}
+                      stroke="var(--color-tactical-gray)"
+                    />
+                    <YAxis 
+                      label={{ value: chartData.label, angle: -90, position: 'insideLeft' }}
+                      stroke="var(--color-tactical-gray)"
+                    />
+                    <Tooltip 
+                      formatter={(value) => [`${value} ${chartData.unit}`, chartData.label]}
+                      contentStyle={{
+                        backgroundColor: 'var(--color-cream)',
+                        border: '1px solid var(--color-army-tan)'
+                      }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke={chartData.color} 
+                      strokeWidth={2}
+                      dot={{ fill: chartData.color }}
+                      activeDot={{ r: 8 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          )}
+          
+          {/* Notes section (if available) */}
+          {workout.notes && (
+            <div className="rounded-lg bg-white/50 p-4">
+              <div className="mb-2 flex items-center">
+                <FileText className="mr-2 size-4 text-brass-gold" />
+                <span className="text-sm font-medium text-muted-foreground">Workout Notes</span>
+              </div>
+              <p className="text-sm text-tactical-gray whitespace-pre-line">{workout.notes}</p>
+            </div>
+          )}
           
           <div className="bg-muted/30 rounded-lg p-4">
             <h3 className="mb-2 font-semibold text-sm">Device Information</h3>
