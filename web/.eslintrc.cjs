@@ -17,24 +17,9 @@ module.exports = {
     ],
     '@typescript-eslint/no-unused-vars': 'error',
     '@typescript-eslint/no-explicit-any': 'error',
-  },
-  overrides: [
-    {
-      // Disable no-explicit-any for d.ts files
-      files: ["*.d.ts"],
-      rules: {
-        "@typescript-eslint/no-explicit-any": "off"
-      }
-    },
-    {
-      // Relax rules for backup directory
-      files: ["backup/**/*.{ts,tsx}"],
-      rules: {
-        "@typescript-eslint/no-unused-vars": "warn",
-        "react-hooks/exhaustive-deps": "warn",
-      }
-    }
-  ],
+    'no-restricted-imports': ['error', {
+      patterns: ['redux', 'react-redux', '@reduxjs/toolkit']
+    }],
     'tailwindcss/no-custom-classname': [
       'warn', 
       {
@@ -58,4 +43,21 @@ module.exports = {
     ],
     'tailwindcss/migration-from-tailwind-2': 'warn'
   },
+  overrides: [
+    {
+      // Disable no-explicit-any for d.ts files
+      files: ["*.d.ts"],
+      rules: {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
+      // Relax rules for backup directory
+      files: ["backup/**/*.{ts,tsx}"],
+      rules: {
+        "@typescript-eslint/no-unused-vars": "warn",
+        "react-hooks/exhaustive-deps": "warn",
+      }
+    }
+  ]
 } 
