@@ -21,20 +21,16 @@ import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/lib/apiClient';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardContent, 
   QuickLinkCard, 
   SectionCard, 
   WelcomeCard 
 } from '@/components/ui/card';
 
-// Import the exercise PNG images
-import pushupImage from '@/assets/pushup.png';
-import pullupImage from '@/assets/pullup.png';
-import situpImage from '@/assets/situp.png';
-import runningImage from '@/assets/running.png';
+// Import the exercise PNG images with explicit paths to ensure they're found
+import pushupImage from '../assets/pushup.png';
+import pullupImage from '../assets/pullup.png';
+import situpImage from '../assets/situp.png';
+import runningImage from '../assets/running.png';
 
 // Define exercise types for quick start
 const exerciseLinks = [
@@ -343,7 +339,7 @@ const Dashboard: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            {exerciseLinks.map((exercise, idx) => (
+            {exerciseLinks.map((exercise) => (
               <QuickLinkCard
                 key={exercise.name}
                 title={exercise.name}

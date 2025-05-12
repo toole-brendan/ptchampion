@@ -1,6 +1,5 @@
-import React from 'react';
 import { MetricCard } from "@/components/ui/metric-card";
-import { Activity, Clock, Users, Zap, BarChart, Heart } from "lucide-react";
+import { Activity, Clock, Users, Zap, Heart } from "lucide-react";
 import type { Meta, StoryObj } from "@storybook/react";
 
 const meta: Meta<typeof MetricCard> = {

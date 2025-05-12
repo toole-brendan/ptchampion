@@ -5,13 +5,7 @@ import { AreaChart, Flame, Clock, Award } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { formatTime as formatDuration, formatDistance } from '@/lib/utils';
 
-// Icons mapped to exercise types
-const exerciseIcons: Record<string, React.ReactNode> = {
-  'PUSHUP': <Flame className="h-4 w-4 text-brass-gold" />,
-  'PULLUP': <Flame className="h-4 w-4 text-brass-gold" />,
-  'SITUP': <Flame className="h-4 w-4 text-brass-gold" />,
-  'RUNNING': <AreaChart className="h-4 w-4 text-brass-gold" />,
-};
+// Activity type definition
 
 // Activity type definition
 type ActivityType = 'PUSHUP' | 'PULLUP' | 'SITUP' | 'RUNNING';
@@ -52,9 +46,6 @@ export function WorkoutCard({
 }: WorkoutCardProps) {
   // Format the time ago in a readable format (e.g., "2 days ago")
   const timeAgo = formatDistanceToNow(date, { addSuffix: true });
-  
-  // Get the icon for the exercise type
-  const icon = exerciseIcons[exerciseType] || <Flame className="h-4 w-4 text-brass-gold" />;
   
   return (
     <Card 
@@ -122,4 +113,7 @@ export function WorkoutCard({
       </CardContent>
     </Card>
   );
-} 
+}
+
+// Export as default to maintain backward compatibility
+export default WorkoutCard; 

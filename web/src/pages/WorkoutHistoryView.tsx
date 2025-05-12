@@ -15,7 +15,7 @@ import { cn, formatTime } from '@/lib/utils';
 import { useAuth } from '@/lib/authContext';
 import useInfiniteHistory from '@/lib/hooks/useInfiniteHistory';
 import { Button } from '@/components/ui/button';
-import WorkoutCard from '@/components/workout-history/WorkoutCard';
+import { WorkoutCard } from '@/components/workout-history/WorkoutCard';
 import HistoryFilterBar, { DateRange } from '@/components/workout-history/HistoryFilterBar';
 import StreakBanner from '@/components/workout-history/StreakBanner';
 import InfiniteScrollSentinel from '@/components/workout-history/InfiniteScrollSentinel';
@@ -283,11 +283,14 @@ const WorkoutHistoryView: React.FC = () => {
               {historyItems.map((workout) => (
                 <div key={workout.id}>
                   <WorkoutCard 
-                    workout={workout} 
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleCardClick(workout.id);
-                    }}
+                    id={`${workout.id}`}
+                    exerciseType={workout.exercise_type as 'PUSHUP' | 'PULLUP' | 'SITUP' | 'RUNNING'}
+                    count={workout.reps}
+                    distance={workout.distance}
+                    duration={workout.time_in_seconds ?? 0}
+                    date={new Date(workout.created_at)}
+                    score={workout.grade}
+                    onClick={(id: string) => handleCardClick(Number(id))}
                   />
                 </div>
               ))}
