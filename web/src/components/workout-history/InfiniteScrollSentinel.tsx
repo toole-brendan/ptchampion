@@ -8,18 +8,17 @@ interface InfiniteScrollSentinelProps {
   hasNextPage: boolean | undefined;
 }
 
-export const InfiniteScrollSentinel: React.FC<InfiniteScrollSentinelProps> = ({
+const InfiniteScrollSentinel: React.FC<InfiniteScrollSentinelProps> = ({
   onLoadMore,
   isFetchingNextPage,
-  hasNextPage,
+  hasNextPage
 }) => {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        // If the sentinel is visible and we have more pages to load
-        if (entries[0]?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           onLoadMore();
         }
       },
@@ -38,32 +37,26 @@ export const InfiniteScrollSentinel: React.FC<InfiniteScrollSentinelProps> = ({
     };
   }, [onLoadMore, hasNextPage, isFetchingNextPage]);
 
-  // If no more pages, don't render anything
-  if (!hasNextPage && !isFetchingNextPage) {
-    return null;
+  if (!hasNextPage) {
+    return (
+      <div className="py-4 text-center text-sm font-medium text-tactical-gray">
+        You've reached the end of your workout history.
+      </div>
+    );
   }
 
   return (
-    <div className="my-6 flex flex-col items-center" aria-hidden="true">
-      {/* Hidden sentinel div that triggers loading when visible */}
-      <div ref={sentinelRef} className="h-4 w-full" />
-      
-      {/* Loading indicator or button fallback */}
+    <div 
+      ref={sentinelRef} 
+      className="flex items-center justify-center py-6"
+    >
       {isFetchingNextPage ? (
-        <div className="flex items-center">
-          <Loader2 className="mr-2 size-5 animate-spin text-brass-gold" />
-          <span className="text-sm text-tactical-gray">Loading more workouts...</span>
+        <div className="flex items-center gap-2">
+          <Loader2 className="size-5 animate-spin text-brass-gold" />
+          <span className="text-sm font-medium text-tactical-gray">Loading more...</span>
         </div>
-      ) : hasNextPage ? (
-        <Button 
-          variant="outline" 
-          onClick={onLoadMore}
-          className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
-        >
-          Load More
-        </Button>
       ) : (
-        <p className="text-sm text-tactical-gray">No more workouts to load</p>
+        <span className="text-sm font-medium text-tactical-gray">Scroll to load more</span>
       )}
     </div>
   );

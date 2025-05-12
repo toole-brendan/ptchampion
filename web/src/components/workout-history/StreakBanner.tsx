@@ -1,32 +1,26 @@
 import React from 'react';
 import { Flame } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface StreakBannerProps {
   streakCount: number;
   filtersActive: boolean;
 }
 
-export const StreakBanner: React.FC<StreakBannerProps> = ({ streakCount, filtersActive }) => {
-  if (filtersActive || streakCount === 0) {
+const StreakBanner: React.FC<StreakBannerProps> = ({ streakCount, filtersActive }) => {
+  // Only show streak if we have one and no filters are active
+  if (streakCount === 0 || filtersActive) {
     return null;
   }
-  
+
   return (
-    <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-      <div className="flex items-center justify-center bg-brass-gold/10 p-3">
-        <div className="flex items-center space-x-2">
-          <Flame className="size-6 text-red-500" />
-          <p className="font-heading text-lg text-command-black">
-            <span className="font-bold text-brass-gold">{streakCount}-day</span> streak!
-          </p>
-          {streakCount >= 7 && (
-            <span className="rounded bg-brass-gold px-2 py-0.5 font-bold text-xs uppercase text-white">
-              {streakCount >= 30 ? 'Elite' : streakCount >= 14 ? 'Pro' : 'Solid'}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
+    <Alert className="rounded-card border-olive-mist bg-olive-mist/10">
+      <Flame className="size-5 text-brass-gold" />
+      <AlertTitle className="font-heading text-sm">Current Streak: {streakCount} {streakCount === 1 ? 'day' : 'days'}</AlertTitle>
+      <AlertDescription>
+        Keep your workout streak going for better results!
+      </AlertDescription>
+    </Alert>
   );
 };
 

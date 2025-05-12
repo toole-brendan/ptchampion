@@ -25,10 +25,7 @@ import { SkeletonRow } from '@/components/ui/skeleton';
 import { useToast } from '@/components/ui/use-toast';
 import { SectionCard, CardDivider } from "@/components/ui/card"; // Import card components from design system
 
-// Header divider component
-const HeaderDivider: React.FC = () => (
-  <CardDivider className="mx-auto" />
-);
+// Header divider component removed as we'll use a simple div for the separator
 
 const exerciseOptions = ['overall', 'pushup', 'situp', 'pullup', 'running'];
 const exerciseDisplayNames = {
@@ -190,21 +187,19 @@ const Leaderboard: React.FC = () => {
   return (
     <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
       <div className="flex flex-col space-y-section max-w-7xl mx-auto">
-        {/* Header Section Card */}
-        <SectionCard
-          title="Leaderboard"
-          description="Compare your performance"
-          icon={<Trophy className="size-5" />}
-          className="animate-fade-in"
-          showDivider
-        >
-          <div className="flex flex-col items-center">
-            <HeaderDivider />
-            <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">
-              Track your progress against other athletes
-            </p>
-          </div>
-        </SectionCard>
+        {/* Page Header - full-width, no card, left aligned */}
+        <header className="text-left mb-section animate-fade-in px-content">
+          <h1 className="font-heading text-heading3 md:text-heading2 uppercase tracking-wider text-deep-ops">
+            Leaderboard
+          </h1>
+
+          {/* thin gold separator, left aligned */}
+          <div className="my-4 h-px w-24 bg-brass-gold" />
+
+          <p className="text-sm md:text-base font-semibold tracking-wide text-deep-ops">
+            Track your progress against other athletes
+          </p>
+        </header>
         
         {/* Geolocation Alert - Show if needed */}
         {scopeFilter === scopeOptions[1] && geoState.error && (
@@ -258,10 +253,6 @@ const Leaderboard: React.FC = () => {
         {/* Main Leaderboard Section Card */}
         <SectionCard
           title={`${exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Rankings`}
-          description={scopeFilter === scopeOptions[1] 
-            ? 'See how you compare to athletes in your area'
-            : 'See how you measure up against the global competition'
-          }
           icon={<Trophy className="size-5" />}
           className="animate-fade-in animation-delay-100"
           showDivider

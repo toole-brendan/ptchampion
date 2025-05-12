@@ -8,7 +8,8 @@ import {
   Dumbbell, 
   Award, 
   History as HistoryIcon, 
-  Loader2 
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
 import { cn, formatTime } from '@/lib/utils';
@@ -19,11 +20,12 @@ import { WorkoutCard } from '@/components/workout-history/WorkoutCard';
 import HistoryFilterBar, { DateRange } from '@/components/workout-history/HistoryFilterBar';
 import StreakBanner from '@/components/workout-history/StreakBanner';
 import InfiniteScrollSentinel from '@/components/workout-history/InfiniteScrollSentinel';
+import { SectionCard, CardDivider } from "@/components/ui/card";
+import { MetricCard } from "@/components/ui/metric-card";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Player } from '@lottiefiles/react-lottie-player';
+import emptyHistoryAnimation from '@/assets/empty-leaderboard.json'; // Reusing leaderboard animation for now
 
-// Header divider component
-const HeaderDivider: React.FC = () => (
-  <div className="mx-auto my-2 h-px w-16 bg-brass-gold"></div>
-);
 
 const WorkoutHistoryView: React.FC = () => {
   const { isLoading: isAuthLoading } = useAuth();
@@ -91,10 +93,14 @@ const WorkoutHistoryView: React.FC = () => {
 
   if (isLoading && !historyItems.length) {
     return (
-      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="mx-auto mb-4 size-10 animate-spin text-brass-gold"/>
-          <p className="font-heading text-lg uppercase">Loading history...</p>
+      <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
+        <div className="flex flex-col space-y-section max-w-7xl mx-auto">
+          <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="mx-auto mb-4 size-10 animate-spin text-brass-gold"/>
+              <p className="font-heading text-lg uppercase">Loading history...</p>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -102,26 +108,33 @@ const WorkoutHistoryView: React.FC = () => {
 
   if (isError) {
     return (
-      <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-        <div className="bg-card-background relative w-full max-w-md overflow-hidden rounded-card shadow-medium">
-          <div className="p-content">
-            <div className="mb-4 text-center">
-              <h2 className="font-heading text-heading3 uppercase tracking-wider text-error">
-                Error Loading History
-              </h2>
-              <HeaderDivider />
-            </div>
-            <div className="space-y-4 text-center">
-              <p className="text-sm text-tactical-gray">{error instanceof Error ? error.message : 'An unknown error occurred'}</p>
+      <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
+        <div className="flex flex-col space-y-section max-w-7xl mx-auto">
+          <header className="text-left mb-section animate-fade-in px-content">
+            <h1 className="font-heading text-heading3 md:text-heading2 uppercase tracking-wider text-deep-ops">
+              Training History
+            </h1>
+            <div className="my-4 h-px w-24 bg-brass-gold" />
+            <p className="text-sm md:text-base font-semibold tracking-wide text-deep-ops">
+              Track your progress over time
+            </p>
+          </header>
+          
+          <Alert variant="destructive" className="rounded-card">
+            <AlertCircle className="size-5" />
+            <AlertTitle className="font-heading text-sm">Error Loading History</AlertTitle>
+            <AlertDescription>
+              {error instanceof Error ? error.message : 'An unknown error occurred'}
               <Button 
-                onClick={() => refetch()} 
-                variant="outline"
-                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+                variant="outline" 
+                size="sm" 
+                className="mt-2 border-brass-gold text-brass-gold" 
+                onClick={() => refetch()}
               >
                 TRY AGAIN
               </Button>
-            </div>
-          </div>
+            </AlertDescription>
+          </Alert>
         </div>
       </div>
     );
@@ -129,57 +142,75 @@ const WorkoutHistoryView: React.FC = () => {
 
   if (isEmpty) {
     return (
-      <div className="space-y-section">
-        <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
-          <div className="mb-4 text-center">
-            <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
+      <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
+        <div className="flex flex-col space-y-section max-w-7xl mx-auto">
+          <header className="text-left mb-section animate-fade-in px-content">
+            <h1 className="font-heading text-heading3 md:text-heading2 uppercase tracking-wider text-deep-ops">
               Training History
-            </h2>
-            <HeaderDivider />
-            <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Track your progress over time</p>
-          </div>
-        </div>
-        
-        <div className="bg-card-background relative overflow-hidden rounded-card text-center shadow-medium">
-          <div className="p-content">
-            <h3 className="mb-4 font-heading text-heading4 uppercase tracking-wider">No Workouts Found</h3>
-            <p className="text-tactical-gray">You haven't logged any exercises yet.</p>
-            <p className="mt-2 text-tactical-gray">Start tracking your workouts to see your progress here!</p>
-          </div>
+            </h1>
+            <div className="my-4 h-px w-24 bg-brass-gold" />
+            <p className="text-sm md:text-base font-semibold tracking-wide text-deep-ops">
+              Track your progress over time
+            </p>
+          </header>
+          
+          <SectionCard
+            title="No Workouts Found"
+            className="animate-fade-in animation-delay-100 text-center"
+            showDivider
+          >
+            <div className="flex flex-col items-center justify-center py-8">
+              <Player
+                autoplay
+                loop
+                src={emptyHistoryAnimation}
+                style={{ height: '200px', width: '200px' }}
+                className="text-brass-gold"
+              />
+              <p className="mt-4 text-center font-semibold text-tactical-gray">
+                You haven't logged any exercises yet.
+              </p>
+              <p className="text-center text-sm text-tactical-gray">
+                Start tracking your workouts to see your progress here!
+              </p>
+              <Button
+                variant="default"
+                className="mt-4 bg-brass-gold text-deep-ops"
+                onClick={() => navigate('/exercises')}
+              >
+                Start Workout
+              </Button>
+            </div>
+          </SectionCard>
         </div>
       </div>
     );
   }
   
   return (
-    <div 
-      ref={mainRef}
-      className={cn("space-y-section", isFetchingNextPage && "opacity-75 transition-opacity duration-300")}
-    >
-      <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
-        <div className="mb-4 text-center">
-          <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
+    <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
+      <div className="flex flex-col space-y-section max-w-7xl mx-auto" ref={mainRef}>
+        {/* Page Header - full-width, no card, left aligned */}
+        <header className="text-left mb-section animate-fade-in px-content">
+          <h1 className="font-heading text-heading3 md:text-heading2 uppercase tracking-wider text-deep-ops">
             Training History
-          </h2>
-          <HeaderDivider />
-          <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Track your progress over time</p>
-        </div>
-      </div>
-      
-      {/* Streak banner */}
-      <StreakBanner streakCount={streakCount} filtersActive={filtersActive} />
+          </h1>
+          <div className="my-4 h-px w-24 bg-brass-gold" />
+          <p className="text-sm md:text-base font-semibold tracking-wide text-deep-ops">
+            Track your progress over time
+          </p>
+        </header>
+        
+        {/* Streak banner */}
+        <StreakBanner streakCount={streakCount} filtersActive={filtersActive} />
 
-      {/* Filters */}
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <div className="rounded-t-card bg-deep-ops p-content">
-          <div className="flex items-center">
-            <HistoryIcon className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
-              Filter Workouts
-            </h2>
-          </div>
-        </div>
-        <div className="p-content">
+        {/* Filters */}
+        <SectionCard
+          title="Filter Workouts"
+          icon={<HistoryIcon className="size-5" />}
+          className="animate-fade-in animation-delay-100"
+          showDivider
+        >
           <HistoryFilterBar
             exerciseFilter={exerciseFilter}
             dateRange={dateRange}
@@ -188,45 +219,53 @@ const WorkoutHistoryView: React.FC = () => {
             onDateRangeChange={setDateRange}
             onClearFilters={handleClearFilters}
           />
-        </div>
-      </div>
+        </SectionCard>
 
-      {/* Summary stats */}
-      <div className="grid gap-card-gap md:grid-cols-2 lg:grid-cols-4">
-        {[
-          { title: 'TOTAL WORKOUTS', value: summaryStats.totalWorkouts, icon: Dumbbell, unit: '' },
-          { title: 'TOTAL TIME', value: formatTime(summaryStats.totalSeconds), icon: Clock, unit: '' },
-          { title: 'TOTAL REPS', value: summaryStats.totalReps, icon: Repeat, unit: '' },
-          { title: 'TOTAL DISTANCE', value: summaryStats.totalDistance, icon: TrendingUp, unit: 'km' },
-        ].map((stat, index) => (
-          <div key={index} className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-            <div className="p-content">
-              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="font-semibold text-xs uppercase tracking-wider text-tactical-gray">{stat.title}</div>
-                <stat.icon className="size-5 text-brass-gold" />
-              </div>
-              <div className="font-heading text-heading3 text-command-black">
-                {stat.value} {stat.unit && <span className="font-semibold text-sm text-tactical-gray">{stat.unit}</span>}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Personal records */}
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <div className="rounded-t-card bg-deep-ops p-content">
-          <div className="flex items-center">
-            <Award className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
-              Personal Records
-            </h2>
-          </div>
-          <p className="text-sm text-army-tan">
-            Your top performance records based on current filters.
-          </p>
+        {/* Summary stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-card-gap animate-fade-in animation-delay-200">
+          <MetricCard
+            title="TOTAL WORKOUTS"
+            value={summaryStats.totalWorkouts}
+            icon={Dumbbell}
+            iconClassName="text-brass-gold"
+            valueClassName="font-heading text-heading2 text-command-black"
+            index={0}
+          />
+          <MetricCard
+            title="TOTAL TIME"
+            value={formatTime(summaryStats.totalSeconds)}
+            icon={Clock}
+            iconClassName="text-brass-gold"
+            valueClassName="font-heading text-heading2 text-command-black"
+            index={1}
+          />
+          <MetricCard
+            title="TOTAL REPS"
+            value={summaryStats.totalReps}
+            icon={Repeat}
+            iconClassName="text-brass-gold"
+            valueClassName="font-heading text-heading2 text-command-black"
+            index={2}
+          />
+          <MetricCard
+            title="TOTAL DISTANCE"
+            value={summaryStats.totalDistance}
+            unit="km"
+            icon={TrendingUp}
+            iconClassName="text-brass-gold"
+            valueClassName="font-heading text-heading2 text-command-black"
+            index={3}
+          />
         </div>
-        <div className="p-content">
+
+        {/* Personal records */}
+        <SectionCard
+          title="Personal Records"
+          icon={<Award className="size-5" />}
+          description="Your top performance records based on current filters."
+          className="animate-fade-in animation-delay-300"
+          showDivider
+        >
           {personalBests.length > 0 ? (
             <ul className="space-y-3">
               {personalBests.map((pb, index) => {
@@ -238,8 +277,10 @@ const WorkoutHistoryView: React.FC = () => {
                 const date = format(new Date(pb.created_at), 'MMM dd, yyyy');
                 
                 return (
-                  <li key={index} className="relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream/30 p-3 shadow-small">
-                    <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
+                  <li 
+                    key={index} 
+                    className="border-b border-olive-mist/10 transition-colors hover:bg-brass-gold/5 rounded-card p-3"
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col">
                         <span className="font-heading text-sm uppercase text-command-black">{pb.exercise_type}</span>
@@ -255,33 +296,26 @@ const WorkoutHistoryView: React.FC = () => {
               })}
             </ul>
           ) : (
-            <p className="py-4 text-center font-semibold text-sm text-tactical-gray">
+            <div className="py-4 text-center font-semibold text-sm text-tactical-gray">
               No personal bests found for the selected filters.
-            </p>
+            </div>
           )}
-        </div>
-      </div>
+        </SectionCard>
 
-      {/* Workout history cards */}
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <div className="rounded-t-card bg-deep-ops p-content">
-          <div className="flex items-center">
-            <HistoryIcon className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
-              Workout History
-            </h2>
-          </div>
-          <p className="text-sm text-army-tan">
-            {filtersActive 
-              ? 'Filtered workout history matching your criteria.' 
-              : 'Complete history of your workouts.'}
-          </p>
-        </div>
-        <div className="p-content">
+        {/* Workout history cards */}
+        <SectionCard
+          title="Workout History"
+          icon={<HistoryIcon className="size-5" />}
+          description={filtersActive 
+            ? 'Filtered workout history matching your criteria.' 
+            : 'Complete history of your workouts.'}
+          className={cn("animate-fade-in animation-delay-400", isFetchingNextPage && "opacity-75 transition-opacity duration-300")}
+          showDivider
+        >
           {historyItems.length > 0 ? (
             <div className="space-y-4">
               {historyItems.map((workout) => (
-                <div key={workout.id}>
+                <div key={workout.id} className="animate-fade-in">
                   <WorkoutCard 
                     id={`${workout.id}`}
                     exerciseType={workout.exercise_type as 'PUSHUP' | 'PULLUP' | 'SITUP' | 'RUNNING'}
@@ -303,11 +337,23 @@ const WorkoutHistoryView: React.FC = () => {
               />
             </div>
           ) : (
-            <div className="py-8 text-center font-semibold text-sm text-tactical-gray">
-              No workouts match your current filters.
+            <div className="flex flex-col items-center justify-center py-8">
+              <Player
+                autoplay
+                loop
+                src={emptyHistoryAnimation}
+                style={{ height: '200px', width: '200px' }}
+                className="text-brass-gold"
+              />
+              <p className="mt-4 text-center font-semibold text-tactical-gray">
+                No workouts match your current filters.
+              </p>
+              <p className="text-center text-sm text-tactical-gray">
+                Try changing your filter settings or complete more workouts.
+              </p>
             </div>
           )}
-        </div>
+        </SectionCard>
       </div>
     </div>
   );
