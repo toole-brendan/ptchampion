@@ -17,6 +17,19 @@ extension Text {
     func body(weight: Font.Weight = .regular) -> Text {
         self.font(.system(size: 16, weight: weight))
     }
+    
+    public func heading1() -> Text {
+        self.font(Typography.heading1)
+            .foregroundColor(Color.textDefault)
+    }
+    
+    public func heading4(weight: Font.Weight = .bold) -> Text {
+        let font = weight == .bold 
+            ? Typography.heading4 
+            : Font.system(size: Typography.xl, weight: .semibold)
+        return self.font(font)
+                   .foregroundColor(Color.textDefault)
+    }
 }
 
 extension View {

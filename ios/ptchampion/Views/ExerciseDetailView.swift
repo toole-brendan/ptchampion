@@ -85,12 +85,11 @@ struct ExerciseDetailView: View {
                 }
                 .padding(.vertical, Spacing.medium)
             }
-            .frame(maxWidth: 600)
-            .adaptivePadding()
+            .container()
         }
         .background(
-            // Use a concrete color from UIKit to SwiftUI conversion to avoid ambiguity
-            Color(uiColor: UIColor(red: 0.95, green: 0.95, blue: 0.9, alpha: 0.5))
+            // Use design token color instead of hard-coded UIColor
+            Color.backgroundSubtle
         )
         .navigationBarTitleDisplayMode(.inline)
         .container()
@@ -138,7 +137,7 @@ struct ExerciseDetailView: View {
         .padding(Spacing.medium)
         .background(Color.cardBackground)
         .cornerRadius(CornerRadius.medium)
-        .shadow(color: Color(uiColor: UIColor.black).opacity(0.05), radius: 2, x: 0, y: 1)
+        .shadow(color: Color.gray800.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 
