@@ -596,7 +596,7 @@ class WorkoutHistoryViewModel: ObservableObject {
         let uniqueDays = workouts
             .map { Calendar.current.startOfDay(for: $0.date) }
             .sorted()
-            .reduce(into: [Date]()) { (uniqueDays, date) in
+            .reduce(into: [Date]() { (uniqueDays, date) in
                 if uniqueDays.last != date {
                     uniqueDays.append(date)
                 }
@@ -631,7 +631,7 @@ class WorkoutHistoryViewModel: ObservableObject {
         longestWorkoutStreak = max(maxStreak, currentConsStreak)
         
         // Calculate Current Streak
-        let today = calendar.startOfDay(for: Date())
+        let today = calendar.startOfDay(for: Date()
         let uniqueDaysSet = Set(uniqueDays)
         var currentStrk = 0
         var dateToFind = today

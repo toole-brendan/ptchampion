@@ -8,123 +8,123 @@ import PTDesignSystem
 struct DesignSystemDemo: View {
     var body: some View {
         ScrollView {
-            VStack(spacing: AppTheme.GeneratedSpacing.section) {
+            VStack(spacing: Spacing.section) {
                 Text("PT Champion Design System")
-                    .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .heading1()
+                    .foregroundColor(Color.textPrimary)
                 
                 // Colors section
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
                     Text("Colors")
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading3))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .heading3()
+                        .foregroundColor(Color.textPrimary)
                     
                     Text("Base Colors")
-                        .font(AppTheme.GeneratedTypography.subheading())
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .subheading()
+                        .foregroundColor(Color.textSecondary)
                     
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible()),
                         GridItem(.flexible())
-                    ], spacing: AppTheme.GeneratedSpacing.small) {
-                        colorSwatch("Primary", color: AppTheme.GeneratedColors.primary)
-                        colorSwatch("Secondary", color: AppTheme.GeneratedColors.secondary)
-                        colorSwatch("Accent", color: AppTheme.GeneratedColors.accent)
-                        colorSwatch("Background", color: AppTheme.GeneratedColors.background)
-                        colorSwatch("Card", color: AppTheme.GeneratedColors.cardBackground)
-                        colorSwatch("Brass Gold", color: AppTheme.GeneratedColors.brassGold)
+                    ], spacing: Spacing.small) {
+                        colorSwatch("Primary", color: Color.primary)
+                        colorSwatch("Secondary", color: Color.secondary)
+                        colorSwatch("Accent", color: Color.accent)
+                        colorSwatch("Background", color: Color.background)
+                        colorSwatch("Card", color: Color.cardBackground)
+                        colorSwatch("Brass Gold", color: Color.brassGold)
                     }
                     
                     Text("Text Colors")
-                        .font(AppTheme.GeneratedTypography.subheading())
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .subheading()
+                        .foregroundColor(Color.textSecondary)
                     
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible()),
                         GridItem(.flexible())
-                    ], spacing: AppTheme.GeneratedSpacing.small) {
-                        colorSwatch("Text Primary", color: AppTheme.GeneratedColors.textPrimary)
-                        colorSwatch("Text Secondary", color: AppTheme.GeneratedColors.textSecondary)
-                        colorSwatch("Text Tertiary", color: AppTheme.GeneratedColors.textTertiary)
+                    ], spacing: Spacing.small) {
+                        colorSwatch("Text Primary", color: Color.textPrimary)
+                        colorSwatch("Text Secondary", color: Color.textSecondary)
+                        colorSwatch("Text Tertiary", color: Color.textTertiary)
                     }
                     
                     Text("Status Colors")
-                        .font(AppTheme.GeneratedTypography.subheading())
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .subheading()
+                        .foregroundColor(Color.textSecondary)
                     
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible()),
                         GridItem(.flexible()),
                         GridItem(.flexible())
-                    ], spacing: AppTheme.GeneratedSpacing.small) {
-                        colorSwatch("Success", color: AppTheme.GeneratedColors.success)
-                        colorSwatch("Error", color: AppTheme.GeneratedColors.error)
-                        colorSwatch("Warning", color: AppTheme.GeneratedColors.warning)
-                        colorSwatch("Info", color: AppTheme.GeneratedColors.info)
+                    ], spacing: Spacing.small) {
+                        colorSwatch("Success", color: Color.success)
+                        colorSwatch("Error", color: Color.error)
+                        colorSwatch("Warning", color: Color.warning)
+                        colorSwatch("Info", color: Color.info)
                     }
                 }
                 .padding()
-                .background(AppTheme.GeneratedColors.cardBackground)
-                .cornerRadius(AppTheme.GeneratedRadius.card)
+                .background(Color.cardBackground)
+                .cornerRadius(CornerRadius.card)
                 
                 // Typography section
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
                     Text("Typography")
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading3))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .heading3()
+                        .foregroundColor(Color.textPrimary)
                     
                     Group {
                         typographySample("Heading 1", 
-                                        font: AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1),
-                                        size: "\(Int(AppTheme.GeneratedTypography.heading1))pt")
+                                        font: .heading1(),
+                                        size: "24pt")
                         
                         typographySample("Heading 2", 
-                                        font: AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading2),
-                                        size: "\(Int(AppTheme.GeneratedTypography.heading2))pt")
+                                        font: .heading2(),
+                                        size: "20pt")
                         
                         typographySample("Heading 3", 
-                                        font: AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading3),
-                                        size: "\(Int(AppTheme.GeneratedTypography.heading3))pt")
+                                        font: .heading3(),
+                                        size: "18pt")
                         
                         typographySample("Heading 4", 
-                                        font: AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading4),
-                                        size: "\(Int(AppTheme.GeneratedTypography.heading4))pt")
+                                        font: .heading4(),
+                                        size: "16pt")
                         
                         typographySample("Body", 
-                                        font: AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.body),
-                                        size: "\(Int(AppTheme.GeneratedTypography.body))pt")
+                                        font: .body(),
+                                        size: "14pt")
                         
                         typographySample("Body Bold", 
-                                        font: AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.body),
-                                        size: "\(Int(AppTheme.GeneratedTypography.body))pt")
+                                        font: .bodyBold(),
+                                        size: "14pt")
                         
                         typographySample("Small", 
-                                        font: AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small),
-                                        size: "\(Int(AppTheme.GeneratedTypography.small))pt")
+                                        font: .small(),
+                                        size: "12pt")
                         
                         typographySample("Tiny", 
-                                        font: AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.tiny),
-                                        size: "\(Int(AppTheme.GeneratedTypography.tiny))pt")
+                                        font: .caption(),
+                                        size: "10pt")
                     }
                 }
                 .padding()
-                .background(AppTheme.GeneratedColors.cardBackground)
-                .cornerRadius(AppTheme.GeneratedRadius.card)
+                .background(Color.cardBackground)
+                .cornerRadius(CornerRadius.card)
                 
                 // Component Examples
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
                     Text("Component Examples")
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading3))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .heading3()
+                        .foregroundColor(Color.textPrimary)
                     
                     // Buttons
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         Text("Buttons")
-                            .font(AppTheme.GeneratedTypography.subheading())
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .subheading()
+                            .foregroundColor(Color.textSecondary)
                         
                         HStack {
                             PTButton("Primary", action: {})
@@ -138,27 +138,26 @@ struct DesignSystemDemo: View {
                     }
                     
                     // Cards
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         Text("Cards")
-                            .font(AppTheme.GeneratedTypography.subheading())
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .subheading()
+                            .foregroundColor(Color.textSecondary)
                         
-                        PTCard {
-                            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-                                Text("Card Title")
-                                    .font(AppTheme.GeneratedTypography.subheading())
-                                Text("This is a sample card component using the design system tokens for styling.")
-                                    .font(AppTheme.GeneratedTypography.body())
-                            }
-                            .padding()
+                        VStack(alignment: .leading, spacing: Spacing.small) {
+                            Text("Card Title")
+                                .subheading()
+                            Text("This is a sample card component using the design system tokens for styling.")
+                                .body()
                         }
+                        .padding()
+                        .card()
                     }
                     
                     // Text Fields
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         Text("Text Fields")
-                            .font(AppTheme.GeneratedTypography.subheading())
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .subheading()
+                            .foregroundColor(Color.textSecondary)
                         
                         PTTextField(
                             text: .constant("Example text"),
@@ -169,12 +168,13 @@ struct DesignSystemDemo: View {
                     }
                 }
                 .padding()
-                .background(AppTheme.GeneratedColors.cardBackground)
-                .cornerRadius(AppTheme.GeneratedRadius.card)
+                .background(Color.cardBackground)
+                .cornerRadius(CornerRadius.card)
             }
             .padding()
         }
-        .background(AppTheme.GeneratedColors.background)
+        .background(Color.background)
+        .container()
     }
     
     private func colorSwatch(_ name: String, color: Color) -> some View {
@@ -182,12 +182,12 @@ struct DesignSystemDemo: View {
             Rectangle()
                 .fill(color)
                 .frame(width: 70, height: 70)
-                .cornerRadius(AppTheme.GeneratedRadius.small)
+                .cornerRadius(CornerRadius.small)
             
             Text(name)
-                .font(AppTheme.GeneratedTypography.caption())
+                .caption()
                 .multilineTextAlignment(.center)
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .foregroundColor(Color.textSecondary)
         }
     }
     
@@ -195,13 +195,13 @@ struct DesignSystemDemo: View {
         HStack {
             Text(name)
                 .font(font)
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .foregroundColor(Color.textPrimary)
             
             Spacer()
             
             Text(size)
-                .font(AppTheme.GeneratedTypography.caption())
-                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                .caption()
+                .foregroundColor(Color.textTertiary)
         }
     }
 }

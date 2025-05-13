@@ -12,7 +12,7 @@ public struct ActivityFeedItem: Identifiable {
 public func relativeDateFormatter(date: Date) -> String {
     let formatter = RelativeDateTimeFormatter()
     formatter.unitsStyle = .full
-    return formatter.localizedString(for: date, relativeTo: Date())
+    return formatter.localizedString(for: date, relativeTo: Date()
 }
 
 // Sample Activity Data - can be used for previews and development

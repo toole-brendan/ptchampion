@@ -9,9 +9,9 @@ struct LeaderboardFilterBarView: View {
     let showRadiusSelector: Bool
     
     var body: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(spacing: Spacing.medium) {
             // Filters section
-            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            HStack(spacing: Spacing.medium) {
                 categoryFilterMenu
                 exerciseFilterMenu
             }
@@ -42,23 +42,23 @@ struct LeaderboardFilterBarView: View {
         } label: {
             categoryFilterLabel
         }
-        .tint(AppTheme.GeneratedColors.textPrimary)
+        .tint(Color.textPrimary)
     }
     
     private var categoryFilterLabel: some View {
         HStack {
             Image(systemName: "calendar")
-                .foregroundColor(AppTheme.GeneratedColors.primary)
+                .foregroundColor(Color.primary)
             Text(selectedCategory.rawValue)
-                .font(AppTheme.GeneratedTypography.body())
+                .body()
             Image(systemName: "chevron.down")
-                .font(.caption)
+                .caption()
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
+            RoundedRectangle(cornerRadius: CornerRadius.button)
+                .fill(Color.primary.opacity(0.1)
         )
     }
     
@@ -80,23 +80,23 @@ struct LeaderboardFilterBarView: View {
         } label: {
             exerciseFilterLabel
         }
-        .tint(AppTheme.GeneratedColors.textPrimary)
+        .tint(Color.textPrimary)
     }
     
     private var exerciseFilterLabel: some View {
         HStack {
             Image(systemName: "figure.run")
-                .foregroundColor(AppTheme.GeneratedColors.primary)
+                .foregroundColor(Color.primary)
             Text(selectedExercise.displayName)
-                .font(AppTheme.GeneratedTypography.body())
+                .body()
             Image(systemName: "chevron.down")
-                .font(.caption)
+                .caption()
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
+            RoundedRectangle(cornerRadius: CornerRadius.button)
+                .fill(Color.primary.opacity(0.1)
         )
     }
 }
@@ -118,20 +118,20 @@ struct RadiusSelectorView: View {
         } label: {
             HStack {
                 Image(systemName: "map")
-                    .foregroundColor(AppTheme.GeneratedColors.primary)
+                    .foregroundColor(Color.primary)
                 Text("Radius: \(selectedRadius.displayName)")
-                    .font(AppTheme.GeneratedTypography.body())
+                    .body()
                 Image(systemName: "chevron.down")
-                    .font(.caption)
+                    .caption()
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
             .background(
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                    .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
+                RoundedRectangle(cornerRadius: CornerRadius.button)
+                    .fill(Color.primary.opacity(0.1)
             )
         }
-        .tint(AppTheme.GeneratedColors.textPrimary)
+        .tint(Color.textPrimary)
         .padding(.horizontal)
     }
 }

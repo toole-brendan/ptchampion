@@ -38,8 +38,10 @@ enum AssistantKiller {
     /// Replace `addSubview(_:)` with a version that hides the assistant view.
     private static func swizzleAddSubview(in window: UIWindow) {
         let cls = UIView.self
-        let original = class_getInstanceMethod(cls, #selector(UIView.addSubview(_:)))!
-        let replacement = class_getInstanceMethod(cls, #selector(UIView._ptc_addSubview(_:)))!
+        guard let original = class_getInstanceMethod(cls, #selector(UIView.addSubview(_:))),
+              let replacement = class_getInstanceMethod(cls, #selector(UIView._ptc_addSubview(_:))) else {
+            return
+        }
         method_exchangeImplementations(original, replacement)
 
         // Kick the swizzled method once on existing subviews (rarely needed but harmless)
@@ -251,6 +253,21 @@ class FontManager {
     }
 }
 
+// Font Registry Checker class to verify font registration
+class FontRegistryChecker {
+    static func verifyFontRegistration() {
+        let fontFamilyNames = UIFont.familyNames.sorted()
+        print("Available Font Families:")
+        for familyName in fontFamilyNames {
+            print("Family: \(familyName)")
+            let fontNames = UIFont.fontNames(forFamilyName: familyName)
+            for fontName in fontNames {
+                print("Font: \(fontName)")
+            }
+        }
+    }
+}
+
 // --- Main App Structure ---
 
 @main
@@ -297,7 +314,7 @@ struct PTChampionApp: App {
     init() {
         // Check fonts in debug mode
         #if DEBUG
-        FontRegistryChecker.checkFonts()
+        FontRegistryChecker.verifyFontRegistration()
         #endif
         
         // Initialize FontManager first (doesn't depend on self)
@@ -502,7 +519,7 @@ struct PTChampionApp: App {
                 
                 // Check fonts in debug mode
                 #if DEBUG
-                FontRegistryChecker.checkFonts()
+                FontRegistryChecker.verifyFontRegistration()
                 #endif
             }
             .task {
@@ -553,12 +570,12 @@ struct MainTabView: View {
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(Tab.profile)
         }
-        .tint(AppTheme.GeneratedColors.brassGold)
+        .tint(Color.brassGold)
         .onAppear { 
             // Customize TabView appearance 
             let tabBarAppearance = UITabBarAppearance()
             tabBarAppearance.configureWithOpaqueBackground()
-            tabBarAppearance.backgroundColor = UIColor(AppTheme.GeneratedColors.deepOps)
+            tabBarAppearance.backgroundColor = UIColor(Color.deepOps)
             UITabBar.appearance().standardAppearance = tabBarAppearance
             
             if #available(iOS 15.0, *) {
@@ -605,7 +622,7 @@ struct PTChampionApp_Previews: PreviewProvider {
             .environmentObject(mockFeatureFlagService) // Keep providing this
             .environmentObject(mockAuthViewModel) // Provide AuthViewModel
             // Use the helper for preview container
-            .modelContainer(createPreviewModelContainer()) 
+            .modelContainer(createPreviewModelContainer())
     }
 }
 
@@ -635,7 +652,7 @@ struct MainTabView_Previews: PreviewProvider {
             // Ensure other necessary VMs/Services needed by child views are provided for preview
             // e.g., DashboardViewModel, WorkoutHistoryViewModel, SettingsView dependencies
             // Use the helper for preview container
-            .modelContainer(createPreviewModelContainer()) 
+            .modelContainer(createPreviewModelContainer())
     }
 }
 #endif

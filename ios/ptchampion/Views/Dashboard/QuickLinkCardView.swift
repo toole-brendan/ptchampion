@@ -9,37 +9,30 @@ struct QuickLinkCardView: View {
     
     var body: some View {
         NavigationLink(destination: destinationView) {
-            PTCard {
-                VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.extraSmall) {
-                    if isSystemIcon {
-                        Image(systemName: icon)
-                            .font(.system(size: 48))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            .frame(width: 64, height: 64)
-                            .scaledToFit()
-                    } else {
-                        Image(icon)
-                            .resizable()
-                            .scaledToFit()
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            .frame(width: 64, height: 64)
-                    }
-                    
-                    Text(title)
-                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        .lineLimit(1)
-                        .multilineTextAlignment(.center)
+            VStack(alignment: .center, spacing: Spacing.extraSmall) {
+                if isSystemIcon {
+                    Image(systemName: icon)
+                        .font(.system(size: 48))
+                        .foregroundColor(Color.textPrimary)
+                        .frame(width: 64, height: 64)
+                        .scaledToFit()
+                } else {
+                    Image(icon)
+                        .resizable()
+                        .scaledToFit()
+                        .foregroundColor(Color.textPrimary)
+                        .frame(width: 64, height: 64)
                 }
-                .padding(AppTheme.GeneratedSpacing.contentPadding)
-                .frame(maxWidth: .infinity, minHeight: 110, alignment: .center)
+                
+                Text(title)
+                    .small(weight: .semibold, design: .monospaced)
+                    .foregroundColor(Color.textPrimary)
+                    .lineLimit(1)
+                    .multilineTextAlignment(.center)
             }
-            .shadow(
-                color: Color.black.opacity(0.08),
-                radius: 8,
-                x: 0,
-                y: 2
-            )
+            .padding(Spacing.contentPadding)
+            .frame(maxWidth: .infinity, minHeight: 110, alignment: .center)
+            .card(variant: .interactive)
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())

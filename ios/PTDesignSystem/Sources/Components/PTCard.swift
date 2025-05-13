@@ -1,24 +1,33 @@
 import SwiftUI
 import DesignTokens
 
-/// Card style options for flexibility
+/// A container component that provides card-like styling for content
 public enum PTCardStyle: Equatable {
-    case standard    // Default card style
-    case elevated    // More prominent shadow
-    case flat        // No shadow, just border
-    case highlight   // Accent color border
-    case interactive // Designed for touch interaction
+    /// Standard card with light shadow and default styling
+    case standard
     
-    // Custom style with specified parameters
+    /// Elevated card with more prominent shadow
+    case elevated
+    
+    /// Flat card with a border and no shadow
+    case flat
+    
+    /// Highlight card with accent border
+    case highlight
+    
+    /// Interactive card that reacts to touch
+    case interactive
+    
+    /// Custom card with configurable parameters
     case custom(
-        backgroundColor: Color,
+        backgroundColor: SwiftUI.Color,
         cornerRadius: CGFloat,
         shadowRadius: CGFloat,
-        borderColor: Color?,
+        borderColor: SwiftUI.Color?,
         borderWidth: CGFloat
     )
     
-    // Implementation of Equatable for custom case
+    // Implement Equatable
     public static func == (lhs: PTCardStyle, rhs: PTCardStyle) -> Bool {
         switch (lhs, rhs) {
         case (.standard, .standard),
@@ -27,10 +36,12 @@ public enum PTCardStyle: Equatable {
              (.highlight, .highlight),
              (.interactive, .interactive):
             return true
-        case (.custom, .custom):
-            // For custom, we consider them equal if they're both custom
-            // A more detailed comparison could be implemented if needed
-            return true
+        case (.custom(let lbg, let lcr, let lsr, let lbc, let lbw),
+              .custom(let rbg, let rcr, let rsr, let rbc, let rbw)):
+            // Compare the custom properties
+            // Note: For colors we can't easily compare, so we'll return false for custom
+            // to be safe, which is acceptable for UI state changes
+            return lcr == rcr && lsr == rsr && lbw == rbw
         default:
             return false
         }
@@ -65,10 +76,10 @@ public struct PTCard<Content: View>: View {
     public var body: some View {
         content
             .padding(padding ?? EdgeInsets(
-                top: AppTheme.GeneratedSpacing.contentPadding,
-                leading: AppTheme.GeneratedSpacing.contentPadding,
-                bottom: AppTheme.GeneratedSpacing.contentPadding,
-                trailing: AppTheme.GeneratedSpacing.contentPadding
+                top: Spacing.contentPadding,
+                leading: Spacing.contentPadding,
+                bottom: Spacing.contentPadding,
+                trailing: Spacing.contentPadding
             ))
             .background(backgroundView)
             .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
@@ -109,15 +120,13 @@ public struct PTCard<Content: View>: View {
     private var backgroundView: some View {
         switch style {
         case .standard, .elevated, .flat, .highlight, .interactive:
-            // Use web theme if enabled
             if ThemeManager.useWebTheme {
-                PTDesignSystem.AppTheme.Color.surface
+                DesignTokens.Color.surface
             } else {
-                // Gradient background for more dimension
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        PTDesignSystem.AppTheme.GeneratedColors.cardBackground,
-                        PTDesignSystem.AppTheme.GeneratedColors.cardBackground.opacity(0.97)
+                        DesignTokens.Color.cardBackground,
+                        DesignTokens.Color.cardBackground.opacity(0.97)
                     ]),
                     startPoint: .top,
                     endPoint: .bottom
@@ -146,34 +155,34 @@ public struct PTCard<Content: View>: View {
         default:
             // Use web theme radius if enabled
             return ThemeManager.useWebTheme ? 
-                AppTheme.Radius.lg : 
-                AppTheme.GeneratedRadius.card
+                CornerRadius.lg : 
+                CornerRadius.card
         }
     }
     
     // Shadow color based on style
-    private var shadowColor: Color {
+    private var shadowColor: SwiftUI.Color {
         if ThemeManager.useWebTheme {
             switch style {
             case .standard, .interactive:
-                return AppTheme.Shadow.card.color
+                return Shadow.card.color
             case .elevated:
-                return AppTheme.Shadow.md.color
+                return Shadow.md.color
             case .flat, .highlight:
-                return Color.clear
+                return SwiftUI.Color.clear
             case .custom(_, _, _, _, _):
-                return AppTheme.Shadow.card.color
+                return Shadow.card.color
             }
         } else {
             switch style {
             case .standard, .interactive:
-                return Color.black.opacity(0.1)
+                return SwiftUI.Color.black.opacity(0.1)
             case .elevated:
-                return Color.black.opacity(0.15)
+                return SwiftUI.Color.black.opacity(0.15)
             case .flat, .highlight:
-                return Color.clear
+                return SwiftUI.Color.clear
             case .custom(_, _, _, _, _):
-                return Color.black.opacity(0.1)
+                return SwiftUI.Color.black.opacity(0.1)
             }
         }
     }
@@ -183,9 +192,9 @@ public struct PTCard<Content: View>: View {
         if ThemeManager.useWebTheme {
             switch style {
             case .standard, .interactive:
-                return AppTheme.Shadow.card.radius
+                return Shadow.card.radius
             case .elevated:
-                return AppTheme.Shadow.md.radius
+                return Shadow.md.radius
             case .flat, .highlight:
                 return 0
             case .custom(_, _, let radius, _, _):
@@ -210,13 +219,13 @@ public struct PTCard<Content: View>: View {
         if ThemeManager.useWebTheme {
             switch style {
             case .standard, .interactive:
-                return PTDesignSystem.AppTheme.Shadow.card.y
+                return Shadow.card.y
             case .elevated:
-                return PTDesignSystem.AppTheme.Shadow.md.y
+                return Shadow.md.y
             case .flat, .highlight:
                 return 0
             case .custom(_, _, _, _, _):
-                return PTDesignSystem.AppTheme.Shadow.card.y
+                return Shadow.card.y
             }
         } else {
             switch style {
@@ -233,36 +242,36 @@ public struct PTCard<Content: View>: View {
     }
     
     // Border color based on style
-    private var borderColor: Color {
+    private var borderColor: SwiftUI.Color {
         if ThemeManager.useWebTheme {
             switch style {
             case .flat:
-                return PTDesignSystem.AppTheme.Color.borderDefault
+                return DesignTokens.Color.borderDefault
             case .highlight:
-                return PTDesignSystem.AppTheme.Color.brand500
+                return DesignTokens.Color.brand500
             case .interactive:
                 return isPressed ? 
-                    PTDesignSystem.AppTheme.Color.brand500.opacity(0.3) : 
-                    PTDesignSystem.AppTheme.Color.borderDefault
+                    DesignTokens.Color.brand500.opacity(0.3) : 
+                    DesignTokens.Color.borderDefault
             case .custom(_, _, _, let color, _):
-                return color ?? Color.clear
+                return color ?? SwiftUI.Color.clear
             default:
-                return Color.clear
+                return SwiftUI.Color.clear
             }
         } else {
             switch style {
             case .flat:
-                return PTDesignSystem.AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
+                return DesignTokens.Color.tacticalGray.opacity(0.3)
             case .highlight:
-                return PTDesignSystem.AppTheme.GeneratedColors.brassGold
+                return DesignTokens.Color.brassGold
             case .interactive:
                 return isPressed ? 
-                    PTDesignSystem.AppTheme.GeneratedColors.brassGold.opacity(0.3) : 
-                    PTDesignSystem.AppTheme.GeneratedColors.tacticalGray.opacity(0.3)
+                    DesignTokens.Color.brassGold.opacity(0.3) : 
+                    DesignTokens.Color.tacticalGray.opacity(0.3)
             case .custom(_, _, _, let color, _):
-                return color ?? Color.clear
+                return color ?? SwiftUI.Color.clear
             default:
-                return Color.clear
+                return SwiftUI.Color.clear
             }
         }
     }
@@ -332,10 +341,10 @@ struct PTCard_Previews: PreviewProvider {
                 }
                 
                 PTCard(style: .custom(
-                    backgroundColor: AppTheme.GeneratedColors.brassGold.opacity(0.1),
+                    backgroundColor: DesignTokens.Color.brassGold.opacity(0.1),
                     cornerRadius: 20,
                     shadowRadius: 5,
-                    borderColor: AppTheme.GeneratedColors.brassGold.opacity(0.3),
+                    borderColor: DesignTokens.Color.brassGold.opacity(0.3),
                     borderWidth: 2
                 )) {
                     Text("Custom Card")

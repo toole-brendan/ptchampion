@@ -43,54 +43,54 @@ extension View {
 // Extension specifically for Text views
 extension Text {
     func heading1(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.heading1, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.heading1, color: color)
     }
     
     func heading2(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.heading2, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.heading2, color: color)
     }
     
     func heading3(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.heading3, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.heading3, color: color)
     }
     
     func heading4(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.heading4, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.heading4, color: color)
     }
     
     func body(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.body, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.body, color: color)
     }
     
     func bodyBold(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.bodyBold, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.bodyBold, color: color)
     }
     
     func bodySemibold(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.bodySemibold, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.bodySemibold, color: color)
     }
     
     func small(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.small, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.small, color: color)
     }
     
     func smallSemibold(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.smallSemibold, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.smallSemibold, color: color)
     }
     
     func caption(color: Color? = .mutedForeground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.caption, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.caption, color: color)
     }
     
     func label(color: Color? = .tacticalGray) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.label, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.label, color: color)
     }
     
     func metric(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.metric, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.metric, color: color)
     }
     
     func code(color: Color? = .foreground) -> some View {
-        self.modifier(TypographyModifier(style: AppFonts.code, color: color))
+        self.modifier(TypographyModifier(style: AppFonts.code, color: color)
     }
 } 

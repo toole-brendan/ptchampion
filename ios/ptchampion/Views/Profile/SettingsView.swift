@@ -38,7 +38,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack(spacing: Spacing.medium) {
                     // Appearance Group
                     settingsGroup(title: "Appearance") {
                         SettingsRow(icon: "paintbrush.fill", label: "Theme") {
@@ -56,8 +56,8 @@ struct SettingsView: View {
                         }
                         
                         Text("Dark mode support is in progress.")
-                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                            .small()
+                            .foregroundColor(Color.textTertiary)
                             .italic()
                             .padding(.leading, 34) // Align with text after icon
                     }
@@ -82,7 +82,7 @@ struct SettingsView: View {
                     settingsGroup(title: "Notifications") {
                         SettingsRow(icon: "bell.fill", label: "Workout Reminders") {
                             Toggle("", isOn: $workoutRemindersEnabled)
-                                .tint(AppTheme.GeneratedColors.brassGold)
+                                .tint(Color.brassGold)
                                 .onChange(of: workoutRemindersEnabled) { _ in
                                     hapticGenerator.impactOccurred(intensity: 0.4)
                                 }
@@ -92,7 +92,7 @@ struct SettingsView: View {
                         
                         SettingsRow(icon: "trophy.fill", label: "Achievement Notifications") {
                             Toggle("", isOn: $achievementNotificationsEnabled)
-                                .tint(AppTheme.GeneratedColors.brassGold)
+                                .tint(Color.brassGold)
                                 .onChange(of: achievementNotificationsEnabled) { _ in
                                     hapticGenerator.impactOccurred(intensity: 0.4)
                                 }
@@ -107,26 +107,26 @@ struct SettingsView: View {
                         } label: {
                             SettingsRow(icon: "antenna.radiowaves.left.and.right", label: "Manage Bluetooth Devices") {
                                 Image(systemName: "chevron.right")
-                                    .font(.footnote)
-                                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                    .caption()
+                                    .foregroundColor(Color.textTertiary)
                             }
                         }
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .foregroundColor(Color.textPrimary)
                     }
                     
                     // App Version
                     HStack {
                         Spacer()
                         Text("PT Champion v\(appVersion())")
-                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                            .padding(.top, AppTheme.GeneratedSpacing.large)
+                            .small()
+                            .foregroundColor(Color.textTertiary)
+                            .padding(.top, Spacing.large)
                         Spacer()
                     }
                 }
-                .padding(AppTheme.GeneratedSpacing.contentPadding)
+                .padding(Spacing.contentPadding)
             }
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+            .background(Color.background.ignoresSafeArea())
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -137,7 +137,7 @@ struct SettingsView: View {
                     } label: {
                         Text("Done")
                             .fontWeight(.semibold)
-                            .foregroundColor(AppTheme.GeneratedColors.accent)
+                            .foregroundColor(Color.accent)
                     }
                 }
             }
@@ -164,20 +164,20 @@ struct SettingsView: View {
     
     @ViewBuilder
     private func settingsGroup<Content: View>(title: String, @ViewBuilder content: @escaping () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
             // Group title
             Text(title)
-                .font(AppTheme.GeneratedTypography.bodySemibold())
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .bodySemibold()
+                .foregroundColor(Color.textPrimary)
                 .padding(.leading, 4)
             
             // Content card
             VStack(alignment: .leading, spacing: 0) {
                 content()
             }
-            .padding(AppTheme.GeneratedSpacing.medium)
-            .background(AppTheme.GeneratedColors.cardBackground)
-            .cornerRadius(AppTheme.GeneratedRadius.card)
+            .padding(Spacing.medium)
+            .background(Color.cardBackground)
+            .cornerRadius(CornerRadius.card)
             .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
     }
@@ -221,12 +221,12 @@ struct SettingsRow<Content: View>: View {
             // Icon
             Image(systemName: icon)
                 .frame(width: 24)
-                .foregroundColor(AppTheme.GeneratedColors.primary)
+                .foregroundColor(Color.primary)
             
             // Label
             Text(label)
-                .font(AppTheme.GeneratedTypography.body())
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .body()
+                .foregroundColor(Color.textPrimary)
             
             Spacer()
             

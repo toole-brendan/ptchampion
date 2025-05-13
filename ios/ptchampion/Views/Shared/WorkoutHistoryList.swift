@@ -36,11 +36,11 @@ struct WorkoutHistoryList: View {
                 )
                 .listRowBackground(Color.clear)
             } else {
-                ForEach(Array(viewModel.workoutsFiltered.enumerated()), id: \.element.id) { index, workout in
-                    PTCard(style: isEditable ? .highlight : .standard) {
+                ForEach(Array(viewModel.workoutsFiltered.enumerated(), id: \.element.id) { index, workout in
+                    VStack {
                         HStack {
                             WorkoutHistoryRowAdapter(workout: workout)
-                                .contentShape(Rectangle())
+                                .contentShape(Rectangle()
                                 .onTapGesture {
                                     if !isEditable {
                                         onSelect?(workout)
@@ -50,17 +50,17 @@ struct WorkoutHistoryList: View {
                             if isEditable {
                                 Spacer()
                                 
-                                HStack(spacing: AppTheme.GeneratedSpacing.small) {
+                                HStack(spacing: Spacing.small) {
                                     Button {
                                         // TODO: Add share functionality if needed
                                     } label: {
                                         Image(systemName: "square.and.arrow.up")
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                            .body(weight: .medium)
+                                            .foregroundColor(Color.brassGold)
                                             .frame(width: 40, height: 40)
                                             .background(
                                                 Circle()
-                                                    .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                                                    .fill(Color.brassGold.opacity(0.1)
                                             )
                                     }
                                     
@@ -70,20 +70,21 @@ struct WorkoutHistoryList: View {
                                         }
                                     } label: {
                                         Image(systemName: "trash")
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(AppTheme.GeneratedColors.error)
+                                            .body(weight: .medium)
+                                            .foregroundColor(Color.error)
                                             .frame(width: 40, height: 40)
                                             .background(
                                                 Circle()
-                                                    .fill(AppTheme.GeneratedColors.error.opacity(0.1))
+                                                    .fill(Color.error.opacity(0.1)
                                             )
                                     }
                                 }
                             }
                         }
-                        .padding(AppTheme.GeneratedSpacing.small)
+                        .padding(Spacing.small)
                     }
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    .card(variant: isEditable ? .interactive : .default)
+                    .padding(.horizontal, Spacing.contentPadding)
                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                         if !isEditable {
                             Button(role: .destructive) {
@@ -99,7 +100,7 @@ struct WorkoutHistoryList: View {
                             } label: {
                                 Label("Share", systemImage: "square.and.arrow.up")
                             }
-                            .tint(AppTheme.GeneratedColors.brassGold)
+                            .tint(Color.brassGold)
                         }
                     }
                 }
@@ -112,9 +113,9 @@ struct WorkoutHistoryList: View {
         .overlay {
             if viewModel.isLoading {
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle())
+                    .progressViewStyle(CircularProgressViewStyle()
                     .scaleEffect(1.5)
-                    .tint(AppTheme.GeneratedColors.brassGold)
+                    .tint(Color.brassGold)
             }
         }
     }

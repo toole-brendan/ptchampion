@@ -28,18 +28,18 @@ struct EditProfileView: View {
         ZStack {
             // Main Content
             ScrollView {
-                VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                VStack(spacing: Spacing.large) {
                     // Form Content in Cards
                     formContent
                     
                     // Save Button (Additional to the one in navbar)
                     saveButton
-                        .padding(.top, AppTheme.GeneratedSpacing.large)
-                        .padding(.bottom, AppTheme.GeneratedSpacing.section)
+                        .padding(.top, Spacing.large)
+                        .padding(.bottom, Spacing.section)
                 }
-                .padding(AppTheme.GeneratedSpacing.contentPadding)
+                .padding(Spacing.contentPadding)
             }
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+            .background(Color.background.ignoresSafeArea()
             
             // Success Toast
             if showSuccessToast {
@@ -48,18 +48,19 @@ struct EditProfileView: View {
                     
                     HStack(spacing: 12) {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 20))
+                            .font(.title3)
                             .foregroundColor(.white)
                         
                         Text("Profile updated successfully")
-                            .font(.subheadline.weight(.semibold))
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
                             .foregroundColor(.white)
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
                     .background(
                         Capsule()
-                            .fill(AppTheme.GeneratedColors.success)
+                            .fill(Color.success)
                             .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
                     )
                     .padding(.bottom, 20)
@@ -71,33 +72,36 @@ struct EditProfileView: View {
         .navigationTitle("Edit Profile")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // Cancel button
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("Cancel") {
-                    hapticGenerator.impactOccurred(intensity: 0.4)
-                    dismiss()
-                }
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-            }
-            
-            // Save button
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.6)
-                    saveProfile()
-                } label: {
-                    if isLoading {
-                        ProgressView()
-                            .tint(AppTheme.GeneratedColors.accent)
-                    } else {
-                        Text("Save")
-                            .fontWeight(.semibold)
-                            .foregroundColor(AppTheme.GeneratedColors.accent)
+            ToolbarItemGroup {
+                // Cancel button
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        hapticGenerator.impactOccurred(intensity: 0.4)
+                        dismiss()
                     }
+                    .foregroundColor(Color.textPrimary)
                 }
-                .disabled(isLoading || !isFormValid)
+                
+                // Save button
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        hapticGenerator.impactOccurred(intensity: 0.6)
+                        saveProfile()
+                    } label: {
+                        if isLoading {
+                            ProgressView()
+                                .tint(Color.accent)
+                        } else {
+                            Text("Save")
+                                .fontWeight(.semibold)
+                                .foregroundColor(Color.accent)
+                        }
+                    }
+                    .disabled(isLoading || !isFormValid)
+                }
             }
         }
+        .container()
         .onAppear {
             loadCurrentUserData()
             hapticGenerator.prepare()
@@ -108,11 +112,12 @@ struct EditProfileView: View {
     
     // Form Content
     private var formContent: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
             // Section Header
             Text("Personal Information")
-                .font(.title3.weight(.semibold))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(Color.textPrimary)
                 .padding(.leading, 4)
                 .accessibilityAddTraits(.isHeader)
             
@@ -123,46 +128,45 @@ struct EditProfileView: View {
     
     // Personal Info Card
     private var personalInfoCard: some View {
-        PTCard {
-            VStack(spacing: 0) {
-                // First Name Field
-                formField(
-                    label: "First Name",
-                    iconName: "person.fill",
-                    text: $firstName,
-                    placeholder: "Enter your first name",
-                    error: formErrors["firstName"],
-                    field: .firstName
-                )
-                
-                Divider()
-                    .padding(.leading, 56)
-                
-                // Last Name Field
-                formField(
-                    label: "Last Name",
-                    iconName: "person.fill",
-                    text: $lastName,
-                    placeholder: "Enter your last name",
-                    error: formErrors["lastName"],
-                    field: .lastName
-                )
-                
-                Divider()
-                    .padding(.leading, 56)
-                
-                // Email Field
-                formField(
-                    label: "Email",
-                    iconName: "envelope.fill",
-                    text: $email,
-                    placeholder: "Enter your email",
-                    error: formErrors["email"],
-                    keyboardType: .emailAddress,
-                    field: .email
-                )
-            }
+        VStack(spacing: 0) {
+            // First Name Field
+            formField(
+                label: "First Name",
+                iconName: "person.fill",
+                text: $firstName,
+                placeholder: "Enter your first name",
+                error: formErrors["firstName"],
+                field: .firstName
+            )
+            
+            Divider()
+                .padding(.leading, 56)
+            
+            // Last Name Field
+            formField(
+                label: "Last Name",
+                iconName: "person.fill",
+                text: $lastName,
+                placeholder: "Enter your last name",
+                error: formErrors["lastName"],
+                field: .lastName
+            )
+            
+            Divider()
+                .padding(.leading, 56)
+            
+            // Email Field
+            formField(
+                label: "Email",
+                iconName: "envelope.fill",
+                text: $email,
+                placeholder: "Enter your email",
+                error: formErrors["email"],
+                keyboardType: .emailAddress,
+                field: .email
+            )
         }
+        .card()
     }
     
     // Save Button 
@@ -185,10 +189,10 @@ struct EditProfileView: View {
             .padding()
             .background(
                 isFormValid ? 
-                    AppTheme.GeneratedColors.brassGold : 
-                    AppTheme.GeneratedColors.brassGold.opacity(0.3)
+                    Color.brassGold : 
+                    Color.brassGold.opacity(0.3)
             )
-            .cornerRadius(AppTheme.GeneratedRadius.button)
+            .cornerRadius(CornerRadius.button)
         }
         .disabled(isLoading || !isFormValid)
     }
@@ -204,22 +208,22 @@ struct EditProfileView: View {
         field: FormField
     ) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            HStack(spacing: Spacing.medium) {
                 // Icon
                 Image(systemName: iconName)
                     .frame(width: 24)
-                    .foregroundColor(focusedField == field ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.textSecondary)
+                    .foregroundColor(focusedField == field ? Color.brassGold : Color.textSecondary)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     // Label
                     Text(label)
-                        .font(.caption)
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .caption()
+                        .foregroundColor(Color.textSecondary)
                     
                     // Text Field
                     TextField(placeholder, text: text)
-                        .font(.system(size: 16))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .body()
+                        .foregroundColor(Color.textPrimary)
                         .keyboardType(keyboardType)
                         .autocapitalization(.none)
                         .disableAutocorrection(true)
@@ -237,8 +241,8 @@ struct EditProfileView: View {
             // Error Message (if any)
             if let error = error, !error.isEmpty {
                 Text(error)
-                    .font(.caption)
-                    .foregroundColor(AppTheme.GeneratedColors.error)
+                    .caption()
+                    .foregroundColor(Color.error)
                     .padding(.leading, 56)
                     .transition(.opacity)
             }

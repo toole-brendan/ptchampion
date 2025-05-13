@@ -23,11 +23,11 @@ struct WorkoutCompleteView: View {
 
     var body: some View {
         NavigationView { // Wrap in NavigationView for a title and dismiss button
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 if let workoutResult = result {
                     Text("Workout Complete!")
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .heading1()
+                        .foregroundColor(Color.textPrimary)
 
                     Form {
                         Section("Summary") {
@@ -50,20 +50,20 @@ struct WorkoutCompleteView: View {
                         } else if fetchError != nil {
                             Section("Rep Details") {
                                 Text("Could not load rep details: \(fetchError!)")
-                                    .foregroundColor(AppTheme.GeneratedColors.error)
+                                    .foregroundColor(Color.error)
                             }
                         } else if !repDetailsForChart.isEmpty {
                             Section("Form Quality per Rep") {
                                 Chart(repDetailsForChart) {
-                                    RuleMark(y: .value("Target Quality", 0.75))
-                                        .foregroundStyle(AppTheme.GeneratedColors.success.opacity(0.5))
-                                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [5]))
+                                    RuleMark(y: .value("Target Quality", 0.75)
+                                        .foregroundStyle(Color.success.opacity(0.5)
+                                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [5])
                                     
                                     BarMark(
                                         x: .value("Rep", "Rep \($0.repNumber)"),
                                         y: .value("Quality", $0.formQuality)
                                     )
-                                    .foregroundStyle($0.formQuality >= 0.75 ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.warning)
+                                    .foregroundStyle($0.formQuality >= 0.75 ? Color.success : Color.warning)
                                 }
                                 .chartYScale(domain: 0...1)
                                 .frame(height: 200)
@@ -72,17 +72,17 @@ struct WorkoutCompleteView: View {
                         } else {
                             Section("Rep Details"){
                                 Text("No detailed rep data found for this session.")
-                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                    .foregroundColor(Color.textSecondary)
                             }
                         }
                     }
                 } else {
                     // Handle case where workout result is nil (e.g., save failed)
                     Text("Workout Data Unavailable")
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading2))
-                        .foregroundColor(AppTheme.GeneratedColors.error)
+                        .heading2()
+                        .foregroundColor(Color.error)
                     Text("There was an issue saving or loading the workout details.")
-                        .font(AppTheme.GeneratedTypography.body(size: nil))
+                        .body()
                         .multilineTextAlignment(.center)
                         .padding()
                 }
@@ -95,10 +95,11 @@ struct WorkoutCompleteView: View {
                 .padding(.horizontal)
                 .padding(.bottom)
             }
-            .background(AppTheme.GeneratedColors.cream)
+            .background(Color.cream)
             .navigationTitle("Workout Summary")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+            .container()
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
                         dismiss()
@@ -165,21 +166,21 @@ struct WorkoutCompletionInfoRow: View {
         if isVertical {
             VStack(alignment: .leading) {
                 Text(label)
-                    .font(AppTheme.GeneratedTypography.caption(size: nil))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .caption()
+                    .foregroundColor(Color.textSecondary)
                 Text(value)
-                    .font(AppTheme.GeneratedTypography.body(size: nil))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .body()
+                    .foregroundColor(Color.textPrimary)
             }
         } else {
             HStack {
                 Text(label)
-                    .font(AppTheme.GeneratedTypography.body(size: nil))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .body()
+                    .foregroundColor(Color.textSecondary)
                 Spacer()
                 Text(value)
-                    .font(AppTheme.GeneratedTypography.body(size: nil))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .body()
+                    .foregroundColor(Color.textPrimary)
             }
         }
     }

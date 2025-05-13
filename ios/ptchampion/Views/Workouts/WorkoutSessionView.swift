@@ -113,6 +113,7 @@ struct WorkoutSessionView: View {
         .navigationTitle(exerciseType.displayName)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+            .container()
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("End") {
@@ -125,7 +126,7 @@ struct WorkoutSessionView: View {
                         print("View dismissed before workout started")
                     }
                 }
-                .foregroundColor(AppTheme.GeneratedColors.error)
+                .foregroundColor(Color.error)
                 // Disable the End button if the workout is already finished to prevent multiple calls
                 .disabled(viewModel.workoutState == .finished)
             }
@@ -133,16 +134,16 @@ struct WorkoutSessionView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { viewModel.switchCamera() }) {
                     Image(systemName: "arrow.triangle.2.circlepath.camera")
-                        .font(.system(size: 20))
+                        .heading3()
                 }
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .foregroundColor(Color.textPrimary)
             }
         }
         .fullScreenCover(isPresented: $viewModel.showWorkoutCompleteView) {
             if let result = viewModel.completedWorkoutResult {
                 WorkoutCompleteView(
                     result: result,
-                    exerciseGrader: AnyExerciseGraderBox(WorkoutSessionViewModel.createGrader(for: exerciseType))
+                    exerciseGrader: AnyExerciseGraderBox(WorkoutSessionViewModel.createGrader(for: exerciseType)
                 )
                 .onDisappear {
                     dismiss()
@@ -183,12 +184,12 @@ struct WorkoutSessionView: View {
                 startCountdown()
             } label: {
                 Text("Ready for \(exerciseType.displayName)")
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .bodyBold()
+                    .foregroundColor(Color.textPrimary)
                     .padding()
                     .frame(width: 300)
                     .background(.ultraThinMaterial)
-                    .cornerRadius(AppTheme.GeneratedRadius.medium)
+                    .cornerRadius(CornerRadius.medium)
             }
             // Use a more appropriate bottom padding that works across device sizes
             .padding(.bottom, 80)
@@ -205,12 +206,12 @@ struct WorkoutSessionView: View {
             Spacer()
             
             Text("\(count)")
-                .font(.system(size: 80, weight: .bold))
+                .font(.system(size: 80, weight: .bold)
                 .foregroundColor(.white)
                 .padding(30)
                 .background(
                     Circle()
-                        .fill(Color.black.opacity(0.5))
+                        .fill(Color.black.opacity(0.5)
                         .frame(width: 150, height: 150)
                 )
             
@@ -271,10 +272,10 @@ struct WorkoutSessionView: View {
     // MARK: - UI Components
     @ViewBuilder
     private func permissionDeniedOverlay() -> some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(spacing: Spacing.medium) {
             Image(systemName: "camera.slash.fill")
-                .font(.system(size: 50))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .font(.system(size: 50)
+                .foregroundColor(Color.textPrimary)
             
             PTLabel("Camera Access Denied", style: .heading)
             
@@ -289,10 +290,10 @@ struct WorkoutSessionView: View {
                 }
             }
         }
-        .padding(AppTheme.GeneratedSpacing.large)
+        .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            Color(uiColor: UIColor.black.withAlphaComponent(0.85))
+            Color(uiColor: UIColor.black.withAlphaComponent(0.85)
                 .edgesIgnoringSafeArea(.all)
         )
     }

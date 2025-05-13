@@ -1,7 +1,7 @@
 import UIKit
 import SwiftUI
-
 import PTDesignSystem
+
 /// A utility to check color contrast ratio for WCAG accessibility compliance
 public struct UIColorContrastChecker {
     
@@ -66,11 +66,11 @@ public struct UIColorContrastChecker {
         isLargeText: Bool = false
     ) -> [String: Bool] {
         // Get UIColors from AppTheme
-        let uiDeepOps = UIColor(AppTheme.GeneratedColors.deepOps)
-        let uiBrassGold = UIColor(AppTheme.GeneratedColors.brassGold)
-        let uiCream = UIColor(AppTheme.GeneratedColors.cream)
-        let uiCommandBlack = UIColor(AppTheme.GeneratedColors.commandBlack)
-        let uiTacticalGray = UIColor(AppTheme.GeneratedColors.tacticalGray)
+        let uiDeepOps = UIColor(PTDesignSystem.Color.deepOps)
+        let uiBrassGold = UIColor(PTDesignSystem.Color.brassGold)
+        let uiCream = UIColor(PTDesignSystem.Color.cream)
+        let uiCommandBlack = UIColor(PTDesignSystem.Color.commandBlack)
+        let uiTacticalGray = UIColor(PTDesignSystem.Color.tacticalGray)
         
         // Check contrast against each theme color
         return [
@@ -106,15 +106,15 @@ public struct UIColorContrastChecker {
     }
     
     /// Converts a SwiftUI Color to UIColor
-    public static func UIColorFrom(_ color: Color) -> UIColor {
+    public static func UIColorFrom(_ color: SwiftUI.Color) -> UIColor {
         return UIColor(color)
     }
 }
 
 // SwiftUI preview extension to visualize contrast ratios
 public struct ContrastRatioPreview: View {
-    let foreground: Color
-    let background: Color
+    let foreground: SwiftUI.Color
+    let background: SwiftUI.Color
     let text: String
     
     @State private var contrastRatio: CGFloat = 0
@@ -122,8 +122,8 @@ public struct ContrastRatioPreview: View {
     @State private var meetsAAA: Bool = false
     
     public init(
-        foreground: Color,
-        background: Color,
+        foreground: SwiftUI.Color,
+        background: SwiftUI.Color,
         text: String = "Sample Text"
     ) {
         self.foreground = foreground
@@ -173,27 +173,27 @@ public struct ContrastRatioPreview: View {
             self.meetsAA = ratio >= 4.5
             self.meetsAAA = ratio >= 7.0
         }
-        .border(Color.gray, width: 1)
+        .border(SwiftUI.Color.gray, width: 1)
     }
 }
 
 #Preview {
     VStack {
         ContrastRatioPreview(
-            foreground: AppTheme.GeneratedColors.deepOps,
-            background: AppTheme.GeneratedColors.cream,
+            foreground: PTDesignSystem.Color.deepOps,
+            background: PTDesignSystem.Color.cream,
             text: "DeepOps on Cream"
         )
         
         ContrastRatioPreview(
-            foreground: AppTheme.GeneratedColors.brassGold,
-            background: AppTheme.GeneratedColors.deepOps,
+            foreground: PTDesignSystem.Color.brassGold,
+            background: PTDesignSystem.Color.deepOps,
             text: "BrassGold on DeepOps"
         )
         
         ContrastRatioPreview(
-            foreground: AppTheme.GeneratedColors.tacticalGray,
-            background: AppTheme.GeneratedColors.cream,
+            foreground: PTDesignSystem.Color.tacticalGray,
+            background: PTDesignSystem.Color.cream,
             text: "TacticalGray on Cream"
         )
     }

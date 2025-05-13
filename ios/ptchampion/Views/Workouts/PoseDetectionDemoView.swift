@@ -7,7 +7,7 @@ struct PoseDetectionDemoView: View {
     var body: some View {
         VStack(spacing: 20) {
             Image(systemName: "figure.stand")
-                .font(.system(size: 60))
+                .font(.system(size: 60)
                 .foregroundColor(.blue)
             
             Text("Body Pose Detection")
@@ -34,7 +34,7 @@ struct PoseDetectionDemoView: View {
             .padding(.top, 30)
             
             Text("Note: This will use your front camera and requires a real device (not the simulator).")
-                .font(.footnote)
+                .caption()
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
                 .padding()

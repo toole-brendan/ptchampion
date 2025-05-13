@@ -1,0 +1,12 @@
+{
+  "": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftCompilerPlugin.build/SwiftCompilerPlugin.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftCompilerPlugin.build/SwiftCompilerPlugin.o",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftCompilerPlugin.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftCompilerPlugin/CompilerPlugin.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftCompilerPlugin.build/CompilerPlugin.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftCompilerPlugin.build/CompilerPlugin~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftCompilerPlugin.build/CompilerPlugin.swiftdeps"
+  }
+}

@@ -1,17 +1,20 @@
 import SwiftUI
 import PTDesignSystem
 
+// Use design system colors by default; reference SwiftUI.Color when needed
+fileprivate typealias SColor = SwiftUI.Color
+
 struct LeaderboardRowView: View {
     let entry: LeaderboardEntryView
     let isCurrentUser: Bool
 
     // Function to determine medal image and color based on rank
-    private func rankDecoration(rank: Int) -> (image: String?, color: Color) {
+    private func rankDecoration(rank: Int) -> (image: String?, color: SColor) {
         switch rank {
-        case 1: return ("medal.fill", AppTheme.GeneratedColors.brassGold)
-        case 2: return ("medal.fill", Color(.systemGray2))
-        case 3: return ("medal.fill", Color(UIColor.systemBrown))
-        default: return (nil, AppTheme.GeneratedColors.textSecondary)
+        case 1: return ("medal.fill", SColor(.systemYellow))
+        case 2: return ("medal.fill", SColor(.systemGray2))
+        case 3: return ("medal.fill", SColor(UIColor.systemBrown))
+        default: return (nil, SColor(.secondaryLabel))
         }
     }
     
@@ -40,50 +43,50 @@ struct LeaderboardRowView: View {
         let isTopThree = entry.rank <= 3
         let decoration = rankDecoration(rank: entry.rank)
         
-        PTCard(style: isCurrentUser ? .highlight : (isTopThree ? .custom(
+        VStack(style: isCurrentUser ? .highlight : (isTopThree ? .custom(
             backgroundColor: decoration.color.opacity(0.05),
-            cornerRadius: AppTheme.GeneratedRadius.card,
+            cornerRadius: CornerRadius.card,
             shadowRadius: 2,
             borderColor: decoration.color.opacity(0.3),
             borderWidth: 1
         ) : .standard)) {
-            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            HStack(spacing: Spacing.medium) {
                 // Rank with decoration for top 3
                 HStack(spacing: 4) {
                     Text("#\(entry.rank)")
-                        .font(.system(size: 16, weight: .bold, design: .monospaced))
-                        .foregroundColor(isTopThree ? decoration.color : (isCurrentUser ? AppTheme.GeneratedColors.primary : AppTheme.GeneratedColors.textSecondary))
+                        .body(weight: .bold, design: .monospaced)
+                        .foregroundColor(isTopThree ? decoration.color : (isCurrentUser ? .primary : .secondaryLabel))
                     
                     if let imageName = decoration.image {
                         Image(systemName: imageName)
                             .foregroundColor(decoration.color)
-                            .font(.system(size: 14))
+                            .small()
                     }
                 }
                 .frame(minWidth: 50, alignment: .leading)
 
                 // Avatar with initials
                 Circle()
-                    .fill(AppTheme.GeneratedColors.textSecondary.opacity(0.2))
+                    .fill(SColor(.secondarySystemBackground))
                     .frame(width: 32, height: 32)
                     .overlay(
                         Text(getInitials(from: entry.name))
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .caption(weight: .bold)
+                            .foregroundColor(.secondaryLabel)
                     )
 
                 Text(entry.name)
-                    .font(AppTheme.GeneratedTypography.bodyBold())
-                    .foregroundColor(isCurrentUser ? AppTheme.GeneratedColors.primary : AppTheme.GeneratedColors.textPrimary)
+                    .bodyBold()
+                    .foregroundColor(isCurrentUser ? .primary : .label)
                     .lineLimit(1)
                 
                 Spacer()
                 
                 Text("\(entry.score)")
-                    .font(.system(size: 18, weight: .semibold, design: .monospaced))
-                    .foregroundColor(isTopThree ? decoration.color : (isCurrentUser ? AppTheme.GeneratedColors.primary : AppTheme.GeneratedColors.textPrimary))
+                    .heading4(weight: .semibold, design: .monospaced)
+                    .foregroundColor(isTopThree ? decoration.color : (isCurrentUser ? .primary : .label))
             }
-            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+            .padding(.vertical, Spacing.small)
         }
         .animation(.easeInOut(duration: 0.2), value: isCurrentUser)
     }
@@ -92,7 +95,7 @@ struct LeaderboardRowView: View {
 #if DEBUG
 struct LeaderboardRowView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+        VStack(alignment: .leading, spacing: Spacing.small) {
             LeaderboardRowView(
                 entry: LeaderboardEntryView(id: "1", rank: 1, userId: "user123", name: "Current User", score: 15000),
                 isCurrentUser: true
@@ -114,7 +117,7 @@ struct LeaderboardRowView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .preferredColorScheme(.light)
         
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+        VStack(alignment: .leading, spacing: Spacing.small) {
             LeaderboardRowView(
                 entry: LeaderboardEntryView(id: "1", rank: 1, userId: "user123", name: "Gold Medalist", score: 15000),
                 isCurrentUser: false
@@ -133,4 +136,4 @@ struct LeaderboardRowView_Previews: PreviewProvider {
         .preferredColorScheme(.dark)
     }
 }
-#endif 
+#endif

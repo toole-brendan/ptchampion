@@ -9,11 +9,11 @@ struct AccountActionsView: View {
     @State private var showingDeleteConfirmation = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
             // Section Header
             Text("Account")
-                .font(.title3.weight(.semibold))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .heading3()
+                .foregroundColor(Color.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
             
@@ -26,11 +26,11 @@ struct AccountActionsView: View {
                 } label: {
                     HStack {
                         Label("Change Password", systemImage: "lock.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .foregroundColor(Color.textPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.footnote)
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                            .font(.caption)
+                            .foregroundColor(Color.textTertiary)
                     }
                     .contentShape(Rectangle())
                 }
@@ -46,7 +46,7 @@ struct AccountActionsView: View {
                 } label: {
                     HStack {
                         Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .foregroundColor(Color.error)
                         Spacer()
                     }
                     .contentShape(Rectangle())
@@ -63,7 +63,7 @@ struct AccountActionsView: View {
                 } label: {
                     HStack {
                         Label("Delete Account", systemImage: "trash.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .foregroundColor(Color.error)
                         Spacer()
                     }
                     .contentShape(Rectangle())
@@ -110,9 +110,9 @@ struct AccountActionsView: View {
         VStack(alignment: .leading, spacing: 0) {
             content()
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
+        .padding(Spacing.contentPadding)
+        .background(Color.cardBackground)
+        .cornerRadius(CornerRadius.card)
         .shadow(
             color: Color.black.opacity(0.1),
             radius: 4,
@@ -127,7 +127,7 @@ struct AccountActionsView_Previews: PreviewProvider {
         AccountActionsView()
             .environmentObject(MockAuthViewModel())
             .padding()
-            .background(AppTheme.GeneratedColors.background)
+            .background(Color.background)
             .previewLayout(.sizeThatFits)
     }
 } 

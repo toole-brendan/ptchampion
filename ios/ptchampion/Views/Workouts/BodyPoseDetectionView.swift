@@ -62,7 +62,7 @@ struct BodyPoseDetectionView: View {
                 Spacer()
                 Text("Body detected: \(detectedBody != nil ? "Yes" : "No")")
                     .padding(6)
-                    .background(Color.black.opacity(0.7))
+                    .background(Color.black.opacity(0.7)
                     .foregroundColor(.white)
                     .cornerRadius(8)
                     .padding()
@@ -167,7 +167,7 @@ struct BodyPoseDetectionView: View {
     private func permissionDeniedView() -> some View {
         VStack(spacing: 20) {
             Image(systemName: "camera.slash.fill")
-                .font(.system(size: 50))
+                .font(.system(size: 50)
                 .foregroundColor(.white)
             
             Text("Camera Access Denied")
@@ -195,7 +195,7 @@ struct BodyPoseDetectionView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.8))
+        .background(Color.black.opacity(0.8)
         .edgesIgnoringSafeArea(.all)
     }
 }

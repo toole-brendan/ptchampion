@@ -1,0 +1,12 @@
+{
+  "": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/CodeRewriter.build/CodeRewriter.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/CodeRewriter.build/CodeRewriter.o",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/CodeRewriter.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/Sources/main.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/CodeRewriter.build/main.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/CodeRewriter.build/main~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/CodeRewriter.build/main.swiftdeps"
+  }
+}

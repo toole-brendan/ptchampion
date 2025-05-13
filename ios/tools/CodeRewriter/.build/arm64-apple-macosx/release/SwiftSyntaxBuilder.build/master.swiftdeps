@@ -1,0 +1,33 @@
+version: "Apple Swift version 6.1 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)"
+options: "de37f9643eb7d3aaaec18be239790cf6586277abfb978cc2786298483f7f65f6"
+build_start_time: [1747081742, 604136000]
+build_end_time: [1747081747, 85911000]
+inputs:
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/ConvenienceInitializers.swift"
+  : [1747081625, 787767895]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/DeclSyntaxParseable.swift"
+  : [1747081625, 787821311]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/Indenter.swift"
+  : [1747081625, 787960601]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/ResultBuilderExtensions.swift"
+  : [1747081625, 788014516]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/SwiftSyntaxBuilderCompatibility.swift"
+  : [1747081625, 788064516]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/Syntax+StringInterpolation.swift"
+  : [1747081625, 788139098]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/SyntaxNodeWithBody.swift"
+  : [1747081625, 788233638]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/SyntaxParsable+ExpressibleByStringInterpolation.swift"
+  : [1747081625, 788298638]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/ValidatingSyntaxNodes.swift"
+  : [1747081625, 788632674]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/WithTrailingCommaSyntax+EnsuringTrailingComma.swift"
+  : [1747081625, 788702924]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/generated/BuildableNodes.swift"
+  : [1747081625, 788877921]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/generated/RenamedChildrenBuilderCompatibility.swift"
+  : [1747081625, 788993628]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/generated/ResultBuilders.swift"
+  : [1747081625, 789413205]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxBuilder/generated/SyntaxExpressibleByStringInterpolationConformances.swift"
+  : [1747081625, 789509370]

@@ -1,0 +1,12 @@
+{
+  "": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/SwiftSyntaxMacrosTestSupport.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/SwiftSyntaxMacrosTestSupport.o",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntaxMacrosTestSupport/Assertions.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/Assertions.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/Assertions~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/Assertions.swiftdeps"
+  }
+}

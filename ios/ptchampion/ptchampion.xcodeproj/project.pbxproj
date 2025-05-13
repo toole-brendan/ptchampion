@@ -92,6 +92,7 @@
 		BF7960EF2DCFD96400B03835 /* ProfilePreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960EB2DCFD96400B03835 /* ProfilePreferencesView.swift */; };
 		BF7960F02DCFD96400B03835 /* MoreActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960EA2DCFD96400B03835 /* MoreActionsView.swift */; };
 		BF7960F12DCFD96400B03835 /* AccountActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E82DCFD96400B03835 /* AccountActionsView.swift */; };
+		BF7B49BA2DD2C2D600B50FE6 /* Text+Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7B49B82DD2C2D600B50FE6 /* Text+Typography.swift */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -241,6 +242,7 @@
 		BF7960EA2DCFD96400B03835 /* MoreActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreActionsView.swift; sourceTree = "<group>"; };
 		BF7960EB2DCFD96400B03835 /* ProfilePreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePreferencesView.swift; sourceTree = "<group>"; };
 		BF7960EC2DCFD96400B03835 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		BF7B49B82DD2C2D600B50FE6 /* Text+Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Text+Typography.swift"; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -374,6 +376,7 @@
 		BF63E3BB2DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
+				BF7B49B92DD2C2D600B50FE6 /* Extensions */,
 				BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */,
 				BF63E4492DB1EB980037CD02 /* ContentView.swift */,
 				BF63E3E52DB1C89D0037CD02 /* Models */,
@@ -664,6 +667,14 @@
 			name = "Recovered References";
 			sourceTree = "<group>";
 		};
+		BF7B49B92DD2C2D600B50FE6 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				BF7B49B82DD2C2D600B50FE6 /* Text+Typography.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
 		BF89EB462DC98E6A003F8FE3 /* Modifiers */ = {
 			isa = PBXGroup;
 			children = (
@@ -888,6 +899,7 @@
 				BF63E4572DB1EB980037CD02 /* DeviceScanningView.swift in Sources */,
 				BF63E4582DB1EB980037CD02 /* DashboardView.swift in Sources */,
 				BF7960ED2DCFD96400B03835 /* AppInfoView.swift in Sources */,
+				BF7B49BA2DD2C2D600B50FE6 /* Text+Typography.swift in Sources */,
 				BF7960EE2DCFD96400B03835 /* SettingsView.swift in Sources */,
 				BF7960EF2DCFD96400B03835 /* ProfilePreferencesView.swift in Sources */,
 				BFBF2ECF2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift in Sources */,

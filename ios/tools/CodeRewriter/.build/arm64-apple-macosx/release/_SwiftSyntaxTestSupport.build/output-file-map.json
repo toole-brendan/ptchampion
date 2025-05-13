@@ -1,0 +1,52 @@
+{
+  "": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/_SwiftSyntaxTestSupport.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/_SwiftSyntaxTestSupport.o",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/AssertEqualWithDiff.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/AssertEqualWithDiff.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/AssertEqualWithDiff~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/AssertEqualWithDiff.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/IncrementalParseTestUtils.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/IncrementalParseTestUtils.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/IncrementalParseTestUtils~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/IncrementalParseTestUtils.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/LocationMarkers.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/LocationMarkers.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/LocationMarkers~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/LocationMarkers.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/String+TrimmingTrailingWhitespace.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/String+TrimmingTrailingWhitespace.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/String+TrimmingTrailingWhitespace~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/String+TrimmingTrailingWhitespace.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/Syntax+Assertions.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/Syntax+Assertions.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/Syntax+Assertions~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/Syntax+Assertions.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/SyntaxCollection+AtIndex.swift.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxCollection+AtIndex.swift.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxCollection+AtIndex.swift~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxCollection+AtIndex.swift.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/SyntaxComparison.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxComparison.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxComparison~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxComparison.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/SyntaxProtocol+Initializer.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxProtocol+Initializer.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxProtocol+Initializer~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/SyntaxProtocol+Initializer.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/_SwiftSyntaxTestSupport/TestUtils.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/TestUtils.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/TestUtils~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/_SwiftSyntaxTestSupport.build/TestUtils.swiftdeps"
+  }
+}

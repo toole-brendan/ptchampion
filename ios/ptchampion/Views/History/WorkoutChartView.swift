@@ -8,25 +8,25 @@ struct WorkoutChartView: View {
     let filter: WorkoutFilter
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
             if !chartData.isEmpty && filter != .all {
                 Text("PROGRESS CHART")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    .militaryMonospaced(size: Spacing.small)
+                    .foregroundColor(Color.textSecondary)
+                    .padding(.horizontal, Spacing.contentPadding)
                 
-                PTCard(style: .elevated) {
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+VStack {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         HStack {
                             Text(filter.rawValue)
-                                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                                .militaryMonospaced(size: Spacing.body)
+                                .foregroundColor(Color.textPrimary)
                             
                             Spacer()
                             
                             Text(filter.rawValue)
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .small(weight: .medium)
+                                .foregroundColor(Color.brassGold)
                         }
                         
                         Chart(chartData) { point in
@@ -34,85 +34,85 @@ struct WorkoutChartView: View {
                                 x: .value("Date", point.date),
                                 y: .value(chartYAxisLabel, point.value)
                             )
-                            .foregroundStyle(AppTheme.GeneratedColors.brassGold)
+                            .foregroundStyle(Color.brassGold)
                             .interpolationMethod(.catmullRom)
                             
                             PointMark(
                                 x: .value("Date", point.date),
                                 y: .value(chartYAxisLabel, point.value)
                             )
-                            .foregroundStyle(AppTheme.GeneratedColors.brassGold)
+                            .foregroundStyle(Color.brassGold)
                             .symbolSize(CGSize(width: 8, height: 8))
                         }
                         .chartYAxis {
                             AxisMarks(position: .leading) { _ in
                                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
+                                    .foregroundStyle(Color.textTertiary.opacity(0.3))
                                 AxisTick(stroke: StrokeStyle(lineWidth: 1))
-                                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary)
+                                    .foregroundStyle(Color.textTertiary)
                                 AxisValueLabel()
-                                    .foregroundStyle(AppTheme.GeneratedColors.textSecondary)
+                                    .foregroundStyle(Color.textSecondary)
                             }
                         }
                         .chartXAxis {
                             AxisMarks(values: .automatic(desiredCount: 5)) { value in
                                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
+                                    .foregroundStyle(Color.textTertiary.opacity(0.3))
                                 AxisTick(stroke: StrokeStyle(lineWidth: 1))
-                                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary)
+                                    .foregroundStyle(Color.textTertiary)
                                 AxisValueLabel(format: .dateTime.month().day())
-                                    .foregroundStyle(AppTheme.GeneratedColors.textSecondary)
+                                    .foregroundStyle(Color.textSecondary)
                             }
                         }
                         .frame(height: 200)
-                        .padding(.top, AppTheme.GeneratedSpacing.small)
+                        .padding(.top, Spacing.small)
                         
                         HStack {
                             Spacer()
                             
                             HStack(spacing: 4) {
                                 Text("Y-Axis:")
-                                    .font(.system(size: 12))
-                                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                    .caption()
+                                    .foregroundColor(Color.textTertiary)
                                 
                                 Text(chartYAxisLabel)
                                     .militaryMonospaced(size: 12)
-                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                    .foregroundColor(Color.textSecondary)
                             }
                         }
                     }
-                    .padding(AppTheme.GeneratedSpacing.contentPadding)
+                    .padding(Spacing.contentPadding)
                 }
             } else if filter != .all {
                 // Empty chart state
                 Text("PROGRESS CHART")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    .militaryMonospaced(size: Spacing.small)
+                    .foregroundColor(Color.textSecondary)
+                    .padding(.horizontal, Spacing.contentPadding)
                 
-                PTCard(style: .flat) {
-                    VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+VStack {
+                    VStack(spacing: Spacing.medium) {
                         Image(systemName: "chart.line.downtrend.xyaxis")
                             .font(.system(size: 36))
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary.opacity(0.6))
+                            .foregroundColor(Color.textTertiary.opacity(0.6))
                         
-                        VStack(spacing: AppTheme.GeneratedSpacing.small) {
+                        VStack(spacing: Spacing.small) {
                             Text("Not enough data to display chart")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                .body(weight: .medium)
+                                .foregroundColor(Color.textSecondary)
                             
                             Text("Complete more \(filter.rawValue) workouts to see your progress")
-                                .font(.system(size: 14))
-                                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                .small()
+                                .foregroundColor(Color.textTertiary)
                                 .multilineTextAlignment(.center)
                         }
                     }
                     .frame(maxWidth: .infinity, minHeight: 180)
-                    .padding(AppTheme.GeneratedSpacing.contentPadding)
+                    .padding(Spacing.contentPadding)
                 }
             }
         }
-        .padding(.horizontal, filter != .all ? 0 : AppTheme.GeneratedSpacing.contentPadding)
+        .padding(.horizontal, filter != .all ? 0 : Spacing.contentPadding)
     }
 }
 
@@ -144,6 +144,7 @@ private func sampleChartData() -> [ChartableDataPoint] {
             filter: .situp
         )
     }
+    .background(Color.background)
     .previewLayout(.sizeThatFits)
     .padding()
-} 
+}

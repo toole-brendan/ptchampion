@@ -1,0 +1,18 @@
+version: "Apple Swift version 6.1 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)"
+options: "d5ca9ccb77a254b0ec20175067fc6af8f510a73991be280f688335836770e172"
+build_start_time: [1747081722, 269753000]
+build_end_time: [1747081723, 396054000]
+inputs:
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/Convenience.swift"
+  : [1747081625, 756935040]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/Diagnostic.swift"
+  : [1747081625, 757110912]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/DiagnosticsFormatter.swift"
+  : [1747081625, 757210994]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/FixIt.swift"
+  : [1747081625, 757281827]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/GroupedDiagnostics.swift"
+  : [1747081625, 757370575]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/Message.swift"
+  : [1747081625, 757435949]
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftDiagnostics/Note.swift": [1747081625, 757505032]

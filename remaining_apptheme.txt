@@ -1,0 +1,7 @@
+ios/ptchampion/Views/Workouts/PoseOverlayView.swift:import PTDesignSystem // For AppTheme
+ios/ptchampion/Views/Shared/SettingsSheet.swift:// DistanceUnit enum replacing AppTheme.DistanceUnit
+ios/ptchampion/Views/Profile/SettingsView.swift:    enum AppThemeOption: String, CaseIterable, Identifiable {
+ios/ptchampion/Views/Profile/SettingsView.swift:    @AppStorage("selectedAppearance") private var selectedAppearance: AppThemeOption = .system
+ios/ptchampion/Views/Profile/SettingsView.swift:                                ForEach(AppThemeOption.allCases) { option in
+ios/ptchampion/Views/Authentication/LoginView.swift:// Font extensions have been migrated to use AppTheme.GeneratedTypography
+ios/ptchampion/Views/Authentication/LoginView.swift:    // These methods are deprecated and should use AppTheme.GeneratedTypography instead

@@ -6,60 +6,60 @@ struct WorkoutStreaksView: View {
     let longestStreak: Int
     
     var body: some View {
-        HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        HStack(spacing: Spacing.medium) {
             // Current streak card
-            PTCard(style: .elevated) {
-                VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
+VStack {
+                VStack(alignment: .center, spacing: Spacing.small) {
                     HStack(spacing: 6) {
                         Image(systemName: "flame.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .font(.system(size: 14))
+                            .foregroundColor(Color.brassGold)
+                            .small()
                         
                         Text("Current Streak")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .small(weight: .medium)
+                            .foregroundColor(Color.textSecondary)
                     }
                     
                     Text("\(currentStreak)")
                         .font(.system(size: 36, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .foregroundColor(Color.textPrimary)
                     
                     Text("days")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        .small(weight: .medium)
+                        .foregroundColor(Color.textTertiary)
                         .offset(y: -5)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+                .padding(.vertical, Spacing.medium)
             }
             
             // Longest streak card
-            PTCard(style: .elevated) {
-                VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
+VStack {
+                VStack(alignment: .center, spacing: Spacing.small) {
                     HStack(spacing: 6) {
                         Image(systemName: "crown.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .font(.system(size: 14))
+                            .foregroundColor(Color.brassGold)
+                            .small()
                         
                         Text("Longest Streak")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .small(weight: .medium)
+                            .foregroundColor(Color.textSecondary)
                     }
                     
                     Text("\(longestStreak)")
                         .font(.system(size: 36, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .foregroundColor(Color.textPrimary)
                     
                     Text("days")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        .small(weight: .medium)
+                        .foregroundColor(Color.textTertiary)
                         .offset(y: -5)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+                .padding(.vertical, Spacing.medium)
             }
         }
-        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+        .padding(.horizontal, Spacing.contentPadding)
     }
 }
 
@@ -67,4 +67,4 @@ struct WorkoutStreaksView: View {
     WorkoutStreaksView(currentStreak: 3, longestStreak: 7)
         .previewLayout(.sizeThatFits)
         .padding()
-} 
+}

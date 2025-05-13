@@ -239,6 +239,8 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
             // Reset tracking for the next rep cycle
             resetRepTrackingState()
 
+            print("⚙️ Situp rep \(repCount) scored \(formQuality)%")
+
         } else {
             // Provide general feedback if no rep completed
             gradingResult = .inProgress(phase: currentPhaseDescription)
@@ -322,9 +324,9 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
     // Helper to average angles
     private func averageAngle(_ angle1: CGFloat?, _ angle2: CGFloat?) -> CGFloat? {
          switch (angle1, angle2) {
-         case (.some(let a1), .some(let a2)): return (a1 + a2) / 2.0
+         case (.some(let a1), .some(let a2): return (a1 + a2) / 2.0
          case (.some(let a1), .none): return a1
-         case (.none, .some(let a2)): return a2
+         case (.none, .some(let a2): return a2
          case (.none, .none): return nil
          }
      }

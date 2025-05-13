@@ -18,25 +18,25 @@ struct ExerciseHUDView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text("REPS")
-                        .font(AppTheme.GeneratedTypography.caption(size: nil))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .caption()
+                        .foregroundColor(Color.textSecondary)
                     Text("\(repCount)")
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .heading1()
+                        .foregroundColor(Color.textPrimary)
                 }
                 Spacer()
                 VStack(alignment: .trailing) {
                     Text("TIME")
-                        .font(AppTheme.GeneratedTypography.caption(size: nil))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .caption()
+                        .foregroundColor(Color.textSecondary)
                     Text(elapsedTimeFormatted)
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .heading1()
+                        .foregroundColor(Color.textPrimary)
                 }
             }
             .padding()
             .background(.thinMaterial) // Using system blur material for better transparency
-            .cornerRadius(AppTheme.GeneratedRadius.medium)
+            .cornerRadius(CornerRadius.medium)
             .padding()
 
             Spacer() // Pushes feedback and controls down
@@ -44,11 +44,11 @@ struct ExerciseHUDView: View {
             // Only show feedback if controls are shown (not in ready state)
             if showControls {
                 Text(liveFeedback)
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .bodyBold()
+                    .foregroundColor(Color.textPrimary)
                     .padding()
                     .background(.thinMaterial) // Using system blur material for better transparency
-                    .cornerRadius(AppTheme.GeneratedRadius.small)
+                    .cornerRadius(CornerRadius.small)
                     .padding(.horizontal)
             }
             
@@ -60,7 +60,7 @@ struct ExerciseHUDView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 50, height: 50)
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .foregroundColor(Color.textPrimary)
                     }
 
                     Button { toggleSoundAction() } label: {
@@ -68,7 +68,7 @@ struct ExerciseHUDView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 50, height: 50)
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .foregroundColor(Color.textPrimary)
                     }
                 }
                 .padding()
@@ -99,7 +99,7 @@ struct ExerciseHUDView_Previews: PreviewProvider {
             togglePauseAction: { },
             toggleSoundAction: { }
         )
-        .background(Color.black.opacity(0.5)) // Lighter background for preview
+        .background(Color.black.opacity(0.5) // Lighter background for preview
         .previewLayout(.sizeThatFits)
     }
 }

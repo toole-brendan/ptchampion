@@ -10,3 +10,15 @@ import SwiftUI
 
 // This file exists to satisfy build dependencies but doesn't need to define 
 // any functionality since it's already defined in the other files. 
+
+// This file reexports all required tokens and design system types
+
+// Just a central place to list and document the key token modules/sources
+// - AppTheme.swift (base types) - DEPRECATED
+// - Color.swift (color tokens)
+// - Typography.swift (font and text tokens)
+// - Spacing.swift (spacing tokens)
+// - Shadow.swift (shadow tokens)
+// - CornerRadius.swift (corner radius tokens)
+// - TypeAliases.swift (aliases for Swift standard library types)
+// - DesignTokensCore.swift (core design system types) 

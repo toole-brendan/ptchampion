@@ -73,7 +73,7 @@ class UserProfileViewModel: ObservableObject {
         let formattedActivities = data.recentActivities.map {
             FormattedActivityItem(
                 description: $0.description,
-                relativeDate: dateFormatter.localizedString(for: $0.date, relativeTo: Date()),
+                relativeDate: dateFormatter.localizedString(for: $0.date, relativeTo: Date(),
                 iconName: $0.iconName ?? "figure.walk" // Default icon
             )
         }
@@ -94,7 +94,7 @@ class UserProfileViewModel: ObservableObject {
     // Convenience for previews or when no service is needed initially
     // This might be removed if all previews use MockUserService
     convenience init(userID: String) {
-        self.init(userID: userID, userService: MockUserService()) // Default to MockUserService
+        self.init(userID: userID, userService: MockUserService() // Default to MockUserService
         print("UserProfileViewModel initialized with default MockUserService for userID: \(userID)")
     }
 } 

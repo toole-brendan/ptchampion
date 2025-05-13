@@ -7,37 +7,37 @@ struct LeaderboardRowPlaceholder: View {
     @State private var isAnimating = false
     
     var body: some View {
-        PTCard {
-            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+VStack {
+            HStack(spacing: Spacing.medium) {
                 // Rank placeholder
                 HStack(spacing: 4) {
-                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                        .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
+                    RoundedRectangle(cornerRadius: CornerRadius.small)
+                        .fill(Color.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
                         .frame(width: 24, height: 20)
                     
                     Circle()
-                        .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
+                        .fill(Color.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
                         .frame(width: 14, height: 14)
                 }
                 .frame(width: 50, alignment: .leading)
                 
                 // Avatar placeholder
                 Circle()
-                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                    .fill(Color.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
                     .frame(width: 32, height: 32)
                 
                 // Username placeholder
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                RoundedRectangle(cornerRadius: CornerRadius.small)
+                    .fill(Color.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
                     .frame(height: 16)
                     .frame(maxWidth: .infinity)
                 
                 // Score placeholder
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                RoundedRectangle(cornerRadius: CornerRadius.small)
+                    .fill(Color.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
                     .frame(width: 60, height: 18)
             }
-            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+            .padding(.vertical, Spacing.small)
         }
         .animation(.none, value: isAnimating) // Don't animate the card
         .onAppear {
@@ -53,7 +53,7 @@ struct LeaderboardRowPlaceholder: View {
 struct LeaderboardRowPlaceholder_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: AppTheme.GeneratedSpacing.small) {
+            VStack(spacing: Spacing.small) {
                 LeaderboardRowPlaceholder()
                 LeaderboardRowPlaceholder()
                 LeaderboardRowPlaceholder()
@@ -62,7 +62,7 @@ struct LeaderboardRowPlaceholder_Previews: PreviewProvider {
             .previewLayout(.fixed(width: 375, height: 200))
             .previewDisplayName("Light Mode")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.small) {
+            VStack(spacing: Spacing.small) {
                 LeaderboardRowPlaceholder()
                 LeaderboardRowPlaceholder()
             }
@@ -73,4 +73,4 @@ struct LeaderboardRowPlaceholder_Previews: PreviewProvider {
         }
     }
 }
-#endif 
+#endif

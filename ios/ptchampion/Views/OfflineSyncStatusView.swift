@@ -19,16 +19,16 @@ struct OfflineSyncStatusView: View {
                 if pendingSyncCount > 0 {
                     if networkMonitor.isConnected {
                         Text("Online • \(pendingSyncCount) pending sync\(pendingSyncCount == 1 ? "" : "s")")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.orange)
                     } else {
                         Text("Offline • \(pendingSyncCount) pending sync\(pendingSyncCount == 1 ? "" : "s")")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.orange)
                     }
                 } else {
                     Text(networkMonitor.isConnected ? "Online" : "Offline Mode")
-                        .font(.caption)
+                        .caption()
                         .foregroundColor(networkMonitor.isConnected ? .green : .orange)
                 }
                 
@@ -43,7 +43,7 @@ struct OfflineSyncStatusView: View {
                 
                 // Chevron to expand/collapse details
                 Image(systemName: showingDetails ? "chevron.up" : "chevron.down")
-                    .font(.caption)
+                    .caption()
                     .foregroundColor(.gray)
                     .padding(.trailing, 4)
             }
@@ -64,26 +64,26 @@ struct OfflineSyncStatusView: View {
                     // Connection details
                     HStack {
                         Text("Connection:")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.gray)
                         
                         Spacer()
                         
                         Text(networkMonitor.connectionDescription)
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.primary)
                     }
                     
                     // Sync status
                     HStack {
                         Text("Pending Syncs:")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.gray)
                         
                         Spacer()
                         
                         Text("\(pendingSyncCount) item\(pendingSyncCount == 1 ? "" : "s")")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(pendingSyncCount > 0 ? .orange : .primary)
                     }
                     
@@ -94,7 +94,7 @@ struct OfflineSyncStatusView: View {
                         if isSyncing {
                             HStack {
                                 Text("Syncing...")
-                                    .font(.caption)
+                                    .caption()
                                 ProgressView()
                                     .scaleEffect(0.7)
                             }
@@ -106,7 +106,7 @@ struct OfflineSyncStatusView: View {
                             .cornerRadius(4)
                         } else {
                             Text("Sync Now")
-                                .font(.caption)
+                                .caption()
                                 .frame(maxWidth: .infinity)
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 4)

@@ -1,0 +1,4 @@
+module SwiftParser {
+    header "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftParser.build/SwiftParser-Swift.h"
+    requires objc
+}

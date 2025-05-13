@@ -23,18 +23,18 @@ struct DeviceScanningView: View {
                         VStack(alignment: .leading) {
                             HStack {
                                 Text(discovered.name)
-                                    .font(.headline)
+                                    .heading4()
                                 
                                 // Show device type if known
                                 if discovered.deviceType != .unknown {
                                     Text("• \(discovered.deviceType.rawValue)")
-                                        .font(.caption)
+                                        .caption()
                                         .foregroundColor(.secondary)
                                 }
                             }
                             
                             Text("RSSI: \(discovered.rssi)")
-                                .font(.caption)
+                                .caption()
                                 .foregroundColor(.gray)
                         }
                         Spacer()
@@ -69,7 +69,7 @@ struct DeviceScanningView: View {
             if viewModel.isScanning {
                 HStack {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
+                        .progressViewStyle(CircularProgressViewStyle()
                     Text("Scanning for fitness devices...")
                 }
                 .padding(.bottom)
@@ -81,8 +81,8 @@ struct DeviceScanningView: View {
     private func connectedDeviceMetrics() -> some View {
         VStack(spacing: 12) {
             HStack {
-                Text(viewModel.deviceDisplayName())
-                    .font(.headline)
+                Text(viewModel.deviceDisplayName()
+                    .heading4()
                 
                 if viewModel.batteryLevel != nil {
                     Spacer()
@@ -125,7 +125,7 @@ struct DeviceScanningView: View {
             .padding(.top, 8)
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground))
         .padding(.horizontal)
     }
     
@@ -175,7 +175,7 @@ struct DeviceScanningView: View {
                     viewModel.connect(peripheral: discovered)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(viewModel.isScanning || !isConnectable(state: viewModel.connectionState))
+                .disabled(viewModel.isScanning || !isConnectable(state: viewModel.connectionState)
             }
         }
     }
@@ -184,7 +184,7 @@ struct DeviceScanningView: View {
     private func deviceDetailsView() -> some View {
         VStack {
             Text("Device Details")
-                .font(.headline)
+                .heading4()
                 .padding()
             
             if let peripheral = viewModel.connectedPeripheral {
@@ -192,12 +192,12 @@ struct DeviceScanningView: View {
                     DetailRow(label: "Name", value: peripheral.name ?? "Unknown")
                     DetailRow(label: "Manufacturer", value: viewModel.manufacturerName ?? "Unknown")
                     DetailRow(label: "Type", value: viewModel.deviceType.rawValue)
-                    DetailRow(label: "Battery", value: viewModel.formattedBatteryLevel())
+                    DetailRow(label: "Battery", value: viewModel.formattedBatteryLevel()
                     
                     Divider()
                     
                     Text("Supported Features:")
-                        .font(.headline)
+                        .heading4()
                         .padding(.top, 8)
                     
                     VStack(alignment: .leading, spacing: 8) {
@@ -254,7 +254,7 @@ struct DeviceMetricView: View {
                 .bold()
             
             Text(title)
-                .font(.caption)
+                .caption()
                 .foregroundColor(.secondary)
         }
         .frame(minWidth: 70)

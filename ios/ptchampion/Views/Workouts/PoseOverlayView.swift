@@ -1,6 +1,6 @@
 import SwiftUI
 import Vision // For JointName constants
-import PTDesignSystem // For AppTheme
+import PTDesignSystem // For DesignTokens
 
 // SwiftUI view to draw detected pose landmarks over the camera feed
 struct PoseOverlayView: View {
@@ -63,8 +63,8 @@ struct PoseOverlayView: View {
                     
                     // Use red for bad joints, green for good joints
                     let lineColor = isBadLine ? 
-                        AppTheme.GeneratedColors.error.opacity(0.7) : 
-                        AppTheme.GeneratedColors.success.opacity(0.7)
+                        Color.error.opacity(0.7) : 
+                        Color.success.opacity(0.7)
                     
                     context.stroke(path, with: .color(lineColor), lineWidth: 3)
                 }
@@ -84,15 +84,15 @@ struct PoseOverlayView: View {
                     
                     // Use red for bad joints, white with green border for good joints
                     let circleColor = isBadJoint ? 
-                        AppTheme.GeneratedColors.error : 
+                        Color.error : 
                         Color.white
                     
-                    context.fill(Path(ellipseIn: circleRect), with: .color(circleColor))
+                    context.fill(Path(ellipseIn: circleRect), with: .color(circleColor)
                     
                     // Add border to the circle
                     let borderColor = isBadJoint ? 
-                        AppTheme.GeneratedColors.error : 
-                        AppTheme.GeneratedColors.success
+                        Color.error : 
+                        Color.success
                     
                     context.stroke(
                         Path(ellipseIn: circleRect),
@@ -108,11 +108,11 @@ struct PoseOverlayView: View {
                     Spacer()
                     
                     Text("Position yourself in view")
-                        .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .bodyBold()
+                        .foregroundColor(Color.textPrimary)
                         .padding()
                         .background(.thinMaterial)
-                        .cornerRadius(AppTheme.GeneratedRadius.medium)
+                        .cornerRadius(CornerRadius.medium)
                         .padding(.bottom, 200)
                 }
             }

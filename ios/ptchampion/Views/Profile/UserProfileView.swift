@@ -34,7 +34,9 @@ struct UserProfileView: View {
         }
         .navigationTitle(viewModel.userDetails.isLoading ? "Loading Profile..." : viewModel.userDetails.userName)
         .navigationBarTitleDisplayMode(.inline)
-        .background(AppTheme.GeneratedColors.background)
+        .background(Color.background)
+            .container()
+        .container()
         .edgesIgnoringSafeArea(.all)
     }
     
@@ -53,8 +55,8 @@ struct UserProfileView: View {
         let view = VStack {
             Spacer()
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 50))
-                .foregroundColor(AppTheme.GeneratedColors.error)
+                .font(.system(size: 50)
+                .foregroundColor(Color.error)
             PTLabel("Error", style: .body)
                 .padding(.bottom, 2)
             PTLabel(message, style: .body)
@@ -71,19 +73,19 @@ struct UserProfileView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 70, height: 70)
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .foregroundColor(Color.textSecondary)
             
             VStack(alignment: .leading) {
                 PTLabel(viewModel.userDetails.userName, style: .heading)
                 PTLabel("Rank: \(viewModel.userDetails.rank)", style: .subheading)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .foregroundColor(Color.textSecondary)
             }
             Spacer() // Pushes content to the left
         }
     }
     
     private var statsSectionView: some View {
-        PTCard {
+        VStack {
             VStack(alignment: .leading, spacing: 12) {
                 PTLabel("Performance Stats", style: .body)
                     .padding(.bottom, 4)
@@ -94,21 +96,22 @@ struct UserProfileView: View {
                 // TODO: Add more StatCards if applicable, e.g., Streak, Time Trained
             }
         }
+        .card()
     }
     
     private var personalBestsSectionView: some View {
-        PTCard {
+        VStack {
             VStack(alignment: .leading, spacing: 8) {
                 PTLabel("Personal Bests", style: .body)
                     .padding(.bottom, 4)
                 if viewModel.userDetails.personalBests.isEmpty {
                     PTLabel("No personal bests recorded yet.", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .foregroundColor(Color.textSecondary)
                 } else {
                     ForEach(viewModel.userDetails.personalBests, id: \.self) { (pb: String) in
                         HStack {
                             Image(systemName: "trophy.fill")
-                                .foregroundColor(AppTheme.GeneratedColors.warning)
+                                .foregroundColor(Color.warning)
                             PTLabel(pb, style: .body)
                             Spacer()
                         }
@@ -117,26 +120,27 @@ struct UserProfileView: View {
                 }
             }
         }
+        .card()
     }
     
     private var recentActivitySectionView: some View {
-        PTCard {
+        VStack {
             VStack(alignment: .leading, spacing: 8) {
                 PTLabel("Recent Activity", style: .body)
                     .padding(.bottom, 4)
                 if viewModel.userDetails.recentActivity.isEmpty {
                     PTLabel("No recent activity to display.", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .foregroundColor(Color.textSecondary)
                 } else {
                     ForEach(viewModel.userDetails.recentActivity) { (activity: FormattedActivityItem) in
                         HStack(alignment: .top) {
                             Image(systemName: activity.iconName)
-                                .foregroundColor(AppTheme.GeneratedColors.primary)
+                                .foregroundColor(Color.primary)
                                 .frame(width: 20, alignment: .center) // Align icons
                             VStack(alignment: .leading) {
                                 PTLabel(activity.description, style: .body)
                                 PTLabel(activity.relativeDate, style: .caption)
-                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                    .foregroundColor(Color.textSecondary)
                             }
                             Spacer()
                         }
@@ -145,6 +149,7 @@ struct UserProfileView: View {
                 }
             }
         }
+        .card()
     }
 }
 
@@ -170,7 +175,7 @@ struct UserProfileView_Previews: PreviewProvider {
             }
             .previewDisplayName("Error State")
         }
-        // .environmentObject(MockAuthViewModel()) // Temporarily commenting out to see if it resolves ambiguity
+        // .environmentObject(MockAuthViewModel() // Temporarily commenting out to see if it resolves ambiguity
     }
 }
 #endif 

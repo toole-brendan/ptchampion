@@ -8,7 +8,7 @@ struct LoadingView: View {
     var body: some View {
         ZStack {
             // Background
-            AppTheme.GeneratedColors.cream.ignoresSafeArea()
+            Color.cream.ignoresSafeArea()
             
             VStack(spacing: 30) {
                 // Logo
@@ -18,20 +18,20 @@ struct LoadingView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 150, height: 150)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .foregroundColor(Color.brassGold)
                 
                 // Title
                 PTLabel("PT CHAMPION", style: .heading)
-                    .foregroundColor(AppTheme.GeneratedColors.commandBlack)
+                    .foregroundColor(Color.commandBlack)
                 
                 // Loading indicator
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.brassGold))
+                    .progressViewStyle(CircularProgressViewStyle(tint: Color.brassGold))
                     .scaleEffect(1.5)
                     .padding(.top, 20)
                 
                 PTLabel("Loading...", style: .caption)
-                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                    .foregroundColor(Color.tacticalGray)
                     .padding(.top, 10)
             }
         }

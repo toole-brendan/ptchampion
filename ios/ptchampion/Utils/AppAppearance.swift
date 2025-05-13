@@ -17,28 +17,28 @@ struct AppAppearance {
         
         // Configure background - make it match the deepOpsGreen color
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(AppTheme.GeneratedColors.deepOps)
+        appearance.backgroundColor = UIColor(Color.deepOps)
         
         // Remove the default separator line
         appearance.shadowColor = .clear
         
         // Configure selected item colors
         let selectedAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor(AppTheme.GeneratedColors.brassGold),
+            .foregroundColor: UIColor(Color.brassGold),
             .font: UIFont.systemFont(ofSize: 10, weight: .semibold)
         ]
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttributes
         
         // Configure normal item colors
         let normalAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor(AppTheme.GeneratedColors.textTertiary),
+            .foregroundColor: UIColor(Color.textTertiary),
             .font: UIFont.systemFont(ofSize: 10, weight: .semibold)
         ]
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttributes
         
         // Configure icons
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(AppTheme.GeneratedColors.brassGold)
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(AppTheme.GeneratedColors.textTertiary)
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.brassGold)
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.textTertiary)
         
         // Apply the appearance to both UITabBar.appearance() and standardAppearance
         UITabBar.appearance().standardAppearance = appearance
@@ -63,7 +63,7 @@ struct AppAppearance {
         appearance.shadowColor = .clear
         
         // Set button colors - still using gold for nav buttons
-        UINavigationBar.appearance().tintColor = UIColor(AppTheme.GeneratedColors.brassGold)
+        UINavigationBar.appearance().tintColor = UIColor(Color.brassGold)
         
         // Apply the appearance to both UINavigationBar.appearance() and standardAppearance
         UINavigationBar.appearance().standardAppearance = appearance
@@ -81,9 +81,9 @@ struct AppAppearance {
         guard let context = UIGraphicsGetCurrentContext() else { return nil }
         
         // Get the base color
-        let baseColor = UIColor(AppTheme.GeneratedColors.deepOps)
+        let baseColor = UIColor(Color.deepOps)
         baseColor.setFill()
-        context.fill(CGRect(origin: .zero, size: size))
+        context.fill(CGRect(origin: .zero, size: size)
         
         // Set up the grid color (slightly lighter than the base)
         let gridColor = UIColor.white.withAlphaComponent(0.03) // Very subtle
@@ -96,14 +96,14 @@ struct AppAppearance {
         // Draw vertical lines
         let spacing: CGFloat = 10
         for x in stride(from: 0, through: size.width, by: spacing) {
-            path.move(to: CGPoint(x: x, y: 0))
-            path.addLine(to: CGPoint(x: x, y: size.height))
+            path.move(to: CGPoint(x: x, y: 0)
+            path.addLine(to: CGPoint(x: x, y: size.height)
         }
         
         // Draw horizontal lines
         for y in stride(from: 0, through: size.height, by: spacing) {
-            path.move(to: CGPoint(x: 0, y: y))
-            path.addLine(to: CGPoint(x: size.width, y: y))
+            path.move(to: CGPoint(x: 0, y: y)
+            path.addLine(to: CGPoint(x: size.width, y: y)
         }
         
         path.stroke()

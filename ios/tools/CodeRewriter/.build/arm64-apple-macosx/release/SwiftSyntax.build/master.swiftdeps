@@ -1,0 +1,101 @@
+version: "Apple Swift version 6.1 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)"
+options: "c864fa65688733cd8e09c7a6b467a8d5c60f4b2784f498c6e616d0e52cb24b11"
+build_start_time: [1747081626, 742093000]
+build_end_time: [1747081722, 185556000]
+inputs:
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/AbsolutePosition.swift"
+  : [1747081625, 770418724]
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Assert.swift": [1747081625, 770478348]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/BumpPtrAllocator.swift"
+  : [1747081625, 770567972]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/CommonAncestor.swift"
+  : [1747081625, 770682929]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Convenience.swift"
+  : [1747081625, 770732303]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/MemoryLayout.swift"
+  : [1747081625, 774042131]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/MissingNodeInitializers.swift"
+  : [1747081625, 774095964]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Raw/RawSyntax.swift"
+  : [1747081625, 774483083]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Raw/RawSyntaxLayoutView.swift"
+  : [1747081625, 774593706]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Raw/RawSyntaxNodeProtocol.swift"
+  : [1747081625, 774672914]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Raw/RawSyntaxTokenView.swift"
+  : [1747081625, 774755829]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SourceLength.swift"
+  : [1747081625, 774824412]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SourceLocation.swift"
+  : [1747081625, 774904577]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SourcePresence.swift"
+  : [1747081625, 774974576]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SwiftSyntaxCompatibility.swift"
+  : [1747081625, 775030700]
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Syntax.swift": [1747081625, 775197365]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SyntaxArena.swift"
+  : [1747081625, 775411153]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SyntaxChildren.swift"
+  : [1747081625, 775502694]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SyntaxCollection.swift"
+  : [1747081625, 775607317]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SyntaxData.swift"
+  : [1747081625, 775872230]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SyntaxText.swift"
+  : [1747081625, 776100768]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/SyntaxTreeViewMode.swift"
+  : [1747081625, 776155101]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/TokenDiagnostic.swift"
+  : [1747081625, 776238433]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/TokenSyntax.swift"
+  : [1747081625, 776324265]
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Trivia.swift": [1747081625, 776518221]
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/Utils.swift": [1747081625, 776581553]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/ChildNameForKeyPath.swift"
+  : [1747081625, 777165587]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/Keyword.swift"
+  : [1747081625, 777323043]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/RenamedChildrenCompatibility.swift"
+  : [1747081625, 777631039]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/RenamedNodesCompatibility.swift"
+  : [1747081625, 777734079]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxAnyVisitor.swift"
+  : [1747081625, 778419694]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxBaseNodes.swift"
+  : [1747081625, 778659357]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxCollections.swift"
+  : [1747081625, 779014852]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxEnum.swift"
+  : [1747081625, 779088685]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxKind.swift"
+  : [1747081625, 779150559]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxRewriter.swift"
+  : [1747081625, 779408097]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxTraits.swift"
+  : [1747081625, 779506595]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxTransform.swift"
+  : [1747081625, 779679884]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/SyntaxVisitor.swift"
+  : [1747081625, 779842299]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/TokenKind.swift"
+  : [1747081625, 779925756]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/Tokens.swift"
+  : [1747081625, 781425277]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/TriviaPieces.swift"
+  : [1747081625, 781562858]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/raw/RawSyntaxNodes.swift"
+  : [1747081625, 782209890]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/raw/RawSyntaxValidation.swift"
+  : [1747081625, 783622287]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/syntaxNodes/SyntaxDeclNodes.swift"
+  : [1747081625, 784837187]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/syntaxNodes/SyntaxExprNodes.swift"
+  : [1747081625, 785167432]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/syntaxNodes/SyntaxNodes.swift"
+  : [1747081625, 786874991]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/syntaxNodes/SyntaxPatternNodes.swift"
+  : [1747081625, 787138779]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/syntaxNodes/SyntaxStmtNodes.swift"
+  : [1747081625, 787339859]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax/generated/syntaxNodes/SyntaxTypeNodes.swift"
+  : [1747081625, 787477566]

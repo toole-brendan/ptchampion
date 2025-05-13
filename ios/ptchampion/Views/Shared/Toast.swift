@@ -1,6 +1,9 @@
 import SwiftUI
 import PTDesignSystem
 
+fileprivate typealias DSColor = PTDesignSystem.Color
+fileprivate typealias SColor = SwiftUI.Color
+
 /// Toast notification types
 enum ToastType {
     case success
@@ -17,26 +20,26 @@ enum ToastType {
         }
     }
     
-    var bgColor: Color {
+    var bgColor: SColor {
         switch self {
-        case .success: return AppTheme.GeneratedColors.success.opacity(0.15)
-        case .error: return AppTheme.GeneratedColors.error.opacity(0.15)
-        case .warning: return AppTheme.GeneratedColors.warning.opacity(0.15)
-        case .info: return AppTheme.GeneratedColors.info.opacity(0.15)
+        case .success: return DSColor.success.opacity(0.15)
+        case .error: return DSColor.error.opacity(0.15)
+        case .warning: return DSColor.warning.opacity(0.15)
+        case .info: return DSColor.info.opacity(0.15)
         }
     }
     
-    var iconColor: Color {
+    var iconColor: SColor {
         switch self {
-        case .success: return AppTheme.GeneratedColors.success
-        case .error: return AppTheme.GeneratedColors.error
-        case .warning: return AppTheme.GeneratedColors.warning
-        case .info: return AppTheme.GeneratedColors.info
+        case .success: return DSColor.success
+        case .error: return DSColor.error
+        case .warning: return DSColor.warning
+        case .info: return DSColor.info
         }
     }
     
-    var textColor: Color {
-        return AppTheme.GeneratedColors.textPrimary
+    var textColor: SColor {
+        return DSColor.textPrimary
     }
 }
 
@@ -48,7 +51,7 @@ struct Toast: View {
     var onDismiss: (() -> Void)?
     
     var body: some View {
-        HStack(alignment: .top, spacing: AppTheme.GeneratedSpacing.small) {
+        HStack(alignment: .top, spacing: Spacing.small) {
             // Icon
             Image(systemName: type.icon)
                 .resizable()
@@ -57,12 +60,14 @@ struct Toast: View {
                 .foregroundColor(type.iconColor)
             
             // Content
-            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.extraSmall) {
-                PTLabel(title, style: .body)
+            VStack(alignment: .leading, spacing: Spacing.extraSmall) {
+                Text(title)
+                    .body()
                     .foregroundColor(type.textColor)
                 
                 if let message = message {
-                    PTLabel(message, style: .caption)
+                    Text(message)
+                        .caption()
                         .foregroundColor(type.textColor.opacity(0.7))
                         .lineLimit(3)
                 }
@@ -75,16 +80,16 @@ struct Toast: View {
                 Button(action: { onDismiss?() }) {
                     Image(systemName: "xmark")
                         .foregroundColor(type.textColor.opacity(0.6))
-                        .font(.system(size: 14, weight: .medium))
+                        .small(weight: .medium)
                 }
-                .padding(AppTheme.GeneratedSpacing.extraSmall)
+                .padding(Spacing.extraSmall)
             }
         }
-        .padding(AppTheme.GeneratedSpacing.medium)
+        .padding(Spacing.medium)
         .background(type.bgColor)
-        .cornerRadius(AppTheme.GeneratedRadius.medium)
+        .cornerRadius(CornerRadius.medium)
         .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.medium)
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
                 .stroke(type.iconColor.opacity(0.1), lineWidth: 1)
         )
     }
@@ -95,7 +100,7 @@ struct ToastContainer: View {
     @Binding var toasts: [ToastItem]
     
     var body: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.small) {
+        VStack(spacing: Spacing.small) {
             ForEach(toasts) { toast in
                 Toast(
                     type: toast.type,
@@ -120,7 +125,7 @@ struct ToastContainer: View {
                 }
             }
         }
-        .padding(AppTheme.GeneratedSpacing.medium)
+        .padding(Spacing.medium)
         .frame(maxWidth: .infinity)
     }
 }
@@ -188,7 +193,7 @@ extension View {
 struct Toast_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 // Individual toasts
                 Toast(type: .success, title: "Success", message: "Your action was completed successfully.")
                 Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
@@ -202,17 +207,17 @@ struct Toast_Previews: PreviewProvider {
                 ToastExample()
             }
             .padding()
-            .background(AppTheme.GeneratedColors.background.opacity(0.5))
+            .background(DSColor.background.opacity(0.5))
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Light Mode")
             
             // Dark mode preview
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 Toast(type: .success, title: "Success", message: "Your action was completed successfully.")
                 Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
             }
             .padding()
-            .background(AppTheme.GeneratedColors.background.opacity(0.5))
+            .background(DSColor.background.opacity(0.5))
             .environment(\.colorScheme, .dark)
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Dark Mode")
@@ -223,8 +228,8 @@ struct Toast_Previews: PreviewProvider {
         @State private var toasts: [ToastItem] = []
         
         var body: some View {
-            PTCard {
-                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack {
+                VStack(spacing: Spacing.medium) {
                     // Use a typed local variable to resolve ambiguity
                     let coreButtonStyle: PTButton.ButtonStyle = .primary
                     PTButton("Show Success Toast", style: coreButtonStyle) {
@@ -238,6 +243,7 @@ struct Toast_Previews: PreviewProvider {
                 }
                 .padding()
             }
+            .card()
             .toasts($toasts)
         }
     }

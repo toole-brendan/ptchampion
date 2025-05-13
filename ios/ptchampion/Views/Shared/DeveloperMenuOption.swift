@@ -8,7 +8,7 @@ struct DesignSystemToggleOption: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Design System")
-                .font(.headline)
+                .heading4()
             
             Toggle("Web UI Design System", isOn: $isWebDesignEnabled)
                 .onChange(of: isWebDesignEnabled) { newValue in
@@ -29,7 +29,7 @@ struct DesignSystemToggleOption: View {
                 }
             
             Text("Restart screens to see changes")
-                .font(.caption)
+                .caption()
                 .foregroundColor(.secondary)
         }
         .padding()

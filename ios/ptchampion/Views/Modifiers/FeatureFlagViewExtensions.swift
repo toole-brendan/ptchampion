@@ -9,7 +9,7 @@ extension View {
         let service = FeatureFlagService.shared
         return self.opacity(service.isEnabled(flag, defaultValue: defaultValue) ? 1 : 0)
             .frame(height: service.isEnabled(flag, defaultValue: defaultValue) ? nil : 0)
-            .disabled(!service.isEnabled(flag, defaultValue: defaultValue))
+            .disabled(!service.isEnabled(flag, defaultValue: defaultValue)
     }
 
     /// Apply a view modifier conditionally based on a feature flag

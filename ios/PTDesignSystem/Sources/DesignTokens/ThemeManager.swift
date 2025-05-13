@@ -57,7 +57,7 @@ public final class ThemeManager: ObservableObject {
 public extension View {
     // Apply military-style monospaced font to text
     func militaryMonospacedStyle(size: CGFloat? = nil) -> some View {
-        let fontSize = size ?? AppTheme.GeneratedTypography.body
+        let fontSize = size ?? Typography.base
         let view = self.font(.system(size: fontSize, weight: .medium, design: .monospaced))
         
         // Only apply tracking on iOS 16+ where it's available
@@ -73,7 +73,7 @@ public extension View {
 // Extension for Text to easily apply monospaced styling
 public extension Text {
     func militaryMonospaced(size: CGFloat? = nil) -> Text {
-        let fontSize = size ?? AppTheme.GeneratedTypography.body
+        let fontSize = size ?? Typography.base
         let text = self.font(.system(size: fontSize, weight: .medium, design: .monospaced))
         
         // Only apply tracking on iOS 16+ where it's available
@@ -88,8 +88,8 @@ public extension Text {
 
 // Extension for Font to easily create monospaced fonts
 public extension Font {
-    static func militaryMonospaced(size: CGFloat = AppTheme.GeneratedTypography.body) -> Font {
-        return .system(size: size, weight: .medium, design: .monospaced)
+    static func militaryMonospaced(size: CGFloat = Typography.base) -> Font {
+        .system(size: size, weight: .medium, design: .monospaced)
     }
 }
 
@@ -117,22 +117,8 @@ public extension ThemeManager {
     }
     
     // For components to programmatically choose between design systems
-    static func shadowStyle(legacy: PTDesignSystem.AppTheme.GeneratedShadows.Type, web: PTDesignSystem.AppTheme.Shadow) -> PTDesignSystem.Shadow {
-        if useWebTheme {
-            return web
-        } else {
-            // Convert the legacy shadow type to actual Shadow
-            switch legacy {
-            case PTDesignSystem.AppTheme.GeneratedShadows.small.self:
-                return PTDesignSystem.AppTheme.GeneratedShadows.small
-            case PTDesignSystem.AppTheme.GeneratedShadows.medium.self:
-                return PTDesignSystem.AppTheme.GeneratedShadows.medium
-            case PTDesignSystem.AppTheme.GeneratedShadows.large.self:
-                return PTDesignSystem.AppTheme.GeneratedShadows.large
-            default:
-                return PTDesignSystem.AppTheme.GeneratedShadows.small
-            }
-        }
+    static func shadowStyle(legacy: DSShadow, web: DSShadow) -> DSShadow {
+        useWebTheme ? web : legacy
     }
     
     // For components to programmatically choose between design systems

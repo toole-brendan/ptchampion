@@ -2,17 +2,15 @@ import SwiftUI
 import PTDesignSystem
 import SwiftUI
 
+fileprivate typealias DSColor = PTDesignSystem.Color
+fileprivate typealias SColor = SwiftUI.Color
+
 /*
  * DEPRECATION NOTICE
  * This component is deprecated and will be removed in a future update.
  * Please use SettingsView from the Views/Profile directory instead.
  * The ProfileView uses SettingsView for the settings modal.
  */
-
-// Add extension for AppTheme.GeneratedColors for any missing tokens
-public extension AppTheme.GeneratedColors {
-    static let tomahawkRed = error // Map to error color
-}
 
 /// A reusable settings sheet component that can be presented modally
 struct SettingsSheet: View {
@@ -27,7 +25,7 @@ struct SettingsSheet: View {
     var showAbout: Bool = true
     
     // State
-    @State private var selectedDistanceUnit: AppTheme.DistanceUnit = .kilometers
+    @State private var selectedDistanceUnit: DistanceUnit = .kilometers
     @State private var notificationsEnabled: Bool = true
     @State private var shareWorkouts: Bool = true
     @State private var darkModeEnabled: Bool = false
@@ -41,10 +39,10 @@ struct SettingsSheet: View {
                 Section {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .foregroundColor(DSColor.error)
                         Text("This component is deprecated. Please use SettingsView from the Profile directory instead.")
-                            .font(.caption)
-                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .caption()
+                            .foregroundColor(DSColor.error)
                     }
                     .padding(.vertical, 8)
                 }
@@ -77,8 +75,8 @@ struct SettingsSheet: View {
                         HStack {
                             Spacer()
                             Text("Sign Out")
-                                .font(.system(size: AppTheme.GeneratedTypography.body, weight: .bold))
-                                .foregroundColor(AppTheme.GeneratedColors.tomahawkRed)
+                                .font(.system(size: .body(), weight: .bold))
+                                .foregroundColor(DSColor.error)
                             Spacer()
                         }
                     }
@@ -119,21 +117,21 @@ struct SettingsSheet: View {
             if case .authenticated(let user) = authViewModel.authState {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text([user.firstName, user.lastName].compactMap { $0 }.joined(separator: " ")
-                            .ifEmpty(use: user.email))
-                            .font(.system(size: AppTheme.GeneratedTypography.body, weight: .bold))
+                        Text([user.firstName, user.lastName].compactMap { $0 }.joined(separator: " "))
+                            .ifEmpty(use: user.email)
+                            .font(.system(size: .body(), weight: .bold))
                         Text(user.email)
-                            .font(.system(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .font(.system(size: Spacing.small))
+                            .foregroundColor(DSColor.textSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "person.circle.fill")
                         .font(.system(size: 40))
-                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .foregroundColor(DSColor.brassGold)
                 }
-                .padding(.vertical, AppTheme.GeneratedSpacing.small)
+                .padding(.vertical, Spacing.small)
                 
                 Button(action: {
                     // Navigate to profile edit
@@ -145,7 +143,7 @@ struct SettingsSheet: View {
                     showingDeleteAccountConfirmation = true
                 }) {
                     Text("Delete Account")
-                        .foregroundColor(AppTheme.GeneratedColors.tomahawkRed)
+                        .foregroundColor(DSColor.error)
                 }
             } else {
                 Button(action: {
@@ -160,7 +158,7 @@ struct SettingsSheet: View {
     private var appearanceSection: some View {
         Section(header: Text("Appearance")) {
             Picker("Distance Units", selection: $selectedDistanceUnit) {
-                ForEach(AppTheme.DistanceUnit.allCases, id: \.self) { unit in
+                ForEach(DistanceUnit.allCases, id: \.self) { unit in
                     Text(unit.displayName).tag(unit)
                 }
             }
@@ -206,7 +204,7 @@ struct SettingsSheet: View {
                 Text("Version")
                 Spacer()
                 Text(Bundle.main.appVersionAndBuild)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .foregroundColor(DSColor.textSecondary)
             }
             
             NavigationLink("Send Feedback") {
@@ -241,8 +239,8 @@ struct SettingsSheet: View {
             TextEditor(text: .constant(""))
                 .frame(minHeight: 200)
                 .padding()
-                .background(Color.gray.opacity(0.5))
-                .cornerRadius(AppTheme.GeneratedRadius.medium)
+                .background(SColor.gray.opacity(0.5))
+                .cornerRadius(CornerRadius.medium)
                 .padding()
             
             // Use a typed local variable to resolve ambiguity
@@ -317,21 +315,5 @@ extension String {
     /// Returns `self` unless it's empty, in which case `fallback` is returned.
     func ifEmpty(use fallback: @autoclosure () -> String) -> String {
         isEmpty ? fallback() : self
-    }
-}
-
-// MARK: - Extension for AppTheme
-
-extension AppTheme {
-    enum DistanceUnit: String, CaseIterable {
-        case kilometers
-        case miles
-        
-        var displayName: String {
-            switch self {
-            case .kilometers: return "Kilometers"
-            case .miles: return "Miles"
-            }
-        }
     }
 } 

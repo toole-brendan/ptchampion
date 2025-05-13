@@ -1,0 +1,13 @@
+version: "Apple Swift version 6.1 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)"
+options: "bcba787a9df41623b40655e6b8948ff65949ba5555e4657d6869a3da6da5e1b8"
+build_start_time: [1747081722, 269624000]
+build_end_time: [1747081722, 926099000]
+inputs:
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/BasicFormat.swift"
+  : [1747081625, 754767695]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Syntax+Extensions.swift"
+  : [1747081625, 755757723]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/SyntaxProtocol+Formatted.swift"
+  : [1747081625, 755828014]
+  ? "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftBasicFormat/Trivia+FormatExtensions.swift"
+  : [1747081625, 755904971]

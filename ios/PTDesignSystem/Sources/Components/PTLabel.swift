@@ -1,6 +1,8 @@
 import SwiftUI
 import DesignTokens
 
+// Use DSColor from TypeAliases.swift
+
 public struct PTLabel: View {
     private let text: String
     private let style: LabelStyle
@@ -35,14 +37,14 @@ public struct PTLabel: View {
         }
     }
     
-    private var color: Color {
+    private var color: SwiftUI.Color {
         switch style {
         case .heading, .subheading:
-            return AppTheme.GeneratedColors.textPrimary
+            return DesignTokens.Color.textPrimary
         case .body, .bodyBold:
-            return AppTheme.GeneratedColors.textSecondary
+            return DesignTokens.Color.textSecondary
         case .caption:
-            return AppTheme.GeneratedColors.textTertiary
+            return DesignTokens.Color.textTertiary
         }
     }
 }

@@ -1,0 +1,12 @@
+{
+  "": {
+    "dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntax509.build/SwiftSyntax509.d",
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntax509.build/SwiftSyntax509.o",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntax509.build/master.swiftdeps"
+  },
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax509/Empty.swift": {
+    "object": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntax509.build/Empty.swift.o",
+    "swiftmodule": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntax509.build/Empty~partial.swiftmodule",
+    "swift-dependencies": "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntax509.build/Empty.swiftdeps"
+  }
+}

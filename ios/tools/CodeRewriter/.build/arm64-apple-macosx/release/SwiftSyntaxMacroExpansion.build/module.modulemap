@@ -1,0 +1,4 @@
+module SwiftSyntaxMacroExpansion {
+    header "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntaxMacroExpansion.build/SwiftSyntaxMacroExpansion-Swift.h"
+    requires objc
+}

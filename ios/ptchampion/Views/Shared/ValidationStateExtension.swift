@@ -1,17 +1,19 @@
 import SwiftUI
 import PTDesignSystem
 
+fileprivate typealias DSColor = PTDesignSystem.Color
+
 /// ValidationState enum to replace the removed validationState(_:) extension on PTTextField
 enum ValidationState {
     case valid
     case invalid(message: String)
     
-    var borderColor: Color {
+    var borderColor: SwiftUI.Color {
         switch self {
         case .valid:
-            return AppTheme.GeneratedColors.success
+            return DSColor.success
         case .invalid:
-            return AppTheme.GeneratedColors.error
+            return DSColor.error
         }
     }
     
@@ -39,7 +41,7 @@ extension View {
                     VStack(alignment: .leading) {
                         Spacer()
                         Text(message)
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(state.borderColor)
                             .padding(.leading, 4)
                             .padding(.top, 4)

@@ -1,0 +1,6 @@
+version: "Apple Swift version 6.1 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)"
+options: "d423c6382f7470b4316cbb2c4a0c28c6957d3edb08d2126367d063fb5805838d"
+build_start_time: [1747081626, 574908000]
+build_end_time: [1747081626, 666784000]
+inputs:
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/checkouts/swift-syntax/Sources/SwiftSyntax509/Empty.swift": [1747081625, 787574064]

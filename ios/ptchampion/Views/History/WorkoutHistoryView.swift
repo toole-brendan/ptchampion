@@ -19,30 +19,31 @@ struct EmptyHistoryDisplayView: View {
             imageForEmptyState = Image(systemName: currentFilter.systemImage)
         }
         
-        return PTCard(style: .elevated) {
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+VStack {
+            VStack(spacing: Spacing.medium) {
                 imageForEmptyState
                     .resizable()
                     .scaledToFit()
                     .frame(width: 80, height: 80)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.6))
-                    .padding(.top, AppTheme.GeneratedSpacing.medium)
+                    .foregroundColor(Color.brassGold.opacity(0.6))
+                    .padding(.top, Spacing.medium)
                 
-                VStack(spacing: AppTheme.GeneratedSpacing.small) {
+                VStack(spacing: Spacing.small) {
                     PTLabel(titleString, style: .heading)
                         .multilineTextAlignment(.center)
                     
                     PTLabel("Complete a workout to see your progress here!", style: .body)
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .foregroundColor(Color.textSecondary)
                         .multilineTextAlignment(.center)
                 }
-                .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+                .card()
+                .padding(.bottom, Spacing.medium)
             }
             .frame(maxWidth: .infinity)
-            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
+            .padding(.horizontal, Spacing.medium)
         }
-        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
-        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+        .padding(.horizontal, Spacing.contentPadding)
+        .padding(.vertical, Spacing.medium)
     }
 }
 
@@ -58,24 +59,24 @@ struct WorkoutHistoryView: View {
         NavigationStack {
             ZStack {
                 // Background
-                AppTheme.GeneratedColors.background.ignoresSafeArea()
+                Color.background.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: AppTheme.GeneratedSpacing.section) {
+                    VStack(spacing: Spacing.section) {
                         // Custom header to match Leaderboard style exactly
-                        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                        VStack(alignment: .leading, spacing: Spacing.small) {
                             Text("WORKOUT HISTORY")
-                                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                                .militaryMonospaced(size: Spacing.body)
+                                .foregroundColor(Color.textPrimary)
                             
                             // Add subtitle caption similar to the Leaderboard
                             Text("Track your exercise progress")
-                                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                .small()
+                                .foregroundColor(Color.textSecondary)
                                 .italic()
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                        .padding(.horizontal, Spacing.contentPadding)
                         .padding(.top, 12) // Reduced padding to match Leaderboard
                         
                         // Filter bar component
@@ -97,7 +98,7 @@ struct WorkoutHistoryView: View {
                         // Workout history list section
                         workoutHistorySection
                     }
-                    .padding(.bottom, AppTheme.GeneratedSpacing.section)
+                    .padding(.bottom, Spacing.section)
                 }
             }
             .toolbar {
@@ -112,7 +113,7 @@ struct WorkoutHistoryView: View {
                             Text(isEditMode == .active ? "Done" : "Edit")
                         }
                     }
-                    .tint(AppTheme.GeneratedColors.brassGold)
+                    .tint(Color.brassGold)
                 }
             }
             .environment(\.editMode, $isEditMode)
@@ -130,12 +131,12 @@ struct WorkoutHistoryView: View {
     
     // Workout history list section
     private var workoutHistorySection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
             HStack {
                 Text("WORKOUT HISTORY")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    .militaryMonospaced(size: Spacing.small)
+                    .foregroundColor(Color.textSecondary)
+                    .padding(.horizontal, Spacing.contentPadding)
                 
                 Spacer()
             }
@@ -244,4 +245,4 @@ struct WorkoutHistoryView_Previews: PreviewProvider {
     WorkoutHistoryView()
         .modelContainer(createSampleDataContainer())
         .environment(\.colorScheme, .dark)
-} 
+}

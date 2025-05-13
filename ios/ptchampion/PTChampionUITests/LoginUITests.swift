@@ -51,10 +51,10 @@ final class LoginUITests: XCTestCase {
         
         // Verify dashboard is shown after successful login (timeout: 5 seconds)
         let dashboardTitle = app.staticTexts["Dashboard"]
-        XCTAssertTrue(dashboardTitle.waitForExistence(timeout: 5))
+        XCTAssertTrue(dashboardTitle.waitForExistence(timeout: 5)
         
         // Verify user name is displayed
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Welcome, Test User")).element.exists)
+        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "Welcome, Test User").element.exists)
     }
     
     func testFailedLogin() throws {
@@ -74,7 +74,7 @@ final class LoginUITests: XCTestCase {
         
         // Verify error message is shown
         let errorMessage = app.staticTexts["Invalid username or password"]
-        XCTAssertTrue(errorMessage.waitForExistence(timeout: 5))
+        XCTAssertTrue(errorMessage.waitForExistence(timeout: 5)
         
         // Verify we're still on the login screen
         XCTAssertTrue(app.buttons["Log In"].exists)
@@ -87,7 +87,7 @@ final class LoginUITests: XCTestCase {
         app.buttons["Sign Up"].tap()
         
         // Verify sign up screen is shown
-        XCTAssertTrue(app.staticTexts["Create an Account"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Create an Account"].waitForExistence(timeout: 2)
         XCTAssertTrue(app.textFields["Full Name"].exists)
         XCTAssertTrue(app.textFields["Email"].exists)
         XCTAssertTrue(app.textFields["Username"].exists)
@@ -103,7 +103,7 @@ final class LoginUITests: XCTestCase {
         app.buttons["Forgot Password?"].tap()
         
         // Verify forgot password screen is shown
-        XCTAssertTrue(app.staticTexts["Reset Password"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.staticTexts["Reset Password"].waitForExistence(timeout: 2)
         XCTAssertTrue(app.textFields["Email"].exists)
         XCTAssertTrue(app.buttons["Send Reset Link"].exists)
     }

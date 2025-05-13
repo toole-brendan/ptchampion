@@ -8,31 +8,31 @@ struct ExerciseDetailView: View {
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 // Header with title and icon
                 HStack {
                     Text(exerciseType.capitalized)
-                        .font(.system(size: AppTheme.GeneratedTypography.heading4, weight: .bold))
-                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        .heading4(weight: .bold)
+                        .foregroundColor(Color.textPrimary)
                     
                     Spacer()
                     
                     Image(systemName: exerciseIcon)
-                        .font(.system(size: 24))
-                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        .heading2()
+                        .foregroundColor(Color.textPrimary)
                 }
-                .padding(AppTheme.GeneratedSpacing.large)
-                .background(Color.white)
-                .cornerRadius(AppTheme.GeneratedRadius.large)
+                .padding(Spacing.large)
+                .background(Color.cardBackground)
+                .cornerRadius(CornerRadius.large)
                 
                 // Stats summary
-                PTCard {
-                    HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack {
+                    HStack(spacing: Spacing.medium) {
                         StatCard(
                             title: "Best Session",
                             value: "\(viewModel.personalBest)",
                             unit: viewModel.unitForExerciseType(exerciseType),
-                            color: AppTheme.GeneratedColors.brassGold,
+                            color: Color.brassGold,
                             iconName: "trophy.fill"
                         )
                         
@@ -40,14 +40,15 @@ struct ExerciseDetailView: View {
                             title: "Last Week Total",
                             value: "\(viewModel.lastWeekTotal)",
                             unit: viewModel.unitForExerciseType(exerciseType),
-                            color: AppTheme.GeneratedColors.deepOps,
+                            color: Color.textPrimary,
                             iconName: "calendar"
                         )
                     }
                 }
+                .card()
                 
                 // Progress chart
-                PTCard {
+                VStack {
                     if isLoading {
                         Spinner()
                             .padding(.vertical, 100)
@@ -58,19 +59,21 @@ struct ExerciseDetailView: View {
                         )
                     }
                 }
+                .card()
                 
                 // Recent history
-                PTCard {
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack {
+                    VStack(alignment: .leading, spacing: Spacing.medium) {
                         Text(verbatim: "Recent History")
-                            .font(.system(size: AppTheme.GeneratedTypography.heading4, weight: .semibold))
-                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            .heading4(weight: .semibold)
+                            .foregroundColor(Color.textPrimary)
                         
                         ForEach(viewModel.recentSessions) { session in
                             historyRow(session: session)
                         }
                     }
                 }
+                .card()
                 
                 // Add exercise button
                 let buttonStyle: PTButton.ExtendedStyle = .primary
@@ -80,7 +83,7 @@ struct ExerciseDetailView: View {
                 ) {
                     // Open recording modal
                 }
-                .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+                .padding(.vertical, Spacing.medium)
             }
             .frame(maxWidth: 600)
             .adaptivePadding()
@@ -90,6 +93,7 @@ struct ExerciseDetailView: View {
             Color(uiColor: UIColor(red: 0.95, green: 0.95, blue: 0.9, alpha: 0.5))
         )
         .navigationBarTitleDisplayMode(.inline)
+        .container()
         .onAppear {
             // Simulate network loading
             viewModel.loadData(for: exerciseType)
@@ -117,23 +121,23 @@ struct ExerciseDetailView: View {
         HStack {
             VStack(alignment: .leading) {
                 Text(session.formattedDate)
-                    .font(.system(size: AppTheme.GeneratedTypography.body, weight: .semibold))
-                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    .body(weight: .semibold)
+                    .foregroundColor(Color.textPrimary)
                 
                 Text(session.notes)
-                    .font(.system(size: AppTheme.GeneratedTypography.small))
-                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                    .small()
+                    .foregroundColor(Color.textSecondary)
             }
             
             Spacer()
             
             Text("\(session.value) \(session.unit)")
-                .font(.system(size: AppTheme.GeneratedTypography.body, weight: .semibold))
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .body(weight: .semibold)
+                .foregroundColor(Color.brassGold)
         }
-        .padding(AppTheme.GeneratedSpacing.medium)
-        .background(Color.white)
-        .cornerRadius(AppTheme.GeneratedRadius.medium)
+        .padding(Spacing.medium)
+        .background(Color.cardBackground)
+        .cornerRadius(CornerRadius.medium)
         .shadow(color: Color(uiColor: UIColor.black).opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }

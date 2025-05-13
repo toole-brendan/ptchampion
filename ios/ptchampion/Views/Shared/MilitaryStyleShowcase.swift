@@ -13,8 +13,8 @@ struct MilitaryStyleShowcase: View {
                         
                         HStack {
                             Text("STANDARD LABEL")
-                                .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                .militaryMonospaced(size: Spacing.small)
+                                .foregroundColor(Color.textSecondary)
                             
                             Spacer()
                         }
@@ -22,8 +22,8 @@ struct MilitaryStyleShowcase: View {
                         
                         HStack {
                             Text("WITH BRASS ACCENT")
-                                .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .militaryMonospaced(size: Spacing.small)
+                                .foregroundColor(Color.brassGold)
                             
                             Spacer()
                         }
@@ -66,7 +66,7 @@ struct MilitaryStyleShowcase: View {
                     
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Standard Text")
-                            .font(AppTheme.GeneratedTypography.body())
+                            .body()
                         
                         Text("Military Monospaced")
                             .militaryMonospaced()
@@ -75,11 +75,11 @@ struct MilitaryStyleShowcase: View {
                         stencilCapsTextView()
                         
                         Text("Primary Command")
-                            .foregroundColor(AppTheme.GeneratedColors.primary)
+                            .foregroundColor(Color.primary)
                             .militaryMonospaced()
                         
                         Text("Brass Accent")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .foregroundColor(Color.brassGold)
                             .militaryMonospaced()
                     }
                     .padding()
@@ -98,8 +98,8 @@ struct MilitaryStyleShowcase: View {
                                 .militaryMonospaced()
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(AppTheme.GeneratedColors.primary)
-                                .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
+                                .background(Color.primary)
+                                .foregroundColor(Color.textOnPrimary)
                         }
                         
                         // Secondary button with military style
@@ -110,11 +110,11 @@ struct MilitaryStyleShowcase: View {
                                 .militaryMonospaced()
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(AppTheme.GeneratedColors.secondary.opacity(0.1))
-                                .foregroundColor(AppTheme.GeneratedColors.secondary)
+                                .background(Color.secondary.opacity(0.1)
+                                .foregroundColor(Color.secondary)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                                        .stroke(AppTheme.GeneratedColors.secondary, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: CornerRadius.button)
+                                        .stroke(Color.secondary, lineWidth: 1)
                                 )
                         }
                         
@@ -126,15 +126,15 @@ struct MilitaryStyleShowcase: View {
                                 .militaryMonospaced()
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(AppTheme.GeneratedColors.brassGold.opacity(0.1))
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .background(Color.brassGold.opacity(0.1)
+                                .foregroundColor(Color.brassGold)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                                        .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: CornerRadius.button)
+                                        .stroke(Color.brassGold, lineWidth: 1)
                                 )
                         }
                     }
-                    .cornerRadius(AppTheme.GeneratedRadius.button)
+                    .cornerRadius(CornerRadius.button)
                     .padding(.horizontal)
                     
                     // Badges
@@ -143,15 +143,15 @@ struct MilitaryStyleShowcase: View {
                     HStack(spacing: 10) {
                         Text("PT READY")
                             .militaryMonospaced(size: 12)
-                            .badgeStyle(color: AppTheme.GeneratedColors.success)
+                            .badgeStyle(color: Color.success)
                         
                         Text("ELITE")
                             .militaryMonospaced(size: 12)
-                            .badgeStyle(color: AppTheme.GeneratedColors.brassGold)
+                            .badgeStyle(color: Color.brassGold)
                         
                         Text("IMPROVING")
                             .militaryMonospaced(size: 12)
-                            .badgeStyle(color: AppTheme.GeneratedColors.primary)
+                            .badgeStyle(color: Color.primary)
                     }
                     .padding(.horizontal)
                     
@@ -159,7 +159,7 @@ struct MilitaryStyleShowcase: View {
                 }
                 .padding(.top, 20)
             }
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+            .background(Color.background.ignoresSafeArea()
             .navigationTitle("Military UI Kit")
             .navigationBarTitleDisplayMode(.large)
         }
@@ -183,11 +183,11 @@ struct MilitaryStyleShowcase: View {
     private func SectionHeader(_ title: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .militaryMonospaced(size: Spacing.small)
+                .foregroundColor(Color.textSecondary)
             
             Rectangle()
-                .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.3))
+                .fill(Color.tacticalGray.opacity(0.3)
                 .frame(height: 1)
         }
         .padding(.horizontal)

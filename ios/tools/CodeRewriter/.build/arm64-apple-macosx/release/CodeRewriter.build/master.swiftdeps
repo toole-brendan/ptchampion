@@ -1,0 +1,6 @@
+version: "Apple Swift version 6.1 (swiftlang-6.1.0.110.21 clang-1700.0.13.3)"
+options: "a9fa1658d7067065ca2106106dc4139150731f11c0ba1cf27edef16c771bb016"
+build_start_time: [1747081747, 160669000]
+build_end_time: [1747081748, 634551000]
+inputs:
+  "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/Sources/main.swift": !dirty [1747081621, 662999901]

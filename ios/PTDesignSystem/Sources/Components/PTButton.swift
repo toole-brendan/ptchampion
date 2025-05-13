@@ -1,19 +1,6 @@
 import SwiftUI
 import DesignTokens
 
-// MARK: - Helper to use .tint only where it exists
-private extension View {
-    @ViewBuilder
-    func tintCompat(_ color: Color) -> some View {
-        if #available(iOS 16.0, *) {
-            self.tint(color)
-        } else {
-            // .accentColor is available from iOS 13 and still works through iOS 17
-            self.accentColor(color)
-        }
-    }
-}
-
 /// A design token-driven button component that automatically applies styling
 /// based on the design system.
 ///
@@ -32,6 +19,7 @@ public struct PTButton: View {
     private let icon: Image?
     private let fullWidth: Bool
     private let size: ButtonSize
+    private let isEnabled: Bool
     
     @Environment(\.accessibilityReduceMotion) var reduceMotion
     @State private var isPressed = false
@@ -46,6 +34,64 @@ public struct PTButton: View {
         
         /// Used for destructive actions like delete or remove
         case destructive
+        
+        var backgroundColor: SwiftUI.Color {
+            switch self {
+            case .primary:
+                return DesignTokens.Color.primary
+            case .secondary:
+                return DesignTokens.Color.secondary.opacity(0.1)
+            case .destructive:
+                return DesignTokens.Color.error
+            }
+        }
+        
+        var foregroundColor: SwiftUI.Color {
+            switch self {
+            case .primary:
+                return DesignTokens.Color.textOnPrimary
+            case .secondary:
+                return DesignTokens.Color.textPrimary
+            case .destructive:
+                return .white
+            }
+        }
+        
+        var disabledBackgroundColor: SwiftUI.Color {
+            return backgroundColor.opacity(0.5)
+        }
+        
+        var disabledColor: SwiftUI.Color {
+            return foregroundColor.opacity(0.7)
+        }
+        
+        var borderColor: SwiftUI.Color {
+            return SwiftUI.Color.clear
+        }
+        
+        var borderWidth: CGFloat {
+            return 0
+        }
+        
+        var contentPadding: EdgeInsets {
+            return EdgeInsets(top: 12, leading: 16, bottom: 12, trailing: 16)
+        }
+        
+        var minimumWidth: CGFloat {
+            return 0
+        }
+        
+        var iconSize: CGFloat {
+            return 16
+        }
+        
+        var useShadow: Bool {
+            return self == .primary
+        }
+        
+        var shouldShowLeadingIcon: Bool {
+            return true
+        }
     }
     
     /// Button size variants
@@ -79,13 +125,15 @@ public struct PTButton: View {
     ///   - icon: Optional icon to display alongside text
     ///   - fullWidth: Whether the button should expand to full width
     ///   - isLoading: Whether the button should display a loading indicator (default: false)
+    ///   - isEnabled: Whether the button is enabled (default: true)
     ///   - action: The closure to execute when the button is tapped
     public init(_ title: String, 
                 style: ButtonStyle = .primary, 
                 size: ButtonSize = .medium,
                 icon: Image? = nil,
                 fullWidth: Bool = false,
-                isLoading: Bool = false, 
+                isLoading: Bool = false,
+                isEnabled: Bool = true,
                 action: @escaping () -> Void) {
         self.title = title
         self.style = style
@@ -93,13 +141,14 @@ public struct PTButton: View {
         self.icon = icon
         self.fullWidth = fullWidth
         self.size = size
+        self.isEnabled = isEnabled
         self.action = action
     }
     
     public var body: some View {
         Button(action: {
             if !isLoading {
-                hapticFeedback(style: .light)
+                hapticFeedback()
                 action()
             }
         }) {
@@ -113,20 +162,14 @@ public struct PTButton: View {
                 if isLoading {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(
-                            tint: style.foregroundColor)
-                        )
+                            tint: style.foregroundColor
+                        ))
                         .scaleEffect(0.8)
                 } else {
                     Text(title)
-                        .font(ThemeManager.useWebTheme ? PTDesignSystem.AppTheme.Typography.button : PTDesignSystem.AppTheme.GeneratedTypography.bodySemibold())
+                        .font(ThemeManager.useWebTheme ? Typography.button : .system(size: 16, weight: .semibold))
                         .foregroundColor(isEnabled ? style.foregroundColor : style.disabledColor)
                         .lineLimit(1)
-                }
-                
-                if let trailingIcon = trailingIcon {
-                    trailingIcon
-                        .font(.system(size: style.iconSize))
-                        .foregroundColor(isEnabled ? style.foregroundColor : style.disabledColor)
                 }
             }
             .padding(style.contentPadding)
@@ -137,26 +180,26 @@ public struct PTButton: View {
                 : style.disabledBackgroundColor
             )
             .cornerRadius(ThemeManager.useWebTheme ? 
-                PTDesignSystem.AppTheme.Radius.md : 
-                PTDesignSystem.AppTheme.GeneratedRadius.button)
+                CornerRadius.md : 
+                CornerRadius.button)
             .overlay(
                 RoundedRectangle(cornerRadius: ThemeManager.useWebTheme ? 
-                    PTDesignSystem.AppTheme.Radius.md : 
-                    PTDesignSystem.AppTheme.GeneratedRadius.button)
+                    CornerRadius.md : 
+                    CornerRadius.button)
                     .stroke(style.borderColor, lineWidth: style.borderWidth)
             )
             .shadow(
                 color: style.useShadow ? (ThemeManager.useWebTheme ? 
-                    PTDesignSystem.AppTheme.Shadow.button.color : 
-                    Color.black.opacity(0.1)) : Color.clear,
+                    Shadow.button.color : 
+                    SwiftUI.Color.black.opacity(0.1)) : SwiftUI.Color.clear,
                 radius: style.useShadow ? (ThemeManager.useWebTheme ? 
-                    PTDesignSystem.AppTheme.Shadow.button.radius : 
+                    Shadow.button.radius : 
                     4) : 0,
                 x: style.useShadow ? (ThemeManager.useWebTheme ? 
-                    PTDesignSystem.AppTheme.Shadow.button.x : 
+                    Shadow.button.x : 
                     0) : 0,
                 y: style.useShadow ? (ThemeManager.useWebTheme ? 
-                    PTDesignSystem.AppTheme.Shadow.button.y : 
+                    Shadow.button.y : 
                     2) : 0
             )
         }
@@ -164,26 +207,9 @@ public struct PTButton: View {
         .disabled(!isEnabled || isLoading)
     }
     
-    private var backgroundColor: Color {
-        switch style {
-        case .primary:
-            return AppTheme.GeneratedColors.primary
-        case .secondary:
-            return AppTheme.GeneratedColors.secondary.opacity(0.1)
-        case .destructive:
-            return AppTheme.GeneratedColors.error
-        }
-    }
-    
-    private var foregroundColor: Color {
-        switch style {
-        case .primary:
-            return AppTheme.GeneratedColors.textOnPrimary
-        case .secondary:
-            return AppTheme.GeneratedColors.textPrimary
-        case .destructive:
-            return .white
-        }
+    private func hapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
     }
 }
 
@@ -200,6 +226,7 @@ public extension PTButton {
          icon: Image? = nil,
          fullWidth: Bool = false,
          isLoading: Bool = false,
+         isEnabled: Bool = true,
          action: @escaping () -> Void) {
 
         // Map old style → current core style + decorations
@@ -219,7 +246,8 @@ public extension PTButton {
             size: size,
             icon: icon,
             fullWidth: fullWidth,
-            isLoading: isLoading, 
+            isLoading: isLoading,
+            isEnabled: isEnabled,
             action: action
         )
     }

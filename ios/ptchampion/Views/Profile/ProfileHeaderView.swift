@@ -1,59 +1,63 @@
 import SwiftUI
 import PTDesignSystem
 
-// fileprivate extension View { ... } // REMOVED
-
+/// Header component for profile views showing user info and edit button
 struct ProfileHeaderView: View {
-    @ObservedObject var authViewModel: AuthViewModel
+    @EnvironmentObject private var authViewModel: AuthViewModel
     @Binding var showingEditProfile: Bool
     
-    // Computed property to get user's initials
-    private var userInitials: String {
-        if case .authenticated(let user) = authViewModel.authState {
-            let firstInitial = user.firstName?.prefix(1).uppercased() ?? ""
-            let lastInitial = user.lastName?.prefix(1).uppercased() ?? ""
-            
-            if !lastInitial.isEmpty {
-                return "\(firstInitial)\(lastInitial)"
-            } else if !firstInitial.isEmpty {
-                // If only first name is available, use first two letters
-                let firstName = user.firstName ?? ""
-                if firstName.count > 1 {
-                    let secondLetter = String(firstName.dropFirst().prefix(1).uppercased())
-                    return "\(firstInitial)\(secondLetter)"
-                }
-                return firstInitial
-            }
-            return "U" // Default if no name available
+    init(showingEditProfile: Binding<Bool>) {
+        self._showingEditProfile = showingEditProfile
+    }
+    
+    var displayName: String {
+        if let firstName = authViewModel.firstName, let lastName = authViewModel.lastName {
+            return "\(firstName) \(lastName)"
+        } else if let firstName = authViewModel.firstName {
+            return firstName
+        } else if let lastName = authViewModel.lastName {
+            return lastName
+        } else if let email = authViewModel.email {
+            return email
+        } else {
+            return "User"
         }
-        return "U" // Default for unauthenticated
+    }
+    
+    var initials: String {
+        if let firstName = authViewModel.firstName?.prefix(1), let lastName = authViewModel.lastName?.prefix(1) {
+            return "\(firstName)\(lastName)"
+        } else {
+            return displayName.prefix(1).uppercased()
+        }
     }
 
     var body: some View {
-        PTCard(style: .standard) { // Use PTCard as the root
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack {
+            VStack(spacing: Spacing.medium) {
                 // Avatar circle with initials
                 ZStack {
                     Circle()
-                        .fill(AppTheme.GeneratedColors.primary.opacity(0.1))
-                        .frame(width: 100, height: 100)
+                        .fill(Color.brassGold.opacity(0.2))
                     
-                    Text(userInitials)
+                    Text(initials)
                         .font(.system(size: 40, weight: .bold))
-                        .foregroundColor(AppTheme.GeneratedColors.primary)
+                        .foregroundColor(Color.brassGold)
+                        .minimumScaleFactor(0.5)
+                        .padding(Spacing.contentPadding)
                 }
-                .padding(.top, AppTheme.GeneratedSpacing.medium)
+                .frame(width: 100, height: 100)
+                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                 
-                // User information
-                VStack(spacing: AppTheme.GeneratedSpacing.small) {
-                    Text(authViewModel.displayName ?? "N/A")
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                // Name and email
+                VStack(spacing: 4) {
+                    Text(displayName)
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(Color.textPrimary)
                     
                     Text(authViewModel.email ?? "N/A")
-                        .font(.subheadline)
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .font(.caption)
+                        .foregroundColor(Color.textSecondary)
                 }
                 
                 // Edit profile button
@@ -62,49 +66,31 @@ struct ProfileHeaderView: View {
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: "pencil")
-                            .font(.footnote)
+                            .font(.caption)
                         Text("Edit Profile")
-                            .font(.footnote.weight(.medium))
+                            .font(.caption.weight(.medium))
                     }
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, Spacing.small)
                     .padding(.vertical, 6)
-                    .background(
-                        Capsule()
-                            .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
-                    )
+                    .background(Color.brassGold.opacity(0.1))
+                    .cornerRadius(CornerRadius.button)
                 }
-                .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                .buttonStyle(PlainButtonStyle())
             }
-            .frame(maxWidth: .infinity) // Make the VStack (content of the card) take full width
+            .padding(Spacing.contentPadding)
         }
+        .background(Color.cardBackground)
+        .cornerRadius(CornerRadius.card)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
 
-// Moved MockAuthViewModelForHeader outside of the previews property
-fileprivate class MockAuthViewModelForHeaderPreview: AuthViewModel {
-    override init() {
-        super.init()
-        let mockUser = AuthUserModel(
-            id: "mockUserID123",
-            email: "user@example.com",
-            firstName: "Preview",
-            lastName: "User",
-            profilePictureUrl: nil
-        )
-        self.setMockUser(mockUser)
-    }
-}
-
-// Preview for ProfileHeaderView
 struct ProfileHeaderView_Previews: PreviewProvider {
     static var previews: some View {
-        ProfileHeaderView(
-            authViewModel: MockAuthViewModelForHeaderPreview(),
-            showingEditProfile: .constant(false)
-        )
-        .padding()
-        .background(Color.gray.opacity(0.2))
-        .previewLayout(.sizeThatFits)
+        ProfileHeaderView(showingEditProfile: .constant(false))
+            .environmentObject(AuthViewModel())
+            .padding()
+            .background(Color.background)
+            .previewLayout(.sizeThatFits)
     }
 } 

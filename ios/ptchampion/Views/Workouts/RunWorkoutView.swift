@@ -6,12 +6,12 @@ import PTDesignSystem
 
 // Run-specific text style extensions
 extension Text {
-    func runLabelStyle(size: CGFloat = 14, color: Color = AppTheme.GeneratedColors.textSecondary) -> some View { 
-        self.font(.system(size: size)).foregroundColor(color) 
+    func runLabelStyle(size: CGFloat = 14, color: Color = Color.textSecondary) -> some View { 
+        self.font(.system(size: size).foregroundColor(color) 
     }
     
-    func statsNumberStyle(size: CGFloat = 32, color: Color = AppTheme.GeneratedColors.textPrimary) -> some View { 
-        self.font(.system(size: size, weight: .bold)).foregroundColor(color) 
+    func statsNumberStyle(size: CGFloat = 32, color: Color = Color.textPrimary) -> some View { 
+        self.font(.system(size: size, weight: .bold).foregroundColor(color) 
     }
 }
 
@@ -24,9 +24,9 @@ struct RunWorkoutView: View {
     
     // MARK: - Constants
     private struct Constants {
-        static let globalPadding: CGFloat = AppTheme.GeneratedSpacing.contentPadding
-        static let cardGap: CGFloat = AppTheme.GeneratedSpacing.cardGap
-        static let panelCornerRadius: CGFloat = AppTheme.GeneratedRadius.card
+        static let globalPadding: CGFloat = Spacing.contentPadding
+        static let cardGap: CGFloat = Spacing.cardGap
+        static let panelCornerRadius: CGFloat = CornerRadius.card
     }
     
     // MARK: - Initialization
@@ -50,7 +50,7 @@ struct RunWorkoutView: View {
                 // Bottom Controls
                 runControls()
             }
-            .background(AppTheme.GeneratedColors.cream.ignoresSafeArea())
+            .background(Color.cream.ignoresSafeArea()
             
             // Location Permission Request View
             if viewModel.runState == .requestingPermission {
@@ -74,12 +74,13 @@ struct RunWorkoutView: View {
         .navigationTitle("Run Tracking")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+            .container()
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button("End") {
                     handleEndWorkout()
                 }
-                .foregroundColor(AppTheme.GeneratedColors.error)
+                .foregroundColor(Color.error)
             }
         }
         .onAppear {
@@ -131,29 +132,29 @@ struct RunWorkoutView: View {
                 // Bluetooth Device Status
                 HStack(spacing: 4) {
                     Image(systemName: viewModel.bluetoothState == .poweredOn ? "bolt.fill" : "bolt.slash.fill")
-                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : AppTheme.GeneratedColors.textSecondary)
+                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : Color.textSecondary)
                     
                     // Connection Status Text
                     switch viewModel.deviceConnectionState {
                     case .disconnected:
                         Text("No Device Connected")
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .foregroundColor(Color.textSecondary)
                     case .connecting:
                         HStack {
                             Text("Connecting...")
                             ProgressView().scaleEffect(0.7)
                         }
-                        .foregroundColor(AppTheme.GeneratedColors.warning)
+                        .foregroundColor(Color.warning)
                     case .connected(let peripheral):
                         Text("\(peripheral.name ?? "Device")")
-                            .foregroundColor(AppTheme.GeneratedColors.success)
+                            .foregroundColor(Color.success)
                             .fontWeight(.medium)
                     case .disconnecting:
                         Text("Disconnecting...")
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .foregroundColor(Color.textSecondary)
                     case .failed:
                         Text("Connection Failed")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .foregroundColor(Color.error)
                     }
                 }
                 
@@ -162,17 +163,17 @@ struct RunWorkoutView: View {
                 // GPS Source Indicator with improved visual
                 HStack(spacing: 3) {
                     Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
-                        .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
+                        .foregroundColor(viewModel.locationSource == .watch ? .blue : Color.textPrimary)
                     Text("GPS")
-                        .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
+                        .foregroundColor(viewModel.locationSource == .watch ? .blue : Color.textPrimary)
                 }
                 .padding(4)
                 .background(
                     RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(.systemBackground).opacity(0.3))
+                        .fill(Color(.systemBackground).opacity(0.3)
                 )
             }
-            .font(.caption)
+            .caption()
             
             // Heart Rate Indicator Row with improved visualization
             if case .connected = viewModel.deviceConnectionState {
@@ -191,7 +192,7 @@ struct RunWorkoutView: View {
                             )
                         
                         Text(viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM")
-                            .foregroundColor(viewModel.currentHeartRate != nil ? .primary : AppTheme.GeneratedColors.textSecondary)
+                            .foregroundColor(viewModel.currentHeartRate != nil ? .primary : Color.textSecondary)
                             .fontWeight(viewModel.currentHeartRate != nil ? .semibold : .regular)
                     }
                     
@@ -199,7 +200,7 @@ struct RunWorkoutView: View {
                     if viewModel.currentHeartRate != nil {
                         Text("via \(viewModel.connectedDeviceName ?? "Device")")
                             .font(.caption2)
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .foregroundColor(Color.textSecondary)
                     }
                     
                     Spacer()
@@ -214,7 +215,7 @@ struct RunWorkoutView: View {
                         }
                     }
                 }
-                .font(.caption)
+                .caption()
                 .padding(.leading, 8)
             }
         }
@@ -255,7 +256,7 @@ struct RunWorkoutView: View {
             }
         }
         .padding()
-        .background(AppTheme.GeneratedColors.deepOps)
+        .background(Color.deepOps)
     }
     
     // Helper for single metric display
@@ -269,15 +270,15 @@ struct RunWorkoutView: View {
             VStack {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .foregroundColor(iconColor ?? AppTheme.GeneratedColors.textPrimary)
-                        .font(.system(size: 16))
+                        .foregroundColor(iconColor ?? Color.textPrimary)
+                        .body()
                         .padding(.bottom, 2)
                 }
                 Text(label)
-                    .runLabelStyle(size: 12, color: AppTheme.GeneratedColors.textTertiary)
+                    .runLabelStyle(size: 12, color: Color.textTertiary)
                     .padding(.bottom, 1)
                 Text(value)
-                    .statsNumberStyle(size: 24, color: AppTheme.GeneratedColors.cream)
+                    .statsNumberStyle(size: 24, color: Color.cream)
             }
             .frame(maxWidth: .infinity) // Distribute horizontally
         }
@@ -290,17 +291,17 @@ struct RunWorkoutView: View {
             switch viewModel.runState {
             case .ready, .idle:
                 Button { viewModel.startRun() }
-                label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
+                label: { controlButtonLabel(systemName: "play.circle.fill", color: Color.success) }
             case .running:
                 Button { viewModel.pauseRun() }
-                label: { controlButtonLabel(systemName: "pause.circle.fill", color: AppTheme.GeneratedColors.warning) }
+                label: { controlButtonLabel(systemName: "pause.circle.fill", color: Color.warning) }
             case .paused:
                 HStack(spacing: 40) {
                     Button { viewModel.resumeRun() }
-                    label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
+                    label: { controlButtonLabel(systemName: "play.circle.fill", color: Color.success) }
 
                     Button { viewModel.stopRun() }
-                    label: { controlButtonLabel(systemName: "stop.circle.fill", color: AppTheme.GeneratedColors.error) }
+                    label: { controlButtonLabel(systemName: "stop.circle.fill", color: Color.error) }
                 }
             case .finished, .error:
                 EmptyView() // Handled by navigation
@@ -311,7 +312,7 @@ struct RunWorkoutView: View {
         }
         .padding()
         .frame(height: 80) // Consistent height for control area
-        .background(AppTheme.GeneratedColors.backgroundOverlay.opacity(0.3))
+        .background(Color.backgroundOverlay.opacity(0.3)
     }
     
     // Helper for styling control buttons
@@ -327,15 +328,15 @@ struct RunWorkoutView: View {
     // Helper view for permission/error overlays
     @ViewBuilder
     private func permissionOrErrorOverlay() -> some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(spacing: Spacing.medium) {
             // Use the isInPermissionDeniedState property for icon and text selection
             let isPermissionDenied = viewModel.runState == .permissionDenied
             
             Image(systemName: isPermissionDenied ? "location.slash.fill" : "exclamationmark.triangle.fill")
-                .font(.system(size: 50))
+                .font(.system(size: 50)
                 .foregroundColor(isPermissionDenied ? 
-                                 AppTheme.GeneratedColors.textPrimaryOnDark : 
-                                 AppTheme.GeneratedColors.warning)
+                                 Color.textPrimaryOnDark : 
+                                 Color.warning)
             
             PTLabel(isPermissionDenied ? 
                    "Location Access Denied" : "Error", 
@@ -361,10 +362,10 @@ struct RunWorkoutView: View {
                 }
             }
         }
-        .padding(AppTheme.GeneratedSpacing.large)
+        .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            Color(uiColor: UIColor.black.withAlphaComponent(0.85))
+            Color(uiColor: UIColor.black.withAlphaComponent(0.85)
                 .edgesIgnoringSafeArea(.all)
         )
     }
@@ -383,7 +384,7 @@ struct MapViewPlaceholder: View {
         ZStack {
             Color.gray.opacity(0.2)
             Text("Map Area (Optional)")
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .foregroundColor(Color.textSecondary)
         }
     }
 }

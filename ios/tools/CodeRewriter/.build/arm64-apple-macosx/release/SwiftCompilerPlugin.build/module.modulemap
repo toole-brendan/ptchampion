@@ -1,0 +1,4 @@
+module SwiftCompilerPlugin {
+    header "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftCompilerPlugin.build/SwiftCompilerPlugin-Swift.h"
+    requires objc
+}

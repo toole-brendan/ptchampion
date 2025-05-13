@@ -1,6 +1,9 @@
 import SwiftUI
 import PTDesignSystem
 
+fileprivate typealias DSColor = PTDesignSystem.Color
+fileprivate typealias SColor = SwiftUI.Color
+
 struct Spinner: View {
     enum Size: CGFloat {
         case tiny = 16
@@ -23,11 +26,11 @@ struct Spinner: View {
         case secondary
         case light
         
-        var color: Color {
+        var color: SColor {
             switch self {
-            case .primary: return AppTheme.GeneratedColors.primary
-            case .secondary: return AppTheme.GeneratedColors.textSecondary
-            case .light: return AppTheme.GeneratedColors.background
+            case .primary: return DSColor.primary
+            case .secondary: return DSColor.textSecondary
+            case .light: return DSColor.background
             }
         }
     }
@@ -84,17 +87,17 @@ extension Spinner {
     
     static func overlay() -> some View {
         ZStack {
-            Color.black.opacity(0.4)
+            SColor.black.opacity(0.4)
             
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(spacing: Spacing.medium) {
                 Spinner(size: .large)
                 
                 PTLabel("Loading...", style: .body)
-                    .foregroundColor(AppTheme.GeneratedColors.background)
+                    .foregroundColor(DSColor.background)
             }
-            .padding(AppTheme.GeneratedSpacing.large)
-            .background(AppTheme.GeneratedColors.primary.opacity(0.85))
-            .cornerRadius(AppTheme.GeneratedRadius.large)
+            .padding(Spacing.large)
+            .background(DSColor.primary.opacity(0.85))
+            .cornerRadius(CornerRadius.large)
         }
         .ignoresSafeArea()
     }
@@ -121,7 +124,7 @@ struct WithLoading<Content: View>: View {
                     Spinner()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.black.opacity(0.05))
+                .background(SColor.black.opacity(0.05))
             }
         }
     }
@@ -131,9 +134,9 @@ struct WithLoading<Content: View>: View {
 struct Spinner_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 // Size variants
-                HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                HStack(spacing: Spacing.medium) {
                     Spinner(size: .tiny)
                     Spinner(size: .small)
                     Spinner(size: .medium)
@@ -141,14 +144,14 @@ struct Spinner_Previews: PreviewProvider {
                 }
                 
                 // Color variants
-                HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                HStack(spacing: Spacing.medium) {
                     Spinner(variant: .primary)
                     Spinner(variant: .secondary)
                     
                     ZStack {
-                        AppTheme.GeneratedColors.primary
+                        DSColor.primary
                             .frame(width: 80, height: 80)
-                            .cornerRadius(AppTheme.GeneratedRadius.medium)
+                            .cornerRadius(CornerRadius.medium)
                         Spinner(variant: .light)
                     }
                 }
@@ -158,21 +161,21 @@ struct Spinner_Previews: PreviewProvider {
                     VStack {
                         PTLabel("This content is loading", style: .body)
                             .padding()
-                            .background(AppTheme.GeneratedColors.cardBackground)
-                            .cornerRadius(AppTheme.GeneratedRadius.medium)
+                            .background(DSColor.cardBackground)
+                            .cornerRadius(CornerRadius.medium)
                     }
                     .frame(width: 200, height: 100)
                 }
             }
             .padding()
-            .background(AppTheme.GeneratedColors.background.opacity(0.5))
+            .background(DSColor.background.opacity(0.5))
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Light Mode")
             
             // Dark mode preview
             Spinner()
                 .padding()
-                .background(Color.black)
+                .background(SColor.black)
                 .environment(\.colorScheme, .dark)
                 .previewLayout(.sizeThatFits)
                 .previewDisplayName("Dark Mode")

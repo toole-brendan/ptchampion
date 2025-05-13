@@ -23,7 +23,7 @@ struct StyleShowcaseView: View {
                         Text("Heading 4").heading4()
                     }
                     
-                    Divider().background(Color.brassGold.opacity(0.5))
+                    Divider().background(Color.brassGold.opacity(0.5)
                     
                     // Body Text
                     Group {
@@ -32,7 +32,7 @@ struct StyleShowcaseView: View {
                         Text("Body Semibold").bodySemibold()
                     }
                     
-                    Divider().background(Color.brassGold.opacity(0.5))
+                    Divider().background(Color.brassGold.opacity(0.5)
                     
                     // Small Text
                     Group {
@@ -42,7 +42,7 @@ struct StyleShowcaseView: View {
                         Text("LABEL TEXT").label()
                     }
                     
-                    Divider().background(Color.brassGold.opacity(0.5))
+                    Divider().background(Color.brassGold.opacity(0.5)
                     
                     // Special Text
                     Group {
@@ -64,7 +64,7 @@ struct StyleShowcaseView: View {
                     // Base Colors
                     Text("Base Colors").heading4(color: .brassGold)
                     
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100)], spacing: 10) {
                         ColorSwatch(name: "Cream", color: .cream)
                         ColorSwatch(name: "Cream Dark", color: .creamDark)
                         ColorSwatch(name: "Cream Light", color: .creamLight)
@@ -80,7 +80,7 @@ struct StyleShowcaseView: View {
                     // Semantic Colors
                     Text("Semantic Colors").heading4(color: .brassGold)
                     
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100)], spacing: 10) {
                         ColorSwatch(name: "Primary", color: .primary)
                         ColorSwatch(name: "Secondary", color: .secondary)
                         ColorSwatch(name: "Background", color: .background)
@@ -92,7 +92,7 @@ struct StyleShowcaseView: View {
                     // Status Colors
                     Text("Status Colors").heading4(color: .brassGold)
                     
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 10) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 100)], spacing: 10) {
                         ColorSwatch(name: "Success", color: .success)
                         ColorSwatch(name: "Warning", color: .warning)
                         ColorSwatch(name: "Error", color: .error)
@@ -186,7 +186,7 @@ struct StyleShowcaseView: View {
                             }
                             .padding()
                         }
-                        .buttonStyle(PressableCardStyle())
+                        .buttonStyle(PressableCardStyle()
                     }
                 }
                 .padding()
@@ -195,7 +195,7 @@ struct StyleShowcaseView: View {
             .padding(.vertical, ContainerStyle.Spacing.section)
             .container()
         }
-        .background(Color.background.edgesIgnoringSafeArea(.all))
+        .background(Color.background.edgesIgnoringSafeArea(.all)
         .navigationTitle("Style Showcase")
     }
 }

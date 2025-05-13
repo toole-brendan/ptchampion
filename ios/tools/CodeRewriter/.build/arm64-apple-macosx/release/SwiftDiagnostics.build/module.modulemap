@@ -1,0 +1,4 @@
+module SwiftDiagnostics {
+    header "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftDiagnostics.build/SwiftDiagnostics-Swift.h"
+    requires objc
+}

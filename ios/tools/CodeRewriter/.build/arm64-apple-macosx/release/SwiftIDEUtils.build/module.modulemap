@@ -1,0 +1,4 @@
+module SwiftIDEUtils {
+    header "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftIDEUtils.build/SwiftIDEUtils-Swift.h"
+    requires objc
+}

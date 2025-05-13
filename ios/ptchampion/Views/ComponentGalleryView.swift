@@ -1,6 +1,8 @@
 import SwiftUI
 import PTDesignSystem
 
+// Using global DSColor alias from PTDesignSystem; no need for local typealiases.
+
 /// A comprehensive showcase of all UI components used in the app
 /// Helps maintain design consistency and provides a quick way to test component appearance
 struct ComponentGalleryView: View {
@@ -44,6 +46,7 @@ struct ComponentGalleryView: View {
             .navigationTitle("Component Gallery")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingSettingsSheet) {
+            .container()
                 // Display settings sheet when triggered
                 let mockAuth: AuthViewModel = {
                     let auth = AuthViewModel()
@@ -68,7 +71,7 @@ struct ComponentGalleryView: View {
     
     private var componentSelector: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            HStack(spacing: Spacing.medium) {
                 ForEach(0..<components.count, id: \.self) { index in
                     Button(action: {
                         withAnimation {
@@ -76,18 +79,18 @@ struct ComponentGalleryView: View {
                         }
                     }) {
                         PTLabel(components[index], style: .bodyBold)
-                            .foregroundColor(selectedComponent == index ? AppTheme.GeneratedColors.primary : AppTheme.GeneratedColors.textSecondary)
-                            .padding(.vertical, AppTheme.GeneratedSpacing.small)
-                            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
-                            .background(selectedComponent == index ? AppTheme.GeneratedColors.primary.opacity(0.2) : Color.clear)
-                            .cornerRadius(AppTheme.GeneratedRadius.full)
+                            .foregroundColor(selectedComponent == index ? DSColor.primary : DSColor.textSecondary)
+                            .padding(.vertical, Spacing.small)
+                            .padding(.horizontal, Spacing.medium)
+                            .background(selectedComponent == index ? DSColor.primary.opacity(0.2) : Color.clear)
+                            .cornerRadius(CornerRadius.full)
                     }
                 }
             }
-            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
+            .padding(.horizontal, Spacing.medium)
         }
-        .padding(.vertical, AppTheme.GeneratedSpacing.small)
-        .background(AppTheme.GeneratedColors.cardBackground)
+        .padding(.vertical, Spacing.small)
+        .background(DSColor.background.opacity(0.5))
     }
 }
 
@@ -101,7 +104,7 @@ struct ComponentGalleryContentView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 switch selectedComponent {
                 case 0:
                     buttonsSection
@@ -133,16 +136,16 @@ struct ComponentGalleryContentView: View {
             }
             .padding()
         }
-        .background(AppTheme.GeneratedColors.background.opacity(0.5))
+        .background(DSColor.background.opacity(0.5))
     }
     
     // MARK: - Component Sections
     
     private var buttonsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Buttons", description: "Button components with different variants")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(spacing: Spacing.medium) {
                 // Use a typed local variable to resolve ambiguity
                 let coreButtonStyle: PTButton.ButtonStyle = .primary
                 PTButton("Primary Button", style: coreButtonStyle) {}
@@ -174,9 +177,9 @@ struct ComponentGalleryContentView: View {
                 // Since PTButton might not have loading state built in yet, 
                 // you may need to create your own loading button or extend PTButton
                 
-                PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.small)
+                PTSeparator().padding(.vertical, Spacing.small)
                 
-                HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                HStack(spacing: Spacing.medium) {
                     // Explicitly specify the style to avoid ambiguity
                     let defaultStyle: PTButton.ExtendedStyle = .primary
                     
@@ -199,13 +202,13 @@ struct ComponentGalleryContentView: View {
     }
     
     private var textFieldsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Text Fields", description: "Text input components with different states")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(spacing: Spacing.medium) {
                 // Standard PTTextField
                 PTLabel("Standard PTTextField", style: .bodyBold)
-                    .padding(.top, AppTheme.GeneratedSpacing.small)
+                    .padding(.top, Spacing.small)
                 
                 // Empty state
                 PTTextField(
@@ -231,7 +234,7 @@ struct ComponentGalleryContentView: View {
                 
                 // FocusableTextField demonstration
                 PTLabel("FocusableTextField (with focus ring)", style: .bodyBold)
-                    .padding(.top, AppTheme.GeneratedSpacing.medium)
+                    .padding(.top, Spacing.medium)
                 
                 FocusableTextField(
                     "Email Address",
@@ -251,7 +254,7 @@ struct ComponentGalleryContentView: View {
                 
                 // Advanced usage
                 PTLabel("PTTextField with focus extension", style: .bodyBold)
-                    .padding(.top, AppTheme.GeneratedSpacing.medium)
+                    .padding(.top, Spacing.medium)
                 
                 @FocusState var isAdvancedFieldFocused: Bool
                 
@@ -267,11 +270,11 @@ struct ComponentGalleryContentView: View {
     }
     
     private var metricCardsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Metric Cards", description: "Cards displaying key metrics and stats")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(spacing: Spacing.medium) {
+                HStack(spacing: Spacing.medium) {
                     MetricCardView(
                         MetricData(
                             title: "TOTAL WORKOUTS",
@@ -305,10 +308,10 @@ struct ComponentGalleryContentView: View {
     }
     
     private var workoutCardsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Workout Cards", description: "Cards displaying workout details")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(spacing: Spacing.medium) {
                 WorkoutCard(
                     title: "Push-ups Workout",
                     subtitle: "Morning Routine",
@@ -332,21 +335,21 @@ struct ComponentGalleryContentView: View {
     }
     
     private var badgesSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Badges", description: "Status indicators and tags")
             
-            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                PTCard {
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(alignment: .leading, spacing: Spacing.medium) {
+VStack {
+                    VStack(alignment: .leading, spacing: Spacing.medium) {
                         PTLabel("Badge Variants", style: .bodyBold)
                         
-                        HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                        HStack(spacing: Spacing.large) {
                             Badge(text: "Primary")
                             Badge(text: "Secondary", variant: .secondary)
                             Badge(text: "Outline", variant: .outline)
                         }
                         
-                        HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                        HStack(spacing: Spacing.large) {
                             Badge(text: "Destructive", variant: .destructive)
                             Badge(text: "Success", variant: .success)
                         }
@@ -354,11 +357,11 @@ struct ComponentGalleryContentView: View {
                     .padding()
                 }
                 
-                PTCard {
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+VStack {
+                    VStack(alignment: .leading, spacing: Spacing.medium) {
                         PTLabel("Status & Counts", style: .bodyBold)
                         
-                        HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                        HStack(spacing: Spacing.large) {
                             Badge(text: "With Icon", icon: Image(systemName: "checkmark.circle.fill"))
                             Badge.status("Active", isActive: true)
                             Badge.status("Inactive", isActive: false)
@@ -368,14 +371,16 @@ struct ComponentGalleryContentView: View {
                     .padding()
                 }
             }
+            .card()
+            .card()
         }
     }
     
     private var toastsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Toasts", description: "Notification banners and alerts")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(spacing: Spacing.medium) {
                 // Show different toast types
                 Toast(type: .success, title: "Success", message: "Your action was completed successfully.")
                 Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
@@ -389,20 +394,22 @@ struct ComponentGalleryContentView: View {
     }
     
     private var spinnersSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Spinners", description: "Loading indicators")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 // Size variants
-                PTCard {
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+VStack {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         PTLabel("Sizes", style: .bodyBold)
                         
-                        HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                        HStack(spacing: Spacing.large) {
                             VStack {
                                 Spinner(size: .tiny)
                                 PTLabel("Tiny", style: .caption)
                             }
+                            .card()
+                            .card()
                             
                             VStack {
                                 Spinner(size: .small)
@@ -420,15 +427,19 @@ struct ComponentGalleryContentView: View {
                             }
                         }
                     }
+                    .card()
+                    .card()
                     .padding()
                 }
+                .card()
+                .card()
                 
                 // Color variants
-                PTCard {
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+VStack {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         PTLabel("Variants", style: .bodyBold)
                         
-                        HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                        HStack(spacing: Spacing.large) {
                             VStack {
                                 Spinner(variant: .primary)
                                 PTLabel("Primary", style: .caption)
@@ -440,24 +451,36 @@ struct ComponentGalleryContentView: View {
                             }
                             
                             ZStack {
-                                AppTheme.GeneratedColors.primary
+                                DSColor.primary
                                     .frame(width: 60, height: 60)
-                                    .cornerRadius(AppTheme.GeneratedRadius.medium)
+                                    .cornerRadius(CornerRadius.medium)
                                 
                                 VStack {
                                     Spinner(variant: .light)
                                     PTLabel("Light", style: .caption)
-                                        .foregroundColor(AppTheme.GeneratedColors.background)
+                                        .foregroundColor(DSColor.background)
                                 }
+                                .card()
+                                .card()
+                                .card()
+                                .card()
+                                .card()
+                                .card()
+                                .card()
+                                .card()
+                                .card()
+                                .card()
+                                .card()
                             }
                         }
+                        .card()
                     }
                     .padding()
                 }
                 
                 // WithLoading example
-                PTCard {
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+VStack {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         PTLabel("WithLoading Wrapper", style: .bodyBold)
                         
                         WithLoading(isLoading: true) {
@@ -468,6 +491,8 @@ struct ComponentGalleryContentView: View {
                             }
                         }
                     }
+                    .card()
+                    .card()
                     .padding()
                 }
             }
@@ -475,10 +500,10 @@ struct ComponentGalleryContentView: View {
     }
     
     private var headersSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Headers", description: "Dashboard and section headers")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 DashboardHeader.greeting(userName: "John Doe")
                 
                 DashboardHeader.section(title: "Your Workouts", subtitle: "Recent activity")
@@ -491,7 +516,7 @@ struct ComponentGalleryContentView: View {
                             Image(systemName: "gear")
                                 .resizable()
                                 .frame(width: 24, height: 24)
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .foregroundColor(DSColor.brassGold)
                         }
                     }
                 )
@@ -500,11 +525,11 @@ struct ComponentGalleryContentView: View {
     }
     
     private var listsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Lists", description: "Workout history and leaderboards")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+            VStack(spacing: Spacing.medium) {
+                VStack(alignment: .leading, spacing: Spacing.small) {
                     PTLabel("Workout History", style: .bodyBold)
                     
                     // Convert WorkoutHistory to WorkoutResultSwiftData
@@ -522,10 +547,10 @@ struct ComponentGalleryContentView: View {
                         .frame(height: 120)
                 }
                 .padding()
-                .background(AppTheme.GeneratedColors.cardBackground)
-                .cornerRadius(AppTheme.GeneratedRadius.medium)
+                .background(DSColor.cardBackground)
+                .cornerRadius(CornerRadius.medium)
                 
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                VStack(alignment: .leading, spacing: Spacing.small) {
                     PTLabel("Leaderboard", style: .bodyBold)
                     
                     LeaderboardRow(
@@ -553,17 +578,17 @@ struct ComponentGalleryContentView: View {
                     )
                 }
                 .padding()
-                .background(AppTheme.GeneratedColors.cardBackground)
-                .cornerRadius(AppTheme.GeneratedRadius.medium)
+                .background(DSColor.cardBackground)
+                .cornerRadius(CornerRadius.medium)
             }
         }
     }
     
     private var sheetsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Modal Sheets", description: "Settings and filters")
             
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(spacing: Spacing.medium) {
                 // Use a typed local variable to resolve ambiguity
                 let coreButtonStyle: PTButton.ButtonStyle = .primary
                 PTButton("Show Settings Sheet", 
@@ -573,76 +598,76 @@ struct ComponentGalleryContentView: View {
                 }
                 
                 // Show preview of settings content
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
                     PTLabel("Settings Preview", style: .bodyBold)
                     
                     Image("settings_preview")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(height: 200)
-                        .cornerRadius(AppTheme.GeneratedRadius.medium)
+                        .cornerRadius(CornerRadius.medium)
                         .overlay(
-                            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.medium)
-                                .stroke(AppTheme.GeneratedColors.textTertiary.opacity(0.3), lineWidth: 1)
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .stroke(DSColor.textTertiary.opacity(0.3), lineWidth: 1)
                         )
                         .padding(.horizontal)
                 }
                 .padding()
-                .background(AppTheme.GeneratedColors.cardBackground)
-                .cornerRadius(AppTheme.GeneratedRadius.medium)
+                .background(DSColor.cardBackground)
+                .cornerRadius(CornerRadius.medium)
             }
         }
     }
     
     private var typographySection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Typography", description: "Text styles and fonts")
             
-            PTCard {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+VStack {
+                VStack(alignment: .leading, spacing: Spacing.medium) {
                     Group {
                         PTLabel.sized("Heading 1", style: .heading, size: .large)
                         PTLabel.sized("Heading 2", style: .heading, size: .medium)
                         PTLabel.sized("Heading 3", style: .heading, size: .small)
                         
-                        PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
+                        PTSeparator().padding(.vertical, Spacing.extraSmall)
                         
                         PTLabel.sized("Subheading 1", style: .subheading, size: .large)
                         PTLabel.sized("Subheading 2", style: .subheading, size: .medium)
                         
-                        PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
+                        PTSeparator().padding(.vertical, Spacing.extraSmall)
                         
                         PTLabel("Body Text", style: .body)
                         PTLabel("Body Bold", style: .bodyBold)
                         
-                        PTSeparator().padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
+                        PTSeparator().padding(.vertical, Spacing.extraSmall)
                         
                         PTLabel("Caption", style: .caption)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(AppTheme.GeneratedSpacing.medium)
+                    .padding(Spacing.medium)
                 }
             }
         }
     }
     
     private var colorsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+        VStack(alignment: .leading, spacing: Spacing.large) {
             sectionHeader(title: "Colors", description: "Design system color palette")
             
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: AppTheme.GeneratedSpacing.medium) {
-                colorSwatch("Background", color: AppTheme.GeneratedColors.background)
-                colorSwatch("Card Background", color: AppTheme.GeneratedColors.cardBackground)
-                colorSwatch("Primary", color: AppTheme.GeneratedColors.primary)
-                colorSwatch("Primary Light", color: AppTheme.GeneratedColors.primary.opacity(0.2))
-                colorSwatch("Secondary", color: AppTheme.GeneratedColors.secondary)
-                colorSwatch("Accent", color: AppTheme.GeneratedColors.accent)
-                colorSwatch("Success", color: AppTheme.GeneratedColors.success)
-                colorSwatch("Error", color: AppTheme.GeneratedColors.error)
-                colorSwatch("Warning", color: AppTheme.GeneratedColors.warning)
-                colorSwatch("Text Primary", color: AppTheme.GeneratedColors.textPrimary)
-                colorSwatch("Text Secondary", color: AppTheme.GeneratedColors.textSecondary)
-                colorSwatch("Text Tertiary", color: AppTheme.GeneratedColors.textTertiary)
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.medium) {
+                colorSwatch("Background", color: DSColor.background)
+                colorSwatch("Card Background", color: DSColor.cardBackground)
+                colorSwatch("Primary", color: DSColor.primary)
+                colorSwatch("Primary Light", color: DSColor.primary.opacity(0.2))
+                colorSwatch("Secondary", color: DSColor.secondary)
+                colorSwatch("Accent", color: DSColor.accent)
+                colorSwatch("Success", color: DSColor.success)
+                colorSwatch("Error", color: DSColor.error)
+                colorSwatch("Warning", color: DSColor.warning)
+                colorSwatch("Text Primary", color: DSColor.textPrimary)
+                colorSwatch("Text Secondary", color: DSColor.textSecondary)
+                colorSwatch("Text Tertiary", color: DSColor.textTertiary)
             }
         }
     }
@@ -650,24 +675,24 @@ struct ComponentGalleryContentView: View {
     // MARK: - Helper Views
     
     private func sectionHeader(title: String, description: String) -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.extraSmall) {
+        VStack(alignment: .leading, spacing: Spacing.extraSmall) {
             PTLabel(title, style: .heading)
-                .foregroundColor(AppTheme.GeneratedColors.primary)
+                .foregroundColor(DSColor.primary)
             
             PTLabel(description, style: .body)
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .foregroundColor(DSColor.textSecondary)
         }
     }
     
     private func colorSwatch(_ name: String, color: Color) -> some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.extraSmall) {
+        VStack(spacing: Spacing.extraSmall) {
             Rectangle()
                 .fill(color)
                 .frame(height: 60)
-                .cornerRadius(AppTheme.GeneratedRadius.small)
+                .cornerRadius(CornerRadius.small)
             
             PTLabel.sized(name, style: .caption, size: .medium)
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .foregroundColor(DSColor.textSecondary)
         }
     }
 }
@@ -684,4 +709,4 @@ struct ComponentGalleryView_Previews: PreviewProvider {
                 .previewDisplayName("Dark Mode")
         }
     }
-} 
+}

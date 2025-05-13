@@ -69,7 +69,7 @@ struct WorkoutDetailView: View {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute, .second]
         formatter.zeroFormattingBehavior = .pad
-        return formatter.string(from: TimeInterval(seconds)) ?? "00:00:00"
+        return formatter.string(from: TimeInterval(seconds) ?? "00:00:00"
     }
     
     // Helper to format distance (assuming miles for now, can be enhanced)
@@ -130,19 +130,19 @@ struct WorkoutDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(alignment: .leading, spacing: Spacing.large) {
                 PTLabel("Workout Summary", style: .heading)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                    .padding(.bottom, Spacing.small)
 
                 WorkoutDetailInfoRow(label: "Type:", value: workoutResult.exerciseType.capitalized)
-                WorkoutDetailInfoRow(label: "Date:", value: workoutResult.startTime, style: .dateTime.month().day().year().hour().minute())
+                WorkoutDetailInfoRow(label: "Date:", value: workoutResult.startTime, style: .dateTime.month().day().year().hour().minute()
                 WorkoutDetailInfoRow(label: "Duration:", value: formatDuration(workoutResult.durationSeconds))
                 
                 if workoutResult.exerciseType.lowercased() == "run" {
                     WorkoutDetailInfoRow(label: "Distance:", value: formatDistance(workoutResult.distanceMeters))
-                    if isLongestRunPR { Text("🎉 Longest Run PR!").font(.caption).foregroundColor(.green).padding(.leading) }
+                    if isLongestRunPR { Text("🎉 Longest Run PR!").caption().foregroundColor(.green).padding(.leading) }
                     WorkoutDetailInfoRow(label: "Avg Pace:", value: formatPace(distanceMeters: workoutResult.distanceMeters, durationSeconds: workoutResult.durationSeconds))
-                    if isFastestOverallPacePR { Text("🎉 Fastest Overall Pace PR!").font(.caption).foregroundColor(.green).padding(.leading) }
+                    if isFastestOverallPacePR { Text("🎉 Fastest Overall Pace PR!").caption().foregroundColor(.green).padding(.leading) }
                     
                     // Show heart rate and cadence summaries for runs only if we have data
                     if avgHeartRate > 0 {
@@ -157,10 +157,10 @@ struct WorkoutDetailView: View {
                     // Device Used Section
                     if let device = deviceUsed {
                         Divider()
-                            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+                            .padding(.vertical, Spacing.small)
                             
                         PTLabel("Tracking Device", style: .subheading)
-                            .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                            .padding(.bottom, Spacing.small)
                             
                         HStack(spacing: 12) {
                             Image(systemName: device.lowercased().contains("watch") ? "applewatch" : "antenna.radiowaves.left.and.right")
@@ -170,11 +170,11 @@ struct WorkoutDetailView: View {
                             
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(device)
-                                    .font(.headline)
+                                    .heading4()
                                 
                                 if let unit = distanceUnitUsed {
                                     Text("Distance Unit: \(unit)")
-                                        .font(.caption)
+                                        .caption()
                                         .foregroundColor(.secondary)
                                 }
                             }
@@ -182,21 +182,21 @@ struct WorkoutDetailView: View {
                             Spacer()
                         }
                         .padding()
-                        .background(Color(.secondarySystemBackground))
+                        .background(Color(.secondarySystemBackground)
                         .cornerRadius(12)
                     }
                 }
                 
                 if let score = workoutResult.score {
                     WorkoutDetailInfoRow(label: "Score:", value: String(format: "%.1f%%", score))
-                    if isHighestScorePR { Text("🎉 Highest Score PR!").font(.caption).foregroundColor(.green).padding(.leading) }
+                    if isHighestScorePR { Text("🎉 Highest Score PR!").caption().foregroundColor(.green).padding(.leading) }
                 } else if workoutResult.exerciseType.lowercased() != "run" {
                     WorkoutDetailInfoRow(label: "Score:", value: "N/A")
                 }
                 
                 if let repCount = workoutResult.repCount {
                     WorkoutDetailInfoRow(label: "Reps:", value: "\(repCount)")
-                    if isMostRepsPR { Text("🎉 Most Reps PR!").font(.caption).foregroundColor(.green).padding(.leading) }
+                    if isMostRepsPR { Text("🎉 Most Reps PR!").caption().foregroundColor(.green).padding(.leading) }
                 }
                 
                 // Heart Rate chart for runs
@@ -205,7 +205,7 @@ struct WorkoutDetailView: View {
                         .padding(.vertical)
                     
                     PTLabel("Heart Rate", style: .heading)
-                        .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                        .padding(.bottom, Spacing.small)
                     
                     heartRateChart
                         .frame(height: 200)
@@ -215,7 +215,7 @@ struct WorkoutDetailView: View {
                 // Pace chart for runs
                 if workoutResult.exerciseType.lowercased() == "run" && !pacePoints.isEmpty {
                     PTLabel("Pace", style: .heading)
-                        .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                        .padding(.bottom, Spacing.small)
                     
                     paceChart
                         .frame(height: 200)
@@ -225,7 +225,7 @@ struct WorkoutDetailView: View {
                 // Cadence chart for runs
                 if workoutResult.exerciseType.lowercased() == "run" && !cadencePoints.isEmpty {
                     PTLabel("Cadence", style: .heading)
-                        .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                        .padding(.bottom, Spacing.small)
                     
                     cadenceChart
                         .frame(height: 200)
@@ -233,14 +233,14 @@ struct WorkoutDetailView: View {
                 }
                 
                 // Show rep breakdown for strength workouts
-                if ["pushup", "situp", "pullup"].contains(workoutResult.exerciseType.lowercased()) {
+                if ["pushup", "situp", "pullup"].contains(workoutResult.exerciseType.lowercased() {
                     // Only fetch rep data if this is a strength workout with reps
                     if let repCount = workoutResult.repCount, repCount > 0 {
                         Divider()
                             .padding(.vertical)
                         
                         PTLabel("Rep Breakdown", style: .heading)
-                            .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                            .padding(.bottom, Spacing.small)
                         
                         if isLoadingRepDetails {
                             ProgressView("Loading rep details...")
@@ -265,7 +265,7 @@ struct WorkoutDetailView: View {
         .navigationTitle("Workout Details")
         .onAppear {
             // Load rep details for strength workouts
-            if ["pushup", "situp", "pullup"].contains(workoutResult.exerciseType.lowercased()) {
+            if ["pushup", "situp", "pullup"].contains(workoutResult.exerciseType.lowercased() {
                 loadRepDetails()
             }
             
@@ -315,34 +315,34 @@ struct WorkoutDetailView: View {
             }
             
             if !heartRatePoints.isEmpty {
-                RuleMark(y: .value("Avg HR", avgHeartRate))
-                    .foregroundStyle(Color.orange.opacity(0.5))
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
+                RuleMark(y: .value("Avg HR", avgHeartRate)
+                    .foregroundStyle(Color.orange.opacity(0.5)
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5])
                     .annotation(position: .top, alignment: .trailing) {
                         Text("Avg \(avgHeartRate) BPM")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.orange)
                     }
             }
         }
         .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 6)) { value in
+            AxisMarks(values: .automatic(desiredCount: 6) { value in
                 AxisGridLine()
                 AxisValueLabel {
                     if let minutes = value.as(Double.self) {
                         Text("\(Int(minutes))m")
-                            .font(.caption)
+                            .caption()
                     }
                 }
             }
         }
         .chartYAxis {
-            AxisMarks(position: .leading, values: .automatic(desiredCount: 5)) { value in
+            AxisMarks(position: .leading, values: .automatic(desiredCount: 5) { value in
                 AxisGridLine()
                 AxisValueLabel {
                     if let bpm = value.as(Int.self) {
                         Text("\(bpm)")
-                            .font(.caption)
+                            .caption()
                     }
                 }
             }
@@ -361,12 +361,12 @@ struct WorkoutDetailView: View {
             }
         }
         .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 6)) { value in
+            AxisMarks(values: .automatic(desiredCount: 6) { value in
                 AxisGridLine()
                 AxisValueLabel {
                     if let minutes = value.as(Double.self) {
                         Text("\(Int(minutes))m")
-                            .font(.caption)
+                            .caption()
                     }
                 }
             }
@@ -377,7 +377,7 @@ struct WorkoutDetailView: View {
                     AxisGridLine()
                     AxisValueLabel {
                         Text(formatPaceFromMetersPerSecond(paceValue))
-                            .font(.caption)
+                            .caption()
                     }
                 }
             }
@@ -401,29 +401,29 @@ struct WorkoutDetailView: View {
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
                     .annotation(position: .top, alignment: .trailing) {
                         Text("Avg \(avgCadence) spm")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.purple)
                     }
             }
         }
         .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 6)) { value in
+            AxisMarks(values: .automatic(desiredCount: 6) { value in
                 AxisGridLine()
                 AxisValueLabel {
                     if let minutes = value.as(Double.self) {
                         Text("\(Int(minutes))m")
-                            .font(.caption)
+                            .caption()
                     }
                 }
             }
         }
         .chartYAxis {
-            AxisMarks(position: .leading, values: .automatic(desiredCount: 5)) { value in
+            AxisMarks(position: .leading, values: .automatic(desiredCount: 5) { value in
                 AxisGridLine()
                 AxisValueLabel {
                     if let cadence = value.as(Int.self) {
                         Text("\(cadence)")
-                            .font(.caption)
+                            .caption()
                     }
                 }
             }
@@ -450,18 +450,18 @@ struct WorkoutDetailView: View {
         ForEach(repTextDetails) { item in
             HStack(alignment: .top) {
                 Text("Rep \(item.repNumber):")
-                    .font(.subheadline)
+                    .small()
                     .fontWeight(.semibold)
                     .frame(width: 60, alignment: .leading)
                 
                 Text(String(format: "%.1f%%", item.formQuality))
-                    .font(.subheadline)
+                    .small()
                     .foregroundColor(item.formQuality >= 50 ? .green : .red)
                     .frame(width: 60, alignment: .leading)
                 
                 if let phase = item.phase {
                     Text("Phase: \(phase)")
-                        .font(.subheadline)
+                        .small()
                         .foregroundColor(.secondary)
                 }
                 
@@ -558,7 +558,7 @@ struct WorkoutDetailInfoRow: View {
     var dateStyle: Date.FormatStyle? = nil // Optional Date.FormatStyle
 
     // Overloaded initializer for Date values
-    init(label: String, value: Date, style: Date.FormatStyle = .dateTime.day().month().year().hour().minute()) {
+    init(label: String, value: Date, style: Date.FormatStyle = .dateTime.day().month().year().hour().minute() {
         self.label = label
         self.value = value.formatted(style)
         self.dateStyle = style

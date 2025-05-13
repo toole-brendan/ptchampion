@@ -41,7 +41,7 @@ class WasmerGrading {
             let importObject = ImportObject()
             
             // TODO: Add any required environment functions
-            // importObject.register("env", "log", Function(...))
+            // importObject.register("env", "log", Function(...)
             
             // Instantiate the module
             wasmerInstance = try Instance(module: wasmerModule!, importObject: importObject)

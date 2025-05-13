@@ -69,7 +69,7 @@ class NetworkClient {
         
         // Print all keys in the main bundle's info dictionary
         if let infoDict = bundle.infoDictionary {
-            print("NetworkClient Debug: All Info.plist keys: \(infoDict.keys.sorted())")
+            print("NetworkClient Debug: All Info.plist keys: \(infoDict.keys.sorted()")
         } else {
             print("NetworkClient Debug: Could not access Info.plist dictionary")
         }

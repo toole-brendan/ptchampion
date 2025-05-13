@@ -10,7 +10,7 @@ class DesignSystemSnapshotTests: XCTestCase {
         
         // Test in Light and Dark mode
         assertSnapshot(matching: UIHostingController(rootView: buttonVariants), as: .image(on: .iPhone13), named: "buttons-light")
-        assertSnapshot(matching: UIHostingController(rootView: buttonVariants.preferredColorScheme(.dark)), as: .image(on: .iPhone13), named: "buttons-dark")
+        assertSnapshot(matching: UIHostingController(rootView: buttonVariants.preferredColorScheme(.dark), as: .image(on: .iPhone13), named: "buttons-dark")
     }
     
     func testMetricCardVariants() {
@@ -18,7 +18,7 @@ class DesignSystemSnapshotTests: XCTestCase {
         
         // Test in Light and Dark mode
         assertSnapshot(matching: UIHostingController(rootView: metricCards), as: .image(on: .iPhone13), named: "metric-cards-light")
-        assertSnapshot(matching: UIHostingController(rootView: metricCards.preferredColorScheme(.dark)), as: .image(on: .iPhone13), named: "metric-cards-dark")
+        assertSnapshot(matching: UIHostingController(rootView: metricCards.preferredColorScheme(.dark), as: .image(on: .iPhone13), named: "metric-cards-dark")
     }
     
     func testTextFieldVariants() {
@@ -26,7 +26,7 @@ class DesignSystemSnapshotTests: XCTestCase {
         
         // Test in Light and Dark mode
         assertSnapshot(matching: UIHostingController(rootView: textFields), as: .image(on: .iPhone13), named: "text-fields-light")
-        assertSnapshot(matching: UIHostingController(rootView: textFields.preferredColorScheme(.dark)), as: .image(on: .iPhone13), named: "text-fields-dark")
+        assertSnapshot(matching: UIHostingController(rootView: textFields.preferredColorScheme(.dark), as: .image(on: .iPhone13), named: "text-fields-dark")
     }
     
     func testColorTokens() {
@@ -44,7 +44,7 @@ struct ButtonVariantsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text("Button Variants")
-                    .font(AppTheme.GeneratedTypography.heading2())
+                    .font(.heading2()())
                 
                 Group {
                     Button("Primary Button") {}
@@ -59,7 +59,7 @@ struct ButtonVariantsView: View {
                         .ptButtonStyle(variant: .secondary)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(AppTheme.GeneratedColors.textPrimary, lineWidth: 1)
+                                .stroke(Color.textPrimary, lineWidth: 1)
                         )
                         .frame(maxWidth: .infinity)
                     
@@ -73,7 +73,7 @@ struct ButtonVariantsView: View {
                 }
                 
                 Text("Button Sizes")
-                    .font(AppTheme.GeneratedTypography.heading2())
+                    .font(.heading2()())
                 
                 Group {
                     Button("Small Button") {}
@@ -92,7 +92,7 @@ struct ButtonVariantsView: View {
                 }
                 
                 Text("Loading State")
-                    .font(AppTheme.GeneratedTypography.heading2())
+                    .font(.heading2()())
                 
                 Button("Loading Button") {}
                     .ptButtonStyle(isLoading: true)
@@ -100,7 +100,7 @@ struct ButtonVariantsView: View {
             }
             .padding()
         }
-        .background(AppTheme.GeneratedColors.background)
+        .background(Color.background)
     }
 }
 
@@ -109,7 +109,7 @@ struct MetricCardVariantsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text("Metric Cards")
-                    .font(AppTheme.GeneratedTypography.heading2())
+                    .font(.heading2()())
                 
                 MetricCardView(
                     .init(
@@ -142,7 +142,7 @@ struct MetricCardVariantsView: View {
             }
             .padding()
         }
-        .background(AppTheme.GeneratedColors.background)
+        .background(Color.background)
     }
 }
 
@@ -155,7 +155,7 @@ struct TextFieldVariantsView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 Text("Text Fields")
-                    .font(AppTheme.GeneratedTypography.heading2())
+                    .font(.heading2()())
                 
                 FocusableTextField(
                     text: $text1,
@@ -176,32 +176,32 @@ struct TextFieldVariantsView: View {
             }
             .padding()
         }
-        .background(AppTheme.GeneratedColors.background)
+        .background(Color.background)
     }
 }
 
 struct ColorTokensView: View {
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.itemSpacing) {
+            VStack(alignment: .leading, spacing: Spacing.itemSpacing) {
                 Text("Color Tokens")
-                    .font(AppTheme.GeneratedTypography.heading2())
+                    .font(.heading2()())
                 
-                ColorSwatch("deepOps", color: AppTheme.GeneratedColors.deepOps)
-                ColorSwatch("brassGold", color: AppTheme.GeneratedColors.brassGold)
-                ColorSwatch("armyTan", color: AppTheme.GeneratedColors.armyTan)
-                ColorSwatch("oliveMist", color: AppTheme.GeneratedColors.oliveMist)
-                ColorSwatch("commandBlack", color: AppTheme.GeneratedColors.commandBlack)
-                ColorSwatch("tacticalGray", color: AppTheme.GeneratedColors.tacticalGray)
-                ColorSwatch("cream", color: AppTheme.GeneratedColors.cream)
-                ColorSwatch("success", color: AppTheme.GeneratedColors.success)
-                ColorSwatch("warning", color: AppTheme.GeneratedColors.warning)
-                ColorSwatch("error", color: AppTheme.GeneratedColors.error)
-                ColorSwatch("info", color: AppTheme.GeneratedColors.info)
+                ColorSwatch("deepOps", color: Color.deepOps)
+                ColorSwatch("brassGold", color: Color.brassGold)
+                ColorSwatch("armyTan", color: Color.armyTan)
+                ColorSwatch("oliveMist", color: Color.oliveMist)
+                ColorSwatch("commandBlack", color: Color.commandBlack)
+                ColorSwatch("tacticalGray", color: Color.tacticalGray)
+                ColorSwatch("cream", color: Color.cream)
+                ColorSwatch("success", color: Color.success)
+                ColorSwatch("warning", color: Color.warning)
+                ColorSwatch("error", color: Color.error)
+                ColorSwatch("info", color: Color.info)
             }
             .padding()
         }
-        .background(AppTheme.GeneratedColors.background)
+        .background(Color.background)
     }
 }
 
@@ -216,17 +216,17 @@ struct ColorSwatch: View {
     
     var body: some View {
         HStack {
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
+            RoundedRectangle(cornerRadius: CornerRadius.small)
                 .fill(color)
                 .frame(width: 40, height: 40)
                 .overlay(
-                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
+                    RoundedRectangle(cornerRadius: CornerRadius.small)
                         .stroke(Color.gray.opacity(0.3), lineWidth: 1)
                 )
             
             Text(name)
-                .font(AppTheme.GeneratedTypography.body())
-                .padding(.leading, AppTheme.GeneratedSpacing.small)
+                .font(.body()())
+                .padding(.leading, Spacing.small)
         }
     }
 } 

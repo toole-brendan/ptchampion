@@ -76,16 +76,16 @@ struct FontDebugView: View {
             Section(header: Text("Sample Text")) {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Futura PT Book")
-                        .font(.custom("FuturaPT-Book", size: 16, relativeTo: .body))
+                        .font(.custom("FuturaPT-Book", size: 16, relativeTo: .body)
                     
                     Text("Futura PT Medium")
-                        .font(.custom("FuturaPT-Medium", size: 16, relativeTo: .body))
+                        .font(.custom("FuturaPT-Medium", size: 16, relativeTo: .body)
                     
                     Text("Futura PT Demi")
-                        .font(.custom("FuturaPT-Demi", size: 16, relativeTo: .body))
+                        .font(.custom("FuturaPT-Demi", size: 16, relativeTo: .body)
                     
                     Text("Futura PT Bold")
-                        .font(.custom("FuturaPT-Bold", size: 16, relativeTo: .body))
+                        .font(.custom("FuturaPT-Bold", size: 16, relativeTo: .body)
                 }
                 .padding()
             }

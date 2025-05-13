@@ -299,7 +299,7 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
                 minElbowAngleThisRep = 180.0
                 wentLowEnoughThisRep = false
                 
-                // print("PUSHUP REP COMPLETED: #\(_repCount) with quality \(formQuality)")
+                print("⚙️ Pushup rep \(_repCount) scored \(formQuality * 100)%")
                 return .repCompleted(formQuality: formQuality)
             } else {
                 // Didn't go low enough on the previous down phase
@@ -372,9 +372,9 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
     // Helper to average angles, ignoring nil values
     private func averageAngle(_ angle1: CGFloat?, _ angle2: CGFloat?) -> CGFloat? {
         switch (angle1, angle2) {
-        case (.some(let a1), .some(let a2)): return (a1 + a2) / 2.0
+        case (.some(let a1), .some(let a2): return (a1 + a2) / 2.0
         case (.some(let a1), .none): return a1
-        case (.none, .some(let a2)): return a2
+        case (.none, .some(let a2): return a2
         case (.none, .none): return nil
         }
     }

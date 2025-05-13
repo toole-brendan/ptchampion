@@ -1,12 +1,15 @@
+// TODO: Apply .container() to root ScrollView or VStack
 import SwiftUI
 import PTDesignSystem
 import SwiftData
 import Foundation
 
 struct DashboardView: View {
+    // TODO: Add .container() modifier to the outermost VStack to ensure consistent layout
+    
     // Keep track of the constants we need
-    private static let cardGap: CGFloat = AppTheme.GeneratedSpacing.itemSpacing
-    private static let globalPadding: CGFloat = AppTheme.GeneratedSpacing.contentPadding
+    private static let cardGap: CGFloat = Spacing.itemSpacing
+    private static let globalPadding: CGFloat = Spacing.contentPadding
     
     // Use the correct type for AuthViewModel with full qualifier
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -33,8 +36,8 @@ struct DashboardView: View {
                 RadialGradient(
                     gradient: Gradient(colors: [
                         // Make center slightly lighter than main background, or use a very light compatible color
-                        AppTheme.GeneratedColors.background.opacity(0.9), // Assuming background is opaque, making it slightly more transparent in center effectively lightens against a base
-                        AppTheme.GeneratedColors.background
+                        Color.background.opacity(0.9), // Assuming background is opaque, making it slightly more transparent in center effectively lightens against a base
+                        Color.background
                     ]),
                     center: .center,
                     startRadius: 50,
@@ -51,7 +54,8 @@ struct DashboardView: View {
                         quickStatsGridView()
                         
                         // Primary Call-to-Action - Now a static header
-                        PTLabel("Start Workout", style: .heading)
+                        Text("Start Workout")
+                            .heading3()
                             .padding(.top, 16)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -73,22 +77,23 @@ struct DashboardView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(AppTheme.GeneratedColors.brassGold.opacity(0.15))
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .background(Color.brassGold.opacity(0.15))
+                            .foregroundColor(Color.brassGold)
                             .overlay(
-                                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                                    .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
+                                RoundedRectangle(cornerRadius: CornerRadius.button)
+                                    .stroke(Color.brassGold, lineWidth: 1)
                             )
-                            .cornerRadius(AppTheme.GeneratedRadius.button)
+                            .cornerRadius(CornerRadius.button)
                         }
                         .padding(.horizontal)
-                        .padding(.top, AppTheme.GeneratedSpacing.large)
+                        .padding(.top, Spacing.large)
                         #endif
                         
                         Spacer()
                     }
                     .padding(Self.globalPadding)
                 }
+                .container()
             }
             .accessibilityLabel("You have \(viewModel.totalWorkouts) workouts logged")
             .onAppear {
@@ -121,8 +126,8 @@ struct DashboardView: View {
                 .foregroundStyle(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            AppTheme.GeneratedColors.brassGold.opacity(0.9), // Lighter gold at top
-                            AppTheme.GeneratedColors.brassGold // Standard gold at bottom
+                            Color.brassGold.opacity(0.9), // Lighter gold at top
+                            Color.brassGold // Standard gold at bottom
                         ]),
                         startPoint: .top,
                         endPoint: .bottom
@@ -130,9 +135,9 @@ struct DashboardView: View {
                 )
                 .frame(maxWidth: .infinity, alignment: .center)
         }
-        .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading2))
+        .bodyBold()
         .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+        .padding(.vertical, Spacing.medium)
     }
     
     // Helper method for the quick stats grid
@@ -182,41 +187,43 @@ struct DashboardView: View {
         if !activities.isEmpty { // Show only if there are activities
             Group {
                 Text("ACTIVITY FEED")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.top, AppTheme.GeneratedSpacing.large)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                    .militaryMonospaced(size: Spacing.small)
+                    .foregroundColor(Color.textSecondary)
+                    .padding(.top, Spacing.large)
+                    .padding(.bottom, Spacing.small)
                 
-                PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
+                PTSeparator().padding(.bottom, Spacing.small)
 
                 TimelineView(.periodic(from: Date(), by: 60.0)) { context in
                     let displayedActivities = Array(activities.prefix(3))
                     
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         ForEach(displayedActivities.indices, id: \.self) { index in
                             let activity = displayedActivities[index]
                             HStack { 
                                 Image(systemName: activity.icon)
-                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                    .foregroundColor(Color.textSecondary)
                                     .frame(width: 20, alignment: .center)
                                 VStack(alignment: .leading) {
-                                    PTLabel(activity.text, style: .body)
+                                    Text(activity.text)
+                                        .body()
                                         .lineLimit(2)
-                                    PTLabel(relativeDateFormatter(date: activity.date), style: .caption)
-                                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                    Text(relativeDateFormatter(date: activity.date))
+                                        .caption()
+                                        .foregroundColor(Color.textTertiary)
                                 }
                                 Spacer() 
                             }
-                            .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall) 
+                            .padding(.vertical, Spacing.extraSmall) 
                             
                             // Always render separator, control by opacity, use simple color
                             PTSeparator(color: Color.gray.opacity(0.5))
                                 .opacity(index < displayedActivities.count - 1 ? 1 : 0)
                         }
                     }
-                    .padding(AppTheme.GeneratedSpacing.itemSpacing)
-                    .background(AppTheme.GeneratedColors.cardBackground)
-                    .cornerRadius(AppTheme.GeneratedRadius.medium)
+                    .padding(Spacing.itemSpacing)
+                    .background(Color.cardBackground)
+                    .cornerRadius(CornerRadius.medium)
                 }
             }
             .opacity(recentActivityVisible ? 1 : 0)

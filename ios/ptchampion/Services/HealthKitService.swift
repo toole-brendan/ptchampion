@@ -159,13 +159,13 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
     
     func startHeartRateQuery(withStartDate startDate: Date) {
         guard isHealthDataAvailable else {
-            heartRateSubject.send(completion: .failure(HealthKitError.healthDataNotAvailable))
+            heartRateSubject.send(completion: .failure(HealthKitError.healthDataNotAvailable)
             return
         }
         
         // Create heart rate type
         guard let heartRateType = HKObjectType.quantityType(forIdentifier: .heartRate) else {
-            heartRateSubject.send(completion: .failure(HealthKitError.dataTypeNotAvailable))
+            heartRateSubject.send(completion: .failure(HealthKitError.dataTypeNotAvailable)
             return
         }
         
@@ -183,7 +183,7 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
                 guard let self = self else { return }
                 
                 if let error = error {
-                    self.heartRateSubject.send(completion: .failure(error))
+                    self.heartRateSubject.send(completion: .failure(error)
                     return
                 }
                 
@@ -236,7 +236,7 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
         guard let samples = samples, !samples.isEmpty else { return }
         
         for sample in samples {
-            let heartRate = Int(sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute())))
+            let heartRate = Int(sample.quantity.doubleValue(for: HKUnit.count().unitDivided(by: .minute()))
             heartRateSubject.send(heartRate)
         }
     }
@@ -330,8 +330,8 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
         var samples: [HKQuantitySample] = []
         
         for (index, rate) in heartRates.enumerated() {
-            let sampleDate = startDate.addingTimeInterval(timeInterval * Double(index))
-            let quantity = HKQuantity(unit: HKUnit.count().unitDivided(by: .minute()), doubleValue: Double(rate))
+            let sampleDate = startDate.addingTimeInterval(timeInterval * Double(index)
+            let quantity = HKQuantity(unit: HKUnit.count().unitDivided(by: .minute(), doubleValue: Double(rate))
             
             let sample = HKQuantitySample(
                 type: heartRateType,
@@ -383,7 +383,7 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
         }
         
         // Record pause event
-        workoutEvents.append(Date())
+        workoutEvents.append(Date()
         isWorkoutSessionPaused = true
         
         // Update state
@@ -398,7 +398,7 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
         }
         
         // Record resume event
-        workoutEvents.append(Date())
+        workoutEvents.append(Date()
         isWorkoutSessionPaused = false
         
         // Update state

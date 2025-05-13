@@ -1,6 +1,8 @@
 import SwiftUI
 import PTDesignSystem
 
+fileprivate typealias DSColor = PTDesignSystem.Color
+
 /// Trend direction indicators for metric data visualization
 public enum TrendDirection {
     case up, down, neutral
@@ -16,14 +18,14 @@ public enum TrendDirection {
         }
     }
     
-    public var color: Color {
+    public var color: SwiftUI.Color {
         switch self {
         case .up:
-            return AppTheme.GeneratedColors.success
+            return DSColor.success
         case .down:
-            return AppTheme.GeneratedColors.error
+            return DSColor.error
         case .neutral:
-            return AppTheme.GeneratedColors.textTertiary
+            return DSColor.textTertiary
         }
     }
 }

@@ -71,45 +71,45 @@ struct FitnessDeviceManagerView: View {
     private func deviceSourcesSection() -> some View {
         VStack(spacing: 8) {
             Text("Data Sources")
-                .font(.headline)
+                .heading4()
                 .padding(.top)
             
             HStack(spacing: 16) {
                 // Heart Rate Source
                 VStack {
                     Label("Heart Rate", systemImage: "heart.fill")
-                        .font(.caption)
+                        .caption()
                     
                     Text(viewModel.isReceivingHeartRateData ? viewModel.primaryDataSource() : "None")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 .padding(10)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground)))
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground))
                 
                 // Location Source
                 VStack {
                     Label("GPS", systemImage: "location.fill")
-                        .font(.caption)
+                        .caption()
                     
                     Text(viewModel.isReceivingLocationData ? viewModel.deviceDisplayName() : "Phone")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 .padding(10)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground)))
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground))
                 
                 // Pace Source
                 VStack {
                     Label("Pace", systemImage: "figure.walk")
-                        .font(.caption)
+                        .caption()
                     
                     Text(viewModel.isReceivingPaceData ? viewModel.deviceDisplayName() : "None")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 .padding(10)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground)))
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground))
             }
             .padding(.horizontal)
         }
@@ -145,7 +145,7 @@ struct FitnessDeviceManagerView: View {
                 }
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground))
             .padding(.horizontal)
         }
     }
@@ -154,7 +154,7 @@ struct FitnessDeviceManagerView: View {
     private func appleWatchSection() -> some View {
         VStack(alignment: .leading) {
             Text("Apple Watch")
-                .font(.headline)
+                .heading4()
                 .padding(.horizontal)
             
             VStack(spacing: 10) {
@@ -165,12 +165,12 @@ struct FitnessDeviceManagerView: View {
                     
                     VStack(alignment: .leading) {
                         Text(viewModel.isHealthKitAuthorized ? "Connected" : "Not Connected")
-                            .font(.headline)
+                            .heading4()
                         
                         Text(viewModel.isHealthKitAuthorized ? 
                              "Data from Apple Health" : 
                              "Authorization required")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.secondary)
                     }
                     
@@ -193,12 +193,12 @@ struct FitnessDeviceManagerView: View {
                 
                 if viewModel.isHealthKitAuthorized {
                     Toggle("Prefer Apple Watch for Heart Rate", isOn: $viewModel.preferAppleWatchForHeartRate)
-                        .font(.caption)
+                        .caption()
                         .padding(.top, 4)
                 }
             }
             .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground))
             .padding(.horizontal)
         }
     }
@@ -208,12 +208,12 @@ struct FitnessDeviceManagerView: View {
         VStack(alignment: .leading) {
             HStack {
                 Text("Bluetooth Devices")
-                    .font(.headline)
+                    .heading4()
                 
                 Spacer()
                 
                 Text("Status: \(viewModel.bluetoothState.stateDescription)")
-                    .font(.caption)
+                    .caption()
                     .foregroundColor(viewModel.bluetoothState == .poweredOn ? .green : .red)
             }
             .padding(.horizontal)
@@ -248,9 +248,9 @@ struct FitnessDeviceManagerView: View {
             if viewModel.isBluetoothScanning {
                 HStack {
                     ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
+                        .progressViewStyle(CircularProgressViewStyle()
                     Text("Scanning for fitness devices...")
-                        .font(.caption)
+                        .caption()
                 }
                 .padding(.horizontal)
             }
@@ -264,7 +264,7 @@ struct FitnessDeviceManagerView: View {
                 }
                 .padding(.horizontal)
             }
-            .frame(height: min(300, CGFloat(viewModel.bluetoothDevices.count * 60 + 20)))
+            .frame(height: min(300, CGFloat(viewModel.bluetoothDevices.count * 60 + 20))
         }
     }
     
@@ -274,16 +274,16 @@ struct FitnessDeviceManagerView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text("Connected: \(device.name ?? "Unknown Device")")
-                        .font(.headline)
+                        .heading4()
                     
                     HStack {
-                        Text(viewModel.deviceDisplayName())
-                            .font(.subheadline)
+                        Text(viewModel.deviceDisplayName()
+                            .small()
                             .foregroundColor(.secondary)
                         
                         if let batteryLevel = viewModel.deviceBatteryLevel {
                             Label("\(batteryLevel)%", systemImage: "battery.50")
-                                .font(.caption)
+                                .caption()
                                 .foregroundColor(.green)
                         }
                     }
@@ -295,7 +295,7 @@ struct FitnessDeviceManagerView: View {
                     showingDeviceDetails = true
                 } label: {
                     Label("Details", systemImage: "info.circle")
-                        .font(.caption)
+                        .caption()
                 }
                 .buttonStyle(.bordered)
                 
@@ -303,14 +303,14 @@ struct FitnessDeviceManagerView: View {
                     viewModel.disconnectFromDevice()
                 } label: {
                     Label("Disconnect", systemImage: "xmark.circle")
-                        .font(.caption)
+                        .caption()
                 }
                 .buttonStyle(.bordered)
                 .tint(.red)
             }
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground))
         .padding(.horizontal)
     }
     
@@ -320,10 +320,10 @@ struct FitnessDeviceManagerView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text("Previous Device")
-                        .font(.headline)
+                        .heading4()
                     
                     Text("You have a preferred device saved")
-                        .font(.subheadline)
+                        .small()
                         .foregroundColor(.secondary)
                 }
                 
@@ -342,7 +342,7 @@ struct FitnessDeviceManagerView: View {
             }
         }
         .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground))
         .padding(.horizontal)
     }
     
@@ -353,17 +353,17 @@ struct FitnessDeviceManagerView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(device.name)
-                        .font(.headline)
+                        .heading4()
                         
                     HStack {
                         if device.deviceType != .unknown {
                             Text(device.deviceType.rawValue)
-                                .font(.caption)
+                                .caption()
                                 .foregroundColor(.secondary)
                         }
                         
                         Text("RSSI: \(device.rssi)")
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(.gray)
                     }
                 }
@@ -399,7 +399,7 @@ struct FitnessDeviceManagerView: View {
                         Divider()
                         
                         Text("Supported Features:")
-                            .font(.headline)
+                            .heading4()
                             .padding(.top, 8)
                         
                         VStack(alignment: .leading, spacing: 8) {
@@ -430,6 +430,7 @@ struct FitnessDeviceManagerView: View {
                     }
                 }
             }
+            .container()
         }
     }
     
@@ -461,7 +462,7 @@ private struct FitnessMetricView: View {
                 .bold()
             
             Text(title)
-                .font(.caption)
+                .caption()
                 .foregroundColor(.secondary)
         }
         .frame(minWidth: 70)

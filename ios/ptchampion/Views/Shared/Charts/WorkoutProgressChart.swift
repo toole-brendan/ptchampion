@@ -2,6 +2,9 @@ import SwiftUI
 import PTDesignSystem
 import Charts
 
+typealias DSColor = PTDesignSystem.Color
+typealias SColor = SwiftUI.Color
+
 // Generic data point for charts
 struct ChartableDataPoint: Identifiable {
     let id = UUID()
@@ -34,7 +37,7 @@ struct WorkoutProgressChart: View {
         title: String, 
         yAxisLabel: String? = nil,
         showLabels: Bool = true,
-        accentColor: Color = AppTheme.GeneratedColors.brassGold,
+        accentColor: Color = DSColor.brassGold,
         showGradient: Bool = true,
         animateOnAppear: Bool = true
     ) {
@@ -48,19 +51,19 @@ struct WorkoutProgressChart: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
             if showLabels {
                 HStack {
                     Text(title)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .body(weight: .bold)
+                        .foregroundColor(DSColor.textPrimary)
                     
                     Spacer()
                     
                     if let yAxisLabel = yAxisLabel {
                         Text(yAxisLabel)
-                            .font(.system(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .small()
+                            .foregroundColor(DSColor.textSecondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(
@@ -77,9 +80,9 @@ struct WorkoutProgressChart: View {
                 chartContent
             }
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
+        .padding(Spacing.contentPadding)
+        .background(DSColor.cardBackground)
+        .cornerRadius(CornerRadius.card)
         .onAppear {
             if animateOnAppear {
                 withAnimation(.easeInOut(duration: 1.2)) {
@@ -93,19 +96,19 @@ struct WorkoutProgressChart: View {
     
     // Empty state view
     private var emptyStateView: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(spacing: Spacing.medium) {
             Image(systemName: "chart.line.downtrend.xyaxis")
                 .font(.system(size: 36))
-                .foregroundColor(AppTheme.GeneratedColors.textTertiary.opacity(0.5))
+                .foregroundColor(DSColor.textTertiary.opacity(0.5))
             
-            VStack(spacing: AppTheme.GeneratedSpacing.small) {
+            VStack(spacing: Spacing.small) {
                 Text("No data available")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .body(weight: .medium)
+                    .foregroundColor(DSColor.textSecondary)
                 
                 Text("Complete more workouts to see your progress")
-                    .font(.system(size: 14))
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .small()
+                    .foregroundColor(DSColor.textTertiary)
                     .multilineTextAlignment(.center)
             }
         }
@@ -166,24 +169,24 @@ struct WorkoutProgressChart: View {
         .chartYAxis {
             AxisMarks(position: .leading) { _ in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
+                    .foregroundStyle(DSColor.textTertiary.opacity(0.3))
                 AxisTick(stroke: StrokeStyle(lineWidth: 1))
-                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary)
+                    .foregroundStyle(DSColor.textTertiary)
                 AxisValueLabel()
-                    .foregroundStyle(AppTheme.GeneratedColors.textSecondary)
+                    .foregroundStyle(DSColor.textSecondary)
             }
         }
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: 5)) { value in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
+                    .foregroundStyle(DSColor.textTertiary.opacity(0.3))
                 AxisTick(stroke: StrokeStyle(lineWidth: 1))
-                    .foregroundStyle(AppTheme.GeneratedColors.textTertiary)
+                    .foregroundStyle(DSColor.textTertiary)
                 if let date = value.as(Date.self) {
                     AxisValueLabel {
                         Text(Self.dayFormatter.string(from: date))
-                            .font(.system(size: 12))
-                            .foregroundStyle(AppTheme.GeneratedColors.textSecondary)
+                            .caption()
+                            .foregroundStyle(DSColor.textSecondary)
                     }
                 }
             }
@@ -199,11 +202,11 @@ struct WorkoutProgressChart: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(0..<5) { i in
                         Divider()
-                            .background(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
+                            .background(DSColor.textTertiary.opacity(0.3))
                         Spacer()
                     }
                     Divider()
-                        .background(AppTheme.GeneratedColors.textTertiary.opacity(0.3))
+                        .background(DSColor.textTertiary.opacity(0.3))
                 }
                 
                 // Area fill for gradient
@@ -250,8 +253,8 @@ struct WorkoutProgressChart: View {
                                 let text = Self.dayFormatter.string(from: date)
                                 
                                 Text(text)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                    .caption()
+                                    .foregroundColor(DSColor.textSecondary)
                                     .frame(width: geometry.size.width / CGFloat(dataPoints.count))
                             } else {
                                 Spacer()

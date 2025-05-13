@@ -1,0 +1,4 @@
+module SwiftSyntaxMacrosTestSupport {
+    header "/Users/brendantoole/projects/ptchampion/ios/tools/CodeRewriter/.build/arm64-apple-macosx/release/SwiftSyntaxMacrosTestSupport.build/SwiftSyntaxMacrosTestSupport-Swift.h"
+    requires objc
+}

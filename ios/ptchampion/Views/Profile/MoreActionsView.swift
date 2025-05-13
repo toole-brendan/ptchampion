@@ -8,11 +8,11 @@ struct MoreActionsView: View {
     @State private var showingConnectedDevices = false
     
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(alignment: .leading, spacing: Spacing.medium) {
             // Section Header
             Text("More")
-                .font(.title3.weight(.semibold))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .heading3()
+                .foregroundColor(Color.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
             
@@ -25,11 +25,11 @@ struct MoreActionsView: View {
                 } label: {
                     HStack {
                         Label("Privacy Policy", systemImage: "doc.text.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .foregroundColor(Color.textPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.footnote)
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                            .font(.caption)
+                            .foregroundColor(Color.textTertiary)
                     }
                     .contentShape(Rectangle())
                 }
@@ -45,11 +45,11 @@ struct MoreActionsView: View {
                 } label: {
                     HStack {
                         Label("Fitness Devices", systemImage: "antenna.radiowaves.left.and.right")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .foregroundColor(Color.textPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
-                            .font(.footnote)
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                            .font(.caption)
+                            .foregroundColor(Color.textTertiary)
                     }
                     .contentShape(Rectangle())
                 }
@@ -93,9 +93,9 @@ struct MoreActionsView: View {
         VStack(alignment: .leading, spacing: 0) {
             content()
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .background(AppTheme.GeneratedColors.cardBackground)
-        .cornerRadius(AppTheme.GeneratedRadius.card)
+        .padding(Spacing.contentPadding)
+        .background(Color.cardBackground)
+        .cornerRadius(CornerRadius.card)
         .shadow(
             color: Color.black.opacity(0.1),
             radius: 4,
@@ -110,7 +110,7 @@ struct MoreActionsView_Previews: PreviewProvider {
         MoreActionsView()
             .environmentObject(FitnessDeviceManagerViewModel())
             .padding()
-            .background(AppTheme.GeneratedColors.background)
+            .background(Color.background)
             .previewLayout(.sizeThatFits)
     }
 } 

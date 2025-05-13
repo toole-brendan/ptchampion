@@ -30,7 +30,7 @@ struct RegistrationView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
+            VStack(spacing: Spacing.large) {
                 // Logo - fix the ambiguous init by being more explicit
                 let logoImage: UIImage = {
                     if let named = UIImage(named: "pt_champion_logo") {
@@ -47,15 +47,15 @@ struct RegistrationView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 150, height: 150)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .foregroundColor(Color.brassGold)
                     .padding(.top, 20)
                 
                 PTLabel("Create Account", style: .heading)
-                    .foregroundColor(AppTheme.GeneratedColors.commandBlack)
+                    .foregroundColor(Color.commandBlack)
                     .padding(.bottom, 10)
                 
                 // Form fields with consistent styling
-                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                VStack(spacing: Spacing.medium) {
                     PTTextField(
                         "First Name",
                         text: $firstName,
@@ -99,31 +99,31 @@ struct RegistrationView: View {
                     
                     if passwordMismatch {
                         PTLabel("Passwords do not match.", style: .caption)
-                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .foregroundColor(Color.error)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                     }
                     
                     if passwordTooShort {
                         PTLabel("Password must be at least 8 characters.", style: .caption)
-                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .foregroundColor(Color.error)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                     }
                     
                     if let errorMessage = auth.errorMessage {
                         PTLabel(errorMessage, style: .caption)
-                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .foregroundColor(Color.error)
                             .padding(.top, 5)
                     }
                     
                     if let successMessage = auth.successMessage {
                         PTLabel(successMessage, style: .bodyBold)
-                            .foregroundColor(AppTheme.GeneratedColors.success)
-                            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+                            .foregroundColor(Color.success)
+                            .padding(.vertical, Spacing.small)
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .background(AppTheme.GeneratedColors.success.opacity(0.1))
-                            .cornerRadius(AppTheme.GeneratedRadius.medium)
+                            .background(Color.success.opacity(0.1))
+                            .cornerRadius(CornerRadius.medium)
                             .padding(.top, 5)
                     }
                     
@@ -169,14 +169,14 @@ struct RegistrationView: View {
                     .padding(.vertical, 4) // Add smaller padding to simulate the small size
                     .padding(.top, 8)
                 }
-                .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
+                .padding(.horizontal, Spacing.medium)
                 
                 Spacer()
             }
             .frame(minHeight: UIScreen.main.bounds.height - keyboardHeight)
             .padding(.bottom, keyboardHeight)
         }
-        .background(AppTheme.GeneratedColors.cream.ignoresSafeArea())
+        .background(Color.cream.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .onTapGesture {
             hideKeyboard()
@@ -236,6 +236,7 @@ struct RegistrationView: View {
     NavigationView {
         RegistrationView()
             .environmentObject(AuthViewModel())
+            .environmentObject(NavigationState())
             .environment(\.colorScheme, .light)
     }
 }
@@ -244,6 +245,7 @@ struct RegistrationView: View {
     NavigationView {
         RegistrationView()
             .environmentObject(AuthViewModel())
+            .environmentObject(NavigationState())
             .environment(\.colorScheme, .dark)
     }
 } 

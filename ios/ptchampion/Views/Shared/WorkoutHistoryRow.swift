@@ -65,7 +65,7 @@ struct WorkoutHistoryRow: View {
     }
 
     var body: some View {
-        HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        HStack(spacing: Spacing.medium) {
             // Exercise icon in a circular background
             exerciseIcon
                 .resizable()
@@ -74,19 +74,19 @@ struct WorkoutHistoryRow: View {
                 .padding(10)
                 .background(
                     Circle()
-                        .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                        .fill(Color.brassGold.opacity(0.1))
                 )
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .foregroundColor(Color.brassGold)
             
             // Workout details
             VStack(alignment: .leading, spacing: 4) {
                 Text(result.exerciseType.capitalized)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .body(weight: .semibold)
+                    .foregroundColor(Color.textPrimary)
                 
                 Text(result.startTime, formatter: Self.shortDateFormatter)
-                    .font(.system(size: 14))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .small()
+                    .foregroundColor(Color.textSecondary)
             }
             
             Spacer()
@@ -94,33 +94,34 @@ struct WorkoutHistoryRow: View {
             // Performance metrics with visual styling
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(performanceMetric.value)
-                    .font(.system(size: 20, weight: .bold, design: .rounded).monospacedDigit())
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .heading3(weight: .bold, design: .rounded)
+                    .monospacedDigit()
+                    .foregroundColor(Color.textPrimary)
                 
                 Text(performanceMetric.label)
-                    .font(.system(size: 14))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .small()
+                    .foregroundColor(Color.textSecondary)
                     .padding(.leading, 2)
             }
             
             // Duration badge
             VStack(spacing: 2) {
                 Text("Duration")
-                    .font(.system(size: 12))
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .caption()
+                    .foregroundColor(Color.textTertiary)
                 
                 Text(formatDuration(result.durationSeconds))
-                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .small(weight: .medium, design: .monospaced)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(
                         Capsule()
-                            .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.1))
+                            .fill(Color.tacticalGray.opacity(0.1))
                     )
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .foregroundColor(Color.textSecondary)
             }
         }
-        .padding(AppTheme.GeneratedSpacing.medium)
+        .padding(Spacing.medium)
     }
 }
 
@@ -168,7 +169,7 @@ struct WorkoutHistoryRow_Previews: PreviewProvider {
         }
         .previewLayout(.sizeThatFits)
         .padding()
-        .background(AppTheme.GeneratedColors.cardBackground)
+        .background(Color.cardBackground)
     }
 }
 
@@ -184,7 +185,6 @@ extension String {
         return distance
     }
 }
-
 
 // Preview requires a ModelContainer setup
 #Preview("Light Mode") {

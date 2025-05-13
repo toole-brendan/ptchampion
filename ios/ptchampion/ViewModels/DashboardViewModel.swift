@@ -60,13 +60,13 @@ class DashboardViewModel: ObservableObject {
         // Weekly Reps (Push-ups) and Trend
         let pushupPredicateThisWeek = #Predicate<WorkoutResultSwiftData> { $0.exerciseType == "pushup" && $0.endTime >= startOfThisWeek && $0.endTime <= now }
         let pushupsThisWeekDescriptor = FetchDescriptor<WorkoutResultSwiftData>(predicate: pushupPredicateThisWeek)
-        let pushupsThisWeek = (try? modelContext.fetch(pushupsThisWeekDescriptor)) ?? []
+        let pushupsThisWeek = (try? modelContext.fetch(pushupsThisWeekDescriptor) ?? []
         let currentWeekReps = pushupsThisWeek.reduce(0) { $0 + ($1.repCount ?? 0) }
         self.weeklyReps = "\(currentWeekReps)"
         
         let pushupPredicatePreviousWeek = #Predicate<WorkoutResultSwiftData> { $0.exerciseType == "pushup" && $0.endTime >= startOfPreviousWeek && $0.endTime < startOfThisWeek } // Use < startOfThisWeek
         let pushupsPreviousWeekDescriptor = FetchDescriptor<WorkoutResultSwiftData>(predicate: pushupPredicatePreviousWeek)
-        let pushupsPreviousWeek = (try? modelContext.fetch(pushupsPreviousWeekDescriptor)) ?? []
+        let pushupsPreviousWeek = (try? modelContext.fetch(pushupsPreviousWeekDescriptor) ?? []
         let previousWeekReps = pushupsPreviousWeek.reduce(0) { $0 + ($1.repCount ?? 0) }
 
         if !pushupsThisWeek.isEmpty || !pushupsPreviousWeek.isEmpty { // Only show trend if there's some data
@@ -78,7 +78,7 @@ class DashboardViewModel: ObservableObject {
         }
 
         // Monthly workouts (last 30 days)
-        let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: Date()) ?? Date()
+        let thirtyDaysAgo = calendar.date(byAdding: .day, value: -30, to: Date() ?? Date()
         let monthlyWorkoutsDescriptor = FetchDescriptor<WorkoutResultSwiftData>(
             predicate: #Predicate { $0.startTime >= thirtyDaysAgo }
         )
@@ -104,7 +104,7 @@ class DashboardViewModel: ObservableObject {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
-        let futureDate = Calendar.current.date(byAdding: .day, value: 30, to: Date()) ?? Date()
+        let futureDate = Calendar.current.date(byAdding: .day, value: 30, to: Date() ?? Date()
         nextPTTest = formatter.string(from: futureDate)
         
         // Set latest achievement message
@@ -128,7 +128,7 @@ class DashboardViewModel: ObservableObject {
     
     // Helper to get time of day greeting
     var timeOfDayGreeting: String {
-        let hour = Calendar.current.component(.hour, from: Date())
+        let hour = Calendar.current.component(.hour, from: Date()
         switch hour {
         case 0..<12: return "Morning"
         case 12..<17: return "Afternoon"

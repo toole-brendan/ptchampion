@@ -29,7 +29,7 @@ public struct MetricCardView: View {
         }) {
             cardContent
         }
-        .buttonStyle(MetricCardButtonStyle())
+        .buttonStyle(MetricCardButtonStyle()
         .accessibilityElement(children: .contain)
         .accessibilityLabel("\(metric.title), \(displayValue) \(metric.unit ?? "")")
         .accessibilityHint(metric.description ?? "")
@@ -37,7 +37,7 @@ public struct MetricCardView: View {
             // Animate the value counter when the card appears
             if !animateValue {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8) {
                         animateValue = true
                     }
                 }
@@ -62,23 +62,23 @@ public struct MetricCardView: View {
     }
     
     private var cardContent: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.itemSpacing) {
+        VStack(alignment: .leading, spacing: Spacing.itemSpacing) {
             // Title row with optional icon
             HStack(spacing: 6) {
                 if let icon = metric.icon {
                     icon
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .font(.system(size: 15, weight: .medium)
+                        .foregroundColor(Color.brassGold)
                         .frame(width: 22, height: 22)
                         .background(
                             Circle()
-                                .fill(AppTheme.GeneratedColors.brassGold.opacity(0.15))
+                                .fill(Color.brassGold.opacity(0.15)
                         )
                 }
                 
                 Text(metric.title)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .small(weight: .medium))
+                    .foregroundColor(Color.textSecondary)
                     .textCase(.uppercase)
                 
                 Spacer()
@@ -87,10 +87,10 @@ public struct MetricCardView: View {
                 if let trend = self.trend {
                     HStack(spacing: 3) {
                         trend.icon
-                            .font(.system(size: 12, weight: .bold))
+                            .caption() weight: .bold))
                             .foregroundColor(trend.color)
                             // Add subtle rotation animation when trend changes
-                            .rotationEffect(trend == .up ? .degrees(0) : (trend == .down ? .degrees(180) : .degrees(90)))
+                            .rotationEffect(trend == .up ? .degrees(0) : (trend == .down ? .degrees(180) : .degrees(90))
                             .animation(.spring(response: 0.3), value: trend)
                             
                         // Optional percentage or change value could go here
@@ -99,7 +99,7 @@ public struct MetricCardView: View {
                     .padding(.vertical, 3)
                     .background(
                         Capsule()
-                            .fill(trend.color.opacity(0.1))
+                            .fill(trend.color.opacity(0.1)
                     )
                 }
             }
@@ -109,36 +109,36 @@ public struct MetricCardView: View {
                 if displayValue == "-" || displayValue == "0" {
                     // For placeholder or zero values
                     Text(displayValue)
-                        .font(.system(size: 32, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                        .heading1(weight: .bold, design: .rounded).monospacedDigit()
+                        .foregroundColor(Color.tacticalGray)
                         .opacity(0.7)
                 } else {
                     // For actual values with counting animation
                     if let intValue = Int(displayValue), animateValue {
                         Text("\(intValue)")
-                            .font(.system(size: 32, weight: .bold, design: .rounded).monospacedDigit())
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            .contentTransition(.numericText())
+                            .heading1(weight: .bold, design: .rounded).monospacedDigit()
+                            .foregroundColor(Color.textPrimary)
+                            .contentTransition(.numericText()
                             .transaction { transaction in
                                 transaction.animation = .spring(response: 0.8, dampingFraction: 0.8)
                             }
                     } else if let doubleValue = Double(displayValue), animateValue {
                         Text(String(format: "%.1f", doubleValue))
-                            .font(.system(size: 32, weight: .bold, design: .rounded).monospacedDigit())
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            .contentTransition(.numericText())
+                            .heading1(weight: .bold, design: .rounded).monospacedDigit()
+                            .foregroundColor(Color.textPrimary)
+                            .contentTransition(.numericText()
                     } else {
                         // For string values or before animation
                         Text(displayValue)
-                            .font(.system(size: 32, weight: .bold, design: .rounded).monospacedDigit())
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .heading1(weight: .bold, design: .rounded).monospacedDigit()
+                            .foregroundColor(Color.textPrimary)
                     }
                 }
                 
                 if let unit = metric.unit {
                     Text(unit)
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        .body(weight: .medium))
+                        .foregroundColor(Color.textTertiary)
                         .padding(.leading, 2)
                         .alignmentGuide(.firstTextBaseline) { d in
                             d[.firstTextBaseline] - 4 // Align slightly below baseline
@@ -149,26 +149,26 @@ public struct MetricCardView: View {
             // Optional description
             if let description = metric.description {
                 Text(description)
-                    .font(.system(size: 13))
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .font(.system(size: 13)
+                    .foregroundColor(Color.textTertiary)
                     .lineLimit(1)
             }
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
+        .padding(Spacing.contentPadding)
         .frame(maxWidth: .infinity, minHeight: 110, alignment: .leading)
         .background(
             ZStack {
                 // Base layer
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
-                    .fill(AppTheme.GeneratedColors.cardBackground)
+                RoundedRectangle(cornerRadius: CornerRadius.card)
+                    .fill(Color.cardBackground)
                 
                 // Subtle accent gradient at top
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
+                RoundedRectangle(cornerRadius: CornerRadius.card)
                     .fill(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                AppTheme.GeneratedColors.brassGold.opacity(0.05),
-                                AppTheme.GeneratedColors.cardBackground.opacity(0.0)
+                                Color.brassGold.opacity(0.05),
+                                Color.cardBackground.opacity(0.0)
                             ]),
                             startPoint: .top,
                             endPoint: .center
@@ -176,12 +176,12 @@ public struct MetricCardView: View {
                     )
                 
                 // Subtle border
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.card)
+                RoundedRectangle(cornerRadius: CornerRadius.card)
                     .strokeBorder(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                AppTheme.GeneratedColors.brassGold.opacity(0.2),
-                                AppTheme.GeneratedColors.cardBackground.opacity(0.1)
+                                Color.brassGold.opacity(0.2),
+                                Color.cardBackground.opacity(0.1)
                             ]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -223,8 +223,8 @@ struct MetricCardButtonStyle: ButtonStyle {
 // Preview provider
 struct MetricCardView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
-            HStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
+        VStack(spacing: Spacing.cardGap) {
+            HStack(spacing: Spacing.cardGap) {
                 MetricCardView(
                     MetricData(
                         title: "Workouts",
@@ -258,11 +258,11 @@ struct MetricCardView_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(AppTheme.GeneratedColors.background.opacity(0.5))
+        .background(Color.background.opacity(0.5)
         .previewLayout(.sizeThatFits)
         
         // Dark mode preview
-        VStack(spacing: AppTheme.GeneratedSpacing.cardGap) {
+        VStack(spacing: Spacing.cardGap) {
             MetricCardView(
                 MetricData(
                     title: "Max Heart Rate",

@@ -48,20 +48,20 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: AppTheme.GeneratedSpacing.large) {
+                VStack(spacing: Spacing.large) {
                     // Custom header to match Leaderboard style exactly
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                    VStack(alignment: .leading, spacing: Spacing.small) {
                         Text("PROFILE")
-                            .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .militaryMonospaced(size: .body()
+                            .foregroundColor(Color.textPrimary)
                         
                         Text("Personal settings & preferences")
-                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                            .small()
+                            .foregroundColor(Color.textSecondary)
                             .italic()
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    .padding(.horizontal, Spacing.contentPadding)
                     
                     // User Profile Header
                     ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)
@@ -79,9 +79,9 @@ struct ProfileView: View {
                     // App Version Information
                     AppInfoView()
                 }
-                .padding([.horizontal, .bottom], AppTheme.GeneratedSpacing.contentPadding)
+                .padding([.horizontal, .bottom], Spacing.contentPadding)
             }
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+            .background(Color.background.ignoresSafeArea()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -89,7 +89,7 @@ struct ProfileView: View {
                         showingSettings = true
                     } label: {
                         Image(systemName: "gearshape.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            .foregroundColor(Color.textPrimary)
                     }
                 }
             }
@@ -117,8 +117,8 @@ struct ProfileView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationStack {
             ProfileView()
-                .environmentObject(MockAuthViewModel())
-                .environmentObject(FitnessDeviceManagerViewModel())
+                .environmentObject(MockAuthViewModel()
+                .environmentObject(FitnessDeviceManagerViewModel()
         }
     }
 }

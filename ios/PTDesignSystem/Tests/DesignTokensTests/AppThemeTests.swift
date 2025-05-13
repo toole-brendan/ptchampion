@@ -5,11 +5,11 @@ import SwiftUI
 final class AppThemeTests: XCTestCase {
     func testColorsExist() {
         // Basic verification that colors exist and don't crash when accessed
-        _ = AppTheme.GeneratedColors.primary
-        _ = AppTheme.GeneratedColors.secondary
-        _ = AppTheme.GeneratedColors.error
-        _ = AppTheme.GeneratedColors.background
-        _ = AppTheme.GeneratedColors.cardBackground
+        _ = Color.primary
+        _ = Color.secondary
+        _ = Color.error
+        _ = Color.background
+        _ = Color.cardBackground
         
         // If we reach here without crashing, the test passes
         XCTAssert(true)

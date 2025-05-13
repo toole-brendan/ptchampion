@@ -42,19 +42,19 @@ struct LeaderboardView: View {
     
     // Helper computed properties to simplify main view body
     private var headerView: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+        VStack(alignment: .leading, spacing: Spacing.small) {
             // Break down into separate Text views to help compiler
             let titleText = Text(viewModel.selectedBoard.rawValue.uppercased() + " LEADERBOARD")
-                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .militaryMonospaced(size: .body()
+                .foregroundColor(Color.textPrimary)
             
             let subtitleText = Text(formattedFilterTitle)
-                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .small()
+                .foregroundColor(Color.textSecondary)
                 .italic()
             
             // Combine in VStack
-            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+            VStack(alignment: .leading, spacing: Spacing.small) {
                 titleText
                 subtitleText
             }
@@ -62,15 +62,15 @@ struct LeaderboardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)
         // Reduced top padding to minimize initial whitespace
-        .padding(.top, AppTheme.GeneratedSpacing.small)
+        .padding(.top, Spacing.small)
     }
     
     // Further break down segment control to reduce complexity
     private func segmentButton(for type: LeaderboardType) -> some View {
         let isSelected = viewModel.selectedBoard == type
         let foregroundColor = isSelected ? 
-            AppTheme.GeneratedColors.textOnPrimary : 
-            AppTheme.GeneratedColors.textPrimary
+            Color.textOnPrimary : 
+            Color.textPrimary
         
         return Button(action: {
             // Simple state change without animation
@@ -78,7 +78,7 @@ struct LeaderboardView: View {
         }) {
             VStack {
                 Text(type.rawValue)
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.body))
+                    .font(.body()Bold(size: .body()
                     .foregroundColor(foregroundColor)
                     .padding(.vertical, 10)
                     .padding(.horizontal, 20)
@@ -87,8 +87,8 @@ struct LeaderboardView: View {
             .background(
                 ZStack {
                     if isSelected {
-                        RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.full)
-                            .fill(AppTheme.GeneratedColors.primary)
+                        RoundedRectangle(cornerRadius: CornerRadius.full)
+                            .fill(Color.primary)
                             .matchedGeometryEffect(id: "segmentBackground", in: animation)
                     }
                 }
@@ -103,11 +103,11 @@ struct LeaderboardView: View {
             }
         }
         .background(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.full)
-                .stroke(AppTheme.GeneratedColors.primary.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: CornerRadius.full)
+                .stroke(Color.primary.opacity(0.3), lineWidth: 1)
                 .background(
-                    AppTheme.GeneratedColors.cardBackground
-                        .cornerRadius(AppTheme.GeneratedRadius.full)
+                    Color.cardBackground
+                        .cornerRadius(CornerRadius.full)
                 )
         )
         .padding(.horizontal)
@@ -116,7 +116,7 @@ struct LeaderboardView: View {
     var body: some View {
         NavigationStack {
             bodyContent
-                .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+                .background(Color.background.ignoresSafeArea()
                 .onAppear {
                     fetchTask = Task {
                         await viewModel.fetch()
@@ -167,7 +167,7 @@ struct LeaderboardView: View {
             
             // Divider
             Rectangle()
-                .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
+                .fill(Color.tacticalGray.opacity(0.2)
                 .frame(height: 1)
                 .padding(.horizontal)
             
@@ -180,7 +180,7 @@ struct LeaderboardView: View {
     
     // Break down the filter controls into a separate view
     private var filterControlsSection: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(spacing: Spacing.medium) {
             // Use extracted segmented control
             segmentedControl
 
@@ -192,7 +192,7 @@ struct LeaderboardView: View {
                 showRadiusSelector: viewModel.selectedBoard == .local
             )
         }
-        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+        .padding(.vertical, Spacing.medium)
     }
     
     // Break down the main content area into a separate view
@@ -216,13 +216,13 @@ struct LeaderboardView: View {
     
     // Helper function to perform fade transition without using .transition
     private func performContentTransition(action: @escaping () -> Void) {
-        withAnimation(.easeOut(duration: 0.2)) {
+        withAnimation(.easeOut(duration: 0.2) {
             contentOpacity = 0.0
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             action()
-            withAnimation(.easeIn(duration: 0.2)) {
+            withAnimation(.easeIn(duration: 0.2) {
                 contentOpacity = 1.0
             }
         }
@@ -235,13 +235,13 @@ struct LeaderboardView: View {
     
     // Further break down complex views
     private var loadingPlaceholders: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.small) {
+        VStack(spacing: Spacing.small) {
             ForEach(0..<5, id: \.self) { _ in
                 LeaderboardRowPlaceholder()
             }
         }
         .padding(.horizontal)
-        .padding(.top, AppTheme.GeneratedSpacing.medium)
+        .padding(.top, Spacing.medium)
         .frame(maxWidth: .infinity, alignment: .top) // Ensure placeholders align to top
         .onAppear { logViewContent(message: "Showing placeholders") }
     }
@@ -252,21 +252,21 @@ struct LeaderboardView: View {
             VStack {
                 Spacer()
                 Image(systemName: "wifi.exclamationmark")
-                    .font(.system(size: 64))
-                    .foregroundColor(AppTheme.GeneratedColors.error)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+                    .font(.system(size: 64)
+                    .foregroundColor(Color.error)
+                    .padding(.bottom, Spacing.medium)
                 
                 Text("Error Loading Leaderboard")
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                    .font(.body()Bold(size: .heading4()
+                    .foregroundColor(Color.textPrimary)
+                    .padding(.bottom, Spacing.small)
                 
                 Text(message)
-                    .font(AppTheme.GeneratedTypography.body())
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .body()
+                    .foregroundColor(Color.textSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+                    .padding(.horizontal, Spacing.large)
+                    .padding(.bottom, Spacing.medium)
                 
                 // Fix ambiguous reference to .primary by using an explicit ButtonStyle
                 // Using a fully qualified type to resolve ambiguity
@@ -274,7 +274,7 @@ struct LeaderboardView: View {
                     // No animation
                     Task { await viewModel.fetch() } 
                 })
-                .padding(.horizontal, AppTheme.GeneratedSpacing.large)
+                .padding(.horizontal, Spacing.large)
                 
                 Spacer()
             }
@@ -292,30 +292,30 @@ struct LeaderboardView: View {
                 Spacer()
                 ZStack {
                     Circle()
-                        .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                        .fill(Color.brassGold.opacity(0.1)
                         .frame(width: 120, height: 120)
                     
                     Image(systemName: "trophy.fill")
-                        .font(.system(size: 64))
-                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .font(.system(size: 64)
+                        .foregroundColor(Color.brassGold)
                 }
-                .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+                .padding(.bottom, Spacing.medium)
                 
                 Text("Leaderboard is Empty")
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                    .font(.body()Bold(size: .heading4()
+                    .foregroundColor(Color.textPrimary)
+                    .padding(.bottom, Spacing.small)
                 
                 Text("Be the first to set a score!")
-                    .font(AppTheme.GeneratedTypography.body())
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                    .body()
+                    .foregroundColor(Color.textSecondary)
+                    .padding(.bottom, Spacing.small)
                 
                 Text("Complete a workout to post your score on the leaderboard.")
-                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .small()
+                    .foregroundColor(Color.textTertiary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
+                    .padding(.horizontal, Spacing.large)
                 
                 Spacer()
             }
@@ -332,20 +332,20 @@ struct LeaderboardView: View {
             VStack {
                 Spacer()
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 64))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary.opacity(0.7))
-                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
+                    .font(.system(size: 64)
+                    .foregroundColor(Color.textSecondary.opacity(0.7)
+                    .padding(.bottom, Spacing.medium)
                 
                 Text("No Results Found")
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                    .font(.body()Bold(size: .heading4()
+                    .foregroundColor(Color.textPrimary)
+                    .padding(.bottom, Spacing.small)
                 
                 Text("No data available for the current selection.")
-                    .font(AppTheme.GeneratedTypography.body())
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .body()
+                    .foregroundColor(Color.textSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
+                    .padding(.horizontal, Spacing.large)
                 
                 Spacer()
             }
@@ -358,11 +358,11 @@ struct LeaderboardView: View {
     
     private var leaderboardListView: some View {
         ScrollView {
-            LazyVStack(spacing: AppTheme.GeneratedSpacing.small) {
+            LazyVStack(spacing: Spacing.small) {
                 ForEach(viewModel.leaderboardEntries) { entry in
                     let isCurrentUser = entry.userId == viewModel.currentUserID && entry.userId != nil
                     LeaderboardRowView(entry: entry, isCurrentUser: isCurrentUser)
-                        .contentShape(Rectangle()) // Make the whole row tappable
+                        .contentShape(Rectangle() // Make the whole row tappable
                         .onTapGesture {
                             handleRowTap(entry: entry)
                         }
@@ -370,7 +370,7 @@ struct LeaderboardView: View {
                 }
             }
             .padding(.horizontal)
-            .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+            .padding(.vertical, Spacing.medium)
         }
         .onAppear { logViewContent(message: "Showing \(viewModel.leaderboardEntries.count) entries") }
     }

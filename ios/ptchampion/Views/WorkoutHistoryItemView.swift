@@ -124,10 +124,10 @@ struct WorkoutHistoryItemView: View {
                 
                 VStack(alignment: .leading) {
                     Text(exerciseDisplayName)
-                        .font(.headline)
+                        .heading4()
                     
                     Text(formattedDate)
-                        .font(.subheadline)
+                        .small()
                         .foregroundColor(.gray)
                 }
                 
@@ -140,7 +140,7 @@ struct WorkoutHistoryItemView: View {
                     
                     if swiftDataWorkout?.syncStatusEnum != .synced {
                         Text(syncStatusText)
-                            .font(.caption)
+                            .caption()
                             .foregroundColor(syncStatusColor)
                     }
                 }
@@ -170,7 +170,7 @@ struct WorkoutHistoryItemView: View {
                         )
                     } label: {
                         Text("Sync")
-                            .font(.caption)
+                            .caption()
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(Color.blue)
@@ -211,11 +211,11 @@ struct MetricView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label)
-                .font(.caption)
+                .caption()
                 .foregroundColor(.gray)
             
             Text(value)
-                .font(.subheadline)
+                .small()
                 .fontWeight(.medium)
         }
     }
@@ -238,7 +238,7 @@ struct WorkoutHistoryItemView_Previews: PreviewProvider {
                 viewModel: WorkoutHistoryViewModel()
             )
             .padding()
-            .background(Color(.systemBackground))
+            .background(Color(.systemBackground)
             .cornerRadius(8)
             .shadow(radius: 1)
             
@@ -256,7 +256,7 @@ struct WorkoutHistoryItemView_Previews: PreviewProvider {
                 swiftDataWorkout: createMockWorkout(status: .pendingUpload)
             )
             .padding()
-            .background(Color(.systemBackground))
+            .background(Color(.systemBackground)
             .cornerRadius(8)
             .shadow(radius: 1)
             
@@ -274,12 +274,12 @@ struct WorkoutHistoryItemView_Previews: PreviewProvider {
                 swiftDataWorkout: createMockWorkout(status: .conflicted)
             )
             .padding()
-            .background(Color(.systemBackground))
+            .background(Color(.systemBackground)
             .cornerRadius(8)
             .shadow(radius: 1)
         }
         .padding()
-        .background(Color(.systemGroupedBackground))
+        .background(Color(.systemGroupedBackground)
         .previewLayout(.sizeThatFits)
     }
     

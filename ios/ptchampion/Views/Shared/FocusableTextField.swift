@@ -46,8 +46,8 @@ public struct FocusableTextField: View {
         )
         .focused($isFocused)
         .overlay(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
-                .stroke(isFocused ? AppTheme.GeneratedColors.brassGold : Color.clear, lineWidth: 2)
+            RoundedRectangle(cornerRadius: CornerRadius.input)
+                .stroke(isFocused ? Color.brassGold : Color.clear, lineWidth: 2)
         )
         .animation(.easeInOut(duration: 0.2), value: isFocused)
         .introspect(.textField) { (textField: UITextField) in
@@ -77,13 +77,13 @@ struct FocusableTextFieldStyle: TextFieldStyle {
         configuration
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(AppTheme.GeneratedColors.cardBackground)
-            .cornerRadius(AppTheme.GeneratedRadius.input)
+            .background(Color.cardBackground)
+            .cornerRadius(CornerRadius.input)
             .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
-                    .stroke(isFocused ? AppTheme.GeneratedColors.brassGold : Color.gray.opacity(0.3), lineWidth: isFocused ? 2 : 1)
+                RoundedRectangle(cornerRadius: CornerRadius.input)
+                    .stroke(isFocused ? Color.brassGold : Color.gray.opacity(0.3), lineWidth: isFocused ? 2 : 1)
             )
-            .font(AppTheme.GeneratedTypography.body())
+            .body()
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isFocused)
     }
 }
@@ -98,8 +98,8 @@ extension PTTextField {
         self
             .focused(isFocused)
             .overlay(
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.input)
-                    .stroke(isFocused.wrappedValue ? AppTheme.GeneratedColors.brassGold : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: CornerRadius.input)
+                    .stroke(isFocused.wrappedValue ? Color.brassGold : Color.clear, lineWidth: 2)
             )
             .animation(.easeInOut(duration: 0.2), value: isFocused.wrappedValue)
     }
@@ -130,11 +130,11 @@ struct FocusableTextField_Previews: PreviewProvider {
             // Example of using the extension method
             @FocusState var isFieldFocused: Bool
             
-            PTTextField("Using extension", text: .constant("Extension example"))
+            PTTextField("Using extension", text: .constant("Extension example")
                 .withFocusRing($isFieldFocused)
         }
         .padding()
-        .background(AppTheme.GeneratedColors.background)
+        .background(Color.background)
         .previewLayout(.sizeThatFits)
     }
 } 

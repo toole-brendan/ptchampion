@@ -164,7 +164,7 @@ class RunWorkoutViewModel: ObservableObject {
                 if self.runState == .running, let startDate = self.workoutStartDate {
                     let now = Date()
                     let elapsed = now.timeIntervalSince(startDate) + self.accumulatedTime
-                    self.heartRateSamples.append((timestamp: now, elapsedSeconds: elapsed, value: heartRate))
+                    self.heartRateSamples.append((timestamp: now, elapsedSeconds: elapsed, value: heartRate)
                     
                     // Attempt to create a complete metric sample
                     self.collectMetricSample(at: now)
@@ -183,7 +183,7 @@ class RunWorkoutViewModel: ObservableObject {
                 if self.runState == .running, let startDate = self.workoutStartDate {
                     let now = Date()
                     let elapsed = now.timeIntervalSince(startDate) + self.accumulatedTime
-                    self.cadenceSamples.append((timestamp: now, elapsedSeconds: elapsed, stepsPerMinute: cadence.stepsPerMinute))
+                    self.cadenceSamples.append((timestamp: now, elapsedSeconds: elapsed, stepsPerMinute: cadence.stepsPerMinute)
                     
                     // Attempt to create a complete metric sample
                     self.collectMetricSample(at: now)
@@ -201,7 +201,7 @@ class RunWorkoutViewModel: ObservableObject {
                 if pace.metersPerSecond > 0 && self.runState == .running, let startDate = self.workoutStartDate {
                     let now = Date()
                     let elapsed = now.timeIntervalSince(startDate) + self.accumulatedTime
-                    self.paceSamples.append((timestamp: now, elapsedSeconds: elapsed, metersPerSecond: pace.metersPerSecond))
+                    self.paceSamples.append((timestamp: now, elapsedSeconds: elapsed, metersPerSecond: pace.metersPerSecond)
                     self.updateCurrentPaceDisplay(speed: pace.metersPerSecond)
                     
                     // Attempt to create a complete metric sample
@@ -307,7 +307,7 @@ class RunWorkoutViewModel: ObservableObject {
                         if let startDate = self.workoutStartDate {
                             let now = Date()
                             let elapsed = now.timeIntervalSince(startDate) + self.accumulatedTime
-                            self.heartRateSamples.append((timestamp: now, elapsedSeconds: elapsed, value: heartRate))
+                            self.heartRateSamples.append((timestamp: now, elapsedSeconds: elapsed, value: heartRate)
                             
                             // Attempt to create a complete metric sample
                             self.collectMetricSample(at: now)
@@ -714,7 +714,7 @@ class RunWorkoutViewModel: ObservableObject {
         // Create the local record with the correct initializer
         let localRecord = WorkoutResultSwiftData(
             exerciseType: "run",
-            startTime: Date().addingTimeInterval(-Double(workoutData.timeInSeconds ?? 0)), // Approximate start time
+            startTime: Date().addingTimeInterval(-Double(workoutData.timeInSeconds ?? 0), // Approximate start time
             endTime: Date(), // Current time as end time
             durationSeconds: Int(String(workoutData.timeInSeconds ?? 0)) ?? 0,
             repCount: workoutData.repetitions,
@@ -868,7 +868,7 @@ class RunWorkoutViewModel: ObservableObject {
         let locationTimestamps = Set(locationUpdates.map { $0.timestamp })
         for hrSample in heartRateSamples {
             // Skip if we already have a sample at this timestamp (within 1 second)
-            if locationTimestamps.contains(where: { abs($0.timeIntervalSince(hrSample.timestamp)) < 1.0 }) {
+            if locationTimestamps.contains(where: { abs($0.timeIntervalSince(hrSample.timestamp) < 1.0 }) {
                 continue
             }
             
@@ -890,12 +890,12 @@ class RunWorkoutViewModel: ObservableObject {
         guard !heartRateSamples.isEmpty else { return nil }
         
         let closestSample = heartRateSamples.min(by: { 
-            abs($0.timestamp.timeIntervalSince(timestamp)) < abs($1.timestamp.timeIntervalSince(timestamp))
+            abs($0.timestamp.timeIntervalSince(timestamp) < abs($1.timestamp.timeIntervalSince(timestamp)
         })
         
         // Only use if within 10 seconds of the timestamp
         guard let sample = closestSample,
-              abs(sample.timestamp.timeIntervalSince(timestamp)) < 10 else {
+              abs(sample.timestamp.timeIntervalSince(timestamp) < 10 else {
             return nil
         }
         
@@ -907,12 +907,12 @@ class RunWorkoutViewModel: ObservableObject {
         guard !cadenceSamples.isEmpty else { return nil }
         
         let closestSample = cadenceSamples.min(by: { 
-            abs($0.timestamp.timeIntervalSince(timestamp)) < abs($1.timestamp.timeIntervalSince(timestamp))
+            abs($0.timestamp.timeIntervalSince(timestamp) < abs($1.timestamp.timeIntervalSince(timestamp)
         })
         
         // Only use if within 10 seconds of the timestamp
         guard let sample = closestSample,
-              abs(sample.timestamp.timeIntervalSince(timestamp)) < 10 else {
+              abs(sample.timestamp.timeIntervalSince(timestamp) < 10 else {
             return nil
         }
         

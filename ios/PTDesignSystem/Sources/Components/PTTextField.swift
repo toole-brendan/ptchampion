@@ -69,10 +69,6 @@ public struct PTTextField: View {
                 if textField.inputAccessoryView == nil {
                     textField.inputAccessoryView = UIView(frame: .zero)
                 }
-                
-                // Track focus state
-                textField.addTarget(self, action: #selector(UITextField.textFieldDidBeginEditing(_:)), for: .editingDidBegin)
-                textField.addTarget(self, action: #selector(UITextField.textFieldDidEndEditing(_:)), for: .editingDidEnd)
             }
             .onReceive(NotificationCenter.default.publisher(for: UITextField.textDidBeginEditingNotification)) { notification in
                 if let textField = notification.object as? UITextField {
@@ -128,10 +124,10 @@ public struct PTTextField: View {
             // Label at the top
             if !text.isEmpty || label != nil {
                 Text(label ?? placeholder)
-                    .font(ThemeManager.useWebTheme ? PTDesignSystem.AppTheme.Typography.label : .caption)
+                    .font(ThemeManager.useWebTheme ? Typography.label : .caption)
                     .foregroundColor(ThemeManager.useWebTheme ? 
-                        PTDesignSystem.AppTheme.Color.textSubtle : 
-                        PTDesignSystem.AppTheme.GeneratedColors.textSecondary)
+                        Color.textSubtle : 
+                        Color.textSecondary)
             }
             
             HStack {
@@ -153,34 +149,34 @@ public struct PTTextField: View {
                 // Add optional icon
                 if let icon = icon {
                     icon.foregroundColor(ThemeManager.useWebTheme ?
-                        PTDesignSystem.AppTheme.Color.textSubtle :
-                        PTDesignSystem.AppTheme.GeneratedColors.textSecondary)
+                        Color.textSubtle :
+                        Color.textSecondary)
                 }
             }
             .padding(12)
             .background(ThemeManager.useWebTheme ? 
-                PTDesignSystem.AppTheme.Color.surface : 
-                PTDesignSystem.AppTheme.GeneratedColors.cardBackground)
+                Color.surface : 
+                Color.cardBackground)
             .cornerRadius(ThemeManager.useWebTheme ? 
-                PTDesignSystem.AppTheme.Radius.md : 
-                PTDesignSystem.AppTheme.GeneratedRadius.input)
+                CornerRadius.md : 
+                CornerRadius.input)
             .overlay(
                 RoundedRectangle(cornerRadius: ThemeManager.useWebTheme ? 
-                    PTDesignSystem.AppTheme.Radius.md : 
-                    PTDesignSystem.AppTheme.GeneratedRadius.input)
+                    CornerRadius.md : 
+                    CornerRadius.input)
                     .stroke(ThemeManager.useWebTheme ? 
-                        PTDesignSystem.AppTheme.Color.borderDefault : 
-                        PTDesignSystem.AppTheme.GeneratedColors.textSecondary.opacity(0.3), 
+                        Color.borderDefault : 
+                        Color.textSecondary.opacity(0.3), 
                         lineWidth: 1)
             )
             // Add focus state highlight for web theme
             .overlay(
                 RoundedRectangle(cornerRadius: ThemeManager.useWebTheme ? 
-                    PTDesignSystem.AppTheme.Radius.md : 
-                    PTDesignSystem.AppTheme.GeneratedRadius.input)
+                    CornerRadius.md : 
+                    CornerRadius.input)
                     .stroke(ThemeManager.useWebTheme ? 
-                        PTDesignSystem.AppTheme.Color.borderDefault : 
-                        PTDesignSystem.AppTheme.GeneratedColors.textSecondary.opacity(0.3), 
+                        Color.borderDefault : 
+                        Color.textSecondary.opacity(0.3), 
                         lineWidth: 1)
             )
         }

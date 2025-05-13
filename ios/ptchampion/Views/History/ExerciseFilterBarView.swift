@@ -6,7 +6,7 @@ struct ExerciseFilterBarView: View {
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: AppTheme.GeneratedSpacing.itemSpacing) {
+            HStack(spacing: Spacing.itemSpacing) {
                 ForEach(WorkoutFilter.allCases) { filterOption in
                     Button {
                         withAnimation(.easeInOut(duration: 0.3)) {
@@ -21,29 +21,29 @@ struct ExerciseFilterBarView: View {
                                     .frame(width: 16, height: 16)
                             } else {
                                 Image(systemName: filterOption.systemImage)
-                                    .font(.system(size: 12))
+                                    .caption()
                             }
                             
                             Text(filterOption.rawValue)
-                                .font(.system(size: 14, weight: .semibold))
+                                .small(weight: .semibold)
                         }
                         .padding(.horizontal, 12)
                         .padding(.vertical, 8)
                         .background(
                             Capsule()
                                 .fill(filter == filterOption ? 
-                                      AppTheme.GeneratedColors.primary : 
-                                      AppTheme.GeneratedColors.cardBackground)
+                                      Color.primary : 
+                                      Color.cardBackground)
                                 .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
                         )
                         .foregroundColor(filter == filterOption ? 
-                                         AppTheme.GeneratedColors.textOnPrimary : 
-                                         AppTheme.GeneratedColors.textPrimary)
+                                         Color.textOnPrimary : 
+                                         Color.textPrimary)
                     }
                     .buttonStyle(ScaleButtonStyle())
                 }
             }
-            .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+            .padding(.horizontal, Spacing.contentPadding)
             .padding(.vertical, 4)
         }
     }

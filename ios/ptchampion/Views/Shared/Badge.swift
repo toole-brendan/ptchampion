@@ -1,6 +1,9 @@
 import SwiftUI
 import PTDesignSystem
 
+fileprivate typealias DSColor = PTDesignSystem.Color
+fileprivate typealias SColor = SwiftUI.Color
+
 // Badge size options for flexibility
 public enum BadgeSize {
     case small
@@ -9,9 +12,9 @@ public enum BadgeSize {
     
     var textSize: CGFloat {
         switch self {
-        case .small: return AppTheme.GeneratedTypography.tiny
-        case .medium: return AppTheme.GeneratedTypography.small
-        case .large: return AppTheme.GeneratedTypography.body
+        case .small: return Typography.caption
+        case .medium: return Spacing.small
+        case .large: return .body()
         }
     }
     
@@ -82,16 +85,16 @@ public struct PTBadge: View {
         .background(
             ZStack {
                 // Base background
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.badge)
+                RoundedRectangle(cornerRadius: CornerRadius.badge)
                     .fill(type.backgroundColor)
                 
                 // Subtle gradient overlay for dimension
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.badge)
+                RoundedRectangle(cornerRadius: CornerRadius.badge)
                     .fill(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                Color.white.opacity(0.2),
-                                Color.clear
+                                SColor.white.opacity(0.2),
+                                SColor.clear
                             ]),
                             startPoint: .top,
                             endPoint: .bottom
@@ -100,18 +103,18 @@ public struct PTBadge: View {
                 
                 // Animated pulse for important/new badges
                 if type == .new || type == .important {
-                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.badge)
+                    RoundedRectangle(cornerRadius: CornerRadius.badge)
                         .stroke(type.foregroundColor.opacity(isAnimating ? 0.0 : 0.5), lineWidth: 2)
                         .scaleEffect(isAnimating ? 1.1 : 1.0)
                         .opacity(isAnimating ? 0 : 1)
                 }
             }
         )
-        .cornerRadius(AppTheme.GeneratedRadius.badge)
+        .cornerRadius(CornerRadius.badge)
         // Optional shadow for some badge types
         .shadow(
             color: type == .premium || type == .important ? 
-                type.foregroundColor.opacity(0.3) : Color.clear,
+                type.foregroundColor.opacity(0.3) : SColor.clear,
             radius: 2,
             x: 0,
             y: 1
@@ -138,45 +141,45 @@ public enum PTBadgeType {
     case important    // Important notice
     
     // Custom colors
-    var backgroundColor: Color {
+    var backgroundColor: SColor {
         switch self {
         case .default:
-            return AppTheme.GeneratedColors.brassGold.opacity(0.15)
+            return DSColor.brassGold.opacity(0.15)
         case .success:
-            return AppTheme.GeneratedColors.success.opacity(0.15)
+            return DSColor.success.opacity(0.15)
         case .warning:
-            return AppTheme.GeneratedColors.warning.opacity(0.15)
+            return DSColor.warning.opacity(0.15)
         case .error:
-            return AppTheme.GeneratedColors.error.opacity(0.15)
+            return DSColor.error.opacity(0.15)
         case .info:
-            return AppTheme.GeneratedColors.info.opacity(0.15)
+            return DSColor.info.opacity(0.15)
         case .premium:
-            return AppTheme.GeneratedColors.brassGold.opacity(0.2)
+            return DSColor.brassGold.opacity(0.2)
         case .new:
-            return AppTheme.GeneratedColors.primary.opacity(0.15)
+            return DSColor.primary.opacity(0.15)
         case .important:
-            return AppTheme.GeneratedColors.error.opacity(0.15)
+            return DSColor.error.opacity(0.15)
         }
     }
     
-    var foregroundColor: Color {
+    var foregroundColor: SColor {
         switch self {
         case .default:
-            return AppTheme.GeneratedColors.brassGold
+            return DSColor.brassGold
         case .success:
-            return AppTheme.GeneratedColors.success
+            return DSColor.success
         case .warning:
-            return AppTheme.GeneratedColors.warning
+            return DSColor.warning
         case .error:
-            return AppTheme.GeneratedColors.error
+            return DSColor.error
         case .info:
-            return AppTheme.GeneratedColors.info
+            return DSColor.info
         case .premium:
-            return AppTheme.GeneratedColors.brassGold
+            return DSColor.brassGold
         case .new:
-            return AppTheme.GeneratedColors.primary
+            return DSColor.primary
         case .important:
-            return AppTheme.GeneratedColors.error
+            return DSColor.error
         }
     }
 }

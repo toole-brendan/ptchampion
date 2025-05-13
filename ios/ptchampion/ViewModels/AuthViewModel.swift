@@ -84,7 +84,7 @@ enum API {
         // Try to decode the server's message; if that fails fall back to statusCode
         let envelope = (try? JSONDecoder().decode(ErrorEnvelope.self, from: data))?.message
         throw APIError.requestFailed(statusCode: http.statusCode,
-                                 message: envelope ?? HTTPURLResponse.localizedString(forStatusCode: http.statusCode))
+                                   message: envelope ?? HTTPURLResponse.localizedString(forStatusCode: http.statusCode))
     }
 }
 
@@ -387,6 +387,21 @@ class AuthViewModel: ObservableObject {
     var email: String? {
         if case .authenticated(let user) = authState {
             return user.email
+        }
+        return nil
+    }
+    
+    // Convenience accessors for first and last name
+    var firstName: String? {
+        if case .authenticated(let user) = authState {
+            return user.firstName
+        }
+        return nil
+    }
+    
+    var lastName: String? {
+        if case .authenticated(let user) = authState {
+            return user.lastName
         }
         return nil
     }

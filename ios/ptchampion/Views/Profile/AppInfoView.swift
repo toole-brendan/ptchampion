@@ -4,10 +4,10 @@ import PTDesignSystem
 struct AppInfoView: View {
     var body: some View {
         Text("App Version: \(appVersion())")
-            .font(.footnote)
-            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+            .caption()
+            .foregroundColor(Color.textTertiary)
             .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.top, AppTheme.GeneratedSpacing.medium)
+            .padding(.top, Spacing.medium)
     }
     
     private func appVersion() -> String {
@@ -19,7 +19,7 @@ struct AppInfoView_Previews: PreviewProvider {
     static var previews: some View {
         AppInfoView()
             .padding()
-            .background(AppTheme.GeneratedColors.background)
+            .background(Color.background)
             .previewLayout(.sizeThatFits)
     }
 } 

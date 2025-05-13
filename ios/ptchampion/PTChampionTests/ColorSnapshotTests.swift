@@ -168,7 +168,7 @@ struct ColorSwatch: View {
                 .aspectRatio(1, contentMode: .fit)
             
             Text(name)
-                .font(.system(size: 12))
+                .font(.system(size: 12)
                 .foregroundColor(.foreground)
                 .lineLimit(1)
                 .truncationMode(.tail)

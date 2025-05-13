@@ -19,20 +19,20 @@ struct ContentView: View {
             VStack(spacing: 20) {
                 Text("PT Champion")
                     .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(AppTheme.GeneratedColors.primary)
+                    .foregroundColor(Color.primary)
                 
                 Image(systemName: "medal.fill")
                     .font(.system(size: 80))
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .foregroundColor(Color.brassGold)
                     .padding(.bottom, 30)
                 
                 // Use conditional tracking for iOS compatibility
                 militaryTitleText()
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .foregroundColor(Color.textSecondary)
                 
                 Text("Powered by Computer Vision")
                     .militaryMonospaced(size: 14)
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .foregroundColor(Color.textTertiary)
                     .padding(.bottom, 40)
                 
                 Button {
@@ -42,9 +42,9 @@ struct ContentView: View {
                         .militaryMonospaced()
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(AppTheme.GeneratedColors.primary)
-                        .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
-                        .cornerRadius(AppTheme.GeneratedRadius.button)
+                        .background(Color.primary)
+                        .foregroundColor(Color.textOnPrimary)
+                        .cornerRadius(CornerRadius.button)
                 }
                 .padding(.horizontal, 40)
                 
@@ -52,11 +52,12 @@ struct ContentView: View {
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(AppTheme.GeneratedColors.background)
+            .background(Color.background)
             .navigationTitle("PT Champion")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingStyleShowcase) {
                 MilitaryStyleShowcase()
+                    .container()
             }
         }
     }

@@ -80,7 +80,7 @@ struct DashboardHeader: View {
             ZStack {
                 // Background with subtle pattern overlay for texture
                 Rectangle()
-                    .fill(AppTheme.GeneratedColors.deepOps)
+                    .fill(Color.deepOps)
                     .overlay(
                         Image(systemName: "circle.grid.3x3.fill")
                             .resizable(resizingMode: .tile)
@@ -90,20 +90,20 @@ struct DashboardHeader: View {
                 
                 // Content
                 VStack(spacing: 0) {
-                    HStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.medium) {
+                    HStack(alignment: .center, spacing: Spacing.medium) {
                         // Title and subtitle
-                        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small / 2) {
+                        VStack(alignment: .leading, spacing: Spacing.small / 2) {
                             Text(title)
-                                .font(.system(size: AppTheme.GeneratedTypography.heading3, weight: .bold))
-                                .foregroundColor(AppTheme.GeneratedColors.cream)
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(Color.cream)
                                 .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
                                 .offset(x: isLoaded || reduceMotion ? 0 : -10, y: 0)
                                 .opacity(isLoaded ? 1 : 0)
                             
                             if let subtitle = subtitle {
                                 Text(subtitle)
-                                    .font(.system(size: AppTheme.GeneratedTypography.small))
-                                    .foregroundColor(AppTheme.GeneratedColors.cream.opacity(0.8))
+                                    .font(.system(size: Spacing.small))
+                                    .foregroundColor(Color.cream.opacity(0.8))
                                     .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
                                     .offset(x: isLoaded || reduceMotion ? 0 : -10, y: 0)
                                     .opacity(isLoaded ? 1 : 0.7)
@@ -122,20 +122,20 @@ struct DashboardHeader: View {
                             Button(action: { onProfileTap?() }) {
                                 ZStack {
                                     Circle()
-                                        .fill(AppTheme.GeneratedColors.brassGold.opacity(0.2))
+                                        .fill(Color.brassGold.opacity(0.2))
                                         .frame(width: 40, height: 40)
                                     
                                     Text(userInitials)
-                                        .font(.system(size: 16, weight: .bold))
-                                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(Color.brassGold)
                                 }
                                 .overlay(
                                     Circle()
                                         .stroke(
                                             LinearGradient(
                                                 gradient: Gradient(colors: [
-                                                    AppTheme.GeneratedColors.brassGold,
-                                                    AppTheme.GeneratedColors.brassGold.opacity(0.7)
+                                                    Color.brassGold,
+                                                    Color.brassGold.opacity(0.7)
                                                 ]),
                                                 startPoint: .topLeading,
                                                 endPoint: .bottomTrailing
@@ -149,17 +149,17 @@ struct DashboardHeader: View {
                             .opacity(isLoaded ? 1 : 0)
                         }
                     }
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-                    .padding(.vertical, AppTheme.GeneratedSpacing.large)
+                    .padding(.horizontal, Spacing.large)
+                    .padding(.vertical, Spacing.large)
                 }
             }
             
             // Bottom decorative line with gradient
             LinearGradient(
                 gradient: Gradient(colors: [
-                    AppTheme.GeneratedColors.brassGold.opacity(0.7),
-                    AppTheme.GeneratedColors.brassGold,
-                    AppTheme.GeneratedColors.brassGold.opacity(0.7)
+                    Color.brassGold.opacity(0.7),
+                    Color.brassGold,
+                    Color.brassGold.opacity(0.7)
                 ]),
                 startPoint: .leading,
                 endPoint: .trailing
@@ -213,11 +213,13 @@ extension DashboardHeader {
 struct DashboardHeader_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 20) {
-            DashboardHeader.greeting(userName: "John Doe", user: User(id: "123", email: "john@example.com", firstName: "John", lastName: "Doe", profilePictureUrl: nil))
-                .previewDisplayName("Greeting Header")
+            DashboardHeader.greeting(
+                userName: "John Doe",
+                user: User(id: "123", email: "john@example.com", firstName: "John", lastName: "Doe", profilePictureUrl: nil),
+                onProfileTap: {}
+            )
             
             DashboardHeader.section(title: "Your Workouts", subtitle: "Recent history")
-                .previewDisplayName("Section Header")
             
             DashboardHeader(
                 title: "Dashboard",
@@ -227,11 +229,10 @@ struct DashboardHeader_Previews: PreviewProvider {
                         Image(systemName: "gear")
                             .resizable()
                             .frame(width: 24, height: 24)
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .foregroundColor(Color.brassGold)
                     }
                 }
             )
-            .previewDisplayName("Custom Right Accessory")
         }
         .previewLayout(.sizeThatFits)
     }

@@ -7,24 +7,24 @@ import SwiftUIIntrospect
 // These are kept solely for backward compatibility and should be removed in future updates
 extension Font {
     // These methods are deprecated and should use AppTheme.GeneratedTypography instead
-    @available(*, deprecated, message: "Use AppTheme.GeneratedTypography.heading instead")
+    @available(*, deprecated, message: "Use Typography.heading instead")
     static func bebasNeueBold(size: CGFloat) -> Font {
-        return AppTheme.GeneratedTypography.heading(size: size)
+        return Typography.heading(size: size)
     }
     
-    @available(*, deprecated, message: "Use AppTheme.GeneratedTypography.bodyBold instead")
+    @available(*, deprecated, message: "Use .body()Bold instead")
     static func montserratBold(size: CGFloat) -> Font {
-        return AppTheme.GeneratedTypography.bodyBold(size: size)
+        return .body()Bold(size: size)
     }
     
-    @available(*, deprecated, message: "Use AppTheme.GeneratedTypography.bodySemibold instead")
+    @available(*, deprecated, message: "Use .body()Semibold instead")
     static func montserratSemiBold(size: CGFloat) -> Font {
-        return AppTheme.GeneratedTypography.bodySemibold(size: size)
+        return .body()Semibold(size: size)
     }
     
-    @available(*, deprecated, message: "Use AppTheme.GeneratedTypography.body instead")
+    @available(*, deprecated, message: "Use .body() instead")
     static func montserratRegular(size: CGFloat) -> Font {
-        return AppTheme.GeneratedTypography.body(size: size)
+        return .body()(size: size)
     }
 }
 
@@ -66,11 +66,11 @@ struct LoginView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 150, height: 150)
-                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                    .foregroundColor(Color.brassGold)
                             } else {
                                 // Fallback to text if image is missing
                                 PTLabel("PT CHAMPION", style: .heading)
-                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                    .foregroundColor(Color.brassGold)
                                     .frame(width: 150, height: 150)
                                     .onAppear {
                                         print("WARNING: Logo file not found in asset catalog. Please ensure pt_champion_logo.png is added to Assets.xcassets.")
@@ -85,7 +85,7 @@ struct LoginView: View {
                         
                         // Welcome Text
                         PTLabel("Welcome Back", style: .heading)
-                            .foregroundColor(AppTheme.GeneratedColors.commandBlack)
+                            .foregroundColor(Color.commandBlack)
                             .padding(.top, 10)
                         
                         // Form Fields
@@ -166,14 +166,14 @@ struct LoginView: View {
                             // Register Link - Fixed to use direct navigation
                             HStack {
                                 PTLabel("Don't have an account?", style: .caption)
-                                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                                    .foregroundColor(Color.tacticalGray)
                                 
                                 Button(action: {
                                     // Set navigating to register screen using NavigationState
                                     navigationState.navigateTo(.register)
                                 }) {
                                     PTLabel("Register", style: .caption)
-                                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                        .foregroundColor(Color.brassGold)
                                 }
                             }
                             .padding(.top, 8)
@@ -183,13 +183,13 @@ struct LoginView: View {
                         // Error message
                         if let errorMessage = auth.errorMessage {
                             PTLabel(errorMessage, style: .caption)
-                                .foregroundColor(AppTheme.GeneratedColors.error)
+                                .foregroundColor(Color.error)
                                 .padding(.top, 16)
                         }
                         
                         if !authDebugText.isEmpty {
                             Text(authDebugText)
-                                .font(.caption)
+                                .caption()
                                 .foregroundColor(.gray)
                                 .padding(.top)
                         }
@@ -200,7 +200,7 @@ struct LoginView: View {
                     .padding(.bottom, keyboardHeight)
                 }
                 .background(
-                    AppTheme.GeneratedColors.cream
+                    Color.cream
                         .ignoresSafeArea(.all)
                 )
                 .onTapGesture {
@@ -255,6 +255,6 @@ extension View {
 #Preview {
     LoginView()
         .environmentObject(AuthViewModel())
-        .environmentObject(NavigationState()) // Added missing NavigationState for preview
+        .environmentObject(NavigationState())
         .environment(\.colorScheme, .light)
 } 

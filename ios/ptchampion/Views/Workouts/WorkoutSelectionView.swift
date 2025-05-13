@@ -1,6 +1,9 @@
 import SwiftUI
 import PTDesignSystem
 
+fileprivate typealias DSColor = PTDesignSystem.Color
+fileprivate typealias SColor = SwiftUI.Color
+
 struct WorkoutSelectionView: View {
     // TODO: Add ViewModel for workout logic
 
@@ -11,7 +14,7 @@ struct WorkoutSelectionView: View {
         let rawValue: String // Raw value for enum/storage
         let description: String
         let iconName: String // System icon name for example
-        let color: Color // Add a unique color for each exercise
+        let color: SColor // Add a unique color for each exercise
     }
 
     let exercises = [
@@ -20,28 +23,28 @@ struct WorkoutSelectionView: View {
             rawValue: "pushup",
             description: "Upper body strength training focusing on chest, shoulders, and triceps",
             iconName: "pushup",
-            color: AppTheme.GeneratedColors.brassGold
+            color: DSColor.brassGold
         ),
         Exercise(
             name: "Sit-ups",
             rawValue: "situp",
             description: "Core strength exercise targeting abdominal muscles",
             iconName: "situp",
-            color: AppTheme.GeneratedColors.deepOps
+            color: DSColor.deepOps
         ),
         Exercise(
             name: "Pull-ups",
             rawValue: "pullup",
             description: "Upper body exercise focusing on back, shoulders, and arms",
             iconName: "pullup",
-            color: AppTheme.GeneratedColors.primary
+            color: DSColor.primary
         ),
         Exercise(
             name: "Run",
             rawValue: "run",
             description: "Cardiovascular training for endurance and stamina",
             iconName: "running",
-            color: AppTheme.GeneratedColors.success
+            color: DSColor.success
         )
     ]
     
@@ -51,7 +54,7 @@ struct WorkoutSelectionView: View {
     
     var body: some View {
         ScrollView {
-            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            VStack(spacing: Spacing.medium) {
                 // Motivational header
                 motivationalHeader
                     .opacity(headerVisible ? 1 : 0)
@@ -60,13 +63,13 @@ struct WorkoutSelectionView: View {
                 // Exercise cards
                 exerciseCards
             }
-            .padding(AppTheme.GeneratedSpacing.contentPadding)
+            .padding(Spacing.contentPadding)
         }
         .background(
             LinearGradient(
                 gradient: Gradient(colors: [
-                    AppTheme.GeneratedColors.background,
-                    AppTheme.GeneratedColors.background.opacity(0.95)
+                    DSColor.background,
+                    DSColor.background.opacity(0.95)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
@@ -82,21 +85,21 @@ struct WorkoutSelectionView: View {
     // MARK: - View Components
     
     private var motivationalHeader: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+        VStack(alignment: .leading, spacing: Spacing.small) {
             Text("Ready for a Challenge?")
-                .font(.title.weight(.bold))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .heading1()
+                .foregroundColor(DSColor.textPrimary)
             
             Text("Select an exercise to begin your workout session")
-                .font(.subheadline)
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .small()
+                .foregroundColor(DSColor.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+        .padding(.vertical, Spacing.medium)
     }
     
     private var exerciseCards: some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+        VStack(spacing: Spacing.medium) {
             ForEach(Array(exercises.enumerated()), id: \.element.id) { index, exercise in
                 ExerciseCard(
                     exercise: exercise,
@@ -158,7 +161,7 @@ struct ExerciseCard: View {
     
     var body: some View {
         NavigationLink(destination: destination()) {
-            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            HStack(spacing: Spacing.medium) {
                 // Icon circle
                 ZStack {
                     Circle()
@@ -175,12 +178,12 @@ struct ExerciseCard: View {
                 // Exercise info
                 VStack(alignment: .leading, spacing: 4) {
                     Text(exercise.name)
-                        .font(.headline)
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .heading4()
+                        .foregroundColor(DSColor.textPrimary)
                     
                     Text(exercise.description)
-                        .font(.subheadline)
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .small()
+                        .foregroundColor(DSColor.textSecondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -189,13 +192,13 @@ struct ExerciseCard: View {
                 
                 // Arrow
                 Image(systemName: "chevron.right")
-                    .font(.footnote)
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .caption()
+                    .foregroundColor(DSColor.textTertiary)
             }
-            .padding(AppTheme.GeneratedSpacing.medium)
-            .background(AppTheme.GeneratedColors.cardBackground)
-            .cornerRadius(AppTheme.GeneratedRadius.card)
-            .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
+            .padding(Spacing.medium)
+            .background(DSColor.cardBackground)
+            .cornerRadius(CornerRadius.card)
+            .shadow(color: SColor.black.opacity(0.08), radius: 8, x: 0, y: 2)
             // Interactive effects
             .scaleEffect(isPressed ? 0.98 : 1)
             .brightness(isPressed ? -0.02 : 0)
