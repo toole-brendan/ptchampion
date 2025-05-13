@@ -19,20 +19,20 @@ struct ContentView: View {
             VStack(spacing: 20) {
                 Text("PT Champion")
                     .font(.system(size: 40, weight: .bold))
-                    .foregroundColor(Color.primary)
+                    .foregroundColor(ThemeColor.primary)
                 
                 Image(systemName: "medal.fill")
                     .font(.system(size: 80))
-                    .foregroundColor(Color.brassGold)
+                    .foregroundColor(ThemeColor.brassGold)
                     .padding(.bottom, 30)
                 
                 // Use conditional tracking for iOS compatibility
                 militaryTitleText()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                 
                 Text("Powered by Computer Vision")
                     .militaryMonospaced(size: 14)
-                    .foregroundColor(Color.textTertiary)
+                    .foregroundColor(ThemeColor.textTertiary)
                     .padding(.bottom, 40)
                 
                 Button {
@@ -42,8 +42,8 @@ struct ContentView: View {
                         .militaryMonospaced()
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.primary)
-                        .foregroundColor(Color.textOnPrimary)
+                        .background(ThemeColor.primary)
+                        .foregroundColor(ThemeColor.textOnPrimary)
                         .cornerRadius(CornerRadius.button)
                 }
                 .padding(.horizontal, 40)
@@ -52,7 +52,7 @@ struct ContentView: View {
             }
             .padding()
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.background)
+            .background(ThemeColor.background)
             .navigationTitle("PT Champion")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingStyleShowcase) {

@@ -63,8 +63,8 @@ struct PoseOverlayView: View {
                     
                     // Use red for bad joints, green for good joints
                     let lineColor = isBadLine ? 
-                        Color.error.opacity(0.7) : 
-                        Color.success.opacity(0.7)
+                        ThemeColor.error.opacity(0.7) : 
+                        ThemeColor.success.opacity(0.7)
                     
                     context.stroke(path, with: .color(lineColor), lineWidth: 3)
                 }
@@ -84,15 +84,15 @@ struct PoseOverlayView: View {
                     
                     // Use red for bad joints, white with green border for good joints
                     let circleColor = isBadJoint ? 
-                        Color.error : 
-                        Color.white
+                        ThemeColor.error : 
+                        ThemeColor.white
                     
                     context.fill(Path(ellipseIn: circleRect), with: .color(circleColor)
                     
                     // Add border to the circle
                     let borderColor = isBadJoint ? 
-                        Color.error : 
-                        Color.success
+                        ThemeColor.error : 
+                        ThemeColor.success
                     
                     context.stroke(
                         Path(ellipseIn: circleRect),
@@ -109,7 +109,7 @@ struct PoseOverlayView: View {
                     
                     Text("Position yourself in view")
                         .bodyBold()
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                         .padding()
                         .background(.thinMaterial)
                         .cornerRadius(CornerRadius.medium)
@@ -152,5 +152,5 @@ struct PoseOverlayView: View {
     let badJoints: Set<VNHumanBodyPoseObservation.JointName> = [.leftElbow, .leftWrist]
 
     return PoseOverlayView(detectedBody: mockBody, badJointNames: badJoints)
-        .background(Color.gray) // Add background for visibility
+        .background(ThemeColor.gray) // Add background for visibility
 } 

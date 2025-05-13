@@ -25,7 +25,7 @@ VStack {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 80, height: 80)
-                    .foregroundColor(Color.brassGold.opacity(0.6))
+                    .foregroundColor(ThemeColor.brassGold.opacity(0.6))
                     .padding(.top, Spacing.medium)
                 
                 VStack(spacing: Spacing.small) {
@@ -33,7 +33,7 @@ VStack {
                         .multilineTextAlignment(.center)
                     
                     PTLabel("Complete a workout to see your progress here!", style: .body)
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                         .multilineTextAlignment(.center)
                 }
                 .card()
@@ -59,7 +59,7 @@ struct WorkoutHistoryView: View {
         NavigationStack {
             ZStack {
                 // Background
-                Color.background.ignoresSafeArea()
+                ThemeColor.background.ignoresSafeArea()
                 
                 ScrollView {
                     VStack(spacing: Spacing.section) {
@@ -67,12 +67,12 @@ struct WorkoutHistoryView: View {
                         VStack(alignment: .leading, spacing: Spacing.small) {
                             Text("WORKOUT HISTORY")
                                 .militaryMonospaced(size: Spacing.body)
-                                .foregroundColor(Color.textPrimary)
+                                .foregroundColor(ThemeColor.textPrimary)
                             
                             // Add subtitle caption similar to the Leaderboard
                             Text("Track your exercise progress")
                                 .small()
-                                .foregroundColor(Color.textSecondary)
+                                .foregroundColor(ThemeColor.textSecondary)
                                 .italic()
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -113,7 +113,7 @@ struct WorkoutHistoryView: View {
                             Text(isEditMode == .active ? "Done" : "Edit")
                         }
                     }
-                    .tint(Color.brassGold)
+                    .tint(ThemeColor.brassGold)
                 }
             }
             .environment(\.editMode, $isEditMode)
@@ -135,7 +135,7 @@ struct WorkoutHistoryView: View {
             HStack {
                 Text("WORKOUT HISTORY")
                     .militaryMonospaced(size: Spacing.small)
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .padding(.horizontal, Spacing.contentPadding)
                 
                 Spacer()

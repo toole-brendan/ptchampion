@@ -32,13 +32,13 @@ struct ExerciseFilterBarView: View {
                         .background(
                             Capsule()
                                 .fill(filter == filterOption ? 
-                                      Color.primary : 
-                                      Color.cardBackground)
-                                .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+                                      ThemeColor.primary : 
+                                      ThemeColor.cardBackground)
+                                .shadow(color: ThemeColor.black.opacity(0.1), radius: 2, x: 0, y: 1)
                         )
                         .foregroundColor(filter == filterOption ? 
-                                         Color.textOnPrimary : 
-                                         Color.textPrimary)
+                                         ThemeColor.textOnPrimary : 
+                                         ThemeColor.textPrimary)
                     }
                     .buttonStyle(ScaleButtonStyle())
                 }

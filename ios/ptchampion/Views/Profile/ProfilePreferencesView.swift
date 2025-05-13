@@ -39,7 +39,7 @@ struct ProfilePreferencesView: View {
             .padding(Spacing.contentPadding)
             .background(ThemeColor.cardBackground)
             .cornerRadius(CornerRadius.card)
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .shadow(color: ThemeColor.black.opacity(0.05), radius: 4, x: 0, y: 2)
             
             // Notifications Card
             VStack(alignment: .leading, spacing: Spacing.small) { 
@@ -81,7 +81,7 @@ struct ProfilePreferencesView: View {
             .padding(Spacing.contentPadding)
             .background(ThemeColor.cardBackground)
             .cornerRadius(CornerRadius.card)
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .shadow(color: ThemeColor.black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
     }
 }

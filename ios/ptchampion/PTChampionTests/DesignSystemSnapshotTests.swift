@@ -59,7 +59,7 @@ struct ButtonVariantsView: View {
                         .ptButtonStyle(variant: .secondary)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.textPrimary, lineWidth: 1)
+                                .stroke(ThemeColor.textPrimary, lineWidth: 1)
                         )
                         .frame(maxWidth: .infinity)
                     
@@ -100,7 +100,7 @@ struct ButtonVariantsView: View {
             }
             .padding()
         }
-        .background(Color.background)
+        .background(ThemeColor.background)
     }
 }
 
@@ -142,7 +142,7 @@ struct MetricCardVariantsView: View {
             }
             .padding()
         }
-        .background(Color.background)
+        .background(ThemeColor.background)
     }
 }
 
@@ -176,7 +176,7 @@ struct TextFieldVariantsView: View {
             }
             .padding()
         }
-        .background(Color.background)
+        .background(ThemeColor.background)
     }
 }
 
@@ -187,21 +187,21 @@ struct ColorTokensView: View {
                 Text("Color Tokens")
                     .font(.heading2()())
                 
-                ColorSwatch("deepOps", color: Color.deepOps)
-                ColorSwatch("brassGold", color: Color.brassGold)
-                ColorSwatch("armyTan", color: Color.armyTan)
-                ColorSwatch("oliveMist", color: Color.oliveMist)
-                ColorSwatch("commandBlack", color: Color.commandBlack)
-                ColorSwatch("tacticalGray", color: Color.tacticalGray)
-                ColorSwatch("cream", color: Color.cream)
-                ColorSwatch("success", color: Color.success)
-                ColorSwatch("warning", color: Color.warning)
-                ColorSwatch("error", color: Color.error)
-                ColorSwatch("info", color: Color.info)
+                ColorSwatch("deepOps", color: ThemeColor.deepOps)
+                ColorSwatch("brassGold", color: ThemeColor.brassGold)
+                ColorSwatch("armyTan", color: ThemeColor.armyTan)
+                ColorSwatch("oliveMist", color: ThemeColor.oliveMist)
+                ColorSwatch("commandBlack", color: ThemeColor.commandBlack)
+                ColorSwatch("tacticalGray", color: ThemeColor.tacticalGray)
+                ColorSwatch("cream", color: ThemeColor.cream)
+                ColorSwatch("success", color: ThemeColor.success)
+                ColorSwatch("warning", color: ThemeColor.warning)
+                ColorSwatch("error", color: ThemeColor.error)
+                ColorSwatch("info", color: ThemeColor.info)
             }
             .padding()
         }
-        .background(Color.background)
+        .background(ThemeColor.background)
     }
 }
 
@@ -221,7 +221,7 @@ struct ColorSwatch: View {
                 .frame(width: 40, height: 40)
                 .overlay(
                     RoundedRectangle(cornerRadius: CornerRadius.small)
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
+                        .stroke(ThemeColor.gray.opacity(0.3), lineWidth: 1)
                 )
             
             Text(name)

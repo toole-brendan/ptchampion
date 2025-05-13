@@ -27,7 +27,7 @@ struct WorkoutCompleteView: View {
                 if let workoutResult = result {
                     Text("Workout Complete!")
                         .heading1()
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
 
                     Form {
                         Section("Summary") {
@@ -50,20 +50,20 @@ struct WorkoutCompleteView: View {
                         } else if fetchError != nil {
                             Section("Rep Details") {
                                 Text("Could not load rep details: \(fetchError!)")
-                                    .foregroundColor(Color.error)
+                                    .foregroundColor(ThemeColor.error)
                             }
                         } else if !repDetailsForChart.isEmpty {
                             Section("Form Quality per Rep") {
                                 Chart(repDetailsForChart) {
                                     RuleMark(y: .value("Target Quality", 0.75)
-                                        .foregroundStyle(Color.success.opacity(0.5)
+                                        .foregroundStyle(ThemeColor.success.opacity(0.5)
                                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [5])
                                     
                                     BarMark(
                                         x: .value("Rep", "Rep \($0.repNumber)"),
                                         y: .value("Quality", $0.formQuality)
                                     )
-                                    .foregroundStyle($0.formQuality >= 0.75 ? Color.success : Color.warning)
+                                    .foregroundStyle($0.formQuality >= 0.75 ? ThemeColor.success : ThemeColor.warning)
                                 }
                                 .chartYScale(domain: 0...1)
                                 .frame(height: 200)
@@ -72,7 +72,7 @@ struct WorkoutCompleteView: View {
                         } else {
                             Section("Rep Details"){
                                 Text("No detailed rep data found for this session.")
-                                    .foregroundColor(Color.textSecondary)
+                                    .foregroundColor(ThemeColor.textSecondary)
                             }
                         }
                     }
@@ -80,7 +80,7 @@ struct WorkoutCompleteView: View {
                     // Handle case where workout result is nil (e.g., save failed)
                     Text("Workout Data Unavailable")
                         .heading2()
-                        .foregroundColor(Color.error)
+                        .foregroundColor(ThemeColor.error)
                     Text("There was an issue saving or loading the workout details.")
                         .body()
                         .multilineTextAlignment(.center)
@@ -95,7 +95,7 @@ struct WorkoutCompleteView: View {
                 .padding(.horizontal)
                 .padding(.bottom)
             }
-            .background(Color.cream)
+            .background(ThemeColor.cream)
             .navigationTitle("Workout Summary")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -167,20 +167,20 @@ struct WorkoutCompletionInfoRow: View {
             VStack(alignment: .leading) {
                 Text(label)
                     .caption()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                 Text(value)
                     .body()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
             }
         } else {
             HStack {
                 Text(label)
                     .body()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                 Spacer()
                 Text(value)
                     .body()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
             }
         }
     }

@@ -45,59 +45,59 @@ extension Color {
     
     // Light mode semantic mapping (direct)
     static var background: Color {
-        Color.cream
+        ThemeColor.cream
     }
     
     static var foreground: Color {
-        Color.commandBlack
+        ThemeColor.commandBlack
     }
     
     static var primary: Color {
-        Color.brassGold
+        ThemeColor.brassGold
     }
     
     static var primaryForeground: Color {
-        Color.deepOps
+        ThemeColor.deepOps
     }
     
     static var secondary: Color {
-        Color.armyTan
+        ThemeColor.armyTan
     }
     
     static var secondaryForeground: Color {
-        Color.commandBlack
+        ThemeColor.commandBlack
     }
     
     static var muted: Color {
-        Color.oliveMist
+        ThemeColor.oliveMist
     }
     
     static var mutedForeground: Color {
-        Color.tacticalGray
+        ThemeColor.tacticalGray
     }
     
     static var accent: Color {
-        Color.brassGold
+        ThemeColor.brassGold
     }
     
     static var accentForeground: Color {
-        Color.deepOps
+        ThemeColor.deepOps
     }
     
     static var card: Color {
-        Color.cream
+        ThemeColor.cream
     }
     
     static var cardForeground: Color {
-        Color.commandBlack
+        ThemeColor.commandBlack
     }
     
     static var popover: Color {
-        Color.cream
+        ThemeColor.cream
     }
     
     static var popoverForeground: Color {
-        Color.commandBlack
+        ThemeColor.commandBlack
     }
     
     // MARK: - Status Colors
@@ -108,24 +108,24 @@ extension Color {
     static let info = Color(hex: "2196F3")
     
     static var destructive: Color {
-        Color.error
+        ThemeColor.error
     }
     
     static var destructiveForeground: Color {
-        Color.white
+        ThemeColor.white
     }
     
     static var ring: Color {
-        Color.brassGold
+        ThemeColor.brassGold
     }
 }
 
 // MARK: - Shadow Values
 
 struct AppShadow {
-    static let small = Shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
-    static let medium = Shadow(color: Color.black.opacity(0.1), radius: 6, x: 0, y: 4)
-    static let large = Shadow(color: Color.black.opacity(0.1), radius: 15, x: 0, y: 10)
-    static let card = Shadow(color: Color.black.opacity(0.06), radius: 4, x: 0, y: 2)
-    static let cardHover = Shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+    static let small = Shadow(color: ThemeColor.black.opacity(0.04), radius: 2, x: 0, y: 1)
+    static let medium = Shadow(color: ThemeColor.black.opacity(0.1), radius: 6, x: 0, y: 4)
+    static let large = Shadow(color: ThemeColor.black.opacity(0.1), radius: 15, x: 0, y: 10)
+    static let card = Shadow(color: ThemeColor.black.opacity(0.06), radius: 4, x: 0, y: 2)
+    static let cardHover = Shadow(color: ThemeColor.black.opacity(0.08), radius: 8, x: 0, y: 4)
 } 

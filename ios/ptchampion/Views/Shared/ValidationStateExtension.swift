@@ -1,8 +1,6 @@
 import SwiftUI
 import PTDesignSystem
 
-fileprivate typealias DSColor = PTDesignSystem.Color
-
 /// ValidationState enum to replace the removed validationState(_:) extension on PTTextField
 enum ValidationState {
     case valid
@@ -11,9 +9,9 @@ enum ValidationState {
     var borderColor: SwiftUI.Color {
         switch self {
         case .valid:
-            return DSColor.success
+            return ThemeColor.success
         case .invalid:
-            return DSColor.error
+            return ThemeColor.error
         }
     }
     

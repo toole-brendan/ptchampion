@@ -47,7 +47,7 @@ public struct FocusableTextField: View {
         .focused($isFocused)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.input)
-                .stroke(isFocused ? Color.brassGold : Color.clear, lineWidth: 2)
+                .stroke(isFocused ? ThemeColor.brassGold : ThemeColor.clear, lineWidth: 2)
         )
         .animation(.easeInOut(duration: 0.2), value: isFocused)
         .introspect(.textField) { (textField: UITextField) in
@@ -77,11 +77,11 @@ struct FocusableTextFieldStyle: TextFieldStyle {
         configuration
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(Color.cardBackground)
+            .background(ThemeColor.cardBackground)
             .cornerRadius(CornerRadius.input)
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.input)
-                    .stroke(isFocused ? Color.brassGold : Color.gray.opacity(0.3), lineWidth: isFocused ? 2 : 1)
+                    .stroke(isFocused ? ThemeColor.brassGold : ThemeColor.gray.opacity(0.3), lineWidth: isFocused ? 2 : 1)
             )
             .body()
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isFocused)
@@ -99,7 +99,7 @@ extension PTTextField {
             .focused(isFocused)
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.input)
-                    .stroke(isFocused.wrappedValue ? Color.brassGold : Color.clear, lineWidth: 2)
+                    .stroke(isFocused.wrappedValue ? ThemeColor.brassGold : ThemeColor.clear, lineWidth: 2)
             )
             .animation(.easeInOut(duration: 0.2), value: isFocused.wrappedValue)
     }
@@ -134,7 +134,7 @@ struct FocusableTextField_Previews: PreviewProvider {
                 .withFocusRing($isFieldFocused)
         }
         .padding()
-        .background(Color.background)
+        .background(ThemeColor.background)
         .previewLayout(.sizeThatFits)
     }
 } 

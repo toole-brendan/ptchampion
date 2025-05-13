@@ -143,42 +143,42 @@ public enum PTBadgeType {
     var backgroundColor: SwiftUI.Color {
         switch self {
         case .default:
-            return DSColor.brassGold.opacity(0.15)
+            return ThemeColor.brassGold.opacity(0.15)
         case .success:
-            return DSColor.success.opacity(0.15)
+            return ThemeColor.success.opacity(0.15)
         case .warning:
-            return DSColor.warning.opacity(0.15)
+            return ThemeColor.warning.opacity(0.15)
         case .error:
-            return DSColor.error.opacity(0.15)
+            return ThemeColor.error.opacity(0.15)
         case .info:
-            return DSColor.info.opacity(0.15)
+            return ThemeColor.info.opacity(0.15)
         case .premium:
-            return DSColor.brassGold.opacity(0.2)
+            return ThemeColor.brassGold.opacity(0.2)
         case .new:
-            return DSColor.primary.opacity(0.15)
+            return ThemeColor.primary.opacity(0.15)
         case .important:
-            return DSColor.error.opacity(0.15)
+            return ThemeColor.error.opacity(0.15)
         }
     }
     
     var foregroundColor: SwiftUI.Color {
         switch self {
         case .default:
-            return DSColor.brassGold
+            return ThemeColor.brassGold
         case .success:
-            return DSColor.success
+            return ThemeColor.success
         case .warning:
-            return DSColor.warning
+            return ThemeColor.warning
         case .error:
-            return DSColor.error
+            return ThemeColor.error
         case .info:
-            return DSColor.info
+            return ThemeColor.info
         case .premium:
-            return DSColor.brassGold
+            return ThemeColor.brassGold
         case .new:
-            return DSColor.primary
+            return ThemeColor.primary
         case .important:
-            return DSColor.error
+            return ThemeColor.error
         }
     }
 }

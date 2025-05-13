@@ -12,29 +12,29 @@ VStack {
                 // Rank placeholder
                 HStack(spacing: 4) {
                     RoundedRectangle(cornerRadius: CornerRadius.small)
-                        .fill(Color.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
+                        .fill(ThemeColor.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
                         .frame(width: 24, height: 20)
                     
                     Circle()
-                        .fill(Color.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
+                        .fill(ThemeColor.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
                         .frame(width: 14, height: 14)
                 }
                 .frame(width: 50, alignment: .leading)
                 
                 // Avatar placeholder
                 Circle()
-                    .fill(Color.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                    .fill(ThemeColor.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
                     .frame(width: 32, height: 32)
                 
                 // Username placeholder
                 RoundedRectangle(cornerRadius: CornerRadius.small)
-                    .fill(Color.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                    .fill(ThemeColor.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
                     .frame(height: 16)
                     .frame(maxWidth: .infinity)
                 
                 // Score placeholder
                 RoundedRectangle(cornerRadius: CornerRadius.small)
-                    .fill(Color.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
+                    .fill(ThemeColor.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
                     .frame(width: 60, height: 18)
             }
             .padding(.vertical, Spacing.small)

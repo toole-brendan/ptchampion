@@ -631,7 +631,7 @@ class WorkoutHistoryViewModel: ObservableObject {
         longestWorkoutStreak = max(maxStreak, currentConsStreak)
         
         // Calculate Current Streak
-        let today = calendar.startOfDay(for: Date()
+        let today = calendar.startOfDay(for: Date())
         let uniqueDaysSet = Set(uniqueDays)
         var currentStrk = 0
         var dateToFind = today

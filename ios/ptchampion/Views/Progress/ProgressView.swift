@@ -15,7 +15,7 @@ struct WorkoutProgressView: View {
             Spacer()
         }
         .padding()
-        .background(Color.background.ignoresSafeArea())
+        .background(ThemeColor.background.ignoresSafeArea())
         .navigationTitle("Progress")
         .navigationBarTitleDisplayMode(.inline)
     }

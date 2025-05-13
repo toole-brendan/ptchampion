@@ -66,11 +66,11 @@ struct LoginView: View {
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 150, height: 150)
-                                    .foregroundColor(Color.brassGold)
+                                    .foregroundColor(ThemeColor.brassGold)
                             } else {
                                 // Fallback to text if image is missing
                                 PTLabel("PT CHAMPION", style: .heading)
-                                    .foregroundColor(Color.brassGold)
+                                    .foregroundColor(ThemeColor.brassGold)
                                     .frame(width: 150, height: 150)
                                     .onAppear {
                                         print("WARNING: Logo file not found in asset catalog. Please ensure pt_champion_logo.png is added to Assets.xcassets.")
@@ -85,7 +85,7 @@ struct LoginView: View {
                         
                         // Welcome Text
                         PTLabel("Welcome Back", style: .heading)
-                            .foregroundColor(Color.commandBlack)
+                            .foregroundColor(ThemeColor.commandBlack)
                             .padding(.top, 10)
                         
                         // Form Fields
@@ -166,14 +166,14 @@ struct LoginView: View {
                             // Register Link - Fixed to use direct navigation
                             HStack {
                                 PTLabel("Don't have an account?", style: .caption)
-                                    .foregroundColor(Color.tacticalGray)
+                                    .foregroundColor(ThemeColor.tacticalGray)
                                 
                                 Button(action: {
                                     // Set navigating to register screen using NavigationState
                                     navigationState.navigateTo(.register)
                                 }) {
                                     PTLabel("Register", style: .caption)
-                                        .foregroundColor(Color.brassGold)
+                                        .foregroundColor(ThemeColor.brassGold)
                                 }
                             }
                             .padding(.top, 8)
@@ -183,7 +183,7 @@ struct LoginView: View {
                         // Error message
                         if let errorMessage = auth.errorMessage {
                             PTLabel(errorMessage, style: .caption)
-                                .foregroundColor(Color.error)
+                                .foregroundColor(ThemeColor.error)
                                 .padding(.top, 16)
                         }
                         
@@ -200,7 +200,7 @@ struct LoginView: View {
                     .padding(.bottom, keyboardHeight)
                 }
                 .background(
-                    Color.cream
+                    ThemeColor.cream
                         .ignoresSafeArea(.all)
                 )
                 .onTapGesture {

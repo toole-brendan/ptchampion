@@ -173,7 +173,7 @@ struct WorkoutHistoryItemView: View {
                             .caption()
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.blue)
+                            .background(ThemeColor.blue)
                             .foregroundColor(.white)
                             .cornerRadius(4)
                     }

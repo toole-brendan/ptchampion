@@ -11,48 +11,48 @@ struct DesignSystemDemo: View {
             VStack(spacing: Spacing.section) {
                 Text("PT Champion Design System")
                     .heading1()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                 
                 // Colors section
                 VStack(alignment: .leading, spacing: Spacing.medium) {
                     Text("Colors")
                         .heading3()
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                     
                     Text("Base Colors")
                         .subheading()
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                     
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: Spacing.small) {
-                        colorSwatch("Primary", color: Color.primary)
-                        colorSwatch("Secondary", color: Color.secondary)
-                        colorSwatch("Accent", color: Color.accent)
-                        colorSwatch("Background", color: Color.background)
-                        colorSwatch("Card", color: Color.cardBackground)
-                        colorSwatch("Brass Gold", color: Color.brassGold)
+                        colorSwatch("Primary", color: ThemeColor.primary)
+                        colorSwatch("Secondary", color: ThemeColor.secondary)
+                        colorSwatch("Accent", color: ThemeColor.accent)
+                        colorSwatch("Background", color: ThemeColor.background)
+                        colorSwatch("Card", color: ThemeColor.cardBackground)
+                        colorSwatch("Brass Gold", color: ThemeColor.brassGold)
                     }
                     
                     Text("Text Colors")
                         .subheading()
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                     
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: Spacing.small) {
-                        colorSwatch("Text Primary", color: Color.textPrimary)
-                        colorSwatch("Text Secondary", color: Color.textSecondary)
-                        colorSwatch("Text Tertiary", color: Color.textTertiary)
+                        colorSwatch("Text Primary", color: ThemeColor.textPrimary)
+                        colorSwatch("Text Secondary", color: ThemeColor.textSecondary)
+                        colorSwatch("Text Tertiary", color: ThemeColor.textTertiary)
                     }
                     
                     Text("Status Colors")
                         .subheading()
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                     
                     LazyVGrid(columns: [
                         GridItem(.flexible()),
@@ -60,21 +60,21 @@ struct DesignSystemDemo: View {
                         GridItem(.flexible()),
                         GridItem(.flexible())
                     ], spacing: Spacing.small) {
-                        colorSwatch("Success", color: Color.success)
-                        colorSwatch("Error", color: Color.error)
-                        colorSwatch("Warning", color: Color.warning)
-                        colorSwatch("Info", color: Color.info)
+                        colorSwatch("Success", color: ThemeColor.success)
+                        colorSwatch("Error", color: ThemeColor.error)
+                        colorSwatch("Warning", color: ThemeColor.warning)
+                        colorSwatch("Info", color: ThemeColor.info)
                     }
                 }
                 .padding()
-                .background(Color.cardBackground)
+                .background(ThemeColor.cardBackground)
                 .cornerRadius(CornerRadius.card)
                 
                 // Typography section
                 VStack(alignment: .leading, spacing: Spacing.medium) {
                     Text("Typography")
                         .heading3()
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                     
                     Group {
                         typographySample("Heading 1", 
@@ -111,20 +111,20 @@ struct DesignSystemDemo: View {
                     }
                 }
                 .padding()
-                .background(Color.cardBackground)
+                .background(ThemeColor.cardBackground)
                 .cornerRadius(CornerRadius.card)
                 
                 // Component Examples
                 VStack(alignment: .leading, spacing: Spacing.medium) {
                     Text("Component Examples")
                         .heading3()
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                     
                     // Buttons
                     VStack(alignment: .leading, spacing: Spacing.small) {
                         Text("Buttons")
                             .subheading()
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(ThemeColor.textSecondary)
                         
                         HStack {
                             PTButton("Primary", action: {})
@@ -141,7 +141,7 @@ struct DesignSystemDemo: View {
                     VStack(alignment: .leading, spacing: Spacing.small) {
                         Text("Cards")
                             .subheading()
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(ThemeColor.textSecondary)
                         
                         VStack(alignment: .leading, spacing: Spacing.small) {
                             Text("Card Title")
@@ -157,7 +157,7 @@ struct DesignSystemDemo: View {
                     VStack(alignment: .leading, spacing: Spacing.small) {
                         Text("Text Fields")
                             .subheading()
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(ThemeColor.textSecondary)
                         
                         PTTextField(
                             text: .constant("Example text"),
@@ -168,12 +168,12 @@ struct DesignSystemDemo: View {
                     }
                 }
                 .padding()
-                .background(Color.cardBackground)
+                .background(ThemeColor.cardBackground)
                 .cornerRadius(CornerRadius.card)
             }
             .padding()
         }
-        .background(Color.background)
+        .background(ThemeColor.background)
         .container()
     }
     
@@ -187,7 +187,7 @@ struct DesignSystemDemo: View {
             Text(name)
                 .caption()
                 .multilineTextAlignment(.center)
-                .foregroundColor(Color.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
         }
     }
     
@@ -195,13 +195,13 @@ struct DesignSystemDemo: View {
         HStack {
             Text(name)
                 .font(font)
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
             
             Spacer()
             
             Text(size)
                 .caption()
-                .foregroundColor(Color.textTertiary)
+                .foregroundColor(ThemeColor.textTertiary)
         }
     }
 }

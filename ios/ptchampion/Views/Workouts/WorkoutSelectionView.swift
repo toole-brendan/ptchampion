@@ -24,28 +24,28 @@ struct WorkoutSelectionView: View {
             rawValue: "pushup",
             description: "Upper body strength training focusing on chest, shoulders, and triceps",
             iconName: "pushup",
-            color: DSColor.brassGold
+            color: ThemeColor.brassGold
         ),
         Exercise(
             name: "Sit-ups",
             rawValue: "situp",
             description: "Core strength exercise targeting abdominal muscles",
             iconName: "situp",
-            color: DSColor.deepOps
+            color: ThemeColor.deepOps
         ),
         Exercise(
             name: "Pull-ups",
             rawValue: "pullup",
             description: "Upper body exercise focusing on back, shoulders, and arms",
             iconName: "pullup",
-            color: DSColor.primary
+            color: ThemeColor.primary
         ),
         Exercise(
             name: "Run",
             rawValue: "run",
             description: "Cardiovascular training for endurance and stamina",
             iconName: "running",
-            color: DSColor.success
+            color: ThemeColor.success
         )
     ]
     
@@ -69,8 +69,8 @@ struct WorkoutSelectionView: View {
         .background(
             LinearGradient(
                 gradient: Gradient(colors: [
-                    DSColor.background,
-                    DSColor.background.opacity(0.95)
+                    ThemeColor.background,
+                    ThemeColor.background.opacity(0.95)
                 ]),
                 startPoint: .top,
                 endPoint: .bottom
@@ -89,11 +89,11 @@ struct WorkoutSelectionView: View {
         VStack(alignment: .leading, spacing: Spacing.small) {
             Text("Ready for a Challenge?")
                 .heading1()
-                .foregroundColor(DSColor.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
             
             Text("Select an exercise to begin your workout session")
                 .small()
-                .foregroundColor(DSColor.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.vertical, Spacing.medium)
@@ -180,11 +180,11 @@ struct ExerciseCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(exercise.name)
                         .heading4()
-                        .foregroundColor(DSColor.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                     
                     Text(exercise.description)
                         .small()
-                        .foregroundColor(DSColor.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                         .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -194,12 +194,12 @@ struct ExerciseCard: View {
                 // Arrow
                 Image(systemName: "chevron.right")
                     .caption()
-                    .foregroundColor(DSColor.textTertiary)
+                    .foregroundColor(ThemeColor.textTertiary)
             }
             .padding(Spacing.medium)
-            .background(DSColor.cardBackground)
+            .background(ThemeColor.cardBackground)
             .cornerRadius(CornerRadius.card)
-            .shadow(color: SColor.black.opacity(0.08), radius: 8, x: 0, y: 2)
+            .shadow(color: ThemeColor.black.opacity(0.08), radius: 8, x: 0, y: 2)
             // Interactive effects
             .scaleEffect(isPressed ? 0.98 : 1)
             .brightness(isPressed ? -0.02 : 0)

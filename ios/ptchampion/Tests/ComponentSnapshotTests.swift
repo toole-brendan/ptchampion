@@ -58,7 +58,7 @@ class ComponentSnapshotTests: XCTestCase {
         snapshotTest("Typography", view: 
             TypographySamples()
                 .padding()
-                .background(Color.background)
+                .background(ThemeColor.background)
                 .previewLayout(.sizeThatFits)
         )
         
@@ -66,7 +66,7 @@ class ComponentSnapshotTests: XCTestCase {
         snapshotTest("Typography", view: 
             TypographySamples()
                 .padding()
-                .background(Color.background)
+                .background(ThemeColor.background)
                 .previewLayout(.sizeThatFits),
             colorScheme: .dark
         )
@@ -75,7 +75,7 @@ class ComponentSnapshotTests: XCTestCase {
         snapshotTest("TypographyLargeText", view: 
             TypographySamples()
                 .padding()
-                .background(Color.background)
+                .background(ThemeColor.background)
                 .environment(\.sizeCategory, .accessibilityExtraLarge)
                 .previewLayout(.sizeThatFits)
         )
@@ -155,7 +155,7 @@ class ComponentSnapshotTests: XCTestCase {
         snapshotTest("ContainerPhone", view:
             ContainerDemo()
                 .frame(width: 375)
-                .background(Color.background)
+                .background(ThemeColor.background)
                 .previewLayout(.sizeThatFits)
         )
         
@@ -163,7 +163,7 @@ class ComponentSnapshotTests: XCTestCase {
         snapshotTest("ContainerIPad", view:
             ContainerDemo()
                 .frame(width: 768)
-                .background(Color.background)
+                .background(ThemeColor.background)
                 .previewLayout(.sizeThatFits)
         )
     }
@@ -225,7 +225,7 @@ class ComponentSnapshotTests: XCTestCase {
         snapshotTest("CardVariants", view:
             CardVariantsDemo()
                 .padding()
-                .background(Color.background)
+                .background(ThemeColor.background)
                 .previewLayout(.sizeThatFits)
         )
         
@@ -233,7 +233,7 @@ class ComponentSnapshotTests: XCTestCase {
         snapshotTest("CardVariants", view:
             CardVariantsDemo()
                 .padding()
-                .background(Color.background)
+                .background(ThemeColor.background)
                 .previewLayout(.sizeThatFits),
             colorScheme: .dark
         )
@@ -346,7 +346,7 @@ struct TypographySamples: View {
             Text("1,234").metric()
             Text("code sample").code()
         }
-        .background(Color.background)
+        .background(ThemeColor.background)
     }
 }
 
@@ -363,13 +363,13 @@ struct ContainerDemo: View {
             VStack(spacing: 8) {
                 ForEach(0..<3) { _ in
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.muted)
+                        .fill(ThemeColor.muted)
                         .frame(height: 48)
                 }
             }
         }
         .container()
-        .background(Color.card)
+        .background(ThemeColor.card)
     }
 }
 
@@ -414,7 +414,7 @@ struct CardVariantsDemo: View {
             }
         }
         .padding()
-        .background(Color.background)
+        .background(ThemeColor.background)
     }
 }
 

@@ -34,7 +34,7 @@ struct BodyPoseDetectionView: View {
             // Pre-permission request view
             if showPermissionRequest {
                 ZStack {
-                    Color.black.opacity(0.7).edgesIgnoringSafeArea(.all)
+                    ThemeColor.black.opacity(0.7).edgesIgnoringSafeArea(.all)
                     CameraPermissionRequestView(
                         onRequestPermission: {
                             showPermissionRequest = false
@@ -62,7 +62,7 @@ struct BodyPoseDetectionView: View {
                 Spacer()
                 Text("Body detected: \(detectedBody != nil ? "Yes" : "No")")
                     .padding(6)
-                    .background(Color.black.opacity(0.7)
+                    .background(ThemeColor.black.opacity(0.7)
                     .foregroundColor(.white)
                     .cornerRadius(8)
                     .padding()
@@ -189,13 +189,13 @@ struct BodyPoseDetectionView: View {
                     .fontWeight(.semibold)
                     .frame(minWidth: 200)
                     .padding()
-                    .background(Color.blue)
+                    .background(ThemeColor.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.8)
+        .background(ThemeColor.black.opacity(0.8)
         .edgesIgnoringSafeArea(.all)
     }
 }

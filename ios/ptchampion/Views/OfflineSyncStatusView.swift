@@ -49,7 +49,7 @@ struct OfflineSyncStatusView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(Color.black.opacity(0.05))
+            .background(ThemeColor.black.opacity(0.05))
             .cornerRadius(8)
             .contentShape(Rectangle())
             .onTapGesture {
@@ -101,7 +101,7 @@ struct OfflineSyncStatusView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
-                            .background(Color.gray)
+                            .background(ThemeColor.gray)
                             .foregroundColor(.white)
                             .cornerRadius(4)
                         } else {
@@ -112,8 +112,8 @@ struct OfflineSyncStatusView: View {
                                 .padding(.vertical, 4)
                                 .background(
                                     networkMonitor.isConnected && pendingSyncCount > 0 
-                                    ? Color.blue 
-                                    : Color.gray
+                                    ? ThemeColor.blue 
+                                    : ThemeColor.gray
                                 )
                                 .foregroundColor(.white)
                                 .cornerRadius(4)
@@ -124,7 +124,7 @@ struct OfflineSyncStatusView: View {
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(Color.black.opacity(0.03))
+                .background(ThemeColor.black.opacity(0.03))
                 .cornerRadius(8)
             }
         }

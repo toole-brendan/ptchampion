@@ -14,7 +14,7 @@ struct MilitaryStyleShowcase: View {
                         HStack {
                             Text("STANDARD LABEL")
                                 .militaryMonospaced(size: Spacing.small)
-                                .foregroundColor(Color.textSecondary)
+                                .foregroundColor(ThemeColor.textSecondary)
                             
                             Spacer()
                         }
@@ -23,7 +23,7 @@ struct MilitaryStyleShowcase: View {
                         HStack {
                             Text("WITH BRASS ACCENT")
                                 .militaryMonospaced(size: Spacing.small)
-                                .foregroundColor(Color.brassGold)
+                                .foregroundColor(ThemeColor.brassGold)
                             
                             Spacer()
                         }
@@ -75,11 +75,11 @@ struct MilitaryStyleShowcase: View {
                         stencilCapsTextView()
                         
                         Text("Primary Command")
-                            .foregroundColor(Color.primary)
+                            .foregroundColor(ThemeColor.primary)
                             .militaryMonospaced()
                         
                         Text("Brass Accent")
-                            .foregroundColor(Color.brassGold)
+                            .foregroundColor(ThemeColor.brassGold)
                             .militaryMonospaced()
                     }
                     .padding()
@@ -98,8 +98,8 @@ struct MilitaryStyleShowcase: View {
                                 .militaryMonospaced()
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.primary)
-                                .foregroundColor(Color.textOnPrimary)
+                                .background(ThemeColor.primary)
+                                .foregroundColor(ThemeColor.textOnPrimary)
                         }
                         
                         // Secondary button with military style
@@ -110,11 +110,11 @@ struct MilitaryStyleShowcase: View {
                                 .militaryMonospaced()
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.secondary.opacity(0.1)
-                                .foregroundColor(Color.secondary)
+                                .background(ThemeColor.secondary.opacity(0.1)
+                                .foregroundColor(ThemeColor.secondary)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: CornerRadius.button)
-                                        .stroke(Color.secondary, lineWidth: 1)
+                                        .stroke(ThemeColor.secondary, lineWidth: 1)
                                 )
                         }
                         
@@ -126,11 +126,11 @@ struct MilitaryStyleShowcase: View {
                                 .militaryMonospaced()
                                 .frame(maxWidth: .infinity)
                                 .padding()
-                                .background(Color.brassGold.opacity(0.1)
-                                .foregroundColor(Color.brassGold)
+                                .background(ThemeColor.brassGold.opacity(0.1)
+                                .foregroundColor(ThemeColor.brassGold)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: CornerRadius.button)
-                                        .stroke(Color.brassGold, lineWidth: 1)
+                                        .stroke(ThemeColor.brassGold, lineWidth: 1)
                                 )
                         }
                     }
@@ -143,15 +143,15 @@ struct MilitaryStyleShowcase: View {
                     HStack(spacing: 10) {
                         Text("PT READY")
                             .militaryMonospaced(size: 12)
-                            .badgeStyle(color: Color.success)
+                            .badgeStyle(color: ThemeColor.success)
                         
                         Text("ELITE")
                             .militaryMonospaced(size: 12)
-                            .badgeStyle(color: Color.brassGold)
+                            .badgeStyle(color: ThemeColor.brassGold)
                         
                         Text("IMPROVING")
                             .militaryMonospaced(size: 12)
-                            .badgeStyle(color: Color.primary)
+                            .badgeStyle(color: ThemeColor.primary)
                     }
                     .padding(.horizontal)
                     
@@ -159,7 +159,7 @@ struct MilitaryStyleShowcase: View {
                 }
                 .padding(.top, 20)
             }
-            .background(Color.background.ignoresSafeArea()
+            .background(ThemeColor.background.ignoresSafeArea()
             .navigationTitle("Military UI Kit")
             .navigationBarTitleDisplayMode(.large)
         }
@@ -184,10 +184,10 @@ struct MilitaryStyleShowcase: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .militaryMonospaced(size: Spacing.small)
-                .foregroundColor(Color.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
             
             Rectangle()
-                .fill(Color.tacticalGray.opacity(0.3)
+                .fill(ThemeColor.tacticalGray.opacity(0.3)
                 .frame(height: 1)
         }
         .padding(.horizontal)

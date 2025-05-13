@@ -68,17 +68,17 @@ public struct MetricCardView: View {
                 if let icon = metric.icon {
                     icon
                         .font(.system(size: 15, weight: .medium)
-                        .foregroundColor(Color.brassGold)
+                        .foregroundColor(ThemeColor.brassGold)
                         .frame(width: 22, height: 22)
                         .background(
                             Circle()
-                                .fill(Color.brassGold.opacity(0.15)
+                                .fill(ThemeColor.brassGold.opacity(0.15)
                         )
                 }
                 
                 Text(metric.title)
                     .small(weight: .medium))
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .textCase(.uppercase)
                 
                 Spacer()
@@ -110,14 +110,14 @@ public struct MetricCardView: View {
                     // For placeholder or zero values
                     Text(displayValue)
                         .heading1(weight: .bold, design: .rounded).monospacedDigit()
-                        .foregroundColor(Color.tacticalGray)
+                        .foregroundColor(ThemeColor.tacticalGray)
                         .opacity(0.7)
                 } else {
                     // For actual values with counting animation
                     if let intValue = Int(displayValue), animateValue {
                         Text("\(intValue)")
                             .heading1(weight: .bold, design: .rounded).monospacedDigit()
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                             .contentTransition(.numericText()
                             .transaction { transaction in
                                 transaction.animation = .spring(response: 0.8, dampingFraction: 0.8)
@@ -125,20 +125,20 @@ public struct MetricCardView: View {
                     } else if let doubleValue = Double(displayValue), animateValue {
                         Text(String(format: "%.1f", doubleValue))
                             .heading1(weight: .bold, design: .rounded).monospacedDigit()
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                             .contentTransition(.numericText()
                     } else {
                         // For string values or before animation
                         Text(displayValue)
                             .heading1(weight: .bold, design: .rounded).monospacedDigit()
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                     }
                 }
                 
                 if let unit = metric.unit {
                     Text(unit)
                         .body(weight: .medium))
-                        .foregroundColor(Color.textTertiary)
+                        .foregroundColor(ThemeColor.textTertiary)
                         .padding(.leading, 2)
                         .alignmentGuide(.firstTextBaseline) { d in
                             d[.firstTextBaseline] - 4 // Align slightly below baseline
@@ -150,7 +150,7 @@ public struct MetricCardView: View {
             if let description = metric.description {
                 Text(description)
                     .font(.system(size: 13)
-                    .foregroundColor(Color.textTertiary)
+                    .foregroundColor(ThemeColor.textTertiary)
                     .lineLimit(1)
             }
         }
@@ -160,15 +160,15 @@ public struct MetricCardView: View {
             ZStack {
                 // Base layer
                 RoundedRectangle(cornerRadius: CornerRadius.card)
-                    .fill(Color.cardBackground)
+                    .fill(ThemeColor.cardBackground)
                 
                 // Subtle accent gradient at top
                 RoundedRectangle(cornerRadius: CornerRadius.card)
                     .fill(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                Color.brassGold.opacity(0.05),
-                                Color.cardBackground.opacity(0.0)
+                                ThemeColor.brassGold.opacity(0.05),
+                                ThemeColor.cardBackground.opacity(0.0)
                             ]),
                             startPoint: .top,
                             endPoint: .center
@@ -180,8 +180,8 @@ public struct MetricCardView: View {
                     .strokeBorder(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                Color.brassGold.opacity(0.2),
-                                Color.cardBackground.opacity(0.1)
+                                ThemeColor.brassGold.opacity(0.2),
+                                ThemeColor.cardBackground.opacity(0.1)
                             ]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -191,7 +191,7 @@ public struct MetricCardView: View {
             }
         )
         .shadow(
-            color: Color.black.opacity(0.08),
+            color: ThemeColor.black.opacity(0.08),
             radius: 8,
             x: 0,
             y: 2
@@ -210,7 +210,7 @@ struct MetricCardButtonStyle: ButtonStyle {
             // Change shadow on press for tactile feedback
             .shadow(
                 color: configuration.isPressed ? 
-                    Color.black.opacity(0.05) : Color.black.opacity(0.08),
+                    ThemeColor.black.opacity(0.05) : ThemeColor.black.opacity(0.08),
                 radius: configuration.isPressed ? 4 : 8,
                 x: 0,
                 y: configuration.isPressed ? 1 : 2
@@ -258,7 +258,7 @@ struct MetricCardView_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(Color.background.opacity(0.5)
+        .background(ThemeColor.background.opacity(0.5)
         .previewLayout(.sizeThatFits)
         
         // Dark mode preview
@@ -274,7 +274,7 @@ struct MetricCardView_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(Color.black)
+        .background(ThemeColor.black)
         .environment(\.colorScheme, .dark)
         .previewLayout(.sizeThatFits)
     }

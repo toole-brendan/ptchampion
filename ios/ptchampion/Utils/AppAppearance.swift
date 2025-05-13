@@ -17,28 +17,28 @@ struct AppAppearance {
         
         // Configure background - make it match the deepOpsGreen color
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(Color.deepOps)
+        appearance.backgroundColor = UIColor(ThemeColor.deepOps)
         
         // Remove the default separator line
         appearance.shadowColor = .clear
         
         // Configure selected item colors
         let selectedAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor(Color.brassGold),
+            .foregroundColor: UIColor(ThemeColor.brassGold),
             .font: UIFont.systemFont(ofSize: 10, weight: .semibold)
         ]
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = selectedAttributes
         
         // Configure normal item colors
         let normalAttributes: [NSAttributedString.Key: Any] = [
-            .foregroundColor: UIColor(Color.textTertiary),
+            .foregroundColor: UIColor(ThemeColor.textTertiary),
             .font: UIFont.systemFont(ofSize: 10, weight: .semibold)
         ]
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = normalAttributes
         
         // Configure icons
-        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(Color.brassGold)
-        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(Color.textTertiary)
+        appearance.stackedLayoutAppearance.selected.iconColor = UIColor(ThemeColor.brassGold)
+        appearance.stackedLayoutAppearance.normal.iconColor = UIColor(ThemeColor.textTertiary)
         
         // Apply the appearance to both UITabBar.appearance() and standardAppearance
         UITabBar.appearance().standardAppearance = appearance
@@ -63,7 +63,7 @@ struct AppAppearance {
         appearance.shadowColor = .clear
         
         // Set button colors - still using gold for nav buttons
-        UINavigationBar.appearance().tintColor = UIColor(Color.brassGold)
+        UINavigationBar.appearance().tintColor = UIColor(ThemeColor.brassGold)
         
         // Apply the appearance to both UINavigationBar.appearance() and standardAppearance
         UINavigationBar.appearance().standardAppearance = appearance
@@ -81,7 +81,7 @@ struct AppAppearance {
         guard let context = UIGraphicsGetCurrentContext() else { return nil }
         
         // Get the base color
-        let baseColor = UIColor(Color.deepOps)
+        let baseColor = UIColor(ThemeColor.deepOps)
         baseColor.setFill()
         context.fill(CGRect(origin: .zero, size: size)
         

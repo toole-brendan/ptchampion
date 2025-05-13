@@ -78,10 +78,10 @@ struct ComponentGalleryView: View {
                         }
                     }) {
                         PTLabel(components[index], style: .bodyBold)
-                            .foregroundColor(selectedComponent == index ? DSColor.primary : DSColor.textSecondary)
+                            .foregroundColor(selectedComponent == index ? ThemeColor.primary : ThemeColor.textSecondary)
                             .padding(.vertical, Spacing.small)
                             .padding(.horizontal, Spacing.medium)
-                            .background(selectedComponent == index ? DSColor.primary.opacity(0.2) : SwiftUI.Color.clear)
+                            .background(selectedComponent == index ? ThemeColor.primary.opacity(0.2) : SwiftUI.Color.clear)
                             .cornerRadius(CornerRadius.full)
                     }
                 }
@@ -89,7 +89,7 @@ struct ComponentGalleryView: View {
             .padding(.horizontal, Spacing.medium)
         }
         .padding(.vertical, Spacing.small)
-        .background(DSColor.background.opacity(0.5))
+        .background(ThemeColor.background.opacity(0.5))
     }
 }
 
@@ -446,14 +446,14 @@ VStack {
                             }
                             
                             ZStack {
-                                DSColor.primary
+                                ThemeColor.primary
                                     .frame(width: 60, height: 60)
                                     .cornerRadius(CornerRadius.medium)
                                 
                                 VStack {
                                     Spinner(variant: .light)
                                     PTLabel("Light", style: .caption)
-                                        .foregroundColor(DSColor.background)
+                                        .foregroundColor(ThemeColor.background)
                                 }
                                 .card()
                             }
@@ -500,7 +500,7 @@ VStack {
                             Image(systemName: "gear")
                                 .resizable()
                                 .frame(width: 24, height: 24)
-                                .foregroundColor(DSColor.brassGold)
+                                .foregroundColor(ThemeColor.brassGold)
                         }
                     }
                 )
@@ -588,12 +588,12 @@ VStack {
                         .cornerRadius(CornerRadius.medium)
                         .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .stroke(DSColor.textTertiary.opacity(0.3), lineWidth: 1)
+                                .stroke(ThemeColor.textTertiary.opacity(0.3), lineWidth: 1)
                         )
                         .padding(.horizontal)
                 }
                 .padding()
-                .background(DSColor.cardBackground)
+                .background(ThemeColor.cardBackground)
                 .cornerRadius(CornerRadius.medium)
             }
         }
@@ -636,18 +636,18 @@ VStack {
             sectionHeader(title: "Colors", description: "Design system color palette")
             
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: Spacing.medium) {
-                colorSwatch("Background", color: DSColor.background)
-                colorSwatch("Card Background", color: DSColor.cardBackground)
-                colorSwatch("Primary", color: DSColor.primary)
-                colorSwatch("Primary Light", color: DSColor.primary.opacity(0.2))
-                colorSwatch("Secondary", color: DSColor.secondary)
-                colorSwatch("Accent", color: DSColor.accent)
-                colorSwatch("Success", color: DSColor.success)
-                colorSwatch("Error", color: DSColor.error)
-                colorSwatch("Warning", color: DSColor.warning)
-                colorSwatch("Text Primary", color: DSColor.textPrimary)
-                colorSwatch("Text Secondary", color: DSColor.textSecondary)
-                colorSwatch("Text Tertiary", color: DSColor.textTertiary)
+                colorSwatch("Background", color: ThemeColor.background)
+                colorSwatch("Card Background", color: ThemeColor.cardBackground)
+                colorSwatch("Primary", color: ThemeColor.primary)
+                colorSwatch("Primary Light", color: ThemeColor.primary.opacity(0.2))
+                colorSwatch("Secondary", color: ThemeColor.secondary)
+                colorSwatch("Accent", color: ThemeColor.accent)
+                colorSwatch("Success", color: ThemeColor.success)
+                colorSwatch("Error", color: ThemeColor.error)
+                colorSwatch("Warning", color: ThemeColor.warning)
+                colorSwatch("Text Primary", color: ThemeColor.textPrimary)
+                colorSwatch("Text Secondary", color: ThemeColor.textSecondary)
+                colorSwatch("Text Tertiary", color: ThemeColor.textTertiary)
             }
         }
     }
@@ -657,10 +657,10 @@ VStack {
     private func sectionHeader(title: String, description: String) -> some View {
         VStack(alignment: .leading, spacing: Spacing.extraSmall) {
             PTLabel(title, style: .heading)
-                .foregroundColor(DSColor.primary)
+                .foregroundColor(ThemeColor.primary)
             
             PTLabel(description, style: .body)
-                .foregroundColor(DSColor.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
         }
     }
     
@@ -672,7 +672,7 @@ VStack {
                 .cornerRadius(CornerRadius.small)
             
             PTLabel.sized(name, style: .caption, size: .medium)
-                .foregroundColor(DSColor.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
         }
     }
 }

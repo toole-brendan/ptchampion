@@ -16,8 +16,8 @@ struct CardStyle {
     
     // Border
     static let borderWidth: CGFloat = 1
-    static let borderColor = Color.border
-    static let interactiveBorderColor = Color.brassGold.opacity(0.4)
+    static let borderColor = ThemeColor.border
+    static let interactiveBorderColor = ThemeColor.brassGold.opacity(0.4)
     
     // Interactive properties
     static let pressedScale: CGFloat = 0.98
@@ -86,9 +86,9 @@ struct CardModifier: ViewModifier {
     private var backgroundColor: Color {
         switch variant {
         case .panel:
-            return Color.creamDark
+            return ThemeColor.creamDark
         default:
-            return Color.card
+            return ThemeColor.card
         }
     }
     
@@ -117,7 +117,7 @@ struct CardModifier: ViewModifier {
     private var shadowColor: Color {
         switch variant {
         case .flush:
-            return Color.clear
+            return ThemeColor.clear
         case .elevated:
             return AppShadow.medium.color
         case .interactive:
@@ -147,7 +147,7 @@ struct CardDividerModifier: ViewModifier {
         content
             .frame(height: 1)
             .frame(width: 64)
-            .background(Color.brassGold)
+            .background(ThemeColor.brassGold)
             .padding(.vertical, 8)
     }
 }

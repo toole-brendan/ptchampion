@@ -36,8 +36,8 @@ struct DashboardView: View {
                 RadialGradient(
                     gradient: Gradient(colors: [
                         // Make center slightly lighter than main background, or use a very light compatible color
-                        Color.background.opacity(0.9), // Assuming background is opaque, making it slightly more transparent in center effectively lightens against a base
-                        Color.background
+                        ThemeColor.background.opacity(0.9), // Assuming background is opaque, making it slightly more transparent in center effectively lightens against a base
+                        ThemeColor.background
                     ]),
                     center: .center,
                     startRadius: 50,
@@ -77,11 +77,11 @@ struct DashboardView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.brassGold.opacity(0.15))
-                            .foregroundColor(Color.brassGold)
+                            .background(ThemeColor.brassGold.opacity(0.15))
+                            .foregroundColor(ThemeColor.brassGold)
                             .overlay(
                                 RoundedRectangle(cornerRadius: CornerRadius.button)
-                                    .stroke(Color.brassGold, lineWidth: 1)
+                                    .stroke(ThemeColor.brassGold, lineWidth: 1)
                             )
                             .cornerRadius(CornerRadius.button)
                         }
@@ -126,8 +126,8 @@ struct DashboardView: View {
                 .foregroundStyle(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            Color.brassGold.opacity(0.9), // Lighter gold at top
-                            Color.brassGold // Standard gold at bottom
+                            ThemeColor.brassGold.opacity(0.9), // Lighter gold at top
+                            ThemeColor.brassGold // Standard gold at bottom
                         ]),
                         startPoint: .top,
                         endPoint: .bottom
@@ -188,7 +188,7 @@ struct DashboardView: View {
             Group {
                 Text("ACTIVITY FEED")
                     .militaryMonospaced(size: Spacing.small)
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .padding(.top, Spacing.large)
                     .padding(.bottom, Spacing.small)
                 
@@ -202,7 +202,7 @@ struct DashboardView: View {
                             let activity = displayedActivities[index]
                             HStack { 
                                 Image(systemName: activity.icon)
-                                    .foregroundColor(Color.textSecondary)
+                                    .foregroundColor(ThemeColor.textSecondary)
                                     .frame(width: 20, alignment: .center)
                                 VStack(alignment: .leading) {
                                     Text(activity.text)
@@ -210,19 +210,19 @@ struct DashboardView: View {
                                         .lineLimit(2)
                                     Text(relativeDateFormatter(date: activity.date))
                                         .caption()
-                                        .foregroundColor(Color.textTertiary)
+                                        .foregroundColor(ThemeColor.textTertiary)
                                 }
                                 Spacer() 
                             }
                             .padding(.vertical, Spacing.extraSmall) 
                             
                             // Always render separator, control by opacity, use simple color
-                            PTSeparator(color: Color.gray.opacity(0.5))
+                            PTSeparator(color: ThemeColor.gray.opacity(0.5))
                                 .opacity(index < displayedActivities.count - 1 ? 1 : 0)
                         }
                     }
                     .padding(Spacing.itemSpacing)
-                    .background(Color.cardBackground)
+                    .background(ThemeColor.cardBackground)
                     .cornerRadius(CornerRadius.medium)
                 }
             }

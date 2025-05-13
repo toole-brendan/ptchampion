@@ -126,7 +126,7 @@ struct WorkoutSessionView: View {
                         print("View dismissed before workout started")
                     }
                 }
-                .foregroundColor(Color.error)
+                .foregroundColor(ThemeColor.error)
                 // Disable the End button if the workout is already finished to prevent multiple calls
                 .disabled(viewModel.workoutState == .finished)
             }
@@ -136,7 +136,7 @@ struct WorkoutSessionView: View {
                     Image(systemName: "arrow.triangle.2.circlepath.camera")
                         .heading3()
                 }
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
             }
         }
         .fullScreenCover(isPresented: $viewModel.showWorkoutCompleteView) {
@@ -185,7 +185,7 @@ struct WorkoutSessionView: View {
             } label: {
                 Text("Ready for \(exerciseType.displayName)")
                     .bodyBold()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                     .padding()
                     .frame(width: 300)
                     .background(.ultraThinMaterial)
@@ -211,7 +211,7 @@ struct WorkoutSessionView: View {
                 .padding(30)
                 .background(
                     Circle()
-                        .fill(Color.black.opacity(0.5)
+                        .fill(ThemeColor.black.opacity(0.5)
                         .frame(width: 150, height: 150)
                 )
             
@@ -275,7 +275,7 @@ struct WorkoutSessionView: View {
         VStack(spacing: Spacing.medium) {
             Image(systemName: "camera.slash.fill")
                 .font(.system(size: 50)
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
             
             PTLabel("Camera Access Denied", style: .heading)
             

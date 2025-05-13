@@ -80,11 +80,11 @@ struct DashboardHeader: View {
             ZStack {
                 // Background with subtle pattern overlay for texture
                 Rectangle()
-                    .fill(Color.deepOps)
+                    .fill(ThemeColor.deepOps)
                     .overlay(
                         Image(systemName: "circle.grid.3x3.fill")
                             .resizable(resizingMode: .tile)
-                            .foregroundColor(Color.white.opacity(0.03))
+                            .foregroundColor(ThemeColor.white.opacity(0.03))
                             .blendMode(.overlay)
                     )
                 
@@ -95,16 +95,16 @@ struct DashboardHeader: View {
                         VStack(alignment: .leading, spacing: Spacing.small / 2) {
                             Text(title)
                                 .font(.system(size: 24, weight: .bold))
-                                .foregroundColor(Color.cream)
-                                .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
+                                .foregroundColor(ThemeColor.cream)
+                                .shadow(color: ThemeColor.black.opacity(0.2), radius: 1, x: 0, y: 1)
                                 .offset(x: isLoaded || reduceMotion ? 0 : -10, y: 0)
                                 .opacity(isLoaded ? 1 : 0)
                             
                             if let subtitle = subtitle {
                                 Text(subtitle)
                                     .font(.system(size: Spacing.small))
-                                    .foregroundColor(Color.cream.opacity(0.8))
-                                    .shadow(color: Color.black.opacity(0.2), radius: 1, x: 0, y: 1)
+                                    .foregroundColor(ThemeColor.cream.opacity(0.8))
+                                    .shadow(color: ThemeColor.black.opacity(0.2), radius: 1, x: 0, y: 1)
                                     .offset(x: isLoaded || reduceMotion ? 0 : -10, y: 0)
                                     .opacity(isLoaded ? 1 : 0.7)
                             }
@@ -122,20 +122,20 @@ struct DashboardHeader: View {
                             Button(action: { onProfileTap?() }) {
                                 ZStack {
                                     Circle()
-                                        .fill(Color.brassGold.opacity(0.2))
+                                        .fill(ThemeColor.brassGold.opacity(0.2))
                                         .frame(width: 40, height: 40)
                                     
                                     Text(userInitials)
                                         .fontWeight(.bold)
-                                        .foregroundColor(Color.brassGold)
+                                        .foregroundColor(ThemeColor.brassGold)
                                 }
                                 .overlay(
                                     Circle()
                                         .stroke(
                                             LinearGradient(
                                                 gradient: Gradient(colors: [
-                                                    Color.brassGold,
-                                                    Color.brassGold.opacity(0.7)
+                                                    ThemeColor.brassGold,
+                                                    ThemeColor.brassGold.opacity(0.7)
                                                 ]),
                                                 startPoint: .topLeading,
                                                 endPoint: .bottomTrailing
@@ -157,9 +157,9 @@ struct DashboardHeader: View {
             // Bottom decorative line with gradient
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color.brassGold.opacity(0.7),
-                    Color.brassGold,
-                    Color.brassGold.opacity(0.7)
+                    ThemeColor.brassGold.opacity(0.7),
+                    ThemeColor.brassGold,
+                    ThemeColor.brassGold.opacity(0.7)
                 ]),
                 startPoint: .leading,
                 endPoint: .trailing
@@ -229,7 +229,7 @@ struct DashboardHeader_Previews: PreviewProvider {
                         Image(systemName: "gear")
                             .resizable()
                             .frame(width: 24, height: 24)
-                            .foregroundColor(Color.brassGold)
+                            .foregroundColor(ThemeColor.brassGold)
                     }
                 }
             )

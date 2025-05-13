@@ -13,20 +13,20 @@ struct QuickLinkCardView: View {
                 if isSystemIcon {
                     Image(systemName: icon)
                         .font(.system(size: 48))
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                         .frame(width: 64, height: 64)
                         .scaledToFit()
                 } else {
                     Image(icon)
                         .resizable()
                         .scaledToFit()
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                         .frame(width: 64, height: 64)
                 }
                 
                 Text(title)
                     .small(weight: .semibold, design: .monospaced)
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                     .lineLimit(1)
                     .multilineTextAlignment(.center)
             }

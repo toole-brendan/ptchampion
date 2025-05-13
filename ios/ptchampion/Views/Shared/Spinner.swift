@@ -27,9 +27,9 @@ struct Spinner: View {
         
         var color: SwiftUI.Color {
             switch self {
-            case .primary: return DSColor.primary
-            case .secondary: return DSColor.textSecondary
-            case .light: return DSColor.background
+            case .primary: return ThemeColor.primary
+            case .secondary: return ThemeColor.textSecondary
+            case .light: return ThemeColor.background
             }
         }
     }
@@ -92,10 +92,10 @@ extension Spinner {
                 Spinner(size: .large)
                 
                 PTLabel("Loading...", style: .body)
-                    .foregroundColor(DSColor.background)
+                    .foregroundColor(ThemeColor.background)
             }
             .padding(Spacing.large)
-            .background(DSColor.primary.opacity(0.85))
+            .background(ThemeColor.primary.opacity(0.85))
             .cornerRadius(CornerRadius.large)
         }
         .ignoresSafeArea()
@@ -148,7 +148,7 @@ struct Spinner_Previews: PreviewProvider {
                     Spinner(variant: .secondary)
                     
                     ZStack {
-                        DSColor.primary
+                        ThemeColor.primary
                             .frame(width: 80, height: 80)
                             .cornerRadius(CornerRadius.medium)
                         Spinner(variant: .light)
@@ -160,14 +160,14 @@ struct Spinner_Previews: PreviewProvider {
                     VStack {
                         PTLabel("This content is loading", style: .body)
                             .padding()
-                            .background(DSColor.cardBackground)
+                            .background(ThemeColor.cardBackground)
                             .cornerRadius(CornerRadius.medium)
                     }
                     .frame(width: 200, height: 100)
                 }
             }
             .padding()
-            .background(DSColor.background.opacity(0.5))
+            .background(ThemeColor.background.opacity(0.5))
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Light Mode")
             

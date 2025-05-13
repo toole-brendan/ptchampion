@@ -74,19 +74,19 @@ struct WorkoutHistoryRow: View {
                 .padding(10)
                 .background(
                     Circle()
-                        .fill(Color.brassGold.opacity(0.1))
+                        .fill(ThemeColor.brassGold.opacity(0.1))
                 )
-                .foregroundColor(Color.brassGold)
+                .foregroundColor(ThemeColor.brassGold)
             
             // Workout details
             VStack(alignment: .leading, spacing: 4) {
                 Text(result.exerciseType.capitalized)
                     .body(weight: .semibold)
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                 
                 Text(result.startTime, formatter: Self.shortDateFormatter)
                     .small()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
             }
             
             Spacer()
@@ -96,11 +96,11 @@ struct WorkoutHistoryRow: View {
                 Text(performanceMetric.value)
                     .heading3(weight: .bold, design: .rounded)
                     .monospacedDigit()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                 
                 Text(performanceMetric.label)
                     .small()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .padding(.leading, 2)
             }
             
@@ -108,7 +108,7 @@ struct WorkoutHistoryRow: View {
             VStack(spacing: 2) {
                 Text("Duration")
                     .caption()
-                    .foregroundColor(Color.textTertiary)
+                    .foregroundColor(ThemeColor.textTertiary)
                 
                 Text(formatDuration(result.durationSeconds))
                     .small(weight: .medium, design: .monospaced)
@@ -116,9 +116,9 @@ struct WorkoutHistoryRow: View {
                     .padding(.vertical, 4)
                     .background(
                         Capsule()
-                            .fill(Color.tacticalGray.opacity(0.1))
+                            .fill(ThemeColor.tacticalGray.opacity(0.1))
                     )
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
             }
         }
         .padding(Spacing.medium)
@@ -169,7 +169,7 @@ struct WorkoutHistoryRow_Previews: PreviewProvider {
         }
         .previewLayout(.sizeThatFits)
         .padding()
-        .background(Color.cardBackground)
+        .background(ThemeColor.cardBackground)
     }
 }
 

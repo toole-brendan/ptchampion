@@ -19,7 +19,7 @@ struct ExerciseHUDView: View {
                 VStack(alignment: .leading) {
                     Text("REPS")
                         .caption()
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                     Text("\(repCount)")
                         .heading1()
                 }
@@ -27,7 +27,7 @@ struct ExerciseHUDView: View {
                 VStack(alignment: .trailing) {
                     Text("TIME")
                         .caption()
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                     Text(elapsedTimeFormatted)
                         .heading1()
                 }
@@ -43,7 +43,7 @@ struct ExerciseHUDView: View {
             if showControls {
                 Text(liveFeedback)
                     .bodyBold()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                     .padding()
                     .background(.thinMaterial) // Using system blur material for better transparency
                     .cornerRadius(CornerRadius.small)
@@ -58,7 +58,7 @@ struct ExerciseHUDView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 50, height: 50)
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                     }
 
                     Button { toggleSoundAction() } label: {
@@ -66,7 +66,7 @@ struct ExerciseHUDView: View {
                             .resizable()
                             .scaledToFit()
                             .frame(width: 50, height: 50)
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                     }
                 }
                 .padding()
@@ -97,7 +97,7 @@ struct ExerciseHUDView_Previews: PreviewProvider {
             togglePauseAction: { },
             toggleSoundAction: { }
         )
-        .background(Color.black.opacity(0.5) // Lighter background for preview
+        .background(ThemeColor.black.opacity(0.5) // Lighter background for preview
         .previewLayout(.sizeThatFits)
     }
 }

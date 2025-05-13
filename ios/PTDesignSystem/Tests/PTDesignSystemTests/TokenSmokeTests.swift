@@ -4,10 +4,10 @@ import XCTest
 final class TokenSmokeTests: XCTestCase {
     func testTokensCompile() {
         // Colors
-        _ = Color.brand500
-        _ = Color.success500
-        _ = Color.primary
-        _ = Color.surface
+        _ = ThemeColor.brand500
+        _ = ThemeColor.success500
+        _ = ThemeColor.primary
+        _ = ThemeColor.surface
         
         // Typography
         _ = Typography.h1

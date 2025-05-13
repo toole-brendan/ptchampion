@@ -15,7 +15,7 @@ import SwiftUI
 
 // Just a central place to list and document the key token modules/sources
 // - AppTheme.swift (base types) - DEPRECATED
-// - Color.swift (color tokens)
+// - ThemeColor.swift (color tokens)
 // - Typography.swift (font and text tokens)
 // - Spacing.swift (spacing tokens)
 // - Shadow.swift (shadow tokens)

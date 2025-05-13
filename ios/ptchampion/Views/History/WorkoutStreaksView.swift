@@ -12,21 +12,21 @@ VStack {
                 VStack(alignment: .center, spacing: Spacing.small) {
                     HStack(spacing: 6) {
                         Image(systemName: "flame.fill")
-                            .foregroundColor(Color.brassGold)
+                            .foregroundColor(ThemeColor.brassGold)
                             .small()
                         
                         Text("Current Streak")
                             .small(weight: .medium)
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(ThemeColor.textSecondary)
                     }
                     
                     Text("\(currentStreak)")
                         .font(.system(size: 36, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                     
                     Text("days")
                         .small(weight: .medium)
-                        .foregroundColor(Color.textTertiary)
+                        .foregroundColor(ThemeColor.textTertiary)
                         .offset(y: -5)
                 }
                 .frame(maxWidth: .infinity)
@@ -38,21 +38,21 @@ VStack {
                 VStack(alignment: .center, spacing: Spacing.small) {
                     HStack(spacing: 6) {
                         Image(systemName: "crown.fill")
-                            .foregroundColor(Color.brassGold)
+                            .foregroundColor(ThemeColor.brassGold)
                             .small()
                         
                         Text("Longest Streak")
                             .small(weight: .medium)
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(ThemeColor.textSecondary)
                     }
                     
                     Text("\(longestStreak)")
                         .font(.system(size: 36, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                     
                     Text("days")
                         .small(weight: .medium)
-                        .foregroundColor(Color.textTertiary)
+                        .foregroundColor(ThemeColor.textTertiary)
                         .offset(y: -5)
                 }
                 .frame(maxWidth: .infinity)

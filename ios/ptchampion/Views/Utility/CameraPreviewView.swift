@@ -62,5 +62,5 @@ struct CameraPreviewView: UIViewRepresentable {
 
     return CameraPreviewView(session: dummySession)
         .frame(width: 300, height: 500)
-        .background(Color.gray)
+        .background(ThemeColor.gray)
 } 

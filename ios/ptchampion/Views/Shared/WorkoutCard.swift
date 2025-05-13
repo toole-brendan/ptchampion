@@ -120,13 +120,13 @@ struct WorkoutCard: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(title)
                                 .font(.headline)
-                                .foregroundColor(Color.textPrimary)
+                                .foregroundColor(ThemeColor.textPrimary)
                                 .lineLimit(1)
                             
                             if let subtitle = subtitle {
                                 Text(subtitle)
                                     .font(.subheadline)
-                                    .foregroundColor(Color.textSecondary)
+                                    .foregroundColor(ThemeColor.textSecondary)
                                     .lineLimit(1)
                             }
                         }
@@ -136,11 +136,11 @@ struct WorkoutCard: View {
                         VStack(alignment: .trailing) {
                             Text(date, style: .date)
                                 .font(.caption)
-                                .foregroundColor(Color.textSecondary)
+                                .foregroundColor(ThemeColor.textSecondary)
                             
                             Text(date, style: .time)
                                 .font(.caption)
-                                .foregroundColor(Color.textSecondary)
+                                .foregroundColor(ThemeColor.textSecondary)
                         }
                     }
                     
@@ -155,9 +155,9 @@ struct WorkoutCard: View {
                 }
                 .padding(Spacing.contentPadding)
             }
-            .background(Color.cardBackground)
+            .background(ThemeColor.cardBackground)
             .cornerRadius(CornerRadius.card)
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .shadow(color: ThemeColor.black.opacity(0.05), radius: 4, x: 0, y: 2)
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
@@ -172,24 +172,24 @@ struct WorkoutMetricView: View {
         VStack(alignment: .leading, spacing: 4) {
             Image(systemName: metric.iconSystemName)
                 .font(.caption)
-                .foregroundColor(Color.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
                 .frame(width: 20, height: 20)
             
             HStack(alignment: .firstTextBaseline, spacing: 2) {
                 Text(metric.value)
                     .font(.system(size: 14, weight: .regular))
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                 
                 if let unit = metric.unit {
                     Text(unit)
                         .font(.caption)
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                 }
             }
             
             Text(metric.title)
                 .font(.caption)
-                .foregroundColor(Color.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
                 .lineLimit(1)
         }
     }
@@ -221,7 +221,7 @@ struct WorkoutCard_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(Color.background.opacity(0.5))
+        .background(ThemeColor.background.opacity(0.5))
         .previewLayout(.sizeThatFits)
     }
 } 

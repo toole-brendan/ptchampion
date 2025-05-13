@@ -42,13 +42,13 @@ struct LeaderboardFilterBarView: View {
         } label: {
             categoryFilterLabel
         }
-        .tint(Color.textPrimary)
+        .tint(ThemeColor.textPrimary)
     }
     
     private var categoryFilterLabel: some View {
         HStack {
             Image(systemName: "calendar")
-                .foregroundColor(Color.primary)
+                .foregroundColor(ThemeColor.primary)
             Text(selectedCategory.rawValue)
                 .body()
             Image(systemName: "chevron.down")
@@ -58,7 +58,7 @@ struct LeaderboardFilterBarView: View {
         .padding(.horizontal, 12)
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.button)
-                .fill(Color.primary.opacity(0.1)
+                .fill(ThemeColor.primary.opacity(0.1)
         )
     }
     
@@ -80,13 +80,13 @@ struct LeaderboardFilterBarView: View {
         } label: {
             exerciseFilterLabel
         }
-        .tint(Color.textPrimary)
+        .tint(ThemeColor.textPrimary)
     }
     
     private var exerciseFilterLabel: some View {
         HStack {
             Image(systemName: "figure.run")
-                .foregroundColor(Color.primary)
+                .foregroundColor(ThemeColor.primary)
             Text(selectedExercise.displayName)
                 .body()
             Image(systemName: "chevron.down")
@@ -96,7 +96,7 @@ struct LeaderboardFilterBarView: View {
         .padding(.horizontal, 12)
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.button)
-                .fill(Color.primary.opacity(0.1)
+                .fill(ThemeColor.primary.opacity(0.1)
         )
     }
 }
@@ -118,7 +118,7 @@ struct RadiusSelectorView: View {
         } label: {
             HStack {
                 Image(systemName: "map")
-                    .foregroundColor(Color.primary)
+                    .foregroundColor(ThemeColor.primary)
                 Text("Radius: \(selectedRadius.displayName)")
                     .body()
                 Image(systemName: "chevron.down")
@@ -128,10 +128,10 @@ struct RadiusSelectorView: View {
             .padding(.horizontal, 12)
             .background(
                 RoundedRectangle(cornerRadius: CornerRadius.button)
-                    .fill(Color.primary.opacity(0.1)
+                    .fill(ThemeColor.primary.opacity(0.1)
             )
         }
-        .tint(Color.textPrimary)
+        .tint(ThemeColor.textPrimary)
         .padding(.horizontal)
     }
 }

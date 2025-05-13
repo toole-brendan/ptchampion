@@ -39,7 +39,7 @@ struct EditProfileView: View {
                 }
                 .padding(Spacing.contentPadding)
             }
-            .background(DSColor.background.ignoresSafeArea())
+            .background(ThemeColor.background.ignoresSafeArea())
             
             // Success Toast
             if showSuccessToast {
@@ -60,7 +60,7 @@ struct EditProfileView: View {
                     .padding(.vertical, 12)
                     .background(
                         Capsule()
-                            .fill(DSColor.success)
+                            .fill(ThemeColor.success)
                             .shadow(color: SwiftUI.Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
                     )
                     .padding(.bottom, 20)
@@ -78,7 +78,7 @@ struct EditProfileView: View {
                     hapticGenerator.impactOccurred(intensity: 0.4)
                     dismiss()
                 }
-                .foregroundColor(DSColor.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
             }
             
             // Save button
@@ -89,11 +89,11 @@ struct EditProfileView: View {
                 } label: {
                     if isLoading {
                         ProgressView()
-                            .tint(DSColor.accent)
+                            .tint(ThemeColor.accent)
                     } else {
                         Text("Save")
                             .fontWeight(.semibold)
-                            .foregroundColor(DSColor.accent)
+                            .foregroundColor(ThemeColor.accent)
                     }
                 }
                 .disabled(isLoading || !isFormValid)
@@ -115,7 +115,7 @@ struct EditProfileView: View {
             Text("Personal Information")
                 .font(.title3)
                 .fontWeight(.bold)
-                .foregroundColor(DSColor.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
                 .padding(.leading, 4)
                 .accessibilityAddTraits(.isHeader)
             
@@ -187,8 +187,8 @@ struct EditProfileView: View {
             .padding()
             .background(
                 isFormValid ? 
-                DSColor.brassGold : 
-                DSColor.brassGold.opacity(0.3)
+                ThemeColor.brassGold : 
+                ThemeColor.brassGold.opacity(0.3)
             )
             .cornerRadius(CornerRadius.button)
         }
@@ -210,18 +210,18 @@ struct EditProfileView: View {
                 // Icon
                 Image(systemName: iconName)
                     .frame(width: 24)
-                    .foregroundColor(focusedField == field ? DSColor.brassGold : DSColor.textSecondary)
+                    .foregroundColor(focusedField == field ? ThemeColor.brassGold : ThemeColor.textSecondary)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     // Label
                     Text(label)
-                        .caption
-                        .foregroundColor(DSColor.textSecondary)
+                        .caption()
+                        .foregroundColor(ThemeColor.textSecondary)
                     
                     // Text Field
                     TextField(placeholder, text: text)
                         .body
-                        .foregroundColor(DSColor.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                         .keyboardType(keyboardType)
                         .textInputAutocapitalization(TextInputAutocapitalization.never)
                         .disableAutocorrection(true)
@@ -239,8 +239,8 @@ struct EditProfileView: View {
             // Error Message (if any)
             if let error = error, !error.isEmpty {
                 Text(error)
-                    .caption
-                    .foregroundColor(DSColor.error)
+                    .caption()
+                    .foregroundColor(ThemeColor.error)
                     .padding(.leading, 56)
                     .transition(.opacity)
             }

@@ -57,7 +57,7 @@ struct SettingsView: View {
                         
                         Text("Dark mode support is in progress.")
                             .small()
-                            .foregroundColor(Color.textTertiary)
+                            .foregroundColor(ThemeColor.textTertiary)
                             .italic()
                             .padding(.leading, 34) // Align with text after icon
                     }
@@ -82,7 +82,7 @@ struct SettingsView: View {
                     settingsGroup(title: "Notifications") {
                         SettingsRow(icon: "bell.fill", label: "Workout Reminders") {
                             Toggle("", isOn: $workoutRemindersEnabled)
-                                .tint(Color.brassGold)
+                                .tint(ThemeColor.brassGold)
                                 .onChange(of: workoutRemindersEnabled) { _ in
                                     hapticGenerator.impactOccurred(intensity: 0.4)
                                 }
@@ -92,7 +92,7 @@ struct SettingsView: View {
                         
                         SettingsRow(icon: "trophy.fill", label: "Achievement Notifications") {
                             Toggle("", isOn: $achievementNotificationsEnabled)
-                                .tint(Color.brassGold)
+                                .tint(ThemeColor.brassGold)
                                 .onChange(of: achievementNotificationsEnabled) { _ in
                                     hapticGenerator.impactOccurred(intensity: 0.4)
                                 }
@@ -108,10 +108,10 @@ struct SettingsView: View {
                             SettingsRow(icon: "antenna.radiowaves.left.and.right", label: "Manage Bluetooth Devices") {
                                 Image(systemName: "chevron.right")
                                     .caption()
-                                    .foregroundColor(Color.textTertiary)
+                                    .foregroundColor(ThemeColor.textTertiary)
                             }
                         }
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                     }
                     
                     // App Version
@@ -119,14 +119,14 @@ struct SettingsView: View {
                         Spacer()
                         Text("PT Champion v\(appVersion())")
                             .small()
-                            .foregroundColor(Color.textTertiary)
+                            .foregroundColor(ThemeColor.textTertiary)
                             .padding(.top, Spacing.large)
                         Spacer()
                     }
                 }
                 .padding(Spacing.contentPadding)
             }
-            .background(Color.background.ignoresSafeArea())
+            .background(ThemeColor.background.ignoresSafeArea())
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -137,7 +137,7 @@ struct SettingsView: View {
                     } label: {
                         Text("Done")
                             .fontWeight(.semibold)
-                            .foregroundColor(Color.accent)
+                            .foregroundColor(ThemeColor.accent)
                     }
                 }
             }
@@ -168,7 +168,7 @@ struct SettingsView: View {
             // Group title
             Text(title)
                 .bodySemibold()
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
                 .padding(.leading, 4)
             
             // Content card
@@ -176,9 +176,9 @@ struct SettingsView: View {
                 content()
             }
             .padding(Spacing.medium)
-            .background(Color.cardBackground)
+            .background(ThemeColor.cardBackground)
             .cornerRadius(CornerRadius.card)
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .shadow(color: ThemeColor.black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
     }
     
@@ -221,12 +221,12 @@ struct SettingsRow<Content: View>: View {
             // Icon
             Image(systemName: icon)
                 .frame(width: 24)
-                .foregroundColor(Color.primary)
+                .foregroundColor(ThemeColor.primary)
             
             // Label
             Text(label)
                 .body()
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
             
             Spacer()
             

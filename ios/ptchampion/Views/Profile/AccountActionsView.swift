@@ -114,7 +114,7 @@ struct AccountActionsView: View {
         .background(ThemeColor.cardBackground)
         .cornerRadius(CornerRadius.card)
         .shadow(
-            color: Color.black.opacity(0.1),
+            color: ThemeColor.black.opacity(0.1),
             radius: 4,
             x: 0,
             y: 2

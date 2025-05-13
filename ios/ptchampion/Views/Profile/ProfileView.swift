@@ -12,7 +12,7 @@ fileprivate enum ProfileShadowSize {
 fileprivate extension View {
     func profileShadow(size: ProfileShadowSize = .medium) -> some View {
         self.shadow(
-            color: Color.black.opacity(size == .small ? 0.1 : 0.15),
+            color: ThemeColor.black.opacity(size == .small ? 0.1 : 0.15),
             radius: size == .small ? 4 : 8,
             x: 0,
             y: size == .small ? 2 : 4
@@ -53,11 +53,11 @@ struct ProfileView: View {
                     VStack(alignment: .leading, spacing: Spacing.small) {
                         Text("PROFILE")
                             .militaryMonospaced(size: .body()
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                         
                         Text("Personal settings & preferences")
                             .small()
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(ThemeColor.textSecondary)
                             .italic()
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -81,7 +81,7 @@ struct ProfileView: View {
                 }
                 .padding([.horizontal, .bottom], Spacing.contentPadding)
             }
-            .background(Color.background.ignoresSafeArea()
+            .background(ThemeColor.background.ignoresSafeArea()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -89,7 +89,7 @@ struct ProfileView: View {
                         showingSettings = true
                     } label: {
                         Image(systemName: "gearshape.fill")
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                     }
                 }
             }

@@ -20,7 +20,7 @@ struct StatCard: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
                 PTLabel(title, style: .subheading)
-                    .foregroundColor(DSColor.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                 Spacer()
                 if let iconName = iconName {
                     Image(systemName: iconName)
@@ -30,13 +30,13 @@ struct StatCard: View {
             Text(value)
                 .font(.system(.largeTitle, design: .rounded))
                 .fontWeight(.bold)
-                .foregroundColor(DSColor.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
             PTLabel(unit, style: .caption)
-                .foregroundColor(DSColor.textTertiary)
+                .foregroundColor(ThemeColor.textTertiary)
         }
         .padding()
         .frame(maxWidth: .infinity, minHeight: 100) // Ensure a minimum height
-        .background(DSColor.background) // Changed from backgroundSecondary
+        .background(ThemeColor.background) // Changed from backgroundSecondary
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
@@ -60,17 +60,17 @@ struct LeaderboardRow: View {
             if rank <= 3 {
                 ZStack {
                     Circle()
-                        .fill(DSColor.brassGold.opacity(0.1))
+                        .fill(ThemeColor.brassGold.opacity(0.1))
                         .frame(width: 36, height: 36)
                     
                     Image(systemName: "medal.fill")
-                        .foregroundColor(DSColor.brassGold)
+                        .foregroundColor(ThemeColor.brassGold)
                         .heading4()
                 }
             } else {
                 Text("\(rank)")
                     .font(Typography.monospace)
-                    .foregroundColor(DSColor.textTertiary)
+                    .foregroundColor(ThemeColor.textTertiary)
                     .frame(width: 36)
             }
             
@@ -85,11 +85,11 @@ struct LeaderboardRow: View {
                     case .failure(_), .empty:
                         Image(systemName: "person.circle.fill")
                             .resizable()
-                            .foregroundColor(DSColor.textTertiary.opacity(0.5))
+                            .foregroundColor(ThemeColor.textTertiary.opacity(0.5))
                     @unknown default:
                         Image(systemName: "person.circle.fill")
                             .resizable()
-                            .foregroundColor(DSColor.textTertiary.opacity(0.5))
+                            .foregroundColor(ThemeColor.textTertiary.opacity(0.5))
                     }
                 }
                 .frame(width: 40, height: 40)
@@ -99,28 +99,28 @@ struct LeaderboardRow: View {
                     .resizable()
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 40, height: 40)
-                    .foregroundColor(DSColor.textTertiary.opacity(0.5))
+                    .foregroundColor(ThemeColor.textTertiary.opacity(0.5))
             }
             
             // Name
             Text(name)
                 .font(isCurrentUser ? .headline : .body)
-                .foregroundColor(isCurrentUser ? DSColor.brassGold : DSColor.textPrimary)
+                .foregroundColor(isCurrentUser ? ThemeColor.brassGold : ThemeColor.textPrimary)
             
             Spacer()
             
             // Score
             Text(score)
                 .font(Typography.monospace)
-                .foregroundColor(DSColor.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
                 .fontWeight(.medium)
         }
         .padding(Spacing.contentPadding)
-        .background(isCurrentUser ? DSColor.brassGold.opacity(0.05) : DSColor.cardBackground)
+        .background(isCurrentUser ? ThemeColor.brassGold.opacity(0.05) : ThemeColor.cardBackground)
         .cornerRadius(CornerRadius.card)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.card)
-                .stroke(isCurrentUser ? DSColor.brassGold.opacity(0.5) : SwiftUI.Color.clear, lineWidth: 1)
+                .stroke(isCurrentUser ? ThemeColor.brassGold.opacity(0.5) : SwiftUI.Color.clear, lineWidth: 1)
         )
     }
 }
@@ -134,7 +134,7 @@ struct StatCard_Previews: PreviewProvider {
             StatCard(title: "Time Trial", value: "03:45", unit: "min", color: .orange, iconName: "timer")
         }
         .padding()
-        .background(DSColor.background) // Changed from backgroundPrimary
+        .background(ThemeColor.background) // Changed from backgroundPrimary
     }
 }
 #endif 

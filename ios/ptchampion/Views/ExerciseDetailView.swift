@@ -17,8 +17,8 @@ struct ExerciseDetailView: View {
                     Spacer()
                     
                     Image(systemName: exerciseIcon)
-                        .heading2()
-                        .foregroundColor(Color.textPrimary)
+                        .font(.title)
+                        .foregroundColor(ThemeColor.textPrimary)
                 }
                 .card()
                 
@@ -29,7 +29,7 @@ struct ExerciseDetailView: View {
                             title: "Best Session",
                             value: "\(viewModel.personalBest)",
                             unit: viewModel.unitForExerciseType(exerciseType),
-                            color: Color.brassGold,
+                            color: ThemeColor.brassGold,
                             iconName: "trophy.fill"
                         )
                         
@@ -37,7 +37,7 @@ struct ExerciseDetailView: View {
                             title: "Last Week Total",
                             value: "\(viewModel.lastWeekTotal)",
                             unit: viewModel.unitForExerciseType(exerciseType),
-                            color: Color.textPrimary,
+                            color: ThemeColor.textPrimary,
                             iconName: "calendar"
                         )
                     }
@@ -113,23 +113,23 @@ struct ExerciseDetailView: View {
             VStack(alignment: .leading) {
                 Text(session.formattedDate)
                     .body(weight: .semibold)
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                 
                 Text(session.notes)
                     .small()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
             }
             
             Spacer()
             
             Text("\(session.value) \(session.unit)")
                 .body(weight: .semibold)
-                .foregroundColor(Color.brassGold)
+                .foregroundColor(ThemeColor.brassGold)
         }
         .padding(Spacing.medium)
-        .background(Color.cardBackground)
+        .background(ThemeColor.cardBackground)
         .cornerRadius(CornerRadius.medium)
-        .shadow(color: Color.gray800.opacity(0.05), radius: 2, x: 0, y: 1)
+        .shadow(color: ThemeColor.cardBackground.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 

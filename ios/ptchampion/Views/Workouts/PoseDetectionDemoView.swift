@@ -27,7 +27,7 @@ struct PoseDetectionDemoView: View {
                     .fontWeight(.semibold)
                     .frame(minWidth: 200)
                     .padding()
-                    .background(Color.blue)
+                    .background(ThemeColor.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)
             }

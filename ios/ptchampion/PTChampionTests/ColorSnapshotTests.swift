@@ -58,7 +58,7 @@ class ColorSnapshotTests: XCTestCase {
         let controller = UIHostingController(rootView: colorGrid)
         let view = controller.view!
         view.frame = CGRect(x: 0, y: 0, width: width, height: height)
-        view.backgroundColor = UIColor(Color.background)
+        view.backgroundColor = UIColor(ThemeColor.background)
         
         // Make sure the view is laid out
         view.layoutIfNeeded()
@@ -139,7 +139,7 @@ struct ColorGrid: View {
             Spacer()
         }
         .padding(padding)
-        .background(Color.background)
+        .background(ThemeColor.background)
     }
     
     private var rowsCount: Int {
@@ -163,7 +163,7 @@ struct ColorSwatch: View {
                 .fill(color)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                        .stroke(ThemeColor.gray.opacity(0.2), lineWidth: 1)
                 )
                 .aspectRatio(1, contentMode: .fit)
             

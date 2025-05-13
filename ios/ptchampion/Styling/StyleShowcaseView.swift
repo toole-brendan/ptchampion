@@ -13,7 +13,7 @@ struct StyleShowcaseView: View {
                         .heading1()
                         .padding(.bottom, ContainerStyle.Spacing.sm)
                     
-                    Divider().background(Color.brassGold)
+                    Divider().background(ThemeColor.brassGold)
                     
                     // Headings
                     Group {
@@ -23,7 +23,7 @@ struct StyleShowcaseView: View {
                         Text("Heading 4").heading4()
                     }
                     
-                    Divider().background(Color.brassGold.opacity(0.5)
+                    Divider().background(ThemeColor.brassGold.opacity(0.5)
                     
                     // Body Text
                     Group {
@@ -32,7 +32,7 @@ struct StyleShowcaseView: View {
                         Text("Body Semibold").bodySemibold()
                     }
                     
-                    Divider().background(Color.brassGold.opacity(0.5)
+                    Divider().background(ThemeColor.brassGold.opacity(0.5)
                     
                     // Small Text
                     Group {
@@ -42,7 +42,7 @@ struct StyleShowcaseView: View {
                         Text("LABEL TEXT").label()
                     }
                     
-                    Divider().background(Color.brassGold.opacity(0.5)
+                    Divider().background(ThemeColor.brassGold.opacity(0.5)
                     
                     // Special Text
                     Group {
@@ -59,7 +59,7 @@ struct StyleShowcaseView: View {
                         .heading2()
                         .padding(.bottom, ContainerStyle.Spacing.sm)
                     
-                    Divider().background(Color.brassGold)
+                    Divider().background(ThemeColor.brassGold)
                     
                     // Base Colors
                     Text("Base Colors").heading4(color: .brassGold)
@@ -108,7 +108,7 @@ struct StyleShowcaseView: View {
                         .heading2()
                         .padding(.bottom, ContainerStyle.Spacing.sm)
                     
-                    Divider().background(Color.brassGold)
+                    Divider().background(ThemeColor.brassGold)
                     
                     VStack(spacing: ContainerStyle.Spacing.lg) {
                         CardExampleView(title: "Default Card", variant: .default)
@@ -137,7 +137,7 @@ struct StyleShowcaseView: View {
                             .bodyBold(color: .deepOps)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color.brassGold)
+                            .background(ThemeColor.brassGold)
                             .cornerRadius(8)
                         
                         // Secondary Button Example
@@ -145,11 +145,11 @@ struct StyleShowcaseView: View {
                             .bodyBold(color: .brassGold)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color.clear)
+                            .background(ThemeColor.clear)
                             .cornerRadius(8)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(Color.brassGold, lineWidth: 1)
+                                    .stroke(ThemeColor.brassGold, lineWidth: 1)
                             )
                         
                         // Destructive Button Example
@@ -157,7 +157,7 @@ struct StyleShowcaseView: View {
                             .bodyBold(color: .white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(Color.error)
+                            .background(ThemeColor.error)
                             .cornerRadius(8)
                     }
                 }
@@ -179,7 +179,7 @@ struct StyleShowcaseView: View {
                                 Text("Interactive Card")
                                     .heading4(color: .brassGold)
                                 
-                                Color.brassGold
+                                ThemeColor.brassGold
                                     .opacity(0.1)
                                     .frame(height: 100)
                                     .cornerRadius(8)
@@ -195,7 +195,7 @@ struct StyleShowcaseView: View {
             .padding(.vertical, ContainerStyle.Spacing.section)
             .container()
         }
-        .background(Color.background.edgesIgnoringSafeArea(.all)
+        .background(ThemeColor.background.edgesIgnoringSafeArea(.all)
         .navigationTitle("Style Showcase")
     }
 }
@@ -214,7 +214,7 @@ struct ColorSwatch: View {
                 .frame(height: 60)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.black.opacity(0.1), lineWidth: 1)
+                        .stroke(ThemeColor.black.opacity(0.1), lineWidth: 1)
                 )
             
             Text(name)

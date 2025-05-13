@@ -47,11 +47,11 @@ struct RegistrationView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 150, height: 150)
-                    .foregroundColor(Color.brassGold)
+                    .foregroundColor(ThemeColor.brassGold)
                     .padding(.top, 20)
                 
                 PTLabel("Create Account", style: .heading)
-                    .foregroundColor(Color.commandBlack)
+                    .foregroundColor(ThemeColor.commandBlack)
                     .padding(.bottom, 10)
                 
                 // Form fields with consistent styling
@@ -99,30 +99,30 @@ struct RegistrationView: View {
                     
                     if passwordMismatch {
                         PTLabel("Passwords do not match.", style: .caption)
-                            .foregroundColor(Color.error)
+                            .foregroundColor(ThemeColor.error)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                     }
                     
                     if passwordTooShort {
                         PTLabel("Password must be at least 8 characters.", style: .caption)
-                            .foregroundColor(Color.error)
+                            .foregroundColor(ThemeColor.error)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, 4)
                     }
                     
                     if let errorMessage = auth.errorMessage {
                         PTLabel(errorMessage, style: .caption)
-                            .foregroundColor(Color.error)
+                            .foregroundColor(ThemeColor.error)
                             .padding(.top, 5)
                     }
                     
                     if let successMessage = auth.successMessage {
                         PTLabel(successMessage, style: .bodyBold)
-                            .foregroundColor(Color.success)
+                            .foregroundColor(ThemeColor.success)
                             .padding(.vertical, Spacing.small)
                             .frame(maxWidth: .infinity, alignment: .center)
-                            .background(Color.success.opacity(0.1))
+                            .background(ThemeColor.success.opacity(0.1))
                             .cornerRadius(CornerRadius.medium)
                             .padding(.top, 5)
                     }
@@ -176,7 +176,7 @@ struct RegistrationView: View {
             .frame(minHeight: UIScreen.main.bounds.height - keyboardHeight)
             .padding(.bottom, keyboardHeight)
         }
-        .background(Color.cream.ignoresSafeArea())
+        .background(ThemeColor.cream.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .onTapGesture {
             hideKeyboard()

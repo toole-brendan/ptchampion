@@ -21,24 +21,24 @@ enum ToastType {
     
     var bgColor: SwiftUI.Color {
         switch self {
-        case .success: return DSColor.success.opacity(0.15)
-        case .error: return DSColor.error.opacity(0.15)
-        case .warning: return DSColor.warning.opacity(0.15)
-        case .info: return DSColor.info.opacity(0.15)
+        case .success: return ThemeColor.success.opacity(0.15)
+        case .error: return ThemeColor.error.opacity(0.15)
+        case .warning: return ThemeColor.warning.opacity(0.15)
+        case .info: return ThemeColor.info.opacity(0.15)
         }
     }
     
     var iconColor: SwiftUI.Color {
         switch self {
-        case .success: return DSColor.success
-        case .error: return DSColor.error
-        case .warning: return DSColor.warning
-        case .info: return DSColor.info
+        case .success: return ThemeColor.success
+        case .error: return ThemeColor.error
+        case .warning: return ThemeColor.warning
+        case .info: return ThemeColor.info
         }
     }
     
     var textColor: SwiftUI.Color {
-        return DSColor.textPrimary
+        return ThemeColor.textPrimary
     }
 }
 
@@ -206,7 +206,7 @@ struct Toast_Previews: PreviewProvider {
                 ToastExample()
             }
             .padding()
-            .background(DSColor.background.opacity(0.5))
+            .background(ThemeColor.background.opacity(0.5))
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Light Mode")
             
@@ -216,7 +216,7 @@ struct Toast_Previews: PreviewProvider {
                 Toast(type: .error, title: "Error", message: "Something went wrong. Please try again.")
             }
             .padding()
-            .background(DSColor.background.opacity(0.5))
+            .background(ThemeColor.background.opacity(0.5))
             .environment(\.colorScheme, .dark)
             .previewLayout(.sizeThatFits)
             .previewDisplayName("Dark Mode")

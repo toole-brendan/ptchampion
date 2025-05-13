@@ -141,7 +141,7 @@ struct DeviceScanningView: View {
             Text(viewModel.isScanning ? "Stop Scan" : "Start Scan")
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(viewModel.bluetoothState == .poweredOn ? Color.blue : Color.gray)
+                .background(viewModel.bluetoothState == .poweredOn ? ThemeColor.blue : ThemeColor.gray)
                 .foregroundColor(.white)
                 .cornerRadius(10)
         }

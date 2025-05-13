@@ -1,9 +1,5 @@
 import SwiftUI
 import PTDesignSystem
-import SwiftUI
-
-fileprivate typealias DSColor = PTDesignSystem.Color
-fileprivate typealias SColor = SwiftUI.Color
 
 /*
  * DEPRECATION NOTICE
@@ -39,10 +35,10 @@ struct SettingsSheet: View {
                 Section {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(DSColor.error)
+                            .foregroundColor(ThemeColor.error)
                         Text("This component is deprecated. Please use SettingsView from the Profile directory instead.")
                             .caption()
-                            .foregroundColor(DSColor.error)
+                            .foregroundColor(ThemeColor.error)
                     }
                     .padding(.vertical, 8)
                 }
@@ -75,8 +71,8 @@ struct SettingsSheet: View {
                         HStack {
                             Spacer()
                             Text("Sign Out")
-                                .font(.system(size: .body(), weight: .bold))
-                                .foregroundColor(DSColor.error)
+                                .font(Font.system(.body, design: .default).bold())
+                                .foregroundColor(ThemeColor.error)
                             Spacer()
                         }
                     }
@@ -117,19 +113,18 @@ struct SettingsSheet: View {
             if case .authenticated(let user) = authViewModel.authState {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text([user.firstName, user.lastName].compactMap { $0 }.joined(separator: " "))
-                            .ifEmpty(use: user.email)
-                            .font(.system(size: .body(), weight: .bold))
+                        Text([user.firstName, user.lastName].compactMap { $0 }.joined(separator: " ").ifEmpty(use: user.email))
+                            .font(Font.system(.body, design: .default).bold())
                         Text(user.email)
                             .font(.system(size: Spacing.small))
-                            .foregroundColor(DSColor.textSecondary)
+                            .foregroundColor(ThemeColor.textSecondary)
                     }
                     
                     Spacer()
                     
                     Image(systemName: "person.circle.fill")
                         .font(.system(size: 40))
-                        .foregroundColor(DSColor.brassGold)
+                        .foregroundColor(ThemeColor.brassGold)
                 }
                 .padding(.vertical, Spacing.small)
                 
@@ -143,7 +138,7 @@ struct SettingsSheet: View {
                     showingDeleteAccountConfirmation = true
                 }) {
                     Text("Delete Account")
-                        .foregroundColor(DSColor.error)
+                        .foregroundColor(ThemeColor.error)
                 }
             } else {
                 Button(action: {
@@ -204,7 +199,7 @@ struct SettingsSheet: View {
                 Text("Version")
                 Spacer()
                 Text(Bundle.main.appVersionAndBuild)
-                    .foregroundColor(DSColor.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
             }
             
             NavigationLink("Send Feedback") {
@@ -239,7 +234,7 @@ struct SettingsSheet: View {
             TextEditor(text: .constant(""))
                 .frame(minHeight: 200)
                 .padding()
-                .background(SColor.gray.opacity(0.5))
+                .background(SwiftUI.Color.gray.opacity(0.5))
                 .cornerRadius(CornerRadius.medium)
                 .padding()
             

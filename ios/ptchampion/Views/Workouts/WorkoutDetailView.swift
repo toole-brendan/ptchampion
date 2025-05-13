@@ -310,13 +310,13 @@ struct WorkoutDetailView: View {
                     x: .value("Time", point.elapsedSeconds / 60), // Show in minutes
                     y: .value("BPM", point.value)
                 )
-                .foregroundStyle(Color.red)
+                .foregroundStyle(ThemeColor.red)
                 .interpolationMethod(.catmullRom)
             }
             
             if !heartRatePoints.isEmpty {
                 RuleMark(y: .value("Avg HR", avgHeartRate))
-                    .foregroundStyle(Color.orange.opacity(0.5))
+                    .foregroundStyle(ThemeColor.orange.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
                     .annotation(position: .top, alignment: .trailing) {
                         Text("Avg \(avgHeartRate) BPM")
@@ -356,7 +356,7 @@ struct WorkoutDetailView: View {
                     x: .value("Time", point.elapsedSeconds / 60), // Show in minutes
                     y: .value("Pace", point.value)
                 )
-                .foregroundStyle(Color.green)
+                .foregroundStyle(ThemeColor.green)
                 .interpolationMethod(.catmullRom)
             }
         }
@@ -391,13 +391,13 @@ struct WorkoutDetailView: View {
                     x: .value("Time", point.elapsedSeconds / 60), // Show in minutes
                     y: .value("SPM", point.value)
                 )
-                .foregroundStyle(Color.blue)
+                .foregroundStyle(ThemeColor.blue)
                 .interpolationMethod(.catmullRom)
             }
             
             if !cadencePoints.isEmpty {
                 RuleMark(y: .value("Avg Cadence", avgCadence))
-                    .foregroundStyle(Color.purple.opacity(0.5))
+                    .foregroundStyle(ThemeColor.purple.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
                     .annotation(position: .top, alignment: .trailing) {
                         Text("Avg \(avgCadence) spm")
@@ -438,7 +438,7 @@ struct WorkoutDetailView: View {
                 x: .value("Rep", item.repNumber),
                 y: .value("Score", item.formQuality)
             )
-            .foregroundStyle(item.formQuality >= 50 ? Color.green.gradient : Color.red.gradient)
+            .foregroundStyle(item.formQuality >= 50 ? ThemeColor.green.gradient : ThemeColor.red.gradient)
         }
         .chartYScale(domain: 0...100)
         .chartYAxis {

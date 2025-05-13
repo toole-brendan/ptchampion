@@ -10,7 +10,7 @@ struct LocationPermissionRequestView: View {
         VStack(spacing: 25) {
             Image(systemName: "location.fill")
                 .font(.system(size: 70)
-                .foregroundColor(Color.primary)
+                .foregroundColor(ThemeColor.primary)
             
             Text("Location Permission")
                 .font(.title)
@@ -23,15 +23,15 @@ struct LocationPermissionRequestView: View {
             Text("The app will use your device's GPS to calculate distance, pace and route information while you're running.")
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
-                .foregroundColor(Color.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
             
             HStack(spacing: 20) {
                 Button(action: onCancel) {
                     Text("Not Now")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.backgroundOverlay)
-                        .foregroundColor(Color.textPrimary)
+                        .background(ThemeColor.backgroundOverlay)
+                        .foregroundColor(ThemeColor.textPrimary)
                         .cornerRadius(CornerRadius.medium)
                 }
                 
@@ -39,8 +39,8 @@ struct LocationPermissionRequestView: View {
                     Text("Allow Location")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.primary)
-                        .foregroundColor(Color.textPrimaryOnDark)
+                        .background(ThemeColor.primary)
+                        .foregroundColor(ThemeColor.textPrimaryOnDark)
                         .cornerRadius(CornerRadius.medium)
                 }
             }
@@ -48,7 +48,7 @@ struct LocationPermissionRequestView: View {
             .padding(.top, 10)
         }
         .padding()
-        .background(Color.background)
+        .background(ThemeColor.background)
         .cornerRadius(CornerRadius.card)
         .shadow(radius: 10)
         .padding(.horizontal, 20)
@@ -57,7 +57,7 @@ struct LocationPermissionRequestView: View {
 
 #Preview {
     ZStack {
-        Color.gray.opacity(0.3).edgesIgnoringSafeArea(.all)
+        ThemeColor.gray.opacity(0.3).edgesIgnoringSafeArea(.all)
         LocationPermissionRequestView(
             onRequestPermission: {},
             onCancel: {}

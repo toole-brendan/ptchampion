@@ -46,11 +46,11 @@ struct LeaderboardView: View {
             // Break down into separate Text views to help compiler
             let titleText = Text(viewModel.selectedBoard.rawValue.uppercased() + " LEADERBOARD")
                 .militaryMonospaced(size: .body()
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
             
             let subtitleText = Text(formattedFilterTitle)
                 .small()
-                .foregroundColor(Color.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
                 .italic()
             
             // Combine in VStack
@@ -69,8 +69,8 @@ struct LeaderboardView: View {
     private func segmentButton(for type: LeaderboardType) -> some View {
         let isSelected = viewModel.selectedBoard == type
         let foregroundColor = isSelected ? 
-            Color.textOnPrimary : 
-            Color.textPrimary
+            ThemeColor.textOnPrimary : 
+            ThemeColor.textPrimary
         
         return Button(action: {
             // Simple state change without animation
@@ -88,7 +88,7 @@ struct LeaderboardView: View {
                 ZStack {
                     if isSelected {
                         RoundedRectangle(cornerRadius: CornerRadius.full)
-                            .fill(Color.primary)
+                            .fill(ThemeColor.primary)
                             .matchedGeometryEffect(id: "segmentBackground", in: animation)
                     }
                 }
@@ -104,9 +104,9 @@ struct LeaderboardView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: CornerRadius.full)
-                .stroke(Color.primary.opacity(0.3), lineWidth: 1)
+                .stroke(ThemeColor.primary.opacity(0.3), lineWidth: 1)
                 .background(
-                    Color.cardBackground
+                    ThemeColor.cardBackground
                         .cornerRadius(CornerRadius.full)
                 )
         )
@@ -116,7 +116,7 @@ struct LeaderboardView: View {
     var body: some View {
         NavigationStack {
             bodyContent
-                .background(Color.background.ignoresSafeArea()
+                .background(ThemeColor.background.ignoresSafeArea()
                 .onAppear {
                     fetchTask = Task {
                         await viewModel.fetch()
@@ -167,7 +167,7 @@ struct LeaderboardView: View {
             
             // Divider
             Rectangle()
-                .fill(Color.tacticalGray.opacity(0.2)
+                .fill(ThemeColor.tacticalGray.opacity(0.2)
                 .frame(height: 1)
                 .padding(.horizontal)
             
@@ -253,17 +253,17 @@ struct LeaderboardView: View {
                 Spacer()
                 Image(systemName: "wifi.exclamationmark")
                     .font(.system(size: 64)
-                    .foregroundColor(Color.error)
+                    .foregroundColor(ThemeColor.error)
                     .padding(.bottom, Spacing.medium)
                 
                 Text("Error Loading Leaderboard")
                     .font(.body()Bold(size: .heading4()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                     .padding(.bottom, Spacing.small)
                 
                 Text(message)
                     .body()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, Spacing.large)
                     .padding(.bottom, Spacing.medium)
@@ -292,28 +292,28 @@ struct LeaderboardView: View {
                 Spacer()
                 ZStack {
                     Circle()
-                        .fill(Color.brassGold.opacity(0.1)
+                        .fill(ThemeColor.brassGold.opacity(0.1)
                         .frame(width: 120, height: 120)
                     
                     Image(systemName: "trophy.fill")
                         .font(.system(size: 64)
-                        .foregroundColor(Color.brassGold)
+                        .foregroundColor(ThemeColor.brassGold)
                 }
                 .padding(.bottom, Spacing.medium)
                 
                 Text("Leaderboard is Empty")
                     .font(.body()Bold(size: .heading4()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                     .padding(.bottom, Spacing.small)
                 
                 Text("Be the first to set a score!")
                     .body()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .padding(.bottom, Spacing.small)
                 
                 Text("Complete a workout to post your score on the leaderboard.")
                     .small()
-                    .foregroundColor(Color.textTertiary)
+                    .foregroundColor(ThemeColor.textTertiary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, Spacing.large)
                 
@@ -333,17 +333,17 @@ struct LeaderboardView: View {
                 Spacer()
                 Image(systemName: "magnifyingglass")
                     .font(.system(size: 64)
-                    .foregroundColor(Color.textSecondary.opacity(0.7)
+                    .foregroundColor(ThemeColor.textSecondary.opacity(0.7)
                     .padding(.bottom, Spacing.medium)
                 
                 Text("No Results Found")
                     .font(.body()Bold(size: .heading4()
-                    .foregroundColor(Color.textPrimary)
+                    .foregroundColor(ThemeColor.textPrimary)
                     .padding(.bottom, Spacing.small)
                 
                 Text("No data available for the current selection.")
                     .body()
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, Spacing.large)
                 

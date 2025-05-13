@@ -34,7 +34,7 @@ struct WorkoutHistoryList: View {
                     systemImage: "figure.run.circle",
                     description: Text("Complete a workout to see your history here.")
                 )
-                .listRowBackground(Color.clear)
+                .listRowBackground(ThemeColor.clear)
             } else {
                 ForEach(Array(viewModel.workoutsFiltered.enumerated(), id: \.element.id) { index, workout in
                     VStack {
@@ -56,11 +56,11 @@ struct WorkoutHistoryList: View {
                                     } label: {
                                         Image(systemName: "square.and.arrow.up")
                                             .body(weight: .medium)
-                                            .foregroundColor(Color.brassGold)
+                                            .foregroundColor(ThemeColor.brassGold)
                                             .frame(width: 40, height: 40)
                                             .background(
                                                 Circle()
-                                                    .fill(Color.brassGold.opacity(0.1)
+                                                    .fill(ThemeColor.brassGold.opacity(0.1)
                                             )
                                     }
                                     
@@ -71,11 +71,11 @@ struct WorkoutHistoryList: View {
                                     } label: {
                                         Image(systemName: "trash")
                                             .body(weight: .medium)
-                                            .foregroundColor(Color.error)
+                                            .foregroundColor(ThemeColor.error)
                                             .frame(width: 40, height: 40)
                                             .background(
                                                 Circle()
-                                                    .fill(Color.error.opacity(0.1)
+                                                    .fill(ThemeColor.error.opacity(0.1)
                                             )
                                     }
                                 }
@@ -100,7 +100,7 @@ struct WorkoutHistoryList: View {
                             } label: {
                                 Label("Share", systemImage: "square.and.arrow.up")
                             }
-                            .tint(Color.brassGold)
+                            .tint(ThemeColor.brassGold)
                         }
                     }
                 }
@@ -115,7 +115,7 @@ struct WorkoutHistoryList: View {
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle()
                     .scaleEffect(1.5)
-                    .tint(Color.brassGold)
+                    .tint(ThemeColor.brassGold)
             }
         }
     }
