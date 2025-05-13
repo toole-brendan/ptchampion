@@ -29,7 +29,7 @@ struct CameraPermissionRequestView: View {
                     Text("Not Now")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(ThemeColor.gray.opacity(0.2))
+                        .background(SwiftUI.Color.gray.opacity(0.2))
                         .foregroundColor(.primary)
                         .cornerRadius(10)
                 }
@@ -38,7 +38,7 @@ struct CameraPermissionRequestView: View {
                     Text("Allow Camera")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(ThemeColor.blue)
+                        .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
@@ -56,7 +56,7 @@ struct CameraPermissionRequestView: View {
 
 #Preview {
     ZStack {
-        ThemeColor.gray.opacity(0.3).edgesIgnoringSafeArea(.all)
+        SwiftUI.Color.gray.opacity(0.3).ignoresSafeArea()
         CameraPermissionRequestView(
             onRequestPermission: {},
             onCancel: {}

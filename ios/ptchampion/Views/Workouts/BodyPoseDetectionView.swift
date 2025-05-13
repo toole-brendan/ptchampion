@@ -23,18 +23,18 @@ struct BodyPoseDetectionView: View {
         ZStack {
             // Full-screen camera background
             CameraPreviewView(session: cameraService.session)
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea()
             
             // Overlay pose detection
             if let body = detectedBody {
                 PoseOverlayView(detectedBody: body)
-                    .edgesIgnoringSafeArea(.all)
+                    .ignoresSafeArea()
             }
             
             // Pre-permission request view
             if showPermissionRequest {
                 ZStack {
-                    ThemeColor.black.opacity(0.7).edgesIgnoringSafeArea(.all)
+                    SwiftUI.Color.black.opacity(0.7).ignoresSafeArea()
                     CameraPermissionRequestView(
                         onRequestPermission: {
                             showPermissionRequest = false
@@ -62,7 +62,7 @@ struct BodyPoseDetectionView: View {
                 Spacer()
                 Text("Body detected: \(detectedBody != nil ? "Yes" : "No")")
                     .padding(6)
-                    .background(ThemeColor.black.opacity(0.7)
+                    .background(SwiftUI.Color.black.opacity(0.7))
                     .foregroundColor(.white)
                     .cornerRadius(8)
                     .padding()
@@ -167,7 +167,7 @@ struct BodyPoseDetectionView: View {
     private func permissionDeniedView() -> some View {
         VStack(spacing: 20) {
             Image(systemName: "camera.slash.fill")
-                .font(.system(size: 50)
+                .font(.system(size: 50))
                 .foregroundColor(.white)
             
             Text("Camera Access Denied")
@@ -189,14 +189,14 @@ struct BodyPoseDetectionView: View {
                     .fontWeight(.semibold)
                     .frame(minWidth: 200)
                     .padding()
-                    .background(ThemeColor.blue)
+                    .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(10)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ThemeColor.black.opacity(0.8)
-        .edgesIgnoringSafeArea(.all)
+        .background(SwiftUI.Color.black.opacity(0.8))
+        .ignoresSafeArea()
     }
 }
 

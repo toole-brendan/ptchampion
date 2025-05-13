@@ -83,7 +83,7 @@ struct AppAppearance {
         // Get the base color
         let baseColor = UIColor(ThemeColor.deepOps)
         baseColor.setFill()
-        context.fill(CGRect(origin: .zero, size: size)
+        context.fill(CGRect(origin: .zero, size: size))
         
         // Set up the grid color (slightly lighter than the base)
         let gridColor = UIColor.white.withAlphaComponent(0.03) // Very subtle
@@ -96,14 +96,14 @@ struct AppAppearance {
         // Draw vertical lines
         let spacing: CGFloat = 10
         for x in stride(from: 0, through: size.width, by: spacing) {
-            path.move(to: CGPoint(x: x, y: 0)
-            path.addLine(to: CGPoint(x: x, y: size.height)
+            path.move(to: CGPoint(x: x, y: 0))
+            path.addLine(to: CGPoint(x: x, y: size.height))
         }
         
         // Draw horizontal lines
         for y in stride(from: 0, through: size.height, by: spacing) {
-            path.move(to: CGPoint(x: 0, y: y)
-            path.addLine(to: CGPoint(x: size.width, y: y)
+            path.move(to: CGPoint(x: 0, y: y))
+            path.addLine(to: CGPoint(x: size.width, y: y))
         }
         
         path.stroke()

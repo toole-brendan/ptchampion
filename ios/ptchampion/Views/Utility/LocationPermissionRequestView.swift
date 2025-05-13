@@ -9,7 +9,7 @@ struct LocationPermissionRequestView: View {
     var body: some View {
         VStack(spacing: 25) {
             Image(systemName: "location.fill")
-                .font(.system(size: 70)
+                .font(.system(size: 70))
                 .foregroundColor(ThemeColor.primary)
             
             Text("Location Permission")
@@ -57,7 +57,7 @@ struct LocationPermissionRequestView: View {
 
 #Preview {
     ZStack {
-        ThemeColor.gray.opacity(0.3).edgesIgnoringSafeArea(.all)
+        SwiftUI.Color.gray.opacity(0.3).ignoresSafeArea()
         LocationPermissionRequestView(
             onRequestPermission: {},
             onCancel: {}

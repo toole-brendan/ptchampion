@@ -152,5 +152,5 @@ struct PoseOverlayView: View {
     let badJoints: Set<VNHumanBodyPoseObservation.JointName> = [.leftElbow, .leftWrist]
 
     return PoseOverlayView(detectedBody: mockBody, badJointNames: badJoints)
-        .background(ThemeColor.gray) // Add background for visibility
+        .background(SwiftUI.Color.gray) // Add background for visibility
 } 

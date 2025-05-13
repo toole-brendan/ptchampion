@@ -84,9 +84,13 @@ struct LoginView: View {
                         }
                         
                         // Welcome Text
-                        PTLabel("Welcome Back", style: .heading)
-                            .foregroundColor(ThemeColor.commandBlack)
-                            .padding(.top, 10)
+                        Text("Welcome Back")
+                            .heading2()
+                            .foregroundColor(ThemeColor.brassGold)
+
+                        Text("Log in to continue")
+                            .body(weight: .semibold)
+                            .foregroundColor(ThemeColor.textPrimary)
                         
                         // Form Fields
                         VStack(spacing: 16) {

@@ -47,7 +47,7 @@ public struct FocusableTextField: View {
         .focused($isFocused)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.input)
-                .stroke(isFocused ? ThemeColor.brassGold : ThemeColor.clear, lineWidth: 2)
+                .stroke(isFocused ? ThemeColor.brassGold : SwiftUI.Color.clear, lineWidth: 2)
         )
         .animation(.easeInOut(duration: 0.2), value: isFocused)
         .introspect(.textField) { (textField: UITextField) in
@@ -81,7 +81,7 @@ struct FocusableTextFieldStyle: TextFieldStyle {
             .cornerRadius(CornerRadius.input)
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.input)
-                    .stroke(isFocused ? ThemeColor.brassGold : ThemeColor.gray.opacity(0.3), lineWidth: isFocused ? 2 : 1)
+                    .stroke(isFocused ? ThemeColor.brassGold : SwiftUI.Color.gray.opacity(0.3), lineWidth: isFocused ? 2 : 1)
             )
             .body()
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: isFocused)
@@ -99,7 +99,7 @@ extension PTTextField {
             .focused(isFocused)
             .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.input)
-                    .stroke(isFocused.wrappedValue ? ThemeColor.brassGold : ThemeColor.clear, lineWidth: 2)
+                    .stroke(isFocused.wrappedValue ? ThemeColor.brassGold : SwiftUI.Color.clear, lineWidth: 2)
             )
             .animation(.easeInOut(duration: 0.2), value: isFocused.wrappedValue)
     }
@@ -130,7 +130,7 @@ struct FocusableTextField_Previews: PreviewProvider {
             // Example of using the extension method
             @FocusState var isFieldFocused: Bool
             
-            PTTextField("Using extension", text: .constant("Extension example")
+            PTTextField("Using extension", text: .constant("Extension example"))
                 .withFocusRing($isFieldFocused)
         }
         .padding()
