@@ -1,8 +1,9 @@
 import SwiftUI
 import PTDesignSystem
 
-fileprivate typealias DSColor = PTDesignSystem.Color
-fileprivate typealias SColor = SwiftUI.Color
+// Using global DSColor and SColor aliases from PTDesignSystem
+// fileprivate typealias DSColor = PTDesignSystem.Color
+// fileprivate typealias SColor = SwiftUI.Color
 
 struct WorkoutSelectionView: View {
     // TODO: Add ViewModel for workout logic

@@ -38,20 +38,20 @@ public struct PTButton: View {
         var backgroundColor: SwiftUI.Color {
             switch self {
             case .primary:
-                return DesignTokens.Color.primary
+                return ThemeColor.primary
             case .secondary:
-                return DesignTokens.Color.secondary.opacity(0.1)
+                return ThemeColor.secondary.opacity(0.1)
             case .destructive:
-                return DesignTokens.Color.error
+                return ThemeColor.error
             }
         }
         
         var foregroundColor: SwiftUI.Color {
             switch self {
             case .primary:
-                return DesignTokens.Color.textOnPrimary
+                return ThemeColor.textOnPrimary
             case .secondary:
-                return DesignTokens.Color.textPrimary
+                return ThemeColor.textPrimary
             case .destructive:
                 return .white
             }

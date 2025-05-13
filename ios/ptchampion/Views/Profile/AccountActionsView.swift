@@ -13,7 +13,7 @@ struct AccountActionsView: View {
             // Section Header
             Text("Account")
                 .heading3()
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
             
@@ -26,11 +26,11 @@ struct AccountActionsView: View {
                 } label: {
                     HStack {
                         Label("Change Password", systemImage: "lock.fill")
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.caption)
-                            .foregroundColor(Color.textTertiary)
+                            .foregroundColor(ThemeColor.textTertiary)
                     }
                     .contentShape(Rectangle())
                 }
@@ -46,7 +46,7 @@ struct AccountActionsView: View {
                 } label: {
                     HStack {
                         Label("Logout", systemImage: "rectangle.portrait.and.arrow.right")
-                            .foregroundColor(Color.error)
+                            .foregroundColor(ThemeColor.error)
                         Spacer()
                     }
                     .contentShape(Rectangle())
@@ -63,7 +63,7 @@ struct AccountActionsView: View {
                 } label: {
                     HStack {
                         Label("Delete Account", systemImage: "trash.fill")
-                            .foregroundColor(Color.error)
+                            .foregroundColor(ThemeColor.error)
                         Spacer()
                     }
                     .contentShape(Rectangle())
@@ -111,7 +111,7 @@ struct AccountActionsView: View {
             content()
         }
         .padding(Spacing.contentPadding)
-        .background(Color.cardBackground)
+        .background(ThemeColor.cardBackground)
         .cornerRadius(CornerRadius.card)
         .shadow(
             color: Color.black.opacity(0.1),
@@ -127,7 +127,7 @@ struct AccountActionsView_Previews: PreviewProvider {
         AccountActionsView()
             .environmentObject(MockAuthViewModel())
             .padding()
-            .background(Color.background)
+            .background(ThemeColor.background)
             .previewLayout(.sizeThatFits)
     }
 } 

@@ -39,7 +39,7 @@ struct EditProfileView: View {
                 }
                 .padding(Spacing.contentPadding)
             }
-            .background(Color.background.ignoresSafeArea()
+            .background(DSColor.background.ignoresSafeArea())
             
             // Success Toast
             if showSuccessToast {
@@ -49,19 +49,19 @@ struct EditProfileView: View {
                     HStack(spacing: 12) {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.title3)
-                            .foregroundColor(.white)
+                            .foregroundColor(SwiftUI.Color.white)
                         
                         Text("Profile updated successfully")
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundColor(.white)
+                            .foregroundColor(SwiftUI.Color.white)
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
                     .background(
                         Capsule()
-                            .fill(Color.success)
-                            .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
+                            .fill(DSColor.success)
+                            .shadow(color: SwiftUI.Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
                     )
                     .padding(.bottom, 20)
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -72,33 +72,31 @@ struct EditProfileView: View {
         .navigationTitle("Edit Profile")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItemGroup {
-                // Cancel button
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        hapticGenerator.impactOccurred(intensity: 0.4)
-                        dismiss()
-                    }
-                    .foregroundColor(Color.textPrimary)
+            // Cancel button
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button("Cancel") {
+                    hapticGenerator.impactOccurred(intensity: 0.4)
+                    dismiss()
                 }
-                
-                // Save button
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        hapticGenerator.impactOccurred(intensity: 0.6)
-                        saveProfile()
-                    } label: {
-                        if isLoading {
-                            ProgressView()
-                                .tint(Color.accent)
-                        } else {
-                            Text("Save")
-                                .fontWeight(.semibold)
-                                .foregroundColor(Color.accent)
-                        }
+                .foregroundColor(DSColor.textPrimary)
+            }
+            
+            // Save button
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.6)
+                    saveProfile()
+                } label: {
+                    if isLoading {
+                        ProgressView()
+                            .tint(DSColor.accent)
+                    } else {
+                        Text("Save")
+                            .fontWeight(.semibold)
+                            .foregroundColor(DSColor.accent)
                     }
-                    .disabled(isLoading || !isFormValid)
                 }
+                .disabled(isLoading || !isFormValid)
             }
         }
         .container()
@@ -117,7 +115,7 @@ struct EditProfileView: View {
             Text("Personal Information")
                 .font(.title3)
                 .fontWeight(.bold)
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(DSColor.textPrimary)
                 .padding(.leading, 4)
                 .accessibilityAddTraits(.isHeader)
             
@@ -178,19 +176,19 @@ struct EditProfileView: View {
             HStack {
                 if isLoading {
                     ProgressView()
-                        .tint(.white)
+                        .tint(SwiftUI.Color.white)
                 } else {
                     Text("Save Changes")
                         .font(.headline)
-                        .foregroundColor(.white)
+                        .foregroundColor(SwiftUI.Color.white)
                 }
             }
             .frame(maxWidth: .infinity)
             .padding()
             .background(
                 isFormValid ? 
-                    Color.brassGold : 
-                    Color.brassGold.opacity(0.3)
+                DSColor.brassGold : 
+                DSColor.brassGold.opacity(0.3)
             )
             .cornerRadius(CornerRadius.button)
         }
@@ -212,20 +210,20 @@ struct EditProfileView: View {
                 // Icon
                 Image(systemName: iconName)
                     .frame(width: 24)
-                    .foregroundColor(focusedField == field ? Color.brassGold : Color.textSecondary)
+                    .foregroundColor(focusedField == field ? DSColor.brassGold : DSColor.textSecondary)
                 
                 VStack(alignment: .leading, spacing: 2) {
                     // Label
                     Text(label)
-                        .caption()
-                        .foregroundColor(Color.textSecondary)
+                        .caption
+                        .foregroundColor(DSColor.textSecondary)
                     
                     // Text Field
                     TextField(placeholder, text: text)
-                        .body()
-                        .foregroundColor(Color.textPrimary)
+                        .body
+                        .foregroundColor(DSColor.textPrimary)
                         .keyboardType(keyboardType)
-                        .autocapitalization(.none)
+                        .textInputAutocapitalization(TextInputAutocapitalization.never)
                         .disableAutocorrection(true)
                         .onChange(of: text.wrappedValue) { _ in
                             validateField(field)
@@ -241,8 +239,8 @@ struct EditProfileView: View {
             // Error Message (if any)
             if let error = error, !error.isEmpty {
                 Text(error)
-                    .caption()
-                    .foregroundColor(Color.error)
+                    .caption
+                    .foregroundColor(DSColor.error)
                     .padding(.leading, 56)
                     .transition(.opacity)
             }

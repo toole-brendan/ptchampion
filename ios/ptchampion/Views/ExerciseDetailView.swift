@@ -12,8 +12,7 @@ struct ExerciseDetailView: View {
                 // Header with title and icon
                 HStack {
                     Text(exerciseType.capitalized)
-                        .heading4(weight: .bold)
-                        .foregroundColor(Color.textPrimary)
+                        .heading4()
                     
                     Spacer()
                     
@@ -21,9 +20,7 @@ struct ExerciseDetailView: View {
                         .heading2()
                         .foregroundColor(Color.textPrimary)
                 }
-                .padding(Spacing.large)
-                .background(Color.cardBackground)
-                .cornerRadius(CornerRadius.large)
+                .card()
                 
                 // Stats summary
                 VStack {
@@ -65,8 +62,7 @@ struct ExerciseDetailView: View {
                 VStack {
                     VStack(alignment: .leading, spacing: Spacing.medium) {
                         Text(verbatim: "Recent History")
-                            .heading4(weight: .semibold)
-                            .foregroundColor(Color.textPrimary)
+                            .heading4()
                         
                         ForEach(viewModel.recentSessions) { session in
                             historyRow(session: session)
@@ -87,12 +83,8 @@ struct ExerciseDetailView: View {
             }
             .container()
         }
-        .background(
-            // Use design token color instead of hard-coded UIColor
-            Color.backgroundSubtle
-        )
-        .navigationBarTitleDisplayMode(.inline)
         .container()
+        .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             // Simulate network loading
             viewModel.loadData(for: exerciseType)

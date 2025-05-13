@@ -121,12 +121,12 @@ public struct PTCard<Content: View>: View {
         switch style {
         case .standard, .elevated, .flat, .highlight, .interactive:
             if ThemeManager.useWebTheme {
-                DesignTokens.Color.surface
+                ThemeColor.surface
             } else {
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        DesignTokens.Color.cardBackground,
-                        DesignTokens.Color.cardBackground.opacity(0.97)
+                        ThemeColor.cardBackground,
+                        ThemeColor.cardBackground.opacity(0.97)
                     ]),
                     startPoint: .top,
                     endPoint: .bottom
@@ -246,13 +246,13 @@ public struct PTCard<Content: View>: View {
         if ThemeManager.useWebTheme {
             switch style {
             case .flat:
-                return DesignTokens.Color.borderDefault
+                return ThemeColor.borderDefault
             case .highlight:
-                return DesignTokens.Color.brand500
+                return ThemeColor.brand500
             case .interactive:
                 return isPressed ? 
-                    DesignTokens.Color.brand500.opacity(0.3) : 
-                    DesignTokens.Color.borderDefault
+                    ThemeColor.brand500.opacity(0.3) : 
+                    ThemeColor.borderDefault
             case .custom(_, _, _, let color, _):
                 return color ?? SwiftUI.Color.clear
             default:
@@ -261,13 +261,13 @@ public struct PTCard<Content: View>: View {
         } else {
             switch style {
             case .flat:
-                return DesignTokens.Color.tacticalGray.opacity(0.3)
+                return ThemeColor.tacticalGray.opacity(0.3)
             case .highlight:
-                return DesignTokens.Color.brassGold
+                return ThemeColor.brassGold
             case .interactive:
                 return isPressed ? 
-                    DesignTokens.Color.brassGold.opacity(0.3) : 
-                    DesignTokens.Color.tacticalGray.opacity(0.3)
+                    ThemeColor.brassGold.opacity(0.3) : 
+                    ThemeColor.tacticalGray.opacity(0.3)
             case .custom(_, _, _, let color, _):
                 return color ?? SwiftUI.Color.clear
             default:
@@ -341,10 +341,10 @@ struct PTCard_Previews: PreviewProvider {
                 }
                 
                 PTCard(style: .custom(
-                    backgroundColor: DesignTokens.Color.brassGold.opacity(0.1),
+                    backgroundColor: ThemeColor.brassGold.opacity(0.1),
                     cornerRadius: 20,
                     shadowRadius: 5,
-                    borderColor: DesignTokens.Color.brassGold.opacity(0.3),
+                    borderColor: ThemeColor.brassGold.opacity(0.3),
                     borderWidth: 2
                 )) {
                     Text("Custom Card")

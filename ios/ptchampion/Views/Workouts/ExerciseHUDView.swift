@@ -22,7 +22,6 @@ struct ExerciseHUDView: View {
                         .foregroundColor(Color.textSecondary)
                     Text("\(repCount)")
                         .heading1()
-                        .foregroundColor(Color.textPrimary)
                 }
                 Spacer()
                 VStack(alignment: .trailing) {
@@ -31,7 +30,6 @@ struct ExerciseHUDView: View {
                         .foregroundColor(Color.textSecondary)
                     Text(elapsedTimeFormatted)
                         .heading1()
-                        .foregroundColor(Color.textPrimary)
                 }
             }
             .padding()

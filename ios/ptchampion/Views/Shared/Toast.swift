@@ -1,8 +1,7 @@
 import SwiftUI
 import PTDesignSystem
 
-fileprivate typealias DSColor = PTDesignSystem.Color
-fileprivate typealias SColor = SwiftUI.Color
+// Use global DSColor and SColor aliases
 
 /// Toast notification types
 enum ToastType {
@@ -20,7 +19,7 @@ enum ToastType {
         }
     }
     
-    var bgColor: SColor {
+    var bgColor: SwiftUI.Color {
         switch self {
         case .success: return DSColor.success.opacity(0.15)
         case .error: return DSColor.error.opacity(0.15)
@@ -29,7 +28,7 @@ enum ToastType {
         }
     }
     
-    var iconColor: SColor {
+    var iconColor: SwiftUI.Color {
         switch self {
         case .success: return DSColor.success
         case .error: return DSColor.error
@@ -38,7 +37,7 @@ enum ToastType {
         }
     }
     
-    var textColor: SColor {
+    var textColor: SwiftUI.Color {
         return DSColor.textPrimary
     }
 }
@@ -62,7 +61,7 @@ struct Toast: View {
             // Content
             VStack(alignment: .leading, spacing: Spacing.extraSmall) {
                 Text(title)
-                    .body()
+                    .body(weight: .medium)
                     .foregroundColor(type.textColor)
                 
                 if let message = message {
@@ -80,7 +79,7 @@ struct Toast: View {
                 Button(action: { onDismiss?() }) {
                     Image(systemName: "xmark")
                         .foregroundColor(type.textColor.opacity(0.6))
-                        .small(weight: .medium)
+                        .font(.system(size: Spacing.small, weight: .medium))
                 }
                 .padding(Spacing.extraSmall)
             }

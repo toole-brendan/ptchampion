@@ -34,9 +34,8 @@ struct UserProfileView: View {
         }
         .navigationTitle(viewModel.userDetails.isLoading ? "Loading Profile..." : viewModel.userDetails.userName)
         .navigationBarTitleDisplayMode(.inline)
-        .background(Color.background)
+        .background(ThemeColor.background)
             .container()
-        .container()
         .edgesIgnoringSafeArea(.all)
     }
     
@@ -55,8 +54,8 @@ struct UserProfileView: View {
         let view = VStack {
             Spacer()
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 50)
-                .foregroundColor(Color.error)
+                .font(.system(size: 50))
+                .foregroundColor(ThemeColor.error)
             PTLabel("Error", style: .body)
                 .padding(.bottom, 2)
             PTLabel(message, style: .body)
@@ -73,12 +72,12 @@ struct UserProfileView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 70, height: 70)
-                .foregroundColor(Color.textSecondary)
+                .foregroundColor(ThemeColor.textSecondary)
             
             VStack(alignment: .leading) {
                 PTLabel(viewModel.userDetails.userName, style: .heading)
                 PTLabel("Rank: \(viewModel.userDetails.rank)", style: .subheading)
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
             }
             Spacer() // Pushes content to the left
         }
@@ -106,12 +105,12 @@ struct UserProfileView: View {
                     .padding(.bottom, 4)
                 if viewModel.userDetails.personalBests.isEmpty {
                     PTLabel("No personal bests recorded yet.", style: .body)
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                 } else {
                     ForEach(viewModel.userDetails.personalBests, id: \.self) { (pb: String) in
                         HStack {
                             Image(systemName: "trophy.fill")
-                                .foregroundColor(Color.warning)
+                                .foregroundColor(ThemeColor.warning)
                             PTLabel(pb, style: .body)
                             Spacer()
                         }
@@ -130,17 +129,17 @@ struct UserProfileView: View {
                     .padding(.bottom, 4)
                 if viewModel.userDetails.recentActivity.isEmpty {
                     PTLabel("No recent activity to display.", style: .body)
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                 } else {
                     ForEach(viewModel.userDetails.recentActivity) { (activity: FormattedActivityItem) in
                         HStack(alignment: .top) {
                             Image(systemName: activity.iconName)
-                                .foregroundColor(Color.primary)
+                                .foregroundColor(SwiftUI.Color.primary)
                                 .frame(width: 20, alignment: .center) // Align icons
                             VStack(alignment: .leading) {
                                 PTLabel(activity.description, style: .body)
                                 PTLabel(activity.relativeDate, style: .caption)
-                                    .foregroundColor(Color.textSecondary)
+                                    .foregroundColor(ThemeColor.textSecondary)
                             }
                             Spacer()
                         }
@@ -175,7 +174,6 @@ struct UserProfileView_Previews: PreviewProvider {
             }
             .previewDisplayName("Error State")
         }
-        // .environmentObject(MockAuthViewModel() // Temporarily commenting out to see if it resolves ambiguity
     }
 }
 #endif 

@@ -6,12 +6,12 @@ import PTDesignSystem
 
 // Run-specific text style extensions
 extension Text {
-    func runLabelStyle(size: CGFloat = 14, color: Color = Color.textSecondary) -> some View { 
-        self.font(.system(size: size).foregroundColor(color) 
+    func runLabelStyle(size: CGFloat = 14, color: SwiftUI.Color = DSColor.textSecondary) -> some View {
+        self.font(.system(size: size)).foregroundColor(color)
     }
     
-    func statsNumberStyle(size: CGFloat = 32, color: Color = Color.textPrimary) -> some View { 
-        self.font(.system(size: size, weight: .bold).foregroundColor(color) 
+    func statsNumberStyle(size: CGFloat = 32, color: SwiftUI.Color = DSColor.textPrimary) -> some View {
+        self.font(.system(size: size, weight: .bold)).foregroundColor(color)
     }
 }
 
@@ -50,7 +50,7 @@ struct RunWorkoutView: View {
                 // Bottom Controls
                 runControls()
             }
-            .background(Color.cream.ignoresSafeArea()
+            .background(DSColor.cream.ignoresSafeArea())
             
             // Location Permission Request View
             if viewModel.runState == .requestingPermission {
@@ -80,7 +80,7 @@ struct RunWorkoutView: View {
                 Button("End") {
                     handleEndWorkout()
                 }
-                .foregroundColor(Color.error)
+                .foregroundColor(DSColor.error)
             }
         }
         .onAppear {
@@ -132,29 +132,29 @@ struct RunWorkoutView: View {
                 // Bluetooth Device Status
                 HStack(spacing: 4) {
                     Image(systemName: viewModel.bluetoothState == .poweredOn ? "bolt.fill" : "bolt.slash.fill")
-                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : Color.textSecondary)
+                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? SwiftUI.Color.blue : DSColor.textSecondary)
                     
                     // Connection Status Text
                     switch viewModel.deviceConnectionState {
                     case .disconnected:
                         Text("No Device Connected")
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(DSColor.textSecondary)
                     case .connecting:
                         HStack {
                             Text("Connecting...")
                             ProgressView().scaleEffect(0.7)
                         }
-                        .foregroundColor(Color.warning)
+                        .foregroundColor(DSColor.warning)
                     case .connected(let peripheral):
                         Text("\(peripheral.name ?? "Device")")
-                            .foregroundColor(Color.success)
+                            .foregroundColor(DSColor.success)
                             .fontWeight(.medium)
                     case .disconnecting:
                         Text("Disconnecting...")
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(DSColor.textSecondary)
                     case .failed:
                         Text("Connection Failed")
-                            .foregroundColor(Color.error)
+                            .foregroundColor(DSColor.error)
                     }
                 }
                 
@@ -163,9 +163,9 @@ struct RunWorkoutView: View {
                 // GPS Source Indicator with improved visual
                 HStack(spacing: 3) {
                     Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
-                        .foregroundColor(viewModel.locationSource == .watch ? .blue : Color.textPrimary)
+                        .foregroundColor(viewModel.locationSource == .watch ? SwiftUI.Color.blue : DSColor.textPrimary)
                     Text("GPS")
-                        .foregroundColor(viewModel.locationSource == .watch ? .blue : Color.textPrimary)
+                        .foregroundColor(viewModel.locationSource == .watch ? SwiftUI.Color.blue : DSColor.textPrimary)
                 }
                 .padding(4)
                 .background(
@@ -192,7 +192,7 @@ struct RunWorkoutView: View {
                             )
                         
                         Text(viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM")
-                            .foregroundColor(viewModel.currentHeartRate != nil ? .primary : Color.textSecondary)
+                            .foregroundColor(viewModel.currentHeartRate != nil ? DSColor.primary : DSColor.textSecondary)
                             .fontWeight(viewModel.currentHeartRate != nil ? .semibold : .regular)
                     }
                     
@@ -200,7 +200,7 @@ struct RunWorkoutView: View {
                     if viewModel.currentHeartRate != nil {
                         Text("via \(viewModel.connectedDeviceName ?? "Device")")
                             .font(.caption2)
-                            .foregroundColor(Color.textSecondary)
+                            .foregroundColor(DSColor.textSecondary)
                     }
                     
                     Spacer()
@@ -256,7 +256,7 @@ struct RunWorkoutView: View {
             }
         }
         .padding()
-        .background(Color.deepOps)
+        .background(DSColor.deepOps)
     }
     
     // Helper for single metric display
@@ -270,15 +270,15 @@ struct RunWorkoutView: View {
             VStack {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .foregroundColor(iconColor ?? Color.textPrimary)
+                        .foregroundColor(iconColor ?? DSColor.textPrimary)
                         .body()
                         .padding(.bottom, 2)
                 }
                 Text(label)
-                    .runLabelStyle(size: 12, color: Color.textTertiary)
+                    .runLabelStyle(size: 12, color: DSColor.textTertiary)
                     .padding(.bottom, 1)
                 Text(value)
-                    .statsNumberStyle(size: 24, color: Color.cream)
+                    .statsNumberStyle(size: 24, color: DSColor.cream)
             }
             .frame(maxWidth: .infinity) // Distribute horizontally
         }
@@ -291,17 +291,17 @@ struct RunWorkoutView: View {
             switch viewModel.runState {
             case .ready, .idle:
                 Button { viewModel.startRun() }
-                label: { controlButtonLabel(systemName: "play.circle.fill", color: Color.success) }
+                label: { controlButtonLabel(systemName: "play.circle.fill", color: DSColor.success) }
             case .running:
                 Button { viewModel.pauseRun() }
-                label: { controlButtonLabel(systemName: "pause.circle.fill", color: Color.warning) }
+                label: { controlButtonLabel(systemName: "pause.circle.fill", color: DSColor.warning) }
             case .paused:
                 HStack(spacing: 40) {
                     Button { viewModel.resumeRun() }
-                    label: { controlButtonLabel(systemName: "play.circle.fill", color: Color.success) }
+                    label: { controlButtonLabel(systemName: "play.circle.fill", color: DSColor.success) }
 
                     Button { viewModel.stopRun() }
-                    label: { controlButtonLabel(systemName: "stop.circle.fill", color: Color.error) }
+                    label: { controlButtonLabel(systemName: "stop.circle.fill", color: DSColor.error) }
                 }
             case .finished, .error:
                 EmptyView() // Handled by navigation
@@ -312,7 +312,7 @@ struct RunWorkoutView: View {
         }
         .padding()
         .frame(height: 80) // Consistent height for control area
-        .background(Color.backgroundOverlay.opacity(0.3)
+        .background(DSColor.backgroundOverlay.opacity(0.3))
     }
     
     // Helper for styling control buttons
@@ -333,10 +333,10 @@ struct RunWorkoutView: View {
             let isPermissionDenied = viewModel.runState == .permissionDenied
             
             Image(systemName: isPermissionDenied ? "location.slash.fill" : "exclamationmark.triangle.fill")
-                .font(.system(size: 50)
+                .font(.system(size: 50))
                 .foregroundColor(isPermissionDenied ? 
-                                 Color.textPrimaryOnDark : 
-                                 Color.warning)
+                                 DSColor.textPrimaryOnDark : 
+                                 DSColor.warning)
             
             PTLabel(isPermissionDenied ? 
                    "Location Access Denied" : "Error", 
@@ -365,7 +365,7 @@ struct RunWorkoutView: View {
         .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(
-            Color(uiColor: UIColor.black.withAlphaComponent(0.85)
+            SwiftUI.Color(uiColor: UIColor.black.withAlphaComponent(0.85))
                 .edgesIgnoringSafeArea(.all)
         )
     }
@@ -382,9 +382,9 @@ struct RunWorkoutView: View {
 struct MapViewPlaceholder: View {
     var body: some View {
         ZStack {
-            Color.gray.opacity(0.2)
+            SwiftUI.Color.gray.opacity(0.2)
             Text("Map Area (Optional)")
-                .foregroundColor(Color.textSecondary)
+                .foregroundColor(DSColor.textSecondary)
         }
     }
 }

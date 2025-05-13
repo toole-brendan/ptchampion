@@ -19,7 +19,7 @@ public struct PTSeparator: View {
     ) {
         self.orientation = orientation
         self.thickness = thickness
-        self.color = color ?? DesignTokens.Color.textTertiary.opacity(0.3)
+        self.color = color ?? DesignTokens.ThemeColor.textTertiary.opacity(0.3)
     }
     
     public var body: some View {
@@ -53,7 +53,7 @@ public struct PTSeparator_Previews: PreviewProvider {
             }
             .frame(height: 50)
             
-            PTSeparator(thickness: 3, color: DesignTokens.Color.primary)
+            PTSeparator(thickness: 3, color: DesignTokens.ThemeColor.primary)
         }
         .padding()
         .previewLayout(.sizeThatFits)

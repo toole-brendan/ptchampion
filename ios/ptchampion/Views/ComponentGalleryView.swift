@@ -46,7 +46,6 @@ struct ComponentGalleryView: View {
             .navigationTitle("Component Gallery")
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingSettingsSheet) {
-            .container()
                 // Display settings sheet when triggered
                 let mockAuth: AuthViewModel = {
                     let auth = AuthViewModel()
@@ -82,7 +81,7 @@ struct ComponentGalleryView: View {
                             .foregroundColor(selectedComponent == index ? DSColor.primary : DSColor.textSecondary)
                             .padding(.vertical, Spacing.small)
                             .padding(.horizontal, Spacing.medium)
-                            .background(selectedComponent == index ? DSColor.primary.opacity(0.2) : Color.clear)
+                            .background(selectedComponent == index ? DSColor.primary.opacity(0.2) : SwiftUI.Color.clear)
                             .cornerRadius(CornerRadius.full)
                     }
                 }
@@ -134,9 +133,9 @@ struct ComponentGalleryContentView: View {
                     EmptyView()
                 }
             }
-            .padding()
+            .adaptivePadding()
         }
-        .background(DSColor.background.opacity(0.5))
+        .container()
     }
     
     // MARK: - Component Sections
@@ -372,7 +371,6 @@ VStack {
                 }
             }
             .card()
-            .card()
         }
     }
     
@@ -409,7 +407,6 @@ VStack {
                                 PTLabel("Tiny", style: .caption)
                             }
                             .card()
-                            .card()
                             
                             VStack {
                                 Spinner(size: .small)
@@ -428,10 +425,8 @@ VStack {
                         }
                     }
                     .card()
-                    .card()
                     .padding()
                 }
-                .card()
                 .card()
                 
                 // Color variants
@@ -461,16 +456,6 @@ VStack {
                                         .foregroundColor(DSColor.background)
                                 }
                                 .card()
-                                .card()
-                                .card()
-                                .card()
-                                .card()
-                                .card()
-                                .card()
-                                .card()
-                                .card()
-                                .card()
-                                .card()
                             }
                         }
                         .card()
@@ -491,7 +476,6 @@ VStack {
                             }
                         }
                     }
-                    .card()
                     .card()
                     .padding()
                 }
@@ -546,9 +530,7 @@ VStack {
                     WorkoutHistoryRow(result: result)
                         .frame(height: 120)
                 }
-                .padding()
-                .background(DSColor.cardBackground)
-                .cornerRadius(CornerRadius.medium)
+                .card()
                 
                 VStack(alignment: .leading, spacing: Spacing.small) {
                     PTLabel("Leaderboard", style: .bodyBold)
@@ -577,9 +559,7 @@ VStack {
                         isCurrentUser: false
                     )
                 }
-                .padding()
-                .background(DSColor.cardBackground)
-                .cornerRadius(CornerRadius.medium)
+                .card()
             }
         }
     }
@@ -684,7 +664,7 @@ VStack {
         }
     }
     
-    private func colorSwatch(_ name: String, color: Color) -> some View {
+    private func colorSwatch(_ name: String, color: SwiftUI.Color) -> some View {
         VStack(spacing: Spacing.extraSmall) {
             Rectangle()
                 .fill(color)

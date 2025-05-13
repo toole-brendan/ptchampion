@@ -1,8 +1,7 @@
 import SwiftUI
 import PTDesignSystem
 
-fileprivate typealias DSColor = PTDesignSystem.Color
-fileprivate typealias SColor = SwiftUI.Color
+
 
 // Badge size options for flexibility
 public enum BadgeSize {
@@ -14,7 +13,7 @@ public enum BadgeSize {
         switch self {
         case .small: return Typography.caption
         case .medium: return Spacing.small
-        case .large: return .body()
+        case .large: return Typography.body
         }
     }
     
@@ -93,8 +92,8 @@ public struct PTBadge: View {
                     .fill(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                SColor.white.opacity(0.2),
-                                SColor.clear
+                                SwiftUI.Color.white.opacity(0.2),
+                                SwiftUI.Color.clear
                             ]),
                             startPoint: .top,
                             endPoint: .bottom
@@ -114,7 +113,7 @@ public struct PTBadge: View {
         // Optional shadow for some badge types
         .shadow(
             color: type == .premium || type == .important ? 
-                type.foregroundColor.opacity(0.3) : SColor.clear,
+                type.foregroundColor.opacity(0.3) : SwiftUI.Color.clear,
             radius: 2,
             x: 0,
             y: 1
@@ -141,7 +140,7 @@ public enum PTBadgeType {
     case important    // Important notice
     
     // Custom colors
-    var backgroundColor: SColor {
+    var backgroundColor: SwiftUI.Color {
         switch self {
         case .default:
             return DSColor.brassGold.opacity(0.15)
@@ -162,7 +161,7 @@ public enum PTBadgeType {
         }
     }
     
-    var foregroundColor: SColor {
+    var foregroundColor: SwiftUI.Color {
         switch self {
         case .default:
             return DSColor.brassGold
@@ -230,7 +229,7 @@ struct PTBadge_Previews: PreviewProvider {
             }
         }
         .padding()
-        .background(Color.black)
+        .background(SwiftUI.Color.black)
         .environment(\.colorScheme, .dark)
         .previewLayout(.sizeThatFits)
     }

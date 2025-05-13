@@ -12,7 +12,7 @@ struct WorkoutChartView: View {
             if !chartData.isEmpty && filter != .all {
                 Text("PROGRESS CHART")
                     .militaryMonospaced(size: Spacing.small)
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .padding(.horizontal, Spacing.contentPadding)
                 
 VStack {
@@ -20,13 +20,13 @@ VStack {
                         HStack {
                             Text(filter.rawValue)
                                 .militaryMonospaced(size: Spacing.body)
-                                .foregroundColor(Color.textPrimary)
+                                .foregroundColor(ThemeColor.textPrimary)
                             
                             Spacer()
                             
                             Text(filter.rawValue)
                                 .small(weight: .medium)
-                                .foregroundColor(Color.brassGold)
+                                .foregroundColor(ThemeColor.brassGold)
                         }
                         
                         Chart(chartData) { point in
@@ -34,34 +34,34 @@ VStack {
                                 x: .value("Date", point.date),
                                 y: .value(chartYAxisLabel, point.value)
                             )
-                            .foregroundStyle(Color.brassGold)
+                            .foregroundStyle(ThemeColor.brassGold)
                             .interpolationMethod(.catmullRom)
                             
                             PointMark(
                                 x: .value("Date", point.date),
                                 y: .value(chartYAxisLabel, point.value)
                             )
-                            .foregroundStyle(Color.brassGold)
+                            .foregroundStyle(ThemeColor.brassGold)
                             .symbolSize(CGSize(width: 8, height: 8))
                         }
                         .chartYAxis {
                             AxisMarks(position: .leading) { _ in
                                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                                    .foregroundStyle(Color.textTertiary.opacity(0.3))
+                                    .foregroundStyle(ThemeColor.textTertiary.opacity(0.3))
                                 AxisTick(stroke: StrokeStyle(lineWidth: 1))
-                                    .foregroundStyle(Color.textTertiary)
+                                    .foregroundStyle(ThemeColor.textTertiary)
                                 AxisValueLabel()
-                                    .foregroundStyle(Color.textSecondary)
+                                    .foregroundStyle(ThemeColor.textSecondary)
                             }
                         }
                         .chartXAxis {
                             AxisMarks(values: .automatic(desiredCount: 5)) { value in
                                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                                    .foregroundStyle(Color.textTertiary.opacity(0.3))
+                                    .foregroundStyle(ThemeColor.textTertiary.opacity(0.3))
                                 AxisTick(stroke: StrokeStyle(lineWidth: 1))
-                                    .foregroundStyle(Color.textTertiary)
+                                    .foregroundStyle(ThemeColor.textTertiary)
                                 AxisValueLabel(format: .dateTime.month().day())
-                                    .foregroundStyle(Color.textSecondary)
+                                    .foregroundStyle(ThemeColor.textSecondary)
                             }
                         }
                         .frame(height: 200)
@@ -73,11 +73,11 @@ VStack {
                             HStack(spacing: 4) {
                                 Text("Y-Axis:")
                                     .caption()
-                                    .foregroundColor(Color.textTertiary)
+                                    .foregroundColor(ThemeColor.textTertiary)
                                 
                                 Text(chartYAxisLabel)
                                     .militaryMonospaced(size: 12)
-                                    .foregroundColor(Color.textSecondary)
+                                    .foregroundColor(ThemeColor.textSecondary)
                             }
                         }
                     }
@@ -87,23 +87,23 @@ VStack {
                 // Empty chart state
                 Text("PROGRESS CHART")
                     .militaryMonospaced(size: Spacing.small)
-                    .foregroundColor(Color.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                     .padding(.horizontal, Spacing.contentPadding)
                 
 VStack {
                     VStack(spacing: Spacing.medium) {
                         Image(systemName: "chart.line.downtrend.xyaxis")
                             .font(.system(size: 36))
-                            .foregroundColor(Color.textTertiary.opacity(0.6))
+                            .foregroundColor(ThemeColor.textTertiary.opacity(0.6))
                         
                         VStack(spacing: Spacing.small) {
                             Text("Not enough data to display chart")
                                 .body(weight: .medium)
-                                .foregroundColor(Color.textSecondary)
+                                .foregroundColor(ThemeColor.textSecondary)
                             
                             Text("Complete more \(filter.rawValue) workouts to see your progress")
                                 .small()
-                                .foregroundColor(Color.textTertiary)
+                                .foregroundColor(ThemeColor.textTertiary)
                                 .multilineTextAlignment(.center)
                         }
                     }
@@ -144,7 +144,7 @@ private func sampleChartData() -> [ChartableDataPoint] {
             filter: .situp
         )
     }
-    .background(Color.background)
+    .background(ThemeColor.background)
     .previewLayout(.sizeThatFits)
     .padding()
 }

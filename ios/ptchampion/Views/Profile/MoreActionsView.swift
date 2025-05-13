@@ -12,7 +12,7 @@ struct MoreActionsView: View {
             // Section Header
             Text("More")
                 .heading3()
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
             
@@ -25,11 +25,11 @@ struct MoreActionsView: View {
                 } label: {
                     HStack {
                         Label("Privacy Policy", systemImage: "doc.text.fill")
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.caption)
-                            .foregroundColor(Color.textTertiary)
+                            .foregroundColor(ThemeColor.textTertiary)
                     }
                     .contentShape(Rectangle())
                 }
@@ -45,11 +45,11 @@ struct MoreActionsView: View {
                 } label: {
                     HStack {
                         Label("Fitness Devices", systemImage: "antenna.radiowaves.left.and.right")
-                            .foregroundColor(Color.textPrimary)
+                            .foregroundColor(ThemeColor.textPrimary)
                         Spacer()
                         Image(systemName: "chevron.right")
                             .font(.caption)
-                            .foregroundColor(Color.textTertiary)
+                            .foregroundColor(ThemeColor.textTertiary)
                     }
                     .contentShape(Rectangle())
                 }
@@ -94,7 +94,7 @@ struct MoreActionsView: View {
             content()
         }
         .padding(Spacing.contentPadding)
-        .background(Color.cardBackground)
+        .background(ThemeColor.cardBackground)
         .cornerRadius(CornerRadius.card)
         .shadow(
             color: Color.black.opacity(0.1),
@@ -110,7 +110,7 @@ struct MoreActionsView_Previews: PreviewProvider {
         MoreActionsView()
             .environmentObject(FitnessDeviceManagerViewModel())
             .padding()
-            .background(Color.background)
+            .background(ThemeColor.background)
             .previewLayout(.sizeThatFits)
     }
 } 

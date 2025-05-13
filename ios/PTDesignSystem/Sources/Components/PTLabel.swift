@@ -40,11 +40,11 @@ public struct PTLabel: View {
     private var color: SwiftUI.Color {
         switch style {
         case .heading, .subheading:
-            return DesignTokens.Color.textPrimary
+            return DesignTokens.ThemeColor.textPrimary
         case .body, .bodyBold:
-            return DesignTokens.Color.textSecondary
+            return DesignTokens.ThemeColor.textSecondary
         case .caption:
-            return DesignTokens.Color.textTertiary
+            return DesignTokens.ThemeColor.textTertiary
         }
     }
 }

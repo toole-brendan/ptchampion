@@ -1,7 +1,7 @@
 import SwiftUI
 
 // Color tokens for the design system
-public enum Color {
+public enum ThemeColor {
     // Brand palette
     public static let brand50 = SwiftUI.Color(hex: "f0f9ff")
     public static let brand100 = SwiftUI.Color(hex: "e0f2fe")

@@ -69,7 +69,7 @@ struct WorkoutDetailView: View {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.hour, .minute, .second]
         formatter.zeroFormattingBehavior = .pad
-        return formatter.string(from: TimeInterval(seconds) ?? "00:00:00"
+        return formatter.string(from: TimeInterval(seconds)) ?? "00:00:00"
     }
     
     // Helper to format distance (assuming miles for now, can be enhanced)
@@ -135,7 +135,7 @@ struct WorkoutDetailView: View {
                     .padding(.bottom, Spacing.small)
 
                 WorkoutDetailInfoRow(label: "Type:", value: workoutResult.exerciseType.capitalized)
-                WorkoutDetailInfoRow(label: "Date:", value: workoutResult.startTime, style: .dateTime.month().day().year().hour().minute()
+                WorkoutDetailInfoRow(label: "Date:", value: workoutResult.startTime, style: .dateTime.month().day().year().hour().minute())
                 WorkoutDetailInfoRow(label: "Duration:", value: formatDuration(workoutResult.durationSeconds))
                 
                 if workoutResult.exerciseType.lowercased() == "run" {
@@ -182,8 +182,8 @@ struct WorkoutDetailView: View {
                             Spacer()
                         }
                         .padding()
-                        .background(Color(.secondarySystemBackground)
-                        .cornerRadius(12)
+                                .background(Color(.secondarySystemBackground))
+        .cornerRadius(12)
                     }
                 }
                 
@@ -233,7 +233,7 @@ struct WorkoutDetailView: View {
                 }
                 
                 // Show rep breakdown for strength workouts
-                if ["pushup", "situp", "pullup"].contains(workoutResult.exerciseType.lowercased() {
+                if ["pushup", "situp", "pullup"].contains(workoutResult.exerciseType.lowercased()) {
                     // Only fetch rep data if this is a strength workout with reps
                     if let repCount = workoutResult.repCount, repCount > 0 {
                         Divider()
@@ -265,7 +265,7 @@ struct WorkoutDetailView: View {
         .navigationTitle("Workout Details")
         .onAppear {
             // Load rep details for strength workouts
-            if ["pushup", "situp", "pullup"].contains(workoutResult.exerciseType.lowercased() {
+            if ["pushup", "situp", "pullup"].contains(workoutResult.exerciseType.lowercased()) {
                 loadRepDetails()
             }
             
@@ -315,9 +315,9 @@ struct WorkoutDetailView: View {
             }
             
             if !heartRatePoints.isEmpty {
-                RuleMark(y: .value("Avg HR", avgHeartRate)
-                    .foregroundStyle(Color.orange.opacity(0.5)
-                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5])
+                RuleMark(y: .value("Avg HR", avgHeartRate))
+                    .foregroundStyle(Color.orange.opacity(0.5))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
                     .annotation(position: .top, alignment: .trailing) {
                         Text("Avg \(avgHeartRate) BPM")
                             .caption()
@@ -558,7 +558,7 @@ struct WorkoutDetailInfoRow: View {
     var dateStyle: Date.FormatStyle? = nil // Optional Date.FormatStyle
 
     // Overloaded initializer for Date values
-    init(label: String, value: Date, style: Date.FormatStyle = .dateTime.day().month().year().hour().minute() {
+    init(label: String, value: Date, style: Date.FormatStyle = .dateTime.day().month().year().hour().minute()) {
         self.label = label
         self.value = value.formatted(style)
         self.dateStyle = style

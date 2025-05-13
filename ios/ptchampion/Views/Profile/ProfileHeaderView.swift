@@ -38,26 +38,26 @@ struct ProfileHeaderView: View {
                 // Avatar circle with initials
                 ZStack {
                     Circle()
-                        .fill(Color.brassGold.opacity(0.2))
+                        .fill(ThemeColor.brassGold.opacity(0.2))
                     
                     Text(initials)
                         .font(.system(size: 40, weight: .bold))
-                        .foregroundColor(Color.brassGold)
+                        .foregroundColor(ThemeColor.brassGold)
                         .minimumScaleFactor(0.5)
                         .padding(Spacing.contentPadding)
                 }
                 .frame(width: 100, height: 100)
-                .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                .shadow(color: SwiftUI.Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
                 
                 // Name and email
                 VStack(spacing: 4) {
                     Text(displayName)
                         .font(.title3.weight(.semibold))
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                     
                     Text(authViewModel.email ?? "N/A")
                         .font(.caption)
-                        .foregroundColor(Color.textSecondary)
+                        .foregroundColor(ThemeColor.textSecondary)
                 }
                 
                 // Edit profile button
@@ -72,16 +72,16 @@ struct ProfileHeaderView: View {
                     }
                     .padding(.horizontal, Spacing.small)
                     .padding(.vertical, 6)
-                    .background(Color.brassGold.opacity(0.1))
+                    .background(ThemeColor.brassGold.opacity(0.1))
                     .cornerRadius(CornerRadius.button)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
             .padding(Spacing.contentPadding)
         }
-        .background(Color.cardBackground)
+        .background(ThemeColor.cardBackground)
         .cornerRadius(CornerRadius.card)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .shadow(color: SwiftUI.Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -90,7 +90,7 @@ struct ProfileHeaderView_Previews: PreviewProvider {
         ProfileHeaderView(showingEditProfile: .constant(false))
             .environmentObject(AuthViewModel())
             .padding()
-            .background(Color.background)
+            .background(ThemeColor.background)
             .previewLayout(.sizeThatFits)
     }
 } 

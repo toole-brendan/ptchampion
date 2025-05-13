@@ -12,7 +12,7 @@ struct ProfilePreferencesView: View {
         VStack(alignment: .leading, spacing: Spacing.medium) {
             Text("Preferences")
                 .font(.body.weight(.semibold))
-                .foregroundColor(Color.textPrimary)
+                .foregroundColor(ThemeColor.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits([.isHeader])
             
@@ -21,7 +21,7 @@ struct ProfilePreferencesView: View {
                 // Units Picker
                 HStack {
                     Label("Units", systemImage: "ruler")
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                         .font(.body)
                     
                     Spacer()
@@ -37,7 +37,7 @@ struct ProfilePreferencesView: View {
                 .frame(height: 44)
             }
             .padding(Spacing.contentPadding)
-            .background(Color.cardBackground)
+            .background(ThemeColor.cardBackground)
             .cornerRadius(CornerRadius.card)
             .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
             
@@ -46,13 +46,13 @@ struct ProfilePreferencesView: View {
                 // Workout Reminders Toggle
                 HStack {
                     Label("Workout Reminders", systemImage: "bell.fill")
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                         .font(.body)
                     
                     Spacer()
                     
                     Toggle("", isOn: $workoutRemindersEnabled)
-                        .tint(Color.brassGold)
+                        .tint(ThemeColor.brassGold)
                         .onChange(of: workoutRemindersEnabled) { _, _ in 
                             hapticGenerator.impactOccurred(intensity: 0.4)
                         }
@@ -65,13 +65,13 @@ struct ProfilePreferencesView: View {
                 // New Achievements Toggle
                 HStack {
                     Label("New Achievements", systemImage: "trophy.fill")
-                        .foregroundColor(Color.textPrimary)
+                        .foregroundColor(ThemeColor.textPrimary)
                         .font(.body)
                     
                     Spacer()
                     
                     Toggle("", isOn: $achievementNotificationsEnabled)
-                        .tint(Color.brassGold)
+                        .tint(ThemeColor.brassGold)
                         .onChange(of: achievementNotificationsEnabled) { _, _ in 
                             hapticGenerator.impactOccurred(intensity: 0.4)
                         }
@@ -79,7 +79,7 @@ struct ProfilePreferencesView: View {
                 .frame(height: 44)
             }
             .padding(Spacing.contentPadding)
-            .background(Color.cardBackground)
+            .background(ThemeColor.cardBackground)
             .cornerRadius(CornerRadius.card)
             .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
@@ -90,7 +90,7 @@ struct ProfilePreferencesView_Previews: PreviewProvider {
     static var previews: some View {
         ProfilePreferencesView(hapticGenerator: UIImpactFeedbackGenerator(style: .medium))
             .padding()
-            .background(Color.background)
+            .background(ThemeColor.background)
             .previewLayout(.sizeThatFits)
     }
 } 

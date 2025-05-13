@@ -126,8 +126,8 @@ public struct PTTextField: View {
                 Text(label ?? placeholder)
                     .font(ThemeManager.useWebTheme ? Typography.label : .caption)
                     .foregroundColor(ThemeManager.useWebTheme ? 
-                        Color.textSubtle : 
-                        Color.textSecondary)
+                        ThemeColor.textSubtle : 
+                        ThemeColor.textSecondary)
             }
             
             HStack {
@@ -149,14 +149,14 @@ public struct PTTextField: View {
                 // Add optional icon
                 if let icon = icon {
                     icon.foregroundColor(ThemeManager.useWebTheme ?
-                        Color.textSubtle :
-                        Color.textSecondary)
+                        ThemeColor.textSubtle :
+                        ThemeColor.textSecondary)
                 }
             }
             .padding(12)
             .background(ThemeManager.useWebTheme ? 
-                Color.surface : 
-                Color.cardBackground)
+                ThemeColor.surface : 
+                ThemeColor.cardBackground)
             .cornerRadius(ThemeManager.useWebTheme ? 
                 CornerRadius.md : 
                 CornerRadius.input)
@@ -165,8 +165,8 @@ public struct PTTextField: View {
                     CornerRadius.md : 
                     CornerRadius.input)
                     .stroke(ThemeManager.useWebTheme ? 
-                        Color.borderDefault : 
-                        Color.textSecondary.opacity(0.3), 
+                        ThemeColor.borderDefault : 
+                        ThemeColor.textSecondary.opacity(0.3), 
                         lineWidth: 1)
             )
             // Add focus state highlight for web theme
@@ -175,8 +175,8 @@ public struct PTTextField: View {
                     CornerRadius.md : 
                     CornerRadius.input)
                     .stroke(ThemeManager.useWebTheme ? 
-                        Color.borderDefault : 
-                        Color.textSecondary.opacity(0.3), 
+                        ThemeColor.borderDefault : 
+                        ThemeColor.textSecondary.opacity(0.3), 
                         lineWidth: 1)
             )
         }

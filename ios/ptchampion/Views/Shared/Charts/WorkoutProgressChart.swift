@@ -2,8 +2,9 @@ import SwiftUI
 import PTDesignSystem
 import Charts
 
-typealias DSColor = PTDesignSystem.Color
-typealias SColor = SwiftUI.Color
+// Using global DSColor and SColor aliases from PTDesignSystem
+// typealias DSColor = PTDesignSystem.Color
+// typealias SColor = SwiftUI.Color
 
 // Generic data point for charts
 struct ChartableDataPoint: Identifiable {
@@ -37,7 +38,7 @@ struct WorkoutProgressChart: View {
         title: String, 
         yAxisLabel: String? = nil,
         showLabels: Bool = true,
-        accentColor: Color = DSColor.brassGold,
+        accentColor: SwiftUI.Color = ThemeColor.brassGold,
         showGradient: Bool = true,
         animateOnAppear: Bool = true
     ) {
@@ -55,15 +56,14 @@ struct WorkoutProgressChart: View {
             if showLabels {
                 HStack {
                     Text(title)
-                        .body(weight: .bold)
-                        .foregroundColor(DSColor.textPrimary)
+                        .heading4()
                     
                     Spacer()
                     
                     if let yAxisLabel = yAxisLabel {
                         Text(yAxisLabel)
                             .small()
-                            .foregroundColor(DSColor.textSecondary)
+                            .foregroundColor(ThemeColor.textSecondary)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(
@@ -80,9 +80,7 @@ struct WorkoutProgressChart: View {
                 chartContent
             }
         }
-        .padding(Spacing.contentPadding)
-        .background(DSColor.cardBackground)
-        .cornerRadius(CornerRadius.card)
+        .card()
         .onAppear {
             if animateOnAppear {
                 withAnimation(.easeInOut(duration: 1.2)) {
@@ -99,20 +97,21 @@ struct WorkoutProgressChart: View {
         VStack(spacing: Spacing.medium) {
             Image(systemName: "chart.line.downtrend.xyaxis")
                 .font(.system(size: 36))
-                .foregroundColor(DSColor.textTertiary.opacity(0.5))
+                .foregroundColor(ThemeColor.textTertiary.opacity(0.5))
             
             VStack(spacing: Spacing.small) {
                 Text("No data available")
                     .body(weight: .medium)
-                    .foregroundColor(DSColor.textSecondary)
+                    .foregroundColor(ThemeColor.textSecondary)
                 
                 Text("Complete more workouts to see your progress")
                     .small()
-                    .foregroundColor(DSColor.textTertiary)
+                    .foregroundColor(ThemeColor.textTertiary)
                     .multilineTextAlignment(.center)
             }
         }
         .frame(maxWidth: .infinity, minHeight: 200)
+        .background(ThemeColor.background)
     }
     
     // Main chart content
@@ -169,24 +168,24 @@ struct WorkoutProgressChart: View {
         .chartYAxis {
             AxisMarks(position: .leading) { _ in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                    .foregroundStyle(DSColor.textTertiary.opacity(0.3))
+                    .foregroundStyle(ThemeColor.textTertiary.opacity(0.3))
                 AxisTick(stroke: StrokeStyle(lineWidth: 1))
-                    .foregroundStyle(DSColor.textTertiary)
+                    .foregroundStyle(ThemeColor.textTertiary)
                 AxisValueLabel()
-                    .foregroundStyle(DSColor.textSecondary)
+                    .foregroundStyle(ThemeColor.textSecondary)
             }
         }
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: 5)) { value in
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5, dash: [2, 3]))
-                    .foregroundStyle(DSColor.textTertiary.opacity(0.3))
+                    .foregroundStyle(ThemeColor.textTertiary.opacity(0.3))
                 AxisTick(stroke: StrokeStyle(lineWidth: 1))
-                    .foregroundStyle(DSColor.textTertiary)
+                    .foregroundStyle(ThemeColor.textTertiary)
                 if let date = value.as(Date.self) {
                     AxisValueLabel {
                         Text(Self.dayFormatter.string(from: date))
                             .caption()
-                            .foregroundStyle(DSColor.textSecondary)
+                            .foregroundStyle(ThemeColor.textSecondary)
                     }
                 }
             }
@@ -202,11 +201,11 @@ struct WorkoutProgressChart: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(0..<5) { i in
                         Divider()
-                            .background(DSColor.textTertiary.opacity(0.3))
+                            .background(ThemeColor.textTertiary.opacity(0.3))
                         Spacer()
                     }
                     Divider()
-                        .background(DSColor.textTertiary.opacity(0.3))
+                        .background(ThemeColor.textTertiary.opacity(0.3))
                 }
                 
                 // Area fill for gradient
@@ -254,7 +253,7 @@ struct WorkoutProgressChart: View {
                                 
                                 Text(text)
                                     .caption()
-                                    .foregroundColor(DSColor.textSecondary)
+                                    .foregroundColor(ThemeColor.textSecondary)
                                     .frame(width: geometry.size.width / CGFloat(dataPoints.count))
                             } else {
                                 Spacer()
@@ -375,13 +374,13 @@ struct WorkoutProgressChart_Previews: PreviewProvider {
                 dataPoints: sampleData,
                 title: "Weekly Progress",
                 yAxisLabel: "Score",
-                accentColor: Color.green
+                accentColor: SwiftUI.Color.green
             )
             .padding()
             .preferredColorScheme(.dark)
             .previewDisplayName("Dark Mode Chart")
         }
-        .background(Color(.systemBackground))
+        .background(ThemeColor.background)
         .previewLayout(.sizeThatFits)
     }
 } 

@@ -66,11 +66,11 @@ public struct UIColorContrastChecker {
         isLargeText: Bool = false
     ) -> [String: Bool] {
         // Get UIColors from AppTheme
-        let uiDeepOps = UIColor(PTDesignSystem.Color.deepOps)
-        let uiBrassGold = UIColor(PTDesignSystem.Color.brassGold)
-        let uiCream = UIColor(PTDesignSystem.Color.cream)
-        let uiCommandBlack = UIColor(PTDesignSystem.Color.commandBlack)
-        let uiTacticalGray = UIColor(PTDesignSystem.Color.tacticalGray)
+        let uiDeepOps = UIColor(ThemeColor.deepOps)
+        let uiBrassGold = UIColor(ThemeColor.brassGold)
+        let uiCream = UIColor(ThemeColor.cream)
+        let uiCommandBlack = UIColor(ThemeColor.commandBlack)
+        let uiTacticalGray = UIColor(ThemeColor.tacticalGray)
         
         // Check contrast against each theme color
         return [
@@ -180,20 +180,20 @@ public struct ContrastRatioPreview: View {
 #Preview {
     VStack {
         ContrastRatioPreview(
-            foreground: PTDesignSystem.Color.deepOps,
-            background: PTDesignSystem.Color.cream,
+            foreground: ThemeColor.deepOps,
+            background: ThemeColor.cream,
             text: "DeepOps on Cream"
         )
         
         ContrastRatioPreview(
-            foreground: PTDesignSystem.Color.brassGold,
-            background: PTDesignSystem.Color.deepOps,
+            foreground: ThemeColor.brassGold,
+            background: ThemeColor.deepOps,
             text: "BrassGold on DeepOps"
         )
         
         ContrastRatioPreview(
-            foreground: PTDesignSystem.Color.tacticalGray,
-            background: PTDesignSystem.Color.cream,
+            foreground: ThemeColor.tacticalGray,
+            background: ThemeColor.cream,
             text: "TacticalGray on Cream"
         )
     }

@@ -1,8 +1,7 @@
 import SwiftUI
 import PTDesignSystem
 
-fileprivate typealias DSColor = PTDesignSystem.Color
-fileprivate typealias SColor = SwiftUI.Color
+
 
 enum Trend {
     case up(percentage: Int)
@@ -14,7 +13,7 @@ struct StatCard: View {
     let title: String
     let value: String
     let unit: String
-    let color: SColor
+    let color: SwiftUI.Color
     let iconName: String? // Optional icon for the stat card
 
     var body: some View {
@@ -105,7 +104,7 @@ struct LeaderboardRow: View {
             
             // Name
             Text(name)
-                .font(isCurrentUser ? .body()Bold() : .body()())
+                .font(isCurrentUser ? .headline : .body)
                 .foregroundColor(isCurrentUser ? DSColor.brassGold : DSColor.textPrimary)
             
             Spacer()
@@ -121,7 +120,7 @@ struct LeaderboardRow: View {
         .cornerRadius(CornerRadius.card)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.card)
-                .stroke(isCurrentUser ? DSColor.brassGold.opacity(0.5) : SColor.clear, lineWidth: 1)
+                .stroke(isCurrentUser ? DSColor.brassGold.opacity(0.5) : SwiftUI.Color.clear, lineWidth: 1)
         )
     }
 }

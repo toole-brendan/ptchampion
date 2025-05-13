@@ -1,8 +1,7 @@
 import SwiftUI
 import PTDesignSystem
 
-fileprivate typealias DSColor = PTDesignSystem.Color
-fileprivate typealias SColor = SwiftUI.Color
+
 
 struct Spinner: View {
     enum Size: CGFloat {
@@ -26,7 +25,7 @@ struct Spinner: View {
         case secondary
         case light
         
-        var color: SColor {
+        var color: SwiftUI.Color {
             switch self {
             case .primary: return DSColor.primary
             case .secondary: return DSColor.textSecondary
@@ -87,7 +86,7 @@ extension Spinner {
     
     static func overlay() -> some View {
         ZStack {
-            SColor.black.opacity(0.4)
+            SwiftUI.Color.black.opacity(0.4)
             
             VStack(spacing: Spacing.medium) {
                 Spinner(size: .large)
@@ -124,7 +123,7 @@ struct WithLoading<Content: View>: View {
                     Spinner()
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(SColor.black.opacity(0.05))
+                .background(SwiftUI.Color.black.opacity(0.05))
             }
         }
     }
@@ -175,7 +174,7 @@ struct Spinner_Previews: PreviewProvider {
             // Dark mode preview
             Spinner()
                 .padding()
-                .background(SColor.black)
+                .background(SwiftUI.Color.black)
                 .environment(\.colorScheme, .dark)
                 .previewLayout(.sizeThatFits)
                 .previewDisplayName("Dark Mode")

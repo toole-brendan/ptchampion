@@ -26,7 +26,7 @@ enum WorkoutSessionState: Equatable {
              (.paused, .paused),
              (.finished, .finished):
             return true
-        case (.error(let lhsMsg), .error(let rhsMsg):
+        case (.error(let lhsMsg), .error(let rhsMsg)):
             return lhsMsg == rhsMsg
         default:
             return false

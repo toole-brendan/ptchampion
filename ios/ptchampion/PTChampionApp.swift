@@ -570,12 +570,12 @@ struct MainTabView: View {
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
                 .tag(Tab.profile)
         }
-        .tint(Color.brassGold)
+        .tint(ThemeColor.brassGold)
         .onAppear { 
             // Customize TabView appearance 
             let tabBarAppearance = UITabBarAppearance()
             tabBarAppearance.configureWithOpaqueBackground()
-            tabBarAppearance.backgroundColor = UIColor(Color.deepOps)
+            tabBarAppearance.backgroundColor = UIColor(ThemeColor.deepOps)
             UITabBar.appearance().standardAppearance = tabBarAppearance
             
             if #available(iOS 15.0, *) {
