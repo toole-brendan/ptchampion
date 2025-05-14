@@ -54,6 +54,15 @@ ios/*/build/
 *.xcuserstate
 UserInterfaceState.xcuserstate
 
+# Swift build directories
+.build/
+**/.build/
+ios/**/.build/
+ios/tools/CodeRewriter/.build/
+ios/PTDesignSystem/.build/
+ios/tools/CodeRewriter/.build/checkouts/
+ios/PTDesignSystem/.build/checkouts/
+
 # Log files
 LogFiles/
 *_logs/
