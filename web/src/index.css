@@ -291,4 +291,24 @@ html {
     height: 100vh;
     object-fit: contain;
   }
+  
+  .camera-container.fullscreen-fallback {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* ensure overlay above other UI */
+  }
+  
+  .camera-container.fullscreen-fallback video,
+  .camera-container.fullscreen-fallback canvas {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+  }
 }

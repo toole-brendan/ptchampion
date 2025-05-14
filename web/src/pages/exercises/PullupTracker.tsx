@@ -23,7 +23,7 @@ import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewMod
 
 // Import new UI components
 import HUD from '@/components/workout/HUD';
-import SessionControls, { CameraControls } from '@/components/workout/SessionControls';
+import SessionControls from '@/components/workout/SessionControls';
 
 // --- Pull-up specific logic constants (adjust as needed for UI display) ---
 const PULLUP_THRESHOLD_ELBOW_ANGLE_DOWN = 160; // Angle for fully extended arms at bottom
@@ -42,7 +42,8 @@ const PullupTracker: React.FC = () => {
   // References for video and canvas elements
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -253,7 +254,7 @@ const PullupTracker: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Camera Feed Section */}
-          <div className="relative aspect-video overflow-hidden rounded-md bg-muted camera-container">
+          <div ref={containerRef} className="relative aspect-video overflow-hidden rounded-md bg-muted camera-container">
             <video
               ref={videoRef}
               autoPlay
@@ -265,16 +266,6 @@ const PullupTracker: React.FC = () => {
             <canvas
               ref={canvasRef}
               className="pointer-events-none absolute inset-0 size-full"
-            />
-            
-            {/* Camera controls positioned directly in the video feed */}
-            <CameraControls
-              isFullscreen={isFullscreen}
-              toggleFullscreen={toggleFullscreen}
-              showFlip={isMobile}
-              onFlipCamera={flipCamera}
-              disabled={!permissionGranted || !!cameraError || !!modelError}
-              isModelLoading={isModelLoading}
             />
             
             {/* HUD Component */}
@@ -396,9 +387,12 @@ const PullupTracker: React.FC = () => {
           disabled={!permissionGranted || !!cameraError || !!modelError}
           repCount={repCount}
           isSubmitting={isSubmitting}
+          showFlip={isMobile}
+          onFlipCamera={flipCamera}
           onStartPause={handleStartPause}
           onReset={handleReset}
           onFinish={handleFinish}
+          cameraContainerRef={containerRef}
         />
       )}
     </div>

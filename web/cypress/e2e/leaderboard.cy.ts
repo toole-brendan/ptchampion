@@ -8,7 +8,8 @@ describe('Leaderboard Page', () => {
         user: {
           id: 1,
           username: 'testuser',
-          display_name: 'Test User',
+          first_name: 'Test',
+          last_name: 'User',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
@@ -22,21 +23,24 @@ describe('Leaderboard Page', () => {
         {
           user_id: 1,
           username: 'champion',
-          display_name: 'Champion User',
+          first_name: 'Champion',
+          last_name: 'User',
           max_grade: 100,
           last_attempt_date: new Date().toISOString()
         },
         {
           user_id: 2,
           username: 'secondplace',
-          display_name: 'Second Place',
+          first_name: 'Second',
+          last_name: 'Place',
           max_grade: 90,
           last_attempt_date: new Date().toISOString()
         },
         {
           user_id: 3,
           username: 'thirdplace',
-          display_name: 'Third Place',
+          first_name: 'Third',
+          last_name: 'Place',
           max_grade: 80,
           last_attempt_date: new Date().toISOString()
         }
@@ -50,7 +54,8 @@ describe('Leaderboard Page', () => {
         {
           user_id: 2,
           username: 'pushupking',
-          display_name: 'Push-up King',
+          first_name: 'Push-up',
+          last_name: 'King',
           max_grade: 50,
           last_attempt_date: new Date().toISOString()
         }
@@ -70,7 +75,8 @@ describe('Leaderboard Page', () => {
         {
           user_id: 4,
           username: 'localchamp',
-          display_name: 'Local Champion',
+          first_name: 'Local',
+          last_name: 'Champion',
           max_grade: 95,
           last_attempt_date: new Date().toISOString()
         }

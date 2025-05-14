@@ -23,7 +23,7 @@ import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewMod
 
 // Import new UI components
 import HUD from '@/components/workout/HUD';
-import SessionControls, { CameraControls } from '@/components/workout/SessionControls';
+import SessionControls from '@/components/workout/SessionControls';
 
 // Add a constant to enable the new BlazePose model
 // Set to true to use the new BlazePose detector, false to use legacy
@@ -37,6 +37,7 @@ const SitupTracker: React.FC = () => {
   // References for video and canvas elements
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -253,19 +254,9 @@ const SitupTracker: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Camera Feed Section */}
-          <div className="relative aspect-video overflow-hidden rounded-md bg-muted camera-container">
+          <div ref={containerRef} className="relative aspect-video overflow-hidden rounded-md bg-muted camera-container">
             <video ref={videoRef} autoPlay playsInline className="size-full object-cover" muted onLoadedMetadata={() => console.log("Video metadata loaded.")} />
             <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 size-full" />
-            
-            {/* Camera controls positioned directly in the video feed */}
-            <CameraControls
-              isFullscreen={isFullscreen}
-              toggleFullscreen={toggleFullscreen}
-              showFlip={isMobile}
-              onFlipCamera={flipCamera}
-              disabled={!permissionGranted || !!cameraError || !!modelError}
-              isModelLoading={isModelLoading}
-            />
             
             {/* HUD Component */}
             {isActive && permissionGranted && !modelError && !isModelLoading && (
@@ -357,9 +348,12 @@ const SitupTracker: React.FC = () => {
           disabled={!permissionGranted || !!cameraError || !!modelError}
           repCount={repCount}
           isSubmitting={isSubmitting}
+          showFlip={isMobile}
+          onFlipCamera={flipCamera}
           onStartPause={handleStartPause}
           onReset={handleReset}
           onFinish={handleFinish}
+          cameraContainerRef={containerRef}
         />
       )}
     </div>

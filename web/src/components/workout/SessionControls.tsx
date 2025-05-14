@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Play, Pause, RotateCcw, Octagon, Loader2, Maximize, Minimize, FlipHorizontal } from 'lucide-react';
 import { SessionStatus } from '@/viewmodels/TrackerViewModel';
+import { createPortal } from 'react-dom';
 
 export interface SessionControlsProps {
   status: SessionStatus;
@@ -14,6 +15,7 @@ export interface SessionControlsProps {
   onStartPause: () => void;
   onReset: () => void;
   onFinish: () => void;
+  cameraContainerRef?: React.RefObject<HTMLDivElement>;
 }
 
 export const CameraControls: React.FC<{
@@ -69,7 +71,8 @@ const SessionControls: React.FC<SessionControlsProps> = ({
   onFlipCamera,
   onStartPause,
   onReset,
-  onFinish
+  onFinish,
+  cameraContainerRef
 }) => {
   const isActive = status === SessionStatus.ACTIVE;
   const isFinished = status === SessionStatus.COMPLETED;
@@ -78,23 +81,40 @@ const SessionControls: React.FC<SessionControlsProps> = ({
   
   // Toggle fullscreen mode
   const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      // Enter fullscreen
-      const videoContainer = document.querySelector('.camera-container') as HTMLElement;
-      if (videoContainer) {
+    const videoContainer = cameraContainerRef?.current;
+    
+    if (!isFullscreen) {
+      // Attempt to enter fullscreen
+      if (videoContainer && videoContainer.requestFullscreen) {
         videoContainer.requestFullscreen().then(() => {
           setIsFullscreen(true);
         }).catch(err => {
-          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+          console.error("Fullscreen request failed:", err);
+          // Optionally show a toast on error
+          if (window.showToast) {
+            window.showToast({ title: "Unable to enter fullscreen", variant: "destructive", duration: 3000 });
+          }
         });
+      } else if (videoContainer) {
+        // Fullscreen not supported – apply CSS fallback
+        videoContainer.classList.add('fullscreen-fallback');
+        setIsFullscreen(true);
+        if (window.showToast) {
+          window.showToast({ title: "Fullscreen not supported", description: "Using maximized view instead", duration: 3000 });
+        }
       }
     } else {
-      // Exit fullscreen
-      document.exitFullscreen().then(() => {
+      // Exit fullscreen or simulated fullscreen
+      if (document.fullscreenElement) {
+        document.exitFullscreen().then(() => {
+          setIsFullscreen(false);
+        }).catch(err => {
+          console.error("Exit fullscreen failed:", err);
+        });
+      } else if (videoContainer) {
+        videoContainer.classList.remove('fullscreen-fallback');
         setIsFullscreen(false);
-      }).catch(err => {
-        console.error(`Error attempting to exit fullscreen: ${err.message}`);
-      });
+      }
     }
   };
 
@@ -110,54 +130,19 @@ const SessionControls: React.FC<SessionControlsProps> = ({
     };
   }, []);
   
-  // Inject camera controls directly into the camera container when component mounts
-  React.useEffect(() => {
-    // Find the camera container
-    const cameraContainer = document.querySelector('.camera-container');
-    
-    // Create or find the camera controls container
-    let controlsContainer = document.getElementById('camera-controls-container');
-    if (!controlsContainer && cameraContainer) {
-      controlsContainer = document.createElement('div');
-      controlsContainer.id = 'camera-controls-container';
-      controlsContainer.className = 'absolute top-3 right-3 z-40 flex gap-2';
-      cameraContainer.appendChild(controlsContainer);
-    }
-    
-    // Clean up on unmount
-    return () => {
-      if (controlsContainer && cameraContainer?.contains(controlsContainer)) {
-        cameraContainer.removeChild(controlsContainer);
-      }
-    };
-  }, []);
-  
   return (
     <>
-      {/* Camera controls are now injected directly into the camera container by the useEffect above */}
-      <div id="camera-control-buttons" className="hidden">
-        {/* These buttons are used as templates for the injected controls */}
-        <Button
-          size="sm"
-          variant="secondary"
-          className="flex size-10 items-center justify-center rounded-full bg-black/50 p-0 hover:bg-black/70"
-          onClick={toggleFullscreen}
-        >
-          {isFullscreen ? <Minimize className="size-5" /> : <Maximize className="size-5" />}
-        </Button>
-        
-        {showFlip && (
-          <Button
-            size="sm"
-            variant="secondary"
-            className="flex size-10 items-center justify-center rounded-full bg-black/50 p-0 hover:bg-black/70"
-            onClick={onFlipCamera}
-            disabled={disabled || isModelLoading}
-          >
-            <FlipHorizontal className="size-5" />
-          </Button>
-        )}
-      </div>
+      {cameraContainerRef?.current && createPortal(
+        <CameraControls 
+          isFullscreen={isFullscreen}
+          toggleFullscreen={toggleFullscreen}
+          showFlip={showFlip}
+          onFlipCamera={onFlipCamera}
+          disabled={disabled}
+          isModelLoading={isModelLoading}
+        />, 
+        cameraContainerRef.current
+      )}
 
       {/* Bottom controls */}
       <div className="fixed bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 rounded-xl bg-black/50 px-4 py-2 shadow-lg backdrop-blur-sm">
