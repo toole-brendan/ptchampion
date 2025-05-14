@@ -62,21 +62,10 @@ struct WorkoutHistoryView: View {
                 
                 ScrollView {
                     VStack(spacing: AppTheme.GeneratedSpacing.section) {
-                        // Custom header to match Leaderboard style exactly
-                        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-                            Text("WORKOUT HISTORY")
-                                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            
-                            // Add subtitle caption similar to the Leaderboard
-                            Text("Track your exercise progress")
-                                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                                .italic()
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
-                        .padding(.top, 12) // Reduced padding to match Leaderboard
+                        // Header
+                        ScreenHeader(title: "WORKOUT HISTORY",
+                                  subtitle: "Track your exercise progress")
+                            .padding(.top, -10)
                         
                         // Filter bar component
                         ExerciseFilterBarView(filter: $viewModel.filter)

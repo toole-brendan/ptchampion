@@ -34,6 +34,29 @@ enum UnitSetting: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 }
 
+/// Reusable header component for screen titles and subtitles with consistent height and positioning
+struct ScreenHeader: View {
+    let title: String
+    let subtitle: String
+
+    var body: some View {
+        VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
+            Text(title)
+                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
+                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .multilineTextAlignment(.center)
+
+            Text(subtitle)
+                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .italic()
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+    }
+}
+
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel
@@ -49,19 +72,9 @@ struct ProfileView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: AppTheme.GeneratedSpacing.large) {
-                    // Custom header to match Leaderboard style exactly
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-                        Text("PROFILE")
-                            .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        
-                        Text("Personal settings & preferences")
-                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                            .italic()
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+                    ScreenHeader(title: "PROFILE",
+                               subtitle: "Personal settings & preferences")
+                        .padding(.top, -10)
                     
                     // User Profile Header
                     ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)

@@ -42,27 +42,10 @@ struct LeaderboardView: View {
     
     // Helper computed properties to simplify main view body
     private var headerView: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            // Break down into separate Text views to help compiler
-            let titleText = Text(viewModel.selectedBoard.rawValue.uppercased() + " LEADERBOARD")
-                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-            
-            let subtitleText = Text(formattedFilterTitle)
-                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .italic()
-            
-            // Combine in VStack
-            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-                titleText
-                subtitleText
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal)
-        // Reduced top padding to minimize initial whitespace
-        .padding(.top, AppTheme.GeneratedSpacing.small)
+        ScreenHeader(
+            title: "\(viewModel.selectedBoard.rawValue.uppercased()) LEADERBOARD",
+            subtitle: formattedFilterTitle
+        )
     }
     
     // Further break down segment control to reduce complexity
@@ -110,13 +93,13 @@ struct LeaderboardView: View {
                         .cornerRadius(AppTheme.GeneratedRadius.full)
                 )
         )
-        .padding(.horizontal)
     }
     
     var body: some View {
         NavigationStack {
             bodyContent
                 .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+                .navigationBarTitleDisplayMode(.inline)
                 .onAppear {
                     fetchTask = Task {
                         await viewModel.fetch()
@@ -153,28 +136,43 @@ struct LeaderboardView: View {
                 .navigationDestination(item: $navigatingToUserID) { userID in
                     UserProfileView(userID: userID)
                 }
+                // Add an empty toolbar item to ensure navigation bar space
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        EmptyView()
+                    }
+                }
         }
     }
     
     // Break down the body into a separate computed property
     private var bodyContent: some View {
-        VStack(spacing: 0) {
-            // Header with context information
-            headerView
+        ZStack {
+            // Background
+            AppTheme.GeneratedColors.background.ignoresSafeArea()
             
-            // All the filter controls in a separate view
-            filterControlsSection
-            
-            // Divider
-            Rectangle()
-                .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
-                .frame(height: 1)
-                .padding(.horizontal)
-            
-            // Content area with simple opacity animation
-            mainContentArea
-                // Fill remaining available space
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            // Use a ScrollView for consistent layout with other screens
+            ScrollView {
+                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                    // Header section (matches structure in other screens)
+                    headerView
+                        .padding(.top, AppTheme.GeneratedSpacing.medium)
+                    
+                    // All the filter controls in a separate view
+                    filterControlsSection
+                    
+                    // Divider
+                    Rectangle()
+                        .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
+                        .frame(height: 1)
+                        .padding(.horizontal)
+                    
+                    // Content area with simple opacity animation
+                    mainContentArea
+                        // Fill remaining available space
+                        .frame(maxWidth: .infinity, alignment: .top)
+                }
+            }
         }
     }
     
@@ -192,7 +190,8 @@ struct LeaderboardView: View {
                 showRadiusSelector: viewModel.selectedBoard == .local
             )
         }
-        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+        // No vertical padding here - handled by VStack parent spacing
+        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
     }
     
     // Break down the main content area into a separate view
@@ -211,6 +210,7 @@ struct LeaderboardView: View {
                 leaderboardListView
             }
         }
+        .frame(minHeight: 400) // Ensure content has enough space to scroll
         .opacity(contentOpacity)
     }
     
