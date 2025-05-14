@@ -127,6 +127,27 @@ html {
     @apply mt-1 font-sans text-tiny uppercase tracking-wide;
   }
   
+  /* Top Navigation - New styles to replace bottom nav */
+  .top-nav {
+    @apply sticky top-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around bg-deep-ops shadow-medium;
+  }
+
+  .top-nav-item {
+    @apply flex flex-1 flex-col items-center py-3 text-olive-mist opacity-80 transition-all;
+  }
+
+  .top-nav-item.active {
+    @apply bg-brass-gold bg-opacity-20 text-brass-gold;
+  }
+
+  .top-nav-item:hover {
+    @apply text-brass-gold opacity-90;
+  }
+
+  .top-nav-label {
+    @apply mt-1 font-sans text-tiny;
+  }
+
   /* Card Components */
   .card {
     @apply rounded-card bg-card p-md shadow-card text-card-foreground transition-all border border-brass-gold border-opacity-20;
@@ -249,5 +270,25 @@ html {
   
   .count-up-animation::after {
     content: counter(count);
+  }
+  
+  /* Fullscreen video styling */
+  .camera-container:fullscreen {
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .camera-container:fullscreen video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+  }
+  
+  .camera-container:fullscreen canvas {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
   }
 }

@@ -216,7 +216,7 @@ const SitupTracker: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Camera Feed Section */}
-          <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
+          <div className="relative aspect-video overflow-hidden rounded-md bg-muted camera-container">
             <video ref={videoRef} autoPlay playsInline className="size-full object-cover" muted onLoadedMetadata={() => console.log("Video metadata loaded.")} />
             <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 size-full" />
             

@@ -216,7 +216,7 @@ const PullupTracker: React.FC = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Camera Feed Section */}
-          <div className="relative aspect-video overflow-hidden rounded-md bg-muted">
+          <div className="relative aspect-video overflow-hidden rounded-md bg-muted camera-container">
             <video
               ref={videoRef}
               autoPlay
