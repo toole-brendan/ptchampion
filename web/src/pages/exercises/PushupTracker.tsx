@@ -8,7 +8,7 @@
  * Any modifications should be made to this file only.
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Camera, Play, Pause, RotateCcw, Timer, VideoOff, Loader2 } from 'lucide-react';
@@ -23,7 +23,7 @@ import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewMod
 
 // Import new UI components
 import HUD from '@/components/workout/HUD';
-import SessionControls from '@/components/workout/SessionControls';
+import SessionControls, { CameraControls } from '@/components/workout/SessionControls';
 
 // --- Push-up specific logic constants (for UI display only) ---
 const PUSHUP_THRESHOLD_ANGLE_DOWN = 90; // Angle threshold for elbows down
@@ -42,6 +42,9 @@ const PushupTracker: React.FC = () => {
   // References for video and canvas elements
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
   
   // Use our ViewModel hook to manage the tracking state
   const {
@@ -91,6 +94,40 @@ const PushupTracker: React.FC = () => {
       navigate('/exercises'); // Otherwise go to exercises page
     }
   };
+
+  // Toggle fullscreen mode
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      // Enter fullscreen
+      const videoContainer = document.querySelector('.camera-container') as HTMLElement;
+      if (videoContainer) {
+        videoContainer.requestFullscreen().then(() => {
+          setIsFullscreen(true);
+        }).catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      }
+    } else {
+      // Exit fullscreen
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+      }).catch(err => {
+        console.error(`Error attempting to exit fullscreen: ${err.message}`);
+      });
+    }
+  };
+
+  // Listen for fullscreen change events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // Initialize the tracker when component mounts
   useEffect(() => {
@@ -230,6 +267,16 @@ const PushupTracker: React.FC = () => {
               className="pointer-events-none absolute inset-0 size-full"
             />
             
+            {/* Camera controls positioned directly in the video feed */}
+            <CameraControls
+              isFullscreen={isFullscreen}
+              toggleFullscreen={toggleFullscreen}
+              showFlip={isMobile}
+              onFlipCamera={flipCamera}
+              disabled={!permissionGranted || !!cameraError || !!modelError}
+              isModelLoading={isModelLoading}
+            />
+            
             {/* HUD Component */}
             {isActive && permissionGranted && !modelError && !isModelLoading && (
               <HUD 
@@ -344,7 +391,7 @@ const PushupTracker: React.FC = () => {
         </CardFooter>
       </Card>
 
-      {/* Session controls overlay */}
+      {/* Session controls overlay - now without the camera controls, which have been moved */}
       {!isFinished && (
         <SessionControls
           status={status}
@@ -352,8 +399,6 @@ const PushupTracker: React.FC = () => {
           disabled={!permissionGranted || !!cameraError || !!modelError}
           repCount={repCount}
           isSubmitting={isSubmitting}
-          showFlip={isMobile}
-          onFlipCamera={flipCamera}
           onStartPause={handleStartPause}
           onReset={handleReset}
           onFinish={handleFinish}

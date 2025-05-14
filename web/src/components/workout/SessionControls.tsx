@@ -16,6 +16,49 @@ export interface SessionControlsProps {
   onFinish: () => void;
 }
 
+export const CameraControls: React.FC<{
+  isFullscreen: boolean;
+  toggleFullscreen: () => void;
+  showFlip?: boolean;
+  onFlipCamera?: () => void;
+  disabled?: boolean;
+  isModelLoading?: boolean;
+}> = ({
+  isFullscreen,
+  toggleFullscreen,
+  showFlip = false,
+  onFlipCamera,
+  disabled = false,
+  isModelLoading = false,
+}) => {
+  return (
+    <div className="absolute top-3 right-3 z-40 flex gap-2">
+      {/* Fullscreen toggle button */}
+      <Button
+        size="sm"
+        variant="secondary"
+        className="flex size-10 items-center justify-center rounded-full bg-black/50 p-0 hover:bg-black/70"
+        onClick={toggleFullscreen}
+      >
+        {isFullscreen ? <Minimize className="size-5" /> : <Maximize className="size-5" />}
+      </Button>
+      
+      {/* Flip camera button (only on mobile) */}
+      {showFlip && (
+        <Button
+          size="sm"
+          variant="secondary"
+          className="flex size-10 items-center justify-center rounded-full bg-black/50 p-0 hover:bg-black/70"
+          onClick={onFlipCamera}
+          disabled={disabled || isModelLoading}
+        >
+          <FlipHorizontal className="size-5" />
+        </Button>
+      )}
+    </div>
+  );
+};
+
 const SessionControls: React.FC<SessionControlsProps> = ({
   status,
   isModelLoading,
@@ -67,11 +110,33 @@ const SessionControls: React.FC<SessionControlsProps> = ({
     };
   }, []);
   
+  // Inject camera controls directly into the camera container when component mounts
+  React.useEffect(() => {
+    // Find the camera container
+    const cameraContainer = document.querySelector('.camera-container');
+    
+    // Create or find the camera controls container
+    let controlsContainer = document.getElementById('camera-controls-container');
+    if (!controlsContainer && cameraContainer) {
+      controlsContainer = document.createElement('div');
+      controlsContainer.id = 'camera-controls-container';
+      controlsContainer.className = 'absolute top-3 right-3 z-40 flex gap-2';
+      cameraContainer.appendChild(controlsContainer);
+    }
+    
+    // Clean up on unmount
+    return () => {
+      if (controlsContainer && cameraContainer?.contains(controlsContainer)) {
+        cameraContainer.removeChild(controlsContainer);
+      }
+    };
+  }, []);
+  
   return (
     <>
-      {/* Camera controls in top right corner */}
-      <div className="absolute top-3 right-3 z-40 flex gap-2">
-        {/* Fullscreen toggle button */}
+      {/* Camera controls are now injected directly into the camera container by the useEffect above */}
+      <div id="camera-control-buttons" className="hidden">
+        {/* These buttons are used as templates for the injected controls */}
         <Button
           size="sm"
           variant="secondary"
@@ -81,7 +146,6 @@ const SessionControls: React.FC<SessionControlsProps> = ({
           {isFullscreen ? <Minimize className="size-5" /> : <Maximize className="size-5" />}
         </Button>
         
-        {/* Flip camera button (only on mobile) */}
         {showFlip && (
           <Button
             size="sm"
