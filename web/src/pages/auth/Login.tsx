@@ -8,7 +8,6 @@ import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import logoImage from '../../assets/pt_champion_logo_2.png';
 import config from '../../lib/config';
 import { cleanAuthStorage } from '../../lib/secureStorage';
-import DeveloperMenu from '../../components/ui/DeveloperMenu';
 
 // Get token storage key from config to ensure consistency
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
@@ -16,20 +15,17 @@ const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
 // Development mode is controlled by environment config
 
 // Real logo component
-const LogoIcon: React.FC<{ className?: string; onClick?: () => void }> = ({ className, onClick }) => (
+const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
   <img 
     src={logoImage} 
     alt="PT Champion Logo" 
-    className={`${className} max-h-80 w-auto cursor-pointer`} 
-    onClick={onClick}
+    className={`${className} max-h-80 w-auto`} 
   />
 );
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [logoTaps, setLogoTaps] = useState(0);
-  const [showDevMenu, setShowDevMenu] = useState(false);
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -62,20 +58,6 @@ const LoginPage: React.FC = () => {
     };
   }, [clearError, isAuthenticated, location.pathname]); // Added location.pathname to dependencies
 
-  const handleLogoClick = () => {
-    // Increment tap counter regardless of dev mode
-    const newCount = logoTaps + 1;
-    setLogoTaps(newCount);
-    console.log(`Logo tapped ${newCount} times`);
-    
-    // Show developer menu after 5 taps
-    if (newCount >= 5) {
-      console.log('Activating developer menu');
-      setShowDevMenu(true);
-      setLogoTaps(0);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -100,20 +82,8 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="mb-4 flex flex-col items-center">
           <div className="relative mb-2">
-            <div 
-              className="flex cursor-pointer flex-col items-center" 
-              onClick={handleLogoClick}
-              style={{ position: 'relative' }}
-            >
+            <div className="flex flex-col items-center">
               <LogoIcon className="relative z-10" />
-              {logoTaps > 0 && (
-                <div className="absolute right-0 top-0 z-20 flex size-8 items-center justify-center rounded-full bg-brass-gold text-white">
-                  {logoTaps}
-                </div>
-              )}
-              <div className="mt-1 text-center font-semibold text-xs text-brass-gold">
-                Tap for developer menu ({logoTaps}/5)
-              </div>
               <div className="absolute inset-x-0 bottom-0 h-4 bg-brass-gold/10 blur-md"></div>
             </div>
           </div>
@@ -143,7 +113,7 @@ const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
                 placeholder="you@example.com"
                 autoComplete="email"
                 aria-label="Email"
@@ -165,7 +135,7 @@ const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full rounded border border-army-tan/50 p-2 font-mono text-sm"
+                className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
                 placeholder="••••••••"
                 autoComplete="current-password"
                 aria-label="Password"
@@ -199,9 +169,6 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
       </div>
-      
-      {/* Developer Menu */}
-      <DeveloperMenu isOpen={showDevMenu} onClose={() => setShowDevMenu(false)} />
     </div>
   );
 };

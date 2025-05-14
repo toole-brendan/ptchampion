@@ -45,6 +45,7 @@ const RegisterDebug: React.FC = () => {
     const userData: RegisterUserRequest = { 
       username, 
       password,
+      email,
       first_name: firstName,
       last_name: lastName,
     };
