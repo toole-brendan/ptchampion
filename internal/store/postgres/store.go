@@ -148,11 +148,10 @@ func toStoreUser(dbUser User) *store.User {
 
 // CreateUser implements store.UserStore
 func (s *Store) CreateUser(ctx context.Context, user *store.User) (*store.User, error) {
-	// Combine FirstName and LastName for DisplayName
-	var displayName sql.NullString
-	if user.FirstName != "" || user.LastName != "" {
-		displayName.String = strings.TrimSpace(user.FirstName + " " + user.LastName)
-		displayName.Valid = true
+	// Set display_name to username (Option A)
+	displayName := sql.NullString{
+		String: user.Username,
+		Valid:  true,
 	}
 
 	// IMPORTANT: This will need to be updated after SQLC regeneration to include email
@@ -239,20 +238,12 @@ func (s *Store) UpdateUser(ctx context.Context, user *store.User) (*store.User, 
 	// 	params.PasswordHash = user.PasswordHash
 	// }
 
-	if user.FirstName != "" || user.LastName != "" {
+	// Set display_name to username (Option A)
+	if user.Username != "" {
 		params.DisplayName = sql.NullString{
-			String: strings.TrimSpace(user.FirstName + " " + user.LastName),
+			String: user.Username,
 			Valid:  true,
 		}
-	} else {
-		// If both FirstName and LastName are empty in the input,
-		// explicitly preserve the existing DisplayName by not setting params.DisplayName
-		// (it remains Valid=false, COALESCE keeps old value)
-		// Or, if the intent is to clear it, one might set String="" and Valid=true.
-		// For now, we assume empty means "no change" or rely on COALESCE if DisplayName was already null.
-		// If DisplayName from currentUserRecord should be used if input names are empty:
-		// params.DisplayName = currentUserRecord.DisplayName
-		// However, COALESCE handles this better if we just don't set it when no new name is given.
 	}
 
 	updatedDbUser, err := s.Queries.UpdateUser(ctx, params)

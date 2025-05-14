@@ -84,7 +84,7 @@ const LoginPage: React.FC = () => {
     try {
       console.log('Calling login function');
       await login({
-        username: email,
+        email: email,
         password,
       });
       console.log('Login function completed');
