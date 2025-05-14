@@ -34,7 +34,6 @@ const DumbbellIcon: React.FC<IconProps> = (props) => (
 
 export const NAV_ITEMS = [
   { name: 'Dashboard', path: '/', icon: Home },
-  { name: 'Exercises', path: '/exercises', icon: DumbbellIcon },
   { name: 'History', path: '/history', icon: History },
   { name: 'Leaderboard', path: '/leaderboard', icon: Award },
   { name: 'Profile', path: '/profile', icon: User },

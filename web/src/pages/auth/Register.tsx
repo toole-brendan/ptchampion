@@ -96,11 +96,13 @@ const RegisterPage: React.FC = () => {
     }
     
     try {
-      await register({
+      const registerResponse = await register({
+        email: email,
         username: username,
-        password,
-        displayName: `${firstName} ${lastName}`,
-        // We still collect email but don't send it to the API since it's not in the type
+        password: password,
+        first_name: firstName,
+        last_name: lastName,
+        // Remove setting displayName separately as backend now uses username
       });
       // Redirect handled by effect when isAuthenticated changes
     } catch (err) {

@@ -11,10 +11,11 @@ interface DebugInfo {
 }
 
 const RegisterDebug: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [debugInfo, setDebugInfo] = useState<DebugInfo | null>(null);
@@ -31,11 +32,6 @@ const RegisterDebug: React.FC = () => {
       return;
     }
     
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-    
     // Validate password strength
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
@@ -49,7 +45,8 @@ const RegisterDebug: React.FC = () => {
     const userData: RegisterUserRequest = { 
       username, 
       password,
-      displayName: displayName || undefined
+      first_name: firstName,
+      last_name: lastName,
     };
     
     try {
@@ -130,17 +127,34 @@ const RegisterDebug: React.FC = () => {
             </div>
             
             <div>
-              <label htmlFor="display-name" className="block text-sm font-medium text-gray-700">
-                Display Name (optional)
+              <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">
+                First Name
               </label>
               <div className="mt-1">
                 <input
-                  id="display-name"
-                  name="display-name"
+                  id="first-name"
+                  name="first-name"
                   type="text"
-                  autoComplete="name"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
+                  autoComplete="given-name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="last-name" className="block text-sm font-medium text-gray-700">
+                Last Name
+              </label>
+              <div className="mt-1">
+                <input
+                  id="last-name"
+                  name="last-name"
+                  type="text"
+                  autoComplete="family-name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                   className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
                 />
               </div>
@@ -165,24 +179,6 @@ const RegisterDebug: React.FC = () => {
               <p className="mt-1 text-xs text-gray-500">
                 Password must be at least 8 characters long
               </p>
-            </div>
-            
-            <div>
-              <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700">
-                Confirm Password
-              </label>
-              <div className="mt-1">
-                <input
-                  id="confirm-password"
-                  name="confirm-password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
-                />
-              </div>
             </div>
 
             <div>

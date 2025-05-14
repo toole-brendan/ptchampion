@@ -136,39 +136,17 @@ const Dashboard: React.FC = () => {
   // Set username in context when it changes
   useEffect(() => {
     if (user && setUserName) {
-      // Extract first name from display_name, username, or email
-      let firstName = '';
+      // Since we're using Option A (username = display_name), just use username directly
+      let displayText = 'Hello';
       
-      if (user.display_name) {
-        // Use first part of display name
-        firstName = user.display_name.split(' ')[0];
-      } else if (user.username) {
-        // Check if it's an email address
-        if (user.username.includes('@')) {
-          // For email like "toole.brendan@gmail.com", extract "brendan"
-          const emailParts = user.username.split('@')[0];
-          
-          if (emailParts.includes('.')) {
-            // Assume format is "lastname.firstname@..."
-            firstName = emailParts.split('.')[1];
-          } else {
-            // Just use whatever is before the @ symbol
-            firstName = emailParts;
-          }
-        } else {
-          firstName = user.username;
-        }
-      } else {
-        firstName = 'User';
+      if (user.username) {
+        // Extract a friendly name from the username if possible
+        const usernameWithoutSpecialChars = user.username.replace(/[^a-zA-Z0-9]/g, ' ');
+        displayText = `Hello, ${usernameWithoutSpecialChars}`;
       }
       
-      // Properly capitalize the first name (e.g., "john" → "John")
-      firstName = firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
-      
-      // Log what we're setting for debugging
-      console.log('Setting header username:', `Hello, ${firstName}`, 'from user:', user);
-      
-      setUserName(`Hello, ${firstName}`);
+      console.log('Setting header username:', displayText, 'from user:', user);
+      setUserName(displayText);
     }
   }, [user, setUserName]);
   
@@ -194,17 +172,10 @@ const Dashboard: React.FC = () => {
 
   // Format display name properly
   const formatDisplayName = () => {
-    if (!user) return 'USER';
+    if (!user) return 'Soldier';
     
-    if (user.display_name) {
-      return user.display_name;
-    }
-    
-    if (user.username) {
-      return user.username;
-    }
-    
-    return 'USER';
+    // Use username which is now the same as display_name (Option A)
+    return user.username || 'Soldier';
   };
   
   // Format the last workout date

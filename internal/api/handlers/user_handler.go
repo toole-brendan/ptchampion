@@ -18,6 +18,7 @@ import (
 type UserResponse struct {
 	ID        string    `json:"id"`         // Changed to string to match store.User.ID
 	Email     string    `json:"email"`      // Changed from Username
+	Username  string    `json:"username"`   // Add username field
 	FirstName string    `json:"first_name"` // Added
 	LastName  string    `json:"last_name"`  // Added
 	CreatedAt time.Time `json:"created_at"`
@@ -39,6 +40,7 @@ func mapStoreUserToUserResponse(user *store.User) UserResponse {
 	return UserResponse{
 		ID:        user.ID,
 		Email:     user.Email,
+		Username:  user.Username,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		CreatedAt: user.CreatedAt,
