@@ -211,6 +211,11 @@ class AuthViewModel: ObservableObject {
             return
         }
         
+        // DEBUG: Print the raw JSON payload for debugging registration issues
+        if let requestStr = String(data: jsonData, encoding: .utf8) {
+            print("📦 Registration JSON Payload: \(requestStr)")
+        }
+        
         // API URL
         guard let url = URL(string: "https://ptchampion-api-westus.azurewebsites.net/api/v1/auth/register") else {
             self.errorMessage = "Invalid URL"
@@ -250,7 +255,7 @@ class AuthViewModel: ObservableObject {
                     // Attempt to decode server error message
                     var serverErrorMessage = "Registration failed with status code: \(http.statusCode)."
                     if let errorData = String(data: data, encoding: .utf8) {
-                        print("🔴 Registration error data: \(errorData)") // Log raw error data
+                        print("�� Registration error raw response: \(errorData)") // Log raw error data
                         // Try to decode our specific backend error structure first
                         if let backendError = try? JSONDecoder().decode(IOSAPIErrorResponse.self, from: data) {
                             serverErrorMessage = backendError.error.message
