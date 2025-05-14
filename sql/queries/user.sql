@@ -14,21 +14,23 @@ WHERE email = $1 LIMIT 1;
 INSERT INTO users (
   username,
   email, 
-  password_hash, 
-  display_name
+  password_hash,
+  first_name,
+  last_name
 )
-VALUES ($1, $2, $3, $4)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING *;
 
 -- name: UpdateUser :one
 UPDATE users
 SET 
-  username = COALESCE($2, username),
-  email = COALESCE($3, email),
-  display_name = COALESCE($4, display_name),
-  location = COALESCE($5, location),
-  latitude = COALESCE($6, latitude),
-  longitude = COALESCE($7, longitude),
+  username = $2,
+  email = $3,
+  first_name = $4,
+  last_name = $5,
+  location = $6,
+  latitude = $7,
+  longitude = $8,
   updated_at = now()
 WHERE id = $1
 RETURNING *;

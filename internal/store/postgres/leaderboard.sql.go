@@ -27,11 +27,11 @@ WITH user_best_scores AS (
 SELECT 
     u.id as user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     SUM(ubs.best_score) as score
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
-GROUP BY u.id, u.username, u.display_name
+GROUP BY u.id, u.username, u.first_name, u.last_name
 ORDER BY score DESC
 LIMIT $1
 `
@@ -43,10 +43,10 @@ type GetGlobalAggregateLeaderboardParams struct {
 }
 
 type GetGlobalAggregateLeaderboardRow struct {
-	UserID      int32          `json:"user_id"`
-	Username    string         `json:"username"`
-	DisplayName sql.NullString `json:"display_name"`
-	Score       int64          `json:"score"`
+	UserID      int32       `json:"user_id"`
+	Username    string      `json:"username"`
+	DisplayName interface{} `json:"display_name"`
+	Score       int64       `json:"score"`
 }
 
 func (q *Queries) GetGlobalAggregateLeaderboard(ctx context.Context, arg GetGlobalAggregateLeaderboardParams) ([]GetGlobalAggregateLeaderboardRow, error) {
@@ -82,7 +82,7 @@ const getGlobalExerciseLeaderboard = `-- name: GetGlobalExerciseLeaderboard :man
 SELECT 
     u.id as user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     MAX(w.grade) as score
 FROM workouts w
 JOIN users u ON w.user_id = u.id
@@ -91,7 +91,7 @@ WHERE e.type = $1
   AND w.is_public = true
   AND ($2::timestamptz IS NULL OR w.completed_at >= $2::timestamptz)
   AND ($3::timestamptz IS NULL OR w.completed_at < $3::timestamptz)
-GROUP BY u.id, u.username, u.display_name
+GROUP BY u.id, u.username, u.first_name, u.last_name
 ORDER BY score DESC
 LIMIT $4
 `
@@ -104,10 +104,10 @@ type GetGlobalExerciseLeaderboardParams struct {
 }
 
 type GetGlobalExerciseLeaderboardRow struct {
-	UserID      int32          `json:"user_id"`
-	Username    string         `json:"username"`
-	DisplayName sql.NullString `json:"display_name"`
-	Score       interface{}    `json:"score"`
+	UserID      int32       `json:"user_id"`
+	Username    string      `json:"username"`
+	DisplayName interface{} `json:"display_name"`
+	Score       interface{} `json:"score"`
 }
 
 // Apply a reasonable limit
@@ -147,7 +147,7 @@ func (q *Queries) GetGlobalExerciseLeaderboard(ctx context.Context, arg GetGloba
 const getLeaderboardByExerciseType = `-- name: GetLeaderboardByExerciseType :many
 SELECT 
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     e.type as exercise_type,
     MAX(ue.grade) as best_grade -- Get the best grade for this exercise type per user
 FROM user_exercises ue
@@ -166,10 +166,10 @@ type GetLeaderboardByExerciseTypeParams struct {
 }
 
 type GetLeaderboardByExerciseTypeRow struct {
-	Username     string         `json:"username"`
-	DisplayName  sql.NullString `json:"display_name"`
-	ExerciseType string         `json:"exercise_type"`
-	BestGrade    interface{}    `json:"best_grade"`
+	Username     string      `json:"username"`
+	DisplayName  interface{} `json:"display_name"`
+	ExerciseType string      `json:"exercise_type"`
+	BestGrade    interface{} `json:"best_grade"`
 }
 
 func (q *Queries) GetLeaderboardByExerciseType(ctx context.Context, arg GetLeaderboardByExerciseTypeParams) ([]GetLeaderboardByExerciseTypeRow, error) {
@@ -223,12 +223,12 @@ WITH user_best_scores AS (
 SELECT 
     u.id as user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     SUM(ubs.best_score) as score,
     ST_Distance(u.last_location::geography, ST_MakePoint($1, $2)::geography) as distance_meters
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
-GROUP BY u.id, u.username, u.display_name, u.last_location
+GROUP BY u.id, u.username, u.first_name, u.last_name, u.last_location
 ORDER BY score DESC
 LIMIT $3
 `
@@ -243,11 +243,11 @@ type GetLocalAggregateLeaderboardParams struct {
 }
 
 type GetLocalAggregateLeaderboardRow struct {
-	UserID         int32          `json:"user_id"`
-	Username       string         `json:"username"`
-	DisplayName    sql.NullString `json:"display_name"`
-	Score          int64          `json:"score"`
-	DistanceMeters interface{}    `json:"distance_meters"`
+	UserID         int32       `json:"user_id"`
+	Username       string      `json:"username"`
+	DisplayName    interface{} `json:"display_name"`
+	Score          int64       `json:"score"`
+	DistanceMeters interface{} `json:"distance_meters"`
 }
 
 func (q *Queries) GetLocalAggregateLeaderboard(ctx context.Context, arg GetLocalAggregateLeaderboardParams) ([]GetLocalAggregateLeaderboardRow, error) {
@@ -290,7 +290,7 @@ const getLocalExerciseLeaderboard = `-- name: GetLocalExerciseLeaderboard :many
 SELECT 
     u.id as user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     MAX(w.grade) as score,
     ST_Distance(u.last_location::geography, ST_MakePoint($1, $2)::geography) as distance_meters
 FROM workouts w
@@ -306,7 +306,7 @@ WHERE
     )
     AND ($5::timestamptz IS NULL OR w.completed_at >= $5::timestamptz)
     AND ($6::timestamptz IS NULL OR w.completed_at < $6::timestamptz)
-GROUP BY u.id, u.username, u.display_name, u.last_location
+GROUP BY u.id, u.username, u.first_name, u.last_name, u.last_location
 ORDER BY score DESC
 LIMIT $7
 `
@@ -322,11 +322,11 @@ type GetLocalExerciseLeaderboardParams struct {
 }
 
 type GetLocalExerciseLeaderboardRow struct {
-	UserID         int32          `json:"user_id"`
-	Username       string         `json:"username"`
-	DisplayName    sql.NullString `json:"display_name"`
-	Score          interface{}    `json:"score"`
-	DistanceMeters interface{}    `json:"distance_meters"`
+	UserID         int32       `json:"user_id"`
+	Username       string      `json:"username"`
+	DisplayName    interface{} `json:"display_name"`
+	Score          interface{} `json:"score"`
+	DistanceMeters interface{} `json:"distance_meters"`
 }
 
 func (q *Queries) GetLocalExerciseLeaderboard(ctx context.Context, arg GetLocalExerciseLeaderboardParams) ([]GetLocalExerciseLeaderboardRow, error) {
@@ -371,7 +371,7 @@ const getLocalLeaderboard = `-- name: GetLocalLeaderboard :many
 SELECT
     u.id AS user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     w.exercise_id,
     -- Aggregate score based on exercise type (e.g., MAX reps or MIN duration)
     -- This example assumes higher repetitions are better.
@@ -392,7 +392,7 @@ WHERE
         ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography, -- Swapped $2 and $3
         $4
     )
-GROUP BY u.id, u.username, u.display_name, w.exercise_id
+GROUP BY u.id, u.username, u.first_name, u.last_name, w.exercise_id
 ORDER BY score DESC
 LIMIT 50
 `
@@ -405,11 +405,11 @@ type GetLocalLeaderboardParams struct {
 }
 
 type GetLocalLeaderboardRow struct {
-	UserID      int32          `json:"user_id"`
-	Username    string         `json:"username"`
-	DisplayName sql.NullString `json:"display_name"`
-	ExerciseID  int32          `json:"exercise_id"`
-	Score       interface{}    `json:"score"`
+	UserID      int32       `json:"user_id"`
+	Username    string      `json:"username"`
+	DisplayName interface{} `json:"display_name"`
+	ExerciseID  int32       `json:"exercise_id"`
+	Score       interface{} `json:"score"`
 }
 
 // Limit the number of results (e.g., top 10, 20)

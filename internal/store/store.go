@@ -59,11 +59,12 @@ type PaginatedUserExerciseRecords struct {
 // LeaderboardEntry defines a single entry in a leaderboard.
 // It's designed to be relatively generic for different types of leaderboards.
 type LeaderboardEntry struct {
-	UserID      string  // Corresponds to store.User.ID (UUID string)
-	Username    string  // Denormalized from User
-	DisplayName *string // Denormalized from User, nullable
-	Score       int32   // Standardized score/grade for the leaderboard context
-	Rank        int32   // Rank can be set by the service/handler after fetching sorted list
+	UserID    string  // Corresponds to store.User.ID (UUID string)
+	Username  string  // Denormalized from User
+	FirstName *string // Denormalized from User, nullable
+	LastName  *string // Denormalized from User, nullable
+	Score     int32   // Standardized score/grade for the leaderboard context
+	Rank      int32   // Rank can be set by the service/handler after fetching sorted list
 	// Potentially add LastSubmittedAt time.Time if relevant
 }
 

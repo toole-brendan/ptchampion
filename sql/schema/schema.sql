@@ -4,6 +4,8 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username TEXT NOT NULL UNIQUE, -- Username used for display, must be unique
     email TEXT NOT NULL UNIQUE, -- Added separate email field for login
+    first_name TEXT,
+    last_name TEXT,
     password_hash TEXT NOT NULL, -- Renamed to password_hash to reflect its actual content
     display_name TEXT,
     profile_picture_url TEXT,

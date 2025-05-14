@@ -113,14 +113,13 @@ func (s *Store) ExecuteWithTimeout(fn func(context.Context, *Queries) error) err
 
 // Helper to convert db.User (from SQLC) to store.User (domain model)
 func toStoreUser(dbUser User) *store.User {
-	// Approximate FirstName and LastName from DisplayName
+	// Use first_name and last_name directly from the database
 	var firstName, lastName string
-	if dbUser.DisplayName.Valid {
-		parts := strings.SplitN(dbUser.DisplayName.String, " ", 2)
-		firstName = parts[0]
-		if len(parts) > 1 {
-			lastName = parts[1]
-		}
+	if dbUser.FirstName.Valid {
+		firstName = dbUser.FirstName.String
+	}
+	if dbUser.LastName.Valid {
+		lastName = dbUser.LastName.String
 	}
 
 	// Handle potential null times from DB
@@ -132,11 +131,9 @@ func toStoreUser(dbUser User) *store.User {
 		updatedAt = dbUser.UpdatedAt.Time
 	}
 
-	// IMPORTANT: This function will need to be updated after SQLC regeneration
-	// to use the actual Email field once it exists in the database schema
 	return &store.User{
 		ID:           strconv.Itoa(int(dbUser.ID)), // Convert int32 to string; NOTE: This is a temporary fix for ID mismatch
-		Email:        dbUser.Email,                 // Use the actual Email field
+		Email:        dbUser.Email,
 		Username:     dbUser.Username,
 		PasswordHash: dbUser.PasswordHash,
 		FirstName:    firstName,
@@ -148,19 +145,12 @@ func toStoreUser(dbUser User) *store.User {
 
 // CreateUser implements store.UserStore
 func (s *Store) CreateUser(ctx context.Context, user *store.User) (*store.User, error) {
-	// Set display_name to username (Option A)
-	displayName := sql.NullString{
-		String: user.Username,
-		Valid:  true,
-	}
-
-	// IMPORTANT: This will need to be updated after SQLC regeneration to include email
-	// when CreateUserParams is regenerated with the Email field
 	params := CreateUserParams{
-		Username:     user.Username, // Use the actual Username from the input
-		Email:        user.Email,    // Populate the Email field correctly
+		Username:     user.Username,
+		Email:        user.Email,
 		PasswordHash: user.PasswordHash,
-		DisplayName:  displayName,
+		FirstName:    sql.NullString{String: user.FirstName, Valid: user.FirstName != ""},
+		LastName:     sql.NullString{String: user.LastName, Valid: user.LastName != ""},
 	}
 
 	dbUser, err := s.Queries.CreateUser(ctx, params)
@@ -209,8 +199,7 @@ func (s *Store) UpdateUser(ctx context.Context, user *store.User) (*store.User, 
 		return nil, fmt.Errorf("invalid user ID format for update: %w", err)
 	}
 
-	// Fetch the current user record to get existing values for Username and PasswordHash
-	// if they are not being updated, as UpdateUserParams requires them.
+	// Fetch the current user record to get existing values for fields that may not be updated
 	currentUserRecord, err := s.Queries.GetUser(ctx, int32(userIDInt))
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -219,36 +208,38 @@ func (s *Store) UpdateUser(ctx context.Context, user *store.User) (*store.User, 
 		return nil, fmt.Errorf("failed to fetch current user for update: %w", err)
 	}
 
+	// Create update parameters with current values as defaults
 	params := UpdateUserParams{
-		ID: int32(userIDInt),
-		// Username and PasswordHash are not nullable in UpdateUserParams.
-		// Use existing value if not provided in the input user object.
-		Username: currentUserRecord.Username,
-		// PasswordHash: currentUserRecord.PasswordHash, // Commented out as not in UpdateUserParams
-		// Location, Latitude, Longitude, LastSyncedAt will be handled by COALESCE in SQL
-		// as they will be sql.NullString/Time with Valid=false if not set here.
-		// This is appropriate as store.User does not carry this information.
+		ID:        int32(userIDInt),
+		Username:  currentUserRecord.Username,
+		Email:     currentUserRecord.Email,
+		FirstName: currentUserRecord.FirstName,
+		LastName:  currentUserRecord.LastName,
+		Location:  currentUserRecord.Location,
+		Latitude:  currentUserRecord.Latitude,
+		Longitude: currentUserRecord.Longitude,
+	}
+
+	// Override with values from the update request if provided
+	if user.Username != "" {
+		params.Username = user.Username
 	}
 
 	if user.Email != "" {
-		params.Username = user.Email
+		params.Email = user.Email
 	}
 
-	// if user.PasswordHash != "" { // Commented out as not in UpdateUserParams
-	// 	params.PasswordHash = user.PasswordHash
-	// }
-
-	// Set display_name to username (Option A)
-	if user.Username != "" {
-		params.DisplayName = sql.NullString{
-			String: user.Username,
-			Valid:  true,
-		}
+	if user.FirstName != "" {
+		params.FirstName = sql.NullString{String: user.FirstName, Valid: true}
 	}
 
+	if user.LastName != "" {
+		params.LastName = sql.NullString{String: user.LastName, Valid: true}
+	}
+
+	// Perform the update
 	updatedDbUser, err := s.Queries.UpdateUser(ctx, params)
 	if err != nil {
-		// TODO: Handle potential DB errors, e.g., unique constraint violations if username is changed
 		return nil, fmt.Errorf("failed to update user in DB: %w", err)
 	}
 
@@ -495,12 +486,32 @@ func (s *Store) ListExerciseDefinitions(ctx context.Context) ([]*store.Exercise,
 
 // Helper function to map SQLC leaderboard rows to store.LeaderboardEntry
 // This is a generic helper; individual mapping might be slightly different based on actual sqlc structs.
-func mapSqlcRowToLeaderboardEntry(userID int32, username string, displayName sql.NullString, score int32) *store.LeaderboardEntry {
+func mapSqlcRowToLeaderboardEntry(userID int32, username string, displayName interface{}, score int32) *store.LeaderboardEntry {
+	var firstName, lastName *string
+
+	// Handle displayName which is now a string from CONCAT() in SQL
+	if displayName != nil {
+		if strVal, ok := displayName.(string); ok {
+			// Split display_name into first_name and last_name
+			parts := strings.SplitN(strVal, " ", 2)
+			if len(parts) > 0 {
+				firstNameVal := parts[0]
+				firstName = &firstNameVal
+
+				if len(parts) > 1 {
+					lastNameVal := parts[1]
+					lastName = &lastNameVal
+				}
+			}
+		}
+	}
+
 	return &store.LeaderboardEntry{
-		UserID:      strconv.Itoa(int(userID)),
-		Username:    username,
-		DisplayName: nullStringToStringPtr(displayName),
-		Score:       score,
+		UserID:    strconv.Itoa(int(userID)),
+		Username:  username,
+		FirstName: firstName,
+		LastName:  lastName,
+		Score:     score,
 		// Rank is set by the service layer
 	}
 }

@@ -65,7 +65,7 @@ const getLeaderboard = `-- name: GetLeaderboard :many
 SELECT 
     u.id AS user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     MAX(ue.grade) AS max_grade,
     MAX(ue.created_at) AS last_attempt_date
 FROM 
@@ -78,18 +78,18 @@ WHERE
     e.type = $1
     AND ue.grade IS NOT NULL
 GROUP BY 
-    u.id, u.username, u.display_name
+    u.id, u.username, u.first_name, u.last_name
 ORDER BY 
     max_grade DESC, last_attempt_date ASC
 LIMIT 100
 `
 
 type GetLeaderboardRow struct {
-	UserID          int32          `json:"user_id"`
-	Username        string         `json:"username"`
-	DisplayName     sql.NullString `json:"display_name"`
-	MaxGrade        interface{}    `json:"max_grade"`
-	LastAttemptDate interface{}    `json:"last_attempt_date"`
+	UserID          int32       `json:"user_id"`
+	Username        string      `json:"username"`
+	DisplayName     interface{} `json:"display_name"`
+	MaxGrade        interface{} `json:"max_grade"`
+	LastAttemptDate interface{} `json:"last_attempt_date"`
 }
 
 func (q *Queries) GetLeaderboard(ctx context.Context, type_ string) ([]GetLeaderboardRow, error) {

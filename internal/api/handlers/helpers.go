@@ -107,3 +107,27 @@ func NullStringToStringPtr(ns sql.NullString) *string {
 	val := ns.String // Create a new variable to take the address of
 	return &val
 }
+
+// GetStringFromInterface safely extracts a string value from an interface{}
+// that might be a string, sql.NullString or nil
+func GetStringFromInterface(value interface{}) string {
+	if value == nil {
+		return ""
+	}
+
+	// Check if it's a direct string
+	if str, ok := value.(string); ok {
+		return str
+	}
+
+	// Check if it's a sql.NullString
+	if nullStr, ok := value.(sql.NullString); ok {
+		if nullStr.Valid {
+			return nullStr.String
+		}
+		return ""
+	}
+
+	// Try to convert to string as a fallback
+	return ""
+}

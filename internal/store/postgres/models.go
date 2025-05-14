@@ -21,7 +21,8 @@ type User struct {
 	Username            string         `json:"username"`
 	Email               string         `json:"email"`
 	PasswordHash        string         `json:"password_hash"`
-	DisplayName         sql.NullString `json:"display_name"`
+	FirstName           sql.NullString `json:"first_name"`
+	LastName            sql.NullString `json:"last_name"`
 	Location            sql.NullString `json:"location"`
 	Latitude            sql.NullString `json:"latitude"`
 	Longitude           sql.NullString `json:"longitude"`

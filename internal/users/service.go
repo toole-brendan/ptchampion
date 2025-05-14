@@ -15,11 +15,9 @@ import (
 // We define this here to decouple the service from the handler's request struct.
 type UpdateUserProfileRequest struct {
 	// Using pointers to distinguish between empty string and not provided
-	Email       *string
-	FirstName   *string
-	LastName    *string
-	DisplayName *string // Explicit display name if provided
-	// Removed AvatarURL field
+	Email     *string
+	FirstName *string
+	LastName  *string
 	// Password updates should be handled by a separate dedicated method/service if needed
 }
 
@@ -108,10 +106,6 @@ func (s *service) UpdateUserProfile(ctx context.Context, userID string, req *Upd
 		updated = true
 		s.logger.Debug(ctx, "Updating user last name", "userID", userID)
 	}
-
-	// Note: DisplayName is not directly on store.User, store implementation derives it.
-	// If req.DisplayName was provided, the store implementation might need to handle it.
-	// PasswordHash is also not updated here.
 
 	if !updated {
 		s.logger.Info(ctx, "No changes detected for user profile update", "userID", userID)

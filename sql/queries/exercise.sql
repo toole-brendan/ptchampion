@@ -79,7 +79,7 @@ ORDER BY ue.created_at DESC;
 SELECT 
     u.id AS user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     MAX(ue.grade) AS max_grade,
     MAX(ue.created_at) AS last_attempt_date
 FROM 
@@ -92,7 +92,7 @@ WHERE
     e.type = $1
     AND ue.grade IS NOT NULL
 GROUP BY 
-    u.id, u.username, u.display_name
+    u.id, u.username, u.first_name, u.last_name
 ORDER BY 
     max_grade DESC, last_attempt_date ASC
 LIMIT 100;

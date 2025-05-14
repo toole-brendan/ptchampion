@@ -1,7 +1,7 @@
 -- name: GetLeaderboardByExerciseType :many
 SELECT 
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     e.type as exercise_type,
     MAX(ue.grade) as best_grade -- Get the best grade for this exercise type per user
 FROM user_exercises ue
@@ -17,7 +17,7 @@ LIMIT $2; -- Limit the number of results (e.g., top 10, 20)
 SELECT
     u.id AS user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     w.exercise_id,
     -- Aggregate score based on exercise type (e.g., MAX reps or MIN duration)
     -- This example assumes higher repetitions are better.
@@ -38,7 +38,7 @@ WHERE
         ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography, -- Swapped $2 and $3
         $4
     )
-GROUP BY u.id, u.username, u.display_name, w.exercise_id
+GROUP BY u.id, u.username, u.first_name, u.last_name, w.exercise_id
 ORDER BY score DESC
 LIMIT 50; -- Apply a reasonable limit 
 
@@ -46,7 +46,7 @@ LIMIT 50; -- Apply a reasonable limit
 SELECT 
     u.id as user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     MAX(w.grade) as score
 FROM workouts w
 JOIN users u ON w.user_id = u.id
@@ -55,7 +55,7 @@ WHERE e.type = @type
   AND w.is_public = true
   AND (sqlc.narg('start_date')::timestamptz IS NULL OR w.completed_at >= sqlc.narg('start_date')::timestamptz)
   AND (sqlc.narg('end_date')::timestamptz IS NULL OR w.completed_at < sqlc.narg('end_date')::timestamptz)
-GROUP BY u.id, u.username, u.display_name
+GROUP BY u.id, u.username, u.first_name, u.last_name
 ORDER BY score DESC
 LIMIT sqlc.arg('limit');
 
@@ -76,11 +76,11 @@ WITH user_best_scores AS (
 SELECT 
     u.id as user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     SUM(ubs.best_score) as score
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
-GROUP BY u.id, u.username, u.display_name
+GROUP BY u.id, u.username, u.first_name, u.last_name
 ORDER BY score DESC
 LIMIT sqlc.arg('limit');
 
@@ -88,7 +88,7 @@ LIMIT sqlc.arg('limit');
 SELECT 
     u.id as user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     MAX(w.grade) as score,
     ST_Distance(u.last_location::geography, ST_MakePoint(@longitude, @latitude)::geography) as distance_meters
 FROM workouts w
@@ -104,7 +104,7 @@ WHERE
     )
     AND (sqlc.narg('start_date')::timestamptz IS NULL OR w.completed_at >= sqlc.narg('start_date')::timestamptz)
     AND (sqlc.narg('end_date')::timestamptz IS NULL OR w.completed_at < sqlc.narg('end_date')::timestamptz)
-GROUP BY u.id, u.username, u.display_name, u.last_location
+GROUP BY u.id, u.username, u.first_name, u.last_name, u.last_location
 ORDER BY score DESC
 LIMIT sqlc.arg('limit');
 
@@ -131,11 +131,11 @@ WITH user_best_scores AS (
 SELECT 
     u.id as user_id,
     u.username,
-    u.display_name,
+    CONCAT(u.first_name, ' ', u.last_name) as display_name,
     SUM(ubs.best_score) as score,
     ST_Distance(u.last_location::geography, ST_MakePoint(@longitude, @latitude)::geography) as distance_meters
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
-GROUP BY u.id, u.username, u.display_name, u.last_location
+GROUP BY u.id, u.username, u.first_name, u.last_name, u.last_location
 ORDER BY score DESC
 LIMIT sqlc.arg('limit'); 

@@ -10,7 +10,8 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT NOT NULL UNIQUE, -- Username used for display, must be unique
     email TEXT NOT NULL UNIQUE, -- Added separate email field for login
     password_hash TEXT NOT NULL, -- Note: using password_hash instead of password
-    display_name TEXT,
+    first_name TEXT,
+    last_name TEXT,
     location TEXT,
     latitude NUMERIC,
     longitude NUMERIC,

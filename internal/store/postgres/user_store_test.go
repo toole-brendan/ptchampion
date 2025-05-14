@@ -91,7 +91,9 @@ func setupTestDB(db *sql.DB) error {
 			id SERIAL PRIMARY KEY,
 			username VARCHAR(50) UNIQUE NOT NULL,
 			password_hash VARCHAR(100) NOT NULL,
-			display_name VARCHAR(100),
+			email VARCHAR(255) NOT NULL,
+			first_name VARCHAR(255),
+			last_name VARCHAR(255),
 			profile_picture_url VARCHAR(255),
 			location VARCHAR(100),
 			latitude VARCHAR(50),
@@ -116,8 +118,10 @@ func TestCreateUser(t *testing.T) {
 	ctx := context.Background()
 	params := sqlcdb.CreateUserParams{
 		Username:     "testuser",
+		Email:        "test@example.com",
 		PasswordHash: "hashedpassword",
-		DisplayName:  sql.NullString{String: "Test User", Valid: true},
+		FirstName:    sql.NullString{String: "Test", Valid: true},
+		LastName:     sql.NullString{String: "User", Valid: true},
 	}
 
 	createdUser, err := queries.CreateUser(ctx, params)
@@ -127,7 +131,8 @@ func TestCreateUser(t *testing.T) {
 	assert.NotNil(t, createdUser)
 	assert.Equal(t, int64(1), createdUser.ID)
 	assert.Equal(t, "testuser", createdUser.Username)
-	assert.Equal(t, "Test User", createdUser.DisplayName)
+	assert.Equal(t, "Test", createdUser.FirstName.String)
+	assert.Equal(t, "User", createdUser.LastName.String)
 	if createdUser.CreatedAt.Valid {
 		assert.WithinDuration(t, time.Now(), createdUser.CreatedAt.Time, 2*time.Second)
 	} else {
@@ -141,8 +146,10 @@ func TestGetUserByUsername(t *testing.T) {
 	ctx := context.Background()
 	params := sqlcdb.CreateUserParams{
 		Username:     "findme",
+		Email:        "find@example.com",
 		PasswordHash: "hashedpassword",
-		DisplayName:  sql.NullString{String: "Find Me", Valid: true},
+		FirstName:    sql.NullString{String: "Find", Valid: true},
+		LastName:     sql.NullString{String: "Me", Valid: true},
 	}
 	_, err := queries.CreateUser(ctx, params)
 	require.NoError(t, err)
@@ -153,7 +160,8 @@ func TestGetUserByUsername(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, user)
 	assert.Equal(t, "findme", user.Username)
-	assert.Equal(t, "Find Me", user.DisplayName)
+	assert.Equal(t, "Find", user.FirstName.String)
+	assert.Equal(t, "Me", user.LastName.String)
 }
 
 func TestGetUserByID(t *testing.T) {
@@ -162,8 +170,10 @@ func TestGetUserByID(t *testing.T) {
 	ctx := context.Background()
 	insertParams := sqlcdb.CreateUserParams{
 		Username:     "testuser",
+		Email:        "test@example.com",
 		PasswordHash: "hashedpassword",
-		DisplayName:  sql.NullString{String: "Test User", Valid: true},
+		FirstName:    sql.NullString{String: "Test", Valid: true},
+		LastName:     sql.NullString{String: "User", Valid: true},
 	}
 	createdUser, err := queries.CreateUser(ctx, insertParams)
 	require.NoError(t, err)
@@ -183,22 +193,23 @@ func TestUpdateUser(t *testing.T) {
 	ctx := context.Background()
 	insertParams := sqlcdb.CreateUserParams{
 		Username:     "updateme",
+		Email:        "update@example.com",
 		PasswordHash: "hashedpassword",
-		DisplayName:  sql.NullString{String: "Update Me", Valid: true},
+		FirstName:    sql.NullString{String: "Update", Valid: true},
+		LastName:     sql.NullString{String: "Me", Valid: true},
 	}
 	createdUser, err := queries.CreateUser(ctx, insertParams)
 	require.NoError(t, err)
 
 	updateParams := sqlcdb.UpdateUserParams{
-		ID:                createdUser.ID,
-		Username:          createdUser.Username,
-		PasswordHash:      createdUser.PasswordHash,
-		DisplayName:       sql.NullString{String: "Updated Name", Valid: true},
-		ProfilePictureUrl: sql.NullString{Valid: false},
-		Location:          sql.NullString{Valid: false},
-		Latitude:          sql.NullString{Valid: false},
-		Longitude:         sql.NullString{Valid: false},
-		LastSyncedAt:      sql.NullTime{Valid: false},
+		ID:        createdUser.ID,
+		Username:  createdUser.Username,
+		Email:     createdUser.Email,
+		FirstName: sql.NullString{String: "Updated", Valid: true},
+		LastName:  sql.NullString{String: "Name", Valid: true},
+		Location:  sql.NullString{Valid: false},
+		Latitude:  sql.NullString{Valid: false},
+		Longitude: sql.NullString{Valid: false},
 	}
 
 	updatedUser, err := queries.UpdateUser(ctx, updateParams)
@@ -208,5 +219,6 @@ func TestUpdateUser(t *testing.T) {
 	assert.NotNil(t, updatedUser)
 	assert.Equal(t, createdUser.ID, updatedUser.ID)
 	assert.Equal(t, "updateme", updatedUser.Username) // Username shouldn't change
-	assert.Equal(t, "Updated Name", updatedUser.DisplayName)
+	assert.Equal(t, "Updated", updatedUser.FirstName.String)
+	assert.Equal(t, "Name", updatedUser.LastName.String)
 }

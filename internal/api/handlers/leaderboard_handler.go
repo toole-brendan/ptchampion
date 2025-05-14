@@ -31,7 +31,8 @@ const leaderboardCacheTTL = 10 * time.Minute // 10 minute TTL for cached leaderb
 type LocalLeaderboardEntry struct {
 	UserID       int32   `json:"userId"`
 	Username     string  `json:"username"`
-	DisplayName  string  `json:"displayName"`
+	FirstName    string  `json:"first_name"`
+	LastName     string  `json:"last_name"`
 	ExerciseID   int32   `json:"exerciseId"`
 	Score        int32   `json:"score"` // Represents MAX(repetitions) or MIN(duration) etc.
 	Distance     float64 `json:"distanceMeters,omitempty"`
@@ -41,18 +42,20 @@ type LocalLeaderboardEntry struct {
 
 // LeaderboardEntry defines the structure for a single entry on the leaderboard
 type LeaderboardEntry struct {
-	Username    string `json:"username"`
-	DisplayName string `json:"display_name"`
-	BestGrade   int32  `json:"best_grade"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	BestGrade int32  `json:"best_grade"`
 }
 
 // LeaderboardAPIEntry is the response model for a leaderboard entry.
 type LeaderboardAPIEntry struct {
-	Rank        int32   `json:"rank"`
-	UserID      string  `json:"user_id,omitempty"` // omitempty if not available
-	Username    string  `json:"username"`
-	DisplayName *string `json:"display_name,omitempty"`
-	Score       int32   `json:"score"`
+	Rank      int32   `json:"rank"`
+	UserID    string  `json:"user_id,omitempty"` // omitempty if not available
+	Username  string  `json:"username"`
+	FirstName *string `json:"first_name,omitempty"`
+	LastName  *string `json:"last_name,omitempty"`
+	Score     int32   `json:"score"`
 }
 
 // LeaderboardHandler handles leaderboard-related API requests.
@@ -184,10 +187,23 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 			bestGrade = int32(gradeVal)
 		} // else: bestGrade remains 0 if assertion fails or value is NULL
 
+		// Split display_name (which is now generated from CONCAT in SQL) into first_name and last_name
+		firstName := ""
+		lastName := ""
+		displayName := GetStringFromInterface(dbEntry.DisplayName)
+		if displayName != "" {
+			parts := strings.SplitN(displayName, " ", 2)
+			firstName = parts[0]
+			if len(parts) > 1 {
+				lastName = parts[1]
+			}
+		}
+
 		respEntries[i] = LeaderboardEntry{
-			Username:    dbEntry.Username,
-			DisplayName: GetNullString(dbEntry.DisplayName),
-			BestGrade:   bestGrade,
+			Username:  dbEntry.Username,
+			FirstName: firstName,
+			LastName:  lastName,
+			BestGrade: bestGrade,
 		}
 	}
 
@@ -277,7 +293,8 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 		SELECT 
 			u.id AS user_id,
 			u.username,
-			u.display_name,
+			u.first_name,
+			u.last_name,
 			$1::int as exercise_id,
 			rw.best_score AS score,
 			ST_Distance(u.last_location::geography, ST_GeographyFromText($2)::geography) AS distance_meters,
@@ -287,7 +304,7 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 		JOIN workouts w ON rw.user_id = w.user_id AND w.exercise_id = $1
 		WHERE u.last_location IS NOT NULL
 		AND ST_DWithin(u.last_location::geography, ST_GeographyFromText($2)::geography, $3)
-		GROUP BY u.id, u.username, u.display_name, rw.best_score, u.last_location
+		GROUP BY u.id, u.username, u.first_name, u.last_name, rw.best_score, u.last_location
 		ORDER BY u.last_location <-> ST_GeographyFromText($2) ASC -- Using the <-> KNN operator for faster spatial ordering
 		LIMIT $4
 	`
@@ -309,7 +326,7 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 		var entry struct {
 			UserID      int32
 			Username    string
-			DisplayName sql.NullString
+			DisplayName sql.NullString // Keep DisplayName for scanning from SQL
 			ExerciseID  int32
 			Score       sql.NullInt32
 			Distance    float64
@@ -340,10 +357,23 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 			score = entry.Score.Int32
 		}
 
+		// Split display_name into first_name and last_name
+		firstName := ""
+		lastName := ""
+		displayName := GetStringFromInterface(entry.DisplayName)
+		if displayName != "" {
+			parts := strings.SplitN(displayName, " ", 2)
+			firstName = parts[0]
+			if len(parts) > 1 {
+				lastName = parts[1]
+			}
+		}
+
 		respEntries = append(respEntries, LocalLeaderboardEntry{
 			UserID:      entry.UserID,
 			Username:    entry.Username,
-			DisplayName: GetNullString(entry.DisplayName),
+			FirstName:   firstName,
+			LastName:    lastName,
 			ExerciseID:  entry.ExerciseID,
 			Score:       score,
 			Distance:    entry.Distance,
@@ -413,12 +443,25 @@ func (h *Handler) fallbackLocalLeaderboard(c echo.Context, exerciseID int64, lat
 		// Handle potential nil score if MAX returns NULL (e.g., no workouts found)
 		// score will remain 0 if dbEntry.Score is nil or not an int type
 
+		// Split display_name into first_name and last_name
+		firstName := ""
+		lastName := ""
+		displayName := GetStringFromInterface(dbEntry.DisplayName)
+		if displayName != "" {
+			parts := strings.SplitN(displayName, " ", 2)
+			firstName = parts[0]
+			if len(parts) > 1 {
+				lastName = parts[1]
+			}
+		}
+
 		respEntries[i] = LocalLeaderboardEntry{
-			UserID:      dbEntry.UserID,
-			Username:    dbEntry.Username,
-			DisplayName: GetNullString(dbEntry.DisplayName), // Handle potential null display name
-			ExerciseID:  dbEntry.ExerciseID,
-			Score:       score, // Use the correctly asserted score
+			UserID:     dbEntry.UserID,
+			Username:   dbEntry.Username,
+			FirstName:  firstName,
+			LastName:   lastName,
+			ExerciseID: dbEntry.ExerciseID,
+			Score:      score, // Use the correctly asserted score
 		}
 	}
 
@@ -428,11 +471,12 @@ func (h *Handler) fallbackLocalLeaderboard(c echo.Context, exerciseID int64, lat
 
 func mapStoreLeaderboardEntryToAPIEntry(storeEntry *store.LeaderboardEntry) LeaderboardAPIEntry {
 	return LeaderboardAPIEntry{
-		Rank:        storeEntry.Rank,
-		UserID:      storeEntry.UserID,
-		Username:    storeEntry.Username,
-		DisplayName: storeEntry.DisplayName,
-		Score:       storeEntry.Score,
+		Rank:      storeEntry.Rank,
+		UserID:    storeEntry.UserID,
+		Username:  storeEntry.Username,
+		FirstName: storeEntry.FirstName,
+		LastName:  storeEntry.LastName,
+		Score:     storeEntry.Score,
 	}
 }
 
