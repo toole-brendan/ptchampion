@@ -27,14 +27,35 @@ struct WorkoutHistoryView: View {
             )
             
             // Progress chart component
-            WorkoutChartView(
-                chartData: viewModel.chartData,
-                chartYAxisLabel: viewModel.chartYAxisLabel,
-                filter: viewModel.filter
-            )
+            if viewModel.filter != .all {
+                WorkoutChartView(
+                    chartData: viewModel.chartData,
+                    chartYAxisLabel: viewModel.chartYAxisLabel,
+                    filter: viewModel.filter
+                )
+            }
             
-            // Workout history list section
-            workoutHistorySection
+            // Workout history section header
+            HStack {
+                Text("WORKOUT HISTORY")
+                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                
+                Spacer()
+            }
+            
+            // Workout history content
+            if viewModel.workoutsFiltered.isEmpty {
+                EmptyHistoryDisplayView(currentFilter: viewModel.filter)
+            } else {
+                WorkoutHistoryList(
+                    viewModel: viewModel,
+                    onSelect: { workout in
+                        selectedWorkout = workout.toWorkoutResult()
+                    },
+                    isEditable: isEditMode == .active
+                )
+            }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -55,39 +76,14 @@ struct WorkoutHistoryView: View {
         .sheet(isPresented: $isShowingShareSheet) {
             ActivityView(activityItems: [shareText])
         }
+        .navigationDestination(item: $selectedWorkout) { workout in
+            WorkoutDetailView(workoutResult: workout)
+        }
         .onAppear {
             viewModel.modelContext = modelContext
             Task {
                 await viewModel.fetchWorkouts()
             }
-        }
-    }
-    
-    // Workout history list section
-    private var workoutHistorySection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-            HStack {
-                Text("WORKOUT HISTORY")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                
-                Spacer()
-            }
-            
-            if viewModel.workoutsFiltered.isEmpty {
-                EmptyHistoryDisplayView(currentFilter: viewModel.filter)
-            } else {
-                WorkoutHistoryList(
-                    viewModel: viewModel,
-                    onSelect: { workout in
-                        selectedWorkout = workout.toWorkoutResult()
-                    },
-                    isEditable: isEditMode == .active
-                )
-            }
-        }
-        .navigationDestination(item: $selectedWorkout) { workout in
-            WorkoutDetailView(workoutResult: workout)
         }
     }
     
