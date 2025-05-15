@@ -40,19 +40,19 @@ struct ScreenHeader: View {
     let subtitle: String
 
     var body: some View {
-        VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.small) {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
             Text(title)
                 .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
 
             Text(subtitle)
                 .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                 .italic()
-                .multilineTextAlignment(.center)
+                .multilineTextAlignment(.leading)
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, AppTheme.GeneratedSpacing.large)
     }
 }

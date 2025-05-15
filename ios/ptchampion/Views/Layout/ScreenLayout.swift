@@ -55,9 +55,11 @@ struct ScreenContainer<Content: View>: View {
                 .padding(.bottom, ScreenLayout.contentPadding)
         }
         .safeAreaInset(edge: .top) {
-            VStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
                 Spacer().frame(height: ScreenLayout.headerTopPadding)
                 ScreenHeader(title: title, subtitle: subtitle)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, ScreenLayout.contentPadding)
                 Spacer().frame(height: ScreenLayout.headerBottomPadding)
             }
             .background(AppTheme.GeneratedColors.background)

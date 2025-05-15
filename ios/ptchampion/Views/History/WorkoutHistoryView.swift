@@ -35,20 +35,23 @@ struct WorkoutHistoryView: View {
                 )
             }
             
-            // Workout history section header
-            DashboardHeader.section(title: "WORKOUT HISTORY")
-            
-            // Workout history content
-            if viewModel.workoutsFiltered.isEmpty {
-                EmptyHistoryDisplayView(currentFilter: viewModel.filter)
-            } else {
-                WorkoutHistoryList(
-                    viewModel: viewModel,
-                    onSelect: { workout in
-                        selectedWorkout = workout.toWorkoutResult()
-                    },
-                    isEditable: isEditMode == .active
-                )
+            // Grouped Workout History section for consistent spacing
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                // History section header
+                DashboardHeader.section(title: "WORKOUT HISTORY")
+                
+                // History content 
+                if viewModel.workoutsFiltered.isEmpty {
+                    EmptyHistoryDisplayView(currentFilter: viewModel.filter)
+                } else {
+                    WorkoutHistoryList(
+                        viewModel: viewModel,
+                        onSelect: { workout in
+                            selectedWorkout = workout.toWorkoutResult()
+                        },
+                        isEditable: isEditMode == .active
+                    )
+                }
             }
         }
         .toolbar {
