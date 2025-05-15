@@ -13,7 +13,6 @@ struct WorkoutChartView: View {
                 Text("PROGRESS CHART")
                     .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
                     .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                 
                 PTCard(style: .elevated) {
                     VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
@@ -88,7 +87,6 @@ struct WorkoutChartView: View {
                 Text("PROGRESS CHART")
                     .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
                     .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                 
                 PTCard(style: .flat) {
                     VStack(spacing: AppTheme.GeneratedSpacing.medium) {
@@ -112,7 +110,6 @@ struct WorkoutChartView: View {
                 }
             }
         }
-        .padding(.horizontal, filter != .all ? 0 : AppTheme.GeneratedSpacing.contentPadding)
     }
 }
 

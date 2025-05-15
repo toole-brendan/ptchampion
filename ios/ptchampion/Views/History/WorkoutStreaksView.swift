@@ -59,7 +59,6 @@ struct WorkoutStreaksView: View {
                 .padding(.vertical, AppTheme.GeneratedSpacing.medium)
             }
         }
-        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
     }
 }
 
