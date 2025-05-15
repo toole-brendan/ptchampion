@@ -35,22 +35,35 @@ enum UnitSetting: String, CaseIterable, Identifiable {
 }
 
 /// Reusable header component for screen titles and subtitles with consistent height and positioning
-struct ScreenHeader: View {
+struct ScreenHeader<TrailingContent: View>: View {
     let title: String
     let subtitle: String
+    let trailingContent: TrailingContent
+    
+    init(title: String, subtitle: String, @ViewBuilder trailingContent: @escaping () -> TrailingContent = { EmptyView() }) {
+        self.title = title
+        self.subtitle = subtitle
+        self.trailingContent = trailingContent()
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            Text(title)
-                .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .multilineTextAlignment(.leading)
+        HStack {
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                Text(title)
+                    .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .multilineTextAlignment(.leading)
 
-            Text(subtitle)
-                .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .italic()
-                .multilineTextAlignment(.leading)
+                Text(subtitle)
+                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .italic()
+                    .multilineTextAlignment(.leading)
+            }
+            
+            Spacer()
+            
+            trailingContent
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, AppTheme.GeneratedSpacing.large)
@@ -71,7 +84,16 @@ struct ProfileView: View {
     var body: some View {
         ScreenContainer(
             title: "PROFILE",
-            subtitle: "Personal settings & preferences"
+            subtitle: "Personal settings & preferences",
+            trailingHeaderContent: {
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.3)
+                    showingSettings = true
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                }
+            }
         ) {
             // User Profile Header
             ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)
@@ -88,17 +110,6 @@ struct ProfileView: View {
             
             // App Version Information
             AppInfoView()
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.3)
-                    showingSettings = true
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                }
-            }
         }
         .sheet(isPresented: $showingEditProfile) {
             NavigationView {

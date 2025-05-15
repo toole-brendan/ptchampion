@@ -15,16 +15,32 @@ struct WorkoutHistoryView: View {
     var body: some View {
         ScreenContainer(
             title: "WORKOUT HISTORY",
-            subtitle: "Track your exercise progress"
+            subtitle: "Track your exercise progress",
+            trailingHeaderContent: {
+                Button {
+                    withAnimation {
+                        isEditMode = isEditMode == .active ? .inactive : .active
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isEditMode == .active ? "checkmark.circle.fill" : "pencil")
+                        Text(isEditMode == .active ? "Done" : "Edit")
+                    }
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                }
+            }
         ) {
-            // Filter bar component
-            ExerciseFilterBarView(filter: $viewModel.filter)
-            
-            // Streak cards component
-            WorkoutStreaksView(
-                currentStreak: viewModel.currentWorkoutStreak,
-                longestStreak: viewModel.longestWorkoutStreak
-            )
+            // Group filter bar and streak cards as one logical dashboard header
+            VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                // Filter bar component
+                ExerciseFilterBarView(filter: $viewModel.filter)
+                
+                // Streak cards component
+                WorkoutStreaksView(
+                    currentStreak: viewModel.currentWorkoutStreak,
+                    longestStreak: viewModel.longestWorkoutStreak
+                )
+            }
             
             // Progress chart component
             if viewModel.filter != .all {
@@ -52,21 +68,6 @@ struct WorkoutHistoryView: View {
                         isEditable: isEditMode == .active
                     )
                 }
-            }
-        }
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button {
-                    withAnimation {
-                        isEditMode = isEditMode == .active ? .inactive : .active
-                    }
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: isEditMode == .active ? "checkmark.circle.fill" : "pencil")
-                        Text(isEditMode == .active ? "Done" : "Edit")
-                    }
-                }
-                .tint(AppTheme.GeneratedColors.brassGold)
             }
         }
         .environment(\.editMode, $isEditMode)
