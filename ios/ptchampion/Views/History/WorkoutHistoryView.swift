@@ -36,13 +36,10 @@ struct WorkoutHistoryView: View {
             }
             
             // Workout history section header
-            HStack {
-                Text("WORKOUT HISTORY")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                
-                Spacer()
-            }
+            Text("WORKOUT HISTORY")
+                .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
             // Workout history content
             if viewModel.workoutsFiltered.isEmpty {
