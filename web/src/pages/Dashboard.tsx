@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { MetricCard } from '@/components/ui/metric-card';
 import { 
@@ -45,6 +45,19 @@ const Dashboard: React.FC = () => {
   const { user, isLoading: isAuthLoading, error: authError } = useAuth();
   const api = useApi();
   const { setUserName } = useHeaderContext();
+  const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 768);
+  
+  // Add event listener for window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
   
   // Get user exercise history for dashboard stats
   const { 
@@ -269,12 +282,14 @@ const Dashboard: React.FC = () => {
                   {dashboardMetrics.totalWorkouts} total workouts completed
                 </p>
               </div>
-              <Button 
-                onClick={() => navigate('/profile')}
-                variant="outline"
-              >
-                View Profile
-              </Button>
+              {isDesktop && (
+                <Button 
+                  onClick={() => navigate('/profile')}
+                  variant="outline"
+                >
+                  View Profile
+                </Button>
+              )}
             </div>
           }
         />
