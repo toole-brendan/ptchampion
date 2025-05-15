@@ -31,31 +31,17 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   return (
     <div className="flex min-h-screen flex-col bg-cream">
-      {/* Top navigation bar (moved from bottom) */}
-      <nav className="top-nav">
-        {navItems.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={`top-nav-item ${isNavItemActive(item.to) ? 'active' : ''}`}
-          >
-            {item.icon}
-            <span className="top-nav-label">{item.label}</span>
-          </Link>
-        ))}
-      </nav>
-      
-      {/* Offline Banner positioned below header */}
+      {/* Offline Banner positioned at the top */}
       <div className="relative z-30">
         <OfflineBanner />
       </div>
       
-      <main className="mx-auto w-full flex-1 px-content py-md">
+      <main className="mx-auto w-full flex-1 px-content py-md pb-[70px]">
         {children}
       </main>
       
-      {/* User profile button moved to floating button at bottom right */}
-      <div className="fixed bottom-4 right-4 z-50">
+      {/* User profile button at bottom right */}
+      <div className="fixed bottom-[70px] right-4 z-50">
         <Popover>
           <PopoverTrigger asChild>
             <div className="flex size-12 items-center justify-center rounded-full bg-brass-gold text-deep-ops cursor-pointer shadow-lg">
@@ -106,6 +92,20 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
           </PopoverContent>
         </Popover>
       </div>
+
+      {/* Bottom navigation bar (moved from top) */}
+      <nav className="bottom-nav">
+        {navItems.map((item) => (
+          <Link
+            key={item.to}
+            to={item.to}
+            className={`bottom-nav-item ${isNavItemActive(item.to) ? 'active' : ''}`}
+          >
+            {item.icon}
+            <span className="bottom-nav-label">{item.label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 };

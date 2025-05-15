@@ -296,7 +296,6 @@ const Dashboard: React.FC = () => {
           description="Choose an exercise to begin a new session"
           icon={<Play className="size-5" />}
           className="animate-fade-in animation-delay-200"
-          headerClassName="flex items-center justify-between"
           showDivider
         >
           <div className="flex justify-end mb-4">
