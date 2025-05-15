@@ -36,10 +36,7 @@ struct WorkoutHistoryView: View {
             }
             
             // Workout history section header
-            Text("WORKOUT HISTORY")
-                .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            DashboardHeader.section(title: "WORKOUT HISTORY")
             
             // Workout history content
             if viewModel.workoutsFiltered.isEmpty {
