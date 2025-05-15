@@ -12,6 +12,8 @@
 	<array>
 		<string>fetch</string>
 		<string>processing</string>
+		<string>bluetooth-central</string>
+		<string>location</string>
 	</array>
 </dict>
 </plist> 
