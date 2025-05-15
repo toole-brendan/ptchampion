@@ -69,64 +69,47 @@ struct ProfileView: View {
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
 
     var body: some View {
-        NavigationStack {
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(spacing: AppTheme.GeneratedSpacing.large) {
-                    // Empty spacer to reserve room for the header that's positioned using safeAreaInset
-                    Color.clear.frame(height: 16)
-                    
-                    // User Profile Header
-                    ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)
-                    
-                    // Quick Preferences Section
-                    ProfilePreferencesView(hapticGenerator: hapticGenerator)
-                    
-                    // Account Actions Section
-                    AccountActionsView()
-                    
-                    // More Options Section
-                    MoreActionsView()
-                        .environmentObject(fitnessDeviceManagerViewModel)
-                    
-                    // App Version Information
-                    AppInfoView()
-                }
-                .padding([.horizontal, .bottom], AppTheme.GeneratedSpacing.contentPadding)
-            }
-            // Use safeAreaInset to position header consistently across all screens
-            .safeAreaInset(edge: .top) {
-                VStack(spacing: 0) {
-                    Spacer().frame(height: 12)
-                    ScreenHeader(title: "PROFILE",
-                               subtitle: "Personal settings & preferences")
-                    Spacer().frame(height: 8)
-                }
-                .background(AppTheme.GeneratedColors.background)
-            }
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        hapticGenerator.impactOccurred(intensity: 0.3)
-                        showingSettings = true
-                    } label: {
-                        Image(systemName: "gearshape.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
+        ScreenContainer(
+            title: "PROFILE",
+            subtitle: "Personal settings & preferences"
+        ) {
+            // User Profile Header
+            ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)
+            
+            // Quick Preferences Section
+            ProfilePreferencesView(hapticGenerator: hapticGenerator)
+            
+            // Account Actions Section
+            AccountActionsView()
+            
+            // More Options Section
+            MoreActionsView()
+                .environmentObject(fitnessDeviceManagerViewModel)
+            
+            // App Version Information
+            AppInfoView()
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.3)
+                    showingSettings = true
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                 }
             }
-            .sheet(isPresented: $showingEditProfile) {
-                NavigationView {
-                    EditProfileView()
-                        .environmentObject(authViewModel)
-                }
+        }
+        .sheet(isPresented: $showingEditProfile) {
+            NavigationView {
+                EditProfileView()
+                    .environmentObject(authViewModel)
             }
-            .sheet(isPresented: $showingSettings) {
-                NavigationView {
-                    SettingsView()
-                        .environmentObject(authViewModel)
-                }
+        }
+        .sheet(isPresented: $showingSettings) {
+            NavigationView {
+                SettingsView()
+                    .environmentObject(authViewModel)
             }
         }
         .onAppear {

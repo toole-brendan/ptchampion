@@ -92,6 +92,7 @@
 		BF7960EF2DCFD96400B03835 /* ProfilePreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960EB2DCFD96400B03835 /* ProfilePreferencesView.swift */; };
 		BF7960F02DCFD96400B03835 /* MoreActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960EA2DCFD96400B03835 /* MoreActionsView.swift */; };
 		BF7960F12DCFD96400B03835 /* AccountActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E82DCFD96400B03835 /* AccountActionsView.swift */; };
+		BF7B49C52DD567C500B50FE6 /* ScreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7B49C32DD567C500B50FE6 /* ScreenLayout.swift */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -241,6 +242,7 @@
 		BF7960EA2DCFD96400B03835 /* MoreActionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreActionsView.swift; sourceTree = "<group>"; };
 		BF7960EB2DCFD96400B03835 /* ProfilePreferencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePreferencesView.swift; sourceTree = "<group>"; };
 		BF7960EC2DCFD96400B03835 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		BF7B49C32DD567C500B50FE6 /* ScreenLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenLayout.swift; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -602,6 +604,7 @@
 		BF63E44A2DB1EB980037CD02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BF7B49C42DD567C500B50FE6 /* Layout */,
 				BFB1EDB02DD0E38E00AC9653 /* OfflineSyncStatusView.swift */,
 				BFB1EDB12DD0E38E00AC9653 /* WorkoutHistoryItemView.swift */,
 				BF25ED332DCE323700620C84 /* LoadingView.swift */,
@@ -662,6 +665,14 @@
 				BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */,
 			);
 			name = "Recovered References";
+			sourceTree = "<group>";
+		};
+		BF7B49C42DD567C500B50FE6 /* Layout */ = {
+			isa = PBXGroup;
+			children = (
+				BF7B49C32DD567C500B50FE6 /* ScreenLayout.swift */,
+			);
+			path = Layout;
 			sourceTree = "<group>";
 		};
 		BF89EB462DC98E6A003F8FE3 /* Modifiers */ = {
@@ -918,6 +929,7 @@
 				BFADF9B92DC93D890016AF0B /* FocusableTextField.swift in Sources */,
 				BFADF9BA2DC93D890016AF0B /* WorkoutCard.swift in Sources */,
 				BF89EB492DC98E8A003F8FE3 /* CommonNetworkTypes.swift in Sources */,
+				BF7B49C52DD567C500B50FE6 /* ScreenLayout.swift in Sources */,
 				BF199EBF2DCE228800E23EFF /* UserProfileViewModel.swift in Sources */,
 				BFADF9BB2DC93D890016AF0B /* MetricCard.swift in Sources */,
 				BF7960DF2DCFCCE800B03835 /* QuickLinkCardView.swift in Sources */,

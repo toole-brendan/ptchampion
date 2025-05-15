@@ -96,87 +96,68 @@ struct LeaderboardView: View {
     }
     
     var body: some View {
-        NavigationStack {
-            bodyContent
-                .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-                .navigationBarTitleDisplayMode(.inline)
-                .onAppear {
-                    fetchTask = Task {
-                        await viewModel.fetch()
-                    }
-                }
-                .onDisappear {
-                    // Cancel any ongoing fetch when view disappears
-                    fetchTask?.cancel()
-                }
-                .onChange(of: viewModel.selectedBoard) { _ in 
-                    performContentTransition {
-                        fetchTask?.cancel() // Cancel any previous fetch
-                        fetchTask = Task { await viewModel.fetch() }
-                    }
-                }
-                .onChange(of: viewModel.selectedCategory) { _ in 
-                    performContentTransition {
-                        fetchTask?.cancel() // Cancel any previous fetch
-                        fetchTask = Task { await viewModel.fetch() }
-                    }
-                }
-                .onChange(of: viewModel.selectedExercise) { _ in 
-                    performContentTransition {
-                        fetchTask?.cancel() // Cancel any previous fetch
-                        fetchTask = Task { await viewModel.fetch() }
-                    }
-                }
-                .onChange(of: viewModel.selectedRadius) { _ in 
-                    performContentTransition {
-                        fetchTask?.cancel() // Cancel any previous fetch
-                        fetchTask = Task { await viewModel.fetch() }
-                    }
-                }
-                .navigationDestination(item: $navigatingToUserID) { userID in
-                    UserProfileView(userID: userID)
-                }
-                // Add an empty toolbar item to ensure navigation bar space
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarLeading) {
-                        EmptyView()
-                    }
-                }
+        ScreenContainer(
+            title: "\(viewModel.selectedBoard.rawValue.uppercased()) LEADERBOARD",
+            subtitle: formattedFilterTitle,
+            addNavigationStack: true
+        ) {
+            // All the filter controls in a separate view
+            filterControlsSection
+            
+            // Divider
+            Rectangle()
+                .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
+                .frame(height: 1)
+            
+            // Content area with simple opacity animation
+            mainContentArea
+                // Fill remaining available space
+                .frame(maxWidth: .infinity, alignment: .top)
         }
-    }
-    
-    // Break down the body into a separate computed property
-    private var bodyContent: some View {
-        ScrollView(.vertical, showsIndicators: true) {
-            VStack(spacing: AppTheme.GeneratedSpacing.large) {
-                // Empty spacer to reserve room for the header that's positioned using safeAreaInset
-                Color.clear.frame(height: 16)                
-                
-                // All the filter controls in a separate view
-                filterControlsSection
-                
-                // Divider
-                Rectangle()
-                    .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
-                    .frame(height: 1)
-                    .padding(.horizontal)
-                
-                // Content area with simple opacity animation
-                mainContentArea
-                    // Fill remaining available space
-                    .frame(maxWidth: .infinity, alignment: .top)
+        .opacity(contentOpacity)
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            fetchTask = Task {
+                await viewModel.fetch()
             }
         }
-        // Use safeAreaInset to position header consistently across all screens
-        .safeAreaInset(edge: .top) {
-            VStack(spacing: 0) {
-                Spacer().frame(height: 12)
-                headerView
-                Spacer().frame(height: 8)
-            }
-            .background(AppTheme.GeneratedColors.background)
+        .onDisappear {
+            // Cancel any ongoing fetch when view disappears
+            fetchTask?.cancel()
         }
-        .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
+        .onChange(of: viewModel.selectedBoard) { _ in 
+            performContentTransition {
+                fetchTask?.cancel() // Cancel any previous fetch
+                fetchTask = Task { await viewModel.fetch() }
+            }
+        }
+        .onChange(of: viewModel.selectedCategory) { _ in 
+            performContentTransition {
+                fetchTask?.cancel() // Cancel any previous fetch
+                fetchTask = Task { await viewModel.fetch() }
+            }
+        }
+        .onChange(of: viewModel.selectedExercise) { _ in 
+            performContentTransition {
+                fetchTask?.cancel() // Cancel any previous fetch
+                fetchTask = Task { await viewModel.fetch() }
+            }
+        }
+        .onChange(of: viewModel.selectedRadius) { _ in 
+            performContentTransition {
+                fetchTask?.cancel() // Cancel any previous fetch
+                fetchTask = Task { await viewModel.fetch() }
+            }
+        }
+        .navigationDestination(item: $navigatingToUserID) { userID in
+            UserProfileView(userID: userID)
+        }
+        // Add an empty toolbar item to ensure navigation bar space
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                EmptyView()
+            }
+        }
     }
     
     // Break down the filter controls into a separate view
@@ -193,8 +174,6 @@ struct LeaderboardView: View {
                 showRadiusSelector: viewModel.selectedBoard == .local
             )
         }
-        // No vertical padding here - handled by VStack parent spacing
-        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
     }
     
     // Break down the main content area into a separate view
@@ -214,7 +193,6 @@ struct LeaderboardView: View {
             }
         }
         .frame(minHeight: 400) // Ensure content has enough space to scroll
-        .opacity(contentOpacity)
     }
     
     // Helper function to perform fade transition without using .transition

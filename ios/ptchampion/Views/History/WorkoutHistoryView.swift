@@ -55,69 +55,52 @@ struct WorkoutHistoryView: View {
     @State private var isEditMode: EditMode = .inactive
     
     var body: some View {
-        NavigationStack {
-            ScrollView(.vertical, showsIndicators: true) {
-                VStack(spacing: AppTheme.GeneratedSpacing.large) {                 
-                    // Empty spacer to reserve room for the header that's positioned using safeAreaInset
-                    Color.clear.frame(height: 16)
-                
-                    // Filter bar component
-                    ExerciseFilterBarView(filter: $viewModel.filter)
-                    
-                    // Streak cards component
-                    WorkoutStreaksView(
-                        currentStreak: viewModel.currentWorkoutStreak,
-                        longestStreak: viewModel.longestWorkoutStreak
-                    )
-                    
-                    // Progress chart component
-                    WorkoutChartView(
-                        chartData: viewModel.chartData,
-                        chartYAxisLabel: viewModel.chartYAxisLabel,
-                        filter: viewModel.filter
-                    )
-                    
-                    // Workout history list section
-                    workoutHistorySection
-                }
-                .padding(.bottom, AppTheme.GeneratedSpacing.section)
-            }
-            // Use safeAreaInset to position header consistently across all screens
-            .safeAreaInset(edge: .top) {
-                VStack(spacing: 0) {
-                    Spacer().frame(height: 12)
-                    ScreenHeader(title: "WORKOUT HISTORY", 
-                                subtitle: "Track your exercise progress")
-                    Spacer().frame(height: 8)
-                }
-                .background(AppTheme.GeneratedColors.background)
-            }
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        withAnimation {
-                            isEditMode = isEditMode == .active ? .inactive : .active
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: isEditMode == .active ? "checkmark.circle.fill" : "pencil")
-                            Text(isEditMode == .active ? "Done" : "Edit")
-                        }
+        ScreenContainer(
+            title: "WORKOUT HISTORY",
+            subtitle: "Track your exercise progress"
+        ) {
+            // Filter bar component
+            ExerciseFilterBarView(filter: $viewModel.filter)
+            
+            // Streak cards component
+            WorkoutStreaksView(
+                currentStreak: viewModel.currentWorkoutStreak,
+                longestStreak: viewModel.longestWorkoutStreak
+            )
+            
+            // Progress chart component
+            WorkoutChartView(
+                chartData: viewModel.chartData,
+                chartYAxisLabel: viewModel.chartYAxisLabel,
+                filter: viewModel.filter
+            )
+            
+            // Workout history list section
+            workoutHistorySection
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    withAnimation {
+                        isEditMode = isEditMode == .active ? .inactive : .active
                     }
-                    .tint(AppTheme.GeneratedColors.brassGold)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: isEditMode == .active ? "checkmark.circle.fill" : "pencil")
+                        Text(isEditMode == .active ? "Done" : "Edit")
+                    }
                 }
+                .tint(AppTheme.GeneratedColors.brassGold)
             }
-            .environment(\.editMode, $isEditMode)
-            .sheet(isPresented: $isShowingShareSheet) {
-                ActivityView(activityItems: [shareText])
-            }
-            .onAppear {
-                viewModel.modelContext = modelContext
-                Task {
-                    await viewModel.fetchWorkouts()
-                }
+        }
+        .environment(\.editMode, $isEditMode)
+        .sheet(isPresented: $isShowingShareSheet) {
+            ActivityView(activityItems: [shareText])
+        }
+        .onAppear {
+            viewModel.modelContext = modelContext
+            Task {
+                await viewModel.fetchWorkouts()
             }
         }
     }
@@ -129,7 +112,6 @@ struct WorkoutHistoryView: View {
                 Text("WORKOUT HISTORY")
                     .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
                     .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
                 
                 Spacer()
             }

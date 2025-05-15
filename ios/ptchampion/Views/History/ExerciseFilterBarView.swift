@@ -44,7 +44,6 @@ struct ExerciseFilterBarView: View {
                 }
             }
             .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
-            .padding(.vertical, 4)
         }
     }
 }
