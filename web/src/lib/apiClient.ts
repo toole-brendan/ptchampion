@@ -122,7 +122,8 @@ const apiRequest = async <T>(
         const fallbackUser: UserResponse = {
           id: 9999,
           username: 'devuser',
-          display_name: 'Developer',
+          first_name: 'Developer',
+          last_name: 'User',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
@@ -191,21 +192,24 @@ const apiRequest = async <T>(
           {
             user_id: 9999,
             username: 'devuser',
-            display_name: 'Developer',
+            first_name: 'Developer',
+            last_name: 'User',
             max_grade: 100,
             last_attempt_date: new Date().toISOString(),
           },
           {
             user_id: 9998,
             username: 'user2',
-            display_name: 'Mock User 2',
+            first_name: 'Mock',
+            last_name: 'User 2',
             max_grade: 90,
             last_attempt_date: new Date().toISOString(),
           },
           {
             user_id: 9997,
             username: 'user3',
-            display_name: 'Mock User 3',
+            first_name: 'Mock',
+            last_name: 'User 3',
             max_grade: 80,
             last_attempt_date: new Date().toISOString(),
           }
@@ -302,7 +306,13 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
     user?: UserResponse;
   }
   
-  const response = await apiRequest<BackendLoginResponse>('/auth/login', 'POST', data, false);
+  // Transform the login request to match backend field naming (capitalized fields)
+  const transformedData = {
+    Email: data.email,
+    Password: data.password
+  };
+  
+  const response = await apiRequest<BackendLoginResponse>('/auth/login', 'POST', transformedData, false);
   
   // Log the full response object
   console.log('LOGIN RESPONSE FULL DETAILS:', response);
