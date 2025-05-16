@@ -53,8 +53,30 @@ type Config struct {
 	// Database operation timeout (default 3 seconds)
 	DBTimeout time.Duration `envconfig:"DB_TIMEOUT" default:"3s"`
 
+	// OAuth Configuration
+	GoogleOAuth GoogleOAuthConfig
+	AppleOAuth  AppleOAuthConfig
+
 	// Add other config fields like SESSION_SECRET later
 	// SessionSecret string `envconfig:"SESSION_SECRET" required:"true"`
+}
+
+// GoogleOAuthConfig holds Google OAuth credentials and settings
+type GoogleOAuthConfig struct {
+	WebClientID     string
+	WebClientSecret string
+	IOSClientID     string
+	RedirectURL     string
+}
+
+// AppleOAuthConfig holds Apple Sign In credentials and settings
+type AppleOAuthConfig struct {
+	ServiceID      string
+	AppBundleID    string
+	TeamID         string
+	KeyID          string
+	PrivateKeyPath string
+	RedirectURL    string
 }
 
 // Load loads configuration from environment variables, .env file, or Azure Key Vault
@@ -98,6 +120,23 @@ func Load() (*Config, error) {
 	// Log the port for debugging
 	log.Printf("Server configured to run on port: %s", cfg.Port)
 	log.Printf("Client origin set to: %s", cfg.ClientOrigin)
+
+	// Load OAuth Configuration
+	cfg.GoogleOAuth = GoogleOAuthConfig{
+		WebClientID:     getEnv("GOOGLE_WEB_CLIENT_ID", ""),
+		WebClientSecret: getEnv("GOOGLE_WEB_CLIENT_SECRET", ""),
+		IOSClientID:     getEnv("GOOGLE_IOS_CLIENT_ID", ""),
+		RedirectURL:     fmt.Sprintf("%s/auth/google", getEnv("API_BASE_URL", "http://localhost:8080")),
+	}
+
+	cfg.AppleOAuth = AppleOAuthConfig{
+		ServiceID:      getEnv("APPLE_SERVICE_ID", ""),
+		AppBundleID:    getEnv("APPLE_APP_BUNDLE_ID", ""),
+		TeamID:         getEnv("APPLE_TEAM_ID", ""),
+		KeyID:          getEnv("APPLE_KEY_ID", ""),
+		PrivateKeyPath: getEnv("APPLE_PRIVATE_KEY_PATH", ""),
+		RedirectURL:    fmt.Sprintf("%s/auth/apple", getEnv("API_BASE_URL", "http://localhost:8080")),
+	}
 
 	return &cfg, nil
 }
@@ -210,4 +249,13 @@ func fetchSecretsIfNeeded(cfg *Config) error {
 	}
 
 	return nil
+}
+
+// getEnv retrieves an environment variable with a fallback default value
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		return fallback
+	}
+	return value
 }

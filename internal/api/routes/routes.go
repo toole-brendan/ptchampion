@@ -80,7 +80,14 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 
 	// Social authentication routes
 	authGroup := apiGroup.Group("/auth")
-	RegisterSocialAuthRoutes(authGroup)
+
+	// Create token service and social auth service
+	tokenService := auth.NewTokenService(cfg.JWTSecret)
+	socialAuthService := auth.NewSocialAuthService(cfg, logger)
+	socialAuthHandler := NewSocialAuthHandler(store, tokenService, socialAuthService, cfg, logger)
+
+	// Register social auth routes
+	RegisterSocialAuthRoutes(authGroup, socialAuthHandler)
 
 	// Create a separate group for protected routes
 	protectedGroup := apiGroup.Group("", authMiddleware)
