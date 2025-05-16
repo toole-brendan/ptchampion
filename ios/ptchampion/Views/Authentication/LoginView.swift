@@ -93,47 +93,6 @@ struct LoginView: View {
                         
                         // Form Fields
                         VStack(spacing: 16) {
-                            // Sign in with Apple button
-                            SignInWithAppleButton(.signIn, onRequest: configureAppleRequest, onCompletion: handleAppleSignInCompletion)
-                                .frame(height: 50)
-                                .cornerRadius(8)
-                            
-                            // Sign in with Google button
-                            Button(action: signInWithGoogle) {
-                                HStack {
-                                    Image(systemName: "g.circle.fill") // Use a custom Google logo image in production
-                                        .foregroundColor(.blue)
-                                    Text("Sign in with Google")
-                                        .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
-                                        .foregroundColor(.primary)
-                                    Spacer()
-                                }
-                                .padding()
-                                .frame(height: 50)
-                                .background(Color(.systemBackground))
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color(.systemGray4), lineWidth: 1)
-                                )
-                            }
-                            
-                            // Separator
-                            HStack {
-                                Rectangle()
-                                    .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.3))
-                                    .frame(height: 1)
-                                
-                                PTLabel("or", style: .caption)
-                                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
-                                    .padding(.horizontal, 8)
-                                
-                                Rectangle()
-                                    .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.3))
-                                    .frame(height: 1)
-                            }
-                            .padding(.vertical, 8)
-                            
                             PTTextField(
                                 "Email",
                                 text: $email,
@@ -198,6 +157,56 @@ struct LoginView: View {
                                 }
                             }
                             .padding(.top, 8)
+                            
+                            // Separator
+                            HStack {
+                                Rectangle()
+                                    .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.3))
+                                    .frame(height: 1)
+                                
+                                PTLabel("or", style: .caption)
+                                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                                    .padding(.horizontal, 8)
+                                
+                                Rectangle()
+                                    .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.3))
+                                    .frame(height: 1)
+                            }
+                            .padding(.vertical, 16)
+                            
+                            // Sign in with Apple button
+                            SignInWithAppleButton(.signIn, onRequest: configureAppleRequest, onCompletion: handleAppleSignInCompletion)
+                                .frame(height: 50)
+                                .cornerRadius(8)
+                            
+                            // Sign in with Google button
+                            Button(action: signInWithGoogle) {
+                                HStack {
+                                    Spacer()
+                                    
+                                    // Use the logo3x asset
+                                    Image("logo3x")
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 24, height: 24)
+                                        .padding(.trailing, 8)
+                                    
+                                    Text("Sign in with Google")
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(Color.black.opacity(0.87))
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal, 12)
+                                .frame(height: 50)
+                                .background(Color.white)
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                )
+                            }
+                            .accessibilityLabel("Sign in with Google")
                             
                             // Debug buttons only in dev mode
                             if showDevOptions {
@@ -448,4 +457,101 @@ extension View {
         .environmentObject(AuthViewModel())
         .environmentObject(NavigationState()) // Added missing NavigationState for preview
         .environment(\.colorScheme, .light)
+}
+
+// MARK: - Helper Views
+
+/// Google G logo implementation with official colors
+struct GoogleGLogo: View {
+    var body: some View {
+        GeometryReader { geometry in
+            let size = min(geometry.size.width, geometry.size.height)
+            ZStack {
+                // Main 'G' shape
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: size, height: size)
+                
+                // Top red portion
+                Path { path in
+                    let width = size
+                    let height = size
+                    path.move(to: CGPoint(x: width * 0.25, y: height * 0.25))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.25))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.4))
+                    path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.4))
+                    path.closeSubpath()
+                }
+                .fill(Color(red: 0.91, green: 0.27, blue: 0.21)) // Google red
+                
+                // Right yellow portion
+                Path { path in
+                    let width = size
+                    let height = size
+                    path.move(to: CGPoint(x: width * 0.75, y: height * 0.25))
+                    path.addLine(to: CGPoint(x: width * 0.95, y: height * 0.25))
+                    path.addLine(to: CGPoint(x: width * 0.95, y: height * 0.75))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.75))
+                    path.closeSubpath()
+                }
+                .fill(Color(red: 0.98, green: 0.73, blue: 0.01)) // Google yellow
+                
+                // Bottom green portion
+                Path { path in
+                    let width = size
+                    let height = size
+                    path.move(to: CGPoint(x: width * 0.25, y: height * 0.6))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.6))
+                    path.addLine(to: CGPoint(x: width * 0.75, y: height * 0.75))
+                    path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.75))
+                    path.closeSubpath()
+                }
+                .fill(Color(red: 0.0, green: 0.59, blue: 0.53)) // Google green
+                
+                // Left blue portion
+                Path { path in
+                    let width = size
+                    let height = size
+                    path.move(to: CGPoint(x: width * 0.05, y: height * 0.25))
+                    path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.25))
+                    path.addLine(to: CGPoint(x: width * 0.25, y: height * 0.75))
+                    path.addLine(to: CGPoint(x: width * 0.05, y: height * 0.75))
+                    path.closeSubpath()
+                }
+                .fill(Color(red: 0.01, green: 0.44, blue: 0.87)) // Google blue
+                
+                // White center
+                Circle()
+                    .fill(Color.white)
+                    .frame(width: size * 0.5, height: size * 0.5)
+                    .offset(x: size * 0.075, y: 0)
+            }
+        }
+    }
+}
+
+// MARK: - Helper Extensions
+
+// Helper extension to list available image assets
+extension UIImage {
+    static var assetNames: [String] {
+        var names = [String]()
+        
+        // Get the main bundle
+        if let bundle = Bundle(identifier: Bundle.main.bundleIdentifier!) {
+            // Get the path to the asset catalog
+            if let path = bundle.path(forResource: "Assets", ofType: "car") {
+                // Get the names of all the asset catalogs
+                if let enumerator = FileManager.default.enumerator(atPath: path) {
+                    for case let fileName as String in enumerator {
+                        if fileName.hasSuffix(".png") || fileName.hasSuffix(".jpg") {
+                            names.append(fileName)
+                        }
+                    }
+                }
+            }
+        }
+        
+        return names
+    }
 } 
