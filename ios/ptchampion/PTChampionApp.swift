@@ -7,6 +7,7 @@ import ObjectiveC
 import Combine
 import HealthKit
 import BackgroundTasks
+import GoogleSignIn  // Add GoogleSignIn import
 
 
 // Import local files/modules
@@ -250,10 +251,22 @@ class FontManager {
     }
 }
 
+// Add AppDelegate to handle Google Sign-In URL callbacks
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, open url: URL,
+                     options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
+        // Let GoogleSignIn handle the URL
+        return GIDSignIn.sharedInstance.handle(url)
+    }
+}
+
 // --- Main App Structure ---
 
 @main
 struct PTChampionApp: App {
+    // Register AppDelegate to handle Google Sign-In callbacks
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    
     // Environment objects & Services that need to be @StateObject
     @StateObject private var authService: AuthService // Declared, initialized in init
     @StateObject private var featureFlagService = FeatureFlagService() // Default init works

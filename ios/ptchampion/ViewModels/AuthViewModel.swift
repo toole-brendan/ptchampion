@@ -448,25 +448,22 @@ extension AuthViewModel {
 // Add these methods to the AuthViewModel class
 
 // Login with Google
-func loginWithGoogle() async {
+func loginWithGoogle(idToken: String) async {
     isLoading = true
     errorMessage = nil
     
     do {
-        print("AuthViewModel: Initiating Google Sign In")
-        // In a real implementation, this would receive a token from GoogleSignIn SDK
-        // For now, we'll simulate a successful Google authentication
-        let mockGoogleToken = "mock-google-token-\(UUID().uuidString)"
+        print("AuthViewModel: Processing Google Sign In with token")
         
         // Call the AuthService with Google token
-        let response = try await authService.loginWithSocial(provider: "google", token: mockGoogleToken)
+        let response = try await authService.loginWithSocial(provider: "google", token: idToken)
         
         // Update authentication state
         self.isAuthenticated = true
         self.currentUser = response.user
         
         // Notify of successful login
-        print("AuthViewModel: Google Sign In successful")
+        print("AuthViewModel: Google Sign In successful for user ID: \(response.user.id)")
         
     } catch let error as APIError {
         handleApiError(error)

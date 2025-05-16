@@ -3,6 +3,7 @@ import UIKit
 import PTDesignSystem
 import SwiftUIIntrospect
 import AuthenticationServices // Import for Sign in with Apple
+import CryptoKit // Import for SHA256 hashing
 
 // Font extensions have been migrated to use AppTheme.GeneratedTypography
 // These are kept solely for backward compatibility and should be removed in future updates
@@ -287,42 +288,55 @@ struct LoginView: View {
     
     // Configure Apple Sign In Request
     private func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
+        // Request user name and email
         request.requestedScopes = [.fullName, .email]
-        // Use a nonce for enhanced security
+        // Generate a random nonce to include in the request (for token validation)
         let nonce = generateNonce()
-        request.nonce = sha256(nonce)
-        // Store the nonce for verification later
+        // Save the nonce for token validation later
         UserDefaults.standard.set(nonce, forKey: "appleSignInNonce")
+        // Set the SHA256 hashed nonce on the request
+        request.nonce = sha256(nonce)
     }
     
     // Handle Apple Sign In Completion
     private func handleAppleSignInCompletion(_ result: Result<ASAuthorization, Error>) {
         switch result {
-        case .success(let authorization):
-            if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
-                // Extract user identity token
-                guard let identityToken = appleIDCredential.identityToken,
-                      let tokenString = String(data: identityToken, encoding: .utf8) else {
-                    print("Error: Could not extract identity token from Apple Sign In")
+        case .success(let authResult):
+            if let appleIDCredential = authResult.credential as? ASAuthorizationAppleIDCredential {
+                // Retrieve the identity token
+                guard let identityTokenData = appleIDCredential.identityToken,
+                      let identityToken = String(data: identityTokenData, encoding: .utf8) else {
+                    print("Error: Unable to retrieve Apple identity token")
+                    auth.errorMessage = "Unable to complete Apple sign-in. Please try again."
                     return
                 }
                 
-                // Get user details
+                // Get the nonce we sent with the request
+                let nonce = UserDefaults.standard.string(forKey: "appleSignInNonce") ?? ""
+                
+                // Here you can verify the nonce in the identityToken if your backend requires it
+                // The identityToken is a JWT containing a 'nonce' claim that should match the SHA256 hash of our original nonce
+                // For extra security, you could send both the identityToken and original nonce to your backend
+                
+                // Extract user info (only available on first sign-in)
                 let userId = appleIDCredential.user
                 let fullName = appleIDCredential.fullName
                 let email = appleIDCredential.email
                 
                 print("Successfully signed in with Apple: \(userId)")
-                print("Name: \(fullName?.givenName ?? "") \(fullName?.familyName ?? "")")
+                if let givenName = fullName?.givenName, let familyName = fullName?.familyName {
+                    print("Name: \(givenName) \(familyName)")
+                }
                 print("Email: \(email ?? "Not provided")")
                 
-                // Authenticate with our server
+                // Call backend via AuthViewModel to complete sign-in
                 Task {
-                    await auth.loginWithApple(identityToken: tokenString)
+                    await auth.loginWithApple(identityToken: identityToken)
                 }
             }
         case .failure(let error):
-            print("Apple Sign In failed: \(error.localizedDescription)")
+            print("Apple Sign-In failed: \(error.localizedDescription)")
+            auth.errorMessage = "Apple Sign-In failed. Please try again."
         }
     }
     
@@ -342,37 +356,44 @@ struct LoginView: View {
         }
     }
     
-    // Helper function to generate a random nonce for Apple Sign In
+    // Helper function to generate a secure random nonce
     private func generateNonce(length: Int = 32) -> String {
-        let charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._"
-        var nonce = ""
-        var remainingLength = length
+        var randomBytes = [UInt8](repeating: 0, count: length)
+        let status = SecRandomCopyBytes(kSecRandomDefault, randomBytes.count, &randomBytes)
         
-        while remainingLength > 0 {
-            let randomBytes = [UInt8](repeating: 0, count: 16)
-            let randomData = Data(randomBytes)
-            
-            randomData.withUnsafeBytes { buffer in
-                let availableLength = min(remainingLength, randomData.count)
-                for i in 0..<availableLength {
-                    if let randomValue = buffer.baseAddress?.advanced(by: i).assumingMemoryBound(to: UInt8.self).pointee {
-                        let index = Int(randomValue) % charset.count
-                        let characterIndex = charset.index(charset.startIndex, offsetBy: index)
-                        nonce.append(charset[characterIndex])
-                    }
-                }
-                remainingLength -= availableLength
+        guard status == errSecSuccess else {
+            // Fall back to a less secure random generation if SecRandomCopyBytes fails
+            print("Warning: SecRandomCopyBytes failed. Using less secure random generation.")
+            var nonce = ""
+            let allowedChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._"
+            for _ in 0..<length {
+                let randomIndex = Int.random(in: 0..<allowedChars.count)
+                let randomChar = allowedChars[allowedChars.index(allowedChars.startIndex, offsetBy: randomIndex)]
+                nonce.append(randomChar)
             }
+            return nonce
         }
         
-        return nonce
+        // Convert random bytes to base64 string and remove characters that could cause issues
+        return Data(randomBytes)
+            .base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+            .prefix(length)
+            .description
     }
     
-    // Helper function to create a SHA256 hash (for Apple Sign In)
+    // Helper function to create a SHA256 hash of the nonce
     private func sha256(_ input: String) -> String {
-        // In a real implementation, we would use CommonCrypto or CryptoKit to create a SHA256 hash
-        // This is a placeholder that returns the input for simplicity
-        return input
+        guard let data = input.data(using: .utf8) else {
+            return input // Return input as fallback if encoding fails
+        }
+        
+        let hashedData = SHA256.hash(data: data)
+        let hashString = hashedData.compactMap { String(format: "%02x", $0) }.joined()
+        
+        return hashString
     }
 }
 
