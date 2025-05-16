@@ -74,3 +74,6 @@ webapp_logs/
 design-tokens/build/
 design-tokens/node_modules/.build/plugins/cache/DesignTokenGenPlugin-state.json
 .build/plugins/cache/DesignTokenGenPlugin-state.json
+
+# Private keys
+internal/config/AuthKey_*.p8
