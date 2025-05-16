@@ -105,6 +105,8 @@ type Store interface {
 type UserStore interface {
 	GetUserByID(ctx context.Context, id string) (*User, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	GetUserByUsername(ctx context.Context, username string) (*User, error)
+	GetUserByProviderID(ctx context.Context, provider string, providerID string) (*User, error)
 	CreateUser(ctx context.Context, user *User) (*User, error)
 	UpdateUser(ctx context.Context, user *User) (*User, error)
 	DeleteUser(ctx context.Context, id string) error

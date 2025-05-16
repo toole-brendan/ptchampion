@@ -6,7 +6,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/labstack/echo/v4"
 
@@ -115,14 +114,16 @@ func (h *SocialAuthHandler) HandleGoogleAuth(c echo.Context) error {
 	}
 
 	// Generate JWT token
-	tokenString, err := h.tokenService.GenerateJWT(user.ID, h.config.JWTSecret, time.Hour*24)
+	tokenPair, err := h.tokenService.GenerateTokenPair(c.Request().Context(), user.ID)
 	if err != nil {
 		h.logger.Error(c.Request().Context(), "Failed to generate JWT token", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate authentication token"})
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"token": tokenString,
+		"token":         tokenPair.AccessToken,
+		"refresh_token": tokenPair.RefreshToken,
+		"expires_at":    tokenPair.AccessTokenExpiresAt,
 		"user": map[string]interface{}{
 			"id":         user.ID,
 			"email":      user.Email,
@@ -215,14 +216,16 @@ func (h *SocialAuthHandler) HandleAppleAuth(c echo.Context) error {
 	}
 
 	// Generate JWT token
-	tokenString, err := h.tokenService.GenerateJWT(user.ID, h.config.JWTSecret, time.Hour*24)
+	tokenPair, err := h.tokenService.GenerateTokenPair(c.Request().Context(), user.ID)
 	if err != nil {
 		h.logger.Error(c.Request().Context(), "Failed to generate JWT token", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to generate authentication token"})
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"token": tokenString,
+		"token":         tokenPair.AccessToken,
+		"refresh_token": tokenPair.RefreshToken,
+		"expires_at":    tokenPair.AccessTokenExpiresAt,
 		"user": map[string]interface{}{
 			"id":         user.ID,
 			"email":      user.Email,

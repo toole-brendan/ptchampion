@@ -132,7 +132,7 @@ func toStoreUser(dbUser User) *store.User {
 	}
 
 	return &store.User{
-		ID:           strconv.Itoa(int(dbUser.ID)), // Convert int32 to string; NOTE: This is a temporary fix for ID mismatch
+		ID:           strconv.Itoa(int(dbUser.ID)), // Convert int32 to string
 		Email:        dbUser.Email,
 		Username:     dbUser.Username,
 		PasswordHash: dbUser.PasswordHash,
@@ -190,6 +190,21 @@ func (s *Store) GetUserByEmail(ctx context.Context, email string) (*store.User, 
 		return nil, fmt.Errorf("failed to get user by email from DB: %w", err)
 	}
 	return toStoreUser(dbUser), nil
+}
+
+// GetUserByUsername implements store.UserStore
+func (s *Store) GetUserByUsername(ctx context.Context, username string) (*store.User, error) {
+	// TODO: Implement once the actual SQL query is defined
+	s.logger.Debug(ctx, "GetUserByUsername: Not implemented yet, returning ErrUserNotFound", "username", username)
+	return nil, store.ErrUserNotFound
+}
+
+// GetUserByProviderID implements store.UserStore
+func (s *Store) GetUserByProviderID(ctx context.Context, provider string, providerID string) (*store.User, error) {
+	// TODO: Implement once the actual SQL query is defined
+	s.logger.Debug(ctx, "GetUserByProviderID: Not implemented yet, returning ErrUserNotFound",
+		"provider", provider, "providerID", providerID)
+	return nil, store.ErrUserNotFound
 }
 
 // UpdateUser implements store.UserStore

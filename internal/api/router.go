@@ -268,6 +268,13 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 
 		// 3️⃣ Everything else requires JWT
 		// The OpenAPI handlers will apply auth middleware to protected routes
+
+		// OAuth routes for Google and Apple authentication
+		e.GET("/auth/google", handleGoogleOAuth)
+		e.POST("/auth/google", handleGoogleOAuth)
+		e.GET("/auth/apple", handleAppleOAuth)
+		e.POST("/auth/apple", handleAppleOAuth)
+
 		RegisterHandlersWithBaseURL(e, apiHandler, "/api/v1")
 	} else {
 		log.Printf("Warning: apiHandler is nil, OpenAPI endpoints not registered")
@@ -302,4 +309,22 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 	// All routes are registered through OpenAPI‑generated RegisterHandlers above.
 
 	return e // Return the Echo instance
+}
+
+// handleGoogleOAuth handles OAuth authentication flow for Google accounts.
+// Supports both web (GET) and mobile (POST) flows.
+func handleGoogleOAuth(c echo.Context) error {
+	// Placeholder for Google OAuth implementation
+	return c.JSON(http.StatusNotImplemented, map[string]string{
+		"message": "Google OAuth implementation pending",
+	})
+}
+
+// handleAppleOAuth handles OAuth authentication flow for Apple accounts.
+// Supports both web (GET) and mobile (POST) flows.
+func handleAppleOAuth(c echo.Context) error {
+	// Placeholder for Apple OAuth implementation
+	return c.JSON(http.StatusNotImplemented, map[string]string{
+		"message": "Apple OAuth implementation pending",
+	})
 }
