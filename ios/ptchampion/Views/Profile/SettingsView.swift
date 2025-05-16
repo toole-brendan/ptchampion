@@ -2,238 +2,280 @@ import SwiftUI
 import Foundation
 import CoreLocation
 import PTDesignSystem
+import UserNotifications
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authViewModel: AuthViewModel
-    @Environment(\.dynamicTypeSize) var dynamicTypeSize
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     
-    // App theme settings
-    enum AppThemeOption: String, CaseIterable, Identifiable {
-        case system = "System"
-        case light = "Light"
-        case dark = "Dark"
-        
-        var id: String { self.rawValue }
-    }
+    // Settings
+    @AppStorage("geolocation") private var geolocationEnabled: Bool = false
+    @AppStorage("notifications") private var notificationsEnabled: Bool = false
     
-    @AppStorage("selectedAppearance") private var selectedAppearance: AppThemeOption = .system
-    
-    // Units settings
-    enum UnitSetting: String, CaseIterable, Identifiable {
-        case metric = "Metric (kg, km)"
-        case imperial = "Imperial (lbs, miles)"
-        var id: String { self.rawValue }
-    }
-    @AppStorage("selectedUnit") private var selectedUnit: UnitSetting = .metric
-    
-    // Notifications
-    @AppStorage("workoutRemindersEnabled") private var workoutRemindersEnabled: Bool = true
-    @AppStorage("achievementNotificationsEnabled") private var achievementNotificationsEnabled: Bool = true
-    
-    // Device management
-    @State private var showDeviceScanner = false
+    // App version
+    private let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                    // Appearance Group
-                    settingsGroup(title: "Appearance") {
-                        SettingsRow(icon: "paintbrush.fill", label: "Theme") {
-                            Picker("", selection: $selectedAppearance) {
-                                ForEach(AppThemeOption.allCases) { option in
-                                    Text(option.rawValue).tag(option)
+            ZStack {
+                // Ambient Background Gradient
+                RadialGradient(
+                    gradient: Gradient(colors: [
+                        AppTheme.GeneratedColors.background.opacity(0.9),
+                        AppTheme.GeneratedColors.background
+                    ]),
+                    center: .center,
+                    startRadius: 50,
+                    endRadius: UIScreen.main.bounds.height * 0.6
+                )
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                        // Page Header
+                        VStack(spacing: 16) {
+                            HStack {
+                                Text("Settings")
+                                    .font(.system(size: 32, weight: .bold))
+                                    .tracking(2)
+                                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                
+                                Spacer()
+                                
+                                Button {
+                                    hapticGenerator.impactOccurred(intensity: 0.3)
+                                    dismiss()
+                                } label: {
+                                    HStack {
+                                        Image(systemName: "arrow.left")
+                                            .font(.system(size: 14))
+                                        Text("BACK TO PROFILE")
+                                            .militaryMonospaced(size: 14)
+                                    }
+                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                    .padding(.vertical, 8)
+                                    .padding(.horizontal, 12)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 6)
+                                            .strokeBorder(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
+                                    )
                                 }
                             }
-                            .pickerStyle(MenuPickerStyle())
-                            .frame(width: 120)
-                            .onChange(of: selectedAppearance) { _ in
-                                hapticGenerator.impactOccurred(intensity: 0.3)
-                                applyTheme()
-                            }
+                            
+                            Rectangle()
+                                .frame(width: 120, height: 1.5)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        .padding(.bottom, AppTheme.GeneratedSpacing.small)
                         
-                        Text("Dark mode support is in progress.")
-                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                            .italic()
-                            .padding(.leading, 34) // Align with text after icon
-                    }
-                    
-                    // Units Group
-                    settingsGroup(title: "Units") {
-                        SettingsRow(icon: "ruler", label: "Units") {
-                            Picker("", selection: $selectedUnit) {
-                                ForEach(UnitSetting.allCases) { unit in
-                                    Text(unit.rawValue).tag(unit)
-                                }
-                            }
-                            .pickerStyle(MenuPickerStyle())
-                            .frame(width: 200)
-                            .onChange(of: selectedUnit) { _ in
-                                hapticGenerator.impactOccurred(intensity: 0.3)
-                            }
-                        }
-                    }
-                    
-                    // Notifications Group
-                    settingsGroup(title: "Notifications") {
-                        SettingsRow(icon: "bell.fill", label: "Workout Reminders") {
-                            Toggle("", isOn: $workoutRemindersEnabled)
-                                .tint(AppTheme.GeneratedColors.brassGold)
-                                .onChange(of: workoutRemindersEnabled) { _ in
-                                    hapticGenerator.impactOccurred(intensity: 0.4)
-                                }
-                        }
+                        // General Settings Section
+                        generalSettingsSection
                         
-                        Divider()
-                        
-                        SettingsRow(icon: "trophy.fill", label: "Achievement Notifications") {
-                            Toggle("", isOn: $achievementNotificationsEnabled)
-                                .tint(AppTheme.GeneratedColors.brassGold)
-                                .onChange(of: achievementNotificationsEnabled) { _ in
-                                    hapticGenerator.impactOccurred(intensity: 0.4)
-                                }
-                        }
+                        // Legal & About Section
+                        legalAndAboutSection
                     }
-                    
-                    // Device Management Group
-                    settingsGroup(title: "Device Management") {
-                        Button {
-                            hapticGenerator.impactOccurred(intensity: 0.5)
-                            showDeviceScanner = true
-                        } label: {
-                            SettingsRow(icon: "antenna.radiowaves.left.and.right", label: "Manage Bluetooth Devices") {
-                                Image(systemName: "chevron.right")
-                                    .font(.footnote)
-                                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                            }
-                        }
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
-                    
-                    // App Version
-                    HStack {
-                        Spacer()
-                        Text("PT Champion v\(appVersion())")
-                            .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                            .padding(.top, AppTheme.GeneratedSpacing.large)
-                        Spacer()
-                    }
-                }
-                .padding(AppTheme.GeneratedSpacing.contentPadding)
-            }
-            .background(AppTheme.GeneratedColors.background.ignoresSafeArea())
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        hapticGenerator.impactOccurred(intensity: 0.3)
-                        dismiss()
-                    } label: {
-                        Text("Done")
-                            .fontWeight(.semibold)
-                            .foregroundColor(AppTheme.GeneratedColors.accent)
-                    }
+                    .padding(AppTheme.GeneratedSpacing.contentPadding)
                 }
             }
-            .sheet(isPresented: $showDeviceScanner) {
-                NavigationStack {
-                    DeviceScanningView()
-                        .navigationTitle("Bluetooth Devices")
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("Done") {
-                                    showDeviceScanner = false
-                                }
-                            }
-                        }
-                }
-            }
+            .navigationBarHidden(true)
             .onAppear {
                 hapticGenerator.prepare()
             }
         }
     }
     
-    // MARK: - Helper Views
-    
-    @ViewBuilder
-    private func settingsGroup<Content: View>(title: String, @ViewBuilder content: @escaping () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-            // Group title
-            Text(title)
-                .font(AppTheme.GeneratedTypography.bodySemibold())
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                .padding(.leading, 4)
-            
-            // Content card
-            VStack(alignment: .leading, spacing: 0) {
-                content()
+    // MARK: - General Settings Section
+    private var generalSettingsSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+            PTCard(style: .standard) {
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                    HStack {
+                        Image(systemName: "gearshape.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .font(.system(size: 20))
+                        Text("General Settings")
+                            .militaryMonospaced(size: 18)
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
+                    .padding(.bottom, 4)
+                    
+                    Text("Configure application preferences and permissions.")
+                        .militaryMonospaced(size: 14)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    
+                    // Geolocation Setting
+                    settingToggle(
+                        icon: "location.fill", 
+                        title: "Geolocation Tracking", 
+                        description: "Allow location tracking for runs and local leaderboards.",
+                        isOn: $geolocationEnabled,
+                        action: handleGeolocationToggle
+                    )
+                    
+                    Divider().padding(.vertical, 8)
+                    
+                    // Notifications Setting
+                    settingToggle(
+                        icon: "bell.fill", 
+                        title: "Notifications", 
+                        description: "Receive reminders and updates about your workouts.",
+                        isOn: $notificationsEnabled,
+                        action: handleNotificationsToggle
+                    )
+                }
+                .padding()
             }
-            .padding(AppTheme.GeneratedSpacing.medium)
-            .background(AppTheme.GeneratedColors.cardBackground)
-            .cornerRadius(AppTheme.GeneratedRadius.card)
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .padding(.bottom, 8)
         }
+    }
+    
+    // MARK: - Legal & About Section
+    private var legalAndAboutSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+            PTCard(style: .standard) {
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                    HStack {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .font(.system(size: 20))
+                        Text("About & Legal")
+                            .militaryMonospaced(size: 18)
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
+                    .padding(.bottom, 4)
+                    
+                    Text("App information and legal documents.")
+                        .militaryMonospaced(size: 14)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    
+                    // App Version
+                    HStack {
+                        HStack {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .font(.system(size: 16))
+                            Text("App Version")
+                                .militaryMonospaced(size: 16)
+                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        }
+                        
+                        Spacer()
+                        
+                        Text(appVersion)
+                            .militaryMonospaced(size: 14)
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    }
+                    .padding(.vertical, 8)
+                    
+                    Divider().padding(.vertical, 4)
+                    
+                    // Legal Documents
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                        HStack {
+                            Image(systemName: "shield.fill")
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .font(.system(size: 16))
+                            Text("Legal Documents")
+                                .militaryMonospaced(size: 16)
+                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        }
+                        
+                        // Terms of Service
+                        Button {
+                            // Open Terms of Service
+                        } label: {
+                            Text("Terms of Service")
+                                .militaryMonospaced(size: 14)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        }
+                        .padding(.leading, 28)
+                        
+                        // Privacy Policy
+                        Button {
+                            // Open Privacy Policy
+                        } label: {
+                            Text("Privacy Policy")
+                                .militaryMonospaced(size: 14)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        }
+                        .padding(.leading, 28)
+                    }
+                    
+                    // Copyright Info
+                    Text("© \(Calendar.current.component(.year, from: Date())) PT Champion. All rights reserved.")
+                        .militaryMonospaced(size: 12)
+                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 16)
+                }
+                .padding()
+            }
+        }
+    }
+    
+    // MARK: - Helper Views
+    @ViewBuilder
+    private func settingToggle(
+        icon: String,
+        title: String,
+        description: String,
+        isOn: Binding<Bool>,
+        action: @escaping (Bool) -> Void
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Image(systemName: icon)
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .font(.system(size: 16))
+                        
+                        Text(title)
+                            .militaryMonospaced(size: 16)
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
+                    
+                    Text(description)
+                        .militaryMonospaced(size: 14)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.leading, 24)
+                }
+                
+                Spacer()
+                
+                Toggle("", isOn: isOn)
+                    .labelsHidden()
+                    .tint(AppTheme.GeneratedColors.brassGold)
+                    .onChange(of: isOn.wrappedValue) { _, newValue in
+                        hapticGenerator.impactOccurred(intensity: 0.4)
+                        action(newValue)
+                    }
+            }
+        }
+        .padding()
+        .background(AppTheme.GeneratedColors.background.opacity(0.5))
+        .cornerRadius(8)
     }
     
     // MARK: - Helper Methods
-    
-    private func appVersion() -> String {
-        return Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "N/A"
+    private func handleGeolocationToggle(_ enabled: Bool) {
+        if enabled {
+            // Request location permissions
+            let locationManager = CLLocationManager()
+            locationManager.requestWhenInUseAuthorization()
+        }
     }
     
-    private func applyTheme() {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
-        windowScene.windows.forEach { window in
-            switch selectedAppearance {
-            case .light:
-                window.overrideUserInterfaceStyle = .light
-            case .dark:
-                window.overrideUserInterfaceStyle = .dark
-            case .system:
-                window.overrideUserInterfaceStyle = .unspecified
+    private func handleNotificationsToggle(_ enabled: Bool) {
+        if enabled {
+            // Request notification permissions
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in
+                // Handle result
             }
         }
-    }
-}
-
-// MARK: - Settings Row Component
-
-struct SettingsRow<Content: View>: View {
-    let icon: String
-    let label: String
-    let control: Content
-    
-    init(icon: String, label: String, @ViewBuilder control: () -> Content) {
-        self.icon = icon
-        self.label = label
-        self.control = control()
-    }
-    
-    var body: some View {
-        HStack {
-            // Icon
-            Image(systemName: icon)
-                .frame(width: 24)
-                .foregroundColor(AppTheme.GeneratedColors.primary)
-            
-            // Label
-            Text(label)
-                .font(AppTheme.GeneratedTypography.body())
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-            
-            Spacer()
-            
-            // Control (toggle, picker, etc.)
-            control
-        }
-        .frame(minHeight: 44) // Ensure minimum hit target size for accessibility
     }
 }
 
