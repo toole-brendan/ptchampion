@@ -25,7 +25,7 @@ const (
 	RefreshToken TokenType = "refresh"
 
 	// Token durations
-	accessTokenDuration  = time.Minute * 15   // 15 minutes
+	accessTokenDuration  = time.Hour * 12     // 12 hours
 	refreshTokenDuration = time.Hour * 24 * 7 // 7 days
 	tokenIssuer          = "ptchampion"
 )
