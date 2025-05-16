@@ -105,11 +105,16 @@ class AuthViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var successMessage: String? = nil
     
+    // Reference to AuthService for social login
+    private var authService: AuthService?
+    
     // Add a unique identifier for debugging
     private let instanceId = UUID().uuidString.prefix(8)
 
     init() { 
         print("⚙️ AuthViewModel init – ID: \(instanceId)", ObjectIdentifier(self))
+        // Initialize authService with a new instance
+        self.authService = AuthService()
         checkAuthentication() 
     }
 
@@ -286,6 +291,99 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Social Login Methods
+    
+    // Helper function to handle API errors
+    private func handleApiError(_ error: Error) {
+        if let apiError = error as? APIError {
+            errorMessage = apiError.localizedDescription
+        } else {
+            errorMessage = error.localizedDescription
+        }
+    }
+    
+    // Login with Google
+    func loginWithGoogle(idToken: String) async {
+        self.isLoading = true
+        self.errorMessage = nil
+        
+        do {
+            print("AuthViewModel: Processing Google Sign In with token")
+            
+            guard let authService = self.authService else {
+                self.errorMessage = "AuthService not initialized"
+                self.isLoading = false
+                return
+            }
+            
+            // Call the AuthService with Google token
+            let response = try await authService.loginWithSocial(provider: "google", token: idToken)
+            
+            // Update authentication state
+            withAnimation {
+                self.authState = .authenticated(response.user)
+            }
+            
+            // Save the token
+            try KeychainService.shared.saveAccessToken(response.token)
+            KeychainService.shared.saveUserID(response.user.id)
+            
+            // Notify of successful login
+            print("AuthViewModel: Google Sign In successful for user ID: \(response.user.id)")
+            
+        } catch let error as APIError {
+            handleApiError(error)
+            withAnimation { self.authState = .unauthenticated }
+        } catch {
+            self.errorMessage = "Google sign-in failed: \(error.localizedDescription)"
+            withAnimation { self.authState = .unauthenticated }
+            print("AuthViewModel: Google sign-in error: \(error)")
+        }
+        
+        self.isLoading = false
+    }
+
+    // Login with Apple
+    func loginWithApple(identityToken: String) async {
+        self.isLoading = true
+        self.errorMessage = nil
+        
+        do {
+            print("AuthViewModel: Processing Apple Sign In with token")
+            
+            guard let authService = self.authService else {
+                self.errorMessage = "AuthService not initialized"
+                self.isLoading = false
+                return
+            }
+            
+            // Call the AuthService with Apple token
+            let response = try await authService.loginWithSocial(provider: "apple", token: identityToken)
+            
+            // Update authentication state
+            withAnimation {
+                self.authState = .authenticated(response.user)
+            }
+            
+            // Save the token
+            try KeychainService.shared.saveAccessToken(response.token)
+            KeychainService.shared.saveUserID(response.user.id)
+            
+            // Notify of successful login
+            print("AuthViewModel: Apple Sign In successful")
+            
+        } catch let error as APIError {
+            handleApiError(error)
+            withAnimation { self.authState = .unauthenticated }
+        } catch {
+            self.errorMessage = "Apple sign-in failed: \(error.localizedDescription)"
+            withAnimation { self.authState = .unauthenticated }
+            print("AuthViewModel: Apple sign-in error: \(error)")
+        }
+        
+        self.isLoading = false
+    }
+    
     // MARK: - Developer Mode Functions
     
     /// Bypasses the normal authentication flow for development purposes
@@ -445,62 +543,4 @@ extension AuthViewModel {
 //     let lastName: String?
 // }
 
-// Add these methods to the AuthViewModel class
-
-// Login with Google
-func loginWithGoogle(idToken: String) async {
-    isLoading = true
-    errorMessage = nil
-    
-    do {
-        print("AuthViewModel: Processing Google Sign In with token")
-        
-        // Call the AuthService with Google token
-        let response = try await authService.loginWithSocial(provider: "google", token: idToken)
-        
-        // Update authentication state
-        self.isAuthenticated = true
-        self.currentUser = response.user
-        
-        // Notify of successful login
-        print("AuthViewModel: Google Sign In successful for user ID: \(response.user.id)")
-        
-    } catch let error as APIError {
-        handleApiError(error)
-    } catch {
-        errorMessage = "Google sign-in failed: \(error.localizedDescription)"
-        isAuthenticated = false
-        print("AuthViewModel: Google sign-in error: \(error)")
-    }
-    
-    isLoading = false
-}
-
-// Login with Apple
-func loginWithApple(identityToken: String) async {
-    isLoading = true
-    errorMessage = nil
-    
-    do {
-        print("AuthViewModel: Processing Apple Sign In with token")
-        
-        // Call the AuthService with Apple token
-        let response = try await authService.loginWithSocial(provider: "apple", token: identityToken)
-        
-        // Update authentication state
-        self.isAuthenticated = true
-        self.currentUser = response.user
-        
-        // Notify of successful login
-        print("AuthViewModel: Apple Sign In successful")
-        
-    } catch let error as APIError {
-        handleApiError(error)
-    } catch {
-        errorMessage = "Apple sign-in failed: \(error.localizedDescription)"
-        isAuthenticated = false
-        print("AuthViewModel: Apple sign-in error: \(error)")
-    }
-    
-    isLoading = false
-} 
+// Remove the duplicate methods that are outside the class scope 

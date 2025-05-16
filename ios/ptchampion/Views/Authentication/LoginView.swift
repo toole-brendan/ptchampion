@@ -364,7 +364,7 @@ struct LoginView: View {
         }
         
         // Present Google Sign-In
-        GIDSignIn.sharedInstance.signIn(with: config, presenting: rootViewController) { user, error in
+        GIDSignIn.sharedInstance.signIn(withPresenting: rootViewController) { signInResult, error in
             if let error = error {
                 print("Google Sign-In error: \(error.localizedDescription)")
                 Task { @MainActor in
@@ -373,7 +373,8 @@ struct LoginView: View {
                 return
             }
             
-            guard let user = user else { return }
+            guard let signInResult = signInResult else { return }
+            let user = signInResult.user
             
             // Get ID token from Google user
             guard let idToken = user.idToken?.tokenString else {
