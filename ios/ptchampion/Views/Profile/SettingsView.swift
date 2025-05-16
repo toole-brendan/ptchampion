@@ -3,11 +3,14 @@ import Foundation
 import CoreLocation
 import PTDesignSystem
 import UserNotifications
+import SafariServices
 
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authViewModel: AuthViewModel
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
+    @State private var showPrivacyPolicySafari = false
+    @State private var showTermsOfServiceSafari = false
     
     // Settings
     @AppStorage("geolocation") private var geolocationEnabled: Bool = false
@@ -15,6 +18,10 @@ struct SettingsView: View {
     
     // App version
     private let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
+    
+    // Web URLs
+    private let privacyPolicyURL = URL(string: "https://ptchampion.ai/privacy.html")!
+    private let termsOfServiceURL = URL(string: "https://ptchampion.ai/terms.html")!
     
     var body: some View {
         NavigationStack {
@@ -183,22 +190,32 @@ struct SettingsView: View {
                         // Terms of Service
                         Button {
                             // Open Terms of Service
+                            showTermsOfServiceSafari = true
                         } label: {
                             Text("Terms of Service")
                                 .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         }
                         .padding(.leading, 28)
+                        .sheet(isPresented: $showTermsOfServiceSafari) {
+                            SafariView(url: termsOfServiceURL)
+                                .edgesIgnoringSafeArea(.all)
+                        }
                         
                         // Privacy Policy
                         Button {
                             // Open Privacy Policy
+                            showPrivacyPolicySafari = true
                         } label: {
                             Text("Privacy Policy")
                                 .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         }
                         .padding(.leading, 28)
+                        .sheet(isPresented: $showPrivacyPolicySafari) {
+                            SafariView(url: privacyPolicyURL)
+                                .edgesIgnoringSafeArea(.all)
+                        }
                     }
                     
                     // Copyright Info
@@ -274,6 +291,19 @@ struct SettingsView: View {
                 // Handle result
             }
         }
+    }
+}
+
+// Add Safari View Controller wrapper
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    
+    func makeUIViewController(context: UIViewControllerRepresentableContext<SafariView>) -> SFSafariViewController {
+        return SFSafariViewController(url: url)
+    }
+    
+    func updateUIViewController(_ uiViewController: SFSafariViewController, context: UIViewControllerRepresentableContext<SafariView>) {
+        // No updates needed
     }
 }
 
