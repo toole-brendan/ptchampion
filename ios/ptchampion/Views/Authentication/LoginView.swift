@@ -4,6 +4,7 @@ import PTDesignSystem
 import SwiftUIIntrospect
 import AuthenticationServices // Import for Sign in with Apple
 import CryptoKit // Import for SHA256 hashing
+import GoogleSignIn // Import for Google Sign-In
 
 // Font extensions have been migrated to use AppTheme.GeneratedTypography
 // These are kept solely for backward compatibility and should be removed in future updates
@@ -342,16 +343,50 @@ struct LoginView: View {
     
     // Sign in with Google
     private func signInWithGoogle() {
-        // Normally, this would use Google SDK
         print("Initiating Google Sign In")
-        Task {
-            do {
-                // This is a placeholder for actual Google Sign-In SDK integration
-                // In a real implementation, we would call Google's SDK methods
-                // and then send the auth token to our backend
-                await auth.loginWithGoogle()
-            } catch {
-                print("Google Sign In error: \(error.localizedDescription)")
+        
+        guard let clientID = Bundle.main.object(forInfoDictionaryKey: "GOOGLE_IOS_CLIENT_ID") as? String ?? 
+              ProcessInfo.processInfo.environment["GOOGLE_IOS_CLIENT_ID"] else {
+            print("Google ClientID not found")
+            auth.errorMessage = "Google Sign-In configuration error"
+            return
+        }
+        
+        // Configure Google Sign-In
+        let config = GIDConfiguration(clientID: clientID)
+        
+        // Get the current view controller to present Google Sign-In
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            print("No root view controller found")
+            auth.errorMessage = "Unable to present Google Sign-In"
+            return
+        }
+        
+        // Present Google Sign-In
+        GIDSignIn.sharedInstance.signIn(with: config, presenting: rootViewController) { user, error in
+            if let error = error {
+                print("Google Sign-In error: \(error.localizedDescription)")
+                Task { @MainActor in
+                    self.auth.errorMessage = "Google Sign-In failed. Please try again."
+                }
+                return
+            }
+            
+            guard let user = user else { return }
+            
+            // Get ID token from Google user
+            guard let idToken = user.idToken?.tokenString else {
+                print("Error: No Google ID token")
+                Task { @MainActor in
+                    self.auth.errorMessage = "Google Sign-In failed: No ID token received"
+                }
+                return
+            }
+            
+            // Send the token to backend via AuthViewModel
+            Task {
+                await self.auth.loginWithGoogle(idToken: idToken)
             }
         }
     }
