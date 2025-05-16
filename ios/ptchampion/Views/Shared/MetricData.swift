@@ -35,18 +35,21 @@ public struct MetricData: Identifiable {
     public let unit: String?
     public let description: String?
     public let icon: Image?
+    public let subtitle: String?
 
     public init(
         title: String,
         value: Any,
         unit: String? = nil,
         description: String? = nil,
+        subtitle: String? = nil,
         icon: Image? = nil
     ) {
         self.title = title
         self.value = value
         self.unit = unit
         self.description = description
+        self.subtitle = subtitle
         self.icon = icon
     }
     
@@ -56,6 +59,7 @@ public struct MetricData: Identifiable {
         value: Int,
         unit: String? = nil,
         description: String? = nil,
+        subtitle: String? = nil,
         icon: Image? = nil
     ) {
         self.init(
@@ -63,6 +67,7 @@ public struct MetricData: Identifiable {
             value: value as Any,
             unit: unit,
             description: description,
+            subtitle: subtitle,
             icon: icon
         )
     }
@@ -73,6 +78,7 @@ public struct MetricData: Identifiable {
         value: Double,
         unit: String? = nil,
         description: String? = nil,
+        subtitle: String? = nil,
         icon: Image? = nil
     ) {
         self.init(
@@ -80,6 +86,7 @@ public struct MetricData: Identifiable {
             value: value as Any,
             unit: unit,
             description: description,
+            subtitle: subtitle,
             icon: icon
         )
     }
@@ -89,6 +96,7 @@ public struct MetricData: Identifiable {
         title: String,
         value: String,
         description: String? = nil,
+        subtitle: String? = nil,
         icon: Image? = nil
     ) {
         self.init(
@@ -96,6 +104,7 @@ public struct MetricData: Identifiable {
             value: value as Any,
             unit: nil,
             description: description,
+            subtitle: subtitle,
             icon: icon
         )
     }

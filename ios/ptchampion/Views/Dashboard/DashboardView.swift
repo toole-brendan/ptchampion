@@ -44,40 +44,40 @@ struct DashboardView: View {
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: Self.cardGap) {
-                        // Greeting header with user's name
-                        greetingHeaderView()
-                        
-                        // Quick Stats Card Grid
-                        quickStatsGridView()
+                        // PT Champion header with separator
+                        VStack(spacing: 24) {
+                            Text("PT CHAMPION")
+                                .font(.system(size: 48, weight: .heavy))
+                                .tracking(2) // Add letter spacing
+                                .foregroundColor(Color(hex: "#C0A860")) // More accurate gold color
+                                .frame(maxWidth: .infinity, alignment: .center)
+                            
+                            Rectangle()
+                                .frame(width: 120, height: 1.5)
+                                .foregroundColor(Color(hex: "#C0A860"))
+                            
+                            Text("FITNESS EVALUATION SYSTEM")
+                                .font(.system(size: 18, weight: .regular))
+                                .tracking(1.5) // Add letter spacing
+                                .foregroundColor(Color(hex: "#4A4A3A"))
+                                .frame(maxWidth: .infinity, alignment: .center)
+                        }
+                        .padding(.top, 20)
+                        .padding(.bottom, 30)
+                        .frame(maxWidth: .infinity)
                         
                         // Quick Links Section with the new styling
                         quickLinksSectionView()
-
+                        
+                        // Greeting header with user's name and stats
+                        greetingHeaderView()
+                        
                         // Activity Feed Section
                         activityFeedSectionView()
                         
                         // Design Showcase Button (only in DEBUG builds)
                         #if DEBUG
-                        Button {
-                            showingStyleShowcase = true
-                        } label: {
-                            HStack {
-                                Image(systemName: "paintbrush.fill")
-                                Text("MILITARY UI SHOWCASE")
-                                    .militaryMonospaced(size: 14)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(AppTheme.GeneratedColors.brassGold.opacity(0.15))
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.button)
-                                    .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
-                            )
-                            .cornerRadius(AppTheme.GeneratedRadius.button)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, AppTheme.GeneratedSpacing.large)
+                        // Removed Military UI Showcase button while keeping the DEBUG conditional for future use
                         #endif
                         
                         Spacer()
@@ -102,48 +102,164 @@ struct DashboardView: View {
     // Helper method for the greeting header
     @ViewBuilder
     private func greetingHeaderView() -> some View {
-        VStack(spacing: 0) {
-            HStack(spacing: 0) {
-                Text("Good \(viewModel.timeOfDayGreeting),")
-                    .lineLimit(1)
+        VStack(alignment: .leading, spacing: 0) {
+            // Header matching START TRACKING section with dark background and gold text
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .center) {
+                    Text(authViewModel.displayName.uppercased())
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    
+                    Spacer()
+                    
+                    // View Profile button
+                    NavigationLink(destination: ProfileView()) {
+                        HStack(spacing: 8) {
+                            Text("VIEW PROFILE")
+                                .font(.system(size: 14, weight: .medium))
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12))
+                        }
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .strokeBorder(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
+                        )
+                    }
+                }
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("\(viewModel.totalWorkouts) TOTAL WORKOUTS COMPLETED")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
             }
-            .frame(maxWidth: .infinity, alignment: .center)
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
             
-            Text(authViewModel.displayName)
-                .lineLimit(1)
-                .truncationMode(.tail)
-                .minimumScaleFactor(0.7)
-                .foregroundStyle(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            AppTheme.GeneratedColors.brassGold.opacity(0.9), // Lighter gold at top
-                            AppTheme.GeneratedColors.brassGold // Standard gold at bottom
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
+            // Profile stats in light background similar to quick links
+            VStack(spacing: 16) {
+                // Stats cards in a grid
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 16),
+                    GridItem(.flexible(), spacing: 16)
+                ], spacing: 16) {
+                    // Total Workouts
+                    statCardStyled(
+                        title: "TOTAL WORKOUTS",
+                        value: "\(viewModel.totalWorkouts)",
+                        iconName: "flame.fill",
+                        index: 0
                     )
-                )
-                .frame(maxWidth: .infinity, alignment: .center)
+                    
+                    // Last Activity
+                    statCardStyled(
+                        title: "LAST ACTIVITY",
+                        value: viewModel.lastWorkoutDate != nil ? viewModel.lastWorkoutDateFormatted : "None",
+                        subtitle: viewModel.lastWorkoutDate == nil ? "No workouts yet" : nil,
+                        iconName: "calendar",
+                        index: 1
+                    )
+                    
+                    // Total Repetitions
+                    statCardStyled(
+                        title: "TOTAL REPETITIONS",
+                        value: "\(viewModel.totalReps) reps",
+                        iconName: "arrow.up.arrow.down",
+                        index: 2
+                    )
+                    
+                    // Total Distance
+                    statCardStyled(
+                        title: "TOTAL DISTANCE",
+                        value: String(format: "%.1f km", viewModel.totalDistanceKm),
+                        iconName: "figure.walk",
+                        index: 3
+                    )
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
-        .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading2))
-        .frame(maxWidth: .infinity, alignment: .center)
-        .padding(.vertical, AppTheme.GeneratedSpacing.medium)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .padding(.bottom, AppTheme.GeneratedSpacing.medium)
     }
     
-    // Helper method for the quick stats grid
+    // Helper method for styled stat cards that look like QuickLinkCardView
     @ViewBuilder
-    private func quickStatsGridView() -> some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible(), spacing: Self.cardGap),
-            GridItem(.flexible(), spacing: Self.cardGap)
-        ], spacing: Self.cardGap) {
-            statCard(at: 0, data: MetricData(title: "Last Score", value: viewModel.lastScoreString), trend: viewModel.lastScoreTrend)
-            statCard(at: 1, data: MetricData(title: "7-Day Push-Ups", value: viewModel.weeklyReps), trend: viewModel.weeklyPushupTrend)
-            statCard(at: 2, data: MetricData(title: "Monthly Workouts", value: viewModel.monthlyWorkouts))
-            statCard(at: 3, data: MetricData(title: "Personal Best", value: viewModel.personalBest))
+    private func statCardStyled(title: String, value: String, subtitle: String? = nil, iconName: String, index: Int) -> some View {
+        NavigationLink {
+            if title == "TOTAL WORKOUTS" || title == "TOTAL REPETITIONS" {
+                // Navigate to history with all workouts
+                WorkoutHistoryView()
+            } else if title == "LAST ACTIVITY" {
+                // Navigate to history with all workouts
+                WorkoutHistoryView()
+            } else if title == "TOTAL DISTANCE" {
+                // Navigate to history filtered to running workouts
+                WorkoutHistoryView(initialFilterType: .run)
+            } else {
+                // Default case
+                WorkoutHistoryView()
+            }
+        } label: {
+            VStack(alignment: .center, spacing: 12) {
+                // Icon centered in circle container
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                        .frame(width: 60, height: 60)
+                    
+                    Image(systemName: iconName)
+                        .font(.system(size: 24))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                }
+                
+                // Stat value with title
+                VStack(spacing: 2) {
+                    Text(value)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    
+                    Text(title)
+                        .militaryMonospaced(size: 12)
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps.opacity(0.8))
+                        .lineLimit(1)
+                        .multilineTextAlignment(.center)
+                    
+                    if let subtitle = subtitle {
+                        Text(subtitle)
+                            .font(.system(size: 12))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+            }
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity)
+            .background(AppTheme.GeneratedColors.cream)
+            .cornerRadius(12)
+            .shadow(
+                color: Color.black.opacity(0.05),
+                radius: 3,
+                x: 0,
+                y: 1
+            )
+            .opacity(index < statCardsVisible.count ? (statCardsVisible[index] ? 1 : 0) : 1)
+            .offset(y: index < statCardsVisible.count ? (statCardsVisible[index] ? 0 : 15) : 0)
         }
+        .buttonStyle(PlainButtonStyle()) // Use plain button style to maintain custom appearance
     }
-
+    
     // Helper method for the Quick Links section
     @ViewBuilder
     private func quickLinksSectionView() -> some View {
@@ -197,62 +313,239 @@ struct DashboardView: View {
     // Helper method for the Activity Feed section
     @ViewBuilder
     private func activityFeedSectionView() -> some View {
-        let activities = ActivityFeedSamples.items
-        
-        if !activities.isEmpty { // Show only if there are activities
-            Group {
-                Text("ACTIVITY FEED")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.top, AppTheme.GeneratedSpacing.large)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
-                
-                PTSeparator().padding(.bottom, AppTheme.GeneratedSpacing.small)
-
-                TimelineView(.periodic(from: Date(), by: 60.0)) { context in
-                    let displayedActivities = Array(activities.prefix(3))
+        if !viewModel.recentWorkouts.isEmpty { // Show only if there are activities
+            VStack(alignment: .leading, spacing: 0) {
+                // Header matching other sections - dark background with gold text
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("RECENT ACTIVITY")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .padding(.bottom, 4)
                     
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-                        ForEach(displayedActivities.indices, id: \.self) { index in
-                            let activity = displayedActivities[index]
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                        .padding(.bottom, 4)
+                    
+                    Text("YOUR LATEST WORKOUT SESSIONS")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AppTheme.GeneratedColors.deepOps)
+                .cornerRadius(8, corners: [.topLeft, .topRight])
+                
+                // Activity content with cream background
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(viewModel.recentWorkouts) { workout in
+                        NavigationLink(destination: WorkoutHistoryView(initialFilterType: getFilterType(for: workout.exerciseType))) {
                             HStack { 
-                                Image(systemName: activity.icon)
-                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                                    .frame(width: 20, alignment: .center)
-                                VStack(alignment: .leading) {
-                                    PTLabel(activity.text, style: .body)
-                                        .lineLimit(2)
-                                    PTLabel(relativeDateFormatter(date: activity.date), style: .caption)
-                                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                // Exercise icon in circular container
+                                ZStack {
+                                    Circle()
+                                        .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                                        .frame(width: 40, height: 40)
+                                    
+                                    Image(systemName: iconForExerciseType(workout.exerciseType))
+                                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                        .frame(width: 20, height: 20)
                                 }
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(formatExerciseType(workout.exerciseType))
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                        .lineLimit(2)
+                                    
+                                    Text(relativeDateFormatter(date: workout.endTime))
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.secondary)
+                                }
+                                
                                 Spacer() 
+                                
+                                // Activity metric (like distance or reps)
+                                Text(formatWorkoutMetric(workout))
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             }
-                            .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall) 
-                            
-                            // Always render separator, control by opacity, use simple color
-                            PTSeparator(color: Color.gray.opacity(0.5))
-                                .opacity(index < displayedActivities.count - 1 ? 1 : 0)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 0)
+                                    .fill(Color.clear)
+                                    .contentShape(Rectangle())
+                            )
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        if workout.id != viewModel.recentWorkouts.last?.id {
+                            Divider()
+                                .background(Color.gray.opacity(0.2))
+                                .padding(.horizontal, 16)
                         }
                     }
-                    .padding(AppTheme.GeneratedSpacing.itemSpacing)
-                    .background(AppTheme.GeneratedColors.cardBackground)
-                    .cornerRadius(AppTheme.GeneratedRadius.medium)
+                    
+                    // View All button
+                    NavigationLink(destination: WorkoutHistoryView()) {
+                        HStack {
+                            Spacer()
+                            
+                            Text("VIEW DETAILED HISTORY")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 12))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            
+                            Spacer()
+                        }
+                        .padding(.vertical, 12)
+                        .background(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
+                .background(Color(hex: "#EDE9DB")) // cream-dark from web
+                .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             }
+            .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
             .opacity(recentActivityVisible ? 1 : 0)
             .offset(y: recentActivityVisible ? 0 : 15)
         } else {
-            EmptyView()
+            // Empty state with "No workouts yet" message
+            VStack(alignment: .leading, spacing: 0) {
+                // Header matching other sections
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("RECENT ACTIVITY")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .padding(.bottom, 4)
+                    
+                    Rectangle()
+                        .frame(height: 1)
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                        .padding(.bottom, 4)
+                    
+                    Text("YOUR LATEST WORKOUT SESSIONS")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(AppTheme.GeneratedColors.deepOps)
+                .cornerRadius(8, corners: [.topLeft, .topRight])
+                
+                // Empty state content
+                VStack(spacing: 20) {
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 32))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .padding()
+                        .background(
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                                .frame(width: 80, height: 80)
+                        )
+                    
+                    Text("No Workouts Yet")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    
+                    Text("Start your fitness journey by completing your first workout.")
+                        .font(.system(size: 16))
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 20)
+                    
+                    NavigationLink(destination: WorkoutSessionView(exerciseType: .pushup)) {
+                        HStack {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 14))
+                            Text("START WORKOUT")
+                                .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(AppTheme.GeneratedColors.brassGold)
+                        .cornerRadius(8)
+                    }
+                    .padding(.top, 8)
+                }
+                .padding(.vertical, 40)
+                .frame(maxWidth: .infinity)
+                .background(Color(hex: "#EDE9DB")) // cream-dark from web
+                .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            }
+            .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+            .opacity(recentActivityVisible ? 1 : 0)
+            .offset(y: recentActivityVisible ? 0 : 15)
         }
     }
     
-    // Helper to build stat cards with animation modifiers
-    @ViewBuilder
-    private func statCard(at index: Int, data: MetricData, trend: TrendDirection? = nil) -> some View {
-        MetricCardView(data, trend: trend)
-            .opacity(statCardsVisible[index] ? 1 : 0)
-            .offset(y: statCardsVisible[index] ? 0 : 15) // Slide up by 15 points
-            .animation(.easeOut.delay(Double(index) * 0.1), value: statCardsVisible[index])
+    // Helper function to convert exercise type to filter type
+    private func getFilterType(for exerciseType: String) -> WorkoutFilter {
+        switch exerciseType.lowercased() {
+        case "pushup":
+            return .pushup
+        case "situp":
+            return .situp
+        case "pullup":
+            return .pullup
+        case "run", "running":
+            return .run
+        default:
+            return .all
+        }
+    }
+    
+    // Helper function to format exercise type for display
+    private func formatExerciseType(_ type: String) -> String {
+        switch type.lowercased() {
+        case "pushup":
+            return "Push-ups"
+        case "situp":
+            return "Sit-ups"
+        case "pullup":
+            return "Pull-ups"
+        case "run", "running":
+            return "Running"
+        default:
+            return type.capitalized
+        }
+    }
+    
+    // Helper function to get icon for exercise type
+    private func iconForExerciseType(_ type: String) -> String {
+        switch type.lowercased() {
+        case "pushup":
+            return "figure.strengthtraining.traditional"
+        case "situp":
+            return "figure.core.training"
+        case "pullup":
+            return "figure.pull.ups"
+        case "run", "running":
+            return "figure.run"
+        default:
+            return "figure.mixed.cardio"
+        }
+    }
+    
+    // Helper function to format workout metric (reps or distance)
+    private func formatWorkoutMetric(_ workout: WorkoutResultSwiftData) -> String {
+        if workout.exerciseType.lowercased() == "run" || workout.exerciseType.lowercased() == "running" {
+            if let distance = workout.distanceMeters {
+                return String(format: "%.1f km", distance / 1000.0)
+            }
+            return "-"
+        } else {
+            if let reps = workout.repCount {
+                return "\(reps) reps"
+            }
+            return "-"
+        }
     }
     
     private func animateContentIn() {

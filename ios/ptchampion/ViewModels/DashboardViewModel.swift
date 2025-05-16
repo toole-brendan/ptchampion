@@ -12,6 +12,15 @@ class DashboardViewModel: ObservableObject {
     @Published var nextPTTest: String = "-"
     @Published var latestAchievement: String = ""
     
+    // Add properties for new dashboard metrics
+    @Published var totalReps: Int = 0
+    @Published var totalDistanceKm: Double = 0.0
+    @Published var lastWorkoutDate: Date? = nil
+    @Published var lastWorkoutDateFormatted: String = "-"
+    
+    // Add property for recent workouts to display in the activity feed
+    @Published var recentWorkouts: [WorkoutResultSwiftData] = []
+    
     @Published var lastScoreTrend: TrendDirection? = nil
     @Published var weeklyPushupTrend: TrendDirection? = nil
     
@@ -40,6 +49,44 @@ class DashboardViewModel: ObservableObject {
         guard let allWorkouts = try? modelContext.fetch(allWorkoutsDescriptor) else { return }
         
         self.totalWorkouts = allWorkouts.count
+        
+        // Get recent workouts for activity feed (limited to 5)
+        var recentWorkoutsDescriptor = FetchDescriptor<WorkoutResultSwiftData>(
+            sortBy: [SortDescriptor(\WorkoutResultSwiftData.endTime, order: .reverse)]
+        )
+        recentWorkoutsDescriptor.fetchLimit = 5
+        
+        if let recentWorkouts = try? modelContext.fetch(recentWorkoutsDescriptor) {
+            self.recentWorkouts = recentWorkouts
+        }
+        
+        // Last workout date
+        if let latestWorkout = allWorkouts.first {
+            self.lastWorkoutDate = latestWorkout.endTime
+            
+            let formatter = RelativeDateTimeFormatter()
+            formatter.unitsStyle = .full
+            if let date = self.lastWorkoutDate {
+                self.lastWorkoutDateFormatted = formatter.localizedString(for: date, relativeTo: now)
+            }
+        } else {
+            self.lastWorkoutDate = nil
+            self.lastWorkoutDateFormatted = "None"
+        }
+
+        // Calculate total reps (from all exercise types)
+        self.totalReps = allWorkouts.reduce(0) { $0 + ($1.repCount ?? 0) }
+        
+        // Calculate total distance (from running workouts)
+        let runningWorkoutsDescriptor = FetchDescriptor<WorkoutResultSwiftData>(
+            predicate: #Predicate { $0.exerciseType == "running" }
+        )
+        if let runningWorkouts = try? modelContext.fetch(runningWorkoutsDescriptor) {
+            // Convert meters to kilometers
+            self.totalDistanceKm = runningWorkouts.reduce(into: 0.0) { result, workout in
+                result += (workout.distanceMeters ?? 0.0) / 1000.0
+            }
+        }
 
         // Last Score and Trend
         let scoredWorkouts = allWorkouts.filter { $0.score != nil }.prefix(2).map { $0 } // Get up to 2 most recent scored
