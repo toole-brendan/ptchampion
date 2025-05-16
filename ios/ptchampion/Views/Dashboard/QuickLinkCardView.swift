@@ -9,36 +9,42 @@ struct QuickLinkCardView: View {
     
     var body: some View {
         NavigationLink(destination: destinationView) {
-            PTCard {
-                VStack(alignment: .center, spacing: AppTheme.GeneratedSpacing.extraSmall) {
+            VStack(alignment: .center, spacing: 16) {
+                // Icon centered in circle container
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                        .frame(width: 72, height: 72)
+                    
                     if isSystemIcon {
                         Image(systemName: icon)
-                            .font(.system(size: 48))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            .frame(width: 64, height: 64)
-                            .scaledToFit()
+                            .font(.system(size: 28))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
                     } else {
                         Image(icon)
                             .resizable()
                             .scaledToFit()
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            .frame(width: 64, height: 64)
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            .frame(width: 38, height: 38)
                     }
-                    
-                    Text(title)
-                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        .lineLimit(1)
-                        .multilineTextAlignment(.center)
                 }
-                .padding(AppTheme.GeneratedSpacing.contentPadding)
-                .frame(maxWidth: .infinity, minHeight: 110, alignment: .center)
+                
+                // Text label - UPPERCASE with military styling
+                Text(title.uppercased())
+                    .militaryMonospaced(size: 16)
+                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    .lineLimit(1)
+                    .multilineTextAlignment(.center)
             }
+            .padding(.vertical, 24)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .background(AppTheme.GeneratedColors.cream)
+            .cornerRadius(12)
             .shadow(
-                color: Color.black.opacity(0.08),
-                radius: 8,
+                color: Color.black.opacity(0.05),
+                radius: 3,
                 x: 0,
-                y: 2
+                y: 1
             )
             .contentShape(Rectangle())
         }

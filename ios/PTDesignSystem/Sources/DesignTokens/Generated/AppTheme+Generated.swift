@@ -44,24 +44,34 @@ public extension AppTheme {
     public static let small: CGFloat = 14
     public static let tiny: CGFloat = 12
 
+    // Fallback handling
+    private static func fontWithFallback(_ primaryFont: String, size: CGFloat, weight: Font.Weight? = nil) -> Font {
+      let font = Font.custom(primaryFont, fixedSize: size)
+      let systemFont = Font.system(size: size, weight: weight ?? .regular)
+      
+      // In SwiftUI, we can't directly check if a font exists
+      // This won't actually catch font failures, but it's a placeholder for more advanced handling
+      return font
+    }
+
     public static func heading(size: CGFloat? = nil) -> Font {
-      return Font.custom("Montserrat-Bold", size: size ?? heading1, relativeTo: .body)
+      return fontWithFallback("Futura", size: size ?? heading1, weight: .bold)
     }
 
     public static func body(size: CGFloat? = nil) -> Font {
-      return Font.custom("Montserrat-Regular", size: size ?? body, relativeTo: .body)
+      return fontWithFallback("Futura", size: size ?? body)
     }
 
     public static func bodyBold(size: CGFloat? = nil) -> Font {
-      return Font.custom("Montserrat-Bold", size: size ?? body, relativeTo: .body)
+      return fontWithFallback("Futura", size: size ?? body, weight: .bold)
     }
 
     public static func bodySemibold(size: CGFloat? = nil) -> Font {
-      return Font.custom("Montserrat-SemiBold", size: size ?? body, relativeTo: .body)
+      return fontWithFallback("Futura", size: size ?? body, weight: .medium)
     }
 
     public static func mono(size: CGFloat? = nil) -> Font {
-      return Font.custom("RobotoMono-Medium", size: size ?? body, relativeTo: .body)
+      return Font.system(size: size ?? body, design: .monospaced)
     }
     
     // Additional font styles

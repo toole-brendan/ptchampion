@@ -4,11 +4,10 @@
 <dict>
     <key>UIAppFonts</key>
     <array>
-        <string>Montserrat-Regular.ttf</string>
-        <string>Montserrat-Bold.ttf</string>
-        <string>Montserrat-SemiBold.ttf</string>
-        <string>RobotoMono-Bold.ttf</string>
-        <string>RobotoMono-Medium.ttf</string>
+        <string>FuturaPT-Regular.ttf</string>
+        <string>FuturaPT-Medium.ttf</string>
+        <string>FuturaPT-Bold.ttf</string>
+        <string>Consolas.ttf</string>
     </array>
 </dict>
 </plist>

@@ -50,12 +50,7 @@ struct DashboardView: View {
                         // Quick Stats Card Grid
                         quickStatsGridView()
                         
-                        // Primary Call-to-Action - Now a static header
-                        PTLabel("Start Workout", style: .heading)
-                            .padding(.top, 16)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                        // Quick Links Section
+                        // Quick Links Section with the new styling
                         quickLinksSectionView()
 
                         // Activity Feed Section
@@ -153,11 +148,32 @@ struct DashboardView: View {
     @ViewBuilder
     private func quickLinksSectionView() -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Use the same spacing pattern as the quickStatsGridView
+            // Header matching web version - dark background with gold text
+            VStack(alignment: .leading, spacing: 4) {
+                Text("START TRACKING")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("CHOOSE AN EXERCISE TO BEGIN A NEW SESSION")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+            
+            // Cards grid with light background
             LazyVGrid(columns: [
-                GridItem(.flexible(), spacing: Self.cardGap),
-                GridItem(.flexible(), spacing: Self.cardGap)
-            ], spacing: Self.cardGap) {
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16)
+            ], spacing: 16) {
                 ForEach(quickLinks.indices, id: \.self) { index in
                     let link = quickLinks[index]
                     QuickLinkCardView(
@@ -166,12 +182,16 @@ struct DashboardView: View {
                         destination: link.destination,
                         isSystemIcon: link.isSystemIcon
                     )
-                    // Remove extra padding to match stat cards
                 }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             .opacity(quickLinksVisible ? 1 : 0)
             .offset(y: quickLinksVisible ? 0 : 15)
         }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     // Helper method for the Activity Feed section
@@ -272,4 +292,53 @@ struct DashboardView: View {
     // Simple placeholder to fix build errors
     DashboardView()
         .environmentObject(AuthViewModel())
+}
+
+// Helper for rounded corners on specific sides
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+// Custom shape for rounded corners
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
+    }
+}
+
+// Helper for hex color
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (1, 1, 1, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
+    }
 } 

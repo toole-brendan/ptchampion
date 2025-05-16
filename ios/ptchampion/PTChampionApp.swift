@@ -105,11 +105,10 @@ class FontManager {
         
         // Define all the fonts we need to register
         let fontNames = [
-            "Montserrat-Regular",
-            "Montserrat-Bold",
-            "Montserrat-SemiBold",
-            "RobotoMono-Bold",
-            "RobotoMono-Medium"
+            "FuturaPT-Regular",
+            "FuturaPT-Medium",
+            "FuturaPT-Bold",
+            "Consolas"
         ]
         
         // Try alternate paths where fonts might be

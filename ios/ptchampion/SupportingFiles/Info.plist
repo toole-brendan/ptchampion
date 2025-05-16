@@ -7,11 +7,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>PT Champion</string>
+	<string>PT Champion Dev</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<string>com.toole.ptchampion.new</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -24,20 +24,20 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSCameraUsageDescription</key>
-	<string>PT Champion uses the camera to analyse your exercise form in real time.</string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>PT Champion needs Bluetooth access to connect to fitness devices for heart rate, GPS, pace, and cadence monitoring.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>PT Champion needs Bluetooth access to connect to fitness devices for heart rate, GPS, pace, and cadence monitoring.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>PT Champion uses your location to track your runs and calculate distances for workouts.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>PT Champion uses your location to track your runs and calculate distances for workouts, even in the background.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>PT Champion uses the camera to analyse your exercise form in real time.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>PT Champion needs access to your health data to sync workouts and fetch heart rate data from Apple Watch.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>PT Champion will save your workout data to HealthKit to keep your fitness history up to date.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>PT Champion uses your location to track your runs and calculate distances for workouts, even in the background.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PT Champion uses your location to track your runs and calculate distances for workouts.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Montserrat-Regular.ttf</string>
@@ -51,6 +51,18 @@
 		<key>UIApplicationSupportsMultipleScenes</key>
 		<false/>
 	</dict>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+		<string>bluetooth-peripheral</string>
+		<string>location</string>
+		<string>processing</string>
+		<string>fetch</string>
+		<string>audio</string>
+		<string>voip</string>
+		<string>external-accessory</string>
+		<string>remote-notification</string>
+	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -68,12 +80,6 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>bluetooth-central</string>
-		<string>location</string>
-		<string>processing</string>
 	</array>
 </dict>
 </plist>
