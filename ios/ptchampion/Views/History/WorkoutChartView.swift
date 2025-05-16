@@ -11,8 +11,10 @@ struct WorkoutChartView: View {
         VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
             if !chartData.isEmpty && filter != .all {
                 Text("PROGRESS CHART")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .font(.system(size: 16, weight: .regular))
+                    .tracking(1.5)
+                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
                 PTCard(style: .elevated) {
                     VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
@@ -85,22 +87,25 @@ struct WorkoutChartView: View {
             } else if filter != .all {
                 // Empty chart state
                 Text("PROGRESS CHART")
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.small)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .font(.system(size: 16, weight: .regular))
+                    .tracking(1.5)
+                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 
                 PTCard(style: .flat) {
                     VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                        Image(systemName: "chart.line.downtrend.xyaxis")
+                        Image(systemName: "chart.line.uptrend.xyaxis")
                             .font(.system(size: 36))
                             .foregroundColor(AppTheme.GeneratedColors.textTertiary.opacity(0.6))
                         
                         VStack(spacing: AppTheme.GeneratedSpacing.small) {
-                            Text("Not enough data to display chart")
-                                .font(.system(size: 16, weight: .medium))
+                            Text("NOT ENOUGH DATA TO DISPLAY CHART")
+                                .militaryMonospaced(size: 14)
                                 .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                .fontWeight(.medium)
                             
-                            Text("Complete more \(filter.rawValue) workouts to see your progress")
-                                .font(.system(size: 14))
+                            Text("COMPLETE MORE \(filter.rawValue.uppercased()) WORKOUTS TO SEE PROGRESS")
+                                .militaryMonospaced(size: 12)
                                 .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                                 .multilineTextAlignment(.center)
                         }

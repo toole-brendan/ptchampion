@@ -82,34 +82,78 @@ struct ProfileView: View {
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
 
     var body: some View {
-        ScreenContainer(
-            title: "PROFILE",
-            subtitle: "Personal settings & preferences",
-            trailingHeaderContent: {
-                Button {
-                    hapticGenerator.impactOccurred(intensity: 0.3)
-                    showingSettings = true
-                } label: {
-                    Image(systemName: "gearshape.fill")
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+        // Replace ScreenContainer with custom view matching WorkoutHistoryView style
+        NavigationStack {
+            ZStack {
+                // Ambient Background Gradient
+                RadialGradient(
+                    gradient: Gradient(colors: [
+                        AppTheme.GeneratedColors.background.opacity(0.9),
+                        AppTheme.GeneratedColors.background
+                    ]),
+                    center: .center,
+                    startRadius: 50,
+                    endRadius: UIScreen.main.bounds.height * 0.6
+                )
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                        // Custom styled header matching WorkoutHistoryView
+                        VStack(spacing: 16) {
+                            HStack {
+                                Text("PROFILE")
+                                    .font(.system(size: 32, weight: .bold))
+                                    .tracking(2)
+                                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                
+                                Spacer()
+                                
+                                Button {
+                                    hapticGenerator.impactOccurred(intensity: 0.3)
+                                    showingSettings = true
+                                } label: {
+                                    Image(systemName: "gearshape.fill")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                }
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Rectangle()
+                                .frame(width: 120, height: 1.5)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text("PERSONAL SETTINGS & PREFERENCES")
+                                .font(.system(size: 16, weight: .regular))
+                                .tracking(1.5)
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.top, 20)
+                        .padding(.bottom, 20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        // User Profile Header
+                        ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)
+                        
+                        // Quick Preferences Section
+                        ProfilePreferencesView(hapticGenerator: hapticGenerator)
+                        
+                        // Account Actions Section
+                        AccountActionsView()
+                        
+                        // More Options Section
+                        MoreActionsView()
+                            .environmentObject(fitnessDeviceManagerViewModel)
+                        
+                        // App Version Information
+                        AppInfoView()
+                    }
+                    .padding(AppTheme.GeneratedSpacing.contentPadding)
                 }
             }
-        ) {
-            // User Profile Header
-            ProfileHeaderView(authViewModel: authViewModel, showingEditProfile: $showingEditProfile)
-            
-            // Quick Preferences Section
-            ProfilePreferencesView(hapticGenerator: hapticGenerator)
-            
-            // Account Actions Section
-            AccountActionsView()
-            
-            // More Options Section
-            MoreActionsView()
-                .environmentObject(fitnessDeviceManagerViewModel)
-            
-            // App Version Information
-            AppInfoView()
         }
         .sheet(isPresented: $showingEditProfile) {
             NavigationView {

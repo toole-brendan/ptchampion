@@ -16,7 +16,7 @@ struct WorkoutHistoryView: View {
     var initialFilterType: WorkoutFilter = .all
     
     var body: some View {
-        // Replace ScreenContainer with a custom styled view matching the Dashboard style
+        // Replace ScreenContainer with custom view matching Dashboard style
         NavigationStack {
             ZStack {
                 // Ambient Background Gradient
@@ -33,7 +33,7 @@ struct WorkoutHistoryView: View {
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                        // Custom styled header matching Dashboard
+                        // Custom styled header matching WorkoutHistoryView
                         VStack(spacing: 16) {
                             Text("WORKOUT HISTORY")
                                 .font(.system(size: 32, weight: .bold))
@@ -43,36 +43,14 @@ struct WorkoutHistoryView: View {
                             
                             Rectangle()
                                 .frame(width: 120, height: 1.5)
-                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             
                             Text("TRACK YOUR EXERCISE PROGRESS")
                                 .font(.system(size: 16, weight: .regular))
                                 .tracking(1.5)
                                 .foregroundColor(AppTheme.GeneratedColors.deepOps)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            // Edit button
-                            Button {
-                                withAnimation {
-                                    isEditMode = isEditMode == .active ? .inactive : .active
-                                }
-                            } label: {
-                                HStack(spacing: 8) {
-                                    Image(systemName: isEditMode == .active ? "checkmark.circle.fill" : "pencil")
-                                        .font(.system(size: 14))
-                                    Text(isEditMode == .active ? "DONE" : "EDIT HISTORY")
-                                        .font(.system(size: 14, weight: .medium))
-                                }
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .strokeBorder(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
-                                )
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.top, 8)
                         }
                         .padding(.top, 20)
                         .padding(.bottom, 20)
@@ -83,11 +61,96 @@ struct WorkoutHistoryView: View {
                             // Filter bar component
                             ExerciseFilterBarView(filter: $viewModel.filter)
                             
-                            // Streak cards component
-                            WorkoutStreaksView(
-                                currentStreak: viewModel.currentWorkoutStreak,
-                                longestStreak: viewModel.longestWorkoutStreak
-                            )
+                            // Updated streak cards with dashboard styling
+                            HStack(spacing: 16) {
+                                // Current streak card
+                                VStack(alignment: .center, spacing: 12) {
+                                    // Title at top
+                                    Text("CURRENT STREAK")
+                                        .militaryMonospaced(size: 12)
+                                        .foregroundColor(AppTheme.GeneratedColors.deepOps.opacity(0.8))
+                                        .lineLimit(1)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.top, 4)
+                                    
+                                    // Icon centered in circle container
+                                    ZStack {
+                                        Circle()
+                                            .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                                            .frame(width: 60, height: 60)
+                                        
+                                        Image(systemName: "flame.fill")
+                                            .font(.system(size: 24))
+                                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                    }
+                                    
+                                    // Streak value with days label
+                                    VStack(spacing: 2) {
+                                        Text("\(viewModel.currentWorkoutStreak)")
+                                            .font(.system(size: 20, weight: .bold))
+                                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                        
+                                        Text("days")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.secondary)
+                                            .multilineTextAlignment(.center)
+                                    }
+                                }
+                                .padding(.vertical, 16)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.white)
+                                .cornerRadius(12)
+                                .shadow(
+                                    color: Color.black.opacity(0.05),
+                                    radius: 3,
+                                    x: 0,
+                                    y: 1
+                                )
+                                
+                                // Longest streak card
+                                VStack(alignment: .center, spacing: 12) {
+                                    // Title at top
+                                    Text("LONGEST STREAK")
+                                        .militaryMonospaced(size: 12)
+                                        .foregroundColor(AppTheme.GeneratedColors.deepOps.opacity(0.8))
+                                        .lineLimit(1)
+                                        .multilineTextAlignment(.center)
+                                        .padding(.top, 4)
+                                    
+                                    // Icon centered in circle container
+                                    ZStack {
+                                        Circle()
+                                            .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                                            .frame(width: 60, height: 60)
+                                        
+                                        Image(systemName: "chart.line.uptrend.xyaxis")
+                                            .font(.system(size: 24))
+                                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                    }
+                                    
+                                    // Streak value with days label
+                                    VStack(spacing: 2) {
+                                        Text("\(viewModel.longestWorkoutStreak)")
+                                            .font(.system(size: 20, weight: .bold))
+                                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                        
+                                        Text("days")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(.secondary)
+                                            .multilineTextAlignment(.center)
+                                    }
+                                }
+                                .padding(.vertical, 16)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.white)
+                                .cornerRadius(12)
+                                .shadow(
+                                    color: Color.black.opacity(0.05),
+                                    radius: 3,
+                                    x: 0,
+                                    y: 1
+                                )
+                            }
                         }
                         
                         // Progress chart component
@@ -103,7 +166,7 @@ struct WorkoutHistoryView: View {
                         VStack(alignment: .leading, spacing: 0) {
                             // Header styled like dashboard containers
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("WORKOUT HISTORY")
+                                Text("TRAINING RECORD")
                                     .font(.system(size: 24, weight: .bold))
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                     .padding(.bottom, 4)
@@ -111,24 +174,19 @@ struct WorkoutHistoryView: View {
                                 Rectangle()
                                     .frame(height: 1)
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
-                                    .padding(.bottom, 4)
-                                
-                                Text("YOUR EXERCISE RECORD")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             }
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(AppTheme.GeneratedColors.deepOps)
                             .cornerRadius(8, corners: [.topLeft, .topRight])
                             
-                            // History content with cream background 
+                            // History content with white background instead of cream
                             VStack {
                                 if viewModel.workoutsFiltered.isEmpty {
-                                    // Empty state
+                                    // Empty state with updated styling to match chart empty state
                                     VStack(spacing: 20) {
                                         Image(systemName: "figure.run.circle")
-                                            .font(.system(size: 32))
+                                            .font(.system(size: 36))
                                             .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                             .padding()
                                             .background(
@@ -137,20 +195,22 @@ struct WorkoutHistoryView: View {
                                                     .frame(width: 80, height: 80)
                                             )
                                         
-                                        Text("No Workouts Yet")
-                                            .font(.system(size: 20, weight: .bold))
-                                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                        Text("NO WORKOUTS YET")
+                                            .militaryMonospaced(size: 14)
+                                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                            .fontWeight(.medium)
                                         
-                                        Text("Complete a workout to see your history here.")
-                                            .font(.system(size: 16))
-                                            .foregroundColor(.secondary)
+                                        Text("COMPLETE A WORKOUT TO SEE YOUR HISTORY HERE")
+                                            .militaryMonospaced(size: 12)
+                                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                                             .multilineTextAlignment(.center)
                                             .padding(.horizontal, 20)
                                         
                                         if viewModel.filter != .all {
-                                            Text("Try changing your filter to see more results.")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(.secondary)
+                                            Text("TRY CHANGING YOUR FILTER TO SEE MORE RESULTS")
+                                                .militaryMonospaced(size: 12)
+                                                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                                                .multilineTextAlignment(.center)
                                                 .padding(.top, 4)
                                         }
                                     }
@@ -223,7 +283,7 @@ struct WorkoutHistoryView: View {
                                     }
                                 }
                             }
-                            .background(Color(hex: "#EDE9DB"))
+                            .background(Color.white)
                             .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
                         }
                         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)

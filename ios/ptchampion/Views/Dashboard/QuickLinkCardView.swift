@@ -38,7 +38,7 @@ struct QuickLinkCardView: View {
             }
             .padding(.vertical, 24)
             .frame(maxWidth: .infinity, alignment: .center)
-            .background(AppTheme.GeneratedColors.cream)
+            .background(Color.white)
             .cornerRadius(12)
             .shadow(
                 color: Color.black.opacity(0.05),

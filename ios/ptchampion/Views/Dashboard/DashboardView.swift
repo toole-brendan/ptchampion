@@ -246,7 +246,7 @@ struct DashboardView: View {
             }
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity)
-            .background(AppTheme.GeneratedColors.cream)
+            .background(Color.white)
             .cornerRadius(12)
             .shadow(
                 color: Color.black.opacity(0.05),

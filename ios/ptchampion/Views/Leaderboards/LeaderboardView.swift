@@ -96,66 +96,105 @@ struct LeaderboardView: View {
     }
     
     var body: some View {
-        ScreenContainer(
-            title: "\(viewModel.selectedBoard.rawValue.uppercased()) LEADERBOARD",
-            subtitle: formattedFilterTitle,
-            addNavigationStack: true
-        ) {
-            // All the filter controls in a separate view
-            filterControlsSection
-            
-            // Divider
-            Rectangle()
-                .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
-                .frame(height: 1)
-            
-            // Content area with simple opacity animation
-            mainContentArea
-                // Fill remaining available space
-                .frame(maxWidth: .infinity, alignment: .top)
-        }
-        .opacity(contentOpacity)
-        .navigationBarTitleDisplayMode(.inline)
-        .onAppear {
-            fetchTask = Task {
-                await viewModel.fetch()
+        // Replace ScreenContainer with custom view matching WorkoutHistoryView style
+        NavigationStack {
+            ZStack {
+                // Ambient Background Gradient
+                RadialGradient(
+                    gradient: Gradient(colors: [
+                        AppTheme.GeneratedColors.background.opacity(0.9),
+                        AppTheme.GeneratedColors.background
+                    ]),
+                    center: .center,
+                    startRadius: 50,
+                    endRadius: UIScreen.main.bounds.height * 0.6
+                )
+                .ignoresSafeArea()
+                
+                ScrollView {
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                        // Custom styled header matching WorkoutHistoryView
+                        VStack(spacing: 16) {
+                            Text("\(viewModel.selectedBoard.rawValue.uppercased()) LEADERBOARD")
+                                .font(.system(size: 32, weight: .bold))
+                                .tracking(2)
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Rectangle()
+                                .frame(width: 120, height: 1.5)
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text(formattedFilterTitle.uppercased())
+                                .font(.system(size: 16, weight: .regular))
+                                .tracking(1.5)
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.top, 20)
+                        .padding(.bottom, 20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        
+                        // All the filter controls in a separate view
+                        filterControlsSection
+                        
+                        // Divider
+                        Rectangle()
+                            .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
+                            .frame(height: 1)
+                        
+                        // Content area with simple opacity animation
+                        mainContentArea
+                            // Fill remaining available space
+                            .frame(maxWidth: .infinity, alignment: .top)
+                    }
+                    .padding(AppTheme.GeneratedSpacing.contentPadding)
+                }
             }
-        }
-        .onDisappear {
-            // Cancel any ongoing fetch when view disappears
-            fetchTask?.cancel()
-        }
-        .onChange(of: viewModel.selectedBoard) { _ in 
-            performContentTransition {
-                fetchTask?.cancel() // Cancel any previous fetch
-                fetchTask = Task { await viewModel.fetch() }
+            .opacity(contentOpacity)
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear {
+                fetchTask = Task {
+                    await viewModel.fetch()
+                }
             }
-        }
-        .onChange(of: viewModel.selectedCategory) { _ in 
-            performContentTransition {
-                fetchTask?.cancel() // Cancel any previous fetch
-                fetchTask = Task { await viewModel.fetch() }
+            .onDisappear {
+                // Cancel any ongoing fetch when view disappears
+                fetchTask?.cancel()
             }
-        }
-        .onChange(of: viewModel.selectedExercise) { _ in 
-            performContentTransition {
-                fetchTask?.cancel() // Cancel any previous fetch
-                fetchTask = Task { await viewModel.fetch() }
+            .onChange(of: viewModel.selectedBoard) { _ in 
+                performContentTransition {
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
+                }
             }
-        }
-        .onChange(of: viewModel.selectedRadius) { _ in 
-            performContentTransition {
-                fetchTask?.cancel() // Cancel any previous fetch
-                fetchTask = Task { await viewModel.fetch() }
+            .onChange(of: viewModel.selectedCategory) { _ in 
+                performContentTransition {
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
+                }
             }
-        }
-        .navigationDestination(item: $navigatingToUserID) { userID in
-            UserProfileView(userID: userID)
-        }
-        // Add an empty toolbar item to ensure navigation bar space
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                EmptyView()
+            .onChange(of: viewModel.selectedExercise) { _ in 
+                performContentTransition {
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
+                }
+            }
+            .onChange(of: viewModel.selectedRadius) { _ in 
+                performContentTransition {
+                    fetchTask?.cancel() // Cancel any previous fetch
+                    fetchTask = Task { await viewModel.fetch() }
+                }
+            }
+            .navigationDestination(item: $navigatingToUserID) { userID in
+                UserProfileView(userID: userID)
+            }
+            // Add an empty toolbar item to ensure navigation bar space
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    EmptyView()
+                }
             }
         }
     }
