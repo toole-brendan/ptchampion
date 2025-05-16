@@ -51,15 +51,13 @@ struct SettingsView: View {
                                         Image(systemName: "arrow.left")
                                             .font(.system(size: 14))
                                         Text("BACK TO PROFILE")
-                                            .militaryMonospaced(size: 14)
+                                            .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
                                     }
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                     .padding(.vertical, 8)
                                     .padding(.horizontal, 12)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 6)
-                                            .strokeBorder(AppTheme.GeneratedColors.brassGold, lineWidth: 1)
-                                    )
+                                    .background(AppTheme.GeneratedColors.deepOps)
+                                    .cornerRadius(6)
                                 }
                             }
                             
@@ -96,13 +94,13 @@ struct SettingsView: View {
                             .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             .font(.system(size: 20))
                         Text("General Settings")
-                            .militaryMonospaced(size: 18)
+                            .font(AppTheme.GeneratedTypography.heading(size: 18))
                             .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     }
                     .padding(.bottom, 4)
                     
                     Text("Configure application preferences and permissions.")
-                        .militaryMonospaced(size: 14)
+                        .font(AppTheme.GeneratedTypography.body(size: 14))
                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     
                     // Geolocation Setting
@@ -141,13 +139,13 @@ struct SettingsView: View {
                             .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             .font(.system(size: 20))
                         Text("About & Legal")
-                            .militaryMonospaced(size: 18)
+                            .font(AppTheme.GeneratedTypography.heading(size: 18))
                             .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     }
                     .padding(.bottom, 4)
                     
                     Text("App information and legal documents.")
-                        .militaryMonospaced(size: 14)
+                        .font(AppTheme.GeneratedTypography.body(size: 14))
                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     
                     // App Version
@@ -157,14 +155,14 @@ struct SettingsView: View {
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                 .font(.system(size: 16))
                             Text("App Version")
-                                .militaryMonospaced(size: 16)
+                                .font(AppTheme.GeneratedTypography.bodyBold(size: 16))
                                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                         }
                         
                         Spacer()
                         
                         Text(appVersion)
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     }
                     .padding(.vertical, 8)
@@ -178,7 +176,7 @@ struct SettingsView: View {
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                 .font(.system(size: 16))
                             Text("Legal Documents")
-                                .militaryMonospaced(size: 16)
+                                .font(AppTheme.GeneratedTypography.bodyBold(size: 16))
                                 .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                         }
                         
@@ -187,7 +185,7 @@ struct SettingsView: View {
                             // Open Terms of Service
                         } label: {
                             Text("Terms of Service")
-                                .militaryMonospaced(size: 14)
+                                .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         }
                         .padding(.leading, 28)
@@ -197,15 +195,15 @@ struct SettingsView: View {
                             // Open Privacy Policy
                         } label: {
                             Text("Privacy Policy")
-                                .militaryMonospaced(size: 14)
+                                .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                         }
                         .padding(.leading, 28)
                     }
                     
                     // Copyright Info
-                    Text("© \(Calendar.current.component(.year, from: Date())) PT Champion. All rights reserved.")
-                        .militaryMonospaced(size: 12)
+                    Text("© \(String(Calendar.current.component(.year, from: Date()))) PT Champion. All rights reserved.")
+                        .font(AppTheme.GeneratedTypography.body(size: 12))
                         .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 16)
@@ -233,12 +231,12 @@ struct SettingsView: View {
                             .font(.system(size: 16))
                         
                         Text(title)
-                            .militaryMonospaced(size: 16)
+                            .font(.system(size: 16, weight: .medium, design: .monospaced))
                             .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     }
                     
                     Text(description)
-                        .militaryMonospaced(size: 14)
+                        .font(.system(size: 14, design: .monospaced))
                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.leading, 24)

@@ -50,7 +50,7 @@ struct ScreenHeader<TrailingContent: View>: View {
         HStack {
             VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
                 Text(title)
-                    .militaryMonospaced(size: AppTheme.GeneratedTypography.body)
+                    .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.body))
                     .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     .multilineTextAlignment(.leading)
 
@@ -219,19 +219,19 @@ struct ProfileView: View {
                             .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             .font(.system(size: 20))
                         Text("Edit Profile")
-                            .militaryMonospaced(size: 18)
+                            .font(AppTheme.GeneratedTypography.heading(size: 18))
                             .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     }
                     .padding(.bottom, 4)
                     
                     Text("Update your personal information.")
-                        .militaryMonospaced(size: 14)
+                        .font(AppTheme.GeneratedTypography.body(size: 14))
                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     
                     // Display message if any
                     if let message = message {
                         Text(message)
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
@@ -244,7 +244,7 @@ struct ProfileView: View {
                     // First Name
                     VStack(alignment: .leading, spacing: 4) {
                         Text("First Name")
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         
                         TextField("Your first name", text: $firstName)
@@ -258,7 +258,7 @@ struct ProfileView: View {
                     // Last Name
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Last Name")
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         
                         TextField("Your last name", text: $lastName)
@@ -272,7 +272,7 @@ struct ProfileView: View {
                     // Username
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Username")
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         
                         TextField("Your unique username", text: $username)
@@ -286,7 +286,7 @@ struct ProfileView: View {
                     // Email
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Email")
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         
                         TextField("Your email address", text: $email)
@@ -337,19 +337,19 @@ struct ProfileView: View {
                             .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             .font(.system(size: 20))
                         Text("Password Management")
-                            .militaryMonospaced(size: 18)
+                            .font(AppTheme.GeneratedTypography.heading(size: 18))
                             .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     }
                     .padding(.bottom, 4)
                     
                     Text("Update your password regularly for security.")
-                        .militaryMonospaced(size: 14)
+                        .font(AppTheme.GeneratedTypography.body(size: 14))
                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     
                     // Display password message if any
                     if let passwordMessage = passwordMessage {
                         Text(passwordMessage)
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .padding()
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background(
@@ -362,7 +362,7 @@ struct ProfileView: View {
                     // New Password
                     VStack(alignment: .leading, spacing: 4) {
                         Text("New Password")
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         
                         SecureField("Enter new password", text: $newPassword)
@@ -379,7 +379,7 @@ struct ProfileView: View {
                     // Confirm Password
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Confirm Password")
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         
                         SecureField("Confirm new password", text: $confirmPassword)
@@ -395,7 +395,7 @@ struct ProfileView: View {
                     
                     if !passwordsMatch && !newPassword.isEmpty && !confirmPassword.isEmpty {
                         Text("Passwords do not match")
-                            .militaryMonospaced(size: 14)
+                            .font(AppTheme.GeneratedTypography.body(size: 14))
                             .foregroundColor(AppTheme.GeneratedColors.error)
                     }
                     
@@ -437,13 +437,13 @@ struct ProfileView: View {
                             .foregroundColor(AppTheme.GeneratedColors.error)
                             .font(.system(size: 20))
                         Text("Danger Zone")
-                            .militaryMonospaced(size: 18)
+                            .font(.system(size: 18, weight: .bold, design: .monospaced))
                             .foregroundColor(AppTheme.GeneratedColors.error)
                     }
                     .padding(.bottom, 4)
                     
                     Text("Permanently delete your account and all data.")
-                        .militaryMonospaced(size: 14)
+                        .font(.system(size: 14, design: .monospaced))
                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     
                     // Delete Account button
