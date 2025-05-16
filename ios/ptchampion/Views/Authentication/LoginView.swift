@@ -29,6 +29,19 @@ extension Font {
     static func montserratRegular(size: CGFloat) -> Font {
         return AppTheme.GeneratedTypography.body(size: size)
     }
+    
+    // Futura fonts
+    static func futuraMedium(size: CGFloat) -> Font {
+        return Font.custom("Jost-500-Medium", size: size, relativeTo: .body)
+    }
+    
+    static func futuraRegular(size: CGFloat) -> Font {
+        return Font.custom("Jost-400-Book", size: size, relativeTo: .body)
+    }
+    
+    static func futuraBold(size: CGFloat) -> Font {
+        return Font.custom("Jost-700-Bold", size: size, relativeTo: .body)
+    }
 }
 
 // Login View with keyboard avoidance
@@ -58,7 +71,7 @@ struct LoginView: View {
                         // Logo with fallback - use a more structured approach
                         Group {
                             let logoImage: UIImage? = {
-                                if let namedImage = UIImage(named: "pt_champion_logo") {
+                                if let namedImage = UIImage(named: "pt_champion_logo_2") {
                                     return namedImage
                                 }
                                 return nil
@@ -68,15 +81,15 @@ struct LoginView: View {
                                 Image(uiImage: logo)
                                     .resizable()
                                     .scaledToFit()
-                                    .frame(width: 150, height: 150)
+                                    .frame(width: 200, height: 200)
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             } else {
                                 // Fallback to text if image is missing
                                 PTLabel("PT CHAMPION", style: .heading)
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                                    .frame(width: 150, height: 150)
+                                    .frame(width: 200, height: 200)
                                     .onAppear {
-                                        print("WARNING: Logo file not found in asset catalog. Please ensure pt_champion_logo.png is added to Assets.xcassets.")
+                                        print("WARNING: Logo file not found in asset catalog. Please ensure pt_champion_logo_2.png is added to Assets.xcassets.")
                                     }
                             }
                         }
@@ -87,25 +100,58 @@ struct LoginView: View {
                         }
                         
                         // Welcome Text
-                        PTLabel("Welcome Back", style: .heading)
-                            .foregroundColor(AppTheme.GeneratedColors.commandBlack)
-                            .padding(.top, 10)
+                        VStack(spacing: 8) {
+                            PTLabel("Welcome", style: .heading)
+                                .foregroundColor(AppTheme.GeneratedColors.commandBlack)
+                            
+                            // Add separator line to match web version
+                            Rectangle()
+                                .fill(AppTheme.GeneratedColors.brassGold)
+                                .frame(width: 64, height: 2)
+                        }
+                        .padding(.top, 10)
                         
                         // Form Fields
                         VStack(spacing: 16) {
-                            PTTextField(
-                                "Email",
-                                text: $email,
-                                icon: Image(systemName: "envelope"),
-                                keyboardType: .emailAddress
-                            )
-
-                            PTTextField(
-                                "Password",
-                                text: $password,
-                                isSecure: true,
-                                icon: Image(systemName: "lock")
-                            )
+                            VStack(spacing: 4) {
+                                Text("EMAIL")
+                                    .font(.futuraMedium(size: 12))
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                                
+                                PTTextField(
+                                    "",
+                                    text: $email,
+                                    icon: Image(systemName: "envelope"),
+                                    keyboardType: .emailAddress
+                                )
+                            }
+                            
+                            VStack(spacing: 4) {
+                                // Password label and Forgot password in same row
+                                HStack {
+                                    Text("PASSWORD")
+                                        .font(.futuraMedium(size: 12))
+                                        .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                                    
+                                    Spacer()
+                                    
+                                    Button(action: {
+                                        // Handle forgot password
+                                    }) {
+                                        Text("Forgot password?")
+                                            .font(.system(.caption, design: .monospaced))
+                                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                    }
+                                }
+                                
+                                PTTextField(
+                                    "",
+                                    text: $password,
+                                    isSecure: true,
+                                    icon: Image(systemName: "lock")
+                                )
+                            }
                             
                             // Login Button
                             if auth.isLoading {
@@ -145,14 +191,16 @@ struct LoginView: View {
                             
                             // Register Link - Fixed to use direct navigation
                             HStack {
-                                PTLabel("Don't have an account?", style: .caption)
+                                Text("Don't have an account?")
+                                    .font(.system(.caption, design: .monospaced))
                                     .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
                                 
                                 Button(action: {
                                     // Set navigating to register screen using NavigationState
                                     navigationState.navigateTo(.register)
                                 }) {
-                                    PTLabel("Register", style: .caption)
+                                    Text("Sign up")
+                                        .font(.system(.caption, design: .monospaced))
                                         .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                 }
                             }
@@ -164,7 +212,8 @@ struct LoginView: View {
                                     .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.3))
                                     .frame(height: 1)
                                 
-                                PTLabel("or", style: .caption)
+                                Text("or continue with")
+                                    .font(.system(.caption))
                                     .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
                                     .padding(.horizontal, 8)
                                 
@@ -238,13 +287,6 @@ struct LoginView: View {
                             PTLabel(errorMessage, style: .caption)
                                 .foregroundColor(AppTheme.GeneratedColors.error)
                                 .padding(.top, 16)
-                        }
-                        
-                        if !authDebugText.isEmpty {
-                            Text(authDebugText)
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                                .padding(.top)
                         }
                         
                         Spacer()

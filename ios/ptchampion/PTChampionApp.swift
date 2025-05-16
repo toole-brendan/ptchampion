@@ -89,7 +89,7 @@ class FontManager {
     // Font registration status
     private var fontsRegistered = false
     // Control verbose logging
-    private let verboseLogging = false
+    private let verboseLogging = true
     
     // Helper function for conditional logging
     private func log(_ message: String) {
@@ -118,9 +118,12 @@ class FontManager {
             Bundle.main.bundlePath + "/", // Root bundle
             Bundle.main.resourcePath! + "/Fonts/", // Resources/Fonts directory
             Bundle.main.resourcePath! + "/", // Resources directory
-            // Add additional paths for simulator environment
-            NSHomeDirectory() + "/Library/Developer/CoreSimulator/Devices/*/data/Containers/Bundle/Application/*/ptchampion.app/Fonts/"
         ]
+        
+        // Print the bundle identifier and paths we're checking
+        print("FONT REGISTRATION: Bundle ID: \(Bundle.main.bundleIdentifier ?? "unknown")")
+        print("FONT REGISTRATION: Bundle path: \(Bundle.main.bundlePath)")
+        print("FONT REGISTRATION: Resource path: \(Bundle.main.resourcePath ?? "unknown")")
         
         self.log("FONT REGISTRATION: Checking paths:")
         for path in possibleFontPaths {
@@ -146,15 +149,17 @@ class FontManager {
                         self.log("FONT REGISTRATION: - \(fontFile)")
                     }
                 } else {
-                    self.log("FONT REGISTRATION: Fonts directory doesn't exist")
-                    
-                    // Create Fonts directory if it doesn't exist
-                    do {
-                        try fileManager.createDirectory(atPath: fontsPath, withIntermediateDirectories: true, attributes: nil)
-                        self.log("FONT REGISTRATION: Created Fonts directory at \(fontsPath)")
-                    } catch {
-                        self.log("FONT REGISTRATION: Failed to create Fonts directory: \(error)")
-                    }
+                    print("FONT REGISTRATION: Fonts directory doesn't exist at: \(fontsPath)")
+                }
+                
+                // Check Info.plist for font declaration
+                if let infoPlistPath = Bundle.main.path(forResource: "Info", ofType: "plist"),
+                   let infoPlistData = FileManager.default.contents(atPath: infoPlistPath),
+                   let infoPlist = try? PropertyListSerialization.propertyList(from: infoPlistData, format: nil) as? [String: Any],
+                   let uiAppFonts = infoPlist["UIAppFonts"] as? [String] {
+                    print("FONT REGISTRATION: Fonts declared in Info.plist: \(uiAppFonts)")
+                } else {
+                    print("⚠️ FONT REGISTRATION: No fonts declared in Info.plist or couldn't read plist")
                 }
             } catch {
                 self.log("FONT REGISTRATION: Error reading bundle contents: \(error)")
@@ -168,23 +173,23 @@ class FontManager {
             
             // Try with both bundle resource and direct file path methods
             if let fontURL = Bundle.main.url(forResource: fontName, withExtension: "ttf") {
-                self.log("FONT REGISTRATION: Found \(fontName).ttf via bundle resource")
+                print("FONT REGISTRATION: Found \(fontName).ttf via bundle resource at \(fontURL.path)")
                 fontRegistered = registerFontWith(url: fontURL, fontName: fontName)
                 if fontRegistered { registeredCount += 1 }
             } else if let fontURL = Bundle.main.url(forResource: fontName, withExtension: "otf") {
-                self.log("FONT REGISTRATION: Found \(fontName).otf via bundle resource")
+                print("FONT REGISTRATION: Found \(fontName).otf via bundle resource at \(fontURL.path)")
                 fontRegistered = registerFontWith(url: fontURL, fontName: fontName)
                 if fontRegistered { registeredCount += 1 }
             } else {
-                self.log("FONT REGISTRATION: Trying to find \(fontName) in possible paths...")
+                print("FONT REGISTRATION: Trying to find \(fontName) in possible paths...")
                 // Try each path with each extension (original approach)
                 for path in possibleFontPaths {
                     for ext in ["ttf", "otf"] {
                         let fullPath = path + fontName + "." + ext
                         
-                        if let fontURL = URL(string: "file://" + fullPath),
-                           FileManager.default.fileExists(atPath: fontURL.path) {
-                            self.log("FONT REGISTRATION: Found \(fontName).\(ext) at \(fullPath)")
+                        if FileManager.default.fileExists(atPath: fullPath),
+                           let fontURL = URL(string: "file://" + fullPath) {
+                            print("FONT REGISTRATION: Found \(fontName).\(ext) at \(fullPath)")
                             fontRegistered = registerFontWith(url: fontURL, fontName: fontName)
                             if fontRegistered { 
                                 registeredCount += 1
@@ -206,6 +211,9 @@ class FontManager {
         
         print("✅ Font registration complete. Registered \(registeredCount)/\(fontNames.count) fonts.")
         fontsRegistered = true
+        
+        // Print available fonts to verify registration
+        printAvailableFonts()
     }
     
     // Helper to register a font from a URL

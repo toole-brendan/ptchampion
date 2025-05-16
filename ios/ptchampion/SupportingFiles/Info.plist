@@ -59,9 +59,9 @@
 		<string>Montserrat-SemiBold.ttf</string>
 		<string>RobotoMono-Bold.ttf</string>
 		<string>RobotoMono-Medium.ttf</string>
-		<string>FuturaPT-Regular.ttf</string>
-		<string>FuturaPT-Medium.ttf</string>
-		<string>FuturaPT-Bold.ttf</string>
+		<string>Jost-400-Book.ttf</string>
+		<string>Jost-500-Medium.ttf</string>
+		<string>Jost-700-Bold.ttf</string>
 		<string>Consolas.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>

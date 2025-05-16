@@ -108,18 +108,8 @@ const LoginPage: React.FC = () => {
         <div className="bg-card-background relative overflow-hidden rounded-md border border-army-tan/30 shadow-md">
           <form onSubmit={handleSubmit} className="space-y-4 p-5">
             <div className="mb-2">
-              <h2 className="mb-2 text-center font-heading text-xl uppercase text-foreground">Welcome Back</h2>
+              <h2 className="mb-2 text-center font-heading text-xl uppercase text-foreground">Welcome</h2>
               <div className="mx-auto h-0.5 w-16 bg-brass-gold"></div>
-            </div>
-            
-            {/* Social Login Buttons */}
-            <SocialLoginButtons />
-            
-            <div className="relative my-4">
-              <Separator className="absolute inset-0" />
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card-background px-2 text-tactical-gray">or continue with</span>
-              </div>
             </div>
             
             <div className="space-y-1.5">
@@ -144,7 +134,7 @@ const LoginPage: React.FC = () => {
                 <label htmlFor="password" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
                   Password
                 </label>
-                <Link to="/forgot-password" className="text-sm font-medium text-brass-gold hover:underline">
+                <Link to="/forgot-password" className="text-sm font-medium text-brass-gold hover:underline font-mono">
                   Forgot password?
                 </Link>
               </div>
@@ -168,14 +158,24 @@ const LoginPage: React.FC = () => {
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
+            
+            <div className="relative my-4">
+              <Separator className="absolute inset-0" />
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card-background px-2 text-tactical-gray">or</span>
+              </div>
+            </div>
+            
+            {/* Social Login Buttons moved below regular login */}
+            <SocialLoginButtons />
           </form>
 
           <div className="p-5 pt-0 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground font-mono">
               Don't have an account?{' '}
               <Link
                 to="/register"
-                className="text-brass-gold hover:underline"
+                className="text-brass-gold hover:underline font-mono"
               >
                 Sign up
               </Link>
