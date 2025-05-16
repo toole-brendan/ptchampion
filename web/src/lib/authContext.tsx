@@ -7,12 +7,14 @@ import {
   loginUser,
   registerUser,
   getCurrentUser,
+  loginWithSocialProvider,
 } from './apiClient';
 import {
   LoginRequest,
   RegisterUserRequest,
   UserResponse,
   LoginResponse,
+  SocialSignInRequest,
 } from './types';
 // Import the dev mock token constant
 import { DEV_MOCK_TOKEN } from '../components/ui/DeveloperMenu';
@@ -26,6 +28,7 @@ interface AuthContextType {
   isLoading: boolean; // Represents loading state of user fetch or auth mutations
   error: string | null; // Represents error from user fetch or auth mutations
   login: (data: LoginRequest) => Promise<void>;
+  loginWithSocial: (data: SocialSignInRequest) => Promise<void>;
   register: (data: RegisterUserRequest) => Promise<void>;
   logout: () => void;
   clearError: () => void; // Optional: To clear mutation errors manually if needed
@@ -203,6 +206,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     },
   });
 
+  // Social Login Mutation
+  const { mutateAsync: performSocialLogin, isPending: isSocialLoggingIn } = useMutation<
+    LoginResponse,
+    Error,
+    SocialSignInRequest
+  >({
+    mutationFn: loginWithSocialProvider,
+    onSuccess: (data: LoginResponse) => {
+      console.log('Social login mutation success', { token: !!data.token, user: !!data.user });
+      if (!data.token) {
+        console.error('Token missing in social login response after normalization');
+      }
+      setToken(data.token);
+      queryClient.setQueryData(userQueryKey, data.user);
+      setMutationError(null);
+      console.log('Auth state after social login success:', { token: !!data.token, user: !!data.user });
+    },
+    onError: (error: Error) => {
+      clearToken();
+      setToken(null);
+      queryClient.removeQueries({ queryKey: userQueryKey });
+      setMutationError(error.message || 'Social login failed');
+    },
+  });
+
   // --- Context Methods --- //
 
   // Login method exposed by context
@@ -229,6 +257,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [performRegister]);
 
+  // Social login method exposed by context
+  const loginWithSocial = useCallback(async (data: SocialSignInRequest) => {
+    try {
+      setMutationError(null);
+      await performSocialLogin(data);
+      // Success is handled by mutation's onSuccess
+    } catch (error) {
+      console.error('Social login mutation failed:', error);
+    }
+  }, [performSocialLogin]);
+
   // Logout method
   const logout = useCallback(() => {
     clearToken(); // Clear token from storage
@@ -248,7 +287,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // or if we have a token but are fetching the user (isLoadingUser),
   // or if a login/registration mutation is in progress (isPending...).
   // Dev tokens are never in a loading state.
-  const isLoading = isDevToken ? false : (isLoadingUser || isLoggingIn || isRegistering);
+  const isLoading = isDevToken ? false : (isLoadingUser || isLoggingIn || isRegistering || isSocialLoggingIn);
 
   // Determine overall error state (prefer mutation errors over user fetch errors)
   const error = mutationError || (userError ? userError.message : null);
@@ -264,6 +303,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     isLoading: isLoading,
     error: error,
     login,
+    loginWithSocial,
     register,
     logout,
     clearError,

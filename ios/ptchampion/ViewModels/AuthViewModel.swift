@@ -255,7 +255,7 @@ class AuthViewModel: ObservableObject {
                     // Attempt to decode server error message
                     var serverErrorMessage = "Registration failed with status code: \(http.statusCode)."
                     if let errorData = String(data: data, encoding: .utf8) {
-                        print("�� Registration error raw response: \(errorData)") // Log raw error data
+                        print(" Registration error raw response: \(errorData)") // Log raw error data
                         // Try to decode our specific backend error structure first
                         if let backendError = try? JSONDecoder().decode(IOSAPIErrorResponse.self, from: data) {
                             serverErrorMessage = backendError.error.message
@@ -443,4 +443,67 @@ extension AuthViewModel {
 //     let email: String
 //     let firstName: String?
 //     let lastName: String?
-// } 
+// }
+
+// Add these methods to the AuthViewModel class
+
+// Login with Google
+func loginWithGoogle() async {
+    isLoading = true
+    errorMessage = nil
+    
+    do {
+        print("AuthViewModel: Initiating Google Sign In")
+        // In a real implementation, this would receive a token from GoogleSignIn SDK
+        // For now, we'll simulate a successful Google authentication
+        let mockGoogleToken = "mock-google-token-\(UUID().uuidString)"
+        
+        // Call the AuthService with Google token
+        let response = try await authService.loginWithSocial(provider: "google", token: mockGoogleToken)
+        
+        // Update authentication state
+        self.isAuthenticated = true
+        self.currentUser = response.user
+        
+        // Notify of successful login
+        print("AuthViewModel: Google Sign In successful")
+        
+    } catch let error as APIError {
+        handleApiError(error)
+    } catch {
+        errorMessage = "Google sign-in failed: \(error.localizedDescription)"
+        isAuthenticated = false
+        print("AuthViewModel: Google sign-in error: \(error)")
+    }
+    
+    isLoading = false
+}
+
+// Login with Apple
+func loginWithApple(identityToken: String) async {
+    isLoading = true
+    errorMessage = nil
+    
+    do {
+        print("AuthViewModel: Processing Apple Sign In with token")
+        
+        // Call the AuthService with Apple token
+        let response = try await authService.loginWithSocial(provider: "apple", token: identityToken)
+        
+        // Update authentication state
+        self.isAuthenticated = true
+        self.currentUser = response.user
+        
+        // Notify of successful login
+        print("AuthViewModel: Apple Sign In successful")
+        
+    } catch let error as APIError {
+        handleApiError(error)
+    } catch {
+        errorMessage = "Apple sign-in failed: \(error.localizedDescription)"
+        isAuthenticated = false
+        print("AuthViewModel: Apple sign-in error: \(error)")
+    }
+    
+    isLoading = false
+} 

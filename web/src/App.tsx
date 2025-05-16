@@ -13,11 +13,11 @@ import CameraPermissionDialog from './components/ui/CameraPermissionDialog';
 import poseDetectorService from '@/services/PoseDetectorService';
 import { ToastProvider } from './components/ui/toast-provider';
 import { ErrorReporter } from './components/ErrorReporter';
+import { Login, Register, RegisterDebug } from './pages/auth';
+import OAuthCallback from './pages/auth/OAuthCallback';
 
 // Lazy load pages for code-splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Login = lazy(() => import('./pages/auth/Login'));
-const Register = lazy(() => import('./pages/auth/Register'));
 const Exercises = lazy(() => import('./pages/Exercises'));
 // Replace the old History with the new WorkoutHistoryView
 const WorkoutHistoryView = lazy(() => import('./pages/WorkoutHistoryView'));
@@ -107,6 +107,8 @@ function App({ queryClient }: AppProps) {
                         {/* Public routes */}
                         <Route path="/login" element={<Login />} />
                         <Route path="/register" element={<Register />} />
+                        <Route path="/register-debug" element={<RegisterDebug />} />
+                        <Route path="/auth/callback" element={<OAuthCallback />} />
                         
                         {/* Protected routes - require authentication */}
                         <Route path="/" element={<ProtectedRoute />}>

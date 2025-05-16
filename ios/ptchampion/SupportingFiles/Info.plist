@@ -20,6 +20,21 @@
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.toole.ptchampion.new</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.toole.ptchampion.new</string>
+				<!-- Replace with your actual Google OAuth client ID reverse DNS -->
+				<string>com.googleusercontent.apps.YOUR_CLIENT_ID</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -45,6 +60,10 @@
 		<string>Montserrat-SemiBold.ttf</string>
 		<string>RobotoMono-Bold.ttf</string>
 		<string>RobotoMono-Medium.ttf</string>
+		<string>FuturaPT-Regular.ttf</string>
+		<string>FuturaPT-Medium.ttf</string>
+		<string>FuturaPT-Bold.ttf</string>
+		<string>Consolas.ttf</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
@@ -80,6 +99,11 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<!-- Apple Sign-In configuration -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
 	</array>
 </dict>
 </plist>

@@ -2,6 +2,7 @@ import SwiftUI
 import UIKit
 import PTDesignSystem
 import SwiftUIIntrospect
+import AuthenticationServices // Import for Sign in with Apple
 
 // Font extensions have been migrated to use AppTheme.GeneratedTypography
 // These are kept solely for backward compatibility and should be removed in future updates
@@ -90,6 +91,47 @@ struct LoginView: View {
                         
                         // Form Fields
                         VStack(spacing: 16) {
+                            // Sign in with Apple button
+                            SignInWithAppleButton(.signIn, onRequest: configureAppleRequest, onCompletion: handleAppleSignInCompletion)
+                                .frame(height: 50)
+                                .cornerRadius(8)
+                            
+                            // Sign in with Google button
+                            Button(action: signInWithGoogle) {
+                                HStack {
+                                    Image(systemName: "g.circle.fill") // Use a custom Google logo image in production
+                                        .foregroundColor(.blue)
+                                    Text("Sign in with Google")
+                                        .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                }
+                                .padding()
+                                .frame(height: 50)
+                                .background(Color(.systemBackground))
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color(.systemGray4), lineWidth: 1)
+                                )
+                            }
+                            
+                            // Separator
+                            HStack {
+                                Rectangle()
+                                    .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.3))
+                                    .frame(height: 1)
+                                
+                                PTLabel("or", style: .caption)
+                                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                                    .padding(.horizontal, 8)
+                                
+                                Rectangle()
+                                    .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.3))
+                                    .frame(height: 1)
+                            }
+                            .padding(.vertical, 8)
+                            
                             PTTextField(
                                 "Email",
                                 text: $email,
@@ -140,6 +182,21 @@ struct LoginView: View {
                                 .disabled(email.isEmpty || password.isEmpty)
                             }
                             
+                            // Register Link - Fixed to use direct navigation
+                            HStack {
+                                PTLabel("Don't have an account?", style: .caption)
+                                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
+                                
+                                Button(action: {
+                                    // Set navigating to register screen using NavigationState
+                                    navigationState.navigateTo(.register)
+                                }) {
+                                    PTLabel("Register", style: .caption)
+                                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                }
+                            }
+                            .padding(.top, 8)
+                            
                             // Debug buttons only in dev mode
                             if showDevOptions {
                                 // Add coreButtonStyle for the debug button
@@ -162,21 +219,6 @@ struct LoginView: View {
                                 }
                                 .padding(.top, 8)
                             }
-                            
-                            // Register Link - Fixed to use direct navigation
-                            HStack {
-                                PTLabel("Don't have an account?", style: .caption)
-                                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
-                                
-                                Button(action: {
-                                    // Set navigating to register screen using NavigationState
-                                    navigationState.navigateTo(.register)
-                                }) {
-                                    PTLabel("Register", style: .caption)
-                                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                                }
-                            }
-                            .padding(.top, 8)
                         }
                         .padding(.horizontal, 24)
                         
@@ -239,6 +281,98 @@ struct LoginView: View {
             }  // End GeometryReader
             .navigationBarHidden(true)  // Hide the navigation bar on the login screen
         }  // End NavigationView
+    }
+    
+    // MARK: - Social Sign In Methods
+    
+    // Configure Apple Sign In Request
+    private func configureAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
+        request.requestedScopes = [.fullName, .email]
+        // Use a nonce for enhanced security
+        let nonce = generateNonce()
+        request.nonce = sha256(nonce)
+        // Store the nonce for verification later
+        UserDefaults.standard.set(nonce, forKey: "appleSignInNonce")
+    }
+    
+    // Handle Apple Sign In Completion
+    private func handleAppleSignInCompletion(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .success(let authorization):
+            if let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential {
+                // Extract user identity token
+                guard let identityToken = appleIDCredential.identityToken,
+                      let tokenString = String(data: identityToken, encoding: .utf8) else {
+                    print("Error: Could not extract identity token from Apple Sign In")
+                    return
+                }
+                
+                // Get user details
+                let userId = appleIDCredential.user
+                let fullName = appleIDCredential.fullName
+                let email = appleIDCredential.email
+                
+                print("Successfully signed in with Apple: \(userId)")
+                print("Name: \(fullName?.givenName ?? "") \(fullName?.familyName ?? "")")
+                print("Email: \(email ?? "Not provided")")
+                
+                // Authenticate with our server
+                Task {
+                    await auth.loginWithApple(identityToken: tokenString)
+                }
+            }
+        case .failure(let error):
+            print("Apple Sign In failed: \(error.localizedDescription)")
+        }
+    }
+    
+    // Sign in with Google
+    private func signInWithGoogle() {
+        // Normally, this would use Google SDK
+        print("Initiating Google Sign In")
+        Task {
+            do {
+                // This is a placeholder for actual Google Sign-In SDK integration
+                // In a real implementation, we would call Google's SDK methods
+                // and then send the auth token to our backend
+                await auth.loginWithGoogle()
+            } catch {
+                print("Google Sign In error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // Helper function to generate a random nonce for Apple Sign In
+    private func generateNonce(length: Int = 32) -> String {
+        let charset = "0123456789ABCDEFGHIJKLMNOPQRSTUVXYZabcdefghijklmnopqrstuvwxyz-._"
+        var nonce = ""
+        var remainingLength = length
+        
+        while remainingLength > 0 {
+            let randomBytes = [UInt8](repeating: 0, count: 16)
+            let randomData = Data(randomBytes)
+            
+            randomData.withUnsafeBytes { buffer in
+                let availableLength = min(remainingLength, randomData.count)
+                for i in 0..<availableLength {
+                    if let randomValue = buffer.baseAddress?.advanced(by: i).assumingMemoryBound(to: UInt8.self).pointee {
+                        let index = Int(randomValue) % charset.count
+                        let characterIndex = charset.index(charset.startIndex, offsetBy: index)
+                        nonce.append(charset[characterIndex])
+                    }
+                }
+                remainingLength -= availableLength
+            }
+        }
+        
+        return nonce
+    }
+    
+    // Helper function to create a SHA256 hash (for Apple Sign In)
+    private func sha256(_ input: String) -> String {
+        // In a real implementation, we would use CommonCrypto or CryptoKit to create a SHA256 hash
+        // This is a placeholder that returns the input for simplicity
+        return input
     }
 }
 

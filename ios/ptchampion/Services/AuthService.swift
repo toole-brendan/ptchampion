@@ -155,6 +155,75 @@ class AuthService: ObservableObject, AuthServiceProtocol {
         )
         print("AuthService: User location update successful.")
     }
+
+    func loginWithSocial(provider: String, token: String) async throws -> AuthResponse {
+        print("AuthService: Attempting login with \(provider) provider...")
+        
+        if useMockAuth {
+            print("AuthService: Using mock authentication for social login!")
+            
+            let mockResponse = AuthResponse(
+                token: "mock-jwt-token-for-\(provider)-testing-12345",
+                user: AuthUserModel(
+                    id: "789",
+                    email: "\(provider)User@example.com",
+                    firstName: "\(provider)",
+                    lastName: "User",
+                    profilePictureUrl: nil as String?
+                )
+            )
+            
+            networkClient.saveLoginCredentials(token: mockResponse.token, userId: 789)
+            print("AuthService: Mock \(provider) login successful, credentials saved.")
+            
+            try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
+            return mockResponse
+        }
+        
+        print("AuthService: Sending real \(provider) login request to: /auth/\(provider)...")
+        
+        // Create the request body
+        let requestBody: [String: Any] = [
+            "token": token,
+            "provider": provider
+        ]
+        
+        do {
+            // Convert request body to JSON data
+            let jsonData = try JSONSerialization.data(withJSONObject: requestBody)
+            
+            let response: AuthResponse = try await networkClient.performRequest(
+                endpointPath: "/auth/\(provider)",
+                method: "POST",
+                body: jsonData
+            )
+            
+            print("AuthService: \(provider) login response received successfully!")
+            print("AuthService: Token received: \(response.token.prefix(10))...")
+            print("AuthService: User ID: \(response.user.id)")
+            
+            guard let userIdInt = Int(response.user.id) else {
+                print("AuthService Error: Could not convert user ID string '\(response.user.id)' to Int.")
+                throw APIError.underlying(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user ID format received from server: '\(response.user.id)'."])) 
+            }
+            networkClient.saveLoginCredentials(token: response.token, userId: userIdInt)
+            
+            print("AuthService: \(provider) login successful, credentials saved.")
+            return response
+        } catch {
+            print("AuthService: \(provider) login request failed with error: \(error)")
+            if let apiError = error as? APIError {
+                print("AuthService: API Error details: \(apiError.localizedDescription)")
+                switch apiError {
+                case .requestFailed(let statusCode, let message):
+                    print("AuthService: Request failed with status code: \(statusCode), message: \(message ?? "None")")
+                default:
+                    break
+                }
+            }
+            throw error
+        }
+    }
 }
 
 // Removed the duplicate UpdateLocationRequest struct as it's already defined in UserProfileModels.swift

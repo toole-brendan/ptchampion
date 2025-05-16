@@ -78,6 +78,10 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	apiGroup.POST("/auth/register", authHandlerInstance.Register)
 	apiGroup.POST("/auth/refresh", authHandlerInstance.RefreshToken)
 
+	// Social authentication routes
+	authGroup := apiGroup.Group("/auth")
+	RegisterSocialAuthRoutes(authGroup)
+
 	// Create a separate group for protected routes
 	protectedGroup := apiGroup.Group("", authMiddleware)
 

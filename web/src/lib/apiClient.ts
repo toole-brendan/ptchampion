@@ -543,4 +543,39 @@ export const deleteExercise = async (id: string): Promise<boolean> => {
     console.error('Error deleting exercise:', error);
     throw error;
   }
+};
+
+/**
+ * Log in with a social provider
+ * @param data Social login data (provider and token)
+ */
+export const loginWithSocialProvider = async (data: import('./types').SocialSignInRequest): Promise<import('./types').LoginResponse> => {
+  console.log(`Logging in with ${data.provider} provider...`);
+  
+  try {
+    const response = await fetch(`${getApiBaseUrl()}/auth/${data.provider}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+      throw new Error(errorData.message || `Failed to login with ${data.provider}`);
+    }
+
+    const responseData = await response.json();
+    
+    // Store token
+    if (responseData.token) {
+      localStorage.setItem(TOKEN_STORAGE_KEY, responseData.token);
+    }
+    
+    return responseData;
+  } catch (error) {
+    console.error('Social login error:', error);
+    throw error;
+  }
 }; 

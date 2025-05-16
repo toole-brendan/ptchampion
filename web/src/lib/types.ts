@@ -2,12 +2,11 @@
 
 // Auth types
 export interface RegisterUserRequest {
-  username: string;
-  password: string;
-  first_name: string;
-  last_name: string;
   email: string;
-  profilePictureUrl?: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+  username?: string;
 }
 
 export interface LoginRequest {
@@ -127,3 +126,10 @@ export interface BaseFormAnalysis {
 
 // Note: HolisticResults and HolisticConfig interfaces have been removed
 // as we're now using the PoseDetector service with the BlazePose model 
+
+// Authentication types
+export interface SocialSignInRequest {
+  provider: 'google' | 'apple';
+  token: string;
+  code?: string; // For Apple authorization code
+} 
