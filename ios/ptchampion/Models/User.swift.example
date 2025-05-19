@@ -1,0 +1,95 @@
+import Foundation
+
+/// User model representing a user in the system
+struct User: Codable, Equatable, Identifiable {
+    let id: Int
+    let username: String
+    let email: String
+    let fullName: String
+    let createdAt: Date
+    let profileImageURL: URL?
+    
+    // MARK: - Equatable
+    
+    /// Users are considered equal if they have the same ID
+    static func == (lhs: User, rhs: User) -> Bool {
+        return lhs.id == rhs.id
+    }
+    
+    // MARK: - Computed Properties
+    
+    /// Display name to show in the UI (uses fullName if available, otherwise username)
+    var displayName: String {
+        return !fullName.isEmpty ? fullName : username
+    }
+    
+    /// Whether the user has a profile image
+    var hasProfileImage: Bool {
+        return profileImageURL != nil
+    }
+    
+    /// User's initials from their name (e.g., "John Doe" -> "JD")
+    var initials: String {
+        let fullNameComponents = fullName.split(separator: " ")
+        
+        if fullNameComponents.isEmpty || fullName.isEmpty {
+            // Return first letter of username if no full name
+            return String(username.prefix(1)).uppercased()
+        } else if fullNameComponents.count == 1 {
+            // Return first letter of single name
+            return String(fullNameComponents[0].prefix(1)).uppercased()
+        } else {
+            // Return first letter of first and last name
+            let firstLetter = String(fullNameComponents[0].prefix(1))
+            let lastLetter = String(fullNameComponents[fullNameComponents.count - 1].prefix(1))
+            return (firstLetter + lastLetter).uppercased()
+        }
+    }
+    
+    // MARK: - Decodable Init with custom date handling
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case username
+        case email
+        case fullName = "full_name"
+        case createdAt = "created_at"
+        case profileImageURL = "profile_image_url"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try container.decode(Int.self, forKey: .id)
+        username = try container.decode(String.self, forKey: .username)
+        email = try container.decode(String.self, forKey: .email)
+        fullName = try container.decode(String.self, forKey: .fullName)
+        
+        // Custom date decoding
+        let dateString = try container.decode(String.self, forKey: .createdAt)
+        let dateFormatter = ISO8601DateFormatter()
+        if let date = dateFormatter.date(from: dateString) {
+            createdAt = date
+        } else {
+            throw DecodingError.dataCorruptedError(forKey: .createdAt, in: container, debugDescription: "Date string does not match expected format")
+        }
+        
+        // URL might be null
+        if let urlString = try container.decodeIfPresent(String.self, forKey: .profileImageURL) {
+            profileImageURL = URL(string: urlString)
+        } else {
+            profileImageURL = nil
+        }
+    }
+    
+    // MARK: - Custom init for testing
+    
+    init(id: Int, username: String, email: String, fullName: String, createdAt: Date, profileImageURL: URL?) {
+        self.id = id
+        self.username = username
+        self.email = email
+        self.fullName = fullName
+        self.createdAt = createdAt
+        self.profileImageURL = profileImageURL
+    }
+} 

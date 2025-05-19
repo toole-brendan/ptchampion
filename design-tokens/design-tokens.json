@@ -1,0 +1,101 @@
+{
+  "color": {
+    "base": {
+      "cream": { "value": "#F4F1E6", "type": "color" },
+      "cream-dark": { "value": "#EDE9DB", "type": "color" },
+      "deep-ops": { "value": "#1E241E", "type": "color" },
+      "brass-gold": { "value": "#BFA24D", "type": "color" },
+      "army-tan": { "value": "#E0D4A6", "type": "color" },
+      "olive-mist": { "value": "#C9CCA6", "type": "color" },
+      "command-black": { "value": "#1E1E1E", "type": "color" },
+      "tactical-gray": { "value": "#4E5A48", "type": "color" },
+      "success": { "value": "#4CAF50", "type": "color" },
+      "warning": { "value": "#FF9800", "type": "color" },
+      "error": { "value": "#F44336", "type": "color" },
+      "info": { "value": "#2196F3", "type": "color" }
+    },
+    "semantic": {
+      "primary": { "value": "{color.base.deep-ops.value}", "type": "color" },
+      "secondary": { "value": "{color.base.brass-gold.value}", "type": "color" },
+      "accent": { "value": "{color.base.brass-gold.value}", "type": "color" },
+      "background": { "value": "{color.base.cream.value}", "type": "color" },
+      "card-background": { "value": "#FFFFFFE0", "type": "color" },
+      "text": {
+        "primary": { "value": "{color.base.command-black.value}", "type": "color" },
+        "secondary": { "value": "{color.base.deep-ops.value}", "type": "color" },
+        "tertiary": { "value": "{color.base.tactical-gray.value}", "type": "color" }
+      }
+    },
+    "dark": {
+      "background": { "value": "{color.base.deep-ops.value}", "type": "color" },
+      "foreground": { "value": "{color.base.cream.value}", "type": "color" },
+      "card": { "value": "#212921", "type": "color" },
+      "card-foreground": { "value": "{color.base.cream.value}", "type": "color" },
+      "muted": { "value": "#2A332A", "type": "color" },
+      "muted-foreground": { "value": "{color.base.olive-mist.value}", "type": "color" },
+      "secondary": { "value": "{color.base.tactical-gray.value}", "type": "color" },
+      "secondary-foreground": { "value": "{color.base.cream.value}", "type": "color" },
+      "border": { "value": "#2E382E", "type": "color" }
+    }
+  },
+  "font": {
+    "family": {
+      "heading": { "value": "BebasNeue-Bold", "type": "fontFamily" },
+      "body": { "value": "Montserrat-Regular", "type": "fontFamily" },
+      "body-bold": { "value": "Montserrat-Bold", "type": "fontFamily" },
+      "body-semibold": { "value": "Montserrat-SemiBold", "type": "fontFamily" },
+      "mono": { "value": "RobotoMono-Medium", "type": "fontFamily" }
+    },
+    "size": {
+      "heading1": { "value": 40, "type": "fontSize" },
+      "heading2": { "value": 32, "type": "fontSize" },
+      "heading3": { "value": 26, "type": "fontSize" },
+      "heading4": { "value": 22, "type": "fontSize" },
+      "body": { "value": 16, "type": "fontSize" },
+      "small": { "value": 14, "type": "fontSize" },
+      "tiny": { "value": 12, "type": "fontSize" }
+    }
+  },
+  "radius": {
+    "card": { "value": "12", "type": "borderRadius" },
+    "panel": { "value": "16", "type": "borderRadius" },
+    "button": { "value": "8", "type": "borderRadius" },
+    "input": { "value": "8", "type": "borderRadius" },
+    "small": { "value": "4", "type": "borderRadius" },
+    "medium": { "value": "8", "type": "borderRadius" },
+    "large": { "value": "12", "type": "borderRadius" }
+  },
+  "spacing": {
+    "section": { "value": "32", "type": "spacing" },
+    "card-gap": { "value": "16", "type": "spacing" },
+    "content-padding": { "value": "16", "type": "spacing" },
+    "item-spacing": { "value": "8", "type": "spacing" },
+    "small": { "value": "8", "type": "spacing" },
+    "medium": { "value": "16", "type": "spacing" },
+    "large": { "value": "24", "type": "spacing" }
+  },
+  "shadow": {
+    "small": {
+      "color": { "value": "rgba(0, 0, 0, 0.1)", "type": "color" },
+      "radius": { "value": "4", "type": "dimension" },
+      "x": { "value": "0", "type": "dimension" },
+      "y": { "value": "2", "type": "dimension" }
+    },
+    "medium": {
+      "color": { "value": "rgba(0, 0, 0, 0.15)", "type": "color" },
+      "radius": { "value": "8", "type": "dimension" },
+      "x": { "value": "0", "type": "dimension" },
+      "y": { "value": "4", "type": "dimension" }
+    },
+    "large": {
+      "color": { "value": "rgba(0, 0, 0, 0.2)", "type": "color" },
+      "radius": { "value": "16", "type": "dimension" },
+      "x": { "value": "0", "type": "dimension" },
+      "y": { "value": "8", "type": "dimension" }
+    }
+  },
+  "animation": {
+    "standard": { "value": "0.2s", "type": "time" },
+    "slow": { "value": "0.3s", "type": "time" }
+  }
+} 

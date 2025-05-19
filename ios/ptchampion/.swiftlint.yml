@@ -1,0 +1,105 @@
+disabled_rules:
+  - force_cast
+  - force_try
+  - line_length
+  - todo
+
+opt_in_rules:
+  - empty_count
+  - empty_string
+  - conditional_returns_on_newline
+  - explicit_init
+  - redundant_nil_coalescing
+  - nimble_operator
+  - operator_usage_whitespace
+  - closure_spacing
+  - first_where
+  - prohibited_super_call
+  - fatal_error_message
+  - vertical_parameter_alignment_on_call
+  - redundant_nil_coalescing
+  - overridden_super_call
+  - private_outlet
+  - prohibited_interface_builder
+  
+# Custom rules for PT Champion Design System
+custom_rules:
+  pt_color_literal:
+    name: "Direct Color Creation"
+    regex: "Color\\(red: [^,]*?, green: [^,]*?, blue: [^,]*?"
+    message: "Don't use Color(red:...) literals. Use AppTheme.GeneratedColors.* instead"
+    severity: error
+  
+  pt_magic_number_spacing:
+    name: "Magic Number Spacing"
+    regex: "(padding|spacing|offset)\\(\\s*[0-9]+\\s*\\)"
+    message: "Don't use magic numbers for spacing. Use AppTheme.GeneratedSpacing.* instead"
+    severity: error
+    
+  pt_custom_corner_radius:
+    name: "Custom Corner Radius"
+    regex: "cornerRadius\\(\\s*[0-9]+\\s*\\)"
+    message: "Don't use magic numbers for cornerRadius. Use AppTheme.GeneratedRadius.* instead"
+    severity: error
+    
+  use_generated_colors:
+    name: "Use Generated Colors"
+    regex: "AppTheme\\.Colors\\."
+    message: "Use AppTheme.GeneratedColors instead of AppTheme.Colors"
+    severity: error
+  
+  use_generated_typography:
+    name: "Use Generated Typography"
+    regex: "AppTheme\\.Typography\\."
+    message: "Use AppTheme.GeneratedTypography instead of AppTheme.Typography"
+    severity: error
+    
+  direct_color_usage:
+    name: "Direct Color Usage"
+    regex: "\\.foregroundColor\\((\\.deepOpsGreen|\\.brassGold|\\.tacticalGray|\\.commandBlack|\\.cream)"
+    message: "Use AppTheme.GeneratedColors instead of direct color references"
+    severity: error
+  
+  font_custom_usage:
+    name: "Direct Font Custom Usage"
+    regex: "Font\\.custom\\("
+    message: "Use AppTheme.GeneratedTypography instead of Font.custom"
+    severity: error
+
+analyzer_rules:
+  - unused_import
+  - unused_private_declaration
+
+excluded:
+  - Pods
+  - fastlane
+  - .build
+  - build/ios
+
+line_length:
+  warning: 150
+  error: 200
+  ignores_function_declarations: true
+  ignores_comments: true
+  ignores_urls: true
+  
+type_name:
+  min_length: 3
+  max_length:
+    warning: 50
+    error: 60
+  
+identifier_name:
+  min_length:
+    warning: 2
+  excluded:
+    - id
+    - URL
+    - x
+    - y
+    - i
+    - j
+    - to
+    - ui
+    
+reporter: "xcode" 

@@ -1,0 +1,4 @@
+<step title="Incoming Request" date="2025-04-21T00:15:14.123" instance="33053f" url="/dump" method="GET" type="request" pid="768,1,52" Host="ptchampion-api-westus.scm.azurewebsites.net" User-Agent="AZURECLI/2.71.0 (HOMEBREW)" Accept-Encoding="identity" Authorization="Bas..." x-ms-client-request-id="b0feb568-1e45-11f0-b41d-0a007e41dc62" X-ARR-LOG-ID="b0feb568-1e45-11f0-b41d-0a007e41dc62" CLIENT-IP="100.8.71.115:63488" X-SITE-DEPLOYMENT-ID="ptchampion-api-westus" WAS-DEFAULT-HOSTNAME="ptchampion-api-westus.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/dump" X-Client-IP="100.8.71.115" X-Client-Port="63488" >
+  <step title="Cleanup Xml Logs" date="2025-04-21T00:15:14.126" /><!-- duration: 6ms -->
+  <step title="Outgoing response" date="2025-04-21T00:15:14.498" type="response" statusCode="200" statusText="OK" /><!-- duration: 3ms -->
+</step><!-- duration: 381ms -->

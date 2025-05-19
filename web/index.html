@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" class="bg-cream text-deep-ops min-h-screen antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+
+    <!-- iOS & iPadOS home-screen / tab-bar -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+
+    <!-- macOS Safari pinned tabs -->
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#1E241E">
+
+    <!-- PWA support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PT Champion</title>
+    <!-- Preload critical Futura font file -->
+    <link rel="preload" href="/fonts/futura/FuturaPT-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  </head>
+  <body class="bg-cream text-deep-ops m-0 p-0">
+    <div id="root">
+      <!-- Initial loading indicator while React loads -->
+      <div id="initial-loader" class="bg-cream flex items-center justify-center h-screen w-screen">
+        <div class="loader-spinner border-brass-gold/30 border-t-brass-gold"></div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

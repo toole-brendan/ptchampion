@@ -1,0 +1,45 @@
+/* Theme configuration for shadcn/ui components based on PT Champion "Brass & Cream" Design System */
+
+@layer base {
+  :root {
+    /* PT Champion Style Guide V2 base colors */
+    --color-cream: #F4F1E6; /* Light Background */
+    --color-cream-dark: #EDE9DB; /* Slightly darker cream for panels */
+    --color-deep-ops: #1E241E; /* Primary Dark Background */
+    --color-brass-gold: #BFA24D; /* Accent / Highlight color */
+    --color-army-tan: #E0D4A6; /* Button/Text Highlight */
+    --color-olive-mist: #C9CCA6; /* Chart Fill */
+    --color-command-black: #1E1E1E; /* Primary Text */
+    --color-tactical-gray: #4E5A48; /* Secondary Text */
+    --color-hunter-green: #355E3B; /* Deep green-ish text */
+
+    /* Shadow variables */
+    --shadow-card: 0 2px 4px rgba(0,0,0,.06);
+    --shadow-card-light: 0 4px 8px rgba(0, 0, 0, 0.08);
+    --shadow-small: 0 1px 2px rgba(0,0,0,.04);
+    --shadow-medium: 0 4px 6px rgba(0,0,0,.1);
+    --shadow-large: 0 10px 15px rgba(0,0,0,.1);
+    
+    /* shadcn/ui variable mapping for light mode */
+    --background: var(--color-cream);
+    --foreground: var(--color-command-black);
+    --card: var(--color-cream);
+    --card-foreground: var(--color-command-black);
+    --popover: var(--color-cream);
+    --popover-foreground: var(--color-command-black);
+    --primary: var(--color-brass-gold);
+    --primary-foreground: var(--color-deep-ops);
+    --secondary: var(--color-army-tan);
+    --secondary-foreground: var(--color-command-black);
+    --muted: var(--color-olive-mist);
+    --muted-foreground: var(--color-tactical-gray);
+    --accent: var(--color-brass-gold);
+    --accent-foreground: var(--color-deep-ops);
+    --destructive: var(--color-error);
+    --destructive-foreground: #FFFFFF;
+    --border: #E2D9C2;
+    --input: var(--color-cream);
+    --ring: var(--color-brass-gold);
+    --radius: 0.5rem;
+  }
+} 

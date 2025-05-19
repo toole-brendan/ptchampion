@@ -1,0 +1,105 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Database Migrations (optional, if preferred)
+# migrations/
+
+# sqlc Schema Source (if derived from migrations)
+# sql/schema/schema.sql
+
+# Environment variables
+.env*
+!/.env.example
+
+# Go build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test artifacts
+*.test
+
+# Binaries for programs and plugins
+bin/
+server_binary
+main
+cmd/server/server
+ptchampion
+
+# Generated files
+PTChampion-Swift/Sources/GeneratedAPI/
+PTChampion-Kotlin/app/src/main/java/com/example/ptchampion/generatedapi/
+
+# Android build outputs
+PTChampion-Kotlin/app/build/outputs/
+PTChampion-Kotlin/.gradle/
+PTChampion-Kotlin/build/
+
+# Android heap dumps
+*.hprof
+
+# Android local configuration files
+PTChampion-Kotlin/local.properties
+
+# Terraform
+.terraform/
+*.tfplan
+.terraform.lock.hcl
+
+# iOS
+ios/*/build/
+*.xcuserstate
+UserInterfaceState.xcuserstate
+
+# Swift build directories
+.build/
+**/.build/
+ios/**/.build/
+ios/tools/CodeRewriter/.build/
+ios/PTDesignSystem/.build/
+ios/tools/CodeRewriter/.build/checkouts/
+ios/PTDesignSystem/.build/checkouts/
+
+# Log files
+LogFiles/
+*_logs/
+debug_logs/
+ptlogs/
+webapp_logs/
+
+# Design Token build artifacts
+design-tokens/build/
+design-tokens/node_modules/.build/plugins/cache/DesignTokenGenPlugin-state.json
+.build/plugins/cache/DesignTokenGenPlugin-state.json
+
+# Private keys
+internal/config/AuthKey_*.p8
+
+# CocoaPods
+Pods/
+ios/*/Pods/
+ios/Pods/
+*.xcworkspace
+!default.xcworkspace
+
+# Large model files
+*.task
+*.tflite
+**/pose_landmarker_*.task
+web/dist/models/
+web/public/models/
+
+# Android build artifacts
+android/.gradle/
+android/app/build/
+android/app/build/outputs/apk/
+*.apk
+
+# Terraform provider binaries
+terraform/**/.terraform/providers/

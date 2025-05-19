@@ -1,0 +1,525 @@
+2025-04-20T00:04:01.8688848Z 169.254.130.1 - - [20/Apr/2025:00:04:01 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18734"
+2025-04-20T00:09:02.0909708Z 169.254.130.1 - - [20/Apr/2025:00:09:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19155"
+2025-04-20T00:14:02.3105609Z 169.254.130.1 - - [20/Apr/2025:00:14:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19578"
+2025-04-20T00:19:02.5720914Z 169.254.130.1 - - [20/Apr/2025:00:19:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19593"
+2025-04-20T00:24:02.7284541Z 169.254.130.1 - - [20/Apr/2025:00:24:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5062"
+2025-04-20T00:29:02.9272711Z 169.254.130.1 - - [20/Apr/2025:00:29:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5805"
+2025-04-20T00:34:03.1534713Z 169.254.130.1 - - [20/Apr/2025:00:34:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6142"
+2025-04-20T00:39:03.3884672Z 169.254.130.1 - - [20/Apr/2025:00:39:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6679"
+2025-04-20T00:44:03.6036513Z 169.254.130.1 - - [20/Apr/2025:00:44:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7096"
+2025-04-20T00:49:03.7843379Z 169.254.130.1 - - [20/Apr/2025:00:49:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7110"
+2025-04-20T00:54:03.9627866Z 169.254.130.1 - - [20/Apr/2025:00:54:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7866"
+2025-04-20T00:59:04.1629348Z 169.254.130.1 - - [20/Apr/2025:00:59:04 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7912"
+2025-04-20T01:04:04.3271251Z 169.254.130.1 - - [20/Apr/2025:01:04:04 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8235"
+2025-04-20T01:09:04.6014558Z 169.254.130.1 - - [20/Apr/2025:01:09:04 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8595"
+2025-04-20T01:14:04.8423425Z 169.254.130.1 - - [20/Apr/2025:01:14:04 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8965"
+2025-04-20T01:19:05.0617177Z 169.254.130.1 - - [20/Apr/2025:01:19:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9207"
+2025-04-20T01:24:05.2518450Z 169.254.130.1 - - [20/Apr/2025:01:24:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9438"
+2025-04-20T01:29:05.4449005Z 169.254.130.1 - - [20/Apr/2025:01:29:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9733"
+2025-04-20T01:34:05.6557777Z 169.254.130.1 - - [20/Apr/2025:01:34:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9747"
+2025-04-20T01:39:05.8781673Z 169.254.130.1 - - [20/Apr/2025:01:39:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10224"
+2025-04-20T01:44:07.0308438Z 169.254.130.1 - - [20/Apr/2025:01:44:07 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10447"
+2025-04-20T01:49:07.5526356Z 169.254.130.1 - - [20/Apr/2025:01:49:07 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10688"
+2025-04-20T01:54:07.7701105Z 169.254.130.1 - - [20/Apr/2025:01:54:07 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10930"
+2025-04-20T01:59:08.0028312Z 169.254.130.1 - - [20/Apr/2025:01:59:08 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11007"
+2025-04-20T02:04:08.2185150Z 169.254.130.1 - - [20/Apr/2025:02:04:08 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11266"
+2025-04-20T02:09:08.4541807Z 169.254.130.1 - - [20/Apr/2025:02:09:08 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11500"
+2025-04-20T02:14:08.5918991Z 169.254.130.1 - - [20/Apr/2025:02:14:08 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11723"
+2025-04-20T02:19:08.8432261Z 169.254.130.1 - - [20/Apr/2025:02:19:08 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12070"
+2025-04-20T02:24:09.0484275Z 169.254.130.1 - - [20/Apr/2025:02:24:09 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12336"
+2025-04-20T02:29:09.2857922Z 169.254.130.1 - - [20/Apr/2025:02:29:09 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12572"
+2025-04-20T02:34:09.5174830Z 169.254.130.1 - - [20/Apr/2025:02:34:09 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12832"
+2025-04-20T02:36:17.8564520Z 2025/04/20 02:36:17 [error] 30#30: *50 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T02:36:17.8565333Z 169.254.130.1 - - [20/Apr/2025:02:36:17 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" "89.163.154.134, 147.243.109.140:37004"
+2025-04-20T02:39:09.7382563Z 169.254.130.1 - - [20/Apr/2025:02:39:09 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13061"
+2025-04-20T02:41:57.5465803Z 2025/04/20 02:41:57 [error] 31#31: *52 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T02:41:57.5466571Z 169.254.130.1 - - [20/Apr/2025:02:41:57 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" "89.163.154.134, 147.243.109.147:52396"
+2025-04-20T02:44:09.9040346Z 169.254.130.1 - - [20/Apr/2025:02:44:09 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13283"
+2025-04-20T02:49:10.1249060Z 169.254.130.1 - - [20/Apr/2025:02:49:10 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13532"
+2025-04-20T02:54:10.3260820Z 169.254.130.1 - - [20/Apr/2025:02:54:10 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13738"
+2025-04-20T02:59:10.5591375Z 169.254.130.1 - - [20/Apr/2025:02:59:10 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13992"
+2025-04-20T03:04:10.7234692Z 169.254.130.1 - - [20/Apr/2025:03:04:10 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14224"
+2025-04-20T03:04:25.4466702Z 169.254.130.1 - - [20/Apr/2025:03:04:25 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "108.45.147.214, 147.243.236.46:52122"
+2025-04-20T03:04:25.4467529Z 2025/04/20 03:04:25 [error] 31#31: *57 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T03:04:26.5279916Z 169.254.130.1 - - [20/Apr/2025:03:04:26 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "108.45.147.214, 147.243.236.46:52122"
+2025-04-20T03:04:26.5281000Z 2025/04/20 03:04:26 [error] 31#31: *57 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T03:04:28.6181290Z 2025/04/20 03:04:28 [error] 31#31: *57 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T03:04:28.6182138Z 169.254.130.1 - - [20/Apr/2025:03:04:28 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "108.45.147.214, 147.243.236.46:52122"
+2025-04-20T03:09:10.9141335Z 169.254.130.1 - - [20/Apr/2025:03:09:10 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14240"
+2025-04-20T03:14:12.1986058Z 169.254.130.1 - - [20/Apr/2025:03:14:12 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15568"
+2025-04-20T03:19:12.3777380Z 169.254.130.1 - - [20/Apr/2025:03:19:12 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15637"
+2025-04-20T03:20:35.8020862Z 169.254.130.1 - - [20/Apr/2025:03:20:35 +0000] "GET /api/v1/features HTTP/1.1" 404 153 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Mobile/15E148 Safari/604.1" "108.45.147.214, 147.243.54.201:57136"
+2025-04-20T03:20:35.8021110Z 2025/04/20 03:20:35 [error] 31#31: *61 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T03:20:36.9617185Z 169.254.130.1 - - [20/Apr/2025:03:20:36 +0000] "GET /api/v1/features HTTP/1.1" 404 153 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Mobile/15E148 Safari/604.1" "108.45.147.214, 147.243.54.201:57136"
+2025-04-20T03:20:36.9617592Z 2025/04/20 03:20:36 [error] 31#31: *61 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T03:20:39.0465245Z 2025/04/20 03:20:39 [error] 31#31: *61 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T03:20:39.0465245Z 169.254.130.1 - - [20/Apr/2025:03:20:39 +0000] "GET /api/v1/features HTTP/1.1" 404 153 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (iPhone; CPU iPhone OS 18_3_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.3.1 Mobile/15E148 Safari/604.1" "108.45.147.214, 147.243.54.201:57136"
+2025-04-20T03:24:12.6307229Z 169.254.130.1 - - [20/Apr/2025:03:24:12 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16040"
+2025-04-20T03:29:12.8401410Z 169.254.130.1 - - [20/Apr/2025:03:29:12 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16218"
+2025-04-20T03:34:13.0287523Z 169.254.130.1 - - [20/Apr/2025:03:34:13 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16483"
+2025-04-20T03:39:13.2914336Z 169.254.130.1 - - [20/Apr/2025:03:39:13 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16733"
+2025-04-20T03:44:13.5279725Z 169.254.130.1 - - [20/Apr/2025:03:44:13 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16758"
+2025-04-20T03:49:13.7597707Z 169.254.130.1 - - [20/Apr/2025:03:49:13 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17165"
+2025-04-20T03:54:13.9788624Z 169.254.130.1 - - [20/Apr/2025:03:54:13 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17439"
+2025-04-20T03:59:14.1464702Z 169.254.130.1 - - [20/Apr/2025:03:59:14 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17703"
+2025-04-20T04:04:14.3704708Z 169.254.130.1 - - [20/Apr/2025:04:04:14 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17918"
+2025-04-20T04:09:14.5452055Z 169.254.130.1 - - [20/Apr/2025:04:09:14 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17942"
+2025-04-20T04:14:14.7492510Z 169.254.130.1 - - [20/Apr/2025:04:14:14 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18156"
+2025-04-20T04:19:14.9757265Z 169.254.130.1 - - [20/Apr/2025:04:19:14 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18572"
+2025-04-20T04:24:15.2082345Z 169.254.130.1 - - [20/Apr/2025:04:24:15 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18594"
+2025-04-20T04:29:15.4266411Z 169.254.130.1 - - [20/Apr/2025:04:29:15 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18969"
+2025-04-20T04:34:15.6405146Z 169.254.130.1 - - [20/Apr/2025:04:34:15 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19205"
+2025-04-20T04:39:15.8888605Z 169.254.130.1 - - [20/Apr/2025:04:39:15 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19362"
+2025-04-20T04:44:16.1271285Z 169.254.130.1 - - [20/Apr/2025:04:44:16 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19636"
+2025-04-20T04:49:16.4056374Z 169.254.130.1 - - [20/Apr/2025:04:49:16 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19859"
+2025-04-20T04:54:16.6520197Z 169.254.130.1 - - [20/Apr/2025:04:54:16 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5082"
+2025-04-20T04:59:16.8831527Z 169.254.130.1 - - [20/Apr/2025:04:59:16 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5331"
+2025-04-20T05:04:17.0957437Z 169.254.130.1 - - [20/Apr/2025:05:04:17 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5572"
+2025-04-20T05:09:17.3145284Z 169.254.130.1 - - [20/Apr/2025:05:09:17 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5806"
+2025-04-20T05:14:17.5291622Z 169.254.130.1 - - [20/Apr/2025:05:14:17 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6031"
+2025-04-20T05:19:17.7056685Z 169.254.130.1 - - [20/Apr/2025:05:19:17 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6249"
+2025-04-20T05:24:17.9702056Z 169.254.130.1 - - [20/Apr/2025:05:24:17 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6442"
+2025-04-20T05:29:18.2052412Z 169.254.130.1 - - [20/Apr/2025:05:29:18 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6639"
+2025-04-20T05:34:18.4123721Z 169.254.130.1 - - [20/Apr/2025:05:34:18 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6833"
+2025-04-20T05:39:18.6406336Z 169.254.130.1 - - [20/Apr/2025:05:39:18 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7946"
+2025-04-20T05:44:18.8554880Z 169.254.130.1 - - [20/Apr/2025:05:44:18 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8149"
+2025-04-20T05:49:19.0669190Z 169.254.130.1 - - [20/Apr/2025:05:49:19 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8355"
+2025-04-20T05:54:19.2770150Z 169.254.130.1 - - [20/Apr/2025:05:54:19 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8599"
+2025-04-20T05:59:19.5127762Z 169.254.130.1 - - [20/Apr/2025:05:59:19 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8871"
+2025-04-20T06:04:19.7665140Z 169.254.130.1 - - [20/Apr/2025:06:04:19 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9138"
+2025-04-20T06:09:20.0024507Z 169.254.130.1 - - [20/Apr/2025:06:09:20 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9356"
+2025-04-20T06:14:20.2275406Z 169.254.130.1 - - [20/Apr/2025:06:14:20 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9549"
+2025-04-20T06:19:20.4089069Z 169.254.130.1 - - [20/Apr/2025:06:19:20 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9642"
+2025-04-20T06:24:20.6560784Z 169.254.130.1 - - [20/Apr/2025:06:24:20 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9982"
+2025-04-20T06:29:20.7953305Z 169.254.130.1 - - [20/Apr/2025:06:29:20 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10092"
+2025-04-20T06:34:20.9760201Z 169.254.130.1 - - [20/Apr/2025:06:34:20 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10289"
+2025-04-20T06:39:21.2100256Z 169.254.130.1 - - [20/Apr/2025:06:39:21 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10751"
+2025-04-20T06:44:21.4615984Z 169.254.130.1 - - [20/Apr/2025:06:44:21 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10806"
+2025-04-20T06:49:21.6690022Z 169.254.130.1 - - [20/Apr/2025:06:49:21 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11205"
+2025-04-20T06:54:21.8449491Z 169.254.130.1 - - [20/Apr/2025:06:54:21 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11422"
+2025-04-20T06:59:22.0961874Z 169.254.130.1 - - [20/Apr/2025:06:59:22 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12580"
+2025-04-20T07:04:22.3287771Z 169.254.130.1 - - [20/Apr/2025:07:04:22 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12736"
+2025-04-20T07:05:48.9470224Z 169.254.130.1 - - [20/Apr/2025:07:05:48 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.132 Safari/537.36" "205.169.39.0, 147.243.178.136:57466"
+2025-04-20T07:05:48.9471139Z 2025/04/20 07:05:48 [error] 30#30: *107 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T07:05:50.0104662Z 2025/04/20 07:05:50 [error] 30#30: *107 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T07:05:50.0105402Z 169.254.130.1 - - [20/Apr/2025:07:05:50 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.132 Safari/537.36" "205.169.39.0, 147.243.178.136:57466"
+2025-04-20T07:05:52.0626606Z 2025/04/20 07:05:52 [error] 30#30: *107 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T07:05:52.0627386Z 169.254.130.1 - - [20/Apr/2025:07:05:52 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.132 Safari/537.36" "205.169.39.0, 147.243.178.136:57466"
+2025-04-20T07:09:22.5397870Z 169.254.130.1 - - [20/Apr/2025:07:09:22 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12946"
+2025-04-20T07:14:22.7776173Z 169.254.130.1 - - [20/Apr/2025:07:14:22 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12976"
+2025-04-20T07:16:10.2546594Z 2025/04/20 07:16:10 [error] 30#30: *110 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net"
+2025-04-20T07:16:10.2547405Z 169.254.130.1 - - [20/Apr/2025:07:16:10 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" "13.83.128.90, 147.243.241.236:35496"
+2025-04-20T07:16:15.0239148Z 2025/04/20 07:16:15 [error] 30#30: *110 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T07:16:15.0239148Z 169.254.130.1 - - [20/Apr/2025:07:16:15 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.101:42896"
+2025-04-20T07:16:16.0609130Z 2025/04/20 07:16:16 [error] 30#30: *110 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T07:16:16.0614947Z 169.254.130.1 - - [20/Apr/2025:07:16:16 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.101:42896"
+2025-04-20T07:16:17.8724192Z 2025/04/20 07:16:17 [error] 30#30: *110 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T07:16:17.8724963Z 169.254.130.1 - - [20/Apr/2025:07:16:17 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.101:42896"
+2025-04-20T07:19:22.9789333Z 169.254.130.1 - - [20/Apr/2025:07:19:22 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13400"
+2025-04-20T07:24:23.2047494Z 169.254.130.1 - - [20/Apr/2025:07:24:23 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13444"
+2025-04-20T07:29:23.4537979Z 169.254.130.1 - - [20/Apr/2025:07:29:23 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13873"
+2025-04-20T07:34:23.6662942Z 169.254.130.1 - - [20/Apr/2025:07:34:23 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15044"
+2025-04-20T07:39:23.8787643Z 169.254.130.1 - - [20/Apr/2025:07:39:23 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15119"
+2025-04-20T07:44:24.0876204Z 169.254.130.1 - - [20/Apr/2025:07:44:24 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15604"
+2025-04-20T07:49:24.2938746Z 169.254.130.1 - - [20/Apr/2025:07:49:24 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15866"
+2025-04-20T07:54:24.4983112Z 169.254.130.1 - - [20/Apr/2025:07:54:24 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15909"
+2025-04-20T07:59:24.7183059Z 169.254.130.1 - - [20/Apr/2025:07:59:24 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16384"
+2025-04-20T08:04:24.9353871Z 169.254.130.1 - - [20/Apr/2025:08:04:24 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16430"
+2025-04-20T08:09:25.1588274Z 169.254.130.1 - - [20/Apr/2025:08:09:25 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16827"
+2025-04-20T08:14:25.3775404Z 169.254.130.1 - - [20/Apr/2025:08:14:25 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16884"
+2025-04-20T08:19:25.6052822Z 169.254.130.1 - - [20/Apr/2025:08:19:25 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17270"
+2025-04-20T08:24:25.8264472Z 169.254.130.1 - - [20/Apr/2025:08:24:25 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17484"
+2025-04-20T08:29:26.0943278Z 169.254.130.1 - - [20/Apr/2025:08:29:26 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17697"
+2025-04-20T08:34:26.2644400Z 169.254.130.1 - - [20/Apr/2025:08:34:26 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17784"
+2025-04-20T08:39:26.5271472Z 169.254.130.1 - - [20/Apr/2025:08:39:26 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18147"
+2025-04-20T08:44:26.7402116Z 169.254.130.1 - - [20/Apr/2025:08:44:26 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18343"
+2025-04-20T08:47:01.9679369Z 169.254.130.1 - - [20/Apr/2025:08:47:01 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.102:52084"
+2025-04-20T08:47:01.9680140Z 2025/04/20 08:47:01 [error] 31#31: *129 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/"
+2025-04-20T08:47:03.0093813Z 2025/04/20 08:47:03 [error] 31#31: *129 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T08:47:03.0098959Z 169.254.130.1 - - [20/Apr/2025:08:47:03 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.102:52084"
+2025-04-20T08:47:04.8387339Z 169.254.130.1 - - [20/Apr/2025:08:47:04 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.102:52084"
+2025-04-20T08:47:04.8387339Z 2025/04/20 08:47:04 [error] 31#31: *129 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T08:49:26.9519207Z 169.254.130.1 - - [20/Apr/2025:08:49:26 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18560"
+2025-04-20T08:54:27.1594302Z 169.254.130.1 - - [20/Apr/2025:08:54:27 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18807"
+2025-04-20T08:59:27.3936632Z 169.254.130.1 - - [20/Apr/2025:08:59:27 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19016"
+2025-04-20T09:04:27.5199113Z 169.254.130.1 - - [20/Apr/2025:09:04:27 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19200"
+2025-04-20T09:09:27.7498897Z 169.254.130.1 - - [20/Apr/2025:09:09:27 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19258"
+2025-04-20T09:14:27.9471811Z 169.254.130.1 - - [20/Apr/2025:09:14:27 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19626"
+2025-04-20T09:19:28.1214541Z 169.254.130.1 - - [20/Apr/2025:09:19:28 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19779"
+2025-04-20T09:24:28.3383883Z 169.254.130.1 - - [20/Apr/2025:09:24:28 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5075"
+2025-04-20T09:29:29.5433191Z 169.254.130.1 - - [20/Apr/2025:09:29:29 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5296"
+2025-04-20T09:34:29.7829786Z 169.254.130.1 - - [20/Apr/2025:09:34:29 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5493"
+2025-04-20T09:39:29.9426204Z 169.254.130.1 - - [20/Apr/2025:09:39:29 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5728"
+2025-04-20T09:44:30.1564765Z 169.254.130.1 - - [20/Apr/2025:09:44:30 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5798"
+2025-04-20T09:45:28.6564903Z 169.254.130.1 - - [20/Apr/2025:09:45:28 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "13.68.110.14, 147.243.243.241:51282"
+2025-04-20T09:45:28.6565923Z 2025/04/20 09:45:28 [error] 30#30: *141 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/"
+2025-04-20T09:45:29.7365394Z 169.254.130.1 - - [20/Apr/2025:09:45:29 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "13.68.110.14, 147.243.243.241:51282"
+2025-04-20T09:45:29.7365367Z 2025/04/20 09:45:29 [error] 30#30: *141 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T09:45:31.6084721Z 169.254.130.1 - - [20/Apr/2025:09:45:31 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "13.68.110.14, 147.243.243.241:51282"
+2025-04-20T09:45:31.6085930Z 2025/04/20 09:45:31 [error] 30#30: *141 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T09:49:30.3799173Z 169.254.130.1 - - [20/Apr/2025:09:49:30 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6281"
+2025-04-20T09:54:30.6131360Z 169.254.130.1 - - [20/Apr/2025:09:54:30 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6521"
+2025-04-20T09:59:30.7855858Z 169.254.130.1 - - [20/Apr/2025:09:59:30 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6730"
+2025-04-20T10:04:31.0181690Z 169.254.130.1 - - [20/Apr/2025:10:04:31 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7007"
+2025-04-20T10:09:31.2569115Z 169.254.130.1 - - [20/Apr/2025:10:09:31 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7265"
+2025-04-20T10:14:31.4688524Z 169.254.130.1 - - [20/Apr/2025:10:14:31 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7362"
+2025-04-20T10:14:50.6322017Z 169.254.130.1 - - [20/Apr/2025:10:14:50 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/125.0.6422.60 Safari/537.36" "34.123.170.104, 147.243.76.243:58772"
+2025-04-20T10:14:50.6323097Z 2025/04/20 10:14:50 [error] 31#31: *147 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T10:14:51.7176080Z 2025/04/20 10:14:51 [error] 31#31: *147 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T10:14:51.7188852Z 169.254.130.1 - - [20/Apr/2025:10:14:51 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/125.0.6422.60 Safari/537.36" "34.123.170.104, 147.243.76.243:58772"
+2025-04-20T10:14:53.7927202Z 169.254.130.1 - - [20/Apr/2025:10:14:53 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/125.0.6422.60 Safari/537.36" "34.123.170.104, 147.243.76.243:58772"
+2025-04-20T10:14:53.7927780Z 2025/04/20 10:14:53 [error] 31#31: *147 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T10:14:58.8173521Z 169.254.130.1 - - [20/Apr/2025:10:14:58 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36" "205.169.39.181, 147.243.34.149:48808"
+2025-04-20T10:14:58.8174399Z 2025/04/20 10:14:58 [error] 31#31: *147 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T10:14:59.8641024Z 2025/04/20 10:14:59 [error] 31#31: *147 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T10:14:59.8641853Z 169.254.130.1 - - [20/Apr/2025:10:14:59 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36" "205.169.39.181, 147.243.34.149:48808"
+2025-04-20T10:15:01.9416748Z 2025/04/20 10:15:01 [error] 31#31: *147 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T10:15:01.9417534Z 169.254.130.1 - - [20/Apr/2025:10:15:01 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.79 Safari/537.36" "205.169.39.181, 147.243.34.149:48808"
+2025-04-20T10:19:31.7057569Z 169.254.130.1 - - [20/Apr/2025:10:19:31 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7867"
+2025-04-20T10:24:31.9249223Z 169.254.130.1 - - [20/Apr/2025:10:24:31 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8606"
+2025-04-20T10:29:32.1710036Z 169.254.130.1 - - [20/Apr/2025:10:29:32 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8879"
+2025-04-20T10:34:32.3860960Z 169.254.130.1 - - [20/Apr/2025:10:34:32 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9427"
+2025-04-20T10:39:32.6395211Z 169.254.130.1 - - [20/Apr/2025:10:39:32 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9530"
+2025-04-20T10:44:32.8465960Z 169.254.130.1 - - [20/Apr/2025:10:44:32 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10133"
+2025-04-20T10:49:33.0310143Z 169.254.130.1 - - [20/Apr/2025:10:49:33 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10566"
+2025-04-20T10:54:33.2887848Z 169.254.130.1 - - [20/Apr/2025:10:54:33 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10620"
+2025-04-20T10:59:33.5002930Z 169.254.130.1 - - [20/Apr/2025:10:59:33 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11388"
+2025-04-20T11:04:33.7420461Z 169.254.130.1 - - [20/Apr/2025:11:04:33 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11680"
+2025-04-20T11:09:33.9394988Z 169.254.130.1 - - [20/Apr/2025:11:09:33 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11930"
+2025-04-20T11:14:34.1894504Z 169.254.130.1 - - [20/Apr/2025:11:14:34 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12662"
+2025-04-20T11:19:34.4410096Z 169.254.130.1 - - [20/Apr/2025:11:19:34 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14114"
+2025-04-20T11:24:35.2594975Z 169.254.130.1 - - [20/Apr/2025:11:24:35 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14395"
+2025-04-20T11:29:35.4707814Z 169.254.130.1 - - [20/Apr/2025:11:29:35 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14561"
+2025-04-20T11:34:35.7090812Z 169.254.130.1 - - [20/Apr/2025:11:34:35 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15035"
+2025-04-20T11:39:35.9318701Z 169.254.130.1 - - [20/Apr/2025:11:39:35 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15244"
+2025-04-20T11:44:36.1791846Z 169.254.130.1 - - [20/Apr/2025:11:44:36 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15451"
+2025-04-20T11:49:36.4571729Z 169.254.130.1 - - [20/Apr/2025:11:49:36 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18061"
+2025-04-20T11:54:36.6993066Z 169.254.130.1 - - [20/Apr/2025:11:54:36 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19141"
+2025-04-20T11:59:36.8878606Z 169.254.130.1 - - [20/Apr/2025:11:59:36 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19923"
+2025-04-20T12:04:37.1517216Z 169.254.130.1 - - [20/Apr/2025:12:04:37 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5522"
+2025-04-20T12:09:37.3775323Z 169.254.130.1 - - [20/Apr/2025:12:09:37 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6058"
+2025-04-20T12:14:37.6262512Z 169.254.130.1 - - [20/Apr/2025:12:14:37 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6578"
+2025-04-20T12:19:37.8897314Z 169.254.130.1 - - [20/Apr/2025:12:19:37 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6654"
+2025-04-20T12:24:38.0911149Z 169.254.130.1 - - [20/Apr/2025:12:24:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7330"
+2025-04-20T12:29:38.3031328Z 169.254.130.1 - - [20/Apr/2025:12:29:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8021"
+2025-04-20T12:34:38.5043057Z 169.254.130.1 - - [20/Apr/2025:12:34:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9176"
+2025-04-20T12:39:38.7144718Z 169.254.130.1 - - [20/Apr/2025:12:39:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9944"
+2025-04-20T12:44:38.9402912Z 169.254.130.1 - - [20/Apr/2025:12:44:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10618"
+2025-04-20T12:49:39.2297744Z 169.254.130.1 - - [20/Apr/2025:12:49:39 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11307"
+2025-04-20T12:54:39.4368530Z 169.254.130.1 - - [20/Apr/2025:12:54:39 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11933"
+2025-04-20T12:59:39.6582724Z 169.254.130.1 - - [20/Apr/2025:12:59:39 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12609"
+2025-04-20T13:04:39.8615092Z 169.254.130.1 - - [20/Apr/2025:13:04:39 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13296"
+2025-04-20T13:09:40.7733421Z 169.254.130.1 - - [20/Apr/2025:13:09:40 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13978"
+2025-04-20T13:14:40.7115442Z 169.254.130.1 - - [20/Apr/2025:13:14:40 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14577"
+2025-04-20T13:19:40.9115068Z 169.254.130.1 - - [20/Apr/2025:13:19:40 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14755"
+2025-04-20T13:24:41.1610043Z 169.254.130.1 - - [20/Apr/2025:13:24:41 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15960"
+2025-04-20T13:29:41.3972520Z 169.254.130.1 - - [20/Apr/2025:13:29:41 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16140"
+2025-04-20T13:34:41.5989325Z 169.254.130.1 - - [20/Apr/2025:13:34:41 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17270"
+2025-04-20T13:39:41.8414163Z 169.254.130.1 - - [20/Apr/2025:13:39:41 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17446"
+2025-04-20T13:44:42.0352504Z 169.254.130.1 - - [20/Apr/2025:13:44:42 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19349"
+2025-04-20T13:49:42.2780511Z 169.254.130.1 - - [20/Apr/2025:13:49:42 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19443"
+2025-04-20T13:54:42.5221176Z 169.254.130.1 - - [20/Apr/2025:13:54:42 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5120"
+2025-04-20T13:59:42.7157180Z 169.254.130.1 - - [20/Apr/2025:13:59:42 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6074"
+2025-04-20T14:04:42.8791044Z 169.254.130.1 - - [20/Apr/2025:14:04:42 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7014"
+2025-04-20T14:09:43.1129498Z 169.254.130.1 - - [20/Apr/2025:14:09:43 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7111"
+2025-04-20T14:14:44.0153214Z 169.254.130.1 - - [20/Apr/2025:14:14:44 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8319"
+2025-04-20T14:19:44.2467879Z 169.254.130.1 - - [20/Apr/2025:14:19:44 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8897"
+2025-04-20T14:24:44.4652281Z 169.254.130.1 - - [20/Apr/2025:14:24:44 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9105"
+2025-04-20T14:29:44.7157783Z 169.254.130.1 - - [20/Apr/2025:14:29:44 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9567"
+2025-04-20T14:34:44.9538726Z 169.254.130.1 - - [20/Apr/2025:14:34:44 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10442"
+2025-04-20T14:39:45.1893248Z 169.254.130.1 - - [20/Apr/2025:14:39:45 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11334"
+2025-04-20T14:44:45.3886311Z 169.254.130.1 - - [20/Apr/2025:14:44:45 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11544"
+2025-04-20T14:48:16.0301760Z 2025/04/20 14:48:16 [error] 30#30: *202 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T14:48:16.0302029Z 169.254.130.1 - - [20/Apr/2025:14:48:16 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.118:41486"
+2025-04-20T14:48:17.0640724Z 2025/04/20 14:48:17 [error] 30#30: *202 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T14:48:17.0640724Z 169.254.130.1 - - [20/Apr/2025:14:48:17 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.118:41486"
+2025-04-20T14:48:18.8727038Z 2025/04/20 14:48:18 [error] 30#30: *202 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T14:48:18.8727933Z 169.254.130.1 - - [20/Apr/2025:14:48:18 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.118:41486"
+2025-04-20T14:49:45.5567457Z 169.254.130.1 - - [20/Apr/2025:14:49:45 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12323"
+2025-04-20T14:54:45.8074924Z 169.254.130.1 - - [20/Apr/2025:14:54:45 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13526"
+2025-04-20T14:59:46.0566979Z 169.254.130.1 - - [20/Apr/2025:14:59:46 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13625"
+2025-04-20T15:04:46.3183390Z 169.254.130.1 - - [20/Apr/2025:15:04:46 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14947"
+2025-04-20T15:09:46.5013815Z 169.254.130.1 - - [20/Apr/2025:15:09:46 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15393"
+2025-04-20T15:14:46.7091397Z 169.254.130.1 - - [20/Apr/2025:15:14:46 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16278"
+2025-04-20T15:19:46.9091145Z 169.254.130.1 - - [20/Apr/2025:15:19:46 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17007"
+2025-04-20T15:24:47.1250911Z 169.254.130.1 - - [20/Apr/2025:15:24:47 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17173"
+2025-04-20T15:29:47.3292607Z 169.254.130.1 - - [20/Apr/2025:15:29:47 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19227"
+2025-04-20T15:34:47.5727956Z 169.254.130.1 - - [20/Apr/2025:15:34:47 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19921"
+2025-04-20T15:39:47.8223939Z 169.254.130.1 - - [20/Apr/2025:15:39:47 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5641"
+2025-04-20T15:44:48.0325371Z 169.254.130.1 - - [20/Apr/2025:15:44:48 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6350"
+2025-04-20T15:49:48.2904754Z 169.254.130.1 - - [20/Apr/2025:15:49:48 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6379"
+2025-04-20T15:54:48.5071170Z 169.254.130.1 - - [20/Apr/2025:15:54:48 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7073"
+2025-04-20T15:59:48.7604907Z 169.254.130.1 - - [20/Apr/2025:15:59:48 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7769"
+2025-04-20T16:04:48.9857414Z 169.254.130.1 - - [20/Apr/2025:16:04:48 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9013"
+2025-04-20T16:09:49.1680197Z 169.254.130.1 - - [20/Apr/2025:16:09:49 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9653"
+2025-04-20T16:14:49.3729306Z 169.254.130.1 - - [20/Apr/2025:16:14:49 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10270"
+2025-04-20T16:19:49.6128561Z 169.254.130.1 - - [20/Apr/2025:16:19:49 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11052"
+2025-04-20T16:24:49.8051851Z 169.254.130.1 - - [20/Apr/2025:16:24:49 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11658"
+2025-04-20T16:29:50.0164551Z 169.254.130.1 - - [20/Apr/2025:16:29:50 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12359"
+2025-04-20T16:34:50.1920549Z 169.254.130.1 - - [20/Apr/2025:16:34:50 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12543"
+2025-04-20T16:39:50.3771175Z 169.254.130.1 - - [20/Apr/2025:16:39:50 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13765"
+2025-04-20T16:44:50.6285509Z 169.254.130.1 - - [20/Apr/2025:16:44:50 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14479"
+2025-04-20T16:49:50.8798659Z 169.254.130.1 - - [20/Apr/2025:16:49:50 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15149"
+2025-04-20T16:54:51.1181292Z 169.254.130.1 - - [20/Apr/2025:16:54:51 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15683"
+2025-04-20T16:59:51.3457734Z 169.254.130.1 - - [20/Apr/2025:16:59:51 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16272"
+2025-04-20T17:04:51.5787354Z 169.254.130.1 - - [20/Apr/2025:17:04:51 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16874"
+2025-04-20T17:09:51.8726618Z 169.254.130.1 - - [20/Apr/2025:17:09:51 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17492"
+2025-04-20T17:14:52.0895771Z 169.254.130.1 - - [20/Apr/2025:17:14:52 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17666"
+2025-04-20T17:19:52.3006534Z 169.254.130.1 - - [20/Apr/2025:17:19:52 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19779"
+2025-04-20T17:24:52.5151444Z 169.254.130.1 - - [20/Apr/2025:17:24:52 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5374"
+2025-04-20T17:29:52.7598980Z 169.254.130.1 - - [20/Apr/2025:17:29:52 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5891"
+2025-04-20T17:34:52.9572999Z 169.254.130.1 - - [20/Apr/2025:17:34:52 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6579"
+2025-04-20T17:39:53.1565959Z 169.254.130.1 - - [20/Apr/2025:17:39:53 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6871"
+2025-04-20T17:44:53.3900734Z 169.254.130.1 - - [20/Apr/2025:17:44:53 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7157"
+2025-04-20T17:49:53.6267913Z 169.254.130.1 - - [20/Apr/2025:17:49:53 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7267"
+2025-04-20T17:54:53.9022818Z 169.254.130.1 - - [20/Apr/2025:17:54:53 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7841"
+2025-04-20T17:59:54.1004784Z 169.254.130.1 - - [20/Apr/2025:17:59:54 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7953"
+2025-04-20T18:04:54.3615328Z 169.254.130.1 - - [20/Apr/2025:18:04:54 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8711"
+2025-04-20T18:09:54.5347362Z 169.254.130.1 - - [20/Apr/2025:18:09:54 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8960"
+2025-04-20T18:14:54.8036945Z 169.254.130.1 - - [20/Apr/2025:18:14:54 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9412"
+2025-04-20T18:19:55.0446818Z 169.254.130.1 - - [20/Apr/2025:18:19:55 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10389"
+2025-04-20T18:24:55.2238607Z 169.254.130.1 - - [20/Apr/2025:18:24:55 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10968"
+2025-04-20T18:29:55.4012020Z 169.254.130.1 - - [20/Apr/2025:18:29:55 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11495"
+2025-04-20T18:34:55.5980120Z 169.254.130.1 - - [20/Apr/2025:18:34:55 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11953"
+2025-04-20T18:39:55.8439209Z 169.254.130.1 - - [20/Apr/2025:18:39:55 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12433"
+2025-04-20T18:44:56.0732374Z 169.254.130.1 - - [20/Apr/2025:18:44:56 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12925"
+2025-04-20T18:49:56.2826807Z 169.254.130.1 - - [20/Apr/2025:18:49:56 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13429"
+2025-04-20T18:54:56.4674222Z 169.254.130.1 - - [20/Apr/2025:18:54:56 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13872"
+2025-04-20T18:59:56.6995791Z 169.254.130.1 - - [20/Apr/2025:18:59:56 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14300"
+2025-04-20T19:04:56.8841116Z 169.254.130.1 - - [20/Apr/2025:19:04:56 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14786"
+2025-04-20T19:09:57.0957098Z 169.254.130.1 - - [20/Apr/2025:19:09:57 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15281"
+2025-04-20T19:14:57.3681251Z 169.254.130.1 - - [20/Apr/2025:19:14:57 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15748"
+2025-04-20T19:18:57.3000281Z 169.254.130.1 - - [20/Apr/2025:19:18:57 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.132 Safari/537.36" "205.169.39.1, 147.243.17.140:49442"
+2025-04-20T19:18:57.3000281Z 2025/04/20 19:18:57 [error] 31#31: *257 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T19:18:58.3518040Z 169.254.130.1 - - [20/Apr/2025:19:18:58 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.132 Safari/537.36" "205.169.39.1, 147.243.17.140:49442"
+2025-04-20T19:18:58.3518237Z 2025/04/20 19:18:58 [error] 31#31: *257 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T19:19:00.4090556Z 2025/04/20 19:19:00 [error] 31#31: *257 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T19:19:00.4091146Z 169.254.130.1 - - [20/Apr/2025:19:19:00 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.5938.132 Safari/537.36" "205.169.39.1, 147.243.17.140:49442"
+2025-04-20T19:19:57.5368765Z 169.254.130.1 - - [20/Apr/2025:19:19:57 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16204"
+2025-04-20T19:24:57.7067215Z 169.254.130.1 - - [20/Apr/2025:19:24:57 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16721"
+2025-04-20T19:29:57.8972411Z 169.254.130.1 - - [20/Apr/2025:19:29:57 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17226"
+2025-04-20T19:34:58.9793382Z 169.254.130.1 - - [20/Apr/2025:19:34:58 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17776"
+2025-04-20T19:39:58.3260977Z 169.254.130.1 - - [20/Apr/2025:19:39:58 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17851"
+2025-04-20T19:44:58.5039050Z 169.254.130.1 - - [20/Apr/2025:19:44:58 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19261"
+2025-04-20T19:49:58.6615727Z 169.254.130.1 - - [20/Apr/2025:19:49:58 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5124"
+2025-04-20T19:54:58.9172073Z 169.254.130.1 - - [20/Apr/2025:19:54:58 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5258"
+2025-04-20T19:59:59.1097927Z 169.254.130.1 - - [20/Apr/2025:19:59:59 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6159"
+2025-04-20T20:04:59.3245852Z 169.254.130.1 - - [20/Apr/2025:20:04:59 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6293"
+2025-04-20T20:09:59.5841446Z 169.254.130.1 - - [20/Apr/2025:20:09:59 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6832"
+2025-04-20T20:14:59.7747257Z 169.254.130.1 - - [20/Apr/2025:20:14:59 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7731"
+2025-04-20T20:19:59.9785223Z 169.254.130.1 - - [20/Apr/2025:20:19:59 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7807"
+2025-04-20T20:25:00.2286593Z 169.254.130.1 - - [20/Apr/2025:20:25:00 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8708"
+2025-04-20T20:30:00.4608552Z 169.254.130.1 - - [20/Apr/2025:20:30:00 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8845"
+2025-04-20T20:35:00.7388959Z 169.254.130.1 - - [20/Apr/2025:20:35:00 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9771"
+2025-04-20T20:40:01.0052145Z 169.254.130.1 - - [20/Apr/2025:20:40:01 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9893"
+2025-04-20T20:45:01.1660512Z 169.254.130.1 - - [20/Apr/2025:20:45:01 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10741"
+2025-04-20T20:50:01.3897461Z 169.254.130.1 - - [20/Apr/2025:20:50:01 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11270"
+2025-04-20T20:55:01.5538101Z 169.254.130.1 - - [20/Apr/2025:20:55:01 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11394"
+2025-04-20T21:00:01.7917295Z 169.254.130.1 - - [20/Apr/2025:21:00:01 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12096"
+2025-04-20T21:05:02.0347101Z 169.254.130.1 - - [20/Apr/2025:21:05:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12726"
+2025-04-20T21:10:02.2533832Z 169.254.130.1 - - [20/Apr/2025:21:10:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13170"
+2025-04-20T21:15:02.5329190Z 169.254.130.1 - - [20/Apr/2025:21:15:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13697"
+2025-04-20T21:20:02.7332021Z 169.254.130.1 - - [20/Apr/2025:21:20:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14135"
+2025-04-20T21:25:02.9244879Z 169.254.130.1 - - [20/Apr/2025:21:25:02 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14641"
+2025-04-20T21:30:03.1442784Z 169.254.130.1 - - [20/Apr/2025:21:30:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15163"
+2025-04-20T21:35:03.3679385Z 169.254.130.1 - - [20/Apr/2025:21:35:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15644"
+2025-04-20T21:40:03.5850364Z 169.254.130.1 - - [20/Apr/2025:21:40:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15644"
+2025-04-20T21:45:03.8183302Z 169.254.130.1 - - [20/Apr/2025:21:45:03 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16635"
+2025-04-20T21:50:04.0458636Z 169.254.130.1 - - [20/Apr/2025:21:50:04 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:16635"
+2025-04-20T21:55:04.2604322Z 169.254.130.1 - - [20/Apr/2025:21:55:04 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:17235"
+2025-04-20T22:00:04.5263185Z 169.254.130.1 - - [20/Apr/2025:22:00:04 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18885"
+2025-04-20T22:05:04.7959852Z 169.254.130.1 - - [20/Apr/2025:22:05:04 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:18885"
+2025-04-20T22:10:05.0153892Z 169.254.130.1 - - [20/Apr/2025:22:10:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:19899"
+2025-04-20T22:15:05.2120022Z 169.254.130.1 - - [20/Apr/2025:22:15:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:5574"
+2025-04-20T22:20:05.3960232Z 169.254.130.1 - - [20/Apr/2025:22:20:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6135"
+2025-04-20T22:25:05.6604888Z 169.254.130.1 - - [20/Apr/2025:22:25:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:6657"
+2025-04-20T22:30:05.8936540Z 169.254.130.1 - - [20/Apr/2025:22:30:05 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7135"
+2025-04-20T22:35:06.0917280Z 169.254.130.1 - - [20/Apr/2025:22:35:06 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:7642"
+2025-04-20T22:40:06.2909812Z 169.254.130.1 - - [20/Apr/2025:22:40:06 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8026"
+2025-04-20T22:45:06.5181674Z 169.254.130.1 - - [20/Apr/2025:22:45:06 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:8506"
+2025-04-20T22:50:06.7389651Z 169.254.130.1 - - [20/Apr/2025:22:50:06 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9204"
+2025-04-20T22:51:55.0691096Z 169.254.130.1 - - [20/Apr/2025:22:51:55 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "2600:4041:4240:dd00:91aa:f2bc:b7e0:91cb, 147.243.65.209:44186"
+2025-04-20T22:51:55.0691151Z 2025/04/20 22:51:55 [error] 30#30: *300 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:55:06.9469567Z 169.254.130.1 - - [20/Apr/2025:22:55:06 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:9339"
+2025-04-20T22:58:09.9437286Z 169.254.130.1 - - [20/Apr/2025:22:58:09 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.26 Mobile Safari/537.36" "223.160.16.92, 147.243.2.10:46692"
+2025-04-20T22:58:09.9439279Z 2025/04/20 22:58:09 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:58:11.1101020Z 2025/04/20 22:58:11 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:58:11.1101913Z 169.254.130.1 - - [20/Apr/2025:22:58:11 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.26 Mobile Safari/537.36" "223.160.16.92, 147.243.2.10:46692"
+2025-04-20T22:58:13.3333160Z 2025/04/20 22:58:13 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:58:13.3334032Z 169.254.130.1 - - [20/Apr/2025:22:58:13 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Linux; Android 7.0; SM-G950U Build/NRD90M) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.6422.26 Mobile Safari/537.36" "223.160.16.92, 147.243.2.10:46692"
+2025-04-20T22:58:29.5200109Z 169.254.130.1 - - [20/Apr/2025:22:58:29 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "100.8.71.115, 147.243.65.150:54518"
+2025-04-20T22:58:29.5200087Z 2025/04/20 22:58:29 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:58:30.6221404Z 2025/04/20 22:58:30 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:58:30.6221564Z 169.254.130.1 - - [20/Apr/2025:22:58:30 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "100.8.71.115, 147.243.65.150:54518"
+2025-04-20T22:58:32.7157101Z 2025/04/20 22:58:32 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/register"
+2025-04-20T22:58:32.7157101Z 169.254.130.1 - - [20/Apr/2025:22:58:32 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/register" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "100.8.71.115, 147.243.65.150:54518"
+2025-04-20T22:58:51.6618591Z 169.254.130.1 - - [20/Apr/2025:22:58:51 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3" "51.159.100.248, 147.243.109.240:56660"
+2025-04-20T22:58:51.6621016Z 2025/04/20 22:58:51 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:58:52.9817552Z 169.254.130.1 - - [20/Apr/2025:22:58:52 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3" "51.159.100.248, 147.243.109.240:56660"
+2025-04-20T22:58:52.9817552Z 2025/04/20 22:58:52 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:58:55.4697879Z 2025/04/20 22:58:55 [error] 30#30: *302 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T22:58:55.4697879Z 169.254.130.1 - - [20/Apr/2025:22:58:55 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.3" "51.159.100.248, 147.243.109.240:56660"
+2025-04-20T23:00:07.1950852Z 169.254.130.1 - - [20/Apr/2025:23:00:07 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10227"
+2025-04-20T23:00:47.7179616Z 2025/04/20 23:00:47 [error] 30#30: *303 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net"
+2025-04-20T23:00:47.7179666Z 169.254.130.1 - - [20/Apr/2025:23:00:47 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" "13.83.128.90, 147.243.244.108:41564"
+2025-04-20T23:04:22.5116568Z 169.254.130.1 - - [20/Apr/2025:23:04:22 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "2600:4041:4240:dd00:91aa:f2bc:b7e0:91cb, 147.243.65.204:48670"
+2025-04-20T23:04:22.5116888Z 2025/04/20 23:04:22 [error] 30#30: *304 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T23:05:07.4496735Z 169.254.130.1 - - [20/Apr/2025:23:05:07 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:10814"
+2025-04-20T23:05:33.1711481Z 169.254.130.1 - - [20/Apr/2025:23:05:32 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "2600:4041:4240:dd00:91aa:f2bc:b7e0:91cb, 147.243.65.204:48670"
+2025-04-20T23:05:33.1711667Z 2025/04/20 23:05:32 [error] 30#30: *304 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T23:10:07.6120607Z 169.254.130.1 - - [20/Apr/2025:23:10:07 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11286"
+2025-04-20T23:10:17.6008411Z 169.254.130.1 - - [20/Apr/2025:23:10:17 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11286"
+2025-04-20T23:10:27.6286038Z 169.254.130.1 - - [20/Apr/2025:23:10:27 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11357"
+2025-04-20T23:14:17.8022129Z 169.254.130.1 - - [20/Apr/2025:23:14:17 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11731"
+2025-04-20T23:14:27.8166205Z 169.254.130.1 - - [20/Apr/2025:23:14:27 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11731"
+2025-04-20T23:14:37.7794274Z 169.254.130.1 - - [20/Apr/2025:23:14:37 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:11357"
+2025-04-20T23:18:15.6969187Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+2025-04-20T23:18:15.6971358Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+2025-04-20T23:18:15.7044123Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+2025-04-20T23:18:15.7376534Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+2025-04-20T23:18:15.7978526Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+2025-04-20T23:18:15.7990526Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+2025-04-20T23:18:15.7998462Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+2025-04-20T23:18:15.8056183Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+2025-04-20T23:18:15.8098813Z /docker-entrypoint.sh: Configuration complete; ready for start up
+2025-04-20T23:18:15.8296065Z 2025/04/20 23:18:15 [notice] 1#1: using the "epoll" event method
+2025-04-20T23:18:15.8296319Z 2025/04/20 23:18:15 [notice] 1#1: nginx/1.27.5
+2025-04-20T23:18:15.8296365Z 2025/04/20 23:18:15 [notice] 1#1: built by gcc 14.2.0 (Alpine 14.2.0) 
+2025-04-20T23:18:15.8296403Z 2025/04/20 23:18:15 [notice] 1#1: OS: Linux 5.15.173.1-1.cm2
+2025-04-20T23:18:15.8296439Z 2025/04/20 23:18:15 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 131072:131072
+2025-04-20T23:18:15.8303900Z 2025/04/20 23:18:15 [notice] 1#1: start worker processes
+2025-04-20T23:18:15.8304069Z 2025/04/20 23:18:15 [notice] 1#1: start worker process 30
+2025-04-20T23:18:15.8304111Z 2025/04/20 23:18:15 [notice] 1#1: start worker process 31
+2025-04-20T23:18:16.7496336Z 2025/04/20 23:18:16 [error] 30#30: *1 open() "/usr/share/nginx/html/robots933456.txt" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /robots933456.txt HTTP/1.1", host: "169.254.130.2"
+2025-04-20T23:18:16.7506110Z 169.254.130.1 - - [20/Apr/2025:23:18:16 +0000] "GET /robots933456.txt HTTP/1.1" 404 153 "-" "HealthCheck/1.0" "-"
+2025-04-20T23:18:37.5248215Z 2025/04/20 23:18:37 [notice] 31#31: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:18:37.5248652Z 2025/04/20 23:18:37 [notice] 31#31: gracefully shutting down
+2025-04-20T23:18:37.5248686Z 2025/04/20 23:18:37 [notice] 31#31: exiting
+2025-04-20T23:18:37.5250370Z 2025/04/20 23:18:37 [notice] 31#31: exit
+2025-04-20T23:18:37.5259704Z 2025/04/20 23:18:37 [notice] 1#1: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:18:37.5260923Z 2025/04/20 23:18:37 [notice] 30#30: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:18:37.5260989Z 2025/04/20 23:18:37 [notice] 30#30: gracefully shutting down
+2025-04-20T23:18:37.5261432Z 2025/04/20 23:18:37 [notice] 30#30: exiting
+2025-04-20T23:18:37.5262621Z 2025/04/20 23:18:37 [notice] 30#30: exit
+2025-04-20T23:18:37.5687908Z 2025/04/20 23:18:37 [notice] 1#1: signal 17 (SIGCHLD) received from 30
+2025-04-20T23:18:37.5688189Z 2025/04/20 23:18:37 [notice] 1#1: worker process 30 exited with code 0
+2025-04-20T23:18:37.5688227Z 2025/04/20 23:18:37 [notice] 1#1: signal 29 (SIGIO) received
+2025-04-20T23:18:37.5767187Z 2025/04/20 23:18:37 [notice] 1#1: signal 17 (SIGCHLD) received from 31
+2025-04-20T23:18:37.5767378Z 2025/04/20 23:18:37 [notice] 1#1: worker process 31 exited with code 0
+2025-04-20T23:18:37.5768384Z 2025/04/20 23:18:37 [notice] 1#1: exit
+2025-04-20T23:18:56.6404140Z 2025/04/20 23:18:56 [error] 31#31: *2 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T23:18:56.6404926Z 169.254.130.1 - - [20/Apr/2025:23:18:56 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "2600:4041:4240:dd00:91aa:f2bc:b7e0:91cb, 147.243.65.233:59146"
+2025-04-20T23:18:57.7488646Z 169.254.130.1 - - [20/Apr/2025:23:18:57 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/login?returnUrl=%2F" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "2600:4041:4240:dd00:91aa:f2bc:b7e0:91cb, 147.243.65.233:59146"
+2025-04-20T23:18:57.7489425Z 2025/04/20 23:18:57 [error] 31#31: *2 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/login?returnUrl=%2F"
+2025-04-20T23:18:59.8479617Z 169.254.130.1 - - [20/Apr/2025:23:18:59 +0000] "GET /api/v1/features HTTP/1.1" 404 555 "https://www.ptchampion.ai/register" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" "2600:4041:4240:dd00:91aa:f2bc:b7e0:91cb, 147.243.65.233:59146"
+2025-04-20T23:18:59.8479617Z 2025/04/20 23:18:59 [error] 31#31: *2 open() "/usr/share/nginx/html/api/v1/features" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/v1/features HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net", referrer: "https://www.ptchampion.ai/register"
+2025-04-20T23:19:37.9974409Z 169.254.130.1 - - [20/Apr/2025:23:19:37 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12127"
+2025-04-20T23:22:10.6339602Z 169.254.130.1 - - [20/Apr/2025:23:22:10 +0000] "HEAD / HTTP/1.1" 200 0 "-" "curl/8.7.1" "100.8.71.115:60569"
+2025-04-20T23:22:17.7222993Z 2025/04/20 23:22:17 [error] 30#30: *3 open() "/usr/share/nginx/html/api/health" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /api/health HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net"
+2025-04-20T23:22:17.7222993Z 169.254.130.1 - - [20/Apr/2025:23:22:17 +0000] "GET /api/health HTTP/1.1" 404 153 "-" "curl/8.7.1" "100.8.71.115:60582"
+2025-04-20T23:22:30.5175499Z 2025/04/20 23:22:30 [error] 30#30: *3 open() "/usr/share/nginx/html/health" failed (2: No such file or directory), client: 169.254.130.1, server: localhost, request: "GET /health HTTP/1.1", host: "ptchampion-api-westus.azurewebsites.net"
+2025-04-20T23:22:30.5175499Z 169.254.130.1 - - [20/Apr/2025:23:22:30 +0000] "GET /health HTTP/1.1" 404 153 "-" "curl/8.7.1" "100.8.71.115:60592"
+2025-04-20T23:24:38.2285345Z 169.254.130.1 - - [20/Apr/2025:23:24:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12460"
+2025-04-20T23:29:38.4431215Z 169.254.130.1 - - [20/Apr/2025:23:29:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:12857"
+2025-04-20T23:34:38.6807848Z 169.254.130.1 - - [20/Apr/2025:23:34:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13777"
+2025-04-20T23:39:38.9301526Z 169.254.130.1 - - [20/Apr/2025:23:39:38 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:13981"
+2025-04-20T23:44:39.1720197Z 169.254.130.1 - - [20/Apr/2025:23:44:39 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:14688"
+2025-04-20T23:49:39.4160525Z 169.254.130.1 - - [20/Apr/2025:23:49:39 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15094"
+2025-04-20T23:50:19.4551199Z 169.254.130.1 - - [20/Apr/2025:23:50:19 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15293"
+2025-04-20T23:50:27.2791408Z 2025/04/20 23:50:27 [notice] 1#1: using the "epoll" event method
+2025-04-20T23:50:27.2792801Z 2025/04/20 23:50:27 [notice] 1#1: nginx/1.27.5
+2025-04-20T23:50:27.2792882Z 2025/04/20 23:50:27 [notice] 1#1: built by gcc 14.2.0 (Alpine 14.2.0) 
+2025-04-20T23:50:27.2792946Z 2025/04/20 23:50:27 [notice] 1#1: OS: Linux 5.15.173.1-1.cm2
+2025-04-20T23:50:27.2792981Z 2025/04/20 23:50:27 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 131072:131072
+2025-04-20T23:50:27.2793225Z 2025/04/20 23:50:27 [notice] 1#1: start worker processes
+2025-04-20T23:50:27.2794487Z 2025/04/20 23:50:27 [notice] 1#1: start worker process 30
+2025-04-20T23:50:27.2796646Z 2025/04/20 23:50:27 [notice] 1#1: start worker process 31
+2025-04-20T23:50:27.9675446Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+2025-04-20T23:50:27.9675652Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+2025-04-20T23:50:27.9675698Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+2025-04-20T23:50:27.9675748Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+2025-04-20T23:50:27.9675782Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+2025-04-20T23:50:27.9675814Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+2025-04-20T23:50:27.9675846Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+2025-04-20T23:50:27.9675877Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+2025-04-20T23:50:27.9675916Z /docker-entrypoint.sh: Configuration complete; ready for start up
+2025-04-20T23:50:29.4410083Z 169.254.130.1 - - [20/Apr/2025:23:50:29 +0000] "GET / HTTP/1.1" 200 615 "-" "AlwaysOn" "127.0.0.1:15398"
+2025-04-20T23:50:35.5807178Z 2025/04/20 23:50:35 [notice] 30#30: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:50:35.5807431Z 2025/04/20 23:50:35 [notice] 1#1: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:50:35.5807470Z 2025/04/20 23:50:35 [notice] 30#30: gracefully shutting down
+2025-04-20T23:50:35.5807500Z 2025/04/20 23:50:35 [notice] 30#30: exiting
+2025-04-20T23:50:35.5807528Z 2025/04/20 23:50:35 [notice] 31#31: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:50:35.5807552Z 2025/04/20 23:50:35 [notice] 31#31: gracefully shutting down
+2025-04-20T23:50:35.5807574Z 2025/04/20 23:50:35 [notice] 31#31: exiting
+2025-04-20T23:50:35.5807597Z 2025/04/20 23:50:35 [notice] 30#30: exit
+2025-04-20T23:50:35.5807640Z 2025/04/20 23:50:35 [notice] 31#31: exit
+2025-04-20T23:50:35.6166086Z 2025/04/20 23:50:35 [notice] 1#1: signal 17 (SIGCHLD) received from 31
+2025-04-20T23:50:35.6166255Z 2025/04/20 23:50:35 [notice] 1#1: worker process 31 exited with code 0
+2025-04-20T23:50:35.6166289Z 2025/04/20 23:50:35 [notice] 1#1: signal 29 (SIGIO) received
+2025-04-20T23:50:35.6246039Z 2025/04/20 23:50:35 [notice] 1#1: signal 17 (SIGCHLD) received from 30
+2025-04-20T23:50:35.6246199Z 2025/04/20 23:50:35 [notice] 1#1: worker process 30 exited with code 0
+2025-04-20T23:50:35.6247304Z 2025/04/20 23:50:35 [notice] 1#1: exit
+2025-04-20T23:50:55.8198299Z 2025/04/20 23:50:55 [notice] 31#31: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:50:55.8199419Z 2025/04/20 23:50:55 [notice] 1#1: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:50:55.8205637Z 2025/04/20 23:50:55 [notice] 31#31: gracefully shutting down
+2025-04-20T23:50:55.8216270Z 2025/04/20 23:50:55 [notice] 31#31: exiting
+2025-04-20T23:50:55.8222286Z 2025/04/20 23:50:55 [notice] 31#31: exit
+2025-04-20T23:50:55.8267329Z 2025/04/20 23:50:55 [notice] 30#30: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:50:55.8268795Z 2025/04/20 23:50:55 [notice] 30#30: gracefully shutting down
+2025-04-20T23:50:55.8271825Z 2025/04/20 23:50:55 [notice] 30#30: exiting
+2025-04-20T23:50:55.8274072Z 2025/04/20 23:50:55 [notice] 30#30: exit
+2025-04-20T23:50:55.8608350Z 2025/04/20 23:50:55 [notice] 1#1: signal 17 (SIGCHLD) received from 31
+2025-04-20T23:50:55.8611947Z 2025/04/20 23:50:55 [notice] 1#1: worker process 31 exited with code 0
+2025-04-20T23:50:55.8612821Z 2025/04/20 23:50:55 [notice] 1#1: signal 29 (SIGIO) received
+2025-04-20T23:50:55.8616104Z 2025/04/20 23:50:55 [notice] 1#1: signal 17 (SIGCHLD) received from 30
+2025-04-20T23:50:55.8616995Z 2025/04/20 23:50:55 [notice] 1#1: worker process 30 exited with code 0
+2025-04-20T23:50:55.8618477Z 2025/04/20 23:50:55 [notice] 1#1: exit
+2025-04-20T23:51:18.0493222Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+2025-04-20T23:51:18.0508415Z 2025/04/20 23:51:18 [notice] 1#1: using the "epoll" event method
+2025-04-20T23:51:18.1012054Z 2025/04/20 23:51:18 [notice] 1#1: nginx/1.27.5
+2025-04-20T23:51:18.1012312Z 2025/04/20 23:51:18 [notice] 1#1: built by gcc 14.2.0 (Alpine 14.2.0) 
+2025-04-20T23:51:18.1012362Z 2025/04/20 23:51:18 [notice] 1#1: OS: Linux 5.15.173.1-1.cm2
+2025-04-20T23:51:18.1012399Z 2025/04/20 23:51:18 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 131072:131072
+2025-04-20T23:51:18.1012448Z 2025/04/20 23:51:18 [notice] 1#1: start worker processes
+2025-04-20T23:51:18.1012487Z 2025/04/20 23:51:18 [notice] 1#1: start worker process 30
+2025-04-20T23:51:18.1012521Z 2025/04/20 23:51:18 [notice] 1#1: start worker process 31
+2025-04-20T23:51:18.1014926Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+2025-04-20T23:51:18.1015022Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+2025-04-20T23:51:18.1015064Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+2025-04-20T23:51:18.1016920Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+2025-04-20T23:51:18.1017045Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+2025-04-20T23:51:18.1017087Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+2025-04-20T23:51:18.1017120Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+2025-04-20T23:51:18.1017156Z /docker-entrypoint.sh: Configuration complete; ready for start up
+2025-04-20T23:55:07.1320758Z 2025/04/20 23:55:07 [notice] 30#30: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:55:07.1322310Z 2025/04/20 23:55:07 [notice] 30#30: gracefully shutting down
+2025-04-20T23:55:07.1322373Z 2025/04/20 23:55:07 [notice] 30#30: exiting
+2025-04-20T23:55:07.1322401Z 2025/04/20 23:55:07 [notice] 30#30: exit
+2025-04-20T23:55:07.1324208Z 2025/04/20 23:55:07 [notice] 1#1: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:55:07.1324512Z 2025/04/20 23:55:07 [notice] 31#31: signal 3 (SIGQUIT) received, shutting down
+2025-04-20T23:55:07.1324552Z 2025/04/20 23:55:07 [notice] 31#31: gracefully shutting down
+2025-04-20T23:55:07.1324837Z 2025/04/20 23:55:07 [notice] 31#31: exiting
+2025-04-20T23:55:07.1326502Z 2025/04/20 23:55:07 [notice] 31#31: exit
+2025-04-20T23:55:07.1645424Z 2025/04/20 23:55:07 [notice] 1#1: signal 17 (SIGCHLD) received from 30
+2025-04-20T23:55:07.1645993Z 2025/04/20 23:55:07 [notice] 1#1: worker process 30 exited with code 0
+2025-04-20T23:55:07.1646046Z 2025/04/20 23:55:07 [notice] 1#1: signal 29 (SIGIO) received
+2025-04-20T23:55:07.1725452Z 2025/04/20 23:55:07 [notice] 1#1: signal 17 (SIGCHLD) received from 31
+2025-04-20T23:55:07.1725913Z 2025/04/20 23:55:07 [notice] 1#1: worker process 31 exited with code 0
+2025-04-20T23:55:07.1727713Z 2025/04/20 23:55:07 [notice] 1#1: exit
+2025-04-20T23:57:44.9714914Z /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+2025-04-20T23:57:44.9715046Z /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+2025-04-20T23:57:44.9715080Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+2025-04-20T23:57:44.9783472Z 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+2025-04-20T23:57:45.0270235Z 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+2025-04-20T23:57:45.0271891Z /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+2025-04-20T23:57:45.0275892Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+2025-04-20T23:57:45.0403666Z /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+2025-04-20T23:57:45.0440318Z /docker-entrypoint.sh: Configuration complete; ready for start up
+2025-04-20T23:57:45.0569652Z 2025/04/20 23:57:45 [notice] 1#1: using the "epoll" event method
+2025-04-20T23:57:45.0569833Z 2025/04/20 23:57:45 [notice] 1#1: nginx/1.27.5
+2025-04-20T23:57:45.0569871Z 2025/04/20 23:57:45 [notice] 1#1: built by gcc 14.2.0 (Alpine 14.2.0) 
+2025-04-20T23:57:45.0569899Z 2025/04/20 23:57:45 [notice] 1#1: OS: Linux 5.15.173.1-1.cm2
+2025-04-20T23:57:45.0569927Z 2025/04/20 23:57:45 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 131072:131072
+2025-04-20T23:57:45.0576324Z 2025/04/20 23:57:45 [notice] 1#1: start worker processes
+2025-04-20T23:57:45.0576465Z 2025/04/20 23:57:45 [notice] 1#1: start worker process 30
+2025-04-20T23:57:45.0576497Z 2025/04/20 23:57:45 [notice] 1#1: start worker process 31

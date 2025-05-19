@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Prevent Redux from sneaking back in
+if grep -R --line-number -E "from ['\"](redux|react-redux|@reduxjs/toolkit)['\"]" src; then
+  echo "⚠️  Redux import detected – we don't use Redux in this project"
+  exit 1
+fi 

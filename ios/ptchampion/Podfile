@@ -1,0 +1,28 @@
+# Uncomment the next line to define a global platform for your project
+platform :ios, '14.0'
+
+# Specify the project path explicitly
+project 'ptchampion.xcodeproj'
+
+target 'ptchampion' do
+  # Comment the next line if you don't want to use dynamic frameworks
+  use_frameworks!
+
+  # Pods for ptchampion
+  pod 'MediaPipeTasksVision', '~> 0.10.5'
+  pod 'GoogleSignIn', '~> 7.0.0'
+end
+
+post_install do |installer|
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+      # Ensure CocoaPods-created targets are built with the same Swift version
+      config.build_settings['SWIFT_VERSION'] = '5.0'
+      # Fix build errors with Xcode 14+
+      config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ""
+      config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
+      config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
+    end
+  end
+end

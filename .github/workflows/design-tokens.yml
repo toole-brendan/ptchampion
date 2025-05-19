@@ -1,0 +1,84 @@
+name: Design Token Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'design-tokens/design-tokens.json'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'design-tokens/design-tokens.json'
+      - 'design-tokens/style-dictionary.config.js'
+
+jobs:
+  validate-and-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: 'npm'
+          cache-dependency-path: 'design-tokens/package.json'
+      
+      - name: Install dependencies
+        run: cd design-tokens && npm install
+      
+      - name: Validate design-tokens.json
+        run: |
+          cd design-tokens
+          if ! jq . design-tokens.json > /dev/null 2>&1; then
+            echo "Invalid JSON format in design-tokens.json"
+            exit 1
+          fi
+      
+      - name: Build tokens
+        run: cd design-tokens && npm run build
+      
+      - name: Check if build output is up-to-date
+        run: |
+          cd design-tokens
+          if git diff --name-only build | grep -q .; then
+            echo "Generated token files not up-to-date. Please run 'npm run build' and commit the changes."
+            exit 1
+          fi
+      
+      - name: Upload artifacts
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: design-tokens
+          path: |
+            design-tokens/build/
+  
+  # Optional job to automatically commit updated tokens if main branch
+  auto-commit:
+    runs-on: ubuntu-latest
+    needs: validate-and-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      
+      - name: Install dependencies
+        run: cd design-tokens && npm install
+      
+      - name: Build tokens
+        run: cd design-tokens && npm run build
+      
+      - name: Commit updates
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "chore: update design token build artifacts"
+          file_pattern: "design-tokens/build/**/*" 

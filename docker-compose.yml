@@ -1,0 +1,88 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4-alpine # Use PostGIS image instead of standard PostgreSQL
+    container_name: ptchampion_db
+    environment:
+      POSTGRES_USER: ${DB_USER:-user} # Use environment variables from .env, with defaults
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: ${DB_NAME:-ptchampion}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persist data
+    ports:
+      - "${DB_PORT_HOST:-5432}:5432" # Expose DB port to host (optional, for direct access/debugging)
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-user} -d ${DB_NAME:-ptchampion}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: ptchampion_redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "${REDIS_PORT_HOST:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: . # Use the Dockerfile in the current directory
+      dockerfile: Dockerfile
+    container_name: ptchampion_backend
+    env_file:
+      - .env.dev # Use the development-specific env file
+    environment:
+      AZURE_KEY_VAULT_URL: "" # Disable Azure Key Vault for local development
+      # Ensure the backend waits for the DB host (service name)
+      # The DB_HOST env var in .env should match the service name 'db'
+      DB_HOST: db # Override DB_HOST to use the service name within Docker network
+      DB_SSL_MODE: disable # Disable SSL for local development
+      # Redis configuration for Docker Compose environment
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      # Set explicit PORT for Go server
+      PORT: 8080
+      # Other necessary env vars will be loaded from .env
+      # OpenTelemetry configuration
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_SERVICE_NAME: ptchampion-backend
+      OTEL_RESOURCE_ATTRIBUTES: deployment.environment=${DEPLOY_ENV:-development}
+    ports:
+      - "${APP_PORT_HOST:-8080}:8080" # Map host port to container port 8080
+    depends_on:
+      db:
+        condition: service_healthy # Wait for DB to be healthy
+      redis:
+        condition: service_healthy # Wait for Redis to be healthy
+      jaeger:
+        condition: service_started
+    restart: unless-stopped
+    # Optional: Add volume for live code reloading during development (if using tools like air)
+    # volumes:
+    #   - .:/app
+
+  # Jaeger service for distributed tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: ptchampion_jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "4317:4317"   # OTLP gRPC endpoint
+      - "4318:4318"   # OTLP HTTP endpoint
+    restart: unless-stopped
+
+volumes:
+  postgres_data: # Define the named volume for data persistence
+  redis_data: # Define the named volume for Redis data persistence 

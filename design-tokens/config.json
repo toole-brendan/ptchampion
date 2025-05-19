@@ -1,0 +1,27 @@
+{
+  "source": ["design-tokens.json"],
+  "platforms": {
+    "web": {
+      "transformGroup": "web",
+      "buildPath": "build/web/",
+      "files": [
+        {
+          "destination": "tokens.json",
+          "format": "json"
+        }
+      ]
+    },
+    "ios": {
+      "transformGroup": "ios",
+      "buildPath": "build/ios/",
+      "files": [
+        {
+          "destination": "AppTheme+Generated.swift",
+          "format": "ios/swift/class.swift",
+          "className": "PTGeneratedTokens",
+          "imports": ["SwiftUI"]
+        }
+      ]
+    }
+  }
+} 

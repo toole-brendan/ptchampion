@@ -1,0 +1,97 @@
+Build Error Analysis for PT Champion Android App
+After reviewing your Android codebase, I've identified several potential areas that could be causing build errors and type mismatches. Here's a detailed analysis of the issues I found:
+1. Authentication Storage Inconsistency
+There's an inconsistency between how the auth token is stored and retrieved:
+In AuthDataStore.kt, tokens are stored using DataStore:
+kotlinsuspend fun saveAuthToken(token: String) {
+    dataStore.edit {
+        it[PreferencesKeys.AUTH_TOKEN] = token
+    }
+}
+But in AuthInterceptor.kt, tokens are retrieved from encryptedPrefs:
+kotlinval token = encryptedPrefs.getString(AUTH_TOKEN_KEY, null)
+Similar inconsistency in AuthRepositoryImpl.kt, which uses EncryptedSharedPreferences:
+kotlinoverride suspend fun storeAuthToken(token: String) {
+    withContext(Dispatchers.IO) {
+        encryptedPrefs.edit().putString(AUTH_TOKEN_KEY, token).apply()
+    }
+}
+2. Duplicate Resource Classes
+You have two different Resource classes:
+
+com.example.ptchampion.domain.util.Resource (in domain/util/Resource.kt)
+com.example.ptchampion.domain.exercise.bluetooth.Resource (in domain/exercise/bluetooth/Resource.kt)
+
+This leads to import confusion in files like:
+
+RunningTrackingViewModel.kt where both Resource types are used
+LeaderboardViewModel.kt which may be importing the wrong Resource class
+
+3. Location-related Type Mismatches
+In RunningTrackingViewModel.kt, there's a type casting issue:
+kotlin// Use star projection for runtime check due to type erasure
+if (resource is Resource.Success<*>) { 
+    // Smart cast should allow accessing data as Location? if the flow emits Resource<Location>
+    (resource.data as? Location)?.let { location -> 
+        processLocationUpdate(location)
+    }
+}
+The problem is that locationService.getLocationUpdates() might return a Flow<Resource<LocationData>> but the code tries to cast to Location.
+4. MediaPipe API Compatibility Issues
+The PoseLandmarkerHelper.kt file has several commented sections that might indicate API compatibility issues:
+kotlin// Comment out setNumThreads for now
+// if (delegate != Delegate.GPU) {
+//     baseOptionsBuilder.setNumThreads(defaultNumThreads)
+// }
+In PoseDetectorProcessor.kt there are similar concerns:
+kotlin// rotationDegrees is not directly used by detectLiveStream in PoseLandmarkerHelper
+// but might be needed if implementing rotation logic inside the helper
+5. Bluetooth Service Integration Issues
+In RunningTrackingViewModel.kt, there's a commented out section:
+kotlin// Fix: Comment out unresolved connectedDevice access
+// watchDataRepository.connectedDevice.value?.let { device ->
+//     _connectedWatchName.value = device.name
+// }
+The issue might be that WatchDataRepository doesn't expose connectedDevice directly, but instead from the underlying BluetoothService.
+Similarly in WatchBluetoothService.kt, a function is commented out with the note:
+kotlin/* // Temporarily commented out for debugging Kapt error
+private fun processLocationAndSpeedData(value: ByteArray) {
+    ...
+}
+*/
+6. Inconsistent Generic Usage with Workout Repository
+In WorkoutRepository.kt, methods like getWorkoutById return Resource<WorkoutResponse>, but implementation in WorkoutRepositoryImpl.kt may have mismatched types.
+The error handling in repositories often returns specific types within Resource.Error that might not match the expected generic type:
+kotlinreturn Resource.Error("API Error fetching workout $workoutId: ${response.code()} ${response.message()}")
+7. Incomplete Bluetooth Implementation
+The BluetoothDeviceManagementViewModel.kt has placeholder TODO comments for critical functionality:
+kotlin// TODO: Implement permission checking logic
+// TODO: Implement Bluetooth adapter state checking
+// TODO: Implement scan callbacks to update discoveredDevices
+// TODO: Implement connection callbacks
+Recommended Fixes
+
+Standardize authentication storage: Choose either DataStore or EncryptedSharedPreferences, not both.
+Consolidate Resource classes: Remove one of the duplicate Resource classes and update all imports.
+Fix type mismatches:
+
+In RunningTrackingViewModel.kt, ensure correct type handling between LocationData and Location
+Check all Resource generic types to ensure they match expected return types
+
+
+Update MediaPipe implementation:
+
+Update PoseLandmarkerHelper.kt to use compatible APIs
+Fix the commented out sections if needed
+
+
+Fix Bluetooth service integration:
+
+Complete the implementation of BluetoothDeviceManagementViewModel
+Correctly access the connectedDevice property
+
+
+Check Kapt configuration:
+
+Ensure kapt is correctly configured in your build.gradle
+Fix the Kapt error in WatchBluetoothService.kt

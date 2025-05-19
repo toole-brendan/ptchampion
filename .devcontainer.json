@@ -1,0 +1,74 @@
+{
+	"name": "PT Champion Dev Environment",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	// Using a base Ubuntu image and adding features.
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+
+	"features": {
+		// Go (Specify version based on project needs, roadmap mentions 1.22/1.23 for CI)
+		"ghcr.io/devcontainers/features/go:1": {
+			"version": "1.22"
+		},
+		// Node.js (Specify version, roadmap mentions 20 for CI)
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "20"
+		},
+		// Java (Required for Android SDK tooling like Gradle)
+		"ghcr.io/devcontainers/features/java:1": {
+			"version": "17", // Common requirement for modern Android builds
+			"installMaven": false,
+			"installGradle": true
+		},
+		// Android SDK & NDK (Installs command-line tools, SDK, NDK)
+		// This feature can take a while to build initially.
+		"ghcr.io/devcontainers/features/android:1": {
+			"installSdk": true,
+			"installNdk": true,
+			"installPlatformTools": true,
+			"installBuildTools": true
+			// Add specific SDK versions if needed, e.g., "sdkPackages": "platforms;android-34"
+		},
+		// Docker (Useful for running dependencies like databases or Jaeger)
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+	},
+
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "go version && node --version && java --version && echo 'Android SDK installed.' && docker --version",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			// Set *default* container specific settings.json values on container create.
+			"settings": {
+				"go.toolsManagement.checkForUpdates": "local",
+				"go.useLanguageServer": true,
+				"go.gopath": "/go",
+				// Add any specific Java/Android/Node settings here
+				"java.jdt.ls.java.home": "/usr/lib/jvm/msopenjdk-17-amd64" // Adjust path if needed based on java feature install location
+			},
+			
+			// Add the IDs of extensions you want installed when the container is created.
+			"extensions": [
+				"golang.Go", // Go language support
+				"ms-azuretools.vscode-docker", // Docker integration
+				"esbenp.prettier-vscode", // Prettier code formatter
+				"VisualStudioExptTeam.vscodeintellicode", // AI-assisted development
+				"vscjava.vscode-java-pack", // Java Extension Pack (includes debugger, etc.)
+				"vscjava.vscode-gradle", // Gradle for Java
+				"ms-vscode.makefile-tools" // Makefile support
+				// Add Android related extensions if desired, though much Android dev happens in Android Studio
+			]
+		}
+	}
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+} 

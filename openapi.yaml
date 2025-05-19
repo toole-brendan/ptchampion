@@ -1,0 +1,848 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: PT Champion API
+  description: API for the PT Champion fitness tracking application
+servers:
+  - url: /api/v1
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token for authentication
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        profilePictureUrl:
+          type: string
+          nullable: true
+          format: uri
+        location:
+          type: string
+          nullable: true
+        latitude:
+          type: string
+          nullable: true
+        longitude:
+          type: string
+          nullable: true
+        lastSyncedAt:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          nullable: true
+        updatedAt:
+          type: string
+          nullable: true
+      required:
+        - id
+        - username
+        - displayName
+        - profilePictureUrl
+        - location
+        - latitude
+        - longitude
+        - lastSyncedAt
+        - createdAt
+        - updatedAt
+      description: User profile information
+    UserExercise:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        exerciseId:
+          type: integer
+        repetitions:
+          type: integer
+          nullable: true
+        formScore:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 100
+        timeInSeconds:
+          type: integer
+          nullable: true
+        grade:
+          type: integer
+          nullable: true
+          minimum: 0
+          maximum: 100
+        completed:
+          type: boolean
+        metadata:
+          type: string
+          nullable: true
+        deviceId:
+          type: string
+          nullable: true
+        syncStatus:
+          type: string
+          nullable: true
+          enum:
+            - synced
+            - pending
+            - conflict
+        createdAt:
+          type: string
+          nullable: true
+        updatedAt:
+          type: string
+          nullable: true
+      required:
+        - id
+        - userId
+        - exerciseId
+        - repetitions
+        - formScore
+        - timeInSeconds
+        - grade
+        - completed
+        - metadata
+        - deviceId
+        - syncStatus
+        - createdAt
+        - updatedAt
+      description: Details of a completed or tracked exercise
+    InsertUser:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        displayName:
+          type: string
+          nullable: true
+        profilePictureUrl:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+        latitude:
+          type: string
+          nullable: true
+        longitude:
+          type: string
+          nullable: true
+      required:
+        - username
+        - password
+      description: Data required to register a new user
+    UpdateProfile:
+      type: object
+      properties:
+        displayName:
+          type: string
+          nullable: true
+        profilePictureUrl:
+          type: string
+          nullable: true
+        location:
+          type: string
+          nullable: true
+      description: Data for updating a user profile
+    InsertUserExercise:
+      type: object
+      properties:
+        userId:
+          type: integer
+          minimum: -2147483648
+          maximum: 2147483647
+        exerciseId:
+          type: integer
+          minimum: -2147483648
+          maximum: 2147483647
+        repetitions:
+          type: integer
+          nullable: true
+          minimum: -2147483648
+          maximum: 2147483647
+        formScore:
+          type: integer
+          nullable: true
+          minimum: -2147483648
+          maximum: 2147483647
+        timeInSeconds:
+          type: integer
+          nullable: true
+          minimum: -2147483648
+          maximum: 2147483647
+        grade:
+          type: integer
+          nullable: true
+          minimum: -2147483648
+          maximum: 2147483647
+        completed:
+          type: boolean
+          nullable: true
+        metadata:
+          type: string
+          nullable: true
+        deviceId:
+          type: string
+          nullable: true
+        syncStatus:
+          type: string
+          nullable: true
+      required:
+        - userId
+        - exerciseId
+      description: Data for recording a new user exercise attempt
+    SyncRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+        deviceId:
+          type: string
+        lastSyncTimestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          properties:
+            userExercises:
+              type: array
+              items:
+                type: object
+                properties:
+                  userId:
+                    type: integer
+                    minimum: -2147483648
+                    maximum: 2147483647
+                  exerciseId:
+                    type: integer
+                    minimum: -2147483648
+                    maximum: 2147483647
+                  repetitions:
+                    type: integer
+                    nullable: true
+                    minimum: -2147483648
+                    maximum: 2147483647
+                  formScore:
+                    type: integer
+                    nullable: true
+                    minimum: -2147483648
+                    maximum: 2147483647
+                  timeInSeconds:
+                    type: integer
+                    nullable: true
+                    minimum: -2147483648
+                    maximum: 2147483647
+                  grade:
+                    type: integer
+                    nullable: true
+                    minimum: -2147483648
+                    maximum: 2147483647
+                  completed:
+                    type: boolean
+                    nullable: true
+                  metadata:
+                    type: string
+                    nullable: true
+                  deviceId:
+                    type: string
+                    nullable: true
+                  syncStatus:
+                    type: string
+                    nullable: true
+                required:
+                  - userId
+                  - exerciseId
+            profile:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  nullable: true
+                profilePictureUrl:
+                  type: string
+                  nullable: true
+                location:
+                  type: string
+                  nullable: true
+      required:
+        - userId
+        - deviceId
+        - lastSyncTimestamp
+      description: Request payload for synchronizing data
+    SyncResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+        data:
+          type: object
+          properties:
+            userExercises:
+              type: array
+              items:
+                $ref: '#/components/schemas/UserExercise'
+            profile:
+              $ref: '#/components/schemas/User'
+        conflicts:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserExercise'
+      required:
+        - success
+        - timestamp
+      description: Response payload after data synchronization
+    WorkoutResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        exercise_id:
+          type: integer
+        exercise_name:
+          type: string
+        exercise_type:
+          type: string
+        reps:
+          type: integer
+          nullable: true
+        duration_seconds:
+          type: integer
+          nullable: true
+        form_score:
+          type: integer
+          nullable: true
+        grade:
+          type: integer
+        completed_at:
+          type: string
+          format: date-time
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - user_id
+        - exercise_id
+        - exercise_name
+        - exercise_type
+        - reps
+        - duration_seconds
+        - form_score
+        - grade
+        - completed_at
+        - created_at
+      description: A single recorded workout session
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+      required:
+        - token
+        - user
+      description: Authentication token and user profile
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - username
+        - password
+      description: User credentials for login
+    UpdateUserRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 30
+        display_name:
+          type: string
+          maxLength: 100
+        profile_picture_url:
+          type: string
+          format: uri
+        location:
+          type: string
+          maxLength: 100
+        latitude:
+          type: number
+        longitude:
+          type: number
+      description: Fields to update in user profile
+    LogExerciseResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        user_id:
+          type: integer
+        exercise_id:
+          type: integer
+        exercise_name:
+          type: string
+        exercise_type:
+          type: string
+        reps:
+          type: integer
+        time_in_seconds:
+          type: integer
+        distance:
+          type: integer
+        notes:
+          type: string
+        grade:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+      required:
+        - id
+        - user_id
+        - exercise_id
+        - exercise_name
+        - exercise_type
+        - grade
+        - created_at
+      description: Logged exercise data with calculated grade
+    LogExerciseRequest:
+      type: object
+      properties:
+        exercise_id:
+          type: integer
+          minimum: 0
+          exclusiveMinimum: true
+        reps:
+          type: integer
+          minimum: 0
+        duration:
+          type: integer
+          minimum: 0
+        distance:
+          type: integer
+          minimum: 0
+        notes:
+          type: string
+      required:
+        - exercise_id
+      description: Exercise data to log
+    PaginatedExerciseHistoryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              user_id:
+                type: integer
+              exercise_id:
+                type: integer
+              exercise_name:
+                type: string
+              exercise_type:
+                type: string
+              reps:
+                type: integer
+              time_in_seconds:
+                type: integer
+              distance:
+                type: integer
+              notes:
+                type: string
+              grade:
+                type: integer
+              created_at:
+                type: string
+                format: date-time
+            required:
+              - id
+              - user_id
+              - exercise_id
+              - exercise_name
+              - exercise_type
+              - grade
+              - created_at
+        total_count:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
+      required:
+        - items
+        - total_count
+        - page
+        - page_size
+      description: Paginated exercise history for user
+    LeaderboardResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          username:
+            type: string
+          display_name:
+            type: string
+          best_grade:
+            type: integer
+        required:
+          - username
+          - display_name
+          - best_grade
+      description: Leaderboard entries with best scores
+    PaginatedWorkoutsResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkoutResponse'
+        totalCount:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+      required:
+        - items
+        - totalCount
+        - page
+        - pageSize
+        - totalPages
+    LocalLeaderboardResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          userId:
+            type: integer
+          username:
+            type: string
+          displayName:
+            type: string
+            nullable: true
+          exerciseId:
+            type: integer
+          score:
+            type: integer
+          distanceMeters:
+            type: number
+          lastUpdated:
+            type: string
+        required:
+          - userId
+          - username
+          - displayName
+          - exerciseId
+          - score
+  parameters: {}
+paths:
+  /auth/register:
+    post:
+      summary: Register a new user
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertUser'
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input (e.g., validation error)
+        '409':
+          description: Username already exists
+        '500':
+          description: Internal Server Error
+  /auth/login:
+    post:
+      summary: Authenticate a user and get JWT token
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid input
+        '401':
+          description: Invalid username or password
+        '500':
+          description: Internal Server Error
+  /users/me:
+    patch:
+      summary: Update current user profile
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized - missing or invalid token
+        '409':
+          description: Username already taken
+        '500':
+          description: Internal Server Error
+  /exercises:
+    post:
+      summary: Log a completed exercise
+      tags:
+        - Exercises
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogExerciseRequest'
+      responses:
+        '201':
+          description: Exercise logged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogExerciseResponse'
+        '400':
+          description: Invalid input or missing required metrics for exercise type
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal Server Error
+    get:
+      summary: Get exercise history for the current user
+      tags:
+        - Exercises
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          description: Page number for pagination
+          required: false
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+          description: Number of items per page
+          required: false
+      responses:
+        '200':
+          description: Exercise history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedExerciseHistoryResponse'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal Server Error
+  /leaderboard/{exerciseType}:
+    get:
+      summary: Get leaderboard for a specific exercise type
+      tags:
+        - Leaderboard
+      parameters:
+        - name: exerciseType
+          in: path
+          schema:
+            type: string
+            enum:
+              - pushup
+              - pullup
+              - situp
+              - run
+          description: Type of exercise for the leaderboard
+          required: true
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+          description: Maximum number of leaderboard entries to return
+          required: false
+      responses:
+        '200':
+          description: Leaderboard retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaderboardResponse'
+        '400':
+          description: Invalid exercise type
+        '500':
+          description: Internal Server Error
+  /sync:
+    post:
+      summary: Synchronize client data with the server
+      tags:
+        - Sync
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncRequest'
+      responses:
+        '200':
+          description: Sync successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResponse'
+        '400':
+          description: Invalid sync request
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal Server Error during sync
+  /workouts:
+    get:
+      summary: Get workout history for the current user (tracked sessions)
+      tags:
+        - Workouts
+      operationId: getWorkouts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+          required: false
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+          required: false
+      responses:
+        '200':
+          description: Workout history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkoutsResponse'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal Server Error
+  /leaderboards/local:
+    get:
+      summary: Get leaderboard filtered by proximity to user location
+      tags:
+        - Leaderboard
+      operationId: getLocalLeaderboard
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: exercise_id
+          in: query
+          schema:
+            type: integer
+          description: ID of the exercise to filter leaderboard by
+          required: true
+        - name: latitude
+          in: query
+          schema:
+            type: number
+            format: double
+          description: User's current latitude
+          required: true
+        - name: longitude
+          in: query
+          schema:
+            type: number
+            format: double
+          description: User's current longitude
+          required: true
+        - name: radius_meters
+          in: query
+          schema:
+            type: number
+            format: double
+            default: 8047
+          description: Search radius in meters
+          required: false
+      responses:
+        '200':
+          description: Local leaderboard retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocalLeaderboardResponse'
+        '400':
+          description: Missing or invalid required query parameters
+        '500':
+          description: Internal Server Error retrieving local leaderboard

@@ -1,0 +1,48 @@
+# Git files
+.git/
+.gitignore
+
+# Go build output
+ptchampion_server
+*.exe
+*.out
+
+# Configuration files (should be mounted or passed via env vars)
+.env*
+
+# IDE files
+.idea/
+.vscode/
+
+# Frontend directories (assuming we only dockerize the backend)
+PTChampion-Kotlin/
+PTChampion-Swift/
+client/
+ios/
+android/
+web/
+
+# Log files and application logs
+webapp_logs/
+webapp_logs_extracted/
+ptlogs/
+debug_logs/
+LogFiles/
+*.log
+*.txt
+logs/
+*_logs_extracted/
+
+# Node.js dependencies (if applicable within backend context, unlikely but safe)
+node_modules/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Deployment and documentation
+*.md
+docs/
+dist/
+deployments/
+terraform/

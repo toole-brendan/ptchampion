@@ -1,0 +1,314 @@
+@import 'leaflet/dist/leaflet.css';
+@import './components/ui/theme.css';
+@import './styles/ios-tokens.css';
+@import './styles/fonts.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Use system fonts instead of downloading potentially corrupt files */
+html {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+@font-face {
+  font-family: 'Heading Font';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Arial Black'), local('Impact'), local('Helvetica Neue Bold');
+}
+
+@font-face {
+  font-family: 'Body Font';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Helvetica Neue'), local('Arial');
+}
+
+@font-face {
+  font-family: 'Mono Font';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Courier New'), local('Monaco'), local('Consolas');
+}
+
+@layer base {
+  * {
+    @apply transition-colors duration-200;
+  }
+
+  html {
+    @apply bg-cream text-deep-ops antialiased;
+  }
+  
+  body {
+    @apply bg-cream text-deep-ops font-sans text-base leading-relaxed m-0 p-0;
+  }
+  
+  h1 {
+    @apply font-heading text-heading1 font-bold tracking-wide text-brass-gold;
+  }
+  
+  h2 {
+    @apply font-heading text-heading2 font-bold tracking-wide text-brass-gold;
+  }
+  
+  h3 {
+    @apply font-heading text-heading3 font-bold tracking-wide text-brass-gold mb-xs;
+  }
+  
+  h4 {
+    @apply font-heading text-heading4 font-bold tracking-wide text-brass-gold mb-xs;
+  }
+  
+  p + h3 {
+    @apply mt-lg;
+  }
+
+  p {
+    @apply font-sans text-body text-tactical-gray;
+  }
+  
+  .stat-number {
+    @apply font-mono text-heading4 font-medium text-foreground;
+  }
+  
+  .label {
+    @apply font-sans text-small font-semibold uppercase tracking-wide text-olive-mist;
+  }
+}
+
+@layer components {
+  /* Shadow Variables */
+  :root {
+    --shadow-card: 0 2px 4px rgba(0,0,0,.06);
+    --ring-focus: 0 0 0 2px var(--color-brass-gold);
+  }
+
+  /* Initial Loader */
+  .loader-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid transparent;
+    border-top-color: var(--color-brass-gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Bottom Navigation */
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around border-t border-deep-ops border-opacity-10 bg-deep-ops px-4 shadow-medium;
+  }
+  
+  .bottom-nav-item {
+    @apply flex flex-col items-center text-olive-mist opacity-80 transition-all hover:-translate-y-1;
+  }
+  
+  .bottom-nav-item.active {
+    @apply text-brass-gold;
+  }
+
+  .bottom-nav-item:hover {
+    @apply text-brass-gold opacity-90;
+  }
+  
+  .bottom-nav-label {
+    @apply mt-1 font-sans text-tiny uppercase tracking-wide;
+  }
+  
+  /* Top Navigation - New styles to replace bottom nav */
+  .top-nav {
+    @apply sticky top-0 left-0 right-0 z-50 flex h-[60px] items-center justify-around bg-deep-ops shadow-medium;
+  }
+
+  .top-nav-item {
+    @apply flex flex-1 flex-col items-center py-3 text-olive-mist opacity-80 transition-all;
+  }
+
+  .top-nav-item.active {
+    @apply bg-brass-gold bg-opacity-20 text-brass-gold;
+  }
+
+  .top-nav-item:hover {
+    @apply text-brass-gold opacity-90;
+  }
+
+  .top-nav-label {
+    @apply mt-1 font-sans text-tiny;
+  }
+
+  /* Card Components */
+  .card {
+    @apply rounded-card bg-card p-md shadow-card text-card-foreground transition-all border border-brass-gold border-opacity-20;
+  }
+  
+  .card-interactive {
+    @apply card hover:-translate-y-[1px] hover:shadow-medium cursor-pointer focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none hover:border-brass-gold hover:border-opacity-40;
+  }
+
+  .metric-card {
+    @apply border-t border-brass-gold border-opacity-40 bg-cream-dark;
+  }
+  
+  .panel {
+    @apply rounded-panel bg-cream p-lg shadow-medium;
+  }
+
+  /* Button Variants */
+  .btn-primary {
+    @apply bg-brass-gold text-cream font-semibold py-sm px-md rounded-button shadow-small hover:shadow-medium transition-all focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none;
+  }
+  
+  .btn-secondary {
+    @apply bg-army-tan text-command-black font-semibold py-sm px-md rounded-button shadow-small hover:shadow-medium transition-all focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none;
+  }
+
+  .btn-outline {
+    @apply border border-brass-gold text-brass-gold font-semibold py-sm px-md rounded-button hover:bg-brass-gold hover:bg-opacity-10 transition-all focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none;
+  }
+
+  /* Section Headers */
+  .section-header {
+    @apply bg-deep-ops p-content relative rounded-t-card border-l-2 border-l-brass-gold border-opacity-40;
+    background-image: repeating-linear-gradient(45deg, rgba(191, 162, 77, 0.05), rgba(191, 162, 77, 0.05) 10px, transparent 10px, transparent 20px);
+  }
+
+  .section-header::after {
+    content: '';
+    @apply absolute bottom-0 left-0 right-0 h-1 bg-brass-gold;
+  }
+  
+  /* Animation Utilities */
+  .count-up-animation {
+    @apply font-mono transition-all duration-1000;
+    counter-reset: count attr(data-count);
+    animation: count-up 2s ease-out forwards;
+  }
+  
+  .shimmer {
+    @apply relative overflow-hidden;
+    background: linear-gradient(90deg, 
+      var(--color-cream-dark) 0%, 
+      var(--color-cream) 50%, 
+      var(--color-cream-dark) 100%);
+    background-size: 700px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out forwards;
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer utilities {
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out forwards;
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .shimmer {
+    @apply relative overflow-hidden;
+    background: linear-gradient(90deg, 
+      var(--color-cream-dark) 0%, 
+      var(--color-cream) 50%, 
+      var(--color-cream-dark) 100%);
+    background-size: 700px 100%;
+    animation: shimmer 2s infinite linear;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -700px 0; }
+    100% { background-position: 700px 0; }
+  }
+
+  .count-up-animation {
+    @apply font-mono transition-all duration-1000;
+    counter-reset: count attr(data-count);
+    animation: count-up 2s ease-out forwards;
+  }
+  
+  @keyframes count-up {
+    from {
+      counter-increment: count 0;
+    }
+    to {
+      counter-increment: count attr(data-count number);
+    }
+  }
+  
+  .count-up-animation::after {
+    content: counter(count);
+  }
+  
+  /* Fullscreen video styling */
+  .camera-container:fullscreen {
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .camera-container:fullscreen video {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+  }
+  
+  .camera-container:fullscreen canvas {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+  }
+  
+  .camera-container.fullscreen-fallback {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* ensure overlay above other UI */
+  }
+  
+  .camera-container.fullscreen-fallback video,
+  .camera-container.fullscreen-fallback canvas {
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+  }
+}
