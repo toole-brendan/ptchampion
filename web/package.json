@@ -24,7 +24,7 @@
     "chromatic": "chromatic --exit-zero-on-changes"
   },
   "dependencies": {
-    "@hono/zod-validator": "^0.2.2",
+    "@hono/zod-validator": "^0.5.0",
     "@hookform/resolvers": "^3.6.0",
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "@mediapipe/camera_utils": "^0.3.1675466862",
