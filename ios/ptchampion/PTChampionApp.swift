@@ -306,11 +306,54 @@ struct PTChampionApp: App {
             WorkoutDataPoint.self, // Make sure this is included
             RunMetricSample.self   // Add RunMetricSample to schema
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        
+        // Define a version-based migration strategy
+        let modelVersion = "3" // Increment this when schema changes 
+        let migrationKey = "SwiftDataModelVersion"
+        
+        // Check stored version vs current version
+        let currentVersion = UserDefaults.standard.string(forKey: migrationKey)
+        
+        // If versions don't match or no version exists, we'll reset the store
+        if currentVersion != modelVersion {
+            print("SwiftData model version changed from \(currentVersion ?? "nil") to \(modelVersion), resetting store")
+            
+            // Try to find and delete the store files
+            if let appSupportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+                let storeURL = appSupportDir.appendingPathComponent("default.store")
+                let storeSHMURL = appSupportDir.appendingPathComponent("default.store-shm")
+                let storeWALURL = appSupportDir.appendingPathComponent("default.store-wal")
+                
+                for url in [storeURL, storeSHMURL, storeWALURL] {
+                    try? FileManager.default.removeItem(at: url)
+                    print("Deleted store file: \(url.lastPathComponent)")
+                }
+                
+                // Update the stored version
+                UserDefaults.standard.set(modelVersion, forKey: migrationKey)
+            }
+        }
+        
+        // Create a configuration with normal storage
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false
+        )
+        
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            print("Error creating ModelContainer: \(error)")
+            
+            // If we still can't create the container, try in-memory as last resort
+            do {
+                print("Falling back to in-memory store")
+                let fallbackConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+                return try ModelContainer(for: schema, configurations: [fallbackConfig])
+            } catch {
+                print("Fatal error: Could not create ModelContainer: \(error)")
+                fatalError("Could not create ModelContainer: \(error)")
+            }
         }
     }()
 

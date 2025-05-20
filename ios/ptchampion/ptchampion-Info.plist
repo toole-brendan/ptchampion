@@ -14,5 +14,14 @@
 		<string>remote-notification</string>
 		<string>voip</string>
 	</array>
+	<key>NSHealthShareUsageDescription</key>
+	<string>PT Champion needs access to your health data to sync workouts and fetch heart rate data from Apple Watch.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>PT Champion will save your workout data to HealthKit to keep your fitness history up to date.</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+		<string>healthkit</string>
+	</array>
 </dict>
 </plist>
