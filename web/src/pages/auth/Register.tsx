@@ -82,8 +82,8 @@ const RegisterPage: React.FC = () => {
         email: email,
         username: username,
         password: password,
-        first_name: firstName,
-        last_name: lastName,
+        firstName: firstName,
+        lastName: lastName,
         // Remove setting displayName separately as backend now uses username
       });
       // Redirect handled by effect when isAuthenticated changes
@@ -121,8 +121,8 @@ const RegisterPage: React.FC = () => {
           
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label htmlFor="firstName" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
-                  First Name
+                <label htmlFor="firstName" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray font-jost">
+                  FIRST NAME
                 </label>
                 <Input
                   id="firstName"
@@ -130,14 +130,14 @@ const RegisterPage: React.FC = () => {
                   onChange={(e) => setFirstName(e.target.value)}
                   required
                   className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
-                  placeholder="John"
+                  placeholder=""
                   aria-label="First Name"
                 />
               </div>
               
               <div className="space-y-1.5">
-                <label htmlFor="lastName" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
-                  Last Name
+                <label htmlFor="lastName" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray font-jost">
+                  LAST NAME
                 </label>
                 <Input
                   id="lastName"
@@ -145,15 +145,15 @@ const RegisterPage: React.FC = () => {
                   onChange={(e) => setLastName(e.target.value)}
                   required
                   className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
-                  placeholder="Doe"
+                  placeholder=""
                   aria-label="Last Name"
                 />
               </div>
             </div>
             
             <div className="space-y-1.5">
-              <label htmlFor="email" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
-                Email
+              <label htmlFor="email" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray font-jost">
+                EMAIL
               </label>
               <Input
                 id="email"
@@ -162,15 +162,15 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
-                placeholder="you@example.com"
+                placeholder=""
                 autoComplete="email"
                 aria-label="Email"
               />
             </div>
             
             <div className="space-y-1.5">
-              <label htmlFor="username" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
-                Username
+              <label htmlFor="username" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray font-jost">
+                USERNAME
               </label>
               <Input
                 id="username"
@@ -178,15 +178,15 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
-                placeholder="username"
+                placeholder=""
                 autoComplete="username"
                 aria-label="Username"
               />
             </div>
             
             <div className="space-y-1.5">
-              <label htmlFor="password" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
-                Password
+              <label htmlFor="password" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray font-jost">
+                PASSWORD
               </label>
               <Input
                 id="password"
@@ -195,15 +195,15 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
-                placeholder="••••••••"
+                placeholder=""
                 autoComplete="new-password"
                 aria-label="Password"
               />
             </div>
             
             <div className="space-y-1.5">
-              <label htmlFor="confirmPassword" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
-                Confirm Password
+              <label htmlFor="confirmPassword" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray font-jost">
+                CONFIRM PASSWORD
               </label>
               <Input
                 id="confirmPassword"
@@ -212,7 +212,7 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
-                placeholder="••••••••"
+                placeholder=""
                 autoComplete="new-password"
                 aria-label="Confirm Password"
               />
@@ -220,7 +220,7 @@ const RegisterPage: React.FC = () => {
             
             <Button 
               type="submit" 
-              className="mt-2 w-full bg-brass-gold font-heading text-sm uppercase text-white shadow-sm transition-all hover:bg-brass-gold/90" 
+              className="mt-2 w-full bg-brass-gold font-heading font-jost text-sm uppercase text-white shadow-sm transition-all hover:bg-brass-gold/90" 
               disabled={isLoading}
               aria-label="Create Account"
             >
@@ -237,9 +237,9 @@ const RegisterPage: React.FC = () => {
         </div>
 
         <div className="mt-4 text-center">
-          <p className="text-tactical-gray">
+          <p className="text-xs text-tactical-gray font-mono tracking-wider">
             Already have an account?{' '}
-            <Link to="/login" className="font-medium text-brass-gold hover:underline">
+            <Link to="/login" className="font-mono text-brass-gold hover:underline">
               Sign in
             </Link>
           </p>

@@ -113,8 +113,8 @@ const LoginPage: React.FC = () => {
             </div>
             
             <div className="space-y-1.5">
-              <label htmlFor="email" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
-                Email
+              <label htmlFor="email" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray font-jost">
+                EMAIL
               </label>
               <Input
                 id="email"
@@ -123,7 +123,7 @@ const LoginPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
-                placeholder="you@example.com"
+                placeholder=""
                 autoComplete="email"
                 aria-label="Email"
               />
@@ -131,10 +131,10 @@ const LoginPage: React.FC = () => {
             
             <div className="space-y-1.5">
               <div className="flex justify-between">
-                <label htmlFor="password" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray">
-                  Password
+                <label htmlFor="password" className="block text-sm font-medium uppercase tracking-wide text-tactical-gray font-jost">
+                  PASSWORD
                 </label>
-                <Link to="/forgot-password" className="text-sm font-medium text-brass-gold hover:underline font-mono">
+                <Link to="/forgot-password" className="text-xs font-mono text-brass-gold hover:underline tracking-wider">
                   Forgot password?
                 </Link>
               </div>
@@ -145,7 +145,7 @@ const LoginPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full rounded border border-army-tan/50 p-2 font-sans text-sm"
-                placeholder="••••••••"
+                placeholder=""
                 autoComplete="current-password"
                 aria-label="Password"
               />
@@ -153,7 +153,7 @@ const LoginPage: React.FC = () => {
 
             <Button
               type="submit"
-              className="w-full font-heading"
+              className="w-full font-heading font-jost"
               disabled={isLoading}
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
@@ -171,7 +171,7 @@ const LoginPage: React.FC = () => {
           </form>
 
           <div className="p-5 pt-0 text-center">
-            <p className="text-sm text-muted-foreground font-mono">
+            <p className="text-xs text-muted-foreground font-mono tracking-wider">
               Don't have an account?{' '}
               <Link
                 to="/register"
