@@ -408,7 +408,7 @@
 			children = (
 				BFD43D5A2DDB707800C9745D /* PTDesignSystem */,
 				BF7B49C82DD57FD200B50FE6 /* ptchampion-Info.plist */,
-				BF63E3BB2DB1C84E0037CD02,
+				BF63E3BB2DB1C84E0037CD02 /*  */,
 				BF63E3BA2DB1C84E0037CD02 /* Products */,
 				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
@@ -428,7 +428,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BF63E3BB2DB1C84E0037CD02 = {
+		BF63E3BB2DB1C84E0037CD02 /*  */ = {
 			isa = PBXGroup;
 			children = (
 				BF3DA80D2DD7C5D20052E268 /* Resources */,
@@ -778,13 +778,16 @@
 				BF63E3B52DB1C84E0037CD02 /* Sources */,
 				BF63E3B62DB1C84E0037CD02 /* Frameworks */,
 				BF63E3B72DB1C84E0037CD02 /* Resources */,
-				E45DE2888947E652AFC01AFD /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = ptchampion;
+			packageProductDependencies = (
+				E3F71887AD141B426AC88EEB /* GoogleSignIn */,
+				347C6F1E570021ADDE41BE6A /* GoogleSignInSwift */,
+			);
 			productName = ptchampion;
 			productReference = BF63E3B92DB1C84E0037CD02 /* ptchampion.app */;
 			productType = "com.apple.product-type.application";
@@ -859,6 +862,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				BF3DA81B2DD7D9A50052E268 /* XCRemoteSwiftPackageReference "mediapipe" */,
+				34CB0E9F957D679665069AD9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BF63E3BA2DB1C84E0037CD02 /* Products */;
@@ -951,27 +955,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# Clear Swift Package Manager caches only\nrm -rf ~/Library/Caches/org.swift.swiftpm/\n# Don't attempt to delete DerivedData from here\n";
-		};
-		E45DE2888947E652AFC01AFD /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ptchampion/Pods-ptchampion-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-ptchampion/Pods-ptchampion-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ptchampion/Pods-ptchampion-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1460,13 +1443,21 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */ = {
+		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../PTDesignSystem;
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		34CB0E9F957D679665069AD9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.0.0;
+			};
+		};
 		BF3DA8022DD7B8230052E268 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
@@ -1486,6 +1477,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		347C6F1E570021ADDE41BE6A /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34CB0E9F957D679665069AD9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		BF3DA8032DD7B8540052E268 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BF3DA8022DD7B8230052E268 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
@@ -1498,18 +1494,23 @@
 		};
 		BF5D31802DC7F6C40042EE65 /* Components */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
 			productName = Components;
 		};
 		BF5D31822DC7F6C40042EE65 /* DesignTokens */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
 			productName = DesignTokens;
 		};
 		BF5D31842DC7F6C40042EE65 /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
 			productName = PTDesignSystem;
+		};
+		E3F71887AD141B426AC88EEB /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 34CB0E9F957D679665069AD9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
