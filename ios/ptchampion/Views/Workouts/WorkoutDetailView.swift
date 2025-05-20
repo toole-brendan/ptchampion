@@ -141,6 +141,21 @@ struct WorkoutDetailView: View {
                 if workoutResult.exerciseType.lowercased() == "run" {
                     WorkoutDetailInfoRow(label: "Distance:", value: formatDistance(workoutResult.distanceMeters))
                     if isLongestRunPR { Text("🎉 Longest Run PR!").font(.caption).foregroundColor(.green).padding(.leading) }
+                    
+                    // 2-mile Completion Badge
+                    let twoMilesInMeters: Double = 3218.68
+                    if let distance = workoutResult.distanceMeters, distance >= twoMilesInMeters * 0.98 && distance <= twoMilesInMeters * 1.02 {
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("2-Mile Assessment Completed")
+                                .font(.callout)
+                                .foregroundColor(.green)
+                        }
+                        .padding(.leading)
+                        .padding(.bottom, 4)
+                    }
+                    
                     WorkoutDetailInfoRow(label: "Avg Pace:", value: formatPace(distanceMeters: workoutResult.distanceMeters, durationSeconds: workoutResult.durationSeconds))
                     if isFastestOverallPacePR { Text("🎉 Fastest Overall Pace PR!").font(.caption).foregroundColor(.green).padding(.leading) }
                     

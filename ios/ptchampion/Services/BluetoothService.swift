@@ -14,6 +14,8 @@ struct KnownServiceUUIDs {
     // Specialized UUIDs for specific device brands if needed
     struct Garmin {
         static let proprietary = CBUUID(string: "6A4E3E10-667B-11E3-949A-0800200C9A66") // Example Garmin proprietary service
+        static let fitnessMachine = CBUUID(string: "1826") // Fitness Machine Service
+        static let userData = CBUUID(string: "181C") // User Data Service often supported by Garmin
     }
     
     struct Polar {
@@ -273,7 +275,9 @@ class BluetoothService: NSObject, BluetoothServiceProtocol, ObservableObject {
         let serviceUUIDs: [CBUUID] = [
             KnownServiceUUIDs.heartRate,
             KnownServiceUUIDs.locationAndNavigation,
-            KnownServiceUUIDs.runningSpeedAndCadence
+            KnownServiceUUIDs.runningSpeedAndCadence,
+            KnownServiceUUIDs.Garmin.fitnessMachine,
+            KnownServiceUUIDs.Garmin.userData
         ]
         
         // Scan only for peripherals advertising the specified services

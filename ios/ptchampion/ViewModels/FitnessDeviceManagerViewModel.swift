@@ -332,6 +332,23 @@ class FitnessDeviceManagerViewModel: ObservableObject {
         }
     }
     
+    // Helper to determine if connected device is a Garmin
+    func isGarminDevice() -> Bool {
+        return connectedDeviceType == .garmin || 
+               (deviceManufacturer?.lowercased().contains("garmin") ?? false)
+    }
+    
+    // Check if the connected device supports location tracking
+    func deviceSupportsLocation() -> Bool {
+        // First check if we're actively receiving location data
+        if isReceivingLocationData {
+            return true
+        }
+        
+        // Otherwise check based on device type
+        return FitnessDeviceType.supportsLocation(connectedDeviceType)
+    }
+    
     // New method to get the preferred device
     func hasPreferredDevice() -> Bool {
         return bluetoothService.getPreferredDeviceUUID() != nil

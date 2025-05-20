@@ -5,6 +5,9 @@ import SwiftData
 import SwiftUI
 import CoreBluetooth
 import HealthKit
+#if os(iOS)
+import UIKit
+#endif
 
 @MainActor
 class RunWorkoutViewModel: ObservableObject {
@@ -421,6 +424,20 @@ class RunWorkoutViewModel: ObservableObject {
              updateCurrentPaceDisplay(speed: newLocation.speed > 0 ? newLocation.speed : 0)
          }
          self.locationUpdates.append(newLocation)
+         
+         // Check if 2 miles (3218.68 meters) has been reached and stop the run if so
+         let goalDistanceMeters = 2.0 / metersToMiles
+         if totalDistanceMeters >= goalDistanceMeters && runState == .running {
+             print("RunWorkoutViewModel: 2 miles reached, stopping run.")
+             
+             // Trigger haptic feedback on 2-mile completion
+             #if os(iOS)
+             let generator = UINotificationFeedbackGenerator()
+             generator.notificationOccurred(.success)
+             #endif
+             
+             stopRun()
+         }
     }
 
     // This method now DECIDES which source to subscribe to
@@ -666,9 +683,20 @@ class RunWorkoutViewModel: ObservableObject {
          }
          let runExerciseId = 4
 
+         // Determine the proper source attribution for the workout
+         let sourceName: String
+         if isUsingAppleWatch { 
+             sourceName = "Apple Watch" 
+         } else if let deviceName = connectedDeviceName {
+             sourceName = deviceName 
+         } else {
+             sourceName = "Phone GPS"
+         }
+
          let metadataDict: [String: Any] = [
-             "source": connectedDeviceName ?? "Phone GPS",
+             "source": sourceName,
              "distance_unit": distanceUnit.rawValue,
+             "auto_stopped": totalDistanceMeters >= (2.0 / metersToMiles)
          ]
          let metadataString = try? JSONSerialization.data(withJSONObject: metadataDict)
                                      .base64EncodedString()

@@ -225,36 +225,52 @@ struct RunWorkoutView: View {
     
     @ViewBuilder
     private func runMetricsHeader() -> some View {
-        Grid(alignment: .center, horizontalSpacing: 10, verticalSpacing: 15) {
-            GridRow {
-                MetricDisplay(label: "DISTANCE", value: viewModel.distanceFormatted)
-                MetricDisplay(label: "TIME", value: viewModel.elapsedTimeFormatted)
+        VStack(spacing: 0) {
+            // Two Mile Auto-Stop Indicator
+            HStack {
+                Spacer()
+                Text("Auto-Stop at 2 miles")
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(AppTheme.GeneratedColors.warning.opacity(0.3))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    .cornerRadius(12)
+                Spacer()
             }
-            GridRow {
-                MetricDisplay(label: "AVG PACE", value: viewModel.averagePaceFormatted)
-                MetricDisplay(label: "CUR PACE", value: viewModel.currentPaceFormatted)
-            }
+            .padding(.top, 4)
             
-            // Add Heart Rate and Cadence in a row
-            GridRow {
-                // Heart Rate Display
-                MetricDisplay(
-                    label: "HEART RATE",
-                    value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM",
-                    icon: "heart.fill",
-                    iconColor: .red
-                )
+            Grid(alignment: .center, horizontalSpacing: 10, verticalSpacing: 15) {
+                GridRow {
+                    MetricDisplay(label: "DISTANCE", value: viewModel.distanceFormatted)
+                    MetricDisplay(label: "TIME", value: viewModel.elapsedTimeFormatted)
+                }
+                GridRow {
+                    MetricDisplay(label: "AVG PACE", value: viewModel.averagePaceFormatted)
+                    MetricDisplay(label: "CUR PACE", value: viewModel.currentPaceFormatted)
+                }
                 
-                // Cadence Display
-                MetricDisplay(
-                    label: "CADENCE",
-                    value: viewModel.currentCadence != nil ? "\(viewModel.currentCadence!) SPM" : "-- SPM",
-                    icon: "metronome",
-                    iconColor: .blue
-                )
+                // Add Heart Rate and Cadence in a row
+                GridRow {
+                    // Heart Rate Display
+                    MetricDisplay(
+                        label: "HEART RATE",
+                        value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM",
+                        icon: "heart.fill",
+                        iconColor: .red
+                    )
+                    
+                    // Cadence Display
+                    MetricDisplay(
+                        label: "CADENCE",
+                        value: viewModel.currentCadence != nil ? "\(viewModel.currentCadence!) SPM" : "-- SPM",
+                        icon: "metronome",
+                        iconColor: .blue
+                    )
+                }
             }
+            .padding()
         }
-        .padding()
         .background(AppTheme.GeneratedColors.deepOps)
     }
     

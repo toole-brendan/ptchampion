@@ -27,6 +27,18 @@ enum FitnessDeviceType: String, Codable {
             return .genericFitnessTracker
         }
     }
+    
+    // Helper method to determine if the device supports location data
+    static func supportsLocation(_ type: FitnessDeviceType) -> Bool {
+        switch type {
+        case .garmin, .suunto, .polar:
+            return true // Most modern fitness watches support location
+        case .appleWatch:
+            return false // Apple Watch location comes through HealthKit, not BLE
+        default:
+            return false
+        }
+    }
 }
 
 // MARK: - Running Metrics
