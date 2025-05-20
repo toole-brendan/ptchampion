@@ -3,6 +3,9 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award, ChevronLeft, ChevronRight, Loader2, History as HistoryIcon, Flame, AreaChart } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import { keepPreviousData } from '@tanstack/react-query';
+import { DayPickerRangeProps } from "react-day-picker";
+import { useNavigate } from 'react-router-dom';
+import { DateRange as RDDateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,19 +27,11 @@ import { ExerciseResponse } from '../lib/types';
 import { useAuth } from '../lib/authContext';
 import { formatTime, formatDistance } from '../lib/utils';
 
-// Define the DateRange type if it's not imported
-type DateRange = {
-  from: Date;
-  to?: Date;
-};
-
-// Define the PaginatedExercisesResponse type if it's not imported
-interface PaginatedExercisesResponse {
-  items: ExerciseResponse[];
-  total_count: number;
-  page: number;
-  page_size: number;
-}
+// Import the exercise PNG images 
+import pushupImage from '../assets/pushup.png';
+import pullupImage from '../assets/pullup.png';
+import situpImage from '../assets/situp.png';
+import runningImage from '../assets/running.png';
 
 // Create exercise filter buttons similar to iOS ExerciseFilterBarView
 interface FilterButtonProps {
@@ -86,12 +81,26 @@ const getExerciseMetric = (exercise: string): { metric: 'reps' | 'distance' | nu
 
 const DEFAULT_PAGE_SIZE = 15;
 
+// Define the PaginatedExercisesResponse type if it's not imported
+interface PaginatedExercisesResponse {
+  items: ExerciseResponse[];
+  total_count: number;
+  page: number;
+  page_size: number;
+}
+
 const History: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [page, setPage] = useState(1);
   const [pageSize] = useState(DEFAULT_PAGE_SIZE);
   const [exerciseFilter, setExerciseFilter] = useState<string>('All');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<RDDateRange | undefined>(undefined);
+  const navigate = useNavigate();
+
+  // Create a properly typed handler for Calendar's onSelect
+  const handleDateRangeSelect: DayPickerRangeProps['onSelect'] = (range) => {
+    setDateRange(range);
+  };
 
   const { 
     data: paginatedData, 
@@ -492,7 +501,10 @@ const History: React.FC = () => {
                     mode="range"
                     defaultMonth={dateRange?.from}
                     selected={dateRange}
-                    onSelect={setDateRange}
+                    onSelect={(range) => {
+                      // @ts-ignore - Type compatibility issue between the DateRange types
+                      setDateRange(range);
+                    }}
                     numberOfMonths={2}
                   />
                 </PopoverContent>
@@ -672,6 +684,7 @@ const History: React.FC = () => {
             title="Personal Records"
             description="Your top performance records"
             icon={<Award className="size-5" />}
+            contentClassName="bg-white"
           >
             <ul className="space-y-3">
               {personalBests.map((pb, index) => (
@@ -698,71 +711,87 @@ const History: React.FC = () => {
           title="Training Record"
           description="Detailed log of workouts matching your filters"
           icon={<HistoryIcon className="size-5" />}
+          contentClassName="bg-white"
         >
-          <div className="rounded-card overflow-hidden bg-white">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
-                  <TableHead className="w-[130px] font-heading text-xs uppercase tracking-wider text-tactical-gray">Exercise</TableHead>
-                  <TableHead className="font-heading text-xs uppercase tracking-wider text-tactical-gray">Date</TableHead>
-                  <TableHead className="font-heading text-xs uppercase tracking-wider text-tactical-gray">Duration</TableHead>
-                  <TableHead className="text-right font-heading text-xs uppercase tracking-wider text-tactical-gray">Performance</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredHistory.length > 0 ? (
-                  filteredHistory.map((session) => (
-                    <TableRow key={session.id} className="border-b border-olive-mist/10 text-sm transition-colors hover:bg-brass-gold/5">
-                      <TableCell className="font-semibold uppercase text-command-black">{session.exercise_type}</TableCell>
-                      <TableCell className="text-tactical-gray">{format(new Date(session.created_at), "PP p")}</TableCell>
-                      <TableCell className="text-tactical-gray">{session.time_in_seconds ? formatTime(session.time_in_seconds) : '-'}</TableCell>
-                      <TableCell className="text-right font-heading text-brass-gold">
-                        {session.reps !== undefined && session.reps !== null
-                          ? `${session.reps} reps`
-                          : session.distance !== undefined && session.distance !== null
-                            ? formatDistance(session.distance)
-                            : '-'}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center font-semibold text-sm text-tactical-gray">
-                      {exercises.length > 0 
-                        ? "No sessions found matching your current filters."
-                        : "Loading sessions..."}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          {filteredHistory.length > 0 ? (
+            <div className="space-y-2">
+              {filteredHistory.map((session) => (
+                <div 
+                  key={session.id} 
+                  className="flex items-center justify-between p-4 bg-white hover:bg-brass-gold hover:bg-opacity-5 cursor-pointer rounded-md"
+                  onClick={() => navigate ? navigate(`/history/${session.id}`) : window.location.href = `/history/${session.id}`}
+                >
+                  <div className="flex items-center">
+                    <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
+                      {session.exercise_type && (
+                        session.exercise_type.toUpperCase().includes('PUSH') ? 
+                          <img src={pushupImage} alt="Push-ups" className="size-6" /> :
+                        session.exercise_type.toUpperCase().includes('PULL') ? 
+                          <img src={pullupImage} alt="Pull-ups" className="size-6" /> :
+                        session.exercise_type.toUpperCase().includes('SIT') ? 
+                          <img src={situpImage} alt="Sit-ups" className="size-6" /> :
+                        session.exercise_type.toUpperCase().includes('RUN') ? 
+                          <img src={runningImage} alt="Running" className="size-6" /> :
+                          <Dumbbell className="size-5 text-brass-gold" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-sm uppercase text-command-black">
+                        {session.exercise_type}
+                      </h3>
+                      <p className="text-xs text-tactical-gray">
+                        {format(new Date(session.created_at), "PP p")}
+                        {session.time_in_seconds ? ` · ${formatTime(session.time_in_seconds)}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="font-heading text-xl text-brass-gold">
+                    {session.reps !== undefined && session.reps !== null
+                      ? `${session.reps} reps`
+                      : session.distance !== undefined && session.distance !== null
+                        ? formatDistance(session.distance)
+                        : '-'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-card overflow-hidden bg-white p-8 text-center">
+              <p className="font-semibold text-sm text-tactical-gray">
+                {exercises.length > 0 
+                  ? "No sessions found matching your current filters."
+                  : "Loading sessions..."}
+              </p>
+            </div>
+          )}
           
-          <div className="mt-4 flex items-center justify-between">
-            <div className="text-sm text-tactical-gray">
-              Page {page} of {totalPages} ({totalCount} total records)
+          {filteredHistory.length > 0 && (
+            <div className="mt-4 flex items-center justify-between">
+              <div className="text-sm text-tactical-gray">
+                Page {page} of {totalPages} ({totalCount} total records)
+              </div>
+              <div className="space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+                  disabled={page <= 1 || isFetching}
+                  className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+                >
+                  <ChevronLeft className="mr-1 size-4" /> PREV
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={page >= totalPages || isFetching}
+                  className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
+                >
+                  NEXT <ChevronRight className="ml-1 size-4" />
+                </Button>
+              </div>
             </div>
-            <div className="space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-                disabled={page <= 1 || isFetching}
-                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
-              >
-                <ChevronLeft className="mr-1 size-4" /> PREV
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-                disabled={page >= totalPages || isFetching}
-                className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
-              >
-                NEXT <ChevronRight className="ml-1 size-4" />
-              </Button>
-            </div>
-          </div>
+          )}
         </SectionCard>
       </div>
     </div>

@@ -26,6 +26,11 @@ import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Player } from '@lottiefiles/react-lottie-player';
 import emptyHistoryAnimation from '@/assets/empty-leaderboard.json'; // Reusing leaderboard animation for now
 
+// Import exercise PNG images 
+import pushupImage from '../assets/pushup.png';
+import pullupImage from '../assets/pullup.png';
+import situpImage from '../assets/situp.png';
+import runningImage from '../assets/running.png';
 
 const WorkoutHistoryView: React.FC = () => {
   const { isLoading: isAuthLoading } = useAuth();
@@ -230,6 +235,7 @@ const WorkoutHistoryView: React.FC = () => {
             iconClassName="text-brass-gold"
             valueClassName="font-heading text-heading2 text-command-black"
             index={0}
+            className="bg-white"
           />
           <MetricCard
             title="TOTAL TIME"
@@ -238,6 +244,7 @@ const WorkoutHistoryView: React.FC = () => {
             iconClassName="text-brass-gold"
             valueClassName="font-heading text-heading2 text-command-black"
             index={1}
+            className="bg-white"
           />
           <MetricCard
             title="TOTAL REPS"
@@ -246,6 +253,7 @@ const WorkoutHistoryView: React.FC = () => {
             iconClassName="text-brass-gold"
             valueClassName="font-heading text-heading2 text-command-black"
             index={2}
+            className="bg-white"
           />
           <MetricCard
             title="TOTAL DISTANCE"
@@ -255,6 +263,7 @@ const WorkoutHistoryView: React.FC = () => {
             iconClassName="text-brass-gold"
             valueClassName="font-heading text-heading2 text-command-black"
             index={3}
+            className="bg-white"
           />
         </div>
 
@@ -279,12 +288,32 @@ const WorkoutHistoryView: React.FC = () => {
                 return (
                   <li 
                     key={index} 
-                    className="border-b border-olive-mist/10 transition-colors hover:bg-brass-gold/5 rounded-card p-3"
+                    className="border-b border-olive-mist/10 transition-colors hover:bg-brass-gold/5 rounded-card p-3 bg-white"
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="font-heading text-sm uppercase text-command-black">{pb.exercise_type}</span>
-                        <span className="font-semibold text-xs text-tactical-gray">{metric}</span>
+                      <div className="flex items-center">
+                        <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
+                          {pb.exercise_type.toLowerCase().includes('push') ? 
+                            <img src={pushupImage} alt="Push-ups" className="size-6" /> :
+                          pb.exercise_type.toLowerCase().includes('pull') ? 
+                            <img src={pullupImage} alt="Pull-ups" className="size-6" /> :
+                          pb.exercise_type.toLowerCase().includes('sit') ? 
+                            <img src={situpImage} alt="Sit-ups" className="size-6" /> :
+                          pb.exercise_type.toLowerCase().includes('run') ? 
+                            <img src={runningImage} alt="Running" className="size-6" /> :
+                            <Dumbbell className="size-5 text-brass-gold" />
+                          }
+                        </div>
+                        <div className="flex flex-col">
+                          <h3 className="mb-0.5 font-heading text-sm uppercase text-command-black">
+                            {pb.exercise_type.toLowerCase().includes('push') ? 'Push-ups' :
+                             pb.exercise_type.toLowerCase().includes('pull') ? 'Pull-ups' :
+                             pb.exercise_type.toLowerCase().includes('sit') ? 'Sit-ups' :
+                             pb.exercise_type.toLowerCase().includes('run') ? 'Running' :
+                             pb.exercise_type}
+                          </h3>
+                          <span className="font-semibold text-xs text-tactical-gray">{metric}</span>
+                        </div>
                       </div>
                       <div className="text-right">
                         <p className="font-heading text-xl text-brass-gold">{value}</p>

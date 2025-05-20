@@ -11,7 +11,7 @@ import runningImage from '../../assets/running.png';
 
 interface WorkoutCardProps {
   id: string;
-  exerciseType: 'PUSHUP' | 'PULLUP' | 'SITUP' | 'RUNNING';
+  exerciseType: string;
   count?: number;
   distance?: number;
   duration: number;
@@ -32,37 +32,38 @@ export function WorkoutCard({
 }: WorkoutCardProps) {
   // Get the appropriate icon and display name based on exercise type
   const getExerciseDetails = () => {
-    switch (exerciseType) {
-      case 'PUSHUP':
-        return { 
-          name: 'Push-ups',
-          icon: pushupImage,
-          metric: count ? `${count} reps` : '-'
-        };
-      case 'PULLUP':
-        return { 
-          name: 'Pull-ups',
-          icon: pullupImage,
-          metric: count ? `${count} reps` : '-'
-        };
-      case 'SITUP':
-        return { 
-          name: 'Sit-ups',
-          icon: situpImage,
-          metric: count ? `${count} reps` : '-'
-        };
-      case 'RUNNING':
-        return { 
-          name: 'Running',
-          icon: runningImage,
-          metric: distance ? formatDistance(distance) : '-'
-        };
-      default:
-        return { 
-          name: exerciseType,
-          icon: null,
-          metric: count ? `${count} reps` : '-'
-        };
+    const type = exerciseType.toUpperCase();
+    
+    if (type.includes('PUSH')) {
+      return { 
+        name: 'Push-ups',
+        icon: pushupImage,
+        metric: count ? `${count} reps` : '-'
+      };
+    } else if (type.includes('PULL')) {
+      return { 
+        name: 'Pull-ups',
+        icon: pullupImage,
+        metric: count ? `${count} reps` : '-'
+      };
+    } else if (type.includes('SIT')) {
+      return { 
+        name: 'Sit-ups',
+        icon: situpImage,
+        metric: count ? `${count} reps` : '-'
+      };
+    } else if (type.includes('RUN')) {
+      return { 
+        name: 'Running',
+        icon: runningImage,
+        metric: distance ? formatDistance(distance) : '-'
+      };
+    } else {
+      return { 
+        name: exerciseType,
+        icon: null,
+        metric: count ? `${count} reps` : '-'
+      };
     }
   };
 
@@ -72,7 +73,7 @@ export function WorkoutCard({
   
   return (
     <div 
-      className="animate-slide-up flex items-center justify-between rounded-card px-4 py-3 transition-colors border border-olive-mist/20 hover:bg-brass-gold/5 focus-visible:outline-none focus-visible:ring-[var(--ring-focus)] cursor-pointer bg-cream/30"
+      className="animate-slide-up flex items-center justify-between rounded-card px-4 py-3 transition-colors border border-olive-mist/20 hover:bg-brass-gold/5 focus-visible:outline-none focus-visible:ring-[var(--ring-focus)] cursor-pointer bg-white"
       onClick={() => onClick(id)}
       tabIndex={0}
       role="button"

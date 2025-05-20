@@ -31,7 +31,13 @@ const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
 
 const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
   const location = useLocation();
-  const userInitial = username ? username.charAt(0).toUpperCase() : '?';
+  
+  // Extract the actual username if it has "Hello, " prefix
+  const actualUsername = username.startsWith('Hello, ') 
+    ? username.substring(7) // Remove "Hello, " prefix
+    : username;
+  
+  const userInitial = actualUsername ? actualUsername.charAt(0).toUpperCase() : '?';
   
   // Helper function to check if a nav item is active
   const isNavItemActive = (path: string) => {
@@ -47,7 +53,9 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
       <div className="grid grid-cols-3 w-full items-center">
         {/* Left - Logo */}
         <div className="flex items-center">
-          <LogoIcon className="size-10" />
+          <Link to="/" aria-label="Go to Dashboard">
+            <LogoIcon className="size-10 hover:opacity-80 transition-opacity" />
+          </Link>
           <SyncIndicator />
         </div>
 
@@ -87,7 +95,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
                     {userInitial}
                   </div>
                   <span className="ml-2 hidden md:inline text-brass-gold text-sm">
-                    {username}
+                    {actualUsername}
                   </span>
                   <ChevronDown size={16} className="ml-1 hidden md:inline" />
                 </div>
@@ -96,7 +104,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
             <PopoverContent className="w-56 bg-deep-ops border border-brass-gold border-opacity-20 p-0">
               <div className="text-cream">
                 <div className="border-b border-cream border-opacity-10 p-3">
-                  <p className="text-sm font-medium text-brass-gold">{username}</p>
+                  <p className="text-sm font-medium text-brass-gold">{actualUsername}</p>
                 </div>
                 
                 <div className="p-1">

@@ -70,6 +70,7 @@ export interface LeaderboardEntry {
   username: string;
   first_name?: string;
   last_name?: string;
+  display_name?: string;
   profile_picture_url?: string;
   max_grade: number;
   last_attempt_date: string; // Assuming ISO string format

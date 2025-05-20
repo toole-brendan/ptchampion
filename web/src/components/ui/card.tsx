@@ -193,6 +193,7 @@ function SectionCard({
   children,
   className,
   headerClassName,
+  contentClassName,
   showDivider = true,
   descriptionClassName,
   ...props
@@ -202,6 +203,7 @@ function SectionCard({
   icon?: React.ReactNode;
   children: React.ReactNode;
   headerClassName?: string;
+  contentClassName?: string;
   showDivider?: boolean;
   descriptionClassName?: string;
 } & Omit<CardProps, 'children'>) {
@@ -228,7 +230,7 @@ function SectionCard({
           </p>
         )}
       </div>
-      <div className="bg-cream-dark p-content">
+      <div className={cn("p-content", contentClassName ?? 'bg-cream-dark')}>
         {children}
       </div>
     </Card>
