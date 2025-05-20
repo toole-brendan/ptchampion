@@ -92,6 +92,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             
             let mockResponse = AuthResponse(
                 token: "mock-jwt-token-for-testing-registration-12345",
+                refreshToken: "mock-refresh-token-for-registration-12345",
                 user: AuthUserModel(
                     id: "456",
                     email: userInfo.email,

@@ -261,16 +261,12 @@ class WorkoutHistoryViewModel: ObservableObject {
             
             // Create a proper API request
             let request = InsertUserExerciseRequest(
-                userId: 0, // Will be determined by server from token
                 exerciseId: 0, // Will be determined by server from exerciseType
                 repetitions: workout.reps,
                 formScore: workout.score != nil ? Int(workout.score!) : nil,
                 timeInSeconds: Int(workout.duration),
                 grade: nil,
-                completed: true,
-                metadata: "{\"exerciseType\":\"\(workout.exerciseType)\"}", // Simple metadata
-                deviceId: UIDevice.current.identifierForVendor?.uuidString,
-                syncStatus: "synced"
+                completedAt: Date()
             )
             
             // Save to server
@@ -443,7 +439,8 @@ class WorkoutHistoryViewModel: ObservableObject {
                 durationSeconds: Int(workout.duration),
                 repCount: workout.reps,
                 score: workout.score,
-                distanceMeters: workout.distance
+                distanceMeters: workout.distance,
+                isPublic: false
             )
             context.insert(result)
         }
@@ -488,7 +485,9 @@ class WorkoutHistoryViewModel: ObservableObject {
                     endTime: workout.date.addingTimeInterval(workout.duration),
                     durationSeconds: Int(workout.duration),
                     repCount: workout.reps,
-                    distanceMeters: workout.distance
+                    score: workout.score,
+                    distanceMeters: workout.distance,
+                    isPublic: false
                 )
                 
                 // Set server ID and mark as synced since it came from the server
@@ -687,7 +686,8 @@ struct WorkoutHistory: Identifiable, Codable {
             durationSeconds: Int(duration),
             repCount: reps,
             score: score,
-            distanceMeters: distance
+            distanceMeters: distance,
+            isPublic: false
         )
         return workoutResult
     }
