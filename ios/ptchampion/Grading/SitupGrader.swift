@@ -13,7 +13,7 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
     static var requiredJointConfidence: Float = 0.6
     
     // Required stable frames
-    static var requiredStableFrames: Int = 3
+    static var requiredStableFrames: Int = 5 // Increased from 3 to match Push-up stability
     
     // Angle thresholds
     static let hipAngleDownMin: CGFloat = 150.0  // Min hip angle to be considered 'down' (Aligned w/ Android)
@@ -22,6 +22,9 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
     // Position thresholds
     static let elbowKneeProximityMaxY: CGFloat = 0.10 // Threshold for elbow-knee proximity (Aligned w/ Android)
     static let armsCrossedMaxDist: CGFloat = 0.15 // Threshold for wrist-opposite shoulder dist (Aligned w/ Android)
+    
+    // New thresholds for strict grading
+    static let pauseFrameThreshold: Int = Int(2.0 * targetFramesPerSecond) // ~2 seconds pause
 
     // MARK: - Situp States
     private enum SitupPhase {
@@ -52,6 +55,8 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
     private var minHipAngleThisRep: CGFloat = 180.0    // Track min angle when up
     private var armsWereCrossedThisRep: Bool = false   // Track arm position during UP phase
     private var stableFrameCounter: Int = 0
+    private var framesInPosition: Int = 0
+    private var previousState: SitupPhase = .starting
 
     // MARK: - Protocol Properties
     var currentPhaseDescription: String {
@@ -74,11 +79,13 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
     // MARK: - Protocol Methods
     func resetState() {
         currentState = .starting
+        previousState = .starting
         feedback = "Lie down, arms crossed, knees bent."
         repCount = 0
         formScores = []
         resetRepTrackingState()
         stableFrameCounter = 0
+        framesInPosition = 0
         _lastFormIssue = nil
         _problemJoints = [] // Reset problem joints
         print("SitupGrader: State reset.")
@@ -93,6 +100,8 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
     func gradePose(body: DetectedBody) -> GradingResult {
         feedback = "" // Reset feedback
         _problemJoints = [] // Reset problem joints for this frame
+        
+        previousState = currentState // Remember previous state for transitions
 
         // 1. Check Required Joint Confidence
         let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
@@ -144,22 +153,36 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
         let avgKneeY = (leftKnee.location.y + rightKnee.location.y) / 2.0
         let elbowKneeYDiff = abs(avgElbowY - avgKneeY)
 
+        // Form Issues Collection
+        var formIssues: [String] = []
+
         // 3. Form Check: Arms Crossed (Check distance from wrist to opposite shoulder)
         let leftWristToRightShoulder = distance(leftWrist.location, rightShoulder.location)
         let rightWristToLeftShoulder = distance(rightWrist.location, leftShoulder.location)
         let armsAreCrossed = (leftWristToRightShoulder < SitupGrader.armsCrossedMaxDist && 
                               rightWristToLeftShoulder < SitupGrader.armsCrossedMaxDist)
         
-        // If arms aren't crossed, mark problem joints
+        // If arms aren't crossed, add to form issues
         if !armsAreCrossed {
+            formIssues.append("Keep arms crossed over chest")
             _problemJoints.insert(.leftWrist)
             _problemJoints.insert(.rightWrist)
             _problemJoints.insert(.leftElbow)
             _problemJoints.insert(.rightElbow)
         }
 
+        // Check for pausing too long
+        if currentState == previousState {
+            framesInPosition += 1
+            if framesInPosition > SitupGrader.pauseFrameThreshold {
+                formIssues.append("Paused too long")
+                // No specific joint to highlight for pause
+            }
+        } else {
+            framesInPosition = 0
+        }
+
         // --- State Machine Logic --- 
-        let previousState = currentState
         var detectedState: SitupPhase
 
         // Determine potential state based on angles/proximity
@@ -198,113 +221,100 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
             if armsAreCrossed { armsWereCrossedThisRep = true }
         }
 
+        // Position-specific form checks
+        if currentState == .down && avgHipAngle < SitupGrader.hipAngleDownMin {
+            formIssues.append("Go all the way down")
+            _problemJoints.insert(.leftHip)
+            _problemJoints.insert(.rightHip)
+        } 
+        
+        if currentState == .up && avgHipAngle > SitupGrader.hipAngleUpMax {
+            formIssues.append("Go higher - elbows not close to knees")
+            _problemJoints.insert(.leftShoulder)
+            _problemJoints.insert(.rightShoulder)
+            _problemJoints.insert(.leftElbow)
+            _problemJoints.insert(.rightElbow)
+        }
+
         // Check for Rep Completion (Transition UP -> DOWN)
         var gradingResult: GradingResult = .noChange
-        if previousState == .up && currentState == .down {
+        
+        if previousState == .up && currentState == .down && stableFrameCounter >= SitupGrader.requiredStableFrames {
             var repFormIssues: [String] = []
-            var formQuality: Double = 1.0 // Start with perfect score
             
             // Check if up position was high enough
             if minHipAngleThisRep > SitupGrader.hipAngleUpMax {
-                repFormIssues.append("Sit up higher")
-                formQuality -= 0.3 // Reduce score for not going high enough
+                repFormIssues.append("Go higher - elbows not close to knees")
                 _problemJoints.insert(.leftShoulder)
                 _problemJoints.insert(.rightShoulder)
+                _problemJoints.insert(.leftElbow)
+                _problemJoints.insert(.rightElbow)
             }
             
             // Check if arms were crossed during the UP phase
             if !armsWereCrossedThisRep {
-                 repFormIssues.append("Keep arms crossed")
-                 formQuality -= 0.3 // Reduce score for not crossing arms
-                 _problemJoints.insert(.leftWrist)
-                 _problemJoints.insert(.rightWrist)
+                repFormIssues.append("Keep arms crossed over chest")
+                _problemJoints.insert(.leftWrist)
+                _problemJoints.insert(.rightWrist)
+                _problemJoints.insert(.leftElbow)
+                _problemJoints.insert(.rightElbow)
             }
             
-            // Apply minimum quality floor
-            formQuality = max(0.3, formQuality)
+            // Check if down position was fully reached in previous reps
+            if maxHipAngleThisRep < SitupGrader.hipAngleDownMin {
+                repFormIssues.append("Go all the way down")
+                _problemJoints.insert(.leftHip)
+                _problemJoints.insert(.rightHip)
+            }
             
-            // Add to form quality tracking
-            formScores.append(formQuality)
-
+            // Now, only count the rep if there are no form issues
             if repFormIssues.isEmpty {
                 repCount += 1
-                feedback = "Good rep! (\(repCount))"
-                gradingResult = .repCompleted(formQuality: formQuality)
+                feedback = "Good rep!"
+                formScores.append(1.0) // Perfect form
+                gradingResult = .repCompleted(formQuality: 1.0)
             } else {
-                repCount += 1 // Still count the rep even with issues
-                feedback = repFormIssues.joined(separator: ". ")
+                // Rep not counted due to form issues
+                feedback = repFormIssues.first ?? "Incorrect form"
                 _lastFormIssue = feedback
-                gradingResult = .repCompleted(formQuality: formQuality)
+                gradingResult = .incorrectForm(feedback: feedback)
             }
+            
             // Reset tracking for the next rep cycle
             resetRepTrackingState()
-
         } else {
             // Provide general feedback if no rep completed
-            gradingResult = .inProgress(phase: currentPhaseDescription)
-            if feedback.isEmpty { // Avoid overwriting specific form issue feedback
-                 switch currentState {
-                 case .down: feedback = "Sit up"
-                 case .up: feedback = "Lower down"
-                 case .starting: feedback = "Begin when ready"
-                 case .between: feedback = "Keep moving"
-                 case .invalid: feedback = "Fix pose"
-                 }
-            }
-        }
-
-        // Always check basic arm crossing form, even if not counting rep yet
-         if !armsAreCrossed && currentState != .down && currentState != .starting {
-             // Don't override rep completion/failure feedback
-             switch gradingResult {
-             case .inProgress, .noChange:
-                 // feedback = "Keep arms crossed over chest"
-                 _lastFormIssue = "Keep arms crossed over chest"
-                 _problemJoints.insert(.leftWrist)
-                 _problemJoints.insert(.rightWrist)
-                 _problemJoints.insert(.leftElbow)
-                 _problemJoints.insert(.rightElbow)
-                 // return .incorrectForm(feedback: feedback)
-                 // Continue without showing this tip on the HUD
-             default:
-                 break
-             }
-         }
-
-        // Immediate feedback on current position is now suppressed
-        if currentState == .down && avgHipAngle < SitupGrader.hipAngleDownMin {
-            // Use if-case for comparison
-            if case .inProgress = gradingResult {
-                // feedback = "Lower further"
-                _lastFormIssue = "Lower further"
-                _problemJoints.insert(.leftHip)
-                _problemJoints.insert(.rightHip)
-                // gradingResult = .incorrectForm(feedback: feedback)
-            } else if case .noChange = gradingResult {
-                // feedback = "Lower further"
-                _lastFormIssue = "Lower further"
-                _problemJoints.insert(.leftHip)
-                _problemJoints.insert(.rightHip)
-                // gradingResult = .incorrectForm(feedback: feedback)
-            }
-        } else if currentState == .up && avgHipAngle > SitupGrader.hipAngleUpMax {
-            // Use if-case for comparison
-            if case .inProgress = gradingResult {
-                // feedback = "Sit up higher"
-                _lastFormIssue = "Sit up higher"
-                _problemJoints.insert(.leftShoulder)
-                _problemJoints.insert(.rightShoulder)
-                // gradingResult = .incorrectForm(feedback: feedback)
-            } else if case .noChange = gradingResult {
-                // feedback = "Sit up higher"
-                _lastFormIssue = "Sit up higher"
-                _problemJoints.insert(.leftShoulder)
-                _problemJoints.insert(.rightShoulder)
-                // gradingResult = .incorrectForm(feedback: feedback)
+            if !formIssues.isEmpty {
+                feedback = formIssues.first ?? ""
+                _lastFormIssue = feedback
+                gradingResult = .incorrectForm(feedback: feedback)
+            } else {
+                gradingResult = .inProgress(phase: currentPhaseDescription)
+                if feedback.isEmpty { // Avoid overwriting specific form issue feedback
+                    switch currentState {
+                    case .down: feedback = "Sit up"
+                    case .up: feedback = "Lower down"
+                    case .starting: feedback = "Begin when ready"
+                    case .between: feedback = "Keep moving"
+                    case .invalid: feedback = "Fix pose"
+                    }
+                }
             }
         }
 
         return gradingResult
+    }
+
+    // Calculate angle between three points (used for hip angle)
+    private func calculateAngle(point1: CGPoint, centerPoint: CGPoint, point2: CGPoint) -> CGFloat {
+        let v1 = CGPoint(x: point1.x - centerPoint.x, y: point1.y - centerPoint.y)
+        let v2 = CGPoint(x: point2.x - centerPoint.x, y: point2.y - centerPoint.y)
+        
+        let dot = v1.x * v2.x + v1.y * v2.y
+        let cross = v1.x * v2.y - v1.y * v2.x
+        
+        let angleDegrees = atan2(cross, dot) * 180.0 / .pi
+        return abs(angleDegrees)
     }
 
     // Update state only if stable for enough frames
@@ -314,8 +324,8 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
         } else {
             stableFrameCounter = 0
             // Only change if required frames met OR the new state is invalid
-            if !stable || stableFrameCounter >= SitupGrader.requiredStableFrames || newState == .invalid {
-                 currentState = newState
+            if !stable || stableFrameCounter >= SitupGrader.requiredStableFrames || newState == .invalid || currentState == .starting {
+                currentState = newState
             } // else: keep current state until stability threshold is met
         }
     }

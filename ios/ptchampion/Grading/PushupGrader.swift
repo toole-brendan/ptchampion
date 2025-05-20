@@ -23,6 +23,12 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
     static let hipSagThreshold: CGFloat = 0.10     // Max deviation for hip sagging
     static let hipPikeThreshold: CGFloat = 0.12    // Max deviation for hip piking/raising
     static let shoulderAlignmentMaxXDiff: CGFloat = 0.10 // Max normalized X diff between shoulders
+    
+    // New thresholds for strict grading
+    static let pauseFrameThreshold: Int = Int(2.0 * targetFramesPerSecond) // ~2 seconds pause
+    static let wormingThreshold: CGFloat = 0.03 // 3% threshold for differential movement
+    static let groundTouchThreshold: CGFloat = 0.02 // 2% threshold for ground contact
+    static let liftThreshold: CGFloat = 0.05 // 5% threshold for limb lift-off
 
     // MARK: - States reflecting the phases of a push-up
     private enum PushupState: Equatable {
@@ -54,6 +60,15 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
     private var stableFramesInState: Int = 0
     private var consecutiveInvalidFrames: Int = 0
     private var inRepTransition: Bool = false
+    
+    // New state tracking for additional checks
+    private var framesInPosition: Int = 0
+    private var prevAvgShoulderY: CGFloat?
+    private var prevAvgHipY: CGFloat?
+    private var prevLeftWristY: CGFloat?
+    private var prevRightWristY: CGFloat?
+    private var prevLeftAnkleY: CGFloat?
+    private var prevRightAnkleY: CGFloat?
 
     // MARK: - Protocol Properties
     var currentPhaseDescription: String {
@@ -89,6 +104,16 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
         inRepTransition = false
         _lastFormIssue = nil
         _problemJoints = [] // Reset problem joints
+        
+        // Reset new state variables
+        framesInPosition = 0
+        prevAvgShoulderY = nil
+        prevAvgHipY = nil
+        prevLeftWristY = nil
+        prevRightWristY = nil
+        prevLeftAnkleY = nil
+        prevRightAnkleY = nil
+        
         print("PushupGrader: State reset.")
     }
 
@@ -150,6 +175,8 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
         let rightAnkle = body.point(.rightAnkle)!
         let leftKnee = body.point(.leftKnee)!
         let rightKnee = body.point(.rightKnee)!
+        let leftWrist = body.point(.leftWrist)!
+        let rightWrist = body.point(.rightWrist)!
 
         // 2. Calculate Key Angles & Positions
         // Use the DetectedBody helper to calculate the elbow angles
@@ -160,6 +187,10 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
         let avgShoulderY = (leftShoulder.location.y + rightShoulder.location.y) / 2.0
         let avgHipY = (leftHip.location.y + rightHip.location.y) / 2.0
         let avgAnkleY = (leftAnkle.location.y + rightAnkle.location.y) / 2.0
+        let leftKneeY = leftKnee.location.y
+        let rightKneeY = rightKnee.location.y
+        let leftHipY = leftHip.location.y
+        let rightHipY = rightHip.location.y
 
         // 3. Form Checks
         var formIssues: [String] = []
@@ -188,16 +219,69 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
 
         // Check for Sagging (Hips too low)
         if hipDeviationRatio > PushupGrader.hipSagThreshold {
-             formIssues.append("Keep hips from sagging")
+             formIssues.append("Body sagging")
              _problemJoints.insert(.leftHip)
              _problemJoints.insert(.rightHip)
         }
 
         // Check for Piking (Hips too high)
         if hipDeviationRatio < -PushupGrader.hipPikeThreshold { // Check against negative threshold for piking
-             formIssues.append("Lower your hips")
+             formIssues.append("Body piking")
              _problemJoints.insert(.leftHip)
              _problemJoints.insert(.rightHip)
+        }
+        
+        // c) Check for worming (shoulders and hips moving asynchronously)
+        if let prevShoulderY = prevAvgShoulderY, let prevHipY = prevAvgHipY {
+            let shoulderMove = abs(avgShoulderY - prevShoulderY)
+            let hipMove = abs(avgHipY - prevHipY)
+            
+            if abs(shoulderMove - hipMove) > PushupGrader.wormingThreshold {
+                formIssues.append("Worming detected")
+                _problemJoints.insert(.leftShoulder)
+                _problemJoints.insert(.rightShoulder)
+                _problemJoints.insert(.leftHip)
+                _problemJoints.insert(.rightHip)
+            }
+        }
+        
+        // d) Check for ground contact (knees or body)
+        // Knees touching ground if knees close to hip height
+        if abs(leftKneeY - leftHipY) < PushupGrader.groundTouchThreshold ||
+            abs(rightKneeY - rightHipY) < PushupGrader.groundTouchThreshold {
+            formIssues.append("Knees touching ground")
+            _problemJoints.insert(.leftKnee)
+            _problemJoints.insert(.rightKnee)
+        }
+        
+        // Body touching ground if shoulders almost level with hips
+        if abs(avgShoulderY - avgHipY) < PushupGrader.groundTouchThreshold {
+            formIssues.append("Body touching ground")
+            _problemJoints.insert(.leftShoulder)
+            _problemJoints.insert(.rightShoulder)
+            _problemJoints.insert(.leftHip)
+            _problemJoints.insert(.rightHip)
+        }
+        
+        // e) Check for hand/foot lift-off
+        if let prevLW = prevLeftWristY, let prevRW = prevRightWristY {
+            // If wrist is higher (y decreased) by threshold from last frame, hand was lifted
+            if prevLW - leftWrist.location.y > PushupGrader.liftThreshold ||
+                prevRW - rightWrist.location.y > PushupGrader.liftThreshold {
+                formIssues.append("Hands lifted off ground")
+                _problemJoints.insert(.leftWrist)
+                _problemJoints.insert(.rightWrist)
+            }
+        }
+        
+        if let prevLA = prevLeftAnkleY, let prevRA = prevRightAnkleY {
+            // If ankle is higher (y decreased) by threshold from last frame, foot was lifted
+            if prevLA - leftAnkle.location.y > PushupGrader.liftThreshold ||
+                prevRA - rightAnkle.location.y > PushupGrader.liftThreshold {
+                formIssues.append("Feet lifted off ground")
+                _problemJoints.insert(.leftAnkle)
+                _problemJoints.insert(.rightAnkle)
+            }
         }
 
         // Check for Elbow angle issues during DOWN state
@@ -206,21 +290,30 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
             _problemJoints.insert(.leftElbow)
             _problemJoints.insert(.rightElbow)
         }
+        
+        // f) Check for pausing too long
+        if currentState == previousState {
+            framesInPosition += 1
+            if framesInPosition > PushupGrader.pauseFrameThreshold {
+                formIssues.append("Paused too long")
+                // No specific joint to highlight for pause
+            }
+        } else {
+            framesInPosition = 0
+        }
+
+        // Update tracking variables for the next frame
+        prevAvgShoulderY = avgShoulderY
+        prevAvgHipY = avgHipY
+        prevLeftWristY = leftWrist.location.y
+        prevRightWristY = rightWrist.location.y
+        prevLeftAnkleY = leftAnkle.location.y
+        prevRightAnkleY = rightAnkle.location.y
 
         // Record form issues if any
         if !formIssues.isEmpty {
-            feedback = formIssues.joined(separator: ". ")
+            feedback = formIssues.first ?? ""  // Take the first issue as the primary feedback
             _lastFormIssue = feedback
-            
-            // Don't immediately return, but track the issue and continue evaluating
-            // This allows rep counting to continue even with minor form issues
-            
-            // Form issues in the down position are no longer returned immediately
-            // Commenting out the critical form check to avoid interrupting the user
-            // if currentState == .down {
-            //     // Form issues in the down position are critical
-            //     return .incorrectForm(feedback: feedback)
-            // }
         }
 
         // --- State Machine Logic --- 
@@ -230,14 +323,11 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
         if avgElbowAngle <= PushupGrader.elbowAngleDownMax {
             potentialState = .down
             // STATE TRANSITION: Moving into DOWN position (arms bent)
-            // print("PUSHUP STATE POTENTIAL: DOWN - elbows bent to \(avgElbowAngle)°")
         } else if avgElbowAngle >= PushupGrader.elbowAngleUpMin {
             potentialState = .up
             // STATE TRANSITION: Moving into UP position (arms extended)
-            // print("PUSHUP STATE POTENTIAL: UP - elbows extended to \(avgElbowAngle)°")
         } else {
             potentialState = .between // In transition
-            // print("PUSHUP STATE POTENTIAL: BETWEEN - elbows at \(avgElbowAngle)°")
         }
 
         // Check if state actually changed from previous frame
@@ -249,11 +339,9 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
             if (previousState == .up && potentialState == .between) || 
                (previousState == .down && potentialState == .between) {
                 inRepTransition = true
-                // print("PUSHUP TRANSITION STARTED: \(previousState) -> \(potentialState)")
             }
             else if previousState == .between && (potentialState == .up || potentialState == .down) {
                 inRepTransition = false
-                // print("PUSHUP TRANSITION COMPLETED: \(previousState) -> \(potentialState)")
             }
         } else {
             // Same state as last frame - increment stability counter
@@ -261,7 +349,7 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
         }
 
         // Update current state only if we've met stability threshold or it's the first frame
-        if stableFramesInState >= 2 || previousState == .starting {
+        if stableFramesInState >= PushupGrader.requiredStableFrames || previousState == .starting {
             // Stable new state - commit the change
             currentState = potentialState
         }
@@ -269,52 +357,47 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
         // Track minimum angle during the down phase or transition towards it
         if currentState == .down || (previousState == .up && currentState == .between) {
             minElbowAngleThisRep = min(minElbowAngleThisRep, avgElbowAngle)
-            // print("PUSHUP: Tracking min elbow angle: \(minElbowAngleThisRep)°")
         }
 
         // Check if went low enough (only relevant if currently down or moving up from down)
         if currentState == .down || (previousState == .down && (currentState == .between || currentState == .up)) {
             if minElbowAngleThisRep <= PushupGrader.elbowAngleDownMax {
                 wentLowEnoughThisRep = true
-                // print("PUSHUP: Went low enough with elbow angle \(minElbowAngleThisRep)°")
             }
         }
 
         // Check for Rep Completion - require a stable UP state after a DOWN state
-        if previousState == .down && currentState == .up && stableFramesInState >= 2 {
+        if previousState == .down && currentState == .up && stableFramesInState >= PushupGrader.requiredStableFrames {
             // STATE TRANSITION: DOWN -> UP (Stable) = Potential Rep Completion
-            // print("PUSHUP STATE TRANSITION: DOWN -> UP (Stable Position)")
             
             // Rep attempt: Transitioned from Down to Up
-            if wentLowEnoughThisRep {
+            if wentLowEnoughThisRep && formIssues.isEmpty {
                 // STATE TRANSITION: Valid Rep Completed
                 _repCount += 1 
                 
-                // Calculate form quality based on detected issues
-                let formQuality: Double = formIssues.isEmpty ? 1.0 : 0.7
+                // All counted reps have perfect form
+                let formQuality = 1.0
                 formScores.append(formQuality)
                 
-                feedback = formIssues.isEmpty ? "Good rep!" : "Rep counted with form issues"
+                feedback = "Good rep!"
                 
                 // Reset state for next rep
                 minElbowAngleThisRep = 180.0
                 wentLowEnoughThisRep = false
                 
-                // print("PUSHUP REP COMPLETED: #\(_repCount) with quality \(formQuality)")
                 return .repCompleted(formQuality: formQuality)
             } else {
-                // Didn't go low enough on the previous down phase
-                feedback = "Push lower for rep to count"
-                _lastFormIssue = "Push lower for rep to count"
-                _problemJoints.insert(.leftElbow)
-                _problemJoints.insert(.rightElbow)
+                // Either didn't go low enough or had form issues
+                let issueMsg = formIssues.first ?? "Push lower for rep to count"
+                feedback = issueMsg
+                _lastFormIssue = issueMsg
                 
                 // Reset state for next rep attempt
                 minElbowAngleThisRep = 180.0
                 wentLowEnoughThisRep = false
                 
-                // Return noChange instead of incorrectForm to avoid showing the message
-                return .noChange
+                // Return incorrect form to provide immediate feedback
+                return .incorrectForm(feedback: feedback)
             }
         }
 
@@ -323,19 +406,14 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
             switch currentState {
             case .up: 
                 feedback = "Lower body"
-                // print("PUSHUP FEEDBACK: In UP position, should lower body")
             case .down: 
                 feedback = "Push up"
-                // print("PUSHUP FEEDBACK: In DOWN position, should push up")
             case .starting: 
                 feedback = "Begin push-up"
-                // print("PUSHUP FEEDBACK: In STARTING position")
             case .between: 
                 feedback = inRepTransition ? "Keep going" : "Continue movement"
-                // print("PUSHUP FEEDBACK: In BETWEEN position")
             case .invalid: 
                 feedback = "Fix pose"
-                // print("PUSHUP FEEDBACK: In INVALID position")
             }
         }
 

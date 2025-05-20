@@ -65,6 +65,12 @@ class WorkoutSessionViewModel: ObservableObject {
     // Add a flag to ignore late pose detection results
     @Published private var isWorkoutActive: Bool = false
     
+    // MARK: - Feedback Message Persistence
+    // To prevent form feedback from flickering away too quickly
+    private var lastFormFeedback: String = ""
+    private var lastFormFeedbackTimestamp: Date = Date.distantPast
+    private let formFeedbackDisplayDuration: TimeInterval = 2.0 // 2 seconds
+    
     // MARK: - Services
     private var _cameraService: CameraServiceProtocol
     var cameraService: CameraServiceProtocol { _cameraService }
@@ -407,7 +413,7 @@ class WorkoutSessionViewModel: ObservableObject {
         switch result {
         case .repCompleted(let formQuality):
             updateUIFromGraderState()
-            newFeedbackMessage = "Rep Complete! Quality: \(Int(formQuality * 100))%"
+            newFeedbackMessage = "Good rep!"
             newShowFullBodyWarning = false
             
             if isSoundEnabled {
@@ -419,8 +425,18 @@ class WorkoutSessionViewModel: ObservableObject {
             
             saveRepData(formQuality: formQuality)
             
+            // Reset form feedback state since we've completed a rep
+            lastFormFeedback = ""
+            lastFormFeedbackTimestamp = Date.distantPast
+            
         case .inProgress(let phase):
-            newFeedbackMessage = phase ?? exerciseGrader.currentPhaseDescription
+            // Check if we should still display the previous form feedback
+            if !lastFormFeedback.isEmpty && Date().timeIntervalSince(lastFormFeedbackTimestamp) < formFeedbackDisplayDuration {
+                // Continue showing the form feedback
+                newFeedbackMessage = lastFormFeedback
+            } else {
+                newFeedbackMessage = phase ?? exerciseGrader.currentPhaseDescription
+            }
             newShowFullBodyWarning = false
             
         case .invalidPose(let reason):
@@ -431,18 +447,32 @@ class WorkoutSessionViewModel: ObservableObject {
             newFeedbackMessage = feedback
             newShowFullBodyWarning = false
             
+            // Store this form feedback to persist it
+            lastFormFeedback = feedback
+            lastFormFeedbackTimestamp = Date()
+            
         case .noChange:
-            newFeedbackMessage = exerciseGrader.currentPhaseDescription
+            // Check if we should still display the previous form feedback
+            if !lastFormFeedback.isEmpty && Date().timeIntervalSince(lastFormFeedbackTimestamp) < formFeedbackDisplayDuration {
+                // Continue showing the form feedback
+                newFeedbackMessage = lastFormFeedback
+            } else {
+                newFeedbackMessage = exerciseGrader.currentPhaseDescription
+            }
             newShowFullBodyWarning = false
         }
         
         // Get the rep count from the grader
         newRepCount = exerciseGrader.repCount
         
+        // Update problem joints from the grader
+        let newProblemJoints = exerciseGrader.problemJoints
+        
         // Update the published properties only once, which allows SwiftUI to batch the changes
         self.feedbackMessage = newFeedbackMessage
         self.showFullBodyWarning = newShowFullBodyWarning
         self.repCount = newRepCount
+        self.problemJoints = newProblemJoints
     }
     
     private func handleBodyLost() {
@@ -454,6 +484,10 @@ class WorkoutSessionViewModel: ObservableObject {
             // Apply state changes in a batch
             self.feedbackMessage = newFeedbackMessage
             self.showFullBodyWarning = true
+            
+            // Reset form feedback state
+            lastFormFeedback = ""
+            lastFormFeedbackTimestamp = Date.distantPast
         }
     }
     

@@ -13,7 +13,7 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
     static var requiredJointConfidence: Float = 0.6
     
     // Required stable frames
-    static var requiredStableFrames: Int = 3
+    static var requiredStableFrames: Int = 5 // Increased from 3 to match push-up stability
     
     // Angle thresholds
     static let elbowAngleDownMin: CGFloat = 160.0  // Min angle to be considered fully extended ('down')
@@ -24,6 +24,12 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
     static let kippingMaxHipYTravel: CGFloat = 0.10 // Max allowed vertical hip movement for kipping check
     static let chinHeightThreshold: CGFloat = 0.05  // Wrists this much (or less) *above* shoulders counts as "up"
     static let elbowShoulderDeadHangThreshold: CGFloat = 0.20 // Wrists this much (or more) *below* shoulders is "down"
+    
+    // New thresholds for strict grading
+    static let pauseFrameThreshold: Int = Int(2.0 * targetFramesPerSecond) // ~2 seconds pause
+    static let groundContactThreshold: CGFloat = 0.05 // Threshold for detecting ground contact
+    static let kneeBendingThreshold: CGFloat = 30.0 // Max angle change allowed for knees during a rep
+    static let ankleYShiftThreshold: CGFloat = 0.08 // Threshold for detecting sudden ankle movement
 
     // MARK: - Pullup States
     private enum PullupPhase {
@@ -36,6 +42,7 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
 
     // MARK: - Internal State Tracking
     private var currentState: PullupPhase = .starting
+    private var previousState: PullupPhase = .starting
     private var feedback: String = "Hang from bar, arms extended."
     private(set) var repCount: Int = 0
     private var _lastFormIssue: String? = nil
@@ -58,7 +65,16 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
     private var minHipYThisRep: CGFloat = 1.0            // Track min/max hip Y during rep
     private var maxHipYThisRep: CGFloat = 0.0
     private var stableFrameCounter: Int = 0
+    private var framesInPosition: Int = 0
     private var repInProgress: Bool = false              // Flag when moving from DOWN state
+    
+    // New tracking variables for form checks
+    private var prevLeftKneeAngle: CGFloat? = nil
+    private var prevRightKneeAngle: CGFloat? = nil
+    private var prevLeftAnkleY: CGFloat? = nil
+    private var prevRightAnkleY: CGFloat? = nil
+    private var minKneeAngleThisRep: CGFloat = 180.0
+    private var groundContactDetected: Bool = false
 
     // MARK: - Protocol Properties
     var currentPhaseDescription: String {
@@ -81,6 +97,7 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
     // MARK: - Protocol Methods
     func resetState() {
         currentState = .starting
+        previousState = .starting
         feedback = "Hang from bar, arms extended."
         repCount = 0
         formScores = []
@@ -89,8 +106,15 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
         _problemJoints = [] // Reset problem joints
         resetRepTrackingState()
         stableFrameCounter = 0
+        framesInPosition = 0
         repInProgress = false
         startingHipY = nil
+        prevLeftKneeAngle = nil
+        prevRightKneeAngle = nil
+        prevLeftAnkleY = nil
+        prevRightAnkleY = nil
+        minKneeAngleThisRep = 180.0
+        groundContactDetected = false
         print("PullupGrader: State reset.")
     }
 
@@ -101,17 +125,17 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
         // Don't reset startingHipY here, only on first valid frame or full reset
         minHipYThisRep = 1.0
         maxHipYThisRep = 0.0
+        minKneeAngleThisRep = 180.0
+        groundContactDetected = false
     }
 
     func gradePose(body: DetectedBody) -> GradingResult {
         feedback = "" // Reset feedback
         formIssues.removeAll()
         _problemJoints = [] // Reset problem joints for this frame
-
-        // Keep a snapshot of the state before analysing this frame
-        let previousState = currentState
-        // Default grading outcome; will be updated below
-        var gradingResult: GradingResult = .noChange
+        
+        // Keep track of previous state
+        previousState = currentState
 
         // 1. Check Required Joint Confidence
         let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
@@ -119,6 +143,8 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
             .leftElbow, .rightElbow,
             .leftWrist, .rightWrist,
             .leftHip, .rightHip, // Needed for kipping check
+            .leftKnee, .rightKnee, // Added for knee bend check
+            .leftAnkle, .rightAnkle, // Added for ground contact check
             .nose // Needed for chin height check
         ]
         
@@ -151,30 +177,70 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
         let nose = body.point(.nose)!
         let leftHip = body.point(.leftHip)!
         let rightHip = body.point(.rightHip)!
+        let leftKnee = body.point(.leftKnee)!
+        let rightKnee = body.point(.rightKnee)!
+        let leftAnkle = body.point(.leftAnkle)!
+        let rightAnkle = body.point(.rightAnkle)!
 
         // 2. Calculate Key Angles & Positions
         let leftElbowAngle = calculateAngle(point1: leftShoulder.location, centerPoint: leftElbow.location, point2: leftWrist.location)
         let rightElbowAngle = calculateAngle(point1: rightShoulder.location, centerPoint: rightElbow.location, point2: rightWrist.location)
         let avgElbowAngle = averageAngle(leftElbowAngle, rightElbowAngle) ?? 0.0 // Default bent
+        
+        // Calculate knee angles
+        let leftKneeAngle = calculateAngle(point1: leftHip.location, centerPoint: leftKnee.location, point2: leftAnkle.location)
+        let rightKneeAngle = calculateAngle(point1: rightHip.location, centerPoint: rightKnee.location, point2: rightAnkle.location)
 
         let avgWristY = (leftWrist.location.y + rightWrist.location.y) / 2.0
         let noseY = nose.location.y
         let chinIsAboveBar = noseY < (avgWristY - PullupGrader.chinAboveBarMinYDiff) // Smaller Y is higher
 
         let avgHipY = (leftHip.location.y + rightHip.location.y) / 2.0
+        let avgAnkleY = (leftAnkle.location.y + rightAnkle.location.y) / 2.0
 
         // Set starting hip position on first valid frame in starting/down state
         if startingHipY == nil && (currentState == .starting || currentState == .down) && avgElbowAngle >= PullupGrader.elbowAngleDownMin * 0.95 {
              startingHipY = avgHipY
         }
 
-        // Establish a shoulder‑level reference for relative Y‑position checks
-        let shoulderReferenceY = (leftShoulder.location.y + rightShoulder.location.y) / 2.0
+        // Check for pausing too long
+        if currentState == previousState {
+            framesInPosition += 1
+            if framesInPosition > PullupGrader.pauseFrameThreshold {
+                formIssues.append("Paused too long")
+                // No specific joint to highlight for pause
+            }
+        } else {
+            framesInPosition = 0
+        }
+        
+        // Check for knee bending/kicking
+        if let prevLeftAngle = prevLeftKneeAngle, let prevRightAngle = prevRightKneeAngle {
+            let leftKneeChange = abs(leftKneeAngle - prevLeftAngle)
+            let rightKneeChange = abs(rightKneeAngle - prevRightAngle)
+            
+            if leftKneeChange > PullupGrader.kneeBendingThreshold || rightKneeChange > PullupGrader.kneeBendingThreshold {
+                formIssues.append("Knee kicking detected")
+                _problemJoints.insert(.leftKnee)
+                _problemJoints.insert(.rightKnee)
+            }
+        }
+        
+        // Check for ground contact (sudden ankle movement)
+        if let prevLeftY = prevLeftAnkleY, let prevRightY = prevRightAnkleY {
+            let leftAnkleShift = abs(leftAnkle.location.y - prevLeftY)
+            let rightAnkleShift = abs(rightAnkle.location.y - prevRightY)
+            
+            if leftAnkleShift > PullupGrader.ankleYShiftThreshold || rightAnkleShift > PullupGrader.ankleYShiftThreshold {
+                formIssues.append("Feet touching ground")
+                _problemJoints.insert(.leftAnkle)
+                _problemJoints.insert(.rightAnkle)
+                groundContactDetected = true
+            }
+        }
 
         // 1. Determine potential state.
-        // STATE TRANSITION: We consider "up" when the chin clears the bar (chinIsAboveBar).
-        // STATE TRANSITION: We consider "down" when the elbows are almost fully extended.
-        var potentialState: PullupPhase = currentState
+        var potentialState: PullupPhase
         if chinIsAboveBar {
             potentialState = .up
             // STATE TRANSITION: Moving to UP state (chin above bar)
@@ -186,40 +252,14 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
             // STATE TRANSITION: In between positions
         }
 
-        // Update current state
-        currentState = potentialState
-
-        // 2. Check for Rep Completion: Transitioned from Down to Up
-        if previousState == .down && currentState == .up {
-            // STATE TRANSITION: DOWN to UP = potential rep start
-            repCount += 1
-            
-            // Default to perfect form for now, will calculate more precisely at end of rep
-            let formQuality = 1.0
-            
-            gradingResult = .repCompleted(formQuality: formQuality)
-            feedback = "Rep started! Pull complete. (\(repCount))"
-        } else {
-            // Provide feedback based on state if no rep was just counted
-            switch currentState {
-            case .up: feedback = "Lower yourself"
-            case .down: feedback = "Pull up"
-            case .starting: feedback = "Begin pull-ups"
-            case .between: feedback = "Keep moving"
-            case .invalid: feedback = "Fix pose"
-            }
-            
-            // Update grading result if still in progress
-            if case .noChange = gradingResult {
-                gradingResult = .inProgress(phase: currentPhaseDescription)
-            }
-        }
+        // Update stable state - only change state after sufficient stable frames
+        updateState(to: potentialState)
 
         // Start tracking rep if moving from DOWN state
         if previousState == .down && currentState != .down && !repInProgress {
             repInProgress = true
             resetRepTrackingState() // Reset tracking for the new rep attempt
-             if startingHipY == nil { startingHipY = avgHipY } // Capture hip starting Y if missed
+            if startingHipY == nil { startingHipY = avgHipY } // Capture hip starting Y if missed
         }
 
         // Track angles and positions during the rep
@@ -230,105 +270,133 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
             if chinIsAboveBar { chinWasAboveBarThisRep = true }
             minHipYThisRep = min(minHipYThisRep, avgHipY)
             maxHipYThisRep = max(maxHipYThisRep, avgHipY)
+            minKneeAngleThisRep = min(minKneeAngleThisRep, min(leftKneeAngle, rightKneeAngle))
         }
 
         // Check for Rep Completion (Transition UP -> DOWN)
-        if previousState == .up && currentState == .down && repInProgress {
-            // STATE TRANSITION: UP to DOWN = rep completion
+        var gradingResult: GradingResult = .noChange
+        
+        if previousState == .up && currentState == .down && stableFrameCounter >= PullupGrader.requiredStableFrames && repInProgress {
+            // STATE TRANSITION: UP to DOWN (stable) = rep completion
             var repFormIssues: [String] = []
-            var formQuality: Double = 1.0 // Start with perfect score
-
+            
             // a) Check Full Extension (using max angle achieved during rep)
             if maxElbowAngleThisRep < PullupGrader.elbowAngleDownMin {
-                repFormIssues.append("Extend arms fully at bottom")
-                formQuality -= 0.2
+                repFormIssues.append("Full hang between reps")
                 _problemJoints.insert(.leftElbow)
                 _problemJoints.insert(.rightElbow)
             }
             
             // b) Check Chin Over Bar (must have been true at some point during UP)
             if !chinWasAboveBarThisRep {
-                 repFormIssues.append("Chin did not clear bar")
-                 formQuality -= 0.3
-                 _problemJoints.insert(.nose)
-                 _problemJoints.insert(.neck)
+                repFormIssues.append("Pull higher - chin must clear bar")
+                _problemJoints.insert(.nose)
             }
             
             // c) Check Kipping (Hip Y travel)
             let hipTravel = maxHipYThisRep - minHipYThisRep
-            // Estimate body height (shoulder to hip) for normalization - crude approximation
+            // Estimate body height (shoulder to hip) for normalization
             let bodyHeightEstimate = abs(leftShoulder.location.y - leftHip.location.y) + abs(rightShoulder.location.y - rightHip.location.y) / 2.0
             if startingHipY != nil && bodyHeightEstimate > 0.1 && (hipTravel / bodyHeightEstimate) > PullupGrader.kippingMaxHipYTravel {
-                 repFormIssues.append("Excessive hip movement (kipping)")
-                 formQuality -= 0.3
-                 _problemJoints.insert(.leftHip)
-                 _problemJoints.insert(.rightHip)
+                repFormIssues.append("No kipping or swinging")
+                _problemJoints.insert(.leftHip)
+                _problemJoints.insert(.rightHip)
             }
             
             // d) Check Minimum Elbow Bend during Up phase
             if minElbowAngleThisRep > PullupGrader.elbowAngleUpRepCheckMax {
-                 repFormIssues.append("Arms not bent enough at top")
-                 formQuality -= 0.2
-                 _problemJoints.insert(.leftElbow)
-                 _problemJoints.insert(.rightElbow)
+                repFormIssues.append("Arms not bent enough at top")
+                _problemJoints.insert(.leftElbow)
+                _problemJoints.insert(.rightElbow)
             }
             
-            // Apply minimum quality floor and add to form tracking
-            formQuality = max(0.3, formQuality)
-            formScores.append(formQuality)
-
-            if repFormIssues.isEmpty {
-                feedback = "Good rep! (\(repCount))"
-                gradingResult = .repCompleted(formQuality: formQuality)
+            // e) Check for knee bending during rep
+            if minKneeAngleThisRep < 160.0 {
+                repFormIssues.append("Keep legs straight")
+                _problemJoints.insert(.leftKnee)
+                _problemJoints.insert(.rightKnee)
+            }
+            
+            // f) Check for ground contact during rep
+            if groundContactDetected {
+                repFormIssues.append("No ground contact during rep")
+                _problemJoints.insert(.leftAnkle)
+                _problemJoints.insert(.rightAnkle)
+            }
+            
+            // Now, only count the rep if there are no form issues
+            if repFormIssues.isEmpty && formIssues.isEmpty {
+                repCount += 1
+                formScores.append(1.0) // Perfect form
+                feedback = "Good rep!"
+                gradingResult = .repCompleted(formQuality: 1.0)
             } else {
-                feedback = repFormIssues.joined(separator: ". ")
+                // Combine all issues, but prioritize rep-specific issues
+                let allIssues = repFormIssues.isEmpty ? formIssues : repFormIssues
+                feedback = allIssues.first ?? "Incorrect form"
                 _lastFormIssue = feedback
-                gradingResult = .repCompleted(formQuality: formQuality)
+                gradingResult = .incorrectForm(feedback: feedback)
             }
             
-            // Reset tracking for the next rep attempt, mark rep as no longer in progress
+            // Reset tracking for the next rep attempt
             repInProgress = false
             resetRepTrackingState()
-            // Don't reset startingHipY unless fully resetting
-
         } else {
-            // Provide general feedback if no rep completed
-            if case .noChange = gradingResult {
-                gradingResult = .inProgress(phase: currentPhaseDescription)
+            // Ongoing form checks during the rep
+            // Position-specific form checks
+            if currentState == .down && avgElbowAngle < PullupGrader.elbowAngleDownMin {
+                formIssues.append("Full hang between reps")
+                _problemJoints.insert(.leftElbow)
+                _problemJoints.insert(.rightElbow)
+            } 
+            
+            if currentState == .up && !chinIsAboveBar {
+                formIssues.append("Pull higher - chin must clear bar")
+                _problemJoints.insert(.nose)
             }
             
-            if feedback.isEmpty { // Avoid overwriting specific form issue feedback
-                 switch currentState {
-                 case .down: feedback = "Pull up"
-                 case .up: feedback = "Lower down slowly"
-                 case .starting: feedback = "Begin when ready"
-                 case .between:
-                     if previousState == .down { feedback = "Pulling up..." }
-                     else if previousState == .up { feedback = "Lowering..." }
-                     else { feedback = "Keep moving"}
-                 case .invalid: feedback = "Fix pose"
-                 }
+            // Provide feedback on current form issues
+            if !formIssues.isEmpty {
+                feedback = formIssues.first ?? ""
+                _lastFormIssue = feedback
+                gradingResult = .incorrectForm(feedback: feedback)
+            } else {
+                // General guidance if no form issues
+                gradingResult = .inProgress(phase: currentPhaseDescription)
+                if feedback.isEmpty {
+                    switch currentState {
+                    case .down: feedback = "Pull up"
+                    case .up: feedback = "Lower down slowly"
+                    case .starting: feedback = "Begin when ready"
+                    case .between:
+                        if previousState == .down { feedback = "Pulling up..." }
+                        else if previousState == .up { feedback = "Lowering..." }
+                        else { feedback = "Keep moving"}
+                    case .invalid: feedback = "Fix pose"
+                    }
+                }
             }
         }
-
-         // Immediate feedback on current position if needed
-         if currentState == .down && avgElbowAngle < PullupGrader.elbowAngleDownMin {
-             // Form issue while in DOWN position
-             // feedback = "Extend arms fully"
-             _lastFormIssue = "Extend arms fully"
-             _problemJoints.insert(.leftElbow)
-             _problemJoints.insert(.rightElbow)
-             // gradingResult = .incorrectForm(feedback: feedback)
-         } else if currentState == .up && !chinIsAboveBar {
-             // Form issue while in UP position
-             // feedback = "Pull higher!"
-             _lastFormIssue = "Pull higher!"
-             _problemJoints.insert(.nose)
-             _problemJoints.insert(.neck)
-             // gradingResult = .incorrectForm(feedback: feedback)
-         }
+        
+        // Update tracking variables for next frame
+        prevLeftKneeAngle = leftKneeAngle
+        prevRightKneeAngle = rightKneeAngle
+        prevLeftAnkleY = leftAnkle.location.y
+        prevRightAnkleY = rightAnkle.location.y
 
         return gradingResult
+    }
+
+    // Calculate angle between three points
+    private func calculateAngle(point1: CGPoint, centerPoint: CGPoint, point2: CGPoint) -> CGFloat {
+        let v1 = CGPoint(x: point1.x - centerPoint.x, y: point1.y - centerPoint.y)
+        let v2 = CGPoint(x: point2.x - centerPoint.x, y: point2.y - centerPoint.y)
+        
+        let dot = v1.x * v2.x + v1.y * v2.y
+        let cross = v1.x * v2.y - v1.y * v2.x
+        
+        let angleDegrees = atan2(cross, dot) * 180.0 / .pi
+        return abs(angleDegrees)
     }
 
     // Update state only if stable for enough frames
@@ -336,38 +404,37 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
         if newState == currentState {
             if stable { stableFrameCounter += 1 }
         } else {
+            stableFrameCounter = 0
             // Only change if required frames met OR the new state is invalid
             // Also allow immediate transition *out* of invalid state
-            if !stable || stableFrameCounter >= PullupGrader.requiredStableFrames || newState == .invalid || currentState == .invalid {
-                 // Reset counter only if the state *actually* changes
-                 if currentState != newState { stableFrameCounter = 0 }
-                 currentState = newState
+            if !stable || stableFrameCounter >= PullupGrader.requiredStableFrames || newState == .invalid || currentState == .invalid || currentState == .starting {
+                currentState = newState
             } // else: keep current state until stability threshold is met
         }
     }
 
     // Helper to average angles
-     private func averageAngle(_ angle1: CGFloat?, _ angle2: CGFloat?) -> CGFloat? {
-         switch (angle1, angle2) {
-         case (.some(let a1), .some(let a2)): return (a1 + a2) / 2.0
-         case (.some(let a1), .none): return a1
-         case (.none, .some(let a2)): return a2
-         case (.none, .none): return nil
-         }
-     }
-     
-     func calculateFinalScore() -> Double? {
-         // If no reps completed, return nil
-         guard repCount > 0 else { return nil }
-         
-         // Base score is rep count * 10 (max 100)
-         let maxReps = 10 // 10 reps = 100 points
-         let repScore = min(Double(repCount) / Double(maxReps), 1.0) * 85.0 // 85% of score is rep count
-         
-         // Form quality contributes up to 15% of score
-         let formScore = formQualityAverage * 15.0
-         
-         // Total score combines rep count and form quality
-         return min(repScore + formScore, 100.0)
-     }
+    private func averageAngle(_ angle1: CGFloat?, _ angle2: CGFloat?) -> CGFloat? {
+        switch (angle1, angle2) {
+        case (.some(let a1), .some(let a2)): return (a1 + a2) / 2.0
+        case (.some(let a1), .none): return a1
+        case (.none, .some(let a2)): return a2
+        case (.none, .none): return nil
+        }
+    }
+    
+    func calculateFinalScore() -> Double? {
+        // If no reps completed, return nil
+        guard repCount > 0 else { return nil }
+        
+        // Base score is rep count * 10 (max 100)
+        let maxReps = 10 // 10 reps = 100 points
+        let repScore = min(Double(repCount) / Double(maxReps), 1.0) * 85.0 // 85% of score is rep count
+        
+        // Form quality contributes up to 15% of score
+        let formScore = formQualityAverage * 15.0
+        
+        // Total score combines rep count and form quality
+        return min(repScore + formScore, 100.0)
+    }
 }
