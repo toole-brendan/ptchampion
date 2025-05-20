@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5EAE46BDC4D53689486F7C6F /* Pods_ptchampion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */; };
 		BF199EB72DCD8CFE00E23EFF /* UserProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EB62DCD8CFE00E23EFF /* UserProfileView.swift */; };
 		BF199EBA2DCE225200E23EFF /* MockUserService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EB82DCE225200E23EFF /* MockUserService.swift */; };
 		BF199EBB2DCE225200E23EFF /* UserServiceProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */; };
@@ -149,7 +150,6 @@
 		BFBF2ECB2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECA2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift */; };
 		BFBF2ECD2DCFF6F100FFCF4F /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */; };
 		BFBF2ECF2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECE2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift */; };
-		DEB22FBFFB8222A0159C0C34 /* Pods_ptchampion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E8DC053B9DA433F971513094 /* Pods_ptchampion.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -170,8 +170,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		02C3AA52255D8645814B6960 /* Pods-ptchampion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.release.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.release.xcconfig"; sourceTree = "<group>"; };
-		3E484A13A8376C62BC51A1BE /* Pods-ptchampion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.debug.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.debug.xcconfig"; sourceTree = "<group>"; };
 		BF199EB62DCD8CFE00E23EFF /* UserProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfileView.swift; sourceTree = "<group>"; };
 		BF199EB82DCE225200E23EFF /* MockUserService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockUserService.swift; sourceTree = "<group>"; };
 		BF199EB92DCE225200E23EFF /* UserServiceProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserServiceProtocol.swift; sourceTree = "<group>"; };
@@ -318,7 +316,9 @@
 		BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		BFBF2ECE2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitnessDeviceManagerViewModel.swift; sourceTree = "<group>"; };
 		BFD43D5A2DDB707800C9745D /* PTDesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = PTDesignSystem; path = ../PTDesignSystem; sourceTree = SOURCE_ROOT; };
-		E8DC053B9DA433F971513094 /* Pods_ptchampion.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ptchampion.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.release.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.release.xcconfig"; sourceTree = "<group>"; };
+		D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ptchampion.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.debug.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -334,7 +334,7 @@
 				BF3DA8062DD7B8540052E268 /* GoogleSignInSwift in Frameworks */,
 				BF5D31812DC7F6C40042EE65 /* Components in Frameworks */,
 				BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */,
-				DEB22FBFFB8222A0159C0C34 /* Pods_ptchampion.framework in Frameworks */,
+				5EAE46BDC4D53689486F7C6F /* Pods_ptchampion.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -355,6 +355,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1F5F6846D3D01F224B55FCAA /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */,
+				C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		BF37B0412DCACABE00EC4D58 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
@@ -413,7 +423,7 @@
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
 				BF71D10F2DC444F9003E1F33 /* Recovered References */,
 				BF89EB4C2DC99462003F8FE3 /* Frameworks */,
-				DB45A3D088FA8E9884EDE365 /* Pods */,
+				1F5F6846D3D01F224B55FCAA /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -743,7 +753,7 @@
 			isa = PBXGroup;
 			children = (
 				BF89EB4D2DC99462003F8FE3 /* SwiftUI.framework */,
-				E8DC053B9DA433F971513094 /* Pods_ptchampion.framework */,
+				D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -756,16 +766,6 @@
 			path = Charts;
 			sourceTree = "<group>";
 		};
-		DB45A3D088FA8E9884EDE365 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				3E484A13A8376C62BC51A1BE /* Pods-ptchampion.debug.xcconfig */,
-				02C3AA52255D8645814B6960 /* Pods-ptchampion.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -773,7 +773,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = BF63E3DC2DB1C84F0037CD02 /* Build configuration list for PBXNativeTarget "ptchampion" */;
 			buildPhases = (
-				1D544090F9AC3A92B11DADF3 /* [CP] Check Pods Manifest.lock */,
+				9C51E621453C26E1F1F1FE09 /* [CP] Check Pods Manifest.lock */,
 				BF60DF342DC7C25F003487DB /* Clear Package Cache */,
 				BF63E3B52DB1C84E0037CD02 /* Sources */,
 				BF63E3B62DB1C84E0037CD02 /* Frameworks */,
@@ -861,7 +861,6 @@
 			mainGroup = BF63E3B02DB1C84E0037CD02;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BF3DA81B2DD7D9A50052E268 /* XCRemoteSwiftPackageReference "mediapipe" */,
 				34CB0E9F957D679665069AD9 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -911,7 +910,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		1D544090F9AC3A92B11DADF3 /* [CP] Check Pods Manifest.lock */ = {
+		9C51E621453C26E1F1F1FE09 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1238,7 +1237,7 @@
 		};
 		BF63E3DD2DB1C84F0037CD02 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 3E484A13A8376C62BC51A1BE /* Pods-ptchampion.debug.xcconfig */;
+			baseConfigurationReference = F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1280,7 +1279,7 @@
 		};
 		BF63E3DE2DB1C84F0037CD02 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 02C3AA52255D8645814B6960 /* Pods-ptchampion.release.xcconfig */;
+			baseConfigurationReference = C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -1459,14 +1458,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 1.0.0;
-			};
-		};
-		BF3DA81B2DD7D9A50052E268 /* XCRemoteSwiftPackageReference "mediapipe" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/google/mediapipe.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.8.3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
