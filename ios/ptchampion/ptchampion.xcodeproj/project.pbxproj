@@ -24,17 +24,12 @@
 		BF3DA8042DD7B8540052E268 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = BF3DA8032DD7B8540052E268 /* GoogleSignIn */; };
 		BF3DA8062DD7B8540052E268 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = BF3DA8052DD7B8540052E268 /* GoogleSignInSwift */; };
 		BF3DA80E2DD7C5D20052E268 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8092DD7C5D20052E268 /* Montserrat-SemiBold.ttf */; };
-		BF3DA80F2DD7C5D20052E268 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8082DD7C5D20052E268 /* Montserrat-Regular.ttf */; };
 		BF3DA8102DD7C5D20052E268 /* RobotoMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA80B2DD7C5D20052E268 /* RobotoMono-Medium.ttf */; };
 		BF3DA8112DD7C5D20052E268 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8072DD7C5D20052E268 /* Montserrat-Bold.ttf */; };
 		BF3DA8122DD7C5D20052E268 /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA80A2DD7C5D20052E268 /* RobotoMono-Bold.ttf */; };
 		BF3DA8162DD7C6590052E268 /* Jost-500-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8142DD7C6590052E268 /* Jost-500-Medium.ttf */; };
 		BF3DA8172DD7C6590052E268 /* Jost-400-Book.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8132DD7C6590052E268 /* Jost-400-Book.ttf */; };
 		BF3DA8182DD7C6590052E268 /* Jost-700-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8152DD7C6590052E268 /* Jost-700-Bold.ttf */; };
-		BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0032DBAF50000000003 /* Montserrat-Bold.ttf */; };
-		BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0042DBAF50000000004 /* Montserrat-SemiBold.ttf */; };
-		BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0052DBAF50000000005 /* RobotoMono-Bold.ttf */; };
-		BF50A27F2DC5870000534542 /* RobotoMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0062DBAF50000000006 /* RobotoMono-Medium.ttf */; };
 		BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
 		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
 		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
@@ -884,7 +879,6 @@
 				BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */,
 				BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */,
 				BF3DA80E2DD7C5D20052E268 /* Montserrat-SemiBold.ttf in Resources */,
-				BF3DA80F2DD7C5D20052E268 /* Montserrat-Regular.ttf in Resources */,
 				BF3DA8102DD7C5D20052E268 /* RobotoMono-Medium.ttf in Resources */,
 				BF3DA8112DD7C5D20052E268 /* Montserrat-Bold.ttf in Resources */,
 				BF3DA8162DD7C6590052E268 /* Jost-500-Medium.ttf in Resources */,
@@ -892,10 +886,6 @@
 				BF3DA8182DD7C6590052E268 /* Jost-700-Bold.ttf in Resources */,
 				BF3DA8122DD7C5D20052E268 /* RobotoMono-Bold.ttf in Resources */,
 				BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */,
-				BF50A27C2DC5870000534542 /* Montserrat-Bold.ttf in Resources */,
-				BF50A27D2DC5870000534542 /* Montserrat-SemiBold.ttf in Resources */,
-				BF50A27E2DC5870000534542 /* RobotoMono-Bold.ttf in Resources */,
-				BF50A27F2DC5870000534542 /* RobotoMono-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

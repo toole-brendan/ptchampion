@@ -10,7 +10,7 @@ target 'ptchampion' do
 
   # Pods for ptchampion
   pod 'MediaPipeTasksVision', '~> 0.10.5'
-#   pod 'GoogleSignIn', '~> 7.0.0'
+# #   pod 'GoogleSignIn', '~> 7.0.0'
 end
 
 post_install do |installer|
