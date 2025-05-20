@@ -103,3 +103,6 @@ android/app/build/outputs/apk/
 
 # Terraform provider binaries
 terraform/**/.terraform/providers/
+
+# iOS Configuration Files
+ios/ptchampion/Config.swift

@@ -46,9 +46,15 @@ class LeaderboardService: LeaderboardServiceProtocol {
             
             print("🔍 LeaderboardService[\(instanceId)]: Making API call to \(endpointPath) with params: \(queryParams)")
             
-            guard let client = networkClient else {
-                logger.info("No NetworkClient – returning empty array")
-                return []              // ← KEY CHANGE
+            // Use the shared NetworkClient if the injected one is nil
+            let client = networkClient ?? NetworkClient.shared
+            
+            // Check if we have a token in the client
+            if client.authToken == nil {
+                logger.info("Refreshing token from KeychainService before API call")
+                if let freshToken = KeychainService.shared.getAccessToken() {
+                    client.updateAuthToken(freshToken)
+                }
             }
             
             print("🔍 LeaderboardService[\(instanceId)]: NetworkClient available, making real API call")
@@ -124,9 +130,15 @@ class LeaderboardService: LeaderboardServiceProtocol {
             
             print("🔍 LeaderboardService[\(instanceId)]: Making API call to \(endpointPath) with params: \(queryParams)")
 
-            guard let client = networkClient else {
-                logger.info("No NetworkClient – returning empty array")
-                return []              // ← KEY CHANGE
+            // Use the shared NetworkClient if the injected one is nil
+            let client = networkClient ?? NetworkClient.shared
+            
+            // Check if we have a token in the client
+            if client.authToken == nil {
+                logger.info("Refreshing token from KeychainService before API call")
+                if let freshToken = KeychainService.shared.getAccessToken() {
+                    client.updateAuthToken(freshToken)
+                }
             }
             
             let backendEntries: [LocalLeaderboardEntry] = try await client.performRequest(

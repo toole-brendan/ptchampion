@@ -261,6 +261,17 @@ class FontManager {
 
 // Add AppDelegate to handle Google Sign-In URL callbacks
 class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        // Configure Google Sign-In with iOS client ID from Info.plist
+        if let clientID = Bundle.main.object(forInfoDictionaryKey: "GoogleClientID") as? String {
+            GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
+            print("Google Sign-In configured with client ID from Info.plist")
+        } else {
+            print("⚠️ Missing GoogleClientID in Info.plist")
+        }
+        return true
+    }
+    
     func application(_ application: UIApplication, open url: URL,
                      options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         // Let GoogleSignIn handle the URL

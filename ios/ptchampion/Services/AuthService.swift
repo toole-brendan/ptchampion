@@ -63,6 +63,9 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             networkClient.saveLoginCredentials(token: response.token, userId: response.user.id)
             KeychainService.shared.saveRefreshToken(response.refreshToken)
             
+            // Update shared NetworkClient with the new token
+            NetworkClient.shared.updateAuthToken(response.token)
+            
             print("AuthService: Login successful, credentials saved.")
             return response
         } catch {
@@ -134,6 +137,9 @@ class AuthService: ObservableObject, AuthServiceProtocol {
     func logout() {
         print("AuthService: Logging out, clearing credentials.")
         networkClient.clearLoginCredentials()
+        
+        // Clear the shared NetworkClient token
+        NetworkClient.shared.updateAuthToken(nil)
     }
     
     func updateUserLocation(latitude: Double, longitude: Double) async throws -> Void {
@@ -204,6 +210,9 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             
             networkClient.saveLoginCredentials(token: response.token, userId: response.user.id)
             KeychainService.shared.saveRefreshToken(response.refreshToken)
+            
+            // Update shared NetworkClient with the new token
+            NetworkClient.shared.updateAuthToken(response.token)
             
             print("AuthService: \(provider) login successful, credentials saved.")
             return response

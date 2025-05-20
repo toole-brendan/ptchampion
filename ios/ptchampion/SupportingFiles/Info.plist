@@ -4,6 +4,8 @@
 <dict>
 	<key>ApiBaseUrl</key>
 	<string>https://ptchampion-api.vercel.app/api/v1</string>
+	<key>GoogleClientID</key>
+	<string>746387095278-uehvvv1m60l8j805jgkruamrv8da38r3.apps.googleusercontent.com</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
@@ -30,7 +32,7 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>com.toole.ptchampion.new</string>
-				<string>com.googleusercontent.apps.YOUR_GOOGLE_CLIENT_ID</string>
+				<string>com.googleusercontent.apps.746387095278-uehvvv1m60l8j805jgkruamrv8da38r3</string>
 			</array>
 		</dict>
 	</array>

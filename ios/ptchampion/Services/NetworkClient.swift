@@ -95,9 +95,21 @@ class NetworkClient {
     private let keychainAuthTokenKey = "com.ptchampion.authtoken" // Unique key for Keychain item
     private let keychainUserIdKey = "com.ptchampion.userid"    // Unique key for User ID
     private let keychainServiceIdentifier = Bundle.main.bundleIdentifier ?? "com.ptchampion.app" // Service identifier for query
-
+    
+    // Static shared instance for notifications
+    static let shared = NetworkClient()
+    
+    // Token can be set directly for immediate use
+    private var cachedAuthToken: String?
+    
     // Read token from Keychain
-    private var authToken: String? {
+    var authToken: String? {
+        // First check if we have a cached token
+        if let cachedToken = cachedAuthToken {
+            return cachedToken
+        }
+        
+        // Otherwise, check the keychain
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainServiceIdentifier,
@@ -116,7 +128,16 @@ class NetworkClient {
             return nil
         }
 
-        return String(data: data, encoding: .utf8)
+        // Cache the token after reading it
+        let token = String(data: data, encoding: .utf8)
+        cachedAuthToken = token
+        return token
+    }
+    
+    // Public method to update the cached token
+    func updateAuthToken(_ token: String?) {
+        cachedAuthToken = token
+        print("NetworkClient: Auth token updated in cache")
     }
 
     // Read User ID from Keychain
