@@ -50,6 +50,7 @@ struct WorkoutSessionView: View {
                 isPaused: $viewModel.isPaused,
                 isSoundEnabled: $viewModel.isSoundEnabled,
                 showControls: viewModel.workoutState != .ready,
+                showFullBodyWarning: $viewModel.showFullBodyWarning,
                 togglePauseAction: { viewModel.togglePause() },
                 toggleSoundAction: { viewModel.toggleSound() }
             )

@@ -127,7 +127,7 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
                 }
                 feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
                 #else
-                feedback = "Cannot detect full body - step back or adjust camera"
+                feedback = "Your full body is not in view of the camera. No reps will be counted."
                 #endif
                 
                 _lastFormIssue = feedback
@@ -215,11 +215,12 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
             // Don't immediately return, but track the issue and continue evaluating
             // This allows rep counting to continue even with minor form issues
             
-            // Only return form error if we're in a critical state for form
-            if currentState == .down {
-                // Form issues in the down position are critical
-                return .incorrectForm(feedback: feedback)
-            }
+            // Form issues in the down position are no longer returned immediately
+            // Commenting out the critical form check to avoid interrupting the user
+            // if currentState == .down {
+            //     // Form issues in the down position are critical
+            //     return .incorrectForm(feedback: feedback)
+            // }
         }
 
         // --- State Machine Logic --- 
@@ -304,7 +305,7 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
             } else {
                 // Didn't go low enough on the previous down phase
                 feedback = "Push lower for rep to count"
-                _lastFormIssue = feedback
+                _lastFormIssue = "Push lower for rep to count"
                 _problemJoints.insert(.leftElbow)
                 _problemJoints.insert(.rightElbow)
                 
@@ -312,8 +313,8 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
                 minElbowAngleThisRep = 180.0
                 wentLowEnoughThisRep = false
                 
-                // print("PUSHUP REP REJECTED: Didn't go low enough (min angle: \(minElbowAngleThisRep)°)")
-                return .incorrectForm(feedback: feedback)
+                // Return noChange instead of incorrectForm to avoid showing the message
+                return .noChange
             }
         }
 

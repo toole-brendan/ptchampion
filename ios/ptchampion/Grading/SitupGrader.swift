@@ -116,7 +116,7 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
             }
             feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
             #else
-            feedback = "Cannot detect full body - adjust camera position"
+            feedback = "Your full body is not in view of the camera. No reps will be counted."
             #endif
             
             _lastFormIssue = feedback
@@ -258,48 +258,49 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
              // Don't override rep completion/failure feedback
              switch gradingResult {
              case .inProgress, .noChange:
-                 feedback = "Keep arms crossed over chest"
-                 _lastFormIssue = feedback
+                 // feedback = "Keep arms crossed over chest"
+                 _lastFormIssue = "Keep arms crossed over chest"
                  _problemJoints.insert(.leftWrist)
                  _problemJoints.insert(.rightWrist)
                  _problemJoints.insert(.leftElbow)
                  _problemJoints.insert(.rightElbow)
-                 return .incorrectForm(feedback: feedback)
+                 // return .incorrectForm(feedback: feedback)
+                 // Continue without showing this tip on the HUD
              default:
                  break
              }
          }
 
-        // Immediate feedback on current position if needed
+        // Immediate feedback on current position is now suppressed
         if currentState == .down && avgHipAngle < SitupGrader.hipAngleDownMin {
             // Use if-case for comparison
             if case .inProgress = gradingResult {
-                feedback = "Lower further"
-                _lastFormIssue = feedback
+                // feedback = "Lower further"
+                _lastFormIssue = "Lower further"
                 _problemJoints.insert(.leftHip)
                 _problemJoints.insert(.rightHip)
-                gradingResult = .incorrectForm(feedback: feedback)
+                // gradingResult = .incorrectForm(feedback: feedback)
             } else if case .noChange = gradingResult {
-                feedback = "Lower further"
-                _lastFormIssue = feedback
+                // feedback = "Lower further"
+                _lastFormIssue = "Lower further"
                 _problemJoints.insert(.leftHip)
                 _problemJoints.insert(.rightHip)
-                gradingResult = .incorrectForm(feedback: feedback)
+                // gradingResult = .incorrectForm(feedback: feedback)
             }
         } else if currentState == .up && avgHipAngle > SitupGrader.hipAngleUpMax {
             // Use if-case for comparison
             if case .inProgress = gradingResult {
-                feedback = "Sit up higher"
-                _lastFormIssue = feedback
+                // feedback = "Sit up higher"
+                _lastFormIssue = "Sit up higher"
                 _problemJoints.insert(.leftShoulder)
                 _problemJoints.insert(.rightShoulder)
-                gradingResult = .incorrectForm(feedback: feedback)
+                // gradingResult = .incorrectForm(feedback: feedback)
             } else if case .noChange = gradingResult {
-                feedback = "Sit up higher"
-                _lastFormIssue = feedback
+                // feedback = "Sit up higher"
+                _lastFormIssue = "Sit up higher"
                 _problemJoints.insert(.leftShoulder)
                 _problemJoints.insert(.rightShoulder)
-                gradingResult = .incorrectForm(feedback: feedback)
+                // gradingResult = .incorrectForm(feedback: feedback)
             }
         }
 

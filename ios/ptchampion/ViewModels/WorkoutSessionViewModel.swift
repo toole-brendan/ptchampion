@@ -59,6 +59,9 @@ class WorkoutSessionViewModel: ObservableObject {
     @Published var showAlertForSaveError: Bool = false
     @Published var saveErrorMessage: String = ""
     
+    // Add a flag to track if full body warning should be shown
+    @Published var showFullBodyWarning: Bool = false
+    
     // Add a flag to ignore late pose detection results
     @Published private var isWorkoutActive: Bool = false
     
@@ -393,6 +396,7 @@ class WorkoutSessionViewModel: ObservableObject {
         case .repCompleted(let formQuality):
             updateUIFromGraderState()
             feedbackMessage = "Rep Complete! Quality: \(Int(formQuality * 100))%"
+            showFullBodyWarning = false
             
             if isSoundEnabled {
                 AudioServicesPlaySystemSound(1104) // System beep sound
@@ -405,15 +409,19 @@ class WorkoutSessionViewModel: ObservableObject {
             
         case .inProgress(let phase):
             feedbackMessage = phase ?? exerciseGrader.currentPhaseDescription
+            showFullBodyWarning = false
             
         case .invalidPose(let reason):
             feedbackMessage = reason
+            showFullBodyWarning = true
             
         case .incorrectForm(let feedback):
             feedbackMessage = feedback
+            showFullBodyWarning = false
             
         case .noChange:
             feedbackMessage = exerciseGrader.currentPhaseDescription
+            showFullBodyWarning = false
         }
         
         // Always update rep count from grader
@@ -423,7 +431,8 @@ class WorkoutSessionViewModel: ObservableObject {
     private func handleBodyLost() {
         consecutiveFramesWithoutBody += 1
         if consecutiveFramesWithoutBody > maxFramesWithoutBodyBeforeWarning && workoutState == .counting {
-            feedbackMessage = "Body not clearly visible. Adjust position."
+            showFullBodyWarning = true
+            feedbackMessage = "Your full body is not in view of the camera. No reps will be counted."
         }
     }
     

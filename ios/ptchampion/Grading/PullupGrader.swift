@@ -134,7 +134,7 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
             }
             feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
             #else
-            feedback = "Cannot detect full body - adjust position or camera angle"
+            feedback = "Your full body is not in view of the camera. No reps will be counted."
             #endif
             
             _lastFormIssue = feedback
@@ -314,18 +314,18 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
          // Immediate feedback on current position if needed
          if currentState == .down && avgElbowAngle < PullupGrader.elbowAngleDownMin {
              // Form issue while in DOWN position
-             feedback = "Extend arms fully"
-             _lastFormIssue = feedback
+             // feedback = "Extend arms fully"
+             _lastFormIssue = "Extend arms fully"
              _problemJoints.insert(.leftElbow)
              _problemJoints.insert(.rightElbow)
-             gradingResult = .incorrectForm(feedback: feedback)
+             // gradingResult = .incorrectForm(feedback: feedback)
          } else if currentState == .up && !chinIsAboveBar {
              // Form issue while in UP position
-             feedback = "Pull higher!"
-             _lastFormIssue = feedback
+             // feedback = "Pull higher!"
+             _lastFormIssue = "Pull higher!"
              _problemJoints.insert(.nose)
              _problemJoints.insert(.neck)
-             gradingResult = .incorrectForm(feedback: feedback)
+             // gradingResult = .incorrectForm(feedback: feedback)
          }
 
         return gradingResult

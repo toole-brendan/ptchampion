@@ -8,6 +8,7 @@ struct ExerciseHUDView: View {
     @Binding var isPaused: Bool
     @Binding var isSoundEnabled: Bool
     let showControls: Bool // New parameter to control visibility of bottom controls
+    @Binding var showFullBodyWarning: Bool // New parameter to show full body warning
 
     var togglePauseAction: () -> Void
     var toggleSoundAction: () -> Void
@@ -41,8 +42,18 @@ struct ExerciseHUDView: View {
 
             Spacer() // Pushes feedback and controls down
 
-            // Only show feedback if controls are shown (not in ready state)
-            if showControls {
+            // Show full body warning if needed
+            if showControls && showFullBodyWarning {
+                Text(liveFeedback)
+                    .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
+                    .foregroundColor(AppTheme.GeneratedColors.error)
+                    .padding()
+                    .background(.thinMaterial)
+                    .cornerRadius(AppTheme.GeneratedRadius.small)
+                    .padding(.horizontal)
+            }
+            // Only show regular feedback if controls are shown and no warning is active
+            else if showControls {
                 Text(liveFeedback)
                     .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
                     .foregroundColor(AppTheme.GeneratedColors.textPrimary)
@@ -87,6 +98,7 @@ struct ExerciseHUDView_Previews: PreviewProvider {
         @State var liveFeedback = "Keep it up!"
         @State var isPaused = false
         @State var isSoundEnabled = true
+        @State var showFullBodyWarning = false
 
         // Add explicit return for the view
         return ExerciseHUDView(
@@ -96,6 +108,7 @@ struct ExerciseHUDView_Previews: PreviewProvider {
             isPaused: $isPaused,
             isSoundEnabled: $isSoundEnabled,
             showControls: true, // Show controls in this preview
+            showFullBodyWarning: $showFullBodyWarning,
             togglePauseAction: { },
             toggleSoundAction: { }
         )
