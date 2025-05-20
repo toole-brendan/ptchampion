@@ -264,12 +264,12 @@ const Leaderboard: React.FC = () => {
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
                 <SelectTrigger 
                   id="exercise-filter" 
-                  className="border-army-tan/30 bg-cream"
+                  className="border-army-tan/30 bg-white"
                   aria-label="Select exercise type"
                 >
                   <SelectValue placeholder="Select Exercise" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-army-tan/30">
                   {exerciseOptions.map(option => (
                     <SelectItem key={option} value={option}>
                       {exerciseDisplayNames[option as keyof typeof exerciseDisplayNames]}
@@ -284,12 +284,12 @@ const Leaderboard: React.FC = () => {
               <Select value={scopeFilter} onValueChange={setScopeFilter}>
                 <SelectTrigger 
                   id="scope-filter" 
-                  className="border-army-tan/30 bg-cream"
+                  className="border-army-tan/30 bg-white"
                   aria-label="Select leaderboard scope"
                 >
                   <SelectValue placeholder="Select Scope" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border-army-tan/30">
                   {scopeOptions.map(option => (
                     <SelectItem key={option} value={option}>{option}</SelectItem>
                   ))}
@@ -324,7 +324,7 @@ const Leaderboard: React.FC = () => {
               </div>
             </div>
           ) : processedLeaderboard.length > 0 ? (
-            <div className="relative overflow-hidden rounded-card border border-olive-mist/20">
+            <div className="relative overflow-hidden rounded-card border border-olive-mist/20 bg-white">
               <Table className="w-full">
                 <caption className="sr-only">
                   {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Leaderboard - {scopeFilter}
@@ -341,8 +341,8 @@ const Leaderboard: React.FC = () => {
                     <TableRow 
                       key={`${user.username}-${user.rank}`} 
                       className={cn(
-                        "border-b border-olive-mist/10 transition-colors hover:bg-brass-gold/5",
-                        user.rank <= 3 && "bg-cream/30"
+                        "border-b border-olive-mist/10 transition-colors hover:bg-brass-gold/5 bg-white",
+                        user.rank <= 3 && "bg-white"
                       )}
                     >
                       <TableCell className="flex items-center space-x-2">

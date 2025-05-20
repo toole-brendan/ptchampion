@@ -12,7 +12,8 @@ import {
   AreaChart,
   AlertCircle,
   Play,
-  Route
+  Route,
+  Dumbbell
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/lib/authContext';
@@ -21,9 +22,11 @@ import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/lib/apiClient';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { 
-  QuickLinkCard, 
-  SectionCard, 
-  WelcomeCard 
+  Card,
+  QuickLinkCard,
+  SectionCard,
+  CardDivider,
+  WelcomeCard
 } from '@/components/ui/card';
 
 // Import the exercise PNG images with explicit paths to ensure they're found
@@ -241,89 +244,19 @@ const Dashboard: React.FC = () => {
     }
   ];
 
-  // Progress summary metrics
-  const progressMetrics = [
-    {
-      title: "TOTAL TRAINING TIME",
-      value: `${Math.floor(dashboardMetrics.totalDuration / 3600)}h ${Math.floor((dashboardMetrics.totalDuration % 3600) / 60)}m`,
-      icon: Clock,
-      iconClassName: "text-brass-gold",
-      valueClassName: "font-heading text-heading3 text-command-black",
-      index: 0
-    },
-    {
-      title: "EST. CALORIES BURNED",
-      value: Math.floor(dashboardMetrics.totalDuration / 60 * 7),
-      icon: Flame,
-      iconClassName: "text-brass-gold",
-      valueClassName: "font-heading text-heading3 text-command-black",
-      index: 1
-    }
-  ];
-
-  // Get the rank display value as a string
-  const rankDisplayValue = isLeaderboardLoading 
-    ? "Loading..." 
-    : dashboardMetrics.userRank > 0 
-      ? `#${dashboardMetrics.userRank}` 
-      : 'Unranked';
-
   return (
-    <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
-      <div className="flex flex-col space-y-section max-w-7xl mx-auto">
-        {/* Welcome Card */}
-        <WelcomeCard
-          className="animate-fade-in"
-          profileSection={
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-heading text-heading4 uppercase">{formatDisplayName()}</h3>
-                <p className="text-sm text-tactical-gray">
-                  {dashboardMetrics.totalWorkouts} total workouts completed
-                </p>
-              </div>
-              {isDesktop && (
-                <Button 
-                  onClick={() => navigate('/profile')}
-                  variant="outline"
-                >
-                  View Profile
-                </Button>
-              )}
-            </div>
-          }
-        />
+    <div className="bg-cream min-h-screen px-4 py-6 md:py-8 lg:px-8">
+      <div className="flex flex-col space-y-6 max-w-7xl mx-auto">
+        {/* Welcome Card with PT Champion header */}
+        <WelcomeCard className="animate-fade-in" />
 
-        {/* Metrics Section - Flattened grid with responsive columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-card-gap animate-fade-in animation-delay-100">
-          {metrics.map((metric, index) => (
-            <MetricCard
-              key={metric.title}
-              {...metric}
-              index={index}
-            />
-          ))}
-        </div>
-
-        {/* Enhanced Start Tracking Section */}
+        {/* Quick Links Section - Matching iOS structure */}
         <SectionCard
           title="Start Tracking"
           description="Choose an exercise to begin a new session"
-          icon={<Play className="size-5" />}
-          className="animate-fade-in animation-delay-200"
-          showDivider
+          className="animate-fade-in animation-delay-100"
         >
-          <div className="flex justify-end mb-4">
-            <Button 
-              className="bg-brass-gold text-deep-ops shadow-small"
-              onClick={() => navigate('/exercises')}
-            >
-              <Play className="mr-2 size-4" />
-              START SESSION
-            </Button>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {exerciseLinks.map((exercise) => (
               <QuickLinkCard
                 key={exercise.name}
@@ -334,55 +267,37 @@ const Dashboard: React.FC = () => {
                   className="h-10 w-auto object-contain" 
                 />}
                 onClick={() => navigate(exercise.path)}
-                className="bg-cream p-4"
+                className="bg-white"
               />
             ))}
+          </div>
+          
+          <div className="flex justify-center mt-4">
+            <Button 
+              className="bg-brass-gold text-deep-ops"
+              onClick={() => navigate('/exercises')}
+            >
+              <Play className="mr-2 size-4" />
+              START SESSION
+            </Button>
           </div>
         </SectionCard>
 
-        {/* Progress Section with design-system styling */}
+        {/* Stats grid section */}
         <SectionCard
-          title="Progress Summary"
-          description="Your training overview at a glance"
-          icon={<AreaChart className="size-5" />}
-          className="animate-fade-in animation-delay-300"
-          showDivider
+          title="Workout Stats"
+          description="Overview of your training progress"
+          className="animate-fade-in animation-delay-200"
         >
-          {leaderboardError && (
-            <Alert variant="default" className="mb-4 border-olive-mist bg-olive-mist bg-opacity-10">
-              <AlertCircle className="size-5 text-tactical-gray" />
-              <AlertTitle className="font-heading text-sm">Leaderboard data unavailable</AlertTitle>
-              <AlertDescription className="text-tactical-gray">
-                We're unable to load the leaderboard rankings right now. Your personal stats are still available.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          <div className="grid grid-cols-1 gap-card-gap md:grid-cols-3">
-            {progressMetrics.map((metric) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {metrics.map((metric, index) => (
               <MetricCard
                 key={metric.title}
                 {...metric}
+                index={index}
+                className="bg-white"
               />
             ))}
-            <MetricCard
-              title="GLOBAL LEADERBOARD RANK"
-              value={rankDisplayValue}
-              icon={Trophy}
-              iconClassName="text-brass-gold"
-              valueClassName="font-heading text-heading3 text-command-black"
-              index={2}
-            />
-          </div>
-          
-          <div className="mt-6 flex justify-center">
-            <Button 
-              className="bg-brass-gold text-deep-ops shadow-medium"
-              onClick={() => navigate('/history')}
-            >
-              <ArrowRight className="mr-2 size-4" />
-              VIEW DETAILED PROGRESS
-            </Button>
           </div>
         </SectionCard>
 
@@ -390,34 +305,39 @@ const Dashboard: React.FC = () => {
         <SectionCard
           title="Recent Activity"
           description="Your latest workout sessions"
-          icon={<CalendarClock className="size-5" />}
-          className="animate-fade-in animation-delay-400"
-          showDivider
+          className="animate-fade-in animation-delay-300"
         >
           {(exerciseHistory?.items?.length ?? 0) > 0 ? (
             <div className="divide-y divide-tactical-gray divide-opacity-20">
               {exerciseHistory?.items?.slice(0, 5).map((workout, index) => (
                 <div 
                   key={workout.id || index} 
-                  className="animate-slide-up flex items-center justify-between rounded-card px-2 py-3 transition-colors hover:bg-brass-gold hover:bg-opacity-5 focus-visible:outline-none focus-visible:ring-[var(--ring-focus)]"
+                  className="flex items-center justify-between p-4 bg-white hover:bg-brass-gold hover:bg-opacity-5 cursor-pointer rounded-md mb-2"
                   onClick={() => navigate(`/history/${workout.id}`)}
-                  tabIndex={0}
-                  style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-center">
                     <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                      {workout.exercise_type === 'PUSHUP' && <img src={pushupImage} alt="Push-ups" className="size-6" />}
-                      {workout.exercise_type === 'PULLUP' && <img src={pullupImage} alt="Pull-ups" className="size-6" />}
-                      {workout.exercise_type === 'SITUP' && <img src={situpImage} alt="Sit-ups" className="size-6" />}
-                      {workout.exercise_type === 'RUNNING' && <img src={runningImage} alt="Running" className="size-6" />}
+                      {workout.exercise_type && (
+                        workout.exercise_type.toUpperCase().includes('PUSH') ? 
+                          <img src={pushupImage} alt="Push-ups" className="size-6" /> :
+                        workout.exercise_type.toUpperCase().includes('PULL') ? 
+                          <img src={pullupImage} alt="Pull-ups" className="size-6" /> :
+                        workout.exercise_type.toUpperCase().includes('SIT') ? 
+                          <img src={situpImage} alt="Sit-ups" className="size-6" /> :
+                        workout.exercise_type.toUpperCase().includes('RUN') ? 
+                          <img src={runningImage} alt="Running" className="size-6" /> :
+                          <Dumbbell className="size-5 text-brass-gold" />
+                      )}
                     </div>
                     <div>
-                      <h3 className="mb-0 font-heading text-sm uppercase text-command-black">
-                        {workout.exercise_type === 'PUSHUP' ? 'Push-ups' : 
-                         workout.exercise_type === 'PULLUP' ? 'Pull-ups' :
-                         workout.exercise_type === 'SITUP' ? 'Sit-ups' :
-                         workout.exercise_type === 'RUNNING' ? 'Running' : 
-                         workout.exercise_type}
+                      <h3 className="font-heading text-sm uppercase text-command-black">
+                        {workout.exercise_type ? (
+                          workout.exercise_type.toUpperCase().includes('PUSH') ? 'Push-ups' : 
+                          workout.exercise_type.toUpperCase().includes('PULL') ? 'Pull-ups' :
+                          workout.exercise_type.toUpperCase().includes('SIT') ? 'Sit-ups' :
+                          workout.exercise_type.toUpperCase().includes('RUN') ? 'Running' : 
+                          workout.exercise_type
+                        ) : 'Unknown Exercise'}
                       </h3>
                       <p className="text-xs text-tactical-gray">
                         {new Date(workout.created_at).toLocaleDateString(undefined, {
@@ -429,16 +349,28 @@ const Dashboard: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex-shrink-0 font-heading text-heading4 text-brass-gold">
-                    {workout.exercise_type === 'RUNNING' 
+                  <div className="font-heading text-heading4 text-brass-gold">
+                    {workout.exercise_type && workout.exercise_type.toUpperCase().includes('RUN') 
                       ? `${((workout.distance || 0) / 1000).toFixed(2)} km` 
                       : `${workout.reps || 0}`}
                   </div>
                 </div>
               ))}
+              
+              {/* View history button */}
+              <div className="flex justify-center p-3 bg-brass-gold bg-opacity-10">
+                <Button 
+                  variant="ghost" 
+                  className="text-deep-ops font-heading text-sm"
+                  onClick={() => navigate('/history')}
+                >
+                  VIEW DETAILED HISTORY
+                  <ArrowRight className="ml-2 size-4" />
+                </Button>
+              </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
+            <div className="flex flex-col items-center justify-center p-8 text-center">
               <div className="mb-4 rounded-full bg-brass-gold bg-opacity-10 p-4">
                 <Flame className="size-8 text-brass-gold" />
               </div>
@@ -447,7 +379,6 @@ const Dashboard: React.FC = () => {
                 Start your fitness journey by completing your first workout.
               </p>
               <Button
-                variant="default"
                 className="mt-4 bg-brass-gold text-deep-ops"
                 onClick={() => navigate('/exercises')}
               >

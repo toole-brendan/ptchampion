@@ -211,17 +211,17 @@ function SectionCard({
       className={cn("overflow-hidden", className)}
       {...props}
     >
-      <div className={cn("section-header p-content", headerClassName)}>
+      <div className={cn("p-4 bg-deep-ops", headerClassName)}>
         <div className="flex items-center">
           {icon && <span className="mr-2 text-brass-gold">{icon}</span>}
-          <h2 className="font-heading text-heading3 uppercase tracking-wider text-brass-gold">
+          <h2 className="font-heading text-2xl uppercase tracking-wider text-brass-gold">
             {title}
           </h2>
         </div>
-        {showDivider && <CardDivider />}
+        {showDivider && <div className="h-px w-16 bg-brass-gold opacity-30 my-2"></div>}
         {description && (
           <p className={cn(
-            "text-sm uppercase tracking-wide text-brass-gold",
+            "text-xs uppercase tracking-wide text-brass-gold",
             descriptionClassName
           )}>
             {description}

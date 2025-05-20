@@ -161,7 +161,7 @@ class WorkoutSessionViewModel: ObservableObject {
         
         // Pose detection
         poseDetectorService.detectedBodyPublisher
-            .receive(on: DispatchQueue.main)
+            .receive(on: RunLoop.main)
             .sink { [weak self] body in
                 guard let self = self, 
                       self.isWorkoutActive else { return } // Only process if workout is active
@@ -172,10 +172,16 @@ class WorkoutSessionViewModel: ObservableObject {
                     if self.workoutState == .counting && !self.isPaused {
                         self.consecutiveFramesWithoutBody = 0
                         let result = self.exerciseGrader.gradePose(body: body)
-                        self.handleGradingResult(result)
+                        // Defer state updates to next run loop to avoid view update cycles
+                        DispatchQueue.main.async {
+                            self.handleGradingResult(result)
+                        }
                     }
                 } else {
-                    self.handleBodyLost()
+                    // Defer body lost handling to next run loop
+                    DispatchQueue.main.async {
+                        self.handleBodyLost()
+                    }
                 }
             }
             .store(in: &cancellables)
@@ -392,11 +398,17 @@ class WorkoutSessionViewModel: ObservableObject {
     
     // MARK: - Grading Result Handling
     private func handleGradingResult(_ result: GradingResult) {
+        // Create local copies of data to update
+        var newFeedbackMessage: String
+        var newShowFullBodyWarning: Bool
+        var newRepCount: Int = 0
+        
+        // Extract the data based on the result without modifying state yet
         switch result {
         case .repCompleted(let formQuality):
             updateUIFromGraderState()
-            feedbackMessage = "Rep Complete! Quality: \(Int(formQuality * 100))%"
-            showFullBodyWarning = false
+            newFeedbackMessage = "Rep Complete! Quality: \(Int(formQuality * 100))%"
+            newShowFullBodyWarning = false
             
             if isSoundEnabled {
                 AudioServicesPlaySystemSound(1104) // System beep sound
@@ -408,38 +420,53 @@ class WorkoutSessionViewModel: ObservableObject {
             saveRepData(formQuality: formQuality)
             
         case .inProgress(let phase):
-            feedbackMessage = phase ?? exerciseGrader.currentPhaseDescription
-            showFullBodyWarning = false
+            newFeedbackMessage = phase ?? exerciseGrader.currentPhaseDescription
+            newShowFullBodyWarning = false
             
         case .invalidPose(let reason):
-            feedbackMessage = reason
-            showFullBodyWarning = true
+            newFeedbackMessage = reason
+            newShowFullBodyWarning = true
             
         case .incorrectForm(let feedback):
-            feedbackMessage = feedback
-            showFullBodyWarning = false
+            newFeedbackMessage = feedback
+            newShowFullBodyWarning = false
             
         case .noChange:
-            feedbackMessage = exerciseGrader.currentPhaseDescription
-            showFullBodyWarning = false
+            newFeedbackMessage = exerciseGrader.currentPhaseDescription
+            newShowFullBodyWarning = false
         }
         
-        // Always update rep count from grader
-        self.repCount = exerciseGrader.repCount
+        // Get the rep count from the grader
+        newRepCount = exerciseGrader.repCount
+        
+        // Update the published properties only once, which allows SwiftUI to batch the changes
+        self.feedbackMessage = newFeedbackMessage
+        self.showFullBodyWarning = newShowFullBodyWarning
+        self.repCount = newRepCount
     }
     
     private func handleBodyLost() {
         consecutiveFramesWithoutBody += 1
         if consecutiveFramesWithoutBody > maxFramesWithoutBodyBeforeWarning && workoutState == .counting {
-            showFullBodyWarning = true
-            feedbackMessage = "Your full body is not in view of the camera. No reps will be counted."
+            // Create local variables for state updates
+            let newFeedbackMessage = "Your full body is not in view of the camera. No reps will be counted."
+            
+            // Apply state changes in a batch
+            self.feedbackMessage = newFeedbackMessage
+            self.showFullBodyWarning = true
         }
     }
     
     private func updateUIFromGraderState() {
-        repCount = exerciseGrader.repCount
-        feedbackMessage = exerciseGrader.currentPhaseDescription
-        problemJoints = exerciseGrader.problemJoints
+        // Create local variables to batch the changes
+        let newRepCount = exerciseGrader.repCount
+        let newFeedbackMessage = exerciseGrader.currentPhaseDescription
+        let newProblemJoints = exerciseGrader.problemJoints
+        
+        // Apply all changes at once
+        self.repCount = newRepCount
+        self.feedbackMessage = newFeedbackMessage
+        self.problemJoints = newProblemJoints
     }
     
     private func saveRepData(formQuality: Double) {

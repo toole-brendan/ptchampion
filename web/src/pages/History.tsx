@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award, ChevronLeft, ChevronRight, Loader2, History as HistoryIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, Repeat, TrendingUp, Dumbbell, Award, ChevronLeft, ChevronRight, Loader2, History as HistoryIcon, Flame, AreaChart } from "lucide-react";
 import { useQuery } from '@tanstack/react-query';
 import { keepPreviousData } from '@tanstack/react-query';
 
@@ -17,44 +17,65 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardDivider, SectionCard } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getUserExercises } from '../lib/apiClient';
 import { ExerciseResponse } from '../lib/types';
 import { useAuth } from '../lib/authContext';
 import { formatTime, formatDistance } from '../lib/utils';
 
-// Military-style corner component
-const MilitaryCorners: React.FC = () => (
-  <>
-    {/* Military corner cutouts - top left and right */}
-    <div className="absolute left-0 top-0 size-[15px] bg-background"></div>
-    <div className="absolute right-0 top-0 size-[15px] bg-background"></div>
-    
-    {/* Military corner cutouts - bottom left and right */}
-    <div className="absolute bottom-0 left-0 size-[15px] bg-background"></div>
-    <div className="absolute bottom-0 right-0 size-[15px] bg-background"></div>
-    
-    {/* Diagonal lines for corners */}
-    <div className="absolute left-0 top-0 h-px w-[15px] origin-top-left rotate-45 bg-tactical-gray/50"></div>
-    <div className="absolute right-0 top-0 h-px w-[15px] origin-top-right -rotate-45 bg-tactical-gray/50"></div>
-    <div className="absolute bottom-0 left-0 h-px w-[15px] origin-bottom-left -rotate-45 bg-tactical-gray/50"></div>
-    <div className="absolute bottom-0 right-0 h-px w-[15px] origin-bottom-right rotate-45 bg-tactical-gray/50"></div>
-  </>
-);
+// Define the DateRange type if it's not imported
+type DateRange = {
+  from: Date;
+  to?: Date;
+};
 
-// Header divider component
-const HeaderDivider: React.FC = () => (
-  <div className="mx-auto my-2 h-px w-16 bg-brass-gold"></div>
+// Define the PaginatedExercisesResponse type if it's not imported
+interface PaginatedExercisesResponse {
+  items: ExerciseResponse[];
+  total_count: number;
+  page: number;
+  page_size: number;
+}
+
+// Create exercise filter buttons similar to iOS ExerciseFilterBarView
+interface FilterButtonProps {
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  active: boolean;
+  onClick: () => void;
+}
+
+const FilterButton: React.FC<FilterButtonProps> = ({ label, icon: Icon, active, onClick }) => (
+  <Button 
+    variant={active ? "default" : "outline"} 
+    className={cn(
+      "rounded-full transition-all",
+      active 
+        ? "bg-brass-gold text-white" 
+        : "bg-cream text-command-black border-olive-mist/30"
+    )}
+    onClick={onClick}
+  >
+    {Icon && <Icon className="mr-1 size-4" />}
+    {label}
+  </Button>
 );
 
 // Helper to determine metric and unit for an exercise
 const getExerciseMetric = (exercise: string): { metric: 'reps' | 'distance' | null, unit: string } => {
   switch (exercise.toLowerCase()) {
     case 'push-ups':
+    case 'pushup':
+      return { metric: 'reps', unit: 'Reps' };
     case 'sit-ups':
+    case 'situp':  
+      return { metric: 'reps', unit: 'Reps' };
     case 'pull-ups':
+    case 'pullup':
       return { metric: 'reps', unit: 'Reps' };
     case 'running':
+    case 'run':
     case '2-mile run':
       return { metric: 'distance', unit: 'km' };
     // Add more cases for other exercises if needed
@@ -123,6 +144,91 @@ const History: React.FC = () => {
       }
     });
   }, [exercises, dateRange]);
+
+  // Calculate streak stats like in iOS WorkoutHistoryViewModel
+  const streakStats = useMemo(() => {
+    // Sort workouts by date
+    const sortedWorkouts = [...dateFilteredHistory].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    
+    if (sortedWorkouts.length === 0) {
+      return { currentStreak: 0, longestStreak: 0 };
+    }
+    
+    // Calculate streaks
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const streakDates = new Set<string>();
+    
+    // Add all workout dates to a set
+    sortedWorkouts.forEach(workout => {
+      const date = new Date(workout.created_at);
+      date.setHours(0, 0, 0, 0);
+      streakDates.add(date.toISOString().split('T')[0]);
+    });
+    
+    // Check if there's a workout today or yesterday to start the current streak
+    const todayFormatted = today.toISOString().split('T')[0];
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayFormatted = yesterday.toISOString().split('T')[0];
+    
+    let currentStreak = 0;
+    let hasWorkoutTodayOrYesterday = streakDates.has(todayFormatted) || streakDates.has(yesterdayFormatted);
+    
+    if (hasWorkoutTodayOrYesterday) {
+      // Start counting the current streak
+      let checkDate = streakDates.has(todayFormatted) ? today : yesterday;
+      
+      while (true) {
+        const checkDateFormatted = checkDate.toISOString().split('T')[0];
+        
+        if (streakDates.has(checkDateFormatted)) {
+          currentStreak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+    }
+    
+    // Calculate longest streak
+    let longestStreak = 0;
+    let tempStreak = 0;
+    
+    // Convert dates to timestamps and sort
+    const sortedDates = Array.from(streakDates)
+      .map(date => new Date(date).getTime())
+      .sort((a, b) => a - b);
+    
+    for (let i = 0; i < sortedDates.length; i++) {
+      if (i === 0) {
+        tempStreak = 1;
+      } else {
+        const prevDate = new Date(sortedDates[i - 1]);
+        const currDate = new Date(sortedDates[i]);
+        
+        // Check if dates are consecutive
+        prevDate.setDate(prevDate.getDate() + 1);
+        
+        if (
+          prevDate.getFullYear() === currDate.getFullYear() &&
+          prevDate.getMonth() === currDate.getMonth() &&
+          prevDate.getDate() === currDate.getDate()
+        ) {
+          tempStreak++;
+        } else {
+          tempStreak = 1;
+        }
+      }
+      
+      longestStreak = Math.max(longestStreak, tempStreak);
+    }
+    
+    return { currentStreak, longestStreak };
+  }, [dateFilteredHistory]);
 
   const summaryStats = useMemo(() => {
     const totalWorkouts = dateFilteredHistory.length;
@@ -251,13 +357,12 @@ const History: React.FC = () => {
     return (
       <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
         <div className="bg-card-background relative w-full max-w-md overflow-hidden rounded-card shadow-medium">
-          <MilitaryCorners />
           <div className="p-content">
             <div className="mb-4 text-center">
               <h2 className="font-heading text-heading3 uppercase tracking-wider text-error">
                 Error Loading History
               </h2>
-              <HeaderDivider />
+              <div className="mx-auto h-px w-16 bg-brass-gold my-2"></div>
             </div>
             <div className="space-y-4 text-center">
               <p className="text-sm text-tactical-gray">{error instanceof Error ? error.message : String(error)}</p>
@@ -277,55 +382,82 @@ const History: React.FC = () => {
 
   if (!isLoading && totalCount === 0) {
     return (
-      <div className="space-y-section">
-        <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
-          <MilitaryCorners />
-          <div className="mb-4 text-center">
-            <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
-              Training History
-            </h2>
-            <HeaderDivider />
-            <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Track your progress over time</p>
+      <div className="bg-cream min-h-screen px-4 py-6 md:py-8 lg:px-8">
+        <div className="flex flex-col space-y-6 max-w-7xl mx-auto">
+          <div className="text-left mb-4 animate-fade-in">
+            <h1 className="font-heading text-3xl md:text-4xl tracking-wide uppercase text-deep-ops">
+              Workout History
+            </h1>
+            <div className="w-32 h-0.5 bg-brass-gold my-4"></div>
+            <p className="text-sm uppercase tracking-wide text-tactical-gray">
+              Track your exercise progress
+            </p>
           </div>
-        </div>
-        
-        <div className="bg-card-background relative overflow-hidden rounded-card text-center shadow-medium">
-          <MilitaryCorners />
-          <div className="p-content">
-            <h3 className="mb-4 font-heading text-heading4 uppercase tracking-wider">No Workouts Found</h3>
-            <p className="text-tactical-gray">You haven't logged any exercises yet.</p>
-            <p className="mt-2 text-tactical-gray">Start tracking your workouts to see your progress here!</p>
-          </div>
+          
+          <Card className="overflow-hidden shadow-card text-center">
+            <div className="p-content">
+              <div className="py-16 flex flex-col items-center">
+                <div className="mb-4 rounded-full bg-brass-gold bg-opacity-10 p-4">
+                  <HistoryIcon className="size-8 text-brass-gold" />
+                </div>
+                <h3 className="mb-2 font-heading text-heading4">No Workouts Yet</h3>
+                <p className="text-tactical-gray max-w-md mx-auto">
+                  You haven't logged any exercises yet. Start tracking your workouts to see your progress here!
+                </p>
+                <Button
+                  className="mt-6 bg-brass-gold text-deep-ops"
+                  onClick={() => window.location.href = '/exercises'}
+                >
+                  Start First Workout
+                </Button>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     );
   }
   
   return (
-    <div className={cn("space-y-section", isFetching && "opacity-75 transition-opacity duration-300")}>
-      <div className="bg-card-background relative overflow-hidden rounded-card p-content shadow-medium">
-        <MilitaryCorners />
-        <div className="mb-4 text-center">
-          <h2 className="font-heading text-heading3 uppercase tracking-wider text-command-black">
-            Training History
-          </h2>
-          <HeaderDivider />
-          <p className="mt-2 text-sm uppercase tracking-wide text-tactical-gray">Track your progress over time</p>
+    <div className={cn(
+      "bg-cream min-h-screen px-4 py-6 md:py-8 lg:px-8", 
+      isFetching && "opacity-75 transition-opacity duration-300"
+    )}>
+      <div className="flex flex-col space-y-6 max-w-7xl mx-auto">
+        {/* Title Header - Similar to iOS WorkoutHistoryView */}
+        <div className="text-left mb-4 animate-fade-in">
+          <h1 className="font-heading text-3xl md:text-4xl tracking-wide uppercase text-deep-ops">
+            Workout History
+          </h1>
+          <div className="w-32 h-0.5 bg-brass-gold my-4"></div>
+          <p className="text-sm uppercase tracking-wide text-tactical-gray">
+            Track your exercise progress
+          </p>
         </div>
-      </div>
 
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <MilitaryCorners />
-        <div className="rounded-t-card bg-deep-ops p-content">
-          <div className="flex items-center">
-            <HistoryIcon className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
-              Filter Workouts
-            </h2>
+        {/* Filter Section with SectionCard */}
+        <SectionCard
+          title="Filter Workouts"
+          description="Choose an exercise type or date range"
+          className="animate-fade-in"
+        >
+          {/* Exercise Filter Bar */}
+          <div className="overflow-x-auto pb-4 -mx-1 px-1">
+            <div className="flex items-center space-x-2 mb-4">
+              {exerciseTypes.map(type => (
+                <FilterButton
+                  key={type}
+                  label={type === 'All' ? 'All Exercises' : type}
+                  icon={type === 'All' ? Dumbbell : undefined}
+                  active={exerciseFilter === type}
+                  onClick={() => setExerciseFilter(type)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="p-content">
-          <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+            {/* Date Range Field */}
             <div className="space-y-2">
               <label className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Date Range</label>
               <Popover>
@@ -366,7 +498,7 @@ const History: React.FC = () => {
                 </PopoverContent>
               </Popover>
             </div>
-
+            
             <div className="space-y-2">
               <label className="font-semibold text-sm uppercase tracking-wide text-tactical-gray">Exercise Type</label>
               <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
@@ -390,104 +522,160 @@ const History: React.FC = () => {
               onClick={() => { setDateRange(undefined); setExerciseFilter('All'); }} 
               className="w-full border-brass-gold text-brass-gold hover:bg-brass-gold/10"
             >
-              CLEAR FILTERS
+              CLEAR ALL FILTERS
             </Button>
           )}
-        </div>
-      </div>
-
-      <div className="grid gap-card-gap md:grid-cols-2 lg:grid-cols-4">
-        {[
-          { title: 'TOTAL WORKOUTS', value: summaryStats.totalWorkouts, icon: Dumbbell, unit: '' },
-          { title: 'TOTAL TIME', value: summaryStats.totalTime, icon: Clock, unit: '' },
-          { title: 'TOTAL REPS', value: summaryStats.totalReps, icon: Repeat, unit: '' },
-          { title: 'TOTAL DISTANCE', value: summaryStats.totalDistance, icon: TrendingUp, unit: 'km' },
-        ].map((stat, index) => (
-          <div key={index} className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-            <MilitaryCorners />
-            <div className="p-content">
-              <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <div className="font-semibold text-xs uppercase tracking-wider text-tactical-gray">{stat.title}</div>
-                <stat.icon className="size-5 text-brass-gold" />
+        </SectionCard>
+        
+        {/* Streak cards in a row */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+          {/* Current Streak Card */}
+          <Card className="bg-white p-4 shadow-card">
+            <div className="flex flex-col items-center">
+              <p className="text-xs uppercase tracking-wider text-tactical-gray mb-2">
+                CURRENT STREAK
+              </p>
+              <div className="flex size-16 items-center justify-center rounded-full bg-brass-gold bg-opacity-10 mb-2">
+                <Flame className="size-8 text-brass-gold" />
               </div>
-              <div className="font-heading text-heading3 text-command-black">
-                {stat.value} {stat.unit && <span className="font-semibold text-sm text-tactical-gray">{stat.unit}</span>}
+              <p className="font-heading text-2xl text-deep-ops">
+                {streakStats.currentStreak}
+              </p>
+              <p className="text-xs text-tactical-gray">days</p>
+            </div>
+          </Card>
+          
+          {/* Longest Streak Card */}
+          <Card className="bg-white p-4 shadow-card">
+            <div className="flex flex-col items-center">
+              <p className="text-xs uppercase tracking-wider text-tactical-gray mb-2">
+                LONGEST STREAK
+              </p>
+              <div className="flex size-16 items-center justify-center rounded-full bg-brass-gold bg-opacity-10 mb-2">
+                <AreaChart className="size-8 text-brass-gold" />
               </div>
+              <p className="font-heading text-2xl text-deep-ops">
+                {streakStats.longestStreak}
+              </p>
+              <p className="text-xs text-tactical-gray">days</p>
             </div>
-          </div>
-        ))}
-      </div>
+          </Card>
+        </div>
 
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <MilitaryCorners />
-        <div className="rounded-t-card bg-deep-ops p-content">
-          <div className="flex items-center">
-            <TrendingUp className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
-              {exerciseFilter === 'All' ? 'Performance Trend' : `${exerciseFilter} Trend`}
-            </h2>
+        {/* Progress Chart with SectionCard */}
+        {exerciseFilter !== 'All' && (
+          <div className="animate-fade-in">
+            <SectionCard
+              title="Progress Chart"
+              description={`${exerciseFilter} performance over time`}
+              icon={<AreaChart className="size-5" />}
+            >
+              {chartData.length > 1 ? (
+                <div>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-heading text-md uppercase">{exerciseFilter}</h3>
+                    <span className="text-brass-gold font-medium">{exerciseFilter}</span>
+                  </div>
+                  
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-olive-mist)" opacity={0.3} />
+                      <XAxis 
+                        dataKey="date" 
+                        stroke="var(--color-tactical-gray)" 
+                        fontSize={11} 
+                        tickLine={false} 
+                        axisLine={false}
+                        tickFormatter={(date) => format(new Date(date), "MMM d")}
+                      />
+                      <YAxis
+                        stroke="var(--color-tactical-gray)" 
+                        fontSize={11} 
+                        tickLine={false} 
+                        axisLine={false}
+                        allowDecimals={yAxisLabel.includes('km')}
+                        width={40}
+                      />
+                      <Tooltip
+                        contentStyle={{ 
+                          backgroundColor: 'var(--color-cream)', 
+                          border: '1px solid var(--color-army-tan)', 
+                          borderRadius: 'var(--radius-card)', 
+                          fontSize: '12px' 
+                        }}
+                        cursor={{ stroke: 'var(--color-brass-gold)', strokeWidth: 1, strokeDasharray: '3 3' }}
+                        formatter={(value: number) => [
+                          `${value} ${yAxisLabel.includes('km') ? 'km' : (yAxisLabel || '')}`, 
+                          metricName.replace(exerciseFilter + ' ', '')
+                        ]}
+                        labelFormatter={(label: string) => `Date: ${format(new Date(label), 'PP')}`}
+                      />
+                      <Line
+                        type="monotone" 
+                        dataKey="value" 
+                        name={metricName}
+                        stroke="var(--color-brass-gold)" 
+                        strokeWidth={2}
+                        activeDot={{ r: 6, fill: 'var(--color-brass-gold)', stroke: 'var(--color-cream)', strokeWidth: 2 }}
+                        dot={{ r: 3, fill: 'var(--color-brass-gold)', strokeWidth: 0 }}
+                        connectNulls
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                  
+                  <div className="text-right mt-2">
+                    <span className="text-xs text-tactical-gray flex items-center justify-end">
+                      Y-Axis: <span className="font-mono ml-1">{yAxisLabel}</span>
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="text-tactical-gray/60 mb-4">
+                    <AreaChart className="size-10" />
+                  </div>
+                  <h3 className="font-heading text-sm uppercase tracking-wider mb-2">
+                    Not enough data to display chart
+                  </h3>
+                  <p className="text-xs text-tactical-gray max-w-md">
+                    Complete more {exerciseFilter.toLowerCase()} workouts to see your progress chart.
+                  </p>
+                </div>
+              )}
+            </SectionCard>
           </div>
-          <p className="text-sm text-army-tan">
-            {exerciseFilter === 'All'
-              ? 'Select an exercise filter to visualize its trend over time.'
-              : `Performance trend for ${exerciseFilter.toLowerCase()}.`}
-          </p>
-        </div>
-        <div className="p-content">
-          {exerciseFilter !== 'All' && chartData.length > 1 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-olive-mist)" opacity={0.3} />
-                <XAxis dataKey="date" stroke="var(--color-tactical-gray)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis
-                  stroke="var(--color-tactical-gray)" fontSize={11} tickLine={false} axisLine={false}
-                  allowDecimals={yAxisLabel.includes('km')}
-                  width={40}
-                  label={{ value: yAxisLabel, angle: -90, position: 'insideLeft', offset: 0, style: { textAnchor: 'middle', fontSize: '11px', fill: 'var(--color-tactical-gray)' } }}
-                />
-                <Tooltip
-                    contentStyle={{ backgroundColor: 'var(--color-cream)', border: '1px solid var(--color-army-tan)', borderRadius: 'var(--radius-card)', fontSize: '12px' }}
-                    cursor={{ stroke: 'var(--color-brass-gold)' , strokeWidth: 1, strokeDasharray: '3 3' }}
-                    formatter={(value: number) => [`${value} ${yAxisLabel.includes('km') ? 'km' : (yAxisLabel || '')}`, metricName.replace(exerciseFilter + ' ', '')]}
-                    labelFormatter={(label: string) => `Date: ${format(new Date(label), 'PP')}`}
-                />
-                <Line
-                  type="monotone" dataKey="value" name={metricName}
-                  stroke="var(--color-brass-gold)" strokeWidth={2}
-                  activeDot={{ r: 6, fill: 'var(--color-brass-gold)', stroke: 'var(--color-cream)', strokeWidth: 2 }}
-                  dot={{ r: 3, fill: 'var(--color-brass-gold)', strokeWidth: 0 }}
-                  connectNulls
-                 />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-[300px] items-center justify-center p-4 text-center font-semibold text-sm text-tactical-gray">
-              {exerciseFilter === 'All'
-                ? 'Select an exercise filter above to display its trend chart.'
-                : `Not enough data points (minimum 2 required) for ${exerciseFilter} to display a trend chart.`}
-            </div>
-          )}
-        </div>
-      </div>
+        )}
 
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <MilitaryCorners />
-        <div className="rounded-t-card bg-deep-ops p-content">
-          <div className="flex items-center">
-            <Award className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
-              Personal Records
-            </h2>
+        {/* Summary Stats matching the dashboard screenshot */}
+        <div className="bg-cream-dark p-6 rounded-card animate-fade-in">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { title: 'TOTAL WORKOUTS', value: summaryStats.totalWorkouts, icon: Dumbbell },
+              { title: 'TOTAL TIME', value: summaryStats.totalTime, icon: Clock },
+              { title: 'TOTAL REPS', value: summaryStats.totalReps, icon: Repeat },
+              { title: 'TOTAL DISTANCE', value: summaryStats.totalDistance + ' km', icon: TrendingUp },
+            ].map((stat, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex flex-col space-y-1">
+                  <div className="text-xs text-olive-mist uppercase tracking-wider">{stat.title}</div>
+                  <div className="font-heading text-2xl text-deep-ops">{stat.value}</div>
+                </div>
+                <stat.icon className="size-8 text-brass-gold" />
+              </div>
+            ))}
           </div>
-          <p className="text-sm text-army-tan">
-            Your top performance records based on current filters.
-          </p>
         </div>
-        <div className="p-content">
-          {personalBests.length > 0 ? (
+
+        {/* Personal Records Section with SectionCard */}
+        {personalBests.length > 0 && (
+          <SectionCard
+            title="Personal Records"
+            description="Your top performance records"
+            icon={<Award className="size-5" />}
+          >
             <ul className="space-y-3">
               {personalBests.map((pb, index) => (
-                <li key={index} className="relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-cream/30 p-3 shadow-small">
+                <li key={index} className="relative overflow-hidden rounded-card border-l-4 border-brass-gold bg-white p-3 shadow-small">
                   <div className="absolute -left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded bg-brass-gold/40"></div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col">
@@ -502,29 +690,16 @@ const History: React.FC = () => {
                 </li>
               ))}
             </ul>
-          ) : (
-            <p className="py-4 text-center font-semibold text-sm text-tactical-gray">
-              No personal bests found for the selected filters.
-            </p>
-          )}
-        </div>
-      </div>
+          </SectionCard>
+        )}
 
-      <div className="bg-card-background relative overflow-hidden rounded-card shadow-medium">
-        <MilitaryCorners />
-        <div className="rounded-t-card bg-deep-ops p-content">
-          <div className="flex items-center">
-            <HistoryIcon className="mr-2 size-5 text-brass-gold" />
-            <h2 className="font-heading text-heading4 uppercase tracking-wider text-cream">
-              Workout History
-            </h2>
-          </div>
-          <p className="text-sm text-army-tan">
-            Detailed log of workouts matching your filters.
-          </p>
-        </div>
-        <div className="p-content">
-          <div className="overflow-hidden rounded-card border border-olive-mist/20">
+        {/* Training Record Section with SectionCard */}
+        <SectionCard
+          title="Training Record"
+          description="Detailed log of workouts matching your filters"
+          icon={<HistoryIcon className="size-5" />}
+        >
+          <div className="rounded-card overflow-hidden bg-white">
             <Table>
               <TableHeader>
                 <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
@@ -588,7 +763,7 @@ const History: React.FC = () => {
               </Button>
             </div>
           </div>
-        </div>
+        </SectionCard>
       </div>
     </div>
   );
