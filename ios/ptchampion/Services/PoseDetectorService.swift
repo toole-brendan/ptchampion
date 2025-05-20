@@ -4,8 +4,9 @@ import Combine
 import CoreMedia
 import UIKit // For image orientation
 import AVFoundation // For video orientation
+import Vision // For VNHumanBodyPoseObservation
 
-class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject, PoseLandmarkerLiveStreamDelegate {
+class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObject, PoseLandmarkerLiveStreamDelegate {
 
     private let visionQueue = DispatchQueue(label: "com.ptchampion.posedetector.visionqueue", qos: .userInitiated)
     private var poseLandmarker: PoseLandmarker? = nil
@@ -30,6 +31,9 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject, PoseLa
     }
 
     init(throttleFrames: Bool = true) {
+        // Call super.init() first before using self
+        super.init()
+        
         // Initialize the Vision request with throttling option
         self.isThrottlingEnabled = throttleFrames
         print("PoseDetectorService initialized. Throttling: \(throttleFrames)")
@@ -159,7 +163,7 @@ class PoseDetectorService: PoseDetectorServiceProtocol, ObservableObject, PoseLa
         let rootY = CGFloat((leftHip.y + rightHip.y) / 2)
         
         // Helper to get confidence (visibility) if available
-        func landmarkConfidence(_ lm: MPPNormalizedLandmark) -> Float {
+        func landmarkConfidence(_ lm: NormalizedLandmark) -> Float {
             if let vis = lm.visibility { 
                 return vis.floatValue 
             }
