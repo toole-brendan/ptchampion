@@ -30,6 +30,9 @@
 		BF3DA8162DD7C6590052E268 /* Jost-500-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8142DD7C6590052E268 /* Jost-500-Medium.ttf */; };
 		BF3DA8172DD7C6590052E268 /* Jost-400-Book.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8132DD7C6590052E268 /* Jost-400-Book.ttf */; };
 		BF3DA8182DD7C6590052E268 /* Jost-700-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF3DA8152DD7C6590052E268 /* Jost-700-Bold.ttf */; };
+		BF4B8F7C2DDCCC5B003242E0 /* pose_landmarker_lite.task in Resources */ = {isa = PBXBuildFile; fileRef = BF4B8F792DDCCC5B003242E0 /* pose_landmarker_lite.task */; };
+		BF4B8F7D2DDCCC5B003242E0 /* pose_landmarker_heavy.task in Resources */ = {isa = PBXBuildFile; fileRef = BF4B8F7A2DDCCC5B003242E0 /* pose_landmarker_heavy.task */; };
+		BF4B8F7E2DDCCC5B003242E0 /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = BF4B8F7B2DDCCC5B003242E0 /* pose_landmarker_full.task */; };
 		BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
 		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
 		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
@@ -191,6 +194,9 @@
 		BF3DA8132DD7C6590052E268 /* Jost-400-Book.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Jost-400-Book.ttf"; sourceTree = "<group>"; };
 		BF3DA8142DD7C6590052E268 /* Jost-500-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Jost-500-Medium.ttf"; sourceTree = "<group>"; };
 		BF3DA8152DD7C6590052E268 /* Jost-700-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Jost-700-Bold.ttf"; sourceTree = "<group>"; };
+		BF4B8F792DDCCC5B003242E0 /* pose_landmarker_lite.task */ = {isa = PBXFileReference; lastKnownFileType = file; name = pose_landmarker_lite.task; path = Resources/Models/pose_landmarker_lite.task; sourceTree = "<group>"; };
+		BF4B8F7A2DDCCC5B003242E0 /* pose_landmarker_heavy.task */ = {isa = PBXFileReference; lastKnownFileType = file; name = pose_landmarker_heavy.task; path = Resources/Models/pose_landmarker_heavy.task; sourceTree = "<group>"; };
+		BF4B8F7B2DDCCC5B003242E0 /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; name = pose_landmarker_full.task; path = Resources/Models/pose_landmarker_full.task; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -361,7 +367,6 @@
 				F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */,
 				C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -415,9 +420,12 @@
 		BF63E3B02DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
+				BF4B8F7B2DDCCC5B003242E0 /* pose_landmarker_full.task */,
+				BF4B8F7A2DDCCC5B003242E0 /* pose_landmarker_heavy.task */,
+				BF4B8F792DDCCC5B003242E0 /* pose_landmarker_lite.task */,
 				BFD43D5A2DDB707800C9745D /* PTDesignSystem */,
 				BF7B49C82DD57FD200B50FE6 /* ptchampion-Info.plist */,
-				BF63E3BB2DB1C84E0037CD02 /*  */,
+				BF63E3BB2DB1C84E0037CD02,
 				BF63E3BA2DB1C84E0037CD02 /* Products */,
 				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
@@ -437,7 +445,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BF63E3BB2DB1C84E0037CD02 /*  */ = {
+		BF63E3BB2DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
 				BF3DA80D2DD7C5D20052E268 /* Resources */,
@@ -880,6 +888,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BF4B8F7C2DDCCC5B003242E0 /* pose_landmarker_lite.task in Resources */,
+				BF4B8F7D2DDCCC5B003242E0 /* pose_landmarker_heavy.task in Resources */,
+				BF4B8F7E2DDCCC5B003242E0 /* pose_landmarker_full.task in Resources */,
 				BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */,
 				BF63E4782DB454230037CD02 /* Assets.xcassets in Resources */,
 				BF3DA80E2DD7C5D20052E268 /* Montserrat-SemiBold.ttf in Resources */,
@@ -1437,7 +1448,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */ = {
+		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../PTDesignSystem;
 		};
@@ -1480,17 +1491,17 @@
 		};
 		BF5D31802DC7F6C40042EE65 /* Components */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = Components;
 		};
 		BF5D31822DC7F6C40042EE65 /* DesignTokens */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = DesignTokens;
 		};
 		BF5D31842DC7F6C40042EE65 /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = PTDesignSystem;
 		};
 		E3F71887AD141B426AC88EEB /* GoogleSignIn */ = {
