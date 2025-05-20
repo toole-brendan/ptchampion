@@ -11,7 +11,10 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
     
     // Keys that correspond 1-to-1 with stored properties
     private enum CodingKeys: String, CodingKey {
-        case id, email, username, firstName, lastName, profilePictureUrl
+        case id, email, username
+        case firstName = "first_name"
+        case lastName = "last_name"
+        case profilePictureUrl = "profile_picture_url"
     }
     
     // Extra keys the backend may send

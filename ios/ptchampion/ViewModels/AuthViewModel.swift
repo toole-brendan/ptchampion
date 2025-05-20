@@ -44,7 +44,7 @@ enum API {
         case invalidResponse
     }
     
-    static func login(_ email: String, _ password: String) async throws -> (token: String, user: AuthUserModel) {
+    static func login(_ email: String, _ password: String) async throws -> (accessToken: String, refreshToken: String, user: AuthUserModel) {
         print("⚙️ Starting login for email: \(email)")
         let request = AuthLoginRequest(email: email, password: password)
         
@@ -61,7 +61,7 @@ enum API {
         let response: AuthResponse = try await post(request, to: url)
         print("⚙️ Received login response with token: \(response.token.prefix(10))... and user: \(response.user.id)")
         
-        return (response.token, response.user)
+        return (response.token, response.refreshToken, response.user)
     }
     
     static func post<R: Encodable, T: Decodable>(_ body: R, to url: URL) async throws -> T {
@@ -132,12 +132,15 @@ class AuthViewModel: ObservableObject {
                 print("A. Starting API.login call - AuthViewModel ID: \(self.instanceId)")
                 // Normalize email: trim whitespace and convert to lowercase
                 let normalizedEmail = email.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-                let (token, user) = try await API.login(normalizedEmail, password)
+                let (token, refreshToken, user) = try await API.login(normalizedEmail, password)
                 print("B. API.login SUCCESS - token: \(token.prefix(10))... user: \(user.id) - AuthViewModel ID: \(self.instanceId)")
                 
                 // Using a local variable to ensure this sequence completes
                 print("C. Saving token - AuthViewModel ID: \(self.instanceId)")
                 try KeychainService.shared.saveAccessToken(token)
+                
+                print("C2. Saving refresh token - AuthViewModel ID: \(self.instanceId)")
+                KeychainService.shared.saveRefreshToken(refreshToken)
                 
                 print("D. Saving user ID - AuthViewModel ID: \(self.instanceId)")
                 KeychainService.shared.saveUserID(user.id)

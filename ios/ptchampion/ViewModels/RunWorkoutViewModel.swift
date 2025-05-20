@@ -705,16 +705,12 @@ class RunWorkoutViewModel: ObservableObject {
          let runScore = calculateRunScore(seconds: Int(max(0, elapsedTime)))
 
          let workoutData = InsertUserExerciseRequest(
-             userId: Int(userId) ?? 0,
              exerciseId: runExerciseId,
              repetitions: nil,
              formScore: nil,
              timeInSeconds: Int(max(0, elapsedTime)),
              grade: runScore,
-             completed: true,
-             metadata: metadataString,
-             deviceId: UIDevice.current.identifierForVendor?.uuidString,
-             syncStatus: nil
+             completedAt: Date()
          )
 
          var savedServerId: Int? = nil

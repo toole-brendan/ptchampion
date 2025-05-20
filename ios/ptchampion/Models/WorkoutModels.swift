@@ -39,28 +39,20 @@ struct Exercise: Codable, Identifiable {
 // Represents the data to be saved for a completed workout session
 // Aligned with schema.ts InsertUserExercise
 struct InsertUserExerciseRequest: Codable {
-    let userId: Int
     let exerciseId: Int
     let repetitions: Int?
     let formScore: Int? // 0-100
     let timeInSeconds: Int?
     let grade: Int? // 0-100
-    let completed: Bool?
-    let metadata: String? // JSON string
-    let deviceId: String?
-    let syncStatus: String? // synced, pending, conflict
+    let completedAt: Date
 
     enum CodingKeys: String, CodingKey {
-        case userId = "user_id"
         case exerciseId = "exercise_id"
-        case repetitions
+        case repetitions = "reps"
         case formScore = "form_score"
-        case timeInSeconds = "time_in_seconds"
+        case timeInSeconds = "duration_seconds"
         case grade
-        case completed
-        case metadata
-        case deviceId = "device_id"
-        case syncStatus = "sync_status"
+        case completedAt = "completed_at"
     }
 }
 
@@ -123,18 +115,18 @@ extension String {
 
 
 // Structure for paginated workout history response
-// Mirroring Android's PaginatedWorkoutsResponseDto structure
 struct PaginatedUserExerciseResponse: Codable {
     let items: [UserExerciseRecord] // The list of workout records for the current page
-    let totalItems: Int           // Total number of records available
+    let totalCount: Int           // Total number of records available
     let totalPages: Int           // Total number of pages
     let currentPage: Int          // The current page number
-    // Add other pagination fields if the API provides them (e.g., pageSize)
+    let pageSize: Int             // Number of items per page
 
     enum CodingKeys: String, CodingKey {
         case items
-        case totalItems = "total_items" // Adjust key based on actual API response
-        case totalPages = "total_pages"
-        case currentPage = "current_page"
+        case totalCount = "totalCount"
+        case totalPages = "totalPages"
+        case currentPage = "page"
+        case pageSize = "pageSize"
     }
 } 

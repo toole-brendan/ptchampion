@@ -120,7 +120,7 @@ class NetworkClient {
     }
 
     // Read User ID from Keychain
-    var currentUserId: Int? {
+    var currentUserId: String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: keychainServiceIdentifier,
@@ -138,8 +138,8 @@ class NetworkClient {
             }
             return nil
         }
-        // Assuming User ID is stored as a string representation of an Int
-        return Int(String(data: data, encoding: .utf8) ?? "")
+        // User ID is stored as a string
+        return String(data: data, encoding: .utf8)
     }
 
     // Define paths that should NOT have the auth token added automatically
@@ -346,11 +346,11 @@ class NetworkClient {
     
     // Save token AND User ID to Keychain
     // Update this to accept AuthResponse or separate token/userId
-    func saveLoginCredentials(token: String, userId: Int) {
+    func saveLoginCredentials(token: String, userId: String) {
         // Save Token
         saveKeychainItem(key: keychainAuthTokenKey, value: token)
-        // Save User ID (as String)
-        saveKeychainItem(key: keychainUserIdKey, value: String(userId))
+        // Save User ID
+        saveKeychainItem(key: keychainUserIdKey, value: userId)
     }
     
     // Clear token AND User ID from Keychain

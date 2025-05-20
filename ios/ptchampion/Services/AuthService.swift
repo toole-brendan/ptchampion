@@ -30,6 +30,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             
             let mockResponse = AuthResponse(
                 token: "mock-jwt-token-for-testing-12345",
+                refreshToken: "mock-refresh-token-12345",
                 user: AuthUserModel(
                     id: "123",
                     email: credentials.email,
@@ -39,7 +40,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 )
             )
             
-            networkClient.saveLoginCredentials(token: mockResponse.token, userId: 123)
+            networkClient.saveLoginCredentials(token: mockResponse.token, userId: mockResponse.user.id)
             print("AuthService: Mock login successful, credentials saved.")
             
             try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
@@ -59,11 +60,8 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             print("AuthService: Token received: \(response.token.prefix(10))...")
             print("AuthService: User ID: \(response.user.id)")
             
-            guard let userIdInt = Int(response.user.id) else {
-                print("AuthService Error: Could not convert user ID string '\(response.user.id)' to Int.")
-                throw APIError.underlying(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user ID format received from server: '\(response.user.id)'."])) 
-            }
-            networkClient.saveLoginCredentials(token: response.token, userId: userIdInt)
+            networkClient.saveLoginCredentials(token: response.token, userId: response.user.id)
+            KeychainService.shared.saveRefreshToken(response.refreshToken)
             
             print("AuthService: Login successful, credentials saved.")
             return response
@@ -104,7 +102,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 )
             )
             
-            networkClient.saveLoginCredentials(token: mockResponse.token, userId: 456)
+            networkClient.saveLoginCredentials(token: mockResponse.token, userId: mockResponse.user.id)
             return
         }
         
@@ -164,6 +162,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             
             let mockResponse = AuthResponse(
                 token: "mock-jwt-token-for-\(provider)-testing-12345",
+                refreshToken: "mock-refresh-token-for-\(provider)-12345",
                 user: AuthUserModel(
                     id: "789",
                     email: "\(provider)User@example.com",
@@ -173,7 +172,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 )
             )
             
-            networkClient.saveLoginCredentials(token: mockResponse.token, userId: 789)
+            networkClient.saveLoginCredentials(token: mockResponse.token, userId: mockResponse.user.id)
             print("AuthService: Mock \(provider) login successful, credentials saved.")
             
             try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
@@ -202,11 +201,8 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             print("AuthService: Token received: \(response.token.prefix(10))...")
             print("AuthService: User ID: \(response.user.id)")
             
-            guard let userIdInt = Int(response.user.id) else {
-                print("AuthService Error: Could not convert user ID string '\(response.user.id)' to Int.")
-                throw APIError.underlying(NSError(domain: "AuthService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid user ID format received from server: '\(response.user.id)'."])) 
-            }
-            networkClient.saveLoginCredentials(token: response.token, userId: userIdInt)
+            networkClient.saveLoginCredentials(token: response.token, userId: response.user.id)
+            KeychainService.shared.saveRefreshToken(response.refreshToken)
             
             print("AuthService: \(provider) login successful, credentials saved.")
             return response

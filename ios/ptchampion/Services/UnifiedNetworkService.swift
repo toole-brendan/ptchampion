@@ -243,8 +243,8 @@ class UnifiedNetworkService {
     
     // MARK: - Authentication Methods
     
-    func login(username: String, password: String) async throws -> LoginResponse {
-        let loginData = LoginRequest(username: username, password: password)
+    func login(email: String, password: String) async throws -> LoginResponse {
+        let loginData = LoginRequest(email: email, password: password)
         let response: LoginResponse = try await request("/auth/login", method: .post, body: loginData)
         
         // Store tokens
@@ -298,7 +298,7 @@ struct TokenResponse: Decodable {
 
 // This LoginRequest is specific to UnifiedNetworkService and doesn't conflict with AuthLoginRequest
 struct LoginRequest: Encodable {
-    let username: String
+    let email: String
     let password: String
 }
 
