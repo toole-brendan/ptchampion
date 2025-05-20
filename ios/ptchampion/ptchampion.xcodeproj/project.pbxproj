@@ -117,6 +117,8 @@
 		BF8F67962DC931190065A2D7 /* DashboardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F67942DC931190065A2D7 /* DashboardViewModel.swift */; };
 		BF8F67972DC931190065A2D7 /* WorkoutHistoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F67952DC931190065A2D7 /* WorkoutHistoryViewModel.swift */; };
 		BF8F67A32DC931750065A2D7 /* AppModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF8F67A22DC931750065A2D7 /* AppModels.swift */; };
+		BFA722632DDCAD42002ABE5A /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = E3F71887AD141B426AC88EEB /* GoogleSignIn */; };
+		BFA722642DDCAD42002ABE5A /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 347C6F1E570021ADDE41BE6A /* GoogleSignInSwift */; };
 		BFADF9A12DC93D280016AF0B /* AppAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF99F2DC93D280016AF0B /* AppAppearance.swift */; };
 		BFADF9A22DC93D280016AF0B /* UIColorContrastChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9A02DC93D280016AF0B /* UIColorContrastChecker.swift */; };
 		BFADF9B12DC93D890016AF0B /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFADF9AC2DC93D890016AF0B /* Toast.swift */; };
@@ -324,6 +326,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BFA722642DDCAD42002ABE5A /* GoogleSignInSwift in Frameworks */,
+				BFA722632DDCAD42002ABE5A /* GoogleSignIn in Frameworks */,
 				BF3DA8042DD7B8540052E268 /* GoogleSignIn in Frameworks */,
 				BF89EB4E2DC99462003F8FE3 /* SwiftUI.framework in Frameworks */,
 				BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */,
@@ -403,7 +407,7 @@
 			children = (
 				BFD43D5A2DDB707800C9745D /* PTDesignSystem */,
 				BF7B49C82DD57FD200B50FE6 /* ptchampion-Info.plist */,
-				BF63E3BB2DB1C84E0037CD02 /*  */,
+				BF63E3BB2DB1C84E0037CD02,
 				BF63E3BA2DB1C84E0037CD02 /* Products */,
 				BF63E4752DB453140037CD02 /* pt_champion_logo.png */,
 				BF90A0072DBAF50000000007 /* CopyFonts.sh */,
@@ -423,7 +427,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		BF63E3BB2DB1C84E0037CD02 /*  */ = {
+		BF63E3BB2DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
 				BF3DA80D2DD7C5D20052E268 /* Resources */,
@@ -930,7 +934,7 @@
 		};
 		BF60DF342DC7C25F003487DB /* Clear Package Cache */ = {
 			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 8;
 			files = (
 			);
 			inputFileListPaths = (
@@ -942,7 +946,7 @@
 			);
 			outputPaths = (
 			);
-			runOnlyForDeploymentPostprocessing = 0;
+			runOnlyForDeploymentPostprocessing = 1;
 			shellPath = /bin/sh;
 			shellScript = "# Clear Swift Package Manager caches only\nrm -rf ~/Library/Caches/org.swift.swiftpm/\n# Don't attempt to delete DerivedData from here\n";
 		};
@@ -1433,7 +1437,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */ = {
+		BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../PTDesignSystem;
 		};
@@ -1484,17 +1488,17 @@
 		};
 		BF5D31802DC7F6C40042EE65 /* Components */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = Components;
 		};
 		BF5D31822DC7F6C40042EE65 /* DesignTokens */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = DesignTokens;
 		};
 		BF5D31842DC7F6C40042EE65 /* PTDesignSystem */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "PTDesignSystem" */;
+			package = BFE0AAF42DC7A21D00646B30 /* XCLocalSwiftPackageReference "../PTDesignSystem" */;
 			productName = PTDesignSystem;
 		};
 		E3F71887AD141B426AC88EEB /* GoogleSignIn */ = {
