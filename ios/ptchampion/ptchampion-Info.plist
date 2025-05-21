@@ -14,6 +14,10 @@
 		<string>remote-notification</string>
 		<string>voip</string>
 	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.ptchampion.syncWorkouts</string>
+	</array>
 	<key>NSHealthShareUsageDescription</key>
 	<string>PT Champion needs access to your health data to sync workouts and fetch heart rate data from Apple Watch.</string>
 	<key>NSHealthUpdateUsageDescription</key>
