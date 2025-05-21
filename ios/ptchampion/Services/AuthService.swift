@@ -40,7 +40,10 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 )
             )
             
-            networkClient.saveLoginCredentials(token: mockResponse.token, userId: mockResponse.user.id)
+            KeychainService.shared.saveAccessToken(mockResponse.token)
+            KeychainService.shared.saveUserID(mockResponse.user.id)
+            KeychainService.shared.saveRefreshToken(mockResponse.refreshToken)
+            NetworkClient.shared.updateAuthToken(mockResponse.token)
             print("AuthService: Mock login successful, credentials saved.")
             
             try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
@@ -60,7 +63,8 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             print("AuthService: Token received: \(response.token.prefix(10))...")
             print("AuthService: User ID: \(response.user.id)")
             
-            networkClient.saveLoginCredentials(token: response.token, userId: response.user.id)
+            KeychainService.shared.saveAccessToken(response.token)
+            KeychainService.shared.saveUserID(response.user.id)
             KeychainService.shared.saveRefreshToken(response.refreshToken)
             
             // Update shared NetworkClient with the new token
@@ -106,7 +110,10 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 )
             )
             
-            networkClient.saveLoginCredentials(token: mockResponse.token, userId: mockResponse.user.id)
+            KeychainService.shared.saveAccessToken(mockResponse.token)
+            KeychainService.shared.saveUserID(mockResponse.user.id)
+            KeychainService.shared.saveRefreshToken(mockResponse.refreshToken)
+            NetworkClient.shared.updateAuthToken(mockResponse.token)
             return
         }
         
@@ -136,7 +143,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
     
     func logout() {
         print("AuthService: Logging out, clearing credentials.")
-        networkClient.clearLoginCredentials()
+        KeychainService.shared.clearAllTokens()
         
         // Clear the shared NetworkClient token
         NetworkClient.shared.updateAuthToken(nil)
@@ -179,7 +186,10 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 )
             )
             
-            networkClient.saveLoginCredentials(token: mockResponse.token, userId: mockResponse.user.id)
+            KeychainService.shared.saveAccessToken(mockResponse.token)
+            KeychainService.shared.saveUserID(mockResponse.user.id)
+            KeychainService.shared.saveRefreshToken(mockResponse.refreshToken)
+            NetworkClient.shared.updateAuthToken(mockResponse.token)
             print("AuthService: Mock \(provider) login successful, credentials saved.")
             
             try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
@@ -208,7 +218,8 @@ class AuthService: ObservableObject, AuthServiceProtocol {
             print("AuthService: Token received: \(response.token.prefix(10))...")
             print("AuthService: User ID: \(response.user.id)")
             
-            networkClient.saveLoginCredentials(token: response.token, userId: response.user.id)
+            KeychainService.shared.saveAccessToken(response.token)
+            KeychainService.shared.saveUserID(response.user.id)
             KeychainService.shared.saveRefreshToken(response.refreshToken)
             
             // Update shared NetworkClient with the new token

@@ -145,6 +145,9 @@ class AuthViewModel: ObservableObject {
                 print("D. Saving user ID - AuthViewModel ID: \(self.instanceId)")
                 KeychainService.shared.saveUserID(user.id)
                 
+                print("D2. Saving user name - AuthViewModel ID: \(self.instanceId)")
+                KeychainService.shared.saveUserName(firstName: user.firstName, lastName: user.lastName)
+                
                 print("E. Updating authState - AuthViewModel ID: \(self.instanceId)")
                 await MainActor.run {
                     print("E. On MainActor, setting authState - AuthViewModel ID: \(self.instanceId)")
@@ -330,6 +333,7 @@ class AuthViewModel: ObservableObject {
             // Save the token
             try KeychainService.shared.saveAccessToken(response.token)
             KeychainService.shared.saveUserID(response.user.id)
+            KeychainService.shared.saveUserName(firstName: response.user.firstName, lastName: response.user.lastName)
             
             // Notify of successful login
             print("AuthViewModel: Google Sign In successful for user ID: \(response.user.id)")
@@ -371,6 +375,7 @@ class AuthViewModel: ObservableObject {
             // Save the token
             try KeychainService.shared.saveAccessToken(response.token)
             KeychainService.shared.saveUserID(response.user.id)
+            KeychainService.shared.saveUserName(firstName: response.user.firstName, lastName: response.user.lastName)
             
             // Notify of successful login
             print("AuthViewModel: Apple Sign In successful")
@@ -420,6 +425,9 @@ class AuthViewModel: ObservableObject {
 
     func checkAuthentication() {
         Task {
+            // Attempt to migrate tokens from old storage locations if needed
+            KeychainService.shared.migrateTokensIfNeeded()
+            
             let token = KeychainService.shared.getAccessToken()
             let uid = KeychainService.shared.getUserID()
             // It would be ideal to also store/retrieve username from keychain if needed upon cold start
@@ -429,8 +437,21 @@ class AuthViewModel: ObservableObject {
             await MainActor.run {
                 if let token = token, !token.isEmpty, let uid = uid {
                     print("⚙️ Found token and user ID in keychain, setting state to authenticated with user ID: \(uid)")
-                    // Attempt to load more complete user from a service or use placeholder with nil username
-                    authState = .authenticated(AuthUserModel(id: uid, email: "", username: nil, firstName: "User", lastName: "", profilePictureUrl: nil))
+                    // Load stored name from persistence
+                    let (firstName, lastName) = KeychainService.shared.getUserName()
+                    let fName = firstName ?? "User"
+                    let lName = lastName ?? ""
+                    print("⚙️ Using persisted name: \(fName) \(lName)")
+                    
+                    // Create user model with saved name
+                    authState = .authenticated(AuthUserModel(
+                        id: uid,
+                        email: "",
+                        username: nil,
+                        firstName: fName,
+                        lastName: lName,
+                        profilePictureUrl: nil
+                    ))
                 } else {
                     print("⚙️ No valid token or user ID found in keychain, setting state to unauthenticated")
                     authState = .unauthenticated
@@ -456,6 +477,9 @@ class AuthViewModel: ObservableObject {
         user.firstName = firstName
         user.lastName = lastName
         user.email = email
+        
+        // Save the updated name to UserDefaults
+        KeychainService.shared.saveUserName(firstName: firstName, lastName: lastName)
         
         // Update the auth state with the updated user model
         withAnimation {

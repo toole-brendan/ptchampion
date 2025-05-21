@@ -367,6 +367,7 @@ class NetworkClient {
     
     // Save token AND User ID to Keychain
     // Update this to accept AuthResponse or separate token/userId
+    @available(*, deprecated, message: "Use KeychainService.shared instead to ensure consistent token storage")
     func saveLoginCredentials(token: String, userId: String) {
         // Save Token
         saveKeychainItem(key: keychainAuthTokenKey, value: token)
@@ -375,6 +376,7 @@ class NetworkClient {
     }
     
     // Clear token AND User ID from Keychain
+    @available(*, deprecated, message: "Use KeychainService.shared.clearAllTokens() instead to ensure consistent token cleanup")
     func clearLoginCredentials() {
          deleteKeychainItem(key: keychainAuthTokenKey)
          deleteKeychainItem(key: keychainUserIdKey)

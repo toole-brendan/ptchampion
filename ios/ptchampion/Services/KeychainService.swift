@@ -63,7 +63,8 @@ class KeychainService: KeychainServiceProtocol {
     }
 
     // Initialize with unique service and account identifiers
-    init(service: String = "com.ptchampion.auth", account: String = "jwtToken") {
+    init(service: String = Bundle.main.bundleIdentifier ?? "com.ptchampion.app", 
+         account: String = "com.ptchampion.authtoken") {
         self.serviceIdentifier = service
         self.accountIdentifier = account
         
@@ -136,23 +137,63 @@ class KeychainService: KeychainServiceProtocol {
     }
     
     func saveUserID(_ userId: String) {
-        // Store user ID in UserDefaults for now as a quick solution
-        UserDefaults.standard.set(userId, forKey: "com.ptchampion.userId")
-        print("KeychainService: User ID saved to UserDefaults: \(userId)")
+        // Store user ID in Keychain for consistency with token storage
+        let original = accountIdentifier
+        defer { accountIdentifier = original }
+        accountIdentifier = "com.ptchampion.userid"
+        
+        do {
+            try saveToken(userId)  // reuse the Keychain saving logic
+            print("KeychainService: User ID saved to Keychain: \(userId)")
+            
+            // Maintain backward compatibility - also save to UserDefaults
+            UserDefaults.standard.set(userId, forKey: "com.ptchampion.userId")
+        } catch {
+            print("KeychainService: Error saving user ID to Keychain: \(error)")
+        }
     }
     
     func getUserID() -> String? {
-        // Get user ID from UserDefaults for now
-        let userId = UserDefaults.standard.string(forKey: "com.ptchampion.userId")
-        print("KeychainService: Retrieved User ID from UserDefaults: \(String(describing: userId))")
-        return userId
+        // Try to get user ID from Keychain first
+        let original = accountIdentifier
+        defer { accountIdentifier = original }
+        accountIdentifier = "com.ptchampion.userid"
+        
+        if let userIdFromKeychain = try? loadToken() {
+            return userIdFromKeychain
+        }
+        
+        // Fallback to UserDefaults for backward compatibility
+        let userIdFromDefaults = UserDefaults.standard.string(forKey: "com.ptchampion.userId")
+        if userIdFromDefaults != nil {
+            print("KeychainService: Retrieved User ID from UserDefaults fallback: \(String(describing: userIdFromDefaults))")
+            
+            // If found in UserDefaults but not in Keychain, migrate it for future use
+            if let userId = userIdFromDefaults {
+                saveUserID(userId)
+            }
+        }
+        
+        return userIdFromDefaults
     }
     
     func clearAllTokens() {
         do {
+            try deleteToken() // Delete the access token
+            try deleteRefreshToken() // Delete the refresh token
+            
+            // Delete User ID from Keychain
+            let original = accountIdentifier
+            defer { accountIdentifier = original }
+            accountIdentifier = "com.ptchampion.userid"
             try deleteToken()
-            try deleteRefreshToken() // Also clear the refresh token
+            
+            // Also clear from UserDefaults for backward compatibility
             UserDefaults.standard.removeObject(forKey: "com.ptchampion.userId")
+            
+            // Clear user name
+            clearUserName()
+            
             print("KeychainService: All tokens cleared")
         } catch {
             print("KeychainService - Error clearing tokens: \(error.localizedDescription)")
@@ -219,7 +260,7 @@ class KeychainService: KeychainServiceProtocol {
         let query = keychainQuery
         let attributesToUpdate: [String: Any] = [
             kSecValueData as String: tokenData,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         ]
         
         let status = SecItemUpdate(query as CFDictionary, attributesToUpdate as CFDictionary)
@@ -233,7 +274,7 @@ class KeychainService: KeychainServiceProtocol {
     private func addNewToken(with tokenData: Data) throws {
         var query = keychainQuery
         query[kSecValueData as String] = tokenData
-        query[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlockedThisDeviceOnly
+        query[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
         
         let status = SecItemAdd(query as CFDictionary, nil)
         
@@ -292,6 +333,57 @@ class KeychainService: KeychainServiceProtocol {
         
         print("KeychainService: Token deleted (or was not found).")
     }
+
+    // MARK: - Token Migration
+    
+    /// Attempts to migrate tokens from old storage locations to the new standardized locations
+    func migrateTokensIfNeeded() {
+        print("KeychainService: Checking for tokens to migrate...")
+        
+        // Check for token in old location (com.ptchampion.auth / jwtToken)
+        let oldService = "com.ptchampion.auth"
+        let oldAccount = "jwtToken"
+        
+        var query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: oldService,
+            kSecAttrAccount as String: oldAccount,
+            kSecReturnData as String: kCFBooleanTrue!,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        
+        if status == errSecSuccess, let tokenData = item as? Data,
+           let oldToken = String(data: tokenData, encoding: .utf8),
+           !oldToken.isEmpty, getAccessToken() == nil {
+            
+            print("KeychainService: Found token in old location, migrating...")
+            saveAccessToken(oldToken)
+            
+            // Delete the old token
+            let deleteQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrService as String: oldService,
+                kSecAttrAccount as String: oldAccount
+            ]
+            SecItemDelete(deleteQuery as CFDictionary)
+        }
+        
+        // Check for user ID in UserDefaults but not in Keychain
+        if let userIdFromDefaults = UserDefaults.standard.string(forKey: "com.ptchampion.userId") {
+            // Check if it exists in Keychain
+            let original = accountIdentifier
+            defer { accountIdentifier = original }
+            accountIdentifier = "com.ptchampion.userid"
+            
+            if (try? loadToken()) == nil {
+                print("KeychainService: Migrating user ID from UserDefaults to Keychain...")
+                saveUserID(userIdFromDefaults)
+            }
+        }
+    }
 }
 
 // MARK: - UnifiedNetworkService compatibility
@@ -316,5 +408,28 @@ extension KeychainService {
 
         accountIdentifier = "\(original).refresh"
         try deleteToken()
+    }
+    
+    func saveUserName(firstName: String?, lastName: String?) {
+        if let first = firstName { 
+            UserDefaults.standard.set(first, forKey: "com.ptchampion.firstName") 
+        }
+        if let last = lastName { 
+            UserDefaults.standard.set(last, forKey: "com.ptchampion.lastName") 
+        }
+        print("KeychainService: User name saved to UserDefaults: \(firstName ?? "") \(lastName ?? "")")
+    }
+    
+    func getUserName() -> (String?, String?) {
+        let first = UserDefaults.standard.string(forKey: "com.ptchampion.firstName")
+        let last = UserDefaults.standard.string(forKey: "com.ptchampion.lastName")
+        print("KeychainService: Retrieved User name from UserDefaults: \(first ?? ""), \(last ?? "")")
+        return (first, last)
+    }
+    
+    func clearUserName() {
+        UserDefaults.standard.removeObject(forKey: "com.ptchampion.firstName")
+        UserDefaults.standard.removeObject(forKey: "com.ptchampion.lastName")
+        print("KeychainService: User name cleared from UserDefaults")
     }
 } 
