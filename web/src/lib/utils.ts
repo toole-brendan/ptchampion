@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { calculateRunningScore } from "../grading/APFTScoring"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -144,17 +145,15 @@ function calculatePullupScore(reps: number): number {
   }
 }
 
+/**
+ * Calculates the score for a run based on time in seconds
+ * Uses the official APFT scoring table for accuracy
+ * @param timeSeconds Time to complete 2-mile run in seconds
+ * @returns Score from 0-100
+ */
 function calculateRunScore(timeSeconds: number): number {
-  const time100 = 780; // 13:00 in seconds
-  const time0 = 1212;  // 20:12 in seconds
-  
-  if (timeSeconds <= time100) {
-    return 100;
-  } else if (timeSeconds < time0) {
-    return (time0 - timeSeconds) * (100 / (time0 - time100));
-  } else {
-    return 0;
-  }
+  // Use the official APFT scoring table from APFTScoring.ts
+  return calculateRunningScore(timeSeconds);
 }
 
 // Format time in seconds to MM:SS or HH:MM:SS format

@@ -31,7 +31,7 @@ struct DashboardView: View {
         ("Push-Ups", "pushup", "workout-pushups", false),
         ("Sit-Ups", "situp", "workout-situps", false),
         ("Pull-Ups", "pullup", "workout-pullups", false),
-        ("Running", "running", "workout-running", false)
+        ("Two-Mile Run", "running", "workout-running", false)
     ]
     
     // Rubric options for scoring criteria
@@ -39,7 +39,7 @@ struct DashboardView: View {
         ("Push-Ups", "pushup", .pushups, false),
         ("Sit-Ups", "situp", .situps, false),
         ("Pull-Ups", "pullup", .pullups, false),
-        ("Running", "running", .running, false)
+        ("Two-Mile Run", "running", .running, false)
     ]
     
     var body: some View {
@@ -609,7 +609,7 @@ struct DashboardView: View {
         case "pullup":
             return "Pull-ups"
         case "run", "running":
-            return "Running"
+            return "Two-Mile Run"
         default:
             return type.capitalized
         }

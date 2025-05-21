@@ -6,6 +6,7 @@
  */
 
 import { BaseExerciseGrader, GradingResult } from './ExerciseGrader';
+import { calculateRunningScore } from './APFTScoring';
 
 // Define a custom interface for running data
 export interface RunningData {
@@ -68,24 +69,8 @@ export function calculateRunScore(distanceMeters: number, durationSeconds: numbe
   // If distance is not the standard distance, normalize the time
   const normalizedDuration = durationSeconds * (RUNNING_CONSTANTS.STANDARD_DISTANCE_METERS / distanceMeters);
   
-  // If faster than max score time, give 100
-  if (normalizedDuration <= RUNNING_CONSTANTS.MAX_SCORE_TIME_SECONDS) {
-    return 100;
-  }
-  
-  // If slower than passing time, score proportionally down to 60
-  if (normalizedDuration >= RUNNING_CONSTANTS.PASSING_SCORE_TIME_SECONDS) {
-    const overTime = normalizedDuration - RUNNING_CONSTANTS.PASSING_SCORE_TIME_SECONDS;
-    const maxOverTime = 300; // 5 minutes over passing time = score of 0
-    const penaltyFactor = Math.min(overTime / maxOverTime, 1);
-    return Math.max(60 - (penaltyFactor * 60), 0);
-  }
-  
-  // Between max and passing, score proportionally between 100 and 60
-  const timeRange = RUNNING_CONSTANTS.PASSING_SCORE_TIME_SECONDS - RUNNING_CONSTANTS.MAX_SCORE_TIME_SECONDS;
-  const timeOverMax = normalizedDuration - RUNNING_CONSTANTS.MAX_SCORE_TIME_SECONDS;
-  const scoreReduction = (timeOverMax / timeRange) * 40;
-  return Math.max(100 - scoreReduction, 60);
+  // Use the official APFT scoring table for accurate scoring
+  return calculateRunningScore(Math.round(normalizedDuration));
 }
 
 /**
