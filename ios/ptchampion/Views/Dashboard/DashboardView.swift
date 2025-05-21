@@ -18,12 +18,28 @@ struct DashboardView: View {
     @State private var recentActivityVisible = false // ADDED for animation
     @State private var showingStyleShowcase = false // Added for style showcase
     
+    // Enum for rubric modals (identifiable for sheet)
+    private enum RubricType: String, Identifiable {
+        case pushups, situps, pullups, running
+        var id: String { self.rawValue }
+    }
+    
+    @State private var activeRubric: RubricType? = nil
+    
     // Quick links for navigation
     private let quickLinks: [(title: String, icon: String, destination: String, isSystemIcon: Bool)] = [
         ("Push-Ups", "pushup", "workout-pushups", false),
         ("Sit-Ups", "situp", "workout-situps", false),
         ("Pull-Ups", "pullup", "workout-pullups", false),
         ("Running", "running", "workout-running", false)
+    ]
+    
+    // Rubric options for scoring criteria
+    private let rubricOptions: [(title: String, icon: String, type: RubricType, isSystemIcon: Bool)] = [
+        ("Push-Ups", "pushup", .pushups, false),
+        ("Sit-Ups", "situp", .situps, false),
+        ("Pull-Ups", "pullup", .pullups, false),
+        ("Running", "running", .running, false)
     ]
     
     var body: some View {
@@ -69,6 +85,9 @@ struct DashboardView: View {
                         // Quick Links Section with the new styling
                         quickLinksSectionView()
                         
+                        // Scoring Rubric Section
+                        scoringRubricSectionView()
+                        
                         // Greeting header with user's name and stats
                         greetingHeaderView()
                         
@@ -95,6 +114,18 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showingStyleShowcase) {
                 MilitaryStyleShowcase()
+            }
+            .sheet(item: $activeRubric) { rubric in
+                switch rubric {
+                case .pushups:
+                    PushUpsRubricView()
+                case .situps:
+                    SitUpsRubricView()
+                case .pullups:
+                    PullUpsRubricView()
+                case .running:
+                    RunningRubricView()
+                }
             }
         }
     }
@@ -306,6 +337,68 @@ struct DashboardView: View {
             .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             .opacity(quickLinksVisible ? 1 : 0)
             .offset(y: quickLinksVisible ? 0 : 15)
+        }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // Scoring Rubric Section
+    @ViewBuilder
+    private func scoringRubricSectionView() -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header (dark background with gold text)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("SCORING RUBRIC")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("VIEW SCORING CRITERIA FOR EACH EXERCISE")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+            
+            // Vertical list of exercises with arrows
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(rubricOptions, id: \.title) { option in
+                    Button(action: {
+                        // Open the corresponding rubric modal
+                        activeRubric = option.type
+                    }) {
+                        HStack {
+                            // Exercise name
+                            Text(option.title.uppercased())
+                                .militaryMonospaced(size: 16)
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            
+                            Spacer()
+                            
+                            // Right arrow
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        .padding(.vertical, 16)
+                        .padding(.horizontal, 20)
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+            }
+            .padding(.vertical, 16)
+            .padding(.horizontal, 16)
+            .background(Color(hex: "#EDE9DB"))
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
