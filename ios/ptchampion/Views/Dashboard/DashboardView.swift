@@ -366,9 +366,11 @@ struct DashboardView: View {
             .background(AppTheme.GeneratedColors.deepOps)
             .cornerRadius(8, corners: [.topLeft, .topRight])
             
-            // Vertical list of exercises with arrows
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(rubricOptions, id: \.title) { option in
+            // List container with unified background
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(0..<rubricOptions.count, id: \.self) { index in
+                    let option = rubricOptions[index]
+                    
                     Button(action: {
                         // Open the corresponding rubric modal
                         activeRubric = option.type
@@ -388,16 +390,19 @@ struct DashboardView: View {
                         }
                         .padding(.vertical, 16)
                         .padding(.horizontal, 20)
-                        .background(Color.white)
-                        .cornerRadius(8)
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(PlainButtonStyle())
+                    
+                    // Add separator after each item except the last one
+                    if index < rubricOptions.count - 1 {
+                        PTSeparator(color: AppTheme.GeneratedColors.deepOps.opacity(0.3))
+                            .padding(.horizontal, 20)
+                    }
                 }
             }
             .padding(.vertical, 16)
-            .padding(.horizontal, 16)
-            .background(Color(hex: "#EDE9DB"))
+            .background(Color.white)
             .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
