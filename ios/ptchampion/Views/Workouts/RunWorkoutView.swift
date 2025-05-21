@@ -20,7 +20,9 @@ struct RunWorkoutView: View {
     @StateObject private var viewModel: RunWorkoutViewModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel
     @State private var workoutToNavigate: WorkoutResultSwiftData? = nil
+    @State private var showingDeviceManagerSheet = false
     
     // MARK: - Constants
     private struct Constants {
@@ -84,10 +86,25 @@ struct RunWorkoutView: View {
         }
         .onAppear {
             setupView()
+            let noDeviceConnected = (fitnessDeviceManagerViewModel.connectedBluetoothDevice == nil
+                                    && !fitnessDeviceManagerViewModel.isHealthKitAuthorized)
+            if noDeviceConnected {
+                showingDeviceManagerSheet = true   // trigger pairing prompt
+            }
         }
         .onChange(of: viewModel.completedWorkoutForDetail) { newWorkoutDetail in
             if let workout = newWorkoutDetail {
                 self.workoutToNavigate = workout
+            }
+        }
+        .onChange(of: fitnessDeviceManagerViewModel.connectedBluetoothDevice) { newDevice in
+            if newDevice != nil {
+                showingDeviceManagerSheet = false   // device paired, dismiss modal
+            }
+        }
+        .onChange(of: fitnessDeviceManagerViewModel.isHealthKitAuthorized) { authorized in
+            if authorized {
+                showingDeviceManagerSheet = false   // watch authorized, dismiss modal
             }
         }
         .background(
@@ -101,6 +118,17 @@ struct RunWorkoutView: View {
             )
             .opacity(0) // Keep it hidden
         )
+        .sheet(isPresented: $showingDeviceManagerSheet) {
+            NavigationView {
+                FitnessDeviceManagerView()
+                    .environmentObject(fitnessDeviceManagerViewModel)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarLeading) {
+                            Button("Cancel") { showingDeviceManagerSheet = false }
+                        }
+                    }
+            }
+        }
     }
     
     // MARK: - Setup
@@ -407,6 +435,7 @@ struct MapViewPlaceholder: View {
 #Preview {
     NavigationView {
         RunWorkoutView()
+            .environmentObject(FitnessDeviceManagerViewModel())
     }
     .modelContainer(for: WorkoutResultSwiftData.self, inMemory: true)
 }

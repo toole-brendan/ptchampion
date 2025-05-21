@@ -72,6 +72,8 @@ struct ScreenHeader<TrailingContent: View>: View {
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var navigationState: NavigationState
+    @EnvironmentObject var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel
     @Environment(\.colorScheme) var colorScheme 
     @Environment(\.scenePhase) var scenePhase
     @Environment(\.dynamicTypeSize) var dynamicTypeSize
@@ -90,10 +92,8 @@ struct ProfileView: View {
     // UI State
     @State private var isSubmitting = false
     @State private var isChangingPassword = false
-    @State private var isDeletingAccount = false
     @State private var showSuccessMessage = false
     @State private var showPasswordSuccessMessage = false
-    @State private var showingDeleteConfirmation = false
     @State private var message: String? = nil
     @State private var passwordMessage: String? = nil
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
@@ -154,8 +154,38 @@ struct ProfileView: View {
                         // Password Management Section
                         passwordManagementSection
                         
-                        // Account Actions Section (Delete Account only)
-                        accountActionsSection
+                        // Logout Button (replaces Account Actions / Danger Zone section)
+                        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+                            Button {
+                                hapticGenerator.impactOccurred(intensity: 0.5)
+                                authViewModel.logout()
+                                navigationState.navigateTo(.login)
+                            } label: {
+                                HStack {
+                                    if false { // Placeholder for consistency with other buttons
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                            .padding(.trailing, 8)
+                                    }
+                                    Image(systemName: "rectangle.portrait.and.arrow.right")
+                                        .padding(.trailing, 4)
+                                        .foregroundColor(AppTheme.GeneratedColors.error)
+                                    Text("Log Out")
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .foregroundColor(AppTheme.GeneratedColors.error)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(AppTheme.GeneratedColors.deepOps)
+                                .cornerRadius(8)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(AppTheme.GeneratedColors.error, lineWidth: 1.5)
+                                )
+                            }
+                            .padding(.top, 8)
+                        }
+                        .padding(.bottom, 8)
                     }
                     .padding(AppTheme.GeneratedSpacing.contentPadding)
                 }
@@ -194,18 +224,9 @@ struct ProfileView: View {
             NavigationView {
                 SettingsView()
                     .environmentObject(authViewModel)
+                    .environmentObject(navigationState)
+                    .environmentObject(fitnessDeviceManagerViewModel)
             }
-        }
-        .alert("Confirm Delete", isPresented: $showingDeleteConfirmation) {
-            Button("Delete", role: .destructive) {
-                isDeletingAccount = true
-                // In a real app, this would call the delete account API
-                // Then log the user out
-                authViewModel.logout()
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Are you sure you want to delete your account? This action cannot be undone.")
         }
     }
     
@@ -424,51 +445,6 @@ struct ProfileView: View {
                 .padding()
             }
             .padding(.bottom, 8)
-        }
-    }
-    
-    // MARK: - Account Actions Section
-    private var accountActionsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            PTCard(style: .standard) {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                            .font(.system(size: 20))
-                        Text("Danger Zone")
-                            .font(.system(size: 18, weight: .bold, design: .monospaced))
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                    }
-                    .padding(.bottom, 4)
-                    
-                    Text("Permanently delete your account and all data.")
-                        .font(.system(size: 14, design: .monospaced))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    
-                    // Delete Account button
-                    Button {
-                        showingDeleteConfirmation = true
-                    } label: {
-                        HStack {
-                            if isDeletingAccount {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .padding(.trailing, 8)
-                            }
-                            Text(isDeletingAccount ? "Deleting..." : "Delete Account")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(AppTheme.GeneratedColors.error)
-                        .cornerRadius(8)
-                    }
-                    .disabled(isDeletingAccount)
-                }
-                .padding()
-            }
         }
     }
     

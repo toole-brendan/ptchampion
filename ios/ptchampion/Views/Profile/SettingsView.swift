@@ -8,9 +8,14 @@ import SafariServices
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var authViewModel: AuthViewModel
+    @EnvironmentObject private var navigationState: NavigationState
+    @EnvironmentObject private var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     @State private var showPrivacyPolicySafari = false
     @State private var showTermsOfServiceSafari = false
+    @State private var showingDeviceManagerSheet = false
+    @State private var isDeletingAccount = false
+    @State private var showingDeleteConfirmation = false
     
     // Settings
     @AppStorage("geolocation") private var geolocationEnabled: Bool = false
@@ -78,8 +83,14 @@ struct SettingsView: View {
                         // General Settings Section
                         generalSettingsSection
                         
+                        // Fitness Devices Section
+                        fitnessDevicesSection
+                        
                         // Legal & About Section
                         legalAndAboutSection
+                        
+                        // Danger Zone Section (moved from ProfileView)
+                        dangerZoneSection
                     }
                     .padding(AppTheme.GeneratedSpacing.contentPadding)
                 }
@@ -87,6 +98,75 @@ struct SettingsView: View {
             .navigationBarHidden(true)
             .onAppear {
                 hapticGenerator.prepare()
+            }
+            .sheet(isPresented: $showingDeviceManagerSheet) {
+                NavigationView {
+                    FitnessDeviceManagerView()
+                        .environmentObject(fitnessDeviceManagerViewModel)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Done") { showingDeviceManagerSheet = false }
+                            }
+                        }
+                }
+            }
+            .alert("Confirm Delete", isPresented: $showingDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
+                    isDeletingAccount = true
+                    // In a real app, this would call the delete account API
+                    // Then log the user out
+                    authViewModel.logout()
+                    dismiss()
+                    navigationState.navigateTo(.login)
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you want to delete your account? This action cannot be undone.")
+            }
+        }
+    }
+    
+    // MARK: - Danger Zone Section
+    private var dangerZoneSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+            PTCard(style: .standard) {
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle")
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .font(.system(size: 20))
+                        Text("Danger Zone")
+                            .font(.system(size: 18, weight: .bold, design: .monospaced))
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                    }
+                    .padding(.bottom, 4)
+                    
+                    Text("Permanently delete your account and all data.")
+                        .font(.system(size: 14, design: .monospaced))
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    
+                    // Delete Account button
+                    Button {
+                        showingDeleteConfirmation = true
+                    } label: {
+                        HStack {
+                            if isDeletingAccount {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                    .padding(.trailing, 8)
+                            }
+                            Text(isDeletingAccount ? "Deleting..." : "Delete Account")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(AppTheme.GeneratedColors.error)
+                        .cornerRadius(8)
+                    }
+                    .disabled(isDeletingAccount)
+                }
+                .padding()
             }
         }
     }
@@ -129,6 +209,50 @@ struct SettingsView: View {
                         isOn: $notificationsEnabled,
                         action: handleNotificationsToggle
                     )
+                }
+                .padding()
+            }
+            .padding(.bottom, 8)
+        }
+    }
+    
+    // MARK: - Fitness Devices Section
+    private var fitnessDevicesSection: some View {
+        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
+            PTCard(style: .standard) {
+                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+                    HStack {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .font(.system(size: 20))
+                        Text("Fitness Devices")
+                            .font(AppTheme.GeneratedTypography.heading(size: 18))
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                    }
+                    .padding(.bottom, 4)
+                    
+                    Text("Connect or manage fitness tracking devices like watches or heart rate monitors.")
+                        .font(AppTheme.GeneratedTypography.body(size: 14))
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    
+                    Button {
+                        hapticGenerator.impactOccurred(intensity: 0.5)
+                        showingDeviceManagerSheet = true
+                    } label: {
+                        HStack {
+                            Label("Fitness Devices", systemImage: "antenna.radiowaves.left.and.right")
+                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.footnote)
+                                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .frame(height: 44)
+                    .padding()
+                    .background(AppTheme.GeneratedColors.background.opacity(0.5))
+                    .cornerRadius(8)
                 }
                 .padding()
             }
@@ -311,5 +435,7 @@ struct SafariView: UIViewControllerRepresentable {
     NavigationStack {
         SettingsView()
             .environmentObject(AuthViewModel())
+            .environmentObject(NavigationState())
+            .environmentObject(FitnessDeviceManagerViewModel())
     }
 } 
