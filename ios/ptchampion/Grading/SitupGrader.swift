@@ -104,7 +104,7 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
         previousState = currentState // Remember previous state for transitions
 
         // 1. Check Required Joint Confidence
-        let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
+        let requiredJoints: [VNHumanBodyPoseObservation.JointName] = [
             .leftShoulder, .rightShoulder,
             .leftElbow, .rightElbow,
             .leftWrist, .rightWrist,
@@ -113,21 +113,11 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
             .nose // Added Nose (Aligned w/ Android)
         ]
         
-        // Use body's helper method to check missing joints
-        let missingJoints = body.missingJoints(from: keyJoints, minConfidence: SitupGrader.requiredJointConfidence)
-        
-        if !missingJoints.isEmpty {
+        // Check if all required joints are visible using the helper
+        if !PoseValidationHelper.isFullBodyVisible(body, requiredJoints: requiredJoints, confidence: SitupGrader.requiredJointConfidence) {
             updateState(to: .invalid, stable: false)
             
-            #if DEBUG
-            let missingJointNames = missingJoints.map { 
-                String(describing: $0).replacingOccurrences(of: "VNHumanBodyPoseObservation.JointName.", with: "") 
-            }
-            feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
-            #else
-            feedback = "Your full body is not in view of the camera. No reps will be counted."
-            #endif
-            
+            feedback = "Warning: Please position your entire body in the frame."
             _lastFormIssue = feedback
             return .invalidPose(reason: feedback)
         }

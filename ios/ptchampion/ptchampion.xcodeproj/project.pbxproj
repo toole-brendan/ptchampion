@@ -34,6 +34,7 @@
 		BF4B8F7D2DDCCC5B003242E0 /* pose_landmarker_heavy.task in Resources */ = {isa = PBXBuildFile; fileRef = BF4B8F7A2DDCCC5B003242E0 /* pose_landmarker_heavy.task */; };
 		BF4B8F7E2DDCCC5B003242E0 /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = BF4B8F7B2DDCCC5B003242E0 /* pose_landmarker_full.task */; };
 		BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
+		BF59ACB72DDD531C00242910 /* PoseValidationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACB62DDD531C00242910 /* PoseValidationHelper.swift */; };
 		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
 		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
 		BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31842DC7F6C40042EE65 /* PTDesignSystem */; };
@@ -197,6 +198,7 @@
 		BF4B8F792DDCCC5B003242E0 /* pose_landmarker_lite.task */ = {isa = PBXFileReference; lastKnownFileType = file; name = pose_landmarker_lite.task; path = Resources/Models/pose_landmarker_lite.task; sourceTree = "<group>"; };
 		BF4B8F7A2DDCCC5B003242E0 /* pose_landmarker_heavy.task */ = {isa = PBXFileReference; lastKnownFileType = file; name = pose_landmarker_heavy.task; path = Resources/Models/pose_landmarker_heavy.task; sourceTree = "<group>"; };
 		BF4B8F7B2DDCCC5B003242E0 /* pose_landmarker_full.task */ = {isa = PBXFileReference; lastKnownFileType = file; name = pose_landmarker_full.task; path = Resources/Models/pose_landmarker_full.task; sourceTree = "<group>"; };
+		BF59ACB62DDD531C00242910 /* PoseValidationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseValidationHelper.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -533,6 +535,7 @@
 		BF63E40E2DB1EB650037CD02 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACB62DDD531C00242910 /* PoseValidationHelper.swift */,
 				BFADF99F2DC93D280016AF0B /* AppAppearance.swift */,
 				BFADF9A02DC93D280016AF0B /* UIColorContrastChecker.swift */,
 			);
@@ -1031,6 +1034,7 @@
 				BFADF9B32DC93D890016AF0B /* StatCard.swift in Sources */,
 				BFADF9B52DC93D890016AF0B /* SettingsSheet.swift in Sources */,
 				BFADF9B62DC93D890016AF0B /* DashboardHeader.swift in Sources */,
+				BF59ACB72DDD531C00242910 /* PoseValidationHelper.swift in Sources */,
 				BFADF9B72DC93D890016AF0B /* Badge.swift in Sources */,
 				BFADF9B82DC93D890016AF0B /* Spinner.swift in Sources */,
 				BFADF9B92DC93D890016AF0B /* FocusableTextField.swift in Sources */,

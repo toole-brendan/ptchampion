@@ -479,7 +479,7 @@ class WorkoutSessionViewModel: ObservableObject {
         consecutiveFramesWithoutBody += 1
         if consecutiveFramesWithoutBody > maxFramesWithoutBodyBeforeWarning && workoutState == .counting {
             // Create local variables for state updates
-            let newFeedbackMessage = "Your full body is not in view of the camera. No reps will be counted."
+            let newFeedbackMessage = "Warning: Please position your entire body in the frame."
             
             // Apply state changes in a batch
             self.feedbackMessage = newFeedbackMessage

@@ -138,31 +138,19 @@ final class PullupGrader: ObservableObject, ExerciseGraderProtocol {
         previousState = currentState
 
         // 1. Check Required Joint Confidence
-        let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
+        let requiredJoints: [VNHumanBodyPoseObservation.JointName] = [
             .leftShoulder, .rightShoulder,
             .leftElbow, .rightElbow,
             .leftWrist, .rightWrist,
-            .leftHip, .rightHip, // Needed for kipping check
-            .leftKnee, .rightKnee, // Added for knee bend check
-            .leftAnkle, .rightAnkle, // Added for ground contact check
-            .nose // Needed for chin height check
+            .nose,
+            .leftHip, .rightHip,
+            .leftKnee, .rightKnee,
+            .leftAnkle, .rightAnkle
         ]
         
-        // Use body's helper method to check missing joints
-        let missingJoints = body.missingJoints(from: keyJoints, minConfidence: PullupGrader.requiredJointConfidence)
-        
-        if !missingJoints.isEmpty {
+        if !PoseValidationHelper.isFullBodyVisible(body, requiredJoints: requiredJoints, confidence: PullupGrader.requiredJointConfidence) {
             updateState(to: .invalid, stable: false)
-            
-            #if DEBUG
-            let missingJointNames = missingJoints.map { 
-                String(describing: $0).replacingOccurrences(of: "VNHumanBodyPoseObservation.JointName.", with: "") 
-            }
-            feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
-            #else
-            feedback = "Your full body is not in view of the camera. No reps will be counted."
-            #endif
-            
+            feedback = "Warning: Please position your entire body in the frame."
             _lastFormIssue = feedback
             return .invalidPose(reason: feedback)
         }

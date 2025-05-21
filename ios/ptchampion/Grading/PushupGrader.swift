@@ -133,10 +133,8 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
             .leftAnkle, .rightAnkle
         ]
 
-        // Use the body model's helper method to check missing joints
-        let missingJoints = body.missingJoints(from: keyJoints, minConfidence: PushupGrader.requiredJointConfidence)
-        
-        if !missingJoints.isEmpty {
+        // Check if all required joints are visible using the helper
+        if !PoseValidationHelper.isFullBodyVisible(body, requiredJoints: keyJoints, confidence: PushupGrader.requiredJointConfidence) {
             // Increment invalid frame counter
             consecutiveInvalidFrames += 1
             
@@ -146,15 +144,7 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
                 stableFramesInState = 0
                 currentState = .invalid
                 
-                #if DEBUG
-                let missingJointNames = missingJoints.map { 
-                    String(describing: $0).replacingOccurrences(of: "VNHumanBodyPoseObservation.JointName.", with: "") 
-                }
-                feedback = "Cannot see clearly: \(missingJointNames.joined(separator: ", "))"
-                #else
-                feedback = "Your full body is not in view of the camera. No reps will be counted."
-                #endif
-                
+                feedback = "Warning: Please position your entire body in the frame."
                 _lastFormIssue = feedback
                 return .invalidPose(reason: feedback)
             }
