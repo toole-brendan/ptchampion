@@ -5,6 +5,8 @@ import AVFoundation
 struct CameraPreviewView: UIViewRepresentable {
     /// The AVCaptureSession providing the video feed.
     let session: AVCaptureSession
+    /// The camera service to inform about preview layer changes
+    let cameraService: CameraServiceProtocol
 
     /// Creates the underlying UIView (the preview layer's view).
     func makeUIView(context: Context) -> UIView {
@@ -14,7 +16,23 @@ struct CameraPreviewView: UIViewRepresentable {
         // Create the preview layer
         let previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.videoGravity = .resizeAspectFill // Fill the view
-        previewLayer.connection?.videoOrientation = .portrait // Adjust if needed
+        
+        // Remove fixed orientation (will be set dynamically):
+        // previewLayer.connection?.videoOrientation = .portrait
+        
+        // Set initial orientation based on device orientation
+        if let connection = previewLayer.connection, connection.isVideoOrientationSupported {
+            let deviceOrientation = UIDevice.current.orientation
+            switch deviceOrientation {
+            case .landscapeLeft:  connection.videoOrientation = .landscapeRight // Reversed due to camera orientation
+            case .landscapeRight: connection.videoOrientation = .landscapeLeft  // Reversed due to camera orientation
+            case .portraitUpsideDown: connection.videoOrientation = .portraitUpsideDown
+            default: connection.videoOrientation = .portrait
+            }
+        }
+        
+        // Register the preview layer with the camera service
+        cameraService.attachPreviewLayer(previewLayer)
 
         // Add the layer to the view's layer hierarchy
         view.layer.addSublayer(previewLayer)
@@ -58,9 +76,10 @@ struct CameraPreviewView: UIViewRepresentable {
 #Preview(traits: .sizeThatFitsLayout) {
     // Create a dummy session for preview purposes (won't show live feed)
     let dummySession = AVCaptureSession()
+    let dummyService = CameraService()
     // You could potentially add a dummy input/output to make it look like a camera is active
 
-    return CameraPreviewView(session: dummySession)
+    return CameraPreviewView(session: dummySession, cameraService: dummyService)
         .frame(width: 300, height: 500)
         .background(Color.gray)
 } 

@@ -22,7 +22,7 @@ struct BodyPoseDetectionView: View {
     var body: some View {
         ZStack {
             // Full-screen camera background
-            CameraPreviewView(session: cameraService.session)
+            CameraPreviewView(session: cameraService.session, cameraService: cameraService)
                 .edgesIgnoringSafeArea(.all)
             
             // Overlay pose detection

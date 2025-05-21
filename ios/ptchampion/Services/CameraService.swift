@@ -16,6 +16,7 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
     private let sessionQueue = DispatchQueue(label: "com.ptchampion.cameraservice.sessionqueue", qos: .userInitiated)
     private let videoOutput = AVCaptureVideoDataOutput()
     private var videoDeviceInput: AVCaptureDeviceInput?
+    private var currentPreviewLayer: AVCaptureVideoPreviewLayer? = nil  // Renamed to avoid conflict
 
     // Combine Publishers
     private let authorizationStatusSubject = CurrentValueSubject<AVAuthorizationStatus, Never>(.notDetermined)
@@ -227,6 +228,13 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
                  if connection.isVideoOrientationSupported {
                      connection.videoOrientation = videoOrientation
                  }
+                 
+                 // **New:** Update preview layer orientation as well
+                 if let previewConn = self.currentPreviewLayer?.connection, 
+                        previewConn.isVideoOrientationSupported {
+                     previewConn.videoOrientation = videoOrientation
+                 }
+                 
                  // Mirror front camera video
                  if self.videoDeviceInput?.device.position == .front,
                     connection.isVideoMirroringSupported {
@@ -234,6 +242,11 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
                  }
              }
         }
+    }
+    
+    // New method to attach preview layer
+    public func attachPreviewLayer(_ layer: AVCaptureVideoPreviewLayer) {
+        self.currentPreviewLayer = layer
     }
 
     // MARK: - Camera Control

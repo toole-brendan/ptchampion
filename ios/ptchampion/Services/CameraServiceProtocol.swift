@@ -27,6 +27,12 @@ protocol CameraServiceProtocol {
     
     // Switches between front and back cameras
     func switchCamera()
+    
+    // Updates the camera orientation when device orientation changes
+    func updateOutputOrientation()
+    
+    // Attaches a preview layer to the camera service
+    func attachPreviewLayer(_ layer: AVCaptureVideoPreviewLayer)
 
     // Provides the preview layer for displaying the camera feed
     // Note: Managing the layer itself might be better handled by the View

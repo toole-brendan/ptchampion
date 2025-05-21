@@ -33,7 +33,7 @@ struct WorkoutSessionView: View {
     var body: some View {
         ZStack {
             // Camera Preview (full screen background)
-            CameraPreviewView(session: viewModel.cameraService.session)
+            CameraPreviewView(session: viewModel.cameraService.session, cameraService: viewModel.cameraService)
                 .edgesIgnoringSafeArea(.all)
             
             // Pose Detection Overlay
@@ -89,6 +89,17 @@ struct WorkoutSessionView: View {
         .onAppear {
             setupView()
             print("WorkoutSessionView appeared for \(exerciseType.displayName)")
+            
+            // Register for rotation events
+            NotificationCenter.default.addObserver(
+                forName: UIDevice.orientationDidChangeNotification,
+                object: nil, queue: .main
+            ) { _ in
+                // Small delay to ensure UI has rotated
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    viewModel.cameraService.updateOutputOrientation()
+                }
+            }
         }
         .onDisappear {
             // Stop the countdown timer first
@@ -103,6 +114,11 @@ struct WorkoutSessionView: View {
                 
                 print("WorkoutSessionView disappeared while workout was active - pausing workout")
             }
+            
+            // Remove rotation observer
+            NotificationCenter.default.removeObserver(
+                self, name: UIDevice.orientationDidChangeNotification, object: nil
+            )
             
             // Ensure comprehensive cleanup happens on the main actor
             // This ensures all resources are properly released even if the view disappears unexpectedly
