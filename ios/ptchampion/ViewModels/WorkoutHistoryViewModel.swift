@@ -28,7 +28,7 @@ class WorkoutHistoryViewModel: ObservableObject {
     private var lastFetchTime: [String: Date] = [:]
     private var cancellables = Set<AnyCancellable>()
     
-    private let workoutService: WorkoutServiceProtocol
+    private let workoutService: WorkoutService
     var modelContext: ModelContext?
     
     // MARK: - Computed Properties
@@ -44,7 +44,7 @@ class WorkoutHistoryViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(workoutService: WorkoutServiceProtocol = WorkoutService()) {
+    init(workoutService: WorkoutService = WorkoutService()) {
         self.workoutService = workoutService
         
         // Check if we have cached data on init

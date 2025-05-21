@@ -6,17 +6,30 @@ class WorkoutPersistenceService {
     private let modelContainer: ModelContainer?
     private let modelContext: ModelContext?
     
-    init() {
-        // Set up SwiftData container and context
-        do {
-            let schema = Schema([WorkoutResultSwiftData.self])
-            let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-            self.modelContainer = try ModelContainer(for: schema, configurations: [configuration])
-            self.modelContext = ModelContext(modelContainer!)
-        } catch {
-            print("Failed to create SwiftData container: \(error)")
-            self.modelContainer = nil
-            self.modelContext = nil
+    /// Initialize with a shared container or create a new one with a complete schema
+    @MainActor
+    init(container: ModelContainer? = nil) {
+        if let container = container {
+            self.modelContainer = container
+            self.modelContext = container.mainContext
+            print("WorkoutPersistenceService: Using provided ModelContainer")
+        } else {
+            // Set up SwiftData container and context
+            do {
+                let schema = Schema([
+                    WorkoutResultSwiftData.self,
+                    WorkoutDataPoint.self,
+                    RunMetricSample.self
+                ])
+                let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+                self.modelContainer = try ModelContainer(for: schema, configurations: [configuration])
+                self.modelContext = ModelContext(modelContainer!)
+                print("WorkoutPersistenceService: Created new ModelContainer with complete schema")
+            } catch {
+                print("Failed to create SwiftData container: \(error)")
+                self.modelContainer = nil
+                self.modelContext = nil
+            }
         }
     }
     

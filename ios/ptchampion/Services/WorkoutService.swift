@@ -1,7 +1,7 @@
 import Foundation
 
-// Implementation of WorkoutServiceProtocol using the shared NetworkClient
-class WorkoutService: WorkoutServiceProtocol {
+// Implementation of workout service functionality using the shared NetworkClient
+class WorkoutService {
 
     private let networkClient: NetworkClient
 
@@ -46,7 +46,7 @@ class WorkoutService: WorkoutServiceProtocol {
         }
     }
 
-    // MARK: - Protocol Implementation
+    // MARK: - Core API Methods
 
     // Save a workout, expect the saved record back
     func saveWorkout(workoutData: InsertUserExerciseRequest) async throws -> UserExerciseRecord {
@@ -99,36 +99,19 @@ class WorkoutService: WorkoutServiceProtocol {
         return response
     }
 
-    // TODO: Implement other methods from Android WorkoutApiService
-    // func updateUserLocation(location: LocationUpdateRequest) async throws -> Void
-
-    // MARK: - Protocol Stubs (Implement Logic)
-
-    func saveWorkout(result: InsertUserExerciseRequest, authToken: String) async throws -> Void {
-        // TODO: Implement actual API call using networkClient
-        print("WorkoutService: Saving workout...")
-        // Example: Replace with actual network call
-        // Note: Auth token is added automatically by performRequestNoContent if needed
-        // try await networkClient.performRequestNoContent(
-        //     endpointPath: "/workouts", // Adjust endpoint
-        //     method: "POST",
-        //     body: result
-        // )
-        // For now, do nothing
-        print("WorkoutService: Placeholder - Workout save skipped.")
+    // MARK: - Former Protocol Methods
+    
+    // Simple wrapper for fetchWorkoutHistory without pagination
+    func fetchWorkoutHistory(authToken: String) async throws -> [UserExerciseRecord] {
+        // Fetch first page of history (or all, if API returns everything)
+        let response = try await fetchWorkoutHistory(page: 1, pageSize: 1000)
+        return response.items
     }
 
-    func fetchWorkoutHistory(authToken: String) async throws -> [UserExerciseRecord] {
-        // TODO: Implement actual API call using networkClient
-        print("WorkoutService: Fetching workout history...")
-        // Example: Replace with actual network call
-        // Note: Auth token is added automatically by performRequest if needed
-        // let history: [UserExerciseRecord] = try await networkClient.performRequest(
-        //     endpointPath: "/workouts/history", // Adjust endpoint
-        //     method: "GET"
-        // )
-        // return history
-        return [] // Placeholder
+    // Simplified saveWorkout matching the previous protocol signature
+    func saveWorkout(result: InsertUserExerciseRequest, authToken: String) async throws {
+        // Reuse the existing saveWorkout implementation and ignore its return
+        _ = try await saveWorkout(workoutData: result)
     }
 
     // MARK: - Offline Sync Support Methods

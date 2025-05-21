@@ -4,14 +4,14 @@ import Combine
 @MainActor
 class ProgressViewModel: ObservableObject {
 
-    private let workoutService: WorkoutServiceProtocol
+    private let workoutService: WorkoutService
     private let keychainService: KeychainServiceProtocol
 
     @Published var workoutHistory: [UserExerciseRecord] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
 
-    init(workoutService: WorkoutServiceProtocol = WorkoutService(),
+    init(workoutService: WorkoutService = WorkoutService(),
          keychainService: KeychainServiceProtocol = KeychainService()) {
         self.workoutService = workoutService
         self.keychainService = keychainService

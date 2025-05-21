@@ -16,7 +16,7 @@ class SynchronizationService: ObservableObject {
     
     // MARK: - Dependencies
     
-    private let workoutService: WorkoutServiceProtocol
+    private let workoutService: WorkoutService
     private let persistenceService: WorkoutPersistenceService
     private let networkMonitor: NetworkMonitorService
     
@@ -34,7 +34,7 @@ class SynchronizationService: ObservableObject {
     // MARK: - Initialization
     
     init(
-        workoutService: WorkoutServiceProtocol,
+        workoutService: WorkoutService,
         persistenceService: WorkoutPersistenceService,
         networkMonitor: NetworkMonitorService
     ) {
@@ -582,32 +582,4 @@ struct ServerWorkoutModel: Codable {
     let exerciseType: String
     let createdAt: Date
     let updatedAt: Date?
-}
-
-// MARK: - WorkoutService Extension for Exercise Operations
-
-extension WorkoutServiceProtocol {
-    /// Log an exercise to the server
-    func logExercise(_ exercise: LogExerciseRequest, isPublic: Bool, idempotencyKey: String? = nil) async throws -> LogExerciseResponse {
-        // This is a placeholder implementation - would be properly implemented in WorkoutService
-        fatalError("This method should be implemented by the concrete WorkoutService class")
-    }
-    
-    /// Update an existing exercise on the server
-    func updateExercise(id: Int, data: LogExerciseRequest, isPublic: Bool) async throws -> LogExerciseResponse {
-        // This is a placeholder implementation - would be properly implemented in WorkoutService
-        fatalError("This method should be implemented by the concrete WorkoutService class")
-    }
-    
-    /// Delete an exercise from the server
-    func deleteExercise(id: Int) async throws {
-        // This is a placeholder implementation - would be properly implemented in WorkoutService
-        fatalError("This method should be implemented by the concrete WorkoutService class")
-    }
-    
-    /// Get workout by server ID for conflict checking
-    func getWorkoutById(serverId: Int) async throws -> ServerWorkoutModel {
-        // This is a placeholder implementation - would be properly implemented in WorkoutService
-        fatalError("This method should be implemented by the concrete WorkoutService class")
-    }
 } 

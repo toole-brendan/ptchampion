@@ -386,11 +386,12 @@ struct PTChampionApp: App {
         let workoutService = WorkoutService(networkClient: networkClient)
         // Note: poseDetectorService and featureFlagService are initialized at declaration
         
-        // Create persistence service for offline sync
-        let workoutPersistenceService = WorkoutPersistenceService()
-        
         // Create network monitor and sync services
         let tempNetworkMonitorService = NetworkMonitorService()
+        
+        // Create persistence service for offline sync using the shared container
+        let workoutPersistenceService = WorkoutPersistenceService(container: sharedModelContainer)
+        
         let tempSynchronizationService = SynchronizationService(
             workoutService: workoutService,
             persistenceService: workoutPersistenceService,
@@ -412,9 +413,9 @@ struct PTChampionApp: App {
             keychainService: keychainService,
             bluetoothService: tempBluetoothService, // Use local temp instance instead of self.bluetoothService
             healthKitService: tempHealthKitService, // Use local temp instance instead of self.healthKitService
-            modelContext: nil // Set later using self.sharedModelContainer
+            modelContext: nil as ModelContext? // Set later using self.sharedModelContainer
         )
-        let tempWorkoutHistoryViewModel = WorkoutHistoryViewModel(workoutService: workoutService as WorkoutServiceProtocol) // Direct reference to class
+        let tempWorkoutHistoryViewModel = WorkoutHistoryViewModel(workoutService: workoutService) // Direct reference to class
         let tempLeaderboardViewModel = LeaderboardViewModel(
             service: leaderboardService,
             location: locationService,

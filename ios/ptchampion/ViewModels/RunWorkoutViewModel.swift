@@ -16,7 +16,7 @@ class RunWorkoutViewModel: ObservableObject {
     @AppStorage("distanceUnit") private var distanceUnit: DistanceUnit = .miles
 
     private let locationService: LocationServiceProtocol
-    private let workoutService: WorkoutServiceProtocol
+    private let workoutService: WorkoutService
     private let keychainService: KeychainServiceProtocol
     private let bluetoothService: BluetoothServiceProtocol
     private let healthKitService: HealthKitServiceProtocol
@@ -98,7 +98,7 @@ class RunWorkoutViewModel: ObservableObject {
     }
 
     init(locationService: LocationServiceProtocol = LocationService(),
-         workoutService: WorkoutServiceProtocol = WorkoutService(),
+         workoutService: WorkoutService = WorkoutService(),
          keychainService: KeychainServiceProtocol = KeychainService(),
          bluetoothService: BluetoothServiceProtocol = BluetoothService(),
          healthKitService: HealthKitServiceProtocol = HealthKitService(),
