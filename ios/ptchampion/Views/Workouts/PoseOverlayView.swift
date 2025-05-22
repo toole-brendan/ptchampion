@@ -1,3 +1,5 @@
+// ios/ptchampion/Views/Workouts/PoseOverlayView.swift
+
 import SwiftUI
 import Vision // Only used for VNHumanBodyPoseObservation.JointName constants
 import PTDesignSystem // For AppTheme

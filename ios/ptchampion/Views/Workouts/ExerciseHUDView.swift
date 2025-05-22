@@ -1,3 +1,5 @@
+// ios/ptchampion/Views/Workouts/ExerciseHUDView.swift
+
 import SwiftUI
 import PTDesignSystem
 
@@ -64,14 +66,7 @@ struct ExerciseHUDView: View {
             // Bottom: Pause/Sound Controls - only shown when workout is active
             if showControls {
                 HStack(spacing: 30) {
-                    Button { togglePauseAction() } label: {
-                        Image(systemName: isPaused ? "play.circle.fill" : "pause.circle.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
-
+                    // Pause/play button removed, leaving only sound toggle
                     Button { toggleSoundAction() } label: {
                         Image(systemName: isSoundEnabled ? "speaker.wave.2.circle.fill" : "speaker.slash.circle.fill")
                             .resizable()
