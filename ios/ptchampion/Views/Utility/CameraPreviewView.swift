@@ -47,6 +47,7 @@ struct CameraPreviewView: UIViewRepresentable {
     /// Custom UIView subclass to handle orientation changes
     class CameraPreviewLayerView: UIView {
         var previewLayer: AVCaptureVideoPreviewLayer?
+        private let orientationManager = OrientationManager.shared
         
         override func layoutSubviews() {
             super.layoutSubviews()
@@ -62,22 +63,9 @@ struct CameraPreviewView: UIViewRepresentable {
             guard let connection = previewLayer.connection,
                   connection.isVideoOrientationSupported else { return }
             
-            // Get interface orientation instead of device orientation for more reliable results
-            let interfaceOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
-            let videoOrientation: AVCaptureVideoOrientation
-            
-            switch interfaceOrientation {
-            case .landscapeLeft:
-                videoOrientation = .landscapeLeft
-            case .landscapeRight:
-                videoOrientation = .landscapeRight
-            case .portraitUpsideDown:
-                videoOrientation = .portraitUpsideDown
-            case .portrait:
-                videoOrientation = .portrait
-            @unknown default:
-                videoOrientation = .portrait
-            }
+            // Use OrientationManager for consistent orientation handling
+            let interfaceOrientation = orientationManager.interfaceOrientation
+            let videoOrientation = orientationManager.videoOrientation(for: interfaceOrientation)
             
             // Only update if orientation actually changed
             if connection.videoOrientation != videoOrientation {

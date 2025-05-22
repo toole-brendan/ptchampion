@@ -13,6 +13,9 @@ struct PoseOverlayView: View {
     @State private var bodyNotDetectedCounter: Int = 0
     private let showGuidanceThreshold = 45 // About 1.5 seconds at 30fps
     
+    // Orientation management
+    @StateObject private var orientationManager = OrientationManager.shared
+    
     // Initialize with default empty set for bad joints
     init(detectedBody: DetectedBody?, badJointNames: Set<VNHumanBodyPoseObservation.JointName> = []) {
         self.detectedBody = detectedBody
@@ -21,33 +24,12 @@ struct PoseOverlayView: View {
     
     // Helper function to transform coordinates based on orientation
     private func transformPoint(_ normalizedPoint: CGPoint, to viewSize: CGSize) -> CGPoint {
-        let interfaceOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
+        let interfaceOrientation = orientationManager.interfaceOrientation
         
-        var x = normalizedPoint.x
-        var y = normalizedPoint.y
+        // Use OrientationManager for consistent coordinate transformation
+        let transformedPoint = orientationManager.transformNormalizedPoint(normalizedPoint, for: interfaceOrientation)
         
-        // Adjust coordinates based on orientation
-        switch interfaceOrientation {
-        case .landscapeLeft:
-            let temp = x
-            x = 1 - y
-            y = temp
-        case .landscapeRight:
-            let temp = x
-            x = y
-            y = 1 - temp
-        case .portraitUpsideDown:
-            x = 1 - x
-            y = 1 - y
-        case .portrait:
-            // No transformation needed for portrait
-            break
-        @unknown default:
-            // Default to portrait behavior
-            break
-        }
-        
-        return CGPoint(x: x * viewSize.width, y: y * viewSize.height)
+        return CGPoint(x: transformedPoint.x * viewSize.width, y: transformedPoint.y * viewSize.height)
     }
     
     // Specify which joints to draw connections between

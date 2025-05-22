@@ -22,6 +22,10 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
     private var lastProcessedTimestamp: TimeInterval = 0
     private var throttleInterval: TimeInterval = 0.05 // 20 FPS (1/20 = 0.05s)
     private var isThrottlingEnabled: Bool = true
+    
+    // Orientation management
+    private let orientationManager = OrientationManager.shared
+    private var cancellables = Set<AnyCancellable>()
 
     var detectedBodyPublisher: AnyPublisher<DetectedBody?, Never> {
         detectedBodySubject.eraseToAnyPublisher()
@@ -85,22 +89,9 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
             return
         }
         
-        // Get device orientation to determine image rotation
-        let deviceOrientation = UIDevice.current.orientation
-        let imageOrientation: UIImage.Orientation
-        
-        switch deviceOrientation {
-        case .portrait: 
-            imageOrientation = .right        // device upright → rotate image 90° clockwise
-        case .portraitUpsideDown: 
-            imageOrientation = .left         // device upside down → rotate 90° counter-clockwise
-        case .landscapeLeft: 
-            imageOrientation = .up           // device rotated left → image is already upright
-        case .landscapeRight: 
-            imageOrientation = .down         // device rotated right → image 180° rotated
-        default:
-            imageOrientation = .right        // default to portrait behavior
-        }
+        // Get interface orientation for more reliable orientation detection
+        let interfaceOrientation = orientationManager.interfaceOrientation
+        let imageOrientation = orientationManager.imageOrientation(for: interfaceOrientation)
         
         do {
             // Wrap the CMSampleBuffer in an MPImage with the proper orientation
@@ -242,6 +233,9 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
         
         // Clear references
         detectedBodySubject.send(nil)
+        
+        // Cancel orientation subscriptions
+        cancellables.forEach { $0.cancel() }
         
         print("PoseDetectorService deinitialized.")
     }

@@ -17,6 +17,10 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
     private let videoOutput = AVCaptureVideoDataOutput()
     private var videoDeviceInput: AVCaptureDeviceInput?
     private var currentPreviewLayer: AVCaptureVideoPreviewLayer? = nil  // Renamed to avoid conflict
+    
+    // Orientation management
+    private let orientationManager = OrientationManager.shared
+    private var cancellables = Set<AnyCancellable>()
 
     // Combine Publishers
     private let authorizationStatusSubject = CurrentValueSubject<AVAuthorizationStatus, Never>(.notDetermined)
@@ -47,10 +51,23 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
         sessionQueue.setSpecific(key: sessionQueueKey, value: true)
         // Initial status check
         authorizationStatusSubject.send(AVCaptureDevice.authorizationStatus(for: .video))
+        
+        // Subscribe to orientation changes
+        setupOrientationObserver()
+        
         // Configure session asynchronously
         sessionQueue.async {
             self.configureSession()
         }
+    }
+    
+    private func setupOrientationObserver() {
+        orientationManager.debouncedOrientationPublisher
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                self?.updateOutputOrientation()
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Configuration
@@ -231,28 +248,22 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
-            // Get current interface orientation
-            let interfaceOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
-            let videoOrientation: AVCaptureVideoOrientation
+            // Use OrientationManager for consistent orientation handling
+            let interfaceOrientation = self.orientationManager.interfaceOrientation
+            let videoOrientation = self.orientationManager.videoOrientation(for: interfaceOrientation)
             
-            switch interfaceOrientation {
-            case .portrait: 
-                videoOrientation = .portrait
-            case .portraitUpsideDown: 
-                videoOrientation = .portraitUpsideDown
-            case .landscapeLeft: 
-                videoOrientation = .landscapeLeft
-            case .landscapeRight: 
-                videoOrientation = .landscapeRight
-            default: 
-                videoOrientation = .portrait
-            }
+            print("DEBUG: [CameraService] Updating orientation to: \(interfaceOrientation) -> \(videoOrientation)")
             
             self.sessionQueue.async {
                 // Update video output connection
                 if let connection = self.videoOutput.connection(with: .video),
                    connection.isVideoOrientationSupported {
-                    connection.videoOrientation = videoOrientation
+                    
+                    // Only update if orientation actually changed
+                    if connection.videoOrientation != videoOrientation {
+                        connection.videoOrientation = videoOrientation
+                        print("DEBUG: [CameraService] Video output orientation updated to: \(videoOrientation.rawValue)")
+                    }
                     
                     // Mirror front camera
                     if self.videoDeviceInput?.device.position == .front,
@@ -266,7 +277,8 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
                 // Update preview layer connection
                 DispatchQueue.main.async {
                     if let previewConnection = self.currentPreviewLayer?.connection,
-                       previewConnection.isVideoOrientationSupported {
+                       previewConnection.isVideoOrientationSupported,
+                       previewConnection.videoOrientation != videoOrientation {
                         previewConnection.videoOrientation = videoOrientation
                         print("DEBUG: [CameraService] Updated preview layer orientation to: \(videoOrientation.rawValue)")
                     }
@@ -317,6 +329,7 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
     // MARK: - Deinitialization
     deinit {
         stopSession(sync: true)          // now safe – does not form weak refs
+        cancellables.forEach { $0.cancel() }
         print("CameraService deinitialized.")
     }
 } 
