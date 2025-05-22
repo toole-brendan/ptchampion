@@ -67,6 +67,9 @@ class WorkoutSessionViewModel: ObservableObject {
     // Add a flag to ignore late pose detection results
     @Published private var isWorkoutActive: Bool = false
     
+    // Track device orientation for pose detection adjustments
+    @Published var currentOrientation: UIInterfaceOrientation = .portrait
+    
     // MARK: - Feedback Message Persistence
     // To prevent form feedback from flickering away too quickly
     private var lastFormFeedback: String = ""
@@ -128,6 +131,9 @@ class WorkoutSessionViewModel: ObservableObject {
         // Setup subscribers and check camera permissions
         setupSubscribers()
         checkCameraPermission()
+        
+        // Initialize current orientation
+        currentOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
     }
     
     deinit {
@@ -381,6 +387,37 @@ class WorkoutSessionViewModel: ObservableObject {
     
     func switchCamera() {
         cameraService.switchCamera()
+    }
+    
+    // MARK: - Orientation Handling
+    func handleOrientationChange() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            let newOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
+            if self.currentOrientation != newOrientation {
+                print("DEBUG: [WorkoutSessionViewModel] Orientation changed from \(self.currentOrientation.rawValue) to \(newOrientation.rawValue)")
+                self.currentOrientation = newOrientation
+                
+                // Update camera service orientation
+                self.cameraService.updateOutputOrientation()
+                
+                // Recalibrate pose detection if needed
+                self.recalibratePoseDetection()
+            }
+        }
+    }
+
+    private func recalibratePoseDetection() {
+        // Reset any orientation-dependent calibration
+        // This might include resetting reference poses or adjusting detection thresholds
+        print("DEBUG: [WorkoutSessionViewModel] Recalibrating pose detection for new orientation")
+        
+        // Reset the grader state to account for new orientation
+        if workoutState == .counting || workoutState == .ready {
+            exerciseGrader.resetState()
+            updateUIFromGraderState()
+        }
     }
     
     func finishWorkout() {

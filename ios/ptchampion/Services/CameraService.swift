@@ -228,37 +228,50 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
 
     // Change from private to public to allow external calls when device orientation changes
     public func updateOutputOrientation() {
-        guard let connection = videoOutput.connection(with: .video) else { return }
-        // Get current interface orientation (requires running on main thread)
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Get current interface orientation
             let interfaceOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
             let videoOrientation: AVCaptureVideoOrientation
-
+            
             switch interfaceOrientation {
-            case .portrait: videoOrientation = .portrait
-            case .portraitUpsideDown: videoOrientation = .portraitUpsideDown
-            case .landscapeLeft: videoOrientation = .landscapeLeft
-            case .landscapeRight: videoOrientation = .landscapeRight
-            default: videoOrientation = .portrait
+            case .portrait: 
+                videoOrientation = .portrait
+            case .portraitUpsideDown: 
+                videoOrientation = .portraitUpsideDown
+            case .landscapeLeft: 
+                videoOrientation = .landscapeLeft
+            case .landscapeRight: 
+                videoOrientation = .landscapeRight
+            default: 
+                videoOrientation = .portrait
             }
-
-             self.sessionQueue.async { // Switch back to session queue to set orientation
-                 if connection.isVideoOrientationSupported {
-                     connection.videoOrientation = videoOrientation
-                 }
-                 
-                 // **New:** Update preview layer orientation as well
-                 if let previewConn = self.currentPreviewLayer?.connection, 
-                        previewConn.isVideoOrientationSupported {
-                     previewConn.videoOrientation = videoOrientation
-                 }
-                 
-                 // Mirror front camera video
-                 if self.videoDeviceInput?.device.position == .front,
-                    connection.isVideoMirroringSupported {
-                    connection.isVideoMirrored = true
-                 }
-             }
+            
+            self.sessionQueue.async {
+                // Update video output connection
+                if let connection = self.videoOutput.connection(with: .video),
+                   connection.isVideoOrientationSupported {
+                    connection.videoOrientation = videoOrientation
+                    
+                    // Mirror front camera
+                    if self.videoDeviceInput?.device.position == .front,
+                       connection.isVideoMirroringSupported {
+                        connection.isVideoMirrored = true
+                    } else {
+                        connection.isVideoMirrored = false
+                    }
+                }
+                
+                // Update preview layer connection
+                DispatchQueue.main.async {
+                    if let previewConnection = self.currentPreviewLayer?.connection,
+                       previewConnection.isVideoOrientationSupported {
+                        previewConnection.videoOrientation = videoOrientation
+                        print("DEBUG: [CameraService] Updated preview layer orientation to: \(videoOrientation.rawValue)")
+                    }
+                }
+            }
         }
     }
     

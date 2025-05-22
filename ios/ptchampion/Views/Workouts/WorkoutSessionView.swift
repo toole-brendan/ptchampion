@@ -131,26 +131,33 @@ struct WorkoutSessionView: View {
             // Hide tab bar during workout
             UITabBar.appearance().isHidden = true
             
-            // Setup model context first, before any view changes
+            // Setup model context
             DispatchQueue.main.async {
-                print("DEBUG: [WorkoutSessionView] Setting modelContext in ViewModel (async)")
                 viewModel.modelContext = modelContext
             }
             
-            // Register for rotation events
+            // Register for rotation events with immediate update
             NotificationCenter.default.addObserver(
                 forName: UIDevice.orientationDidChangeNotification,
-                object: nil, queue: .main
+                object: nil, 
+                queue: .main
             ) { _ in
                 print("DEBUG: [WorkoutSessionView] Device orientation changed")
-                // Small delay to ensure UI has rotated
+                
+                // Use the ViewModel's orientation handler
+                viewModel.handleOrientationChange()
+                
+                // Also update the UI after a small delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    print("DEBUG: [WorkoutSessionView] Updating camera orientation after rotation")
-                    viewModel.cameraService.updateOutputOrientation()
+                    // Force view refresh if needed
+                    if let windowScene = UIApplication.shared.windows.first?.windowScene {
+                        windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+                    }
                 }
             }
             
-            print("DEBUG: [WorkoutSessionView] onAppear completed")
+            // Initial orientation setup
+            viewModel.handleOrientationChange()
         }
         .onDisappear {
             // Stop the countdown timer first

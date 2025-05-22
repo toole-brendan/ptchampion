@@ -19,6 +19,37 @@ struct PoseOverlayView: View {
         self.badJointNames = badJointNames
     }
     
+    // Helper function to transform coordinates based on orientation
+    private func transformPoint(_ normalizedPoint: CGPoint, to viewSize: CGSize) -> CGPoint {
+        let interfaceOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
+        
+        var x = normalizedPoint.x
+        var y = normalizedPoint.y
+        
+        // Adjust coordinates based on orientation
+        switch interfaceOrientation {
+        case .landscapeLeft:
+            let temp = x
+            x = 1 - y
+            y = temp
+        case .landscapeRight:
+            let temp = x
+            x = y
+            y = 1 - temp
+        case .portraitUpsideDown:
+            x = 1 - x
+            y = 1 - y
+        case .portrait:
+            // No transformation needed for portrait
+            break
+        @unknown default:
+            // Default to portrait behavior
+            break
+        }
+        
+        return CGPoint(x: x * viewSize.width, y: y * viewSize.height)
+    }
+    
     // Specify which joints to draw connections between
     private let jointPairs: [(VNHumanBodyPoseObservation.JointName, VNHumanBodyPoseObservation.JointName)] = [
         // Torso
@@ -58,8 +89,8 @@ struct PoseOverlayView: View {
                           let p2 = body.point(joint2Name),
                           p1.confidence > 0.2, p2.confidence > 0.2 else { continue } // Min confidence for line
 
-                    let point1 = CGPoint(x: p1.location.x * size.width, y: p1.location.y * size.height)
-                    let point2 = CGPoint(x: p2.location.x * size.width, y: p2.location.y * size.height)
+                    let point1 = transformPoint(p1.location, to: size)
+                    let point2 = transformPoint(p2.location, to: size)
 
                     var path = Path()
                     path.move(to: point1)
@@ -78,7 +109,7 @@ struct PoseOverlayView: View {
 
                 // Draw points (circles)
                 for point in body.allPoints where point.confidence > 0.3 { // Min confidence for point
-                    let location = CGPoint(x: point.location.x * size.width, y: point.location.y * size.height)
+                    let location = transformPoint(point.location, to: size)
                     let circleRadius: CGFloat = 5
 
                     let circleRect = CGRect(x: location.x - circleRadius,
