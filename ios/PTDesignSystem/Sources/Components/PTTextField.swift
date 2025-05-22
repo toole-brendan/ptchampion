@@ -85,14 +85,14 @@ public struct PTTextField: View {
                     textField.inputAccessoryView = UIView(frame: .zero)
                 }
                 
-                // Disable password suggestions
-                textField.textContentType = nil
+                // Set password semantics WITHOUT triggering strong password suggestions
+                textField.isSecureTextEntry = true
+                textField.textContentType = .password  // Use .password instead of nil or .newPassword
                 textField.passwordRules = nil
                 
                 #if targetEnvironment(simulator)
-                // This addresses the automatic strong password suggestion in simulator
-                textField.isSecureTextEntry = true
-                textField.textContentType = .oneTimeCode // This prevents auto-fill on simulator
+                // Even in simulator, .password is the right choice (not .oneTimeCode)
+                textField.textContentType = .password
                 #endif
             }
     }
@@ -108,11 +108,18 @@ public struct PTTextField: View {
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            // Label at the top
+            // Label at the top - add safeguard against empty label/placeholder
             if !text.isEmpty || label != nil {
-                Text(label ?? placeholder)
-                    .font(.caption)
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                // Only show the Text view if we have actual content to display
+                if let labelText = label {
+                    Text(labelText)
+                        .font(.caption)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                } else if !placeholder.isEmpty {
+                    Text(placeholder)
+                        .font(.caption)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                }
             }
             
             HStack {

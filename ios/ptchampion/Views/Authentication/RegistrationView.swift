@@ -57,41 +57,47 @@ struct RegistrationView: View {
                 // Form fields with consistent styling
                 VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                     PTTextField(
-                        "First Name",
+                        "",
                         text: $firstName,
+                        label: "FIRST NAME",
                         icon: Image(systemName: "person")
                     )
                     
                     PTTextField(
-                        "Last Name",
+                        "",
                         text: $lastName,
+                        label: "LAST NAME",
                         icon: Image(systemName: "person.2")
                     )
                     
                     PTTextField(
-                        "Email",
+                        "",
                         text: $email,
+                        label: "EMAIL",
                         icon: Image(systemName: "envelope"),
                         keyboardType: .emailAddress
                     )
                     
                     PTTextField(
-                        "Username (display name)",
+                        "",
                         text: $username,
+                        label: "USERNAME",
                         icon: Image(systemName: "person.text.rectangle")
                     )
                     
                     PTTextField(
-                        "Password",
+                        "",
                         text: $password,
+                        label: "PASSWORD",
                         isSecure: true,
                         icon: Image(systemName: "lock")
                     )
                     .onChange(of: password) { _, _ in validatePasswords() }
                     
                     PTTextField(
-                        "Confirm Password",
+                        "",
                         text: $confirmPassword,
+                        label: "CONFIRM PASSWORD",
                         isSecure: true,
                         icon: Image(systemName: "lock.shield")
                     )

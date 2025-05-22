@@ -114,14 +114,10 @@ struct LoginView: View {
                         // Form Fields
                         VStack(spacing: 16) {
                             VStack(spacing: 4) {
-                                Text("EMAIL")
-                                    .font(.futuraMedium(size: 12))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
-                                
                                 PTTextField(
                                     "",
                                     text: $email,
+                                    label: "EMAIL",
                                     icon: Image(systemName: "envelope"),
                                     keyboardType: .emailAddress
                                 )
@@ -129,13 +125,14 @@ struct LoginView: View {
                             
                             VStack(spacing: 4) {
                                 // Password label and Forgot password in same row
-                                HStack {
-                                    Text("PASSWORD")
-                                        .font(.futuraMedium(size: 12))
-                                        .foregroundColor(AppTheme.GeneratedColors.tacticalGray)
-                                    
-                                    Spacer()
-                                    
+                                PTTextField(
+                                    "",
+                                    text: $password,
+                                    label: "PASSWORD",
+                                    isSecure: true,
+                                    icon: Image(systemName: "lock")
+                                )
+                                .overlay(alignment: .topTrailing) {
                                     Button(action: {
                                         // Handle forgot password
                                     }) {
@@ -143,14 +140,9 @@ struct LoginView: View {
                                             .font(.system(.caption, design: .monospaced))
                                             .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                     }
+                                    .padding(.trailing, 4)
+                                    .padding(.top, 0)
                                 }
-                                
-                                PTTextField(
-                                    "",
-                                    text: $password,
-                                    isSecure: true,
-                                    icon: Image(systemName: "lock")
-                                )
                             }
                             
                             // Login Button
@@ -241,7 +233,7 @@ struct LoginView: View {
                                         .padding(.trailing, 8)
                                     
                                     Text("Sign in with Google")
-                                        .font(.system(size: 15, weight: .medium))
+                                        .font(.system(size: 17, weight: .medium))
                                         .foregroundColor(Color.black.opacity(0.87))
                                     
                                     Spacer()
