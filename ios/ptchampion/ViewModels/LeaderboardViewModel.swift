@@ -72,14 +72,7 @@ final class LeaderboardViewModel: ObservableObject {
         let token = keychain.getAccessToken() ?? ""
 
         // Determine the exerciseType string for the API call
-        let apiExerciseType: String
-        switch selectedExercise {
-        case .overall:
-            // Standardized keyword for overall/aggregate. Backend will use this.
-            apiExerciseType = "aggregate_overall"
-        default:
-            apiExerciseType = selectedExercise.rawValue
-        }
+        let apiExerciseType: String = selectedExercise.rawValue
 
         if selectedBoard == .global {
             let backendEntries = try await service.fetchGlobalLeaderboard(

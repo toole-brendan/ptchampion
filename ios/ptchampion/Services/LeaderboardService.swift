@@ -38,7 +38,10 @@ class LeaderboardService: LeaderboardServiceProtocol {
             let endpointPath: String
             var queryParams = ["time_frame": timeFrame]
 
-            if exerciseType == "aggregate_overall" {
+            if exerciseType == "overall" {
+                endpointPath = "/leaderboards/global/overall"
+            } else if exerciseType == "aggregate_overall" {
+                // Keep this for backward compatibility
                 endpointPath = "/leaderboards/global/aggregate"
             } else {
                 endpointPath = "/leaderboards/global/exercise/\(exerciseType)"
@@ -120,7 +123,11 @@ class LeaderboardService: LeaderboardServiceProtocol {
                 "time_frame": timeFrame
             ]
 
-            if exerciseType == "aggregate_overall" {
+            if exerciseType == "overall" {
+                endpointPath = "/leaderboards/local/overall"
+                // No exercise_type query param needed for overall path
+            } else if exerciseType == "aggregate_overall" {
+                // Keep this for backward compatibility
                 endpointPath = "/leaderboards/local/aggregate"
                 // No exercise_type query param needed for aggregate path
             } else {
