@@ -582,11 +582,11 @@ class WorkoutSessionViewModel: ObservableObject {
     static func createGrader(for exerciseType: ExerciseType) -> any ExerciseGraderProtocol {
         switch exerciseType {
         case .pushup:
-            return PushupGrader()
+            return EnhancedPushupGrader()
         case .situp:
-            return SitupGrader()
+            return EnhancedSitupGrader()
         case .pullup:
-            return PullupGrader()
+            return EnhancedPullupGrader()
         default:
             print("Warning: No specific grader for \(exerciseType.displayName). Using placeholder grader.")
             return WorkoutSessionPlaceholderGrader()
