@@ -19,8 +19,6 @@ struct LeaderboardView: View {
     @State private var navigatingToUserID: String?
     @Namespace private var animation
     
-    // Track visibility state for animation
-    @State private var contentOpacity: Double = 1.0
     // Track active fetch task for cancellation
     @State private var fetchTask: Task<Void, Never>? = nil
     
@@ -56,8 +54,10 @@ struct LeaderboardView: View {
             AppTheme.GeneratedColors.textPrimary
         
         return Button(action: {
-            // Simple state change without animation
-            viewModel.selectedBoard = type
+            // Wrap state change in withAnimation to make the transition smooth
+            withAnimation {
+                viewModel.selectedBoard = type
+            }
         }) {
             VStack {
                 Text(type.rawValue)
@@ -144,15 +144,21 @@ struct LeaderboardView: View {
                             .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
                             .frame(height: 1)
                         
-                        // Content area with simple opacity animation
-                        mainContentArea
-                            // Fill remaining available space
-                            .frame(maxWidth: .infinity, alignment: .top)
+                        // Replace direct mainContentArea with conditional views for transitions
+                        if viewModel.selectedBoard == .global {
+                            mainContentArea
+                                .transition(.move(edge: .leading))
+                                .frame(maxWidth: .infinity, alignment: .top)
+                        } else {
+                            mainContentArea
+                                .transition(.move(edge: .trailing))
+                                .frame(maxWidth: .infinity, alignment: .top)
+                        }
                     }
                     .padding(AppTheme.GeneratedSpacing.contentPadding)
+                    .animation(.easeInOut, value: viewModel.selectedBoard) // Add animation for transitions
                 }
             }
-            .opacity(contentOpacity)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 fetchTask = Task {
@@ -164,28 +170,55 @@ struct LeaderboardView: View {
                 fetchTask?.cancel()
             }
             .onChange(of: viewModel.selectedBoard) { _ in 
-                performContentTransition {
-                    fetchTask?.cancel() // Cancel any previous fetch
-                    fetchTask = Task { await viewModel.fetch() }
+                // First, cancel any previous fetch and clear entries immediately
+                fetchTask?.cancel()
+                
+                // Immediately clear entries and set loading state to ensure placeholder display during transition
+                withAnimation {
+                    viewModel.leaderboardEntries = []
+                    viewModel.isLoading = true
+                }
+                
+                // Then start the new fetch task
+                fetchTask = Task { 
+                    await viewModel.fetch() 
                 }
             }
             .onChange(of: viewModel.selectedCategory) { _ in 
-                performContentTransition {
-                    fetchTask?.cancel() // Cancel any previous fetch
-                    fetchTask = Task { await viewModel.fetch() }
+                // Replace fade transition with direct fetch
+                fetchTask?.cancel()
+                
+                // Show loading state during data refresh
+                withAnimation {
+                    viewModel.leaderboardEntries = []
+                    viewModel.isLoading = true
                 }
+                
+                fetchTask = Task { await viewModel.fetch() }
             }
             .onChange(of: viewModel.selectedExercise) { _ in 
-                performContentTransition {
-                    fetchTask?.cancel() // Cancel any previous fetch
-                    fetchTask = Task { await viewModel.fetch() }
+                // Replace fade transition with direct fetch
+                fetchTask?.cancel()
+                
+                // Show loading state during data refresh
+                withAnimation {
+                    viewModel.leaderboardEntries = []
+                    viewModel.isLoading = true
                 }
+                
+                fetchTask = Task { await viewModel.fetch() }
             }
             .onChange(of: viewModel.selectedRadius) { _ in 
-                performContentTransition {
-                    fetchTask?.cancel() // Cancel any previous fetch
-                    fetchTask = Task { await viewModel.fetch() }
+                // Replace fade transition with direct fetch
+                fetchTask?.cancel()
+                
+                // Show loading state during data refresh
+                withAnimation {
+                    viewModel.leaderboardEntries = []
+                    viewModel.isLoading = true
                 }
+                
+                fetchTask = Task { await viewModel.fetch() }
             }
             .navigationDestination(item: $navigatingToUserID) { userID in
                 UserProfileView(userID: userID)
@@ -232,20 +265,6 @@ struct LeaderboardView: View {
             }
         }
         .frame(minHeight: 400) // Ensure content has enough space to scroll
-    }
-    
-    // Helper function to perform fade transition without using .transition
-    private func performContentTransition(action: @escaping () -> Void) {
-        withAnimation(.easeOut(duration: 0.2)) {
-            contentOpacity = 0.0
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            action()
-            withAnimation(.easeIn(duration: 0.2)) {
-                contentOpacity = 1.0
-            }
-        }
     }
     
     // Helper for logging
