@@ -810,26 +810,7 @@ class RunWorkoutViewModel: ObservableObject {
     
     /// Calculate APFT run score (0-100) for 17–21 male age group given elapsed seconds
     private func calculateRunScore(seconds: Int) -> Int {
-        // APFT thresholds for 17–21 M (time in sec: 13:00=100, 16:36=50, 20:12=0)
-        let maxTime = 780    // 13:00 min for 100 pts
-        let midTime = 996    // 16:36 min for 50 pts
-        let minTime = 1212   // 20:12 min for 0 pts
-
-        if seconds <= maxTime {
-            return 100
-        } else if seconds < midTime {
-            // Linear interpolation from 100 down to 50 points
-            let fraction = Double(seconds - maxTime) / Double(midTime - maxTime)
-            let score = 100.0 - fraction * 50.0
-            return Int(round(score))
-        } else if seconds < minTime {
-            // Linear interpolation from 50 down to 0 points
-            let fraction = Double(seconds - midTime) / Double(minTime - midTime)
-            let score = 50.0 - fraction * 50.0
-            return Int(round(score))
-        } else {
-            return 0
-        }
+        return ScoreRubrics.score(for: .run, time: seconds)
     }
 
     // MARK: - Deinit

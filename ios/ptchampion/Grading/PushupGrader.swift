@@ -423,19 +423,9 @@ final class PushupGrader: ObservableObject, ExerciseGraderProtocol {
     }
     
     func calculateFinalScore() -> Double? {
-        // Calculate a score based on rep count and form quality
-        // If no reps completed, return nil
-        guard _repCount > 0 else { return nil }
-        
-        // Base score is rep count * 10 (max 100)
-        let maxReps = 10 // 10 reps = 100 points
-        let repScore = min(Double(_repCount) / Double(maxReps), 1.0) * 85.0 // 85% of score is rep count
-        
-        // Form quality contributes up to 15% of score
-        let formScore = formQualityAverage * 15.0
-        
-        // Total score combines rep count and form quality
-        return min(repScore + formScore, 100.0)
+        guard repCount > 0 else { return nil }
+        let score = ScoreRubrics.score(for: .pushup, reps: repCount)
+        return Double(score)
     }
 
     // Helper to average angles, ignoring nil values

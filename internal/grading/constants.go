@@ -23,17 +23,6 @@ const (
 	ErrPoorForm            GradingError = "poor exercise form detected"
 )
 
-// Scoring Thresholds
-// These values are used to calculate scores for different exercises
-// The scoring is based on a piecewise linear function between min, mid, and max values
-
-// Push-ups (reps)
-const (
-	PushupMinPerfValue float64 = 0  // Performance value for 0 points
-	PushupMidPerfValue float64 = 35 // Performance value for 50 points
-	PushupMaxPerfValue float64 = 71 // Performance value for 100 points
-)
-
 // Push-up Form Thresholds
 const (
 	PushupElbowAngleDownMax      float64 = 90.0  // Max elbow angle considered 'down'
@@ -44,13 +33,6 @@ const (
 	PushupRequiredConfidence     float64 = 0.5   // Min confidence for key joints
 )
 
-// Sit-ups (reps)
-const (
-	SitupMinPerfValue float64 = 0
-	SitupMidPerfValue float64 = 47
-	SitupMaxPerfValue float64 = 78
-)
-
 // Sit-up Form Thresholds
 const (
 	SitupHipAngleDownMax      float64 = 90.0  // Max hip angle at bottom position
@@ -59,25 +41,11 @@ const (
 	SitupTorsoRotationMaxDiff float64 = 0.15  // Max allowed torso rotation
 )
 
-// Pull-ups (reps)
-const (
-	PullupMinPerfValue float64 = 0
-	PullupMidPerfValue float64 = 8
-	PullupMaxPerfValue float64 = 20
-)
-
 // Pull-up Form Thresholds
 const (
 	PullupChinOverBarThreshold float64 = 0.05  // Chin must be this much over the bar
 	PullupArmExtensionMax      float64 = 140.0 // Max elbow angle at bottom position
 	PullupRequiredConfidence   float64 = 0.5   // Min confidence for key joints
-)
-
-// Run (time in seconds) - Lower time is better
-const (
-	RunTimeMaxScoreSec float64 = 780  // 13:00 - Performance value for 100 points
-	RunTimeMidScoreSec float64 = 996  // 16:36 - Performance value for 50 points
-	RunTimeMinScoreSec float64 = 1212 // 20:12 - Performance value for 0 points
 )
 
 // Run tracking thresholds

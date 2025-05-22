@@ -336,17 +336,8 @@ final class SitupGrader: ObservableObject, ExerciseGraderProtocol {
     }
     
     func calculateFinalScore() -> Double? {
-        // If no reps completed, return nil
         guard repCount > 0 else { return nil }
-        
-        // Base score is rep count * 10 (max 100)
-        let maxReps = 10 // 10 reps = 100 points
-        let repScore = min(Double(repCount) / Double(maxReps), 1.0) * 85.0 // 85% of score is rep count
-        
-        // Form quality contributes up to 15% of score
-        let formScore = formQualityAverage * 15.0
-        
-        // Total score combines rep count and form quality
-        return min(repScore + formScore, 100.0)
+        let score = ScoreRubrics.score(for: .situp, reps: repCount)
+        return Double(score)
     }
 } 
