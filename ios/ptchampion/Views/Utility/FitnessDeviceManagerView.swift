@@ -1,6 +1,12 @@
 import SwiftUI
 import HealthKit
 import CoreBluetooth
+import PTDesignSystem
+
+// Create explicit button styles to avoid ambiguity
+fileprivate let primaryButtonStyle = PTButton.ExtendedStyle.primary
+fileprivate let secondaryButtonStyle = PTButton.ExtendedStyle.secondary
+fileprivate let destructiveButtonStyle = PTButton.ExtendedStyle.destructive
 
 struct FitnessDeviceManagerView: View {
     @EnvironmentObject var viewModel: FitnessDeviceManagerViewModel
@@ -12,30 +18,47 @@ struct FitnessDeviceManagerView: View {
     enum BannerType { case bluetooth, healthKit }
     
     var body: some View {
-        VStack(spacing: 0) {
-            // Banner at the top
-            bannerView
+        ZStack {
+            // Ambient Background Gradient (matching Dashboard)
+            RadialGradient(
+                gradient: Gradient(colors: [
+                    AppTheme.GeneratedColors.background.opacity(0.9),
+                    AppTheme.GeneratedColors.background
+                ]),
+                center: .center,
+                startRadius: 50,
+                endRadius: UIScreen.main.bounds.height * 0.6
+            )
+            .ignoresSafeArea()
             
-            // Header
-            deviceSourcesSection()
-            
-            // Current Metrics Section
-            if viewModel.isReceivingHeartRateData || 
-               viewModel.isReceivingPaceData || 
-               viewModel.isReceivingCadenceData {
-                currentMetricsSection()
+            VStack(spacing: 0) {
+                // Banner at the top
+                bannerView
+                
+                ScrollView {
+                    VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                        // Header
+                        deviceSourcesSection()
+                        
+                        // Current Metrics Section
+                        if viewModel.isReceivingHeartRateData || 
+                           viewModel.isReceivingPaceData || 
+                           viewModel.isReceivingCadenceData {
+                            currentMetricsSection()
+                        }
+                        
+                        // Device Sections
+                        if viewModel.isHealthKitAvailable {
+                            appleWatchSection()
+                        }
+                        
+                        bluetoothDevicesSection()
+                        
+                        Spacer(minLength: AppTheme.GeneratedSpacing.contentPadding)
+                    }
+                    .padding(AppTheme.GeneratedSpacing.contentPadding)
+                }
             }
-            
-            // Device Sections
-            if viewModel.isHealthKitAvailable {
-                appleWatchSection()
-                    .padding(.top)
-            }
-            
-            bluetoothDevicesSection()
-                .padding(.top)
-            
-            Spacer()
         }
         .navigationTitle("Fitness Devices")
         .onAppear {
@@ -191,115 +214,260 @@ struct FitnessDeviceManagerView: View {
     
     @ViewBuilder
     private func deviceSourcesSection() -> some View {
-        VStack(spacing: 8) {
-            Text("Data Sources")
-                .font(.headline)
-                .padding(.top)
+        VStack(alignment: .leading, spacing: 0) {
+            // Header with dark background and gold text (like dashboard)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("DATA SOURCES")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("ACTIVE FITNESS TRACKING SOURCES")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
             
-            HStack(spacing: 16) {
+            // Content section with cream background
+            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 // Heart Rate Source
                 VStack {
-                    Label("Heart Rate", systemImage: "heart.fill")
-                        .font(.caption)
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                        
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    
+                    Text("HEART RATE")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
                     
                     Text(viewModel.isReceivingHeartRateData ? viewModel.primaryDataSource() : "None")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(viewModel.isReceivingHeartRateData ? AppTheme.GeneratedColors.deepOps : AppTheme.GeneratedColors.textSecondary)
                 }
-                .padding(10)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground)))
+                .frame(maxWidth: .infinity)
                 
                 // Location Source
                 VStack {
-                    Label("GPS", systemImage: "location.fill")
-                        .font(.caption)
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                        
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    
+                    Text("GPS")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
                     
                     Text(viewModel.isReceivingLocationData ? viewModel.deviceDisplayName() : "Phone")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
                 }
-                .padding(10)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground)))
+                .frame(maxWidth: .infinity)
                 
                 // Pace Source
                 VStack {
-                    Label("Pace", systemImage: "figure.walk")
-                        .font(.caption)
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                        
+                        Image(systemName: "figure.walk")
+                            .font(.system(size: 20))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    
+                    Text("PACE")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
                     
                     Text(viewModel.isReceivingPaceData ? viewModel.deviceDisplayName() : "None")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(viewModel.isReceivingPaceData ? AppTheme.GeneratedColors.deepOps : AppTheme.GeneratedColors.textSecondary)
                 }
-                .padding(10)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground)))
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
-        .padding(.bottom)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     @ViewBuilder
     private func currentMetricsSection() -> some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header with dark background and gold text (like dashboard)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("CURRENT METRICS")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("LIVE FITNESS DATA")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+            
+            // Metrics with cream background
+            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 if viewModel.heartRate > 0 {
-                    FitnessMetricView(
-                        value: viewModel.formattedHeartRate(),
-                        title: "Heart Rate",
-                        systemImage: "heart.fill"
-                    )
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.error.opacity(0.15))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.error)
+                        }
+                        
+                        Text(viewModel.formattedHeartRate())
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("HEART RATE")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
                 
                 if viewModel.currentPace.metersPerSecond > 0 {
-                    FitnessMetricView(
-                        value: viewModel.formattedPace(useImperial: useImperialUnits),
-                        title: useImperialUnits ? "min/mile" : "min/km",
-                        systemImage: "figure.run"
-                    )
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.brassGold.opacity(0.15))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "figure.run")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        }
+                        
+                        Text(viewModel.formattedPace(useImperial: useImperialUnits))
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text(useImperialUnits ? "MIN/MILE" : "MIN/KM")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
                 
                 if viewModel.currentCadence.stepsPerMinute > 0 {
-                    FitnessMetricView(
-                        value: viewModel.formattedCadence(),
-                        title: "Cadence",
-                        systemImage: "metronome"
-                    )
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "metronome")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        
+                        Text(viewModel.formattedCadence())
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("CADENCE")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
             }
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     @ViewBuilder
     private func appleWatchSection() -> some View {
-        VStack(alignment: .leading) {
-            Text("Apple Watch")
-                .font(.headline)
-                .padding(.horizontal)
+        VStack(alignment: .leading, spacing: 0) {
+            // Header with dark background and gold text (like dashboard)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("APPLE WATCH")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("HEALTHKIT DATA CONNECTION")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
             
-            VStack(spacing: 10) {
+            // Content with cream background
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                 HStack {
-                    Image(systemName: "applewatch")
-                        .font(.title2)
-                        .foregroundColor(.blue)
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                            .frame(width: 50, height: 50)
+                        
+                        Image(systemName: "applewatch")
+                            .font(.title2)
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
                     
                     VStack(alignment: .leading) {
                         Text(viewModel.isHealthKitAuthorized ? "Connected" : "Not Connected")
-                            .font(.headline)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
                         
                         Text(viewModel.isHealthKitAuthorized ? 
                              "Data from Apple Health" : 
                              "Authorization required")
-                            .font(.caption)
+                            .font(.system(size: 14))
                             .foregroundColor(.secondary)
                     }
                     
                     Spacer()
                     
                     if !viewModel.isHealthKitAuthorized {
-                        Button("Connect") {
+                        Button {
                             Task {
                                 let authorized = await viewModel.requestHealthKitAuthorization()
                                 if authorized {
@@ -308,48 +476,89 @@ struct FitnessDeviceManagerView: View {
                                     showHealthKitBanner()
                                 }
                             }
+                        } label: {
+                            Text("Connect")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .background(AppTheme.GeneratedColors.brassGold)
+                                .cornerRadius(8)
                         }
-                        .buttonStyle(.borderedProminent)
                     }
                 }
                 
                 if viewModel.isHealthKitAuthorized {
-                    Toggle("Prefer Apple Watch for Heart Rate", isOn: $viewModel.preferAppleWatchForHeartRate)
-                        .font(.caption)
-                        .padding(.top, 4)
+                    Divider()
+                        .background(Color.gray.opacity(0.2))
+                    
+                    Toggle(isOn: $viewModel.preferAppleWatchForHeartRate) {
+                        Text("Prefer Apple Watch for Heart Rate")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .toggleStyle(SwitchToggleStyle(tint: AppTheme.GeneratedColors.brassGold))
                 }
             }
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-            .padding(.horizontal)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     @ViewBuilder
     private func bluetoothDevicesSection() -> some View {
-        VStack(alignment: .leading) {
-            HStack {
-                Text("Bluetooth Devices")
-                    .font(.headline)
+        VStack(alignment: .leading, spacing: 0) {
+            // Header with dark background and gold text (like dashboard)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("BLUETOOTH DEVICES")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    
+                    Spacer()
+                    
+                    Text("Status: \(viewModel.bluetoothState.stateDescription)")
+                        .font(.system(size: 12, weight: .medium))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(viewModel.bluetoothState == .poweredOn ? 
+                                   AppTheme.GeneratedColors.success.opacity(0.2) : 
+                                   AppTheme.GeneratedColors.error.opacity(0.2))
+                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? 
+                                        AppTheme.GeneratedColors.success : 
+                                        AppTheme.GeneratedColors.error)
+                        .cornerRadius(4)
+                }
+                .padding(.bottom, 4)
                 
-                Spacer()
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
                 
-                Text("Status: \(viewModel.bluetoothState.stateDescription)")
-                    .font(.caption)
-                    .foregroundColor(viewModel.bluetoothState == .poweredOn ? .green : .red)
+                Text("CONNECT TO YOUR FITNESS DEVICES")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
             }
-            .padding(.horizontal)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
             
-            // Connected Device
-            if let device = viewModel.connectedBluetoothDevice {
-                connectedDeviceView(device)
-            } else if viewModel.hasPreferredDevice() {
-                // Show auto-connect option if we have a preferred device but not connected
-                autoConnectDeviceView()
-            }
-            
-            // Scan Button
-            HStack {
+            // Content with cream background
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                // Connected Device
+                if let device = viewModel.connectedBluetoothDevice {
+                    connectedDeviceView(device)
+                } else if viewModel.hasPreferredDevice() {
+                    // Show auto-connect option if we have a preferred device but not connected
+                    autoConnectDeviceView()
+                }
+                
+                // Scan Button
                 Button {
                     if viewModel.isBluetoothScanning {
                         viewModel.stopBluetoothScan()
@@ -357,115 +566,230 @@ struct FitnessDeviceManagerView: View {
                         viewModel.startBluetoothScan()
                     }
                 } label: {
-                    Text(viewModel.isBluetoothScanning ? "Stop Scanning" : "Scan for Devices")
-                        .frame(maxWidth: .infinity)
+                    HStack {
+                        Spacer()
+                        
+                        if viewModel.isBluetoothScanning {
+                            HStack {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: Color.white))
+                                    .scaleEffect(0.8)
+                                
+                                Text("Stop Scanning")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .padding(.leading, 8)
+                            }
+                        } else {
+                            Text("Scan for Devices")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        
+                        Spacer()
+                    }
+                    .padding(.vertical, 12)
+                    .foregroundColor(.white)
+                    .background(
+                        viewModel.isBluetoothScanning ? 
+                        AppTheme.GeneratedColors.error : 
+                        AppTheme.GeneratedColors.brassGold
+                    )
+                    .cornerRadius(8)
+                    .opacity(viewModel.bluetoothState != .poweredOn ? 0.5 : 1.0)
                 }
-                .buttonStyle(.bordered)
-                .tint(viewModel.isBluetoothScanning ? .red : .blue)
                 .disabled(viewModel.bluetoothState != .poweredOn)
-            }
-            .padding(.horizontal)
-            
-            // Scanning Indicator
-            if viewModel.isBluetoothScanning {
-                HStack {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                    Text("Scanning for fitness devices...")
-                        .font(.caption)
+                
+                // Scanning Indicator
+                if viewModel.isBluetoothScanning {
+                    HStack {
+                        Text("Scanning for fitness devices...")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .center)
+                    }
+                    .padding(.top, 4)
                 }
-                .padding(.horizontal)
-            }
-            
-            // List of discovered devices
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(viewModel.bluetoothDevices) { device in
-                        deviceRow(device)
+                
+                // List of discovered devices
+                if !viewModel.bluetoothDevices.isEmpty {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("AVAILABLE DEVICES")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            .padding(.vertical, 8)
+                        
+                        ScrollView {
+                            LazyVStack(spacing: 0) {
+                                ForEach(viewModel.bluetoothDevices) { device in
+                                    deviceRow(device)
+                                    
+                                    if device.id != viewModel.bluetoothDevices.last?.id {
+                                        Divider()
+                                            .background(Color.gray.opacity(0.2))
+                                    }
+                                }
+                            }
+                        }
+                        .frame(height: min(300, CGFloat(viewModel.bluetoothDevices.count * 60 + 20)))
+                        .background(Color.white)
+                        .cornerRadius(8)
                     }
                 }
-                .padding(.horizontal)
             }
-            .frame(height: min(300, CGFloat(viewModel.bluetoothDevices.count * 60 + 20)))
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     @ViewBuilder
     private func connectedDeviceView(_ device: CBPeripheral) -> some View {
-        VStack(spacing: 8) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Connected: \(device.name ?? "Unknown Device")")
-                        .font(.headline)
-                    
-                    HStack {
-                        Text(viewModel.deviceDisplayName())
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 0) {
+            Text("CONNECTED DEVICE")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+            
+            VStack {
+                HStack {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.GeneratedColors.success.opacity(0.2))
+                            .frame(width: 40, height: 40)
                         
-                        if let batteryLevel = viewModel.deviceBatteryLevel {
-                            Label("\(batteryLevel)%", systemImage: "battery.50")
-                                .font(.caption)
-                                .foregroundColor(.green)
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.success)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("\(device.name ?? "Unknown Device")")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        HStack {
+                            Text(viewModel.deviceDisplayName())
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                            
+                            if let batteryLevel = viewModel.deviceBatteryLevel {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "battery.50")
+                                        .foregroundColor(AppTheme.GeneratedColors.success)
+                                    
+                                    Text("\(batteryLevel)%")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(AppTheme.GeneratedColors.success)
+                                }
+                            }
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 8) {
+                        Button {
+                            showingDeviceDetails = true
+                        } label: {
+                            Text("Details")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(AppTheme.GeneratedColors.deepOps.opacity(0.3), lineWidth: 1)
+                                )
+                        }
+                        
+                        Button {
+                            viewModel.disconnectFromDevice()
+                        } label: {
+                            Text("Disconnect")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(AppTheme.GeneratedColors.error)
+                                .cornerRadius(6)
                         }
                     }
                 }
-                
-                Spacer()
-                
-                Button {
-                    showingDeviceDetails = true
-                } label: {
-                    Label("Details", systemImage: "info.circle")
-                        .font(.caption)
-                }
-                .buttonStyle(.bordered)
-                
-                Button {
-                    viewModel.disconnectFromDevice()
-                } label: {
-                    Label("Disconnect", systemImage: "xmark.circle")
-                        .font(.caption)
-                }
-                .buttonStyle(.bordered)
-                .tint(.red)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
             }
+            .background(Color.white)
+            .cornerRadius(8)
+            .padding(.horizontal, 16)
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-        .padding(.horizontal)
     }
     
     @ViewBuilder
     private func autoConnectDeviceView() -> some View {
-        VStack(spacing: 8) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text("Previous Device")
-                        .font(.headline)
+        VStack(alignment: .leading, spacing: 0) {
+            Text("SAVED DEVICE")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                .padding(.vertical, 8)
+                .padding(.horizontal, 16)
+            
+            VStack {
+                HStack {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.GeneratedColors.brassGold.opacity(0.2))
+                            .frame(width: 40, height: 40)
+                        
+                        Image(systemName: "star.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    }
                     
-                    Text("You have a preferred device saved")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                    VStack(alignment: .leading) {
+                        Text("Previous Device")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("You have a preferred device saved")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 8) {
+                        Button {
+                            viewModel.reconnectToPreferredDevice()
+                        } label: {
+                            Text("Reconnect")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(AppTheme.GeneratedColors.brassGold)
+                                .cornerRadius(6)
+                        }
+                        
+                        Button {
+                            viewModel.forgetPreferredDevice()
+                        } label: {
+                            Text("Forget")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(AppTheme.GeneratedColors.error)
+                                .cornerRadius(6)
+                        }
+                    }
                 }
-                
-                Spacer()
-                
-                Button("Reconnect") {
-                    viewModel.reconnectToPreferredDevice()
-                }
-                .buttonStyle(.borderedProminent)
-                
-                Button("Forget") {
-                    viewModel.forgetPreferredDevice()
-                }
-                .buttonStyle(.bordered)
-                .tint(.red)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
             }
+            .background(Color.white)
+            .cornerRadius(8)
+            .padding(.horizontal, 16)
         }
-        .padding()
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
-        .padding(.horizontal)
     }
     
     @ViewBuilder
@@ -475,18 +799,19 @@ struct FitnessDeviceManagerView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(device.name)
-                        .font(.headline)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
                         
-                    HStack {
+                    HStack(spacing: 8) {
                         if device.deviceType != .unknown {
                             Text(device.deviceType.rawValue)
-                                .font(.caption)
+                                .font(.system(size: 12))
                                 .foregroundColor(.secondary)
                         }
                         
                         Text("RSSI: \(device.rssi)")
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                            .font(.system(size: 12))
+                            .foregroundColor(Color.gray)
                     }
                 }
                 
@@ -494,16 +819,25 @@ struct FitnessDeviceManagerView: View {
                 
                 if case .connecting = viewModel.deviceConnectionState {
                     ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
                 } else {
-                    Button("Connect") {
+                    Button {
                         viewModel.connectToDevice(device)
+                    } label: {
+                        Text("Connect")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(AppTheme.GeneratedColors.brassGold)
+                            .cornerRadius(6)
+                            .opacity(!isConnectable(state: viewModel.deviceConnectionState) ? 0.5 : 1.0)
                     }
-                    .buttonStyle(.borderedProminent)
                     .disabled(!isConnectable(state: viewModel.deviceConnectionState))
                 }
             }
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color(.tertiarySystemBackground)))
+            .padding(.vertical, 12)
+            .padding(.horizontal, 16)
         }
     }
     
@@ -512,7 +846,7 @@ struct FitnessDeviceManagerView: View {
         NavigationView {
             VStack {
                 if let peripheral = viewModel.connectedBluetoothDevice {
-                    VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
                         FitnessDetailRow(label: "Name", value: peripheral.name ?? "Unknown")
                         FitnessDetailRow(label: "Manufacturer", value: viewModel.deviceManufacturer ?? "Unknown")
                         FitnessDetailRow(label: "Type", value: viewModel.connectedDeviceType.rawValue)
@@ -520,25 +854,24 @@ struct FitnessDeviceManagerView: View {
                         
                         Divider()
                         
-                        Text("Supported Features:")
-                            .font(.headline)
-                            .padding(.top, 8)
+                        PTLabel("Supported Features:", style: .bodyBold)
+                            .padding(.top, AppTheme.GeneratedSpacing.small)
                         
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
                             FitnessFeatureRow(title: "Heart Rate", isSupported: viewModel.isReceivingHeartRateData)
                             FitnessFeatureRow(title: "Location Tracking", isSupported: viewModel.isReceivingLocationData)
                             FitnessFeatureRow(title: "Running Pace", isSupported: viewModel.isReceivingPaceData)
                             FitnessFeatureRow(title: "Running Cadence", isSupported: viewModel.isReceivingCadenceData)
                         }
-                        .padding(.leading)
+                        .padding(.leading, AppTheme.GeneratedSpacing.medium)
                         
                         Spacer()
                     }
-                    .padding()
+                    .padding(AppTheme.GeneratedSpacing.contentPadding)
                 } else {
-                    Text("No device connected")
-                        .foregroundColor(.secondary)
-                        .padding()
+                    PTLabel("No device connected", style: .body)
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .padding(AppTheme.GeneratedSpacing.contentPadding)
                     
                     Spacer()
                 }
@@ -550,6 +883,7 @@ struct FitnessDeviceManagerView: View {
                     Button("Close") {
                         showingDeviceDetails = false
                     }
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                 }
             }
         }
@@ -576,15 +910,13 @@ private struct FitnessMetricView: View {
         VStack {
             Image(systemName: systemImage)
                 .font(.title3)
-                .foregroundColor(.blue)
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
             
-            Text(value)
-                .font(.title3)
-                .bold()
+            PTLabel(value, style: .heading)
+                .fontWeight(.bold)
             
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
+            PTLabel(title, style: .caption)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
         }
         .frame(minWidth: 70)
     }
@@ -596,12 +928,11 @@ private struct FitnessDetailRow: View {
     
     var body: some View {
         HStack {
-            Text(label)
-                .foregroundColor(.secondary)
+            PTLabel(label, style: .body)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                 .frame(width: 120, alignment: .leading)
             
-            Text(value)
-                .fontWeight(.medium)
+            PTLabel(value, style: .bodyBold)
             
             Spacer()
         }
@@ -615,10 +946,10 @@ private struct FitnessFeatureRow: View {
     var body: some View {
         HStack {
             Image(systemName: isSupported ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .foregroundColor(isSupported ? .green : .red)
+                .foregroundColor(isSupported ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.error)
             
-            Text(title)
-                .foregroundColor(isSupported ? .primary : .secondary)
+            PTLabel(title, style: .body)
+                .foregroundColor(isSupported ? AppTheme.GeneratedColors.textPrimary : AppTheme.GeneratedColors.textSecondary)
             
             Spacer()
         }
@@ -645,4 +976,4 @@ extension CBManagerState {
         FitnessDeviceManagerView()
             .environmentObject(FitnessDeviceManagerViewModel())
     }
-} 
+}

@@ -4,17 +4,6 @@ import SwiftData // Import SwiftData
 import CoreBluetooth // For CBManagerState
 import PTDesignSystem
 
-// Run-specific text style extensions
-extension Text {
-    func runLabelStyle(size: CGFloat = 14, color: Color = AppTheme.GeneratedColors.textSecondary) -> some View { 
-        self.font(.system(size: size)).foregroundColor(color) 
-    }
-    
-    func statsNumberStyle(size: CGFloat = 32, color: Color = AppTheme.GeneratedColors.textPrimary) -> some View { 
-        self.font(.system(size: size, weight: .bold)).foregroundColor(color) 
-    }
-}
-
 struct RunWorkoutView: View {
     // MARK: - Properties
     @StateObject private var viewModel: RunWorkoutViewModel
@@ -249,33 +238,33 @@ struct RunWorkoutView: View {
     // MARK: - UI Components
     @ViewBuilder
     private func deviceStatusHeader() -> some View {
-        VStack(spacing: 2) {
+        VStack(spacing: AppTheme.GeneratedSpacing.extraSmall) {
             HStack {
                 // Bluetooth Device Status
                 HStack(spacing: 4) {
                     Image(systemName: viewModel.bluetoothState == .poweredOn ? "bolt.fill" : "bolt.slash.fill")
-                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? .blue : AppTheme.GeneratedColors.textSecondary)
+                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.textSecondary)
                     
                     // Connection Status Text
                     switch viewModel.deviceConnectionState {
                     case .disconnected:
-                        Text("No Device Connected")
+                        PTLabel("No Device Connected", style: .caption)
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     case .connecting:
                         HStack {
-                            Text("Connecting...")
+                            PTLabel("Connecting...", style: .caption)
                             ProgressView().scaleEffect(0.7)
                         }
                         .foregroundColor(AppTheme.GeneratedColors.warning)
                     case .connected(let peripheral):
-                        Text("\(peripheral.name ?? "Device")")
+                        PTLabel(peripheral.name ?? "Device", style: .caption)
                             .foregroundColor(AppTheme.GeneratedColors.success)
                             .fontWeight(.medium)
                     case .disconnecting:
-                        Text("Disconnecting...")
+                        PTLabel("Disconnecting...", style: .caption)
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     case .failed:
-                        Text("Connection Failed")
+                        PTLabel("Connection Failed", style: .caption)
                             .foregroundColor(AppTheme.GeneratedColors.error)
                     }
                 }
@@ -285,13 +274,13 @@ struct RunWorkoutView: View {
                 // GPS Source Indicator with improved visual
                 HStack(spacing: 3) {
                     Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
-                        .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
-                    Text("GPS")
-                        .foregroundColor(viewModel.locationSource == .watch ? .blue : AppTheme.GeneratedColors.textPrimary)
+                        .foregroundColor(viewModel.locationSource == .watch ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.textPrimary)
+                    PTLabel("GPS", style: .caption)
+                        .foregroundColor(viewModel.locationSource == .watch ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.textPrimary)
                 }
                 .padding(4)
                 .background(
-                    RoundedRectangle(cornerRadius: 6)
+                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.badge)
                         .fill(Color(.systemBackground).opacity(0.3))
                 )
             }
@@ -303,7 +292,7 @@ struct RunWorkoutView: View {
                     // Heart rate display with pulsing animation
                     HStack(spacing: 3) {
                         Image(systemName: "heart.fill")
-                            .foregroundColor(.red)
+                            .foregroundColor(AppTheme.GeneratedColors.error)
                             .opacity(viewModel.currentHeartRate != nil ? 1.0 : 0.5)
                             .scaleEffect(viewModel.currentHeartRate != nil ? 1.0 : 0.9)
                             .animation(
@@ -313,14 +302,14 @@ struct RunWorkoutView: View {
                                 value: viewModel.currentHeartRate != nil
                             )
                         
-                        Text(viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM")
-                            .foregroundColor(viewModel.currentHeartRate != nil ? .primary : AppTheme.GeneratedColors.textSecondary)
+                        PTLabel(viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM", style: .caption)
+                            .foregroundColor(viewModel.currentHeartRate != nil ? AppTheme.GeneratedColors.textPrimary : AppTheme.GeneratedColors.textSecondary)
                             .fontWeight(viewModel.currentHeartRate != nil ? .semibold : .regular)
                     }
                     
                     // Add source indicator for heart rate
                     if viewModel.currentHeartRate != nil {
-                        Text("via \(viewModel.connectedDeviceName ?? "Device")")
+                        PTLabel("via \(viewModel.connectedDeviceName ?? "Device")", style: .caption)
                             .font(.caption2)
                             .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                     }
@@ -331,18 +320,18 @@ struct RunWorkoutView: View {
                     if let cadence = viewModel.currentCadence {
                         HStack(spacing: 3) {
                             Image(systemName: "figure.walk")
-                                .foregroundColor(.blue)
-                            Text("\(cadence) SPM")
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            PTLabel("\(cadence) SPM", style: .caption)
                                 .fontWeight(.semibold)
                         }
                     }
                 }
                 .font(.caption)
-                .padding(.leading, 8)
+                .padding(.leading, AppTheme.GeneratedSpacing.small)
             }
         }
-        .padding(.horizontal)
-        .padding(.vertical, 5)
+        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
+        .padding(.vertical, AppTheme.GeneratedSpacing.small / 2)
         .background(.thinMaterial)
     }
     
@@ -352,16 +341,15 @@ struct RunWorkoutView: View {
             // Two Mile Auto-Stop Indicator
             HStack {
                 Spacer()
-                Text("Auto-Stop at 2 miles")
-                    .font(.caption)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                PTLabel("Auto-Stop at 2 miles", style: .caption)
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.small)
+                    .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
                     .background(AppTheme.GeneratedColors.warning.opacity(0.3))
                     .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .cornerRadius(12)
+                    .cornerRadius(AppTheme.GeneratedRadius.card)
                 Spacer()
             }
-            .padding(.top, 4)
+            .padding(.top, AppTheme.GeneratedSpacing.extraSmall)
             
             Grid(alignment: .center, horizontalSpacing: 10, verticalSpacing: 15) {
                 GridRow {
@@ -380,7 +368,7 @@ struct RunWorkoutView: View {
                         label: "HEART RATE",
                         value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM",
                         icon: "heart.fill",
-                        iconColor: .red
+                        iconColor: AppTheme.GeneratedColors.error
                     )
                     
                     // Cadence Display
@@ -388,11 +376,11 @@ struct RunWorkoutView: View {
                         label: "CADENCE",
                         value: viewModel.currentCadence != nil ? "\(viewModel.currentCadence!) SPM" : "-- SPM",
                         icon: "metronome",
-                        iconColor: .blue
+                        iconColor: AppTheme.GeneratedColors.brassGold
                     )
                 }
             }
-            .padding()
+            .padding(AppTheme.GeneratedSpacing.contentPadding)
         }
         .background(AppTheme.GeneratedColors.deepOps)
     }
@@ -410,13 +398,13 @@ struct RunWorkoutView: View {
                     Image(systemName: icon)
                         .foregroundColor(iconColor ?? AppTheme.GeneratedColors.textPrimary)
                         .font(.system(size: 16))
-                        .padding(.bottom, 2)
+                        .padding(.bottom, AppTheme.GeneratedSpacing.extraSmall / 2)
                 }
-                Text(label)
-                    .runLabelStyle(size: 12, color: AppTheme.GeneratedColors.textTertiary)
+                PTLabel(label, style: .caption)
+                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                     .padding(.bottom, 1)
-                Text(value)
-                    .statsNumberStyle(size: 24, color: AppTheme.GeneratedColors.cream)
+                PTLabel(value, style: .heading)
+                    .foregroundColor(AppTheme.GeneratedColors.cream)
             }
             .frame(maxWidth: .infinity) // Distribute horizontally
         }
@@ -434,7 +422,7 @@ struct RunWorkoutView: View {
                 Button { viewModel.pauseRun() }
                 label: { controlButtonLabel(systemName: "pause.circle.fill", color: AppTheme.GeneratedColors.warning) }
             case .paused:
-                HStack(spacing: 40) {
+                HStack(spacing: AppTheme.GeneratedSpacing.large) {
                     Button { viewModel.resumeRun() }
                     label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
 
@@ -448,7 +436,7 @@ struct RunWorkoutView: View {
             }
             Spacer()
         }
-        .padding()
+        .padding(AppTheme.GeneratedSpacing.contentPadding)
         .frame(height: 80) // Consistent height for control area
         .background(AppTheme.GeneratedColors.backgroundOverlay.opacity(0.3))
     }
@@ -460,7 +448,7 @@ struct RunWorkoutView: View {
             .scaledToFit()
             .frame(width: 50, height: 50)
             .foregroundColor(color)
-            .padding()
+            .padding(AppTheme.GeneratedSpacing.small)
     }
     
     // Helper view for permission/error overlays
@@ -534,25 +522,24 @@ struct RunWorkoutView: View {
         } label: {
             HStack {
                 Image(systemName: "antenna.radiowaves.left.and.right")
-                    .foregroundColor(.white)
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimaryOnDark)
                     .font(.system(size: 16))
                 
-                Text("Connect a fitness device for heart rate tracking")
-                    .font(.system(size: 14))
-                    .foregroundColor(.white)
+                PTLabel("Connect a fitness device for heart rate tracking", style: .body)
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimaryOnDark)
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(AppTheme.GeneratedColors.textPrimaryOnDark.opacity(0.8))
                     .font(.system(size: 12))
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 12)
+            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
             .background(AppTheme.GeneratedColors.brassGold)
-            .cornerRadius(8)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .cornerRadius(AppTheme.GeneratedRadius.badge)
+            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
+            .padding(.vertical, AppTheme.GeneratedSpacing.small)
         }
         .onAppear {
             print("DEBUG: [RunWorkoutView] Device connection banner appeared")
