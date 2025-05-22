@@ -1,6 +1,20 @@
 import Foundation
 import CoreGraphics // For CGPoint
-import Vision // Only used for VNHumanBodyPoseObservation.JointName constants
+import Vision // Only used for VNHumanBodyPoseObservation.JointName constants - no Vision detection
+
+// Extension to add MediaPipe BlazePose Full landmarks that don't exist in Apple Vision
+extension VNHumanBodyPoseObservation.JointName {
+    static let leftEyeInner  = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "left_eye_inner"))
+    static let leftEyeOuter  = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "left_eye_outer"))
+    static let rightEyeInner = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "right_eye_inner"))
+    static let rightEyeOuter = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "right_eye_outer"))
+    static let leftMouth     = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "left_mouth"))
+    static let rightMouth    = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "right_mouth"))
+    static let leftHeel      = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "left_heel"))
+    static let rightHeel     = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "right_heel"))
+    static let leftToe       = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "left_toe"))
+    static let rightToe      = VNHumanBodyPoseObservation.JointName(rawValue: VNRecognizedPointKey(rawValue: "right_toe"))
+}
 
 // Represents a single detected point (landmark)
 struct DetectedPoint: Equatable, Hashable {

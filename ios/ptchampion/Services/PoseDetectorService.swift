@@ -4,7 +4,7 @@ import Combine
 import CoreMedia
 import UIKit // For image orientation
 import AVFoundation // For video orientation
-import Vision // For VNHumanBodyPoseObservation
+import Vision // Only kept for VNHumanBodyPoseObservation.JointName constants
 
 class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObject, PoseLandmarkerLiveStreamDelegate {
 
@@ -147,14 +147,25 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
         var pointCount: Int = 0
         
         // Map MediaPipe's landmarks to our joints of interest
-        // Joint indices reference BlazePose keypoints
-        let noseLM       = landmarks[0]
+        // Face landmarks (indices 0-10)
+        let noseLM        = landmarks[0]
+        let leftEyeInner  = landmarks[1], leftEyeCenter = landmarks[2], leftEyeOuter = landmarks[3]
+        let rightEyeInner = landmarks[4], rightEyeCenter = landmarks[5], rightEyeOuter = landmarks[6]
+        let leftEarLM     = landmarks[7], rightEarLM    = landmarks[8]
+        let leftMouthLM   = landmarks[9], rightMouthLM  = landmarks[10]
+        
+        // Body landmarks (indices 11-16, 23-28)
         let leftShoulder = landmarks[11], rightShoulder = landmarks[12]
         let leftElbow    = landmarks[13], rightElbow    = landmarks[14]
         let leftWrist    = landmarks[15], rightWrist    = landmarks[16]
+        // Note: indices 17-22 are hand keypoints (fingers) - these can be captured if needed
         let leftHip      = landmarks[23], rightHip      = landmarks[24]
         let leftKnee     = landmarks[25], rightKnee     = landmarks[26]
         let leftAnkle    = landmarks[27], rightAnkle    = landmarks[28]
+        
+        // Foot landmarks (indices 29-32)
+        let leftHeel     = landmarks[29], rightHeel     = landmarks[30]
+        let leftToe      = landmarks[31], rightToe      = landmarks[32]
         
         // Compute synthetic joints
         let neckX = CGFloat((leftShoulder.x + rightShoulder.x) / 2)
@@ -172,7 +183,19 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
         
         // Build DetectedPoint for each joint (using normalized [0,1] coordinates)
         let jointMappings: [(VNHumanBodyPoseObservation.JointName, CGFloat, CGFloat, Float)] = [
+            // Face
             (.nose,          CGFloat(noseLM.x),       CGFloat(noseLM.y),       landmarkConfidence(noseLM)),
+            (.leftEye,       CGFloat(leftEyeCenter.x),CGFloat(leftEyeCenter.y),landmarkConfidence(leftEyeCenter)),
+            (.leftEyeInner,  CGFloat(leftEyeInner.x), CGFloat(leftEyeInner.y), landmarkConfidence(leftEyeInner)),
+            (.leftEyeOuter,  CGFloat(leftEyeOuter.x), CGFloat(leftEyeOuter.y), landmarkConfidence(leftEyeOuter)),
+            (.rightEye,      CGFloat(rightEyeCenter.x),CGFloat(rightEyeCenter.y),landmarkConfidence(rightEyeCenter)),
+            (.rightEyeInner, CGFloat(rightEyeInner.x),CGFloat(rightEyeInner.y),landmarkConfidence(rightEyeInner)),
+            (.rightEyeOuter, CGFloat(rightEyeOuter.x),CGFloat(rightEyeOuter.y),landmarkConfidence(rightEyeOuter)),
+            (.leftEar,       CGFloat(leftEarLM.x),    CGFloat(leftEarLM.y),    landmarkConfidence(leftEarLM)),
+            (.rightEar,      CGFloat(rightEarLM.x),   CGFloat(rightEarLM.y),   landmarkConfidence(rightEarLM)),
+            (.leftMouth,     CGFloat(leftMouthLM.x),  CGFloat(leftMouthLM.y),  landmarkConfidence(leftMouthLM)),
+            (.rightMouth,    CGFloat(rightMouthLM.x), CGFloat(rightMouthLM.y), landmarkConfidence(rightMouthLM)),
+            // Body
             (.leftShoulder,  CGFloat(leftShoulder.x), CGFloat(leftShoulder.y), landmarkConfidence(leftShoulder)),
             (.rightShoulder, CGFloat(rightShoulder.x),CGFloat(rightShoulder.y),landmarkConfidence(rightShoulder)),
             (.leftElbow,     CGFloat(leftElbow.x),    CGFloat(leftElbow.y),    landmarkConfidence(leftElbow)),
@@ -185,6 +208,12 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
             (.rightKnee,     CGFloat(rightKnee.x),    CGFloat(rightKnee.y),    landmarkConfidence(rightKnee)),
             (.leftAnkle,     CGFloat(leftAnkle.x),    CGFloat(leftAnkle.y),    landmarkConfidence(leftAnkle)),
             (.rightAnkle,    CGFloat(rightAnkle.x),   CGFloat(rightAnkle.y),   landmarkConfidence(rightAnkle)),
+            // Feet
+            (.leftHeel,      CGFloat(leftHeel.x),     CGFloat(leftHeel.y),     landmarkConfidence(leftHeel)),
+            (.rightHeel,     CGFloat(rightHeel.x),    CGFloat(rightHeel.y),    landmarkConfidence(rightHeel)),
+            (.leftToe,       CGFloat(leftToe.x),      CGFloat(leftToe.y),      landmarkConfidence(leftToe)),
+            (.rightToe,      CGFloat(rightToe.x),     CGFloat(rightToe.y),     landmarkConfidence(rightToe)),
+            // Synthetic
             (.neck,          neckX, neckY, min(landmarkConfidence(leftShoulder), landmarkConfidence(rightShoulder))),
             (.root,          rootX, rootY, min(landmarkConfidence(leftHip), landmarkConfidence(rightHip)))
         ]

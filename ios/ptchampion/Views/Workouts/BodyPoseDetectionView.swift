@@ -1,7 +1,7 @@
 import SwiftUI
 import Combine
 import AVFoundation
-import Vision
+import Vision // Only used for VNHumanBodyPoseObservation.JointName constants - no Vision detection
 import CoreMedia
 
 // Helper extension for reliable string conversion

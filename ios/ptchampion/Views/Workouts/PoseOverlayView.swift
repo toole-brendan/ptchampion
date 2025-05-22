@@ -1,7 +1,7 @@
 // ios/ptchampion/Views/Workouts/PoseOverlayView.swift
 
 import SwiftUI
-import Vision // Only used for VNHumanBodyPoseObservation.JointName constants
+import Vision // Only used for VNHumanBodyPoseObservation.JointName constants - no Vision detection
 import PTDesignSystem // For AppTheme
 
 // SwiftUI view to draw detected pose landmarks over the camera feed
@@ -38,7 +38,12 @@ struct PoseOverlayView: View {
         (.leftKnee, .leftAnkle),
         // Right Leg
         (.rightHip, .rightKnee),
-        (.rightKnee, .rightAnkle)
+        (.rightKnee, .rightAnkle),
+        // Feet
+        (.leftAnkle, .leftHeel),
+        (.leftHeel, .leftToe),
+        (.rightAnkle, .rightHeel),
+        (.rightHeel, .rightToe)
     ]
 
     var body: some View {

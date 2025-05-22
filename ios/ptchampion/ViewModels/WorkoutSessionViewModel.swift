@@ -4,7 +4,7 @@ import SwiftUI
 import Combine
 import AVFoundation
 import SwiftData
-import Vision // Only used for VNHumanBodyPoseObservation.JointName constants
+import Vision // Only used for VNHumanBodyPoseObservation.JointName constants - no Vision detection
 import AudioToolbox
 
 // Workout state enumeration to track the current state of a workout session
