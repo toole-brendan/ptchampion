@@ -602,33 +602,77 @@ struct MainTabView: View {
     @EnvironmentObject var workoutHistoryViewModel: WorkoutHistoryViewModel // Direct reference to class
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            // Content
-            Group {
-                switch selectedTab {
-                case .home:
-                    DashboardView()
-                        .environmentObject(tabBarVisibility)
-                    
-                case .history:
-                    HistoryTabView()
-                        .environmentObject(tabBarVisibility)
-                    
-                case .leaderboards:
-                    LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
-                        .environmentObject(tabBarVisibility)
-                    
-                case .profile:
-                    ProfileView()
-                        .environmentObject(tabBarVisibility)
+        TabView(selection: $selectedTab) {
+            DashboardView()
+                .environmentObject(tabBarVisibility)
+                .tabItem { Label("Home", systemImage: "house.fill") }
+                .tag(Tab.home)
+
+            HistoryTabView()
+                .environmentObject(tabBarVisibility)
+                .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
+                .tag(Tab.history)
+
+            LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
+                .environmentObject(tabBarVisibility)
+                .tabItem { Label("Leaders", systemImage: "rosette") }
+                .tag(Tab.leaderboards)
+
+            ProfileView()
+                .environmentObject(tabBarVisibility)
+                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
+                .tag(Tab.profile)
+        }
+        .tint(AppTheme.GeneratedColors.brassGold)
+        .edgesIgnoringSafeArea(.bottom) // Add this to ensure tab bar doesn't interfere
+        .onAppear { 
+            // Customize TabView appearance 
+            let tabBarAppearance = UITabBarAppearance()
+            tabBarAppearance.configureWithOpaqueBackground()
+            tabBarAppearance.backgroundColor = UIColor(AppTheme.GeneratedColors.deepOps)
+            
+            // Customize tab bar item appearance for better centering
+            let itemAppearance = UITabBarItemAppearance()
+            
+            // Configure normal state
+            itemAppearance.normal.iconColor = UIColor.gray
+            itemAppearance.normal.titleTextAttributes = [
+                .foregroundColor: UIColor.gray,
+                .font: UIFont.systemFont(ofSize: 10, weight: .medium)
+            ]
+            
+            // Configure selected state
+            itemAppearance.selected.iconColor = UIColor(AppTheme.GeneratedColors.brassGold)
+            itemAppearance.selected.titleTextAttributes = [
+                .foregroundColor: UIColor(AppTheme.GeneratedColors.brassGold),
+                .font: UIFont.systemFont(ofSize: 10, weight: .medium)
+            ]
+            
+            // Adjust spacing and positioning for better centering
+            itemAppearance.normal.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 2)
+            itemAppearance.selected.titlePositionAdjustment = UIOffset(horizontal: 0, vertical: 2)
+            
+            // Apply the item appearance
+            tabBarAppearance.stackedLayoutAppearance = itemAppearance
+            tabBarAppearance.inlineLayoutAppearance = itemAppearance
+            tabBarAppearance.compactInlineLayoutAppearance = itemAppearance
+            
+            UITabBar.appearance().standardAppearance = tabBarAppearance
+            
+            if #available(iOS 15.0, *) {
+                UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+            }
+            
+            // Add slight top padding to tab bar icons after a brief delay to ensure tabs are created
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                if let tabBar = UIApplication.shared.windows.first?.rootViewController?.view.subviews.compactMap({ $0 as? UITabBar }).first {
+                    let iconTopPadding: CGFloat = 2
+                    tabBar.items?.forEach { item in
+                        item.imageInsets = UIEdgeInsets(top: iconTopPadding, left: 0, bottom: -iconTopPadding, right: 0)
+                    }
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            
-            // Custom Tab Bar
-            CustomTabBar(selectedTab: $selectedTab)
         }
-        .edgesIgnoringSafeArea(.bottom)
         .onChange(of: selectedTab) { _, newTab in
             print("Switched to tab: \(newTab)")
         }

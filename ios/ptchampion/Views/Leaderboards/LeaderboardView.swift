@@ -160,6 +160,7 @@ struct LeaderboardView: View {
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
+            .contentContainer() // Add this line
             .onAppear {
                 fetchTask = Task {
                     await viewModel.fetch()

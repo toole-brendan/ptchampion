@@ -216,6 +216,7 @@ struct ProfileView: View {
                 }
             }
         }
+        .contentContainer() // Add this line
         .onAppear {
             hapticGenerator.prepare()
             loadUserData()

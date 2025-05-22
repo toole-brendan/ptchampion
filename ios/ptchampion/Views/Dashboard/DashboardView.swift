@@ -104,6 +104,7 @@ struct DashboardView: View {
                     .padding(Self.globalPadding)
                 }
             }
+            .contentContainer() // Add this line
             .accessibilityLabel("You have \(viewModel.totalWorkouts) workouts logged")
             .onAppear {
                 DispatchQueue.main.async {

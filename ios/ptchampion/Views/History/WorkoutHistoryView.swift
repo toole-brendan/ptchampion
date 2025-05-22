@@ -291,6 +291,7 @@ struct WorkoutHistoryView: View {
                     .padding(AppTheme.GeneratedSpacing.contentPadding)
                 }
             }
+            .contentContainer() // Add this line
             .environment(\.editMode, $isEditMode)
             .sheet(isPresented: $isShowingShareSheet) {
                 ActivityView(activityItems: [shareText])
