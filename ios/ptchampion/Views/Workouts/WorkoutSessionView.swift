@@ -47,16 +47,14 @@ struct WorkoutSessionView: View {
             }
             
             // UI Overlay (Rep Counter, Feedback, Controls)
-            if viewModel.workoutState == .counting || viewModel.workoutState == .paused {
+            if viewModel.workoutState == .counting {
                 ExerciseHUDView(
                     repCount: $viewModel.repCount,
                     liveFeedback: $viewModel.feedbackMessage,
                     elapsedTimeFormatted: viewModel.elapsedTimeFormatted,
-                    isPaused: $viewModel.isPaused,
                     isSoundEnabled: $viewModel.isSoundEnabled,
-                    showControls: viewModel.workoutState != .ready,
+                    showControls: true,
                     showFullBodyWarning: $viewModel.showFullBodyWarning,
-                    togglePauseAction: { viewModel.togglePause() },
                     toggleSoundAction: { viewModel.toggleSound() }
                 )
             }

@@ -290,7 +290,7 @@ class WorkoutSessionViewModel: ObservableObject {
                 print("DEBUG: [WorkoutSessionViewModel] Camera authorized, updating state")
                 self.isCameraPermissionGranted = true
                 self.workoutState = .ready
-                self.feedbackMessage = "Ready for \(self.exerciseType.displayName)"
+                self.feedbackMessage = "Prepare to begin"
                 
                 // Start camera in next run loop to avoid state update during view render
                 DispatchQueue.main.async {
@@ -346,9 +346,12 @@ class WorkoutSessionViewModel: ObservableObject {
             self.exerciseGrader.resetState()
             self.updateUIFromGraderState()
             
+            // Force workout state to counting and ensure isPaused is false
             self.workoutState = .counting
             self.isPaused = false
+            self.feedbackMessage = "Workout active"
             
+            // Always start the timer fresh
             self.workoutTimer.reset()
             self.workoutTimer.start()
             
@@ -365,7 +368,7 @@ class WorkoutSessionViewModel: ObservableObject {
         
         if isPaused {
             workoutTimer.pause()
-            feedbackMessage = "Paused"
+            feedbackMessage = "Workout paused"
         } else {
             workoutTimer.resume()
             updateUIFromGraderState() // Reset feedback to current state

@@ -7,12 +7,10 @@ struct ExerciseHUDView: View {
     @Binding var repCount: Int
     @Binding var liveFeedback: String
     let elapsedTimeFormatted: String
-    @Binding var isPaused: Bool
     @Binding var isSoundEnabled: Bool
     let showControls: Bool // New parameter to control visibility of bottom controls
     @Binding var showFullBodyWarning: Bool // New parameter to show full body warning
 
-    var togglePauseAction: () -> Void
     var toggleSoundAction: () -> Void
 
     var body: some View {
@@ -53,7 +51,8 @@ struct ExerciseHUDView: View {
                     .padding(.horizontal)
             }
             // Only show regular feedback if controls are shown and no warning is active
-            else if showControls {
+            // and only if it's not a status message like "Workout active" or "Workout paused"
+            else if showControls && !liveFeedback.contains("Workout") {
                 Text(liveFeedback)
                     .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
                     .foregroundColor(AppTheme.GeneratedColors.textPrimary)
@@ -89,7 +88,6 @@ struct ExerciseHUDView_Previews: PreviewProvider {
         // Create some mock state for the preview
         @State var repCount = 10
         @State var liveFeedback = "Keep it up!"
-        @State var isPaused = false
         @State var isSoundEnabled = true
         @State var showFullBodyWarning = false
 
@@ -98,11 +96,9 @@ struct ExerciseHUDView_Previews: PreviewProvider {
             repCount: $repCount,
             liveFeedback: $liveFeedback,
             elapsedTimeFormatted: "01:35",
-            isPaused: $isPaused,
             isSoundEnabled: $isSoundEnabled,
             showControls: true, // Show controls in this preview
             showFullBodyWarning: $showFullBodyWarning,
-            togglePauseAction: { },
             toggleSoundAction: { }
         )
         .background(Color.black.opacity(0.5)) // Lighter background for preview
