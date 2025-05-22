@@ -680,6 +680,7 @@ struct RunWorkoutView: View {
                                 .scaledToFit()
                                 .frame(width: 30, height: 30)
                                 .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                .padding(.leading, 3) // Adjust visual centering due to triangle shape
                         }
                     }
                 }

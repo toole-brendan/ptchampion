@@ -121,7 +121,7 @@ class WorkoutSessionViewModel: ObservableObject {
         
         // Initialize UI with grader's state
         updateUIFromGraderState()
-        feedbackMessage = "Ready for \(exerciseType.displayName)"
+        feedbackMessage = "Get ready to begin"
         
         // Setup subscribers and check camera permissions
         setupSubscribers()

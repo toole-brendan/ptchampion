@@ -45,17 +45,19 @@ struct WorkoutSessionView: View {
             }
             
             // UI Overlay (Rep Counter, Feedback, Controls)
-            ExerciseHUDView(
-                repCount: $viewModel.repCount,
-                liveFeedback: $viewModel.feedbackMessage,
-                elapsedTimeFormatted: viewModel.elapsedTimeFormatted,
-                isPaused: $viewModel.isPaused,
-                isSoundEnabled: $viewModel.isSoundEnabled,
-                showControls: viewModel.workoutState != .ready,
-                showFullBodyWarning: $viewModel.showFullBodyWarning,
-                togglePauseAction: { viewModel.togglePause() },
-                toggleSoundAction: { viewModel.toggleSound() }
-            )
+            if viewModel.workoutState == .counting || viewModel.workoutState == .paused {
+                ExerciseHUDView(
+                    repCount: $viewModel.repCount,
+                    liveFeedback: $viewModel.feedbackMessage,
+                    elapsedTimeFormatted: viewModel.elapsedTimeFormatted,
+                    isPaused: $viewModel.isPaused,
+                    isSoundEnabled: $viewModel.isSoundEnabled,
+                    showControls: viewModel.workoutState != .ready,
+                    showFullBodyWarning: $viewModel.showFullBodyWarning,
+                    togglePauseAction: { viewModel.togglePause() },
+                    toggleSoundAction: { viewModel.toggleSound() }
+                )
+            }
             
             // Start Button Overlay (shown only when in ready state)
             if viewModel.workoutState == .ready && countdown == nil {
@@ -96,15 +98,27 @@ struct WorkoutSessionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: 
-            Button("End") {
+            Button {
                 // Print statement moved outside ViewBuilder context
                 let _ = print("DEBUG: [WorkoutSessionView] End button tapped, workout state: \(viewModel.workoutState)")
                 handleEndWorkout()
+            } label: {
+                Text("End")
+                    .foregroundColor(.red)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .overlay(
+                        Rectangle()
+                            .stroke(Color.red, lineWidth: 2)
+                    )
             }
-            .foregroundColor(AppTheme.GeneratedColors.error)
         )
+        .toolbar(.hidden, for: .tabBar)
         .onAppear {
             print("DEBUG: [WorkoutSessionView] onAppear triggered for \(exerciseType.displayName)")
+            
+            // Hide tab bar during workout
+            UITabBar.appearance().isHidden = true
             
             // Setup model context first, before any view changes
             DispatchQueue.main.async {
@@ -131,6 +145,9 @@ struct WorkoutSessionView: View {
             // Stop the countdown timer first
             print("DEBUG: [WorkoutSessionView] onDisappear triggered - starting cleanup sequence")
             stopCountdownTimer()
+            
+            // Show tab bar when leaving workout
+            UITabBar.appearance().isHidden = false
             
             // Remove rotation observer
             NotificationCenter.default.removeObserver(
@@ -228,26 +245,54 @@ struct WorkoutSessionView: View {
         let _ = print("DEBUG: [WorkoutSessionView] Rendering startButtonOverlay()")
         
         return VStack {
-            Spacer()
+            // Top: Exercise name and subheadline
+            Text(exerciseType.displayName.uppercased())
+                .font(.system(size: 48, weight: .heavy))
+                .tracking(2) // Add letter spacing
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .multilineTextAlignment(.center)
+            Text("You have two minutes to complete as many valid reps as possible.")
+                .font(.subheadline)
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .multilineTextAlignment(.center)
+                .padding(.top, 4)
             
-            Button {
+            Spacer()  // pushes content to top and bottom
+            
+            // Bottom: Instruction and GO button
+            Text("Press GO and assume starting position.")
+                .font(.system(.body, design: .monospaced))
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .multilineTextAlignment(.center)
+                .italic()
+                .padding(.bottom, 16)
+            
+            VStack(spacing: 8) {
+                Text("GO")
+                    .font(.system(size: 16, weight: .bold, design: .monospaced))
+                    .foregroundColor(.black)
+                
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.brassGold)
+                        .frame(width: 80, height: 80)
+                    
+                    Image(systemName: "play.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 30, height: 30)
+                        .foregroundColor(.black)
+                        .padding(.leading, 3) // Adjust visual centering due to triangle shape
+                }
+            }
+            .onTapGesture {
                 print("DEBUG: [WorkoutSessionView] Start button tapped, beginning countdown")
                 startCountdown()
-            } label: {
-                Text("Ready for \(exerciseType.displayName)")
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: nil))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding()
-                    .frame(width: 300)
-                    .background(.ultraThinMaterial)
-                    .cornerRadius(AppTheme.GeneratedRadius.medium)
             }
-            // Use a more appropriate bottom padding that works across device sizes
-            .padding(.bottom, 80)
+            .padding(.bottom, 40)
         }
-        // Add margin to ensure the button stays within safe viewing area
         .padding(.horizontal)
-        .padding(.bottom, 20)
+        .padding(.top, 50) // ensure content is within safe area at top
     }
     
     // MARK: - Countdown Overlay

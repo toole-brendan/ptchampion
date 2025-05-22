@@ -19,25 +19,23 @@ struct ExerciseHUDView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text("REPS")
-                        .font(AppTheme.GeneratedTypography.caption(size: nil))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     Text("\(repCount)")
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .font(.system(size: 36, weight: .bold, design: .monospaced))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
                 }
                 Spacer()
                 VStack(alignment: .trailing) {
                     Text("TIME")
-                        .font(AppTheme.GeneratedTypography.caption(size: nil))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     Text(elapsedTimeFormatted)
-                        .font(AppTheme.GeneratedTypography.heading(size: AppTheme.GeneratedTypography.heading1))
-                        .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        .font(.system(size: 36, weight: .bold, design: .monospaced))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
                 }
             }
             .padding()
-            .background(.thinMaterial) // Using system blur material for better transparency
-            .cornerRadius(AppTheme.GeneratedRadius.medium)
             .padding()
 
             Spacer() // Pushes feedback and controls down
