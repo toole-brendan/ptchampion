@@ -84,7 +84,12 @@ class LeaderboardService: LeaderboardServiceProtocol {
                     rank: rank,
                     userId: "\(entry.id)",
                     name: entry.displayName ?? entry.username,
-                    score: entry.score
+                    score: entry.score,
+                    exerciseType: exerciseType,
+                    location: nil,
+                    distance: nil,
+                    isPersonalBest: nil,
+                    performanceChange: nil
                 ))
             }
             
@@ -167,7 +172,12 @@ class LeaderboardService: LeaderboardServiceProtocol {
                     rank: rank,
                     userId: "\(entry.id)",
                     name: entry.displayName ?? entry.username, 
-                    score: entry.score
+                    score: entry.score,
+                    exerciseType: exerciseType,
+                    location: entry.location,
+                    distance: entry.distanceMeters,
+                    isPersonalBest: nil,
+                    performanceChange: nil
                 ))
             }
             
@@ -195,7 +205,12 @@ class LeaderboardService: LeaderboardServiceProtocol {
                 rank: i,
                 userId: "user-\(i)",
                 name: isLocal ? "Local User \(i)" : "User \(i)",
-                score: 1000 - (i * 30)
+                score: 1000 - (i * 30),
+                exerciseType: nil,
+                location: isLocal ? "Mock City \(i)" : nil,
+                distance: isLocal ? Double(i * 1000) : nil,
+                isPersonalBest: i == 1 ? true : nil,
+                performanceChange: i <= 3 ? .improved(positions: i) : nil
             )
             entries.append(entry)
         }

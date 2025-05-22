@@ -2,50 +2,63 @@ import SwiftUI
 import PTDesignSystem
 
 /// A placeholder row shown during loading of leaderboard data
-/// Uses a subtle animation to indicate the loading state
+/// Uses a smooth shimmer animation to indicate the loading state
 struct LeaderboardRowPlaceholder: View {
     @State private var isAnimating = false
     
     var body: some View {
-        PTCard {
-            HStack(spacing: AppTheme.GeneratedSpacing.medium) {
-                // Rank placeholder
-                HStack(spacing: 4) {
-                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                        .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
-                        .frame(width: 24, height: 20)
-                    
-                    Circle()
-                        .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.2 : 0.1))
-                        .frame(width: 14, height: 14)
-                }
-                .frame(width: 50, alignment: .leading)
+        HStack(spacing: 16) {
+            // Rank badge placeholder (circular to match new design)
+            Circle()
+                .fill(shimmerGradient)
+                .frame(width: 44, height: 44)
+            
+            // User info placeholder
+            VStack(alignment: .leading, spacing: 6) {
+                // Name placeholder
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(shimmerGradient)
+                    .frame(width: 120, height: 16)
                 
-                // Avatar placeholder
-                Circle()
-                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
-                    .frame(width: 32, height: 32)
-                
-                // Username placeholder
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
-                    .frame(height: 16)
-                    .frame(maxWidth: .infinity)
-                
-                // Score placeholder
-                RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.small)
-                    .fill(AppTheme.GeneratedColors.textTertiary.opacity(isAnimating ? 0.3 : 0.15))
-                    .frame(width: 60, height: 18)
+                // Location/details placeholder
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(shimmerGradient)
+                    .frame(width: 80, height: 12)
             }
-            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+            
+            Spacer()
+            
+            // Score placeholder
+            VStack(alignment: .trailing, spacing: 4) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(shimmerGradient)
+                    .frame(width: 60, height: 20)
+                
+                // Subtitle placeholder
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(shimmerGradient)
+                    .frame(width: 40, height: 11)
+            }
         }
-        .animation(.none, value: isAnimating) // Don't animate the card
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
         .onAppear {
-            // Use a spring animation for the pulse effect
-            withAnimation(Animation.easeInOut(duration: 1.2).repeatForever(autoreverses: true)) {
+            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
                 isAnimating = true
             }
         }
+    }
+    
+    private var shimmerGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                Color.gray.opacity(0.3),
+                Color.gray.opacity(0.1),
+                Color.gray.opacity(0.3)
+            ]),
+            startPoint: isAnimating ? .leading : .trailing,
+            endPoint: isAnimating ? .trailing : .leading
+        )
     }
 }
 
@@ -57,19 +70,24 @@ struct LeaderboardRowPlaceholder_Previews: PreviewProvider {
                 LeaderboardRowPlaceholder()
                 LeaderboardRowPlaceholder()
                 LeaderboardRowPlaceholder()
+                LeaderboardRowPlaceholder()
+                LeaderboardRowPlaceholder()
             }
             .padding()
-            .previewLayout(.fixed(width: 375, height: 200))
-            .previewDisplayName("Light Mode")
+            .background(Color.white)
+            .previewLayout(.fixed(width: 375, height: 400))
+            .previewDisplayName("Enhanced Shimmer - Light")
             
             VStack(spacing: AppTheme.GeneratedSpacing.small) {
                 LeaderboardRowPlaceholder()
                 LeaderboardRowPlaceholder()
+                LeaderboardRowPlaceholder()
             }
             .padding()
-            .previewLayout(.fixed(width: 375, height: 200))
+            .background(AppTheme.GeneratedColors.background)
+            .previewLayout(.fixed(width: 375, height: 300))
             .environment(\.colorScheme, .dark)
-            .previewDisplayName("Dark Mode")
+            .previewDisplayName("Enhanced Shimmer - Dark")
         }
     }
 }

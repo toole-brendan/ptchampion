@@ -22,6 +22,15 @@ struct LeaderboardView: View {
     // Track active fetch task for cancellation
     @State private var fetchTask: Task<Void, Never>? = nil
     
+    // Animation states for content
+    @State private var segmentVisible = false
+    @State private var filterVisible = false
+    @State private var contentVisible = false
+    
+    // Haptic feedback generators
+    private let selectionFeedback = UISelectionFeedbackGenerator()
+    private let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+    
     // Initialize with required parameters
     init(viewModel: LeaderboardViewModel, viewId: String) {
         self.viewModel = viewModel
@@ -38,68 +47,10 @@ struct LeaderboardView: View {
         return "\(exerciseName) • \(timeframeName)"
     }
     
-    // Helper computed properties to simplify main view body
-    private var headerView: some View {
-        ScreenHeader(
-            title: "\(viewModel.selectedBoard.rawValue.uppercased()) LEADERBOARD",
-            subtitle: formattedFilterTitle
-        )
-    }
-    
-    // Further break down segment control to reduce complexity
-    private func segmentButton(for type: LeaderboardType) -> some View {
-        let isSelected = viewModel.selectedBoard == type
-        let foregroundColor = isSelected ? 
-            AppTheme.GeneratedColors.textOnPrimary : 
-            Color.black // Use black color for non-selected text
-        
-        return Button(action: {
-            // Wrap state change in withAnimation to make the transition smooth
-            withAnimation {
-                viewModel.selectedBoard = type
-            }
-        }) {
-            VStack {
-                Text(type.rawValue)
-                    .font(.system(size: 16, weight: .semibold)) // Match ProfileView button font
-                    .foregroundColor(foregroundColor)
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 20)
-                    .frame(maxWidth: .infinity)
-            }
-            .background(
-                ZStack {
-                    if isSelected {
-                        RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.full)
-                            .fill(AppTheme.GeneratedColors.primary)
-                            .matchedGeometryEffect(id: "segmentBackground", in: animation)
-                    }
-                }
-            )
-        }
-    }
-    
-    private var segmentedControl: some View {
-        HStack(spacing: 0) {
-            ForEach(LeaderboardType.allCases) { type in
-                segmentButton(for: type)
-            }
-        }
-        .background(
-            RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.full)
-                .stroke(AppTheme.GeneratedColors.primary.opacity(0.3), lineWidth: 1)
-                .background(
-                    AppTheme.GeneratedColors.cardBackground
-                        .cornerRadius(AppTheme.GeneratedRadius.full)
-                )
-        )
-    }
-    
     var body: some View {
-        // Replace ScreenContainer with custom view matching WorkoutHistoryView style
         NavigationStack {
             ZStack {
-                // Ambient Background Gradient
+                // Ambient Background Gradient (matching Dashboard/WorkoutHistory)
                 RadialGradient(
                     gradient: Gradient(colors: [
                         AppTheme.GeneratedColors.background.opacity(0.9),
@@ -113,7 +64,7 @@ struct LeaderboardView: View {
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                        // Custom styled header matching WorkoutHistoryView
+                        // Custom styled header matching Dashboard/WorkoutHistory
                         VStack(spacing: 16) {
                             Text("\(viewModel.selectedBoard.rawValue.uppercased()) LEADERBOARD")
                                 .font(.system(size: 32, weight: .bold))
@@ -136,32 +87,26 @@ struct LeaderboardView: View {
                         .padding(.bottom, 20)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         
-                        // All the filter controls in a separate view
+                        // Filter controls section with animation
                         filterControlsSection
+                            .opacity(segmentVisible ? 1 : 0)
+                            .offset(y: segmentVisible ? 0 : 15)
                         
-                        // Divider
-                        Rectangle()
-                            .fill(AppTheme.GeneratedColors.tacticalGray.opacity(0.2))
-                            .frame(height: 1)
-                        
-                        // Replace direct mainContentArea with conditional views for transitions
-                        if viewModel.selectedBoard == .global {
-                            mainContentArea
-                                .transition(.move(edge: .leading))
-                                .frame(maxWidth: .infinity, alignment: .top)
-                        } else {
-                            mainContentArea
-                                .transition(.move(edge: .trailing))
-                                .frame(maxWidth: .infinity, alignment: .top)
-                        }
+                        // Main leaderboard content in styled container
+                        leaderboardContentSection
+                            .opacity(contentVisible ? 1 : 0)
+                            .offset(y: contentVisible ? 0 : 15)
                     }
                     .padding(AppTheme.GeneratedSpacing.contentPadding)
-                    .animation(.easeInOut, value: viewModel.selectedBoard) // Add animation for transitions
+                }
+                .refreshable {
+                    impactFeedback.impactOccurred()
+                    await viewModel.fetch()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
-            .contentContainer() // Add this line
             .onAppear {
+                animateContentIn()
                 fetchTask = Task {
                     await viewModel.fetch()
                 }
@@ -170,61 +115,25 @@ struct LeaderboardView: View {
                 // Cancel any ongoing fetch when view disappears
                 fetchTask?.cancel()
             }
-            .onChange(of: viewModel.selectedBoard) { _ in 
-                // First, cancel any previous fetch and clear entries immediately
-                fetchTask?.cancel()
-                
-                // Immediately clear entries and set loading state to ensure placeholder display during transition
-                withAnimation {
-                    viewModel.leaderboardEntries = []
-                    viewModel.isLoading = true
-                }
-                
-                // Then start the new fetch task
-                fetchTask = Task { 
-                    await viewModel.fetch() 
-                }
+            .onChange(of: viewModel.selectedBoard) { _ in
+                selectionFeedback.selectionChanged()
+                handleFilterChange()
             }
-            .onChange(of: viewModel.selectedCategory) { _ in 
-                // Replace fade transition with direct fetch
-                fetchTask?.cancel()
-                
-                // Show loading state during data refresh
-                withAnimation {
-                    viewModel.leaderboardEntries = []
-                    viewModel.isLoading = true
-                }
-                
-                fetchTask = Task { await viewModel.fetch() }
+            .onChange(of: viewModel.selectedCategory) { _ in
+                selectionFeedback.selectionChanged()
+                handleFilterChange()
             }
-            .onChange(of: viewModel.selectedExercise) { _ in 
-                // Replace fade transition with direct fetch
-                fetchTask?.cancel()
-                
-                // Show loading state during data refresh
-                withAnimation {
-                    viewModel.leaderboardEntries = []
-                    viewModel.isLoading = true
-                }
-                
-                fetchTask = Task { await viewModel.fetch() }
+            .onChange(of: viewModel.selectedExercise) { _ in
+                selectionFeedback.selectionChanged()
+                handleFilterChange()
             }
-            .onChange(of: viewModel.selectedRadius) { _ in 
-                // Replace fade transition with direct fetch
-                fetchTask?.cancel()
-                
-                // Show loading state during data refresh
-                withAnimation {
-                    viewModel.leaderboardEntries = []
-                    viewModel.isLoading = true
-                }
-                
-                fetchTask = Task { await viewModel.fetch() }
+            .onChange(of: viewModel.selectedRadius) { _ in
+                selectionFeedback.selectionChanged()
+                handleFilterChange()
             }
             .navigationDestination(item: $navigatingToUserID) { userID in
                 UserProfileView(userID: userID)
             }
-            // Add an empty toolbar item to ensure navigation bar space
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     EmptyView()
@@ -233,196 +142,571 @@ struct LeaderboardView: View {
         }
     }
     
-    // Break down the filter controls into a separate view
+    // MARK: - Filter Controls Section
+    
     private var filterControlsSection: some View {
         VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-            // Use extracted segmented control
-            segmentedControl
-
-            // Use the new LeaderboardFilterBarView component
+            // Styled segmented control matching ProfileView
+            styledSegmentedControl
+                .opacity(segmentVisible ? 1 : 0)
+                .offset(y: segmentVisible ? 0 : 10)
+            
+            // Filter bar with consistent styling
             LeaderboardFilterBarView(
                 selectedCategory: $viewModel.selectedCategory,
                 selectedExercise: $viewModel.selectedExercise,
                 selectedRadius: $viewModel.selectedRadius,
                 showRadiusSelector: viewModel.selectedBoard == .local
             )
+            .opacity(filterVisible ? 1 : 0)
+            .offset(y: filterVisible ? 0 : 10)
         }
     }
     
-    // Break down the main content area into a separate view
-    private var mainContentArea: some View {
-        // Changed ZStack alignment to .top to ensure content doesn't float in the center
-        ZStack(alignment: .top) {
-            if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
-                loadingPlaceholders
-            } else if let errorMessage = viewModel.errorMessage {
-                errorView(message: errorMessage)
-            } else if viewModel.leaderboardEntries.isEmpty && viewModel.backendStatus == .noActiveUsers {
-                emptyLeaderboardView
-            } else if viewModel.leaderboardEntries.isEmpty {
-                noResultsView
-            } else {
-                leaderboardListView
+    private var styledSegmentedControl: some View {
+        HStack(spacing: 0) {
+            ForEach(LeaderboardType.allCases) { type in
+                segmentButton(for: type)
             }
         }
-        .frame(minHeight: 400) // Ensure content has enough space to scroll
+        .padding(4)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.white)
+                .shadow(
+                    color: Color.black.opacity(0.05),
+                    radius: 3,
+                    x: 0,
+                    y: 1
+                )
+        )
     }
     
-    // Helper for logging
-    private func logViewContent(message: String) {
-        logger.info("LeaderboardView [\(viewId)]: \(message)")
+    private func segmentButton(for type: LeaderboardType) -> some View {
+        let isSelected = viewModel.selectedBoard == type
+        
+        return Button(action: {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                viewModel.selectedBoard = type
+            }
+        }) {
+            Text(type.rawValue.uppercased())
+                .militaryMonospaced(size: 14)
+                .foregroundColor(isSelected ? AppTheme.GeneratedColors.textOnPrimary : AppTheme.GeneratedColors.deepOps)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity)
+                .background(
+                    ZStack {
+                        if isSelected {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(AppTheme.GeneratedColors.deepOps)
+                                .matchedGeometryEffect(id: "segmentBackground", in: animation)
+                        }
+                    }
+                )
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel("\(type.rawValue) leaderboard")
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
     
-    // Further break down complex views
-    private var loadingPlaceholders: some View {
+    // MARK: - Leaderboard Content Section
+    
+    private var leaderboardContentSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header styled like Dashboard sections
+            VStack(alignment: .leading, spacing: 4) {
+                Text("TOP PERFORMERS")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text(rankingsSubtitle)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+            
+            // Content area with white background
+            VStack {
+                if viewModel.isLoading && viewModel.leaderboardEntries.isEmpty {
+                    loadingContent
+                } else if let errorMessage = viewModel.errorMessage {
+                    errorContent(message: errorMessage)
+                } else if viewModel.leaderboardEntries.isEmpty {
+                    emptyStateContent
+                } else {
+                    leaderboardListContent
+                }
+            }
+            .frame(minHeight: 300)
+            .background(Color.white)
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+        }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    private var rankingsSubtitle: String {
+        if viewModel.selectedBoard == .local {
+            return "ATHLETES WITHIN \(viewModel.selectedRadius.rawValue) MILES"
+        } else {
+            return "NATIONWIDE RANKINGS"
+        }
+    }
+    
+    // MARK: - Content States
+    
+    private var loadingContent: some View {
         VStack(spacing: AppTheme.GeneratedSpacing.small) {
             ForEach(0..<5, id: \.self) { _ in
-                LeaderboardRowPlaceholder()
+                EnhancedLeaderboardRowPlaceholder()
+                    .padding(.horizontal, 16)
             }
         }
-        .padding(.horizontal)
-        .padding(.top, AppTheme.GeneratedSpacing.medium)
-        .frame(maxWidth: .infinity, alignment: .top) // Ensure placeholders align to top
-        .onAppear { logViewContent(message: "Showing placeholders") }
+        .padding(.vertical, 16)
     }
     
-    private func errorView(message: String) -> some View {
-        // Make sure error view takes up full available space
-        GeometryReader { geometry in
-            VStack {
-                Spacer()
-                Image(systemName: "wifi.exclamationmark")
-                    .font(.system(size: 64))
-                    .foregroundColor(AppTheme.GeneratedColors.error)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
-                
-                Text("Error Loading Leaderboard")
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
-                
-                Text(message)
-                    .font(AppTheme.GeneratedTypography.body())
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
-                
-                // Fix ambiguous reference to .primary by using an explicit ButtonStyle
-                // Using a fully qualified type to resolve ambiguity
-                PTButton("Retry", style: PTButton.ButtonStyle.primary, action: { 
-                    // No animation
-                    Task { await viewModel.fetch() } 
-                })
-                .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-                
-                Spacer()
-            }
-            .frame(minHeight: geometry.size.height)
-            .frame(maxWidth: .infinity)
+    private func errorContent(message: String) -> some View {
+        VStack(spacing: 20) {
+            Image(systemName: "wifi.exclamationmark")
+                .font(.system(size: 36))
+                .foregroundColor(AppTheme.GeneratedColors.error)
+                .padding()
+                .background(
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.error.opacity(0.1))
+                        .frame(width: 80, height: 80)
+                )
+            
+            Text("ERROR LOADING RANKINGS")
+                .militaryMonospaced(size: 14)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .fontWeight(.medium)
+            
+            Text(message.uppercased())
+                .militaryMonospaced(size: 12)
+                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+            
+            PTButton("RETRY", style: PTButton.ButtonStyle.primary, action: {
+                impactFeedback.impactOccurred()
+                Task { await viewModel.fetch() }
+            })
+            .padding(.horizontal, 40)
+            .padding(.top, 8)
         }
-        .padding()
-        .onAppear { logViewContent(message: "Showing error: \(message)") }
+        .padding(.vertical, 40)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Error loading rankings. \(message)")
+        .accessibilityHint("Double tap retry button to reload")
     }
     
-    private var emptyLeaderboardView: some View {
-        // Make sure empty view takes up full available space
-        GeometryReader { geometry in
-            VStack {
-                Spacer()
-                ZStack {
+    private var emptyStateContent: some View {
+        VStack(spacing: 20) {
+            Image(systemName: "trophy.fill")
+                .font(.system(size: 36))
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .padding()
+                .background(
                     Circle()
                         .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
-                        .frame(width: 120, height: 120)
+                        .frame(width: 80, height: 80)
+                )
+            
+            Text(viewModel.backendStatus == .noActiveUsers ? "NO ACTIVE ATHLETES" : "NO RANKINGS YET")
+                .militaryMonospaced(size: 14)
+                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                .fontWeight(.medium)
+            
+            Text(viewModel.backendStatus == .noActiveUsers ? 
+                 "BE THE FIRST TO POST A SCORE" : 
+                 "COMPLETE A WORKOUT TO APPEAR HERE")
+                .militaryMonospaced(size: 12)
+                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 20)
+        }
+        .padding(.vertical, 40)
+        .frame(maxWidth: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(viewModel.backendStatus == .noActiveUsers ? 
+                          "No active athletes. Be the first to post a score" : 
+                          "No rankings yet. Complete a workout to appear here")
+    }
+    
+    private var leaderboardListContent: some View {
+        VStack(spacing: 0) {
+            ForEach(Array(viewModel.leaderboardEntries.enumerated()), id: \.element.id) { index, entry in
+                let isCurrentUser = entry.userId == viewModel.currentUserID && entry.userId != nil
+                
+                VStack(spacing: 0) {
+                    EnhancedLeaderboardRow(
+                        entry: entry,
+                        isCurrentUser: isCurrentUser,
+                        rank: index + 1
+                    )
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        handleRowTap(entry: entry)
+                    }
                     
-                    Image(systemName: "trophy.fill")
-                        .font(.system(size: 64))
-                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                }
-                .padding(.bottom, AppTheme.GeneratedSpacing.medium)
-                
-                Text("Leaderboard is Empty")
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
-                
-                Text("Be the first to set a score!")
-                    .font(AppTheme.GeneratedTypography.body())
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
-                
-                Text("Complete a workout to post your score on the leaderboard.")
-                    .font(AppTheme.GeneratedTypography.body(size: AppTheme.GeneratedTypography.small))
-                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-                
-                Spacer()
-            }
-            .frame(minHeight: geometry.size.height)
-            .frame(maxWidth: .infinity)
-        }
-        .padding()
-        .onAppear { logViewContent(message: "Showing empty state") }
-    }
-    
-    private var noResultsView: some View {
-        // Make sure no results view takes up full available space
-        GeometryReader { geometry in
-            VStack {
-                Spacer()
-                Image(systemName: "magnifyingglass")
-                    .font(.system(size: 64))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary.opacity(0.7))
-                    .padding(.bottom, AppTheme.GeneratedSpacing.medium)
-                
-                Text("No Results Found")
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.heading4))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .padding(.bottom, AppTheme.GeneratedSpacing.small)
-                
-                Text("No data available for the current selection.")
-                    .font(AppTheme.GeneratedTypography.body())
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.large)
-                
-                Spacer()
-            }
-            .frame(minHeight: geometry.size.height)
-            .frame(maxWidth: .infinity)
-        }
-        .padding()
-        .onAppear { logViewContent(message: "Showing no data for selection") }
-    }
-    
-    private var leaderboardListView: some View {
-        ScrollView {
-            LazyVStack(spacing: AppTheme.GeneratedSpacing.small) {
-                ForEach(viewModel.leaderboardEntries) { entry in
-                    let isCurrentUser = entry.userId == viewModel.currentUserID && entry.userId != nil
-                    LeaderboardRowView(entry: entry, isCurrentUser: isCurrentUser)
-                        .contentShape(Rectangle()) // Make the whole row tappable
-                        .onTapGesture {
-                            handleRowTap(entry: entry)
-                        }
-                        // No animations
+                    if index < viewModel.leaderboardEntries.count - 1 {
+                        Divider()
+                            .background(Color.gray.opacity(0.2))
+                            .padding(.horizontal, 16)
+                    }
                 }
             }
-            .padding(.horizontal)
-            .padding(.vertical, AppTheme.GeneratedSpacing.medium)
         }
-        .onAppear { logViewContent(message: "Showing \(viewModel.leaderboardEntries.count) entries") }
+        .padding(.vertical, 8)
     }
     
-    // Extract tap handler to simplify
+    // MARK: - Helper Methods
+    
+    private func handleFilterChange() {
+        fetchTask?.cancel()
+        
+        withAnimation {
+            viewModel.leaderboardEntries = []
+            viewModel.isLoading = true
+        }
+        
+        fetchTask = Task {
+            await viewModel.fetch()
+        }
+    }
+    
     private func handleRowTap(entry: LeaderboardEntryView) {
         if let userID = entry.userId {
-            logger.info("Tapping user: \(entry.name, privacy: .public), ID: \(userID, privacy: .public). Preparing for navigation.")
-            self.navigatingToUserID = userID // Set state to trigger navigation
-        } else {
-            logger.info("Tapped on leaderboard entry for user: \(entry.name, privacy: .public), but user ID is nil.")
+            impactFeedback.impactOccurred()
+            logger.info("Tapping user: \(entry.name, privacy: .public), ID: \(userID, privacy: .public)")
+            self.navigatingToUserID = userID
         }
+    }
+    
+    private func animateContentIn() {
+        segmentVisible = false
+        filterVisible = false
+        contentVisible = false
+        
+        let baseDelay = 0.1
+        let staggerDelay = 0.1
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + baseDelay) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                segmentVisible = true
+            }
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + baseDelay + staggerDelay) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                filterVisible = true
+            }
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + baseDelay + (staggerDelay * 2)) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                contentVisible = true
+            }
+        }
+    }
+}
+
+// MARK: - Enhanced Leaderboard Row Component
+
+struct EnhancedLeaderboardRow: View {
+    let entry: LeaderboardEntryView
+    let isCurrentUser: Bool
+    let rank: Int
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Enhanced rank badge with proper medal colors
+            ZStack {
+                Circle()
+                    .fill(rankBackgroundColor)
+                    .frame(width: 44, height: 44)
+                
+                if rank <= 3 {
+                    Image(systemName: rankIcon)
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(rankIconColor)
+                } else {
+                    Text("\(rank)")
+                        .militaryMonospaced(size: 16)
+                        .fontWeight(.bold)
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                }
+            }
+            
+            // User info with performance indicators
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    Text(entry.name)
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        .lineLimit(1)
+                    
+                    // Performance indicator (if available)
+                    if let change = entry.performanceChange {
+                        performanceIndicator(change)
+                    }
+                    
+                    // Personal best indicator (if available)
+                    if entry.isPersonalBest == true {
+                        personalBestBadge
+                    }
+                }
+                
+                if entry.locationDescription != nil || entry.unit != nil {
+                    HStack(spacing: 4) {
+                        if let unit = entry.unit {
+                            Text(unit)
+                                .militaryMonospaced(size: 12)
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        }
+                        if entry.unit != nil && entry.locationDescription != nil {
+                            Text("•")
+                                .font(.system(size: 12))
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        }
+                        if let location = entry.locationDescription {
+                            Text(location)
+                                .font(.system(size: 12))
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        }
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            // Score/metric with enhanced styling
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(entry.displayValue)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(scoreColor)
+                
+                if let subtitle = entry.displaySubtitle {
+                    Text(subtitle)
+                        .font(.system(size: 11))
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .background(
+            isCurrentUser ? 
+            AppTheme.GeneratedColors.brassGold.opacity(0.05) : 
+            Color.clear
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityLabel)
+        .accessibilityHint(entry.userId != nil ? "Double tap to view profile" : "")
+        .accessibilityAddTraits(entry.userId != nil ? .isButton : [])
+    }
+    
+    // MARK: - Helper Views
+    
+    private func performanceIndicator(_ change: PerformanceChange) -> some View {
+        Image(systemName: change.icon)
+            .font(.system(size: 12))
+            .foregroundColor(change.color)
+    }
+    
+    private var personalBestBadge: some View {
+        HStack(spacing: 2) {
+            Image(systemName: "star.fill")
+                .font(.system(size: 8))
+            Text("PB")
+                .militaryMonospaced(size: 8)
+                .fontWeight(.bold)
+        }
+        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+        .padding(.horizontal, 4)
+        .padding(.vertical, 2)
+        .background(
+            Capsule()
+                .fill(AppTheme.GeneratedColors.brassGold.opacity(0.2))
+        )
+    }
+    
+    // MARK: - Computed Properties
+    
+    private var rankBackgroundColor: Color {
+        switch rank {
+        case 1: return goldColor.opacity(0.2)
+        case 2: return silverColor.opacity(0.2)
+        case 3: return bronzeColor.opacity(0.2)
+        default: return AppTheme.GeneratedColors.oliveMist.opacity(0.2)
+        }
+    }
+    
+    private var rankIcon: String {
+        switch rank {
+        case 1: return "trophy.fill"
+        case 2: return "medal.fill"
+        case 3: return "medal.fill"
+        default: return ""
+        }
+    }
+    
+    private var rankIconColor: Color {
+        switch rank {
+        case 1: return goldColor
+        case 2: return silverColor
+        case 3: return bronzeColor
+        default: return AppTheme.GeneratedColors.deepOps
+        }
+    }
+    
+    private var scoreColor: Color {
+        switch rank {
+        case 1: return goldColor
+        case 2: return silverColor
+        case 3: return bronzeColor
+        default: return AppTheme.GeneratedColors.brassGold
+        }
+    }
+    
+    private var goldColor: Color {
+        Color(red: 1.0, green: 0.84, blue: 0.0) // #FFD700
+    }
+    
+    private var silverColor: Color {
+        Color(red: 0.75, green: 0.75, blue: 0.75) // #C0C0C0
+    }
+    
+    private var bronzeColor: Color {
+        Color(red: 0.8, green: 0.5, blue: 0.2) // #CD7F32
+    }
+    
+    private var accessibilityLabel: String {
+        var label = "\(entry.name), ranked \(rank)"
+        
+        switch rank {
+        case 1: label += ", gold medal"
+        case 2: label += ", silver medal" 
+        case 3: label += ", bronze medal"
+        default: break
+        }
+        
+        label += ", score \(entry.displayValue)"
+        
+        if entry.isPersonalBest == true {
+            label += ", personal best"
+        }
+        
+        if let change = entry.performanceChange {
+            switch change {
+            case .improved(let positions):
+                label += ", improved \(positions) positions"
+            case .declined(let positions):
+                label += ", declined \(positions) positions"
+            case .maintained:
+                label += ", maintained position"
+            }
+        }
+        
+        return label
+    }
+}
+
+// MARK: - Enhanced Loading Placeholder with Shimmer
+
+struct EnhancedLeaderboardRowPlaceholder: View {
+    @State private var isAnimating = false
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            // Rank placeholder
+            Circle()
+                .fill(shimmerGradient)
+                .frame(width: 44, height: 44)
+            
+            // Name and info placeholder
+            VStack(alignment: .leading, spacing: 6) {
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(shimmerGradient)
+                    .frame(width: 120, height: 16)
+                
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(shimmerGradient)
+                    .frame(width: 80, height: 12)
+            }
+            
+            Spacer()
+            
+            // Score placeholder
+            RoundedRectangle(cornerRadius: 4)
+                .fill(shimmerGradient)
+                .frame(width: 60, height: 20)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .onAppear {
+            withAnimation(.linear(duration: 1.5).repeatForever(autoreverses: false)) {
+                isAnimating = true
+            }
+        }
+    }
+    
+    private var shimmerGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                Color.gray.opacity(0.3),
+                Color.gray.opacity(0.1),
+                Color.gray.opacity(0.3)
+            ]),
+            startPoint: isAnimating ? .leading : .trailing,
+            endPoint: isAnimating ? .trailing : .leading
+        )
+    }
+}
+
+// MARK: - Performance Change Extension
+
+extension PerformanceChange {
+    var color: Color {
+        switch self {
+        case .improved: return AppTheme.GeneratedColors.success
+        case .declined: return AppTheme.GeneratedColors.error
+        case .maintained: return AppTheme.GeneratedColors.textSecondary
+        }
+    }
+}
+
+// MARK: - Helper Extensions
+
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(
+            roundedRect: rect,
+            byRoundingCorners: corners,
+            cornerRadii: CGSize(width: radius, height: radius)
+        )
+        return Path(path.cgPath)
     }
 }
 

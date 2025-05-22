@@ -16,7 +16,7 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "333"
             endingLineNumber = "333"
-            landmarkName = "noResultsView"
+            landmarkName = "emptyStateContent"
             landmarkType = "24">
          </BreakpointContent>
       </BreakpointProxy>

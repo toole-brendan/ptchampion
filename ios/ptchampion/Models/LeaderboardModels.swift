@@ -9,6 +9,33 @@ struct LeaderboardEntryView: Identifiable, Equatable {
     let userId: String?   // optional – backend may omit
     let name: String      // display name you show in the list
     let score: Int        // points / reps / seconds – whatever your API returns
+    let exerciseType: String? // Optional: type of exercise for context
+    let location: String? // Optional: user's location for local leaderboards
+    let distance: Double? // Optional: distance from current user (for local)
+    let isPersonalBest: Bool? // Optional: whether this is the user's personal best
+    let performanceChange: PerformanceChange? // Optional: change from previous ranking
+    
+    // Computed properties for display
+    var displayValue: String {
+        return "\(score)"
+    }
+    
+    var displaySubtitle: String? {
+        // Could be "reps", "minutes", etc. based on context
+        return nil
+    }
+    
+    var locationDescription: String? {
+        if let distance = distance, distance > 0 {
+            return String(format: "%.1f mi away", distance * 0.000621371) // Convert meters to miles
+        }
+        return location
+    }
+    
+    var unit: String? {
+        // Could be determined based on exercise type
+        return nil
+    }
 }
 
 // MARK: - Enum Types for Leaderboard Filters
@@ -35,7 +62,15 @@ enum LeaderboardType: String, CaseIterable, Identifiable {
 enum LeaderboardExerciseType: String, CaseIterable, Identifiable {
     case overall, pushup, situp, pullup, running
     var id: String { rawValue }
-    var displayName: String { rawValue.capitalized }
+    var displayName: String {
+        switch self {
+        case .overall: return "Overall"
+        case .pushup: return "Push-ups"
+        case .situp: return "Sit-ups"
+        case .pullup: return "Pull-ups"
+        case .running: return "Two-Mile Run"
+        }
+    }
 }
 
 /// Time period categories for leaderboard filtering
@@ -55,6 +90,21 @@ enum LeaderboardCategory: String, CaseIterable, Identifiable {
 /// Backend connection status for error handling
 enum BackendStatus: Equatable {
     case unknown, connected, noActiveUsers, connectionFailed(String)
+}
+
+/// Performance change indicators for leaderboard entries
+enum PerformanceChange: Equatable {
+    case improved(positions: Int)
+    case declined(positions: Int)
+    case maintained
+    
+    var icon: String {
+        switch self {
+        case .improved: return "arrow.up.circle.fill"
+        case .declined: return "arrow.down.circle.fill"
+        case .maintained: return "minus.circle.fill"
+        }
+    }
 }
 
 // MARK: - API Models
