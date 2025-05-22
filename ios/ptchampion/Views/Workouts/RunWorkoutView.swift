@@ -100,10 +100,19 @@ struct RunWorkoutView: View {
         .onAppear {
             setupView()
             
+            // Add location permission check with DispatchQueue.main.async
+            DispatchQueue.main.async {
+                if CLLocationManager.authorizationStatus() == .notDetermined {
+                    viewModel.runState = .requestingPermission
+                }
+            }
+            
             // Avoid automatic device detection in simulator
             if isRunningInSimulator {
-                // Show banner instead of auto sheet presentation
-                showDeviceConnectionBanner = true
+                // Show banner instead of auto sheet presentation - wrap in async
+                DispatchQueue.main.async { 
+                    showDeviceConnectionBanner = true 
+                }
             } else {
                 // Only do this check on real device after a slight delay
                 if #available(iOS 15, *) {
@@ -131,27 +140,36 @@ struct RunWorkoutView: View {
                     let noDeviceConnected = (fitnessDeviceManagerViewModel.connectedBluetoothDevice == nil
                                          && !fitnessDeviceManagerViewModel.isHealthKitAuthorized)
                     if noDeviceConnected {
-                        showDeviceConnectionBanner = true   // Show banner instead of immediate sheet
+                        // Ensure UI updates are on the main thread
+                        await MainActor.run {
+                            showDeviceConnectionBanner = true   // Show banner instead of immediate sheet
+                        }
                     }
                 }
             }
         }
         .onChange(of: viewModel.completedWorkoutForDetail) { newWorkoutDetail in
             if let workout = newWorkoutDetail {
-                showingDeviceManagerSheet = false  // ensure modal is closed
-                self.workoutToNavigate = workout
+                DispatchQueue.main.async {
+                    showingDeviceManagerSheet = false  // ensure modal is closed
+                    self.workoutToNavigate = workout
+                }
             }
         }
         .onChange(of: fitnessDeviceManagerViewModel.connectedBluetoothDevice) { newDevice in
             if newDevice != nil {
-                showingDeviceManagerSheet = false   // device paired, dismiss modal
-                showDeviceConnectionBanner = false  // hide banner
+                DispatchQueue.main.async {
+                    showingDeviceManagerSheet = false   // device paired, dismiss modal
+                    showDeviceConnectionBanner = false  // hide banner
+                }
             }
         }
         .onChange(of: fitnessDeviceManagerViewModel.isHealthKitAuthorized) { authorized in
             if authorized {
-                showingDeviceManagerSheet = false   // watch authorized, dismiss modal
-                showDeviceConnectionBanner = false  // hide banner
+                DispatchQueue.main.async {
+                    showingDeviceManagerSheet = false   // watch authorized, dismiss modal
+                    showDeviceConnectionBanner = false  // hide banner
+                }
             }
         }
         .onChange(of: showingDeviceManagerSheet) { isPresented in

@@ -6,9 +6,12 @@ struct QuickLinkCardView: View {
     let icon: String
     let destination: String
     let isSystemIcon: Bool
+    @State private var isActive = false
     
     var body: some View {
-        NavigationLink(destination: destinationView) {
+        Button(action: {
+            isActive = true
+        }) {
             VStack(alignment: .center, spacing: 16) {
                 // Icon centered in circle container
                 ZStack {
@@ -49,6 +52,14 @@ struct QuickLinkCardView: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(PlainButtonStyle())
+        .background(
+            NavigationLink(
+                destination: destinationView,
+                isActive: $isActive,
+                label: { EmptyView() }
+            )
+            .opacity(0) // Make the navigation link invisible
+        )
     }
     
     // Determine the destination view based on the destination string

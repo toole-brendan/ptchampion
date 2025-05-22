@@ -141,8 +141,10 @@ class WorkoutSessionViewModel: ObservableObject {
     private func setupSubscribers() {
         // Camera authorization status
         cameraService.authorizationStatusPublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
+                print("DEBUG: [WorkoutSessionViewModel] Camera auth status changed: \(status.rawValue)")
                 self?.handleAuthorizationStatusChange(status)
             }
             .store(in: &cancellables)
@@ -172,20 +174,20 @@ class WorkoutSessionViewModel: ObservableObject {
                 guard let self = self, 
                       self.isWorkoutActive else { return } // Only process if workout is active
                       
-                self.detectedBody = body
+                print("DEBUG: [WorkoutSessionViewModel] Received body detection update: \(body != nil)")
                 
-                if let body = body {
-                    if self.workoutState == .counting && !self.isPaused {
-                        self.consecutiveFramesWithoutBody = 0
-                        let result = self.exerciseGrader.gradePose(body: body)
-                        // Defer state updates to next run loop to avoid view update cycles
-                        DispatchQueue.main.async {
+                // Always update body in the next run loop to avoid view update cycles
+                DispatchQueue.main.async {
+                    self.detectedBody = body
+                    
+                    if let body = body {
+                        if self.workoutState == .counting && !self.isPaused {
+                            self.consecutiveFramesWithoutBody = 0
+                            let result = self.exerciseGrader.gradePose(body: body)
+                            // Already in main queue context
                             self.handleGradingResult(result)
                         }
-                    }
-                } else {
-                    // Defer body lost handling to next run loop
-                    DispatchQueue.main.async {
+                    } else {
                         self.handleBodyLost()
                     }
                 }
@@ -196,6 +198,7 @@ class WorkoutSessionViewModel: ObservableObject {
         cameraService.errorPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
+                print("DEBUG: [WorkoutSessionViewModel] Camera service error: \(error.localizedDescription)")
                 self?.handleServiceError(error, serviceName: "Camera")
             }
             .store(in: &cancellables)
@@ -203,6 +206,7 @@ class WorkoutSessionViewModel: ObservableObject {
         poseDetectorService.errorPublisher
             .receive(on: DispatchQueue.main)
             .sink { [weak self] error in
+                print("DEBUG: [WorkoutSessionViewModel] Pose detector error: \(error.localizedDescription)")
                 self?.handleServiceError(error, serviceName: "Pose Detector")
             }
             .store(in: &cancellables)
@@ -217,24 +221,33 @@ class WorkoutSessionViewModel: ObservableObject {
         }
         
         print("Performing cleanup for \(exerciseType.displayName) workout")
-        hasPerformedCleanup = true
         
         // Mark workout as inactive to prevent late callbacks from processing
         isWorkoutActive = false
         
-        // Cancel all publishers - this is safe to call multiple times
-        cancellables.forEach { $0.cancel() }
+        // Cancel all publishers first
+        for cancellable in cancellables {
+            cancellable.cancel()
+        }
         cancellables.removeAll()
         
         // Stop timer if running - safe to call if already stopped
         workoutTimer.stop()
         
-        // Stop camera session - CameraService handles this safely if already stopped
-        cameraService.stopSession()
-        
-        // Ensure we mark the workout as finished if not already
-        if workoutState != .finished && workoutState != .error("Camera error occurred") {
-            workoutState = .finished
+        // Stop camera session - ensure this happens on the main thread
+        // to avoid potential threading issues
+        DispatchQueue.main.async {
+            self.cameraService.stopSession()
+            
+            // Mark cleanup as complete after a short delay to ensure all resources are released
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                self.hasPerformedCleanup = true
+                
+                // Ensure we mark the workout as finished if not already
+                if self.workoutState != .finished && self.workoutState != .error("Camera error occurred") {
+                    self.workoutState = .finished
+                }
+            }
         }
     }
     
@@ -251,39 +264,52 @@ class WorkoutSessionViewModel: ObservableObject {
     
     // Public method to check camera permission
     func checkCameraPermission() {
+        print("DEBUG: [WorkoutSessionViewModel] Checking camera permission")
         let status = AVCaptureDevice.authorizationStatus(for: .video)
+        print("DEBUG: [WorkoutSessionViewModel] Current camera permission status: \(status.rawValue)")
         handleAuthorizationStatusChange(status)
-        
-        // Start camera session if authorized, but don't start the workout
-        if status == .authorized {
-            cameraService.startSession()
-        }
     }
     
     private func handleAuthorizationStatusChange(_ status: AVAuthorizationStatus) {
+        print("DEBUG: [WorkoutSessionViewModel] Handling auth status change: \(status.rawValue) on thread: \(Thread.isMainThread ? "main" : "background")")
+        
+        // Ensure we're updating state on the main thread
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
+            guard let self = self else {
+                print("DEBUG: [WorkoutSessionViewModel] Self deallocated during auth handling")
+                return
+            }
             
+            print("DEBUG: [WorkoutSessionViewModel] Setting cameraAuthorizationStatus to \(status.rawValue)")
             self.cameraAuthorizationStatus = status
             
             switch status {
             case .authorized:
+                print("DEBUG: [WorkoutSessionViewModel] Camera authorized, updating state")
                 self.isCameraPermissionGranted = true
                 self.workoutState = .ready
                 self.feedbackMessage = "Ready for \(self.exerciseType.displayName)"
-                self.cameraService.startSession()
+                
+                // Start camera in next run loop to avoid state update during view render
+                DispatchQueue.main.async {
+                    print("DEBUG: [WorkoutSessionViewModel] Starting camera session (authorized)")
+                    self.cameraService.startSession()
+                }
                 
             case .notDetermined:
+                print("DEBUG: [WorkoutSessionViewModel] Camera permission not determined")
                 self.isCameraPermissionGranted = false
                 self.workoutState = .requestingPermission
                 self.feedbackMessage = "Camera permission needed"
                 
             case .denied, .restricted:
+                print("DEBUG: [WorkoutSessionViewModel] Camera permission denied or restricted")
                 self.isCameraPermissionGranted = false
                 self.workoutState = .permissionDenied
                 self.feedbackMessage = "Camera access denied. Enable in Settings."
                 
             @unknown default:
+                print("DEBUG: [WorkoutSessionViewModel] Unknown camera permission status")
                 self.isCameraPermissionGranted = false
                 self.workoutState = .error("Unknown camera permission status")
             }
@@ -292,30 +318,44 @@ class WorkoutSessionViewModel: ObservableObject {
     
     // MARK: - Workout Session Controls
     func startWorkout() {
+        print("DEBUG: [WorkoutSessionViewModel] startWorkout() called, permission granted: \(isCameraPermissionGranted)")
+        
         guard isCameraPermissionGranted else {
-            workoutState = .requestingPermission
+            print("DEBUG: [WorkoutSessionViewModel] Cannot start workout - missing camera permission")
+            DispatchQueue.main.async {
+                self.workoutState = .requestingPermission
+            }
             return
         }
         
-        // Mark workout as active
-        isWorkoutActive = true
-        
-        // Only create a new session ID if we don't already have one
-        // This prevents issues if startWorkout is called multiple times
-        if currentWorkoutSessionID == nil {
-            currentWorkoutSessionID = UUID()
+        // Updating all state in a single async block to batch changes
+        DispatchQueue.main.async {
+            print("DEBUG: [WorkoutSessionViewModel] Starting workout (async)")
+            
+            // Mark workout as active
+            self.isWorkoutActive = true
+            
+            // Only create a new session ID if we don't already have one
+            if self.currentWorkoutSessionID == nil {
+                print("DEBUG: [WorkoutSessionViewModel] Creating new workout session ID")
+                self.currentWorkoutSessionID = UUID()
+            }
+            
+            self.exerciseGrader.resetState()
+            self.updateUIFromGraderState()
+            
+            self.workoutState = .counting
+            self.isPaused = false
+            
+            self.workoutTimer.reset()
+            self.workoutTimer.start()
+            
+            // Start camera in next run loop
+            DispatchQueue.main.async {
+                print("DEBUG: [WorkoutSessionViewModel] Starting camera session for workout")
+                self.cameraService.startSession()
+            }
         }
-        
-        exerciseGrader.resetState()
-        updateUIFromGraderState()
-        
-        workoutState = .counting
-        isPaused = false
-        
-        workoutTimer.reset()
-        workoutTimer.start()
-        
-        cameraService.startSession()
     }
     
     func togglePause() {

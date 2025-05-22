@@ -106,7 +106,9 @@ struct DashboardView: View {
             }
             .accessibilityLabel("You have \(viewModel.totalWorkouts) workouts logged")
             .onAppear {
-                viewModel.setModelContext(modelContext)
+                DispatchQueue.main.async {
+                    viewModel.setModelContext(modelContext)
+                }
                 animateContentIn()
             }
             .refreshable {

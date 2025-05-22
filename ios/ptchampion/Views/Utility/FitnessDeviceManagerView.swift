@@ -50,7 +50,9 @@ struct FitnessDeviceManagerView: View {
             
             if viewModel.bluetoothState != .poweredOn && !dismissedBluetoothWarning {
                 print("DEBUG: [FitnessDeviceManagerView] Bluetooth state is \(viewModel.bluetoothState.stateDescription), showing banner")
-                showBluetoothBanner()
+                DispatchQueue.main.async {
+                    showBluetoothBanner()
+                }
             } else {
                 print("DEBUG: [FitnessDeviceManagerView] No banner needed: Bluetooth=\(viewModel.bluetoothState.stateDescription), dismissedWarning=\(dismissedBluetoothWarning)")
             }
@@ -86,10 +88,10 @@ struct FitnessDeviceManagerView: View {
             }
             
             print("DEBUG: [FitnessDeviceManagerView] Showing banner and auto-resetting trigger")
-            showBluetoothBanner()
-            
-            // Auto-reset the trigger so the next identical value is ignored
-            viewModel.showBluetoothError = false
+            DispatchQueue.main.async {
+                showBluetoothBanner()
+                viewModel.showBluetoothError = false
+            }
         }
         // Removed automatic HealthKit authorization to prevent auto-dismissal
         // Now authorization only happens when user explicitly taps "Connect" button

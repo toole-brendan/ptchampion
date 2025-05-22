@@ -21,12 +21,14 @@ struct WorkoutSessionView: View {
     
     // MARK: - Initialization
     init(exerciseType: ExerciseType) {
+        print("DEBUG: [WorkoutSessionView] Initializing view for \(exerciseType.rawValue)")
         self.exerciseType = exerciseType
         
         // Create the view model with the exercise type
         _viewModel = StateObject(wrappedValue: WorkoutSessionViewModel(
             exerciseType: exerciseType
         ))
+        print("DEBUG: [WorkoutSessionView] ViewModel created with @StateObject wrapper")
     }
     
     // MARK: - Body
@@ -58,7 +60,7 @@ struct WorkoutSessionView: View {
             // Start Button Overlay (shown only when in ready state)
             if viewModel.workoutState == .ready && countdown == nil {
                 startButtonOverlay()
-                    .zIndex(1)
+                    .zIndex(1) // Ensure it's on top
             }
             
             // Countdown Overlay (shown during countdown)
@@ -71,132 +73,165 @@ struct WorkoutSessionView: View {
             if viewModel.workoutState == .requestingPermission {
                 CameraPermissionRequestView(
                     onRequestPermission: {
+                        // Print statement moved outside ViewBuilder context
+                        let _ = print("DEBUG: [WorkoutSessionView] Camera permission request button tapped")
                         viewModel.requestCameraPermission()
                     },
                     onCancel: {
+                        // Print statement moved outside ViewBuilder context
+                        let _ = print("DEBUG: [WorkoutSessionView] Camera permission cancel button tapped")
                         dismiss()
                     }
                 )
                 .zIndex(2)
             }
             
-            // Permission Denied View
-            if viewModel.workoutState == .permissionDenied {
-                permissionDeniedOverlay()
-                    .zIndex(2)
+            // Permission Denied/Error Overlay
+            if isInErrorOrPermissionDeniedState {
+                permissionOrErrorOverlay()
+                    .zIndex(1)
             }
         }
+        .navigationTitle("Workout: \(exerciseType.displayName)")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .navigationBarItems(leading: 
+            Button("End") {
+                // Print statement moved outside ViewBuilder context
+                let _ = print("DEBUG: [WorkoutSessionView] End button tapped, workout state: \(viewModel.workoutState)")
+                handleEndWorkout()
+            }
+            .foregroundColor(AppTheme.GeneratedColors.error)
+        )
         .onAppear {
-            setupView()
-            print("WorkoutSessionView appeared for \(exerciseType.displayName)")
+            print("DEBUG: [WorkoutSessionView] onAppear triggered for \(exerciseType.displayName)")
+            
+            // Setup model context first, before any view changes
+            DispatchQueue.main.async {
+                print("DEBUG: [WorkoutSessionView] Setting modelContext in ViewModel (async)")
+                viewModel.modelContext = modelContext
+            }
             
             // Register for rotation events
             NotificationCenter.default.addObserver(
                 forName: UIDevice.orientationDidChangeNotification,
                 object: nil, queue: .main
             ) { _ in
+                print("DEBUG: [WorkoutSessionView] Device orientation changed")
                 // Small delay to ensure UI has rotated
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    print("DEBUG: [WorkoutSessionView] Updating camera orientation after rotation")
                     viewModel.cameraService.updateOutputOrientation()
                 }
             }
+            
+            print("DEBUG: [WorkoutSessionView] onAppear completed")
         }
         .onDisappear {
             // Stop the countdown timer first
+            print("DEBUG: [WorkoutSessionView] onDisappear triggered - starting cleanup sequence")
             stopCountdownTimer()
-            
-            // If the workout is still active (not finished), pause it when navigating away
-            if viewModel.workoutState != .finished {
-                // Pause the workout timer if it's running
-                if !viewModel.isPaused {
-                    viewModel.togglePause()
-                }
-                
-                print("WorkoutSessionView disappeared while workout was active - pausing workout")
-            }
             
             // Remove rotation observer
             NotificationCenter.default.removeObserver(
                 self, name: UIDevice.orientationDidChangeNotification, object: nil
             )
+            print("DEBUG: [WorkoutSessionView] Removed rotation observer")
             
-            // Ensure comprehensive cleanup happens on the main actor
-            // This ensures all resources are properly released even if the view disappears unexpectedly
-            Task { @MainActor in
-                viewModel.cleanup()
-                print("WorkoutSessionView disappeared - resources cleaned up")
-            }
-        }
-        .navigationTitle(exerciseType.displayName)
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("End") {
-                    if viewModel.workoutState == .counting || viewModel.workoutState == .paused {
-                        viewModel.finishWorkout()
-                        print("Workout ended by user - cleanup initiated")
-                    } else {
-                        // If workout hasn't started yet, just dismiss
-                        dismiss()
-                        print("View dismissed before workout started")
+            // Use async method with explicit @MainActor to avoid threading issues
+            // and prevent "publishing changes from within view updates" error
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                print("DEBUG: [WorkoutSessionView] Executing delayed cleanup")
+                
+                // If the workout is still active (not finished), pause it when navigating away
+                if self.viewModel.workoutState != .finished {
+                    print("DEBUG: [WorkoutSessionView] Workout not finished, pausing workout")
+                    
+                    // Pause the workout timer if it's running
+                    if !self.viewModel.isPaused {
+                        print("DEBUG: [WorkoutSessionView] Pausing workout because view is disappearing")
+                        self.viewModel.togglePause()
                     }
                 }
-                .foregroundColor(AppTheme.GeneratedColors.error)
-                // Disable the End button if the workout is already finished to prevent multiple calls
-                .disabled(viewModel.workoutState == .finished)
+                
+                // Perform cleanup asynchronously to avoid SwiftUI update cycles
+                Task {
+                    print("DEBUG: [WorkoutSessionView] Starting Task for viewModel cleanup")
+                    await MainActor.run {
+                        print("DEBUG: [WorkoutSessionView] Calling cleanup() on MainActor")
+                        self.viewModel.cleanup()
+                        print("DEBUG: [WorkoutSessionView] ViewModel cleanup completed")
+                    }
+                }
             }
             
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { viewModel.switchCamera() }) {
-                    Image(systemName: "arrow.triangle.2.circlepath.camera")
-                        .font(.system(size: 20))
-                }
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+            print("DEBUG: [WorkoutSessionView] onDisappear completed")
+        }
+        .onChange(of: modelContext) { _, newContext in
+            // Update the view model's context when it changes
+            print("DEBUG: [WorkoutSessionView] ModelContext changed")
+            DispatchQueue.main.async {
+                print("DEBUG: [WorkoutSessionView] Updating viewModel.modelContext")
+                viewModel.modelContext = newContext
             }
         }
         .fullScreenCover(isPresented: $viewModel.showWorkoutCompleteView) {
+            // Print statement moved outside ViewBuilder content
+            let _ = print("DEBUG: [WorkoutSessionView] Showing WorkoutCompleteView for result: \(viewModel.completedWorkoutResult?.id ?? UUID())")
+            
             if let result = viewModel.completedWorkoutResult {
                 WorkoutCompleteView(
                     result: result,
                     exerciseGrader: AnyExerciseGraderBox(WorkoutSessionViewModel.createGrader(for: exerciseType))
                 )
                 .onDisappear {
-                    dismiss()
+                    // Print statement moved outside ViewBuilder context (wrap in closure)
+                    let _ = print("DEBUG: [WorkoutSessionView] WorkoutCompleteView disappeared, dismissing parent view")
+                    DispatchQueue.main.async {
+                        dismiss()
+                    }
                 }
             }
         }
         .alert("Save Error", isPresented: $viewModel.showAlertForSaveError) {
-            Button("OK", role: .cancel) { }
+            Button("OK", role: .cancel) {
+                // Print statement moved outside ViewBuilder context
+                let _ = print("DEBUG: [WorkoutSessionView] Save error alert dismissed")
+            }
         } message: {
             Text(viewModel.saveErrorMessage)
         }
-        .onChange(of: modelContext) { _, newContext in
-            // Update the view model's context when it changes
-            viewModel.modelContext = newContext
-        }
         // Listen for countdown timer
         .onReceive(countdownTimer) { _ in
+            print("DEBUG: [WorkoutSessionView] Countdown timer tick received")
             handleCountdownTick()
         }
     }
     
-    // MARK: - Setup
-    private func setupView() {
-        // Set the model context
-        viewModel.modelContext = modelContext
+    // MARK: - End Workout Handler
+    private func handleEndWorkout() {
+        print("DEBUG: [WorkoutSessionView] handleEndWorkout() called, state: \(viewModel.workoutState)")
         
-        // Check camera permission - but don't auto-start workout
-        viewModel.checkCameraPermission()
+        if viewModel.workoutState == .counting || viewModel.workoutState == .paused {
+            print("DEBUG: [WorkoutSessionView] Workout active, calling finishWorkout()")
+            viewModel.finishWorkout()
+        } else {
+            print("DEBUG: [WorkoutSessionView] Workout not active, dismissing view")
+            dismiss()
+        }
     }
     
     // MARK: - Start Button Overlay
     @ViewBuilder
     private func startButtonOverlay() -> some View {
-        VStack {
+        // Print statement moved outside ViewBuilder context
+        let _ = print("DEBUG: [WorkoutSessionView] Rendering startButtonOverlay()")
+        
+        return VStack {
             Spacer()
             
             Button {
+                print("DEBUG: [WorkoutSessionView] Start button tapped, beginning countdown")
                 startCountdown()
             } label: {
                 Text("Ready for \(exerciseType.displayName)")
@@ -218,7 +253,10 @@ struct WorkoutSessionView: View {
     // MARK: - Countdown Overlay
     @ViewBuilder
     private func countdownOverlay(count: Int) -> some View {
-        VStack {
+        // Print statement moved outside ViewBuilder context
+        let _ = print("DEBUG: [WorkoutSessionView] Rendering countdownOverlay() with count: \(count)")
+        
+        return VStack {
             Spacer()
             
             Text("\(count)")
@@ -237,23 +275,37 @@ struct WorkoutSessionView: View {
     
     // MARK: - Countdown Logic
     private func startCountdown() {
-        // Set initial countdown
-        countdown = 5
+        print("DEBUG: [WorkoutSessionView] Starting countdown sequence")
         
-        // Start the timer
-        countdownTimer = Timer.publish(every: 1, on: .main, in: .common)
-        countdownCancellable = countdownTimer.connect()
+        // Stop any existing countdown
+        stopCountdownTimer()
         
-        // Play sound feedback
-        if viewModel.isSoundEnabled {
-            AudioServicesPlaySystemSound(1103) // System beep
+        // Defer setting the countdown to the next render cycle
+        DispatchQueue.main.async {
+            // Set initial countdown
+            print("DEBUG: [WorkoutSessionView] Setting countdown to 5 (async)")
+            self.countdown = 5
+            
+            // Start the timer
+            self.countdownTimer = Timer.publish(every: 1, on: .main, in: .common)
+            self.countdownCancellable = self.countdownTimer.connect()
+            
+            // Play sound feedback
+            if self.viewModel.isSoundEnabled {
+                print("DEBUG: [WorkoutSessionView] Playing countdown start sound")
+                AudioServicesPlaySystemSound(1103) // System beep
+            }
         }
     }
     
     private func handleCountdownTick() {
-        guard var count = countdown else { return }
+        guard var count = countdown else {
+            print("DEBUG: [WorkoutSessionView] Countdown tick received but countdown is nil!")
+            return
+        }
         
         count -= 1
+        print("DEBUG: [WorkoutSessionView] Countdown tick: \(count)")
         
         // Play tick sound
         if viewModel.isSoundEnabled && count > 0 {
@@ -261,48 +313,89 @@ struct WorkoutSessionView: View {
         }
         
         if count > 0 {
-            countdown = count
+            // Update countdown value
+            DispatchQueue.main.async {
+                print("DEBUG: [WorkoutSessionView] Updating countdown to \(count) (async)")
+                countdown = count
+            }
         } else {
-            // Countdown complete, start workout
-            countdown = nil
+            // Countdown complete, prepare to start workout
+            print("DEBUG: [WorkoutSessionView] Countdown complete, preparing to start workout")
+            
+            // Clear countdown and stop timer first
+            DispatchQueue.main.async {
+                print("DEBUG: [WorkoutSessionView] Clearing countdown (async)")
+                countdown = nil
+            }
             stopCountdownTimer()
             
             // Play start sound
             if viewModel.isSoundEnabled {
+                print("DEBUG: [WorkoutSessionView] Playing workout start sound")
                 AudioServicesPlaySystemSound(1104) // Stronger beep
                 let impactGenerator = UIImpactFeedbackGenerator(style: .heavy)
                 impactGenerator.prepare()
                 impactGenerator.impactOccurred()
             }
             
-            // Start the actual workout
-            viewModel.startWorkout()
+            // Start the actual workout in the next render cycle
+            DispatchQueue.main.async {
+                print("DEBUG: [WorkoutSessionView] Starting workout (async)")
+                viewModel.startWorkout()
+            }
         }
     }
     
     private func stopCountdownTimer() {
-        countdownCancellable?.cancel()
-        countdownCancellable = nil
+        if countdownCancellable != nil {
+            print("DEBUG: [WorkoutSessionView] Stopping countdown timer")
+            countdownCancellable?.cancel()
+            countdownCancellable = nil
+        }
     }
     
     // MARK: - UI Components
     @ViewBuilder
-    private func permissionDeniedOverlay() -> some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-            Image(systemName: "camera.slash.fill")
+    private func permissionOrErrorOverlay() -> some View {
+        // Print statement moved outside ViewBuilder context
+        let _ = print("DEBUG: [WorkoutSessionView] Rendering permissionOrErrorOverlay()")
+        
+        return VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+            // Use the isInPermissionDeniedState property for icon and text selection
+            let isPermissionDenied = viewModel.workoutState == .permissionDenied
+            
+            Image(systemName: isPermissionDenied ? "location.slash.fill" : "exclamationmark.triangle.fill")
                 .font(.system(size: 50))
-                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                .foregroundColor(isPermissionDenied ? 
+                                 AppTheme.GeneratedColors.textPrimaryOnDark : 
+                                 AppTheme.GeneratedColors.warning)
             
-            PTLabel("Camera Access Denied", style: .heading)
+            PTLabel(isPermissionDenied ? 
+                   "Location Access Denied" : "Error", 
+                   style: .heading)
             
-            PTLabel("This feature requires camera access to track exercises. Please enable camera access in Settings.", style: .body)
+            PTLabel(viewModel.errorMessage ?? 
+                   "This feature requires location access to track runs. Please enable location access in Settings.", 
+                   style: .body)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
             
             let primaryButtonStyle: PTButton.ExtendedStyle = .primary
-            PTButton("Open Settings", style: primaryButtonStyle) {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
+            if isPermissionDenied {
+                PTButton("Open Settings", style: primaryButtonStyle) {
+                    print("DEBUG: [WorkoutSessionView] Open Settings button tapped")
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+            } else {
+                PTButton("Dismiss", style: primaryButtonStyle) {
+                    print("DEBUG: [WorkoutSessionView] Dismiss error button tapped")
+                    DispatchQueue.main.async {
+                        print("DEBUG: [WorkoutSessionView] Clearing error message (async)")
+                        viewModel.errorMessage = nil
+                        dismiss()
+                    }
                 }
             }
         }
@@ -312,6 +405,13 @@ struct WorkoutSessionView: View {
             Color(uiColor: UIColor.black.withAlphaComponent(0.85))
                 .edgesIgnoringSafeArea(.all)
         )
+    }
+    
+    // Add a computed property to check if in error state
+    private var isInErrorOrPermissionDeniedState: Bool {
+        if case .permissionDenied = viewModel.workoutState { return true }
+        if case .error = viewModel.workoutState { return true }
+        return false
     }
 }
 

@@ -147,9 +147,20 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
                 print("CameraService: Session already running.")
                 return
             }
+            
+            // Make sure we don't have a delegate set before starting a new session
+            if self.session.isRunning {
+                self.videoOutput.setSampleBufferDelegate(nil, queue: nil)
+                self.session.stopRunning()
+            }
+            
             // Ensure orientation is correct before starting
             self.updateOutputOrientation()
             self.session.startRunning()
+            
+            // Set the delegate after the session is running
+            self.videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "com.ptchampion.cameraservice.samplebufferqueue", qos: .userInitiated))
+            
             print("CameraService: Session started.")
         }
     }
@@ -185,8 +196,15 @@ class CameraService: NSObject, CameraServiceProtocol, AVCaptureVideoDataOutputSa
             // Clear the video output delegate to prevent further callbacks
             self.videoOutput.setSampleBufferDelegate(nil, queue: nil)
             
-            self.session.stopRunning()
-            print("CameraService: Session stopped with delegate cleared.")
+            // Small delay to ensure callbacks are stopped before stopping the session
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.sessionQueue.async {
+                    if self.session.isRunning {
+                        self.session.stopRunning()
+                        print("CameraService: Session stopped with delegate cleared.")
+                    }
+                }
+            }
         }
     }
 

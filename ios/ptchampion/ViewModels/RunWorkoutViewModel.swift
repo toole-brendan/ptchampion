@@ -114,7 +114,6 @@ class RunWorkoutViewModel: ObservableObject {
         subscribeToLocationStatus()
         subscribeToBluetoothStatus()
         subscribeToHealthKitStatus()
-        checkInitialLocationPermission()
         updateDistanceDisplay()
         updatePaceDisplay(elapsedSeconds: 0)
         updateCurrentPaceDisplay(speed: 0)
@@ -123,11 +122,13 @@ class RunWorkoutViewModel: ObservableObject {
     private func subscribeToBluetoothStatus() {
         print("RunWorkoutViewModel: Subscribing to Bluetooth status...")
         bluetoothService.centralManagerStatePublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .assign(to: \.bluetoothState, on: self)
             .store(in: &cancellables)
 
         bluetoothService.connectionStatePublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                  guard let self = self else { return }
@@ -158,6 +159,7 @@ class RunWorkoutViewModel: ObservableObject {
             .store(in: &cancellables)
             
         bluetoothService.heartRatePublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] heartRate in
                 guard let self = self else { return }
@@ -177,6 +179,7 @@ class RunWorkoutViewModel: ObservableObject {
             
         // Subscribe to cadence updates
         bluetoothService.cadencePublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] cadence in
                 guard let self = self else { return }
@@ -196,6 +199,7 @@ class RunWorkoutViewModel: ObservableObject {
             
         // Subscribe to pace updates
         bluetoothService.pacePublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] pace in
                 guard let self = self else { return }
@@ -215,6 +219,7 @@ class RunWorkoutViewModel: ObservableObject {
 
         // Subscribe to watch location service availability
         bluetoothService.locationServiceAvailablePublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] isAvailable in
                  guard let self = self else { return }
@@ -248,6 +253,7 @@ class RunWorkoutViewModel: ObservableObject {
     private func subscribeToLocationStatus() {
         print("RunWorkoutViewModel: Subscribing to Location status...")
         locationService.authorizationStatusPublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] status in
                 self?.locationPermissionStatus = status
@@ -271,6 +277,7 @@ class RunWorkoutViewModel: ObservableObject {
     private func subscribeToHealthKitStatus() {
         // Subscribe to HealthKit workout session state changes
         healthKitService.workoutSessionStatePublisher
+            .removeDuplicates()
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
                 guard let self = self else { return }
@@ -319,12 +326,6 @@ class RunWorkoutViewModel: ObservableObject {
                 }
             )
             .store(in: &cancellables)
-    }
-
-    private func checkInitialLocationPermission() {
-         let status = CLLocationManager.authorizationStatus()
-         print("RunWorkoutViewModel: Initial location status: \(status)")
-         handleAuthorizationStatusChange(status)
     }
 
     private func handleAuthorizationStatusChange(_ status: CLAuthorizationStatus) {
