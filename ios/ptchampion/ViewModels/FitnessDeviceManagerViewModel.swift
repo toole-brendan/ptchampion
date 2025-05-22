@@ -21,6 +21,7 @@ class FitnessDeviceManagerViewModel: ObservableObject {
     // Published error state
     @Published var showBluetoothError: Bool = false
     @Published var bluetoothErrorMessage: String = ""
+    @Published var dismissedBluetoothWarning: Bool = false
     
     // Published device information
     @Published var connectedDeviceType: FitnessDeviceType = .unknown
@@ -60,22 +61,26 @@ class FitnessDeviceManagerViewModel: ObservableObject {
     private func setupPublishers() {
         // Bluetooth state
         bluetoothService.centralManagerStatePublisher
+            .removeDuplicates()         // Ignore identical states to prevent re-triggering
             .receive(on: RunLoop.main)
             .sink { [weak self] state in
-                self?.bluetoothState = state
+                guard let self else { return }
+                self.bluetoothState = state
                 
                 // Show error if Bluetooth is not available
-                if state == .poweredOff {
-                    self?.showBluetoothError = true
-                    self?.bluetoothErrorMessage = "Bluetooth is powered off. Please turn on Bluetooth in Settings."
-                } else if state == .unauthorized {
-                    self?.showBluetoothError = true
-                    self?.bluetoothErrorMessage = "Bluetooth permission denied. Please allow PT Champion to use Bluetooth in Settings."
-                } else if state == .unsupported {
-                    self?.showBluetoothError = true
-                    self?.bluetoothErrorMessage = "Bluetooth is not supported on this device."
-                } else {
-                    self?.showBluetoothError = false
+                switch state {
+                case .poweredOff:
+                    self.showBluetoothError = true
+                    self.bluetoothErrorMessage = "Bluetooth is powered off. Please turn on Bluetooth in Settings."
+                case .unauthorized:
+                    self.showBluetoothError = true
+                    self.bluetoothErrorMessage = "Bluetooth permission denied. Please allow PT Champion to use Bluetooth in Settings."
+                case .unsupported:
+                    self.showBluetoothError = true
+                    self.bluetoothErrorMessage = "Bluetooth is not supported on this device."
+                default:
+                    // Only clear when we leave an error state
+                    self.showBluetoothError = false
                 }
             }
             .store(in: &cancellables)

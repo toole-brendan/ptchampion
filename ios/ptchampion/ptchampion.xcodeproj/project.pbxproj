@@ -39,6 +39,7 @@
 		BF59ACBE2DDE7A3F00242910 /* PushUpsRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACB92DDE7A3F00242910 /* PushUpsRubricView.swift */; };
 		BF59ACBF2DDE7A3F00242910 /* SitUpsRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACBB2DDE7A3F00242910 /* SitUpsRubricView.swift */; };
 		BF59ACC02DDE7A3F00242910 /* PullUpsRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACB82DDE7A3F00242910 /* PullUpsRubricView.swift */; };
+		BF59ACC22DDEAF6500242910 /* WarningBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACC12DDEAF6500242910 /* WarningBanner.swift */; };
 		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
 		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
 		BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31842DC7F6C40042EE65 /* PTDesignSystem */; };
@@ -207,6 +208,7 @@
 		BF59ACB92DDE7A3F00242910 /* PushUpsRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushUpsRubricView.swift; sourceTree = "<group>"; };
 		BF59ACBA2DDE7A3F00242910 /* RunningRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningRubricView.swift; sourceTree = "<group>"; };
 		BF59ACBB2DDE7A3F00242910 /* SitUpsRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SitUpsRubricView.swift; sourceTree = "<group>"; };
+		BF59ACC12DDEAF6500242910 /* WarningBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningBanner.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -383,6 +385,7 @@
 		BF37B0412DCACABE00EC4D58 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACC12DDEAF6500242910 /* WarningBanner.swift */,
 				BF37B0402DCACABE00EC4D58 /* ActivityView.swift */,
 			);
 			path = Utility;
@@ -1071,6 +1074,7 @@
 				BF7960D72DCFAC9500B03835 /* MilitaryStyleShowcase.swift in Sources */,
 				BFB1EDB32DD0E38E00AC9653 /* OfflineSyncStatusView.swift in Sources */,
 				BFB1EDB52DD0E38E00AC9653 /* WorkoutHistoryItemView.swift in Sources */,
+				BF59ACC22DDEAF6500242910 /* WarningBanner.swift in Sources */,
 				BF89EB512DC9A18C003F8FE3 /* ValidationStateExtension.swift in Sources */,
 				BF7960E32DCFCE9F00B03835 /* ExerciseFilterBarView.swift in Sources */,
 				BF7960E42DCFCE9F00B03835 /* WorkoutChartView.swift in Sources */,

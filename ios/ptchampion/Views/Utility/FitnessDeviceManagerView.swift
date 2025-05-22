@@ -5,11 +5,17 @@ import CoreBluetooth
 struct FitnessDeviceManagerView: View {
     @EnvironmentObject var viewModel: FitnessDeviceManagerViewModel
     @State private var showingDeviceDetails = false
-    @State private var showingHealthKitAuth = false
+    @State private var activeBanner: BannerType?     // nil = none
     @AppStorage("useImperialUnits") private var useImperialUnits = false
+    @AppStorage("dismissedBluetoothWarning") private var dismissedBluetoothWarning = false
+
+    enum BannerType { case bluetooth, healthKit }
     
     var body: some View {
         VStack(spacing: 0) {
+            // Banner at the top
+            bannerView
+            
             // Header
             deviceSourcesSection()
             
@@ -32,48 +38,151 @@ struct FitnessDeviceManagerView: View {
             Spacer()
         }
         .navigationTitle("Fitness Devices")
+        .onAppear {
+            // This fires after the NavigationView is on-screen.
+            print("DEBUG: [FitnessDeviceManagerView] onAppear")
+            print("DEBUG: [FitnessDeviceManagerView] Current activeBanner: \(String(describing: activeBanner))")
+            print("DEBUG: [FitnessDeviceManagerView] dismissedBluetoothWarning: \(viewModel.dismissedBluetoothWarning)")
+            
+            // Track state
+            viewModel.showBluetoothError = false
+            print("DEBUG: [FitnessDeviceManagerView] Reset showBluetoothError to false")
+            
+            if viewModel.bluetoothState != .poweredOn && !dismissedBluetoothWarning {
+                print("DEBUG: [FitnessDeviceManagerView] Bluetooth state is \(viewModel.bluetoothState.stateDescription), showing banner")
+                showBluetoothBanner()
+            } else {
+                print("DEBUG: [FitnessDeviceManagerView] No banner needed: Bluetooth=\(viewModel.bluetoothState.stateDescription), dismissedWarning=\(dismissedBluetoothWarning)")
+            }
+        }
+        .onDisappear {
+            print("DEBUG: [FitnessDeviceManagerView] onDisappear - activeBanner: \(String(describing: activeBanner))")
+            print("DEBUG: [FitnessDeviceManagerView] onDisappear - dismissedBluetoothWarning: \(viewModel.dismissedBluetoothWarning)")
+            print("DEBUG: [FitnessDeviceManagerView] onDisappear - bluetoothState: \(viewModel.bluetoothState.stateDescription)")
+            
+            // Reset banner state on disappear to ensure it can be shown again
+            if activeBanner != nil {
+                print("DEBUG: [FitnessDeviceManagerView] Resetting activeBanner from \(String(describing: activeBanner)) to nil on disappear")
+                activeBanner = nil
+            } else {
+                print("DEBUG: [FitnessDeviceManagerView] activeBanner already nil on disappear")
+            }
+        }
         .sheet(isPresented: $showingDeviceDetails) {
             deviceDetailsView()
         }
-        .alert("HealthKit Authorization", isPresented: $showingHealthKitAuth) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text("Please allow PT Champion to access your health data to use Apple Watch features.")
-        }
-        .alert("Bluetooth Error", isPresented: $viewModel.showBluetoothError) {
-            Button("Settings") {
-                if let settingsURL = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(settingsURL)
+        .onReceive(viewModel.$showBluetoothError) { hasError in
+            print("DEBUG: [FitnessDeviceManagerView] onReceive showBluetoothError: \(hasError)")
+            print("DEBUG: [FitnessDeviceManagerView] onReceive dismissedBluetoothWarning: \(dismissedBluetoothWarning)")
+            
+            guard hasError, 
+                  !dismissedBluetoothWarning,
+                  activeBanner == nil   // Prevent rebuild loop
+            else {
+                if hasError {
+                    print("DEBUG: [FitnessDeviceManagerView] Ignoring showBluetoothError because dismissedBluetoothWarning=\(dismissedBluetoothWarning) or banner exists=\(activeBanner != nil)")
                 }
-            }
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(viewModel.bluetoothErrorMessage)
-        }
-        .onAppear {
-            // Request HealthKit authorization when view appears
-            if viewModel.isHealthKitAvailable && !viewModel.isHealthKitAuthorized {
-                Task {
-                    let authorized = await viewModel.requestHealthKitAuthorization()
-                    if authorized {
-                        await viewModel.fetchRecentWorkouts()
-                    } else {
-                        // Delay alert until after modal transition
-                        DispatchQueue.main.async {
-                            showingHealthKitAuth = true
-                        }
-                    }
-                }
+                return
             }
             
-            // If a Bluetooth error is already flagged, delay its alert
-            if viewModel.showBluetoothError {
-                viewModel.showBluetoothError = false  // reset the flag
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    viewModel.showBluetoothError = true
+            print("DEBUG: [FitnessDeviceManagerView] Showing banner and auto-resetting trigger")
+            showBluetoothBanner()
+            
+            // Auto-reset the trigger so the next identical value is ignored
+            viewModel.showBluetoothError = false
+        }
+        // Removed automatic HealthKit authorization to prevent auto-dismissal
+        // Now authorization only happens when user explicitly taps "Connect" button
+    }
+    
+    // MARK: - Banner Helpers
+    private func showBluetoothBanner() {
+        print("DEBUG: [FitnessDeviceManagerView] Showing Bluetooth Banner - activeBanner was \(String(describing: activeBanner))")
+        print("DEBUG: [FitnessDeviceManagerView] dismissedBluetoothWarning = \(dismissedBluetoothWarning)")
+        print("DEBUG: [FitnessDeviceManagerView] Bluetooth state = \(viewModel.bluetoothState.stateDescription)")
+        
+        // Guard against showing banner that's already dismissed or showing
+        guard activeBanner == nil, !dismissedBluetoothWarning else {
+            print("DEBUG: [FitnessDeviceManagerView] NOT showing banner because: activeBanner=\(String(describing: activeBanner)), dismissedWarning=\(dismissedBluetoothWarning)")
+            return
+        }
+            
+        print("DEBUG: [FitnessDeviceManagerView] Setting activeBanner to .bluetooth")
+        activeBanner = .bluetooth
+        viewModel.showBluetoothError = false  // reset trigger
+        print("DEBUG: [FitnessDeviceManagerView] Set activeBanner to .bluetooth")
+    }
+    
+    private func showHealthKitBanner() {
+        print("DEBUG: Showing HealthKit Banner - activeBanner was \(String(describing: activeBanner))")
+        if activeBanner == nil { 
+            activeBanner = .healthKit
+            print("DEBUG: Set activeBanner to .healthKit")
+        }
+    }
+    
+    // Add banner debugging
+    private var bannerView: some View {
+        Group {
+            if let banner = activeBanner {
+                WarningBanner(
+                    title: banner == .bluetooth ? "Bluetooth Error"
+                                                : "HealthKit Authorization",
+                    message: banner == .bluetooth
+                             ? viewModel.bluetoothErrorMessage
+                             : "Please allow PT Champion to access your health data to use Apple Watch features.",
+                    primary: .init(label: "OK") { 
+                        print("DEBUG: [FitnessDeviceManagerView] Banner primary button (OK) tapped - banner type: \(banner)")
+                        // Set the dismissal flag first, then dismiss the banner
+                        if banner == .bluetooth {
+                            print("DEBUG: [FitnessDeviceManagerView] Setting dismissedBluetoothWarning = true")
+                            dismissedBluetoothWarning = true
+                        }
+                        
+                        // Slight delay before dismissing to ensure the tap is fully processed
+                        print("DEBUG: [FitnessDeviceManagerView] Scheduling banner dismissal after 0.1s delay")
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            print("DEBUG: [FitnessDeviceManagerView] Inside delayed dismissal block")
+                            print("DEBUG: [FitnessDeviceManagerView] Setting activeBanner = nil")
+                            activeBanner = nil 
+                            print("DEBUG: [FitnessDeviceManagerView] Banner dismissal complete")
+                        }
+                    },
+                    secondary: banner == .bluetooth
+                        ? .init(label: "Settings") {
+                              print("DEBUG: [FitnessDeviceManagerView] Banner settings button tapped")
+                              if let url = URL(string: UIApplication.openSettingsURLString) {
+                                  print("DEBUG: [FitnessDeviceManagerView] Opening settings URL")
+                                  UIApplication.shared.open(url)
+                              }
+                              
+                              // Set dismissed flag FIRST to prevent race condition
+                              print("DEBUG: [FitnessDeviceManagerView] Setting dismissedBluetoothWarning = true")
+                              dismissedBluetoothWarning = true
+                              
+                              print("DEBUG: [FitnessDeviceManagerView] Scheduling banner dismissal after settings opened (0.5s delay)")
+                              DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                  print("DEBUG: [FitnessDeviceManagerView] Inside settings delayed dismissal block")
+                                  print("DEBUG: [FitnessDeviceManagerView] Setting activeBanner = nil")
+                                  activeBanner = nil
+                                  print("DEBUG: [FitnessDeviceManagerView] Banner dismissal after settings complete")
+                              }
+                          }
+                        : nil
+                )
+                .onAppear {
+                    print("DEBUG: [FitnessDeviceManagerView] Banner appeared - type: \(banner)")
+                    print("DEBUG: [FitnessDeviceManagerView] Current dismissedBluetoothWarning: \(viewModel.dismissedBluetoothWarning)")
                 }
+                .onDisappear {
+                    print("DEBUG: [FitnessDeviceManagerView] Banner disappeared - type: \(banner)")
+                    print("DEBUG: [FitnessDeviceManagerView] dismissedBluetoothWarning at disappear: \(viewModel.dismissedBluetoothWarning)")
+                    print("DEBUG: [FitnessDeviceManagerView] activeBanner at disappear: \(String(describing: activeBanner))")
+                }
+                .id(banner) // Force view recreation when banner type changes
             }
         }
+        .animation(.easeInOut, value: activeBanner)
     }
     
     // MARK: - Sections
@@ -194,7 +303,7 @@ struct FitnessDeviceManagerView: View {
                                 if authorized {
                                     await viewModel.fetchRecentWorkouts()
                                 } else {
-                                    showingHealthKitAuth = true
+                                    showHealthKitBanner()
                                 }
                             }
                         }

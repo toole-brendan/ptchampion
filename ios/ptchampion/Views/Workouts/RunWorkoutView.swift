@@ -91,14 +91,12 @@ struct RunWorkoutView: View {
         .navigationTitle("Run Tracking")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button("End") {
-                    handleEndWorkout()
-                }
-                .foregroundColor(AppTheme.GeneratedColors.error)
+        .navigationBarItems(leading: 
+            Button("End") {
+                handleEndWorkout()
             }
-        }
+            .foregroundColor(AppTheme.GeneratedColors.error)
+        )
         .onAppear {
             setupView()
             
@@ -156,6 +154,9 @@ struct RunWorkoutView: View {
                 showDeviceConnectionBanner = false  // hide banner
             }
         }
+        .onChange(of: showingDeviceManagerSheet) { isPresented in
+            print("DEBUG: showingDeviceManagerSheet changed to \(isPresented)")
+        }
         .background(
             NavigationLink(
                 destination: workoutToNavigate.map { WorkoutDetailView(workoutResult: $0) }, 
@@ -168,14 +169,37 @@ struct RunWorkoutView: View {
             .opacity(0) // Keep it hidden
         )
         // Replace the sheet with a full-screen cover for the device manager
-        .fullScreenCover(isPresented: $showingDeviceManagerSheet) {
+        .fullScreenCover(isPresented: $showingDeviceManagerSheet, onDismiss: {
+            print("DEBUG: [RunWorkoutView] FullScreenCover dismissing")
+            print("DEBUG: [RunWorkoutView] FullScreenCover was dismissed")
+            print("DEBUG: [RunWorkoutView] showingDeviceManagerSheet is now \(showingDeviceManagerSheet)")
+            print("DEBUG: [RunWorkoutView] showDeviceConnectionBanner is now \(showDeviceConnectionBanner)")
+            
+            // Add extra debug info about the device connection state
+            let hasBTDevice = fitnessDeviceManagerViewModel.connectedBluetoothDevice != nil
+            let hasHealthKit = fitnessDeviceManagerViewModel.isHealthKitAuthorized
+            print("DEBUG: [RunWorkoutView] After dismiss - Connected device: \(hasBTDevice), HealthKit authorized: \(hasHealthKit)")
+        }) {
             NavigationView {
                 FitnessDeviceManagerView()
                     .environmentObject(fitnessDeviceManagerViewModel)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarLeading) {
-                            Button("Cancel") { showingDeviceManagerSheet = false }
+                    .navigationBarBackButtonHidden(true)
+                    .navigationBarItems(leading: 
+                        Button("Cancel") { 
+                            print("DEBUG: [RunWorkoutView] Cancel button tapped in FitnessDeviceManagerView")
+                            print("DEBUG: [RunWorkoutView] About to set showingDeviceManagerSheet = false")
+                            showingDeviceManagerSheet = false 
+                            print("DEBUG: [RunWorkoutView] showingDeviceManagerSheet set to false")
                         }
+                    )
+                    .onAppear {
+                        print("DEBUG: [RunWorkoutView] FitnessDeviceManagerView appeared in fullScreenCover")
+                        print("DEBUG: [RunWorkoutView] Bluetooth state: \(fitnessDeviceManagerViewModel.bluetoothState.stateDescription)")
+                        print("DEBUG: [RunWorkoutView] HealthKit authorized: \(fitnessDeviceManagerViewModel.isHealthKitAuthorized)")
+                    }
+                    .onDisappear {
+                        print("DEBUG: [RunWorkoutView] FitnessDeviceManagerView disappeared from fullScreenCover")
+                        print("DEBUG: [RunWorkoutView] Current value of dismissedBluetoothWarning: \(fitnessDeviceManagerViewModel.dismissedBluetoothWarning)")
                     }
             }
         }
@@ -476,9 +500,18 @@ struct RunWorkoutView: View {
     // MARK: - Device Connection Banner
     private func deviceConnectionBanner() -> some View {
         Button {
-            // Use DispatchQueue to defer showing the sheet until after the current UI update
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                showingDeviceManagerSheet = true
+            print("DEBUG: [RunWorkoutView] Banner button tapped - transition sequence starting")
+            // Better two-step transition - first hide banner, then show sheet
+            print("DEBUG: [RunWorkoutView] Step 1: Hiding banner (showDeviceConnectionBanner = false)")
+            DispatchQueue.main.async {
+                showDeviceConnectionBanner = false
+                print("DEBUG: [RunWorkoutView] Banner hidden in first async")
+                
+                DispatchQueue.main.async { // next run loop
+                    print("DEBUG: [RunWorkoutView] Step 2: About to show device manager sheet in second async")
+                    showingDeviceManagerSheet = true
+                    print("DEBUG: [RunWorkoutView] showingDeviceManagerSheet set to true")
+                }
             }
         } label: {
             HStack {
@@ -502,6 +535,12 @@ struct RunWorkoutView: View {
             .cornerRadius(8)
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
+        }
+        .onAppear {
+            print("DEBUG: [RunWorkoutView] Device connection banner appeared")
+        }
+        .onDisappear {
+            print("DEBUG: [RunWorkoutView] Device connection banner disappeared")
         }
     }
 }
