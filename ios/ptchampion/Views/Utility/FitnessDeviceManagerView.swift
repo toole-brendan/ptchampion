@@ -58,8 +58,19 @@ struct FitnessDeviceManagerView: View {
                     if authorized {
                         await viewModel.fetchRecentWorkouts()
                     } else {
-                        showingHealthKitAuth = true
+                        // Delay alert until after modal transition
+                        DispatchQueue.main.async {
+                            showingHealthKitAuth = true
+                        }
                     }
+                }
+            }
+            
+            // If a Bluetooth error is already flagged, delay its alert
+            if viewModel.showBluetoothError {
+                viewModel.showBluetoothError = false  // reset the flag
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    viewModel.showBluetoothError = true
                 }
             }
         }
