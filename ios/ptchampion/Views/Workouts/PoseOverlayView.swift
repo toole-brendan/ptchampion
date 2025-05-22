@@ -68,7 +68,22 @@ struct PoseOverlayView: View {
                         Color.red.opacity(0.7) : 
                         Color.yellow.opacity(0.8)
                     
-                    context.stroke(path, with: .color(lineColor), lineWidth: 5)
+                    context.stroke(path, with: .color(lineColor), lineWidth: 4)
+                }
+
+                // Draw every single landmark as an 8-pt yellow dot so none are "missing".
+                for point in body.allPoints {
+                    // skip totally unseen landmarks (visibility ≈ 0)
+                    guard point.confidence > 0.01 else { continue }
+                    
+                    let location = CGPoint(x: point.location.x * size.width, y: point.location.y * size.height)
+                    let circle = Path { path in
+                        path.addEllipse(in: CGRect(x: location.x - 4,
+                                                y: location.y - 4,
+                                                width: 8,
+                                                height: 8))
+                    }
+                    context.fill(circle, with: .color(.yellow))
                 }
 
                 // Draw points (circles)
