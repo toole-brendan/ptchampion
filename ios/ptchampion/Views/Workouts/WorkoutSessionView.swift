@@ -306,7 +306,7 @@ struct WorkoutSessionView: View {
             
             Text("\(count)")
                 .font(.system(size: 80, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
                 .padding(30)
                 .background(
                     Circle()
