@@ -55,7 +55,8 @@ struct WorkoutSessionView: View {
                     isSoundEnabled: $viewModel.isSoundEnabled,
                     showControls: true,
                     showFullBodyWarning: $viewModel.showFullBodyWarning,
-                    toggleSoundAction: { viewModel.toggleSound() }
+                    toggleSoundAction: { viewModel.toggleSound() },
+                    switchCameraAction: { viewModel.switchCamera() }
                 )
             }
             
@@ -94,7 +95,7 @@ struct WorkoutSessionView: View {
                     .zIndex(1)
             }
         }
-        .navigationTitle("Workout: \(exerciseType.displayName)")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: 
@@ -268,10 +269,6 @@ struct WorkoutSessionView: View {
                 .padding(.bottom, 16)
             
             VStack(spacing: 8) {
-                Text("GO")
-                    .font(.system(size: 16, weight: .bold, design: .monospaced))
-                    .foregroundColor(.black)
-                
                 ZStack {
                     Circle()
                         .fill(AppTheme.GeneratedColors.brassGold)
