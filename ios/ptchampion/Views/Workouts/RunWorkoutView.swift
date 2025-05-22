@@ -38,25 +38,40 @@ struct RunWorkoutView: View {
     // MARK: - Body
     var body: some View {
         ZStack {
+            // Ambient Background Gradient (matching Dashboard)
+            RadialGradient(
+                gradient: Gradient(colors: [
+                    AppTheme.GeneratedColors.background.opacity(0.9),
+                    AppTheme.GeneratedColors.background
+                ]),
+                center: .center,
+                startRadius: 50,
+                endRadius: UIScreen.main.bounds.height * 0.6
+            )
+            .ignoresSafeArea()
+            
             // Main Content
-            VStack(spacing: 0) {
-                // Device Connection Banner (visible when needed)
-                if showDeviceConnectionBanner {
-                    deviceConnectionBanner()
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Device Connection Banner (visible when needed)
+                    if showDeviceConnectionBanner {
+                        deviceConnectionBanner()
+                    }
+                    
+                    // Device Connection Status Header
+                    deviceStatusHeader()
+                    
+                    // Controls - standalone (now positioned between Device Status and Run Metrics)
+                    startButtonSection()
+                    
+                    // Metrics Display
+                    runMetricsHeader()
+                    
+                    // Add some space at the bottom
+                    Spacer(minLength: 30)
                 }
-                
-                // Device Connection Status Header
-                deviceStatusHeader()
-                
-                // Top Metrics Display
-                runMetricsHeader()
-                
-                Spacer() // Pushes controls to bottom
-                
-                // Bottom Controls
-                runControls()
+                .padding(.bottom, 20)
             }
-            .background(AppTheme.GeneratedColors.cream.ignoresSafeArea())
             
             // Location Permission Request View
             if viewModel.runState == .requestingPermission {
@@ -238,151 +253,383 @@ struct RunWorkoutView: View {
     // MARK: - UI Components
     @ViewBuilder
     private func deviceStatusHeader() -> some View {
-        VStack(spacing: AppTheme.GeneratedSpacing.extraSmall) {
-            HStack {
-                // Bluetooth Device Status
-                HStack(spacing: 4) {
-                    Image(systemName: viewModel.bluetoothState == .poweredOn ? "bolt.fill" : "bolt.slash.fill")
-                        .foregroundColor(viewModel.bluetoothState == .poweredOn ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.textSecondary)
+        VStack(alignment: .leading, spacing: 0) {
+            // Header with dark background and gold text (like dashboard)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("DEVICE STATUS")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     
-                    // Connection Status Text
-                    switch viewModel.deviceConnectionState {
-                    case .disconnected:
-                        PTLabel("No Device Connected", style: .caption)
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    case .connecting:
-                        HStack {
-                            PTLabel("Connecting...", style: .caption)
-                            ProgressView().scaleEffect(0.7)
-                        }
-                        .foregroundColor(AppTheme.GeneratedColors.warning)
-                    case .connected(let peripheral):
-                        PTLabel(peripheral.name ?? "Device", style: .caption)
-                            .foregroundColor(AppTheme.GeneratedColors.success)
-                            .fontWeight(.medium)
-                    case .disconnecting:
-                        PTLabel("Disconnecting...", style: .caption)
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    case .failed:
-                        PTLabel("Connection Failed", style: .caption)
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                    }
-                }
-                
-                Spacer()
-                
-                // GPS Source Indicator with improved visual
-                HStack(spacing: 3) {
-                    Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
-                        .foregroundColor(viewModel.locationSource == .watch ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.textPrimary)
-                    PTLabel("GPS", style: .caption)
-                        .foregroundColor(viewModel.locationSource == .watch ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.textPrimary)
-                }
-                .padding(4)
-                .background(
-                    RoundedRectangle(cornerRadius: AppTheme.GeneratedRadius.badge)
-                        .fill(Color(.systemBackground).opacity(0.3))
-                )
-            }
-            .font(.caption)
-            
-            // Heart Rate Indicator Row with improved visualization
-            if case .connected = viewModel.deviceConnectionState {
-                HStack(spacing: 8) {
-                    // Heart rate display with pulsing animation
+                    Spacer()
+                    
+                    // GPS Source Indicator
                     HStack(spacing: 3) {
-                        Image(systemName: "heart.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                            .opacity(viewModel.currentHeartRate != nil ? 1.0 : 0.5)
-                            .scaleEffect(viewModel.currentHeartRate != nil ? 1.0 : 0.9)
-                            .animation(
-                                viewModel.currentHeartRate != nil ? 
-                                    Animation.easeInOut(duration: 0.5).repeatForever(autoreverses: true) : 
-                                    .default, 
-                                value: viewModel.currentHeartRate != nil
-                            )
+                        Image(systemName: viewModel.locationSource == .watch ? "applewatch" : "iphone")
+                            .foregroundColor(.white)
+                        Text("GPS")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(AppTheme.GeneratedColors.brassGold)
+                    .cornerRadius(4)
+                }
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.vertical, 4)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+            
+            // Device status content with cream background
+            VStack(spacing: 12) {
+                // Device connection status
+                HStack {
+                    // Status icon with circular background
+                    ZStack {
+                        Circle()
+                            .fill(getStatusColor().opacity(0.15))
+                            .frame(width: 40, height: 40)
                         
-                        PTLabel(viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM", style: .caption)
-                            .foregroundColor(viewModel.currentHeartRate != nil ? AppTheme.GeneratedColors.textPrimary : AppTheme.GeneratedColors.textSecondary)
-                            .fontWeight(viewModel.currentHeartRate != nil ? .semibold : .regular)
+                        Image(systemName: getConnectionIcon())
+                            .foregroundColor(getStatusColor())
+                            .font(.system(size: 16))
                     }
                     
-                    // Add source indicator for heart rate
-                    if viewModel.currentHeartRate != nil {
-                        PTLabel("via \(viewModel.connectedDeviceName ?? "Device")", style: .caption)
-                            .font(.caption2)
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    // Connection details
+                    VStack(alignment: .leading, spacing: 2) {
+                        // Connection status text
+                        Text(getConnectionStatusText())
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        if case .connected(let peripheral) = viewModel.deviceConnectionState {
+                            Text("Connected to \(peripheral.name ?? "Device")")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                        } else if case .connecting = viewModel.deviceConnectionState {
+                            HStack {
+                                Text("Establishing connection")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                ProgressView().scaleEffect(0.7)
+                            }
+                        } else {
+                            Text("No heart rate data available")
+                                .font(.system(size: 14))
+                                .foregroundColor(.secondary)
+                        }
                     }
                     
                     Spacer()
                     
-                    // Add cadence display if available
-                    if let cadence = viewModel.currentCadence {
-                        HStack(spacing: 3) {
-                            Image(systemName: "figure.walk")
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            PTLabel("\(cadence) SPM", style: .caption)
-                                .fontWeight(.semibold)
+                    // Connect button if disconnected
+                    if case .disconnected = viewModel.deviceConnectionState {
+                        Button {
+                            showingDeviceManagerSheet = true
+                        } label: {
+                            Text("Connect")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(AppTheme.GeneratedColors.brassGold)
+                                .cornerRadius(6)
                         }
                     }
                 }
-                .font(.caption)
-                .padding(.leading, AppTheme.GeneratedSpacing.small)
+                
+                // Heart Rate Indicator Row if connected
+                if case .connected = viewModel.deviceConnectionState, viewModel.currentHeartRate != nil {
+                    Divider()
+                        .background(Color.gray.opacity(0.2))
+                    
+                    HStack {
+                        // Heart rate with pulsing animation
+                        HStack(spacing: 8) {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(AppTheme.GeneratedColors.error)
+                                .opacity(viewModel.currentHeartRate != nil ? 1.0 : 0.5)
+                                .scaleEffect(viewModel.currentHeartRate != nil ? 1.0 : 0.9)
+                                .font(.system(size: 16))
+                                .animation(
+                                    viewModel.currentHeartRate != nil ? 
+                                        Animation.easeInOut(duration: 0.5).repeatForever(autoreverses: true) : 
+                                        .default, 
+                                    value: viewModel.currentHeartRate != nil
+                                )
+                            
+                            Text("\(viewModel.currentHeartRate!) BPM")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        
+                        Spacer()
+                        
+                        // Cadence display if available
+                        if let cadence = viewModel.currentCadence {
+                            HStack(spacing: 8) {
+                                Image(systemName: "figure.walk")
+                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                                    .font(.system(size: 16))
+                                
+                                Text("\(cadence) SPM")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            }
+                        }
+                    }
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
-        .padding(.horizontal, AppTheme.GeneratedSpacing.contentPadding)
-        .padding(.vertical, AppTheme.GeneratedSpacing.small / 2)
-        .background(.thinMaterial)
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // Helper methods for device status header
+    private func getConnectionStatusText() -> String {
+        switch viewModel.deviceConnectionState {
+        case .disconnected:
+            return "No Device Connected"
+        case .connecting:
+            return "Connecting..."
+        case .connected:
+            return "Connected"
+        case .disconnecting:
+            return "Disconnecting..."
+        case .failed:
+            return "Connection Failed"
+        }
+    }
+    
+    private func getConnectionIcon() -> String {
+        switch viewModel.deviceConnectionState {
+        case .disconnected:
+            return "antenna.radiowaves.left.and.right.slash"
+        case .connecting:
+            return "antenna.radiowaves.left.and.right"
+        case .connected:
+            return "antenna.radiowaves.left.and.right"
+        case .disconnecting:
+            return "antenna.radiowaves.left.and.right.slash"
+        case .failed:
+            return "xmark.circle"
+        }
+    }
+    
+    private func getStatusColor() -> Color {
+        switch viewModel.deviceConnectionState {
+        case .disconnected:
+            return AppTheme.GeneratedColors.textSecondary
+        case .connecting:
+            return AppTheme.GeneratedColors.warning
+        case .connected:
+            return AppTheme.GeneratedColors.success
+        case .disconnecting:
+            return AppTheme.GeneratedColors.textSecondary
+        case .failed:
+            return AppTheme.GeneratedColors.error
+        }
     }
     
     @ViewBuilder
     private func runMetricsHeader() -> some View {
-        VStack(spacing: 0) {
-            // Two Mile Auto-Stop Indicator
-            HStack {
-                Spacer()
-                PTLabel("Auto-Stop at 2 miles", style: .caption)
-                    .padding(.horizontal, AppTheme.GeneratedSpacing.small)
-                    .padding(.vertical, AppTheme.GeneratedSpacing.extraSmall)
-                    .background(AppTheme.GeneratedColors.warning.opacity(0.3))
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    .cornerRadius(AppTheme.GeneratedRadius.card)
-                Spacer()
-            }
-            .padding(.top, AppTheme.GeneratedSpacing.extraSmall)
-            
-            Grid(alignment: .center, horizontalSpacing: 10, verticalSpacing: 15) {
-                GridRow {
-                    MetricDisplay(label: "DISTANCE", value: viewModel.distanceFormatted)
-                    MetricDisplay(label: "TIME", value: viewModel.elapsedTimeFormatted)
+        VStack(alignment: .leading, spacing: 0) {
+            // Header with dark background and gold text (like dashboard)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text("RUN METRICS")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    
+                    Spacer()
+                    
+                    // Two Mile Auto-Stop Indicator
+                    Text("Auto-Stop at 2 miles")
+                        .font(.system(size: 12, weight: .medium))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(AppTheme.GeneratedColors.warning.opacity(0.3))
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        .cornerRadius(4)
                 }
-                GridRow {
-                    MetricDisplay(label: "AVG PACE", value: viewModel.averagePaceFormatted)
-                    MetricDisplay(label: "CUR PACE", value: viewModel.currentPaceFormatted)
+                .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("CURRENT PROGRESS TRACKING")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .cornerRadius(8, corners: [.topLeft, .topRight])
+            
+            // Metrics content with cream background
+            VStack(spacing: 20) {
+                // First row: Distance and Time
+                HStack(spacing: 16) {
+                    // Distance
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "figure.run")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        
+                        Text(viewModel.distanceFormatted)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("DISTANCE")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
+                    
+                    // Time
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "clock")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        
+                        Text(viewModel.elapsedTimeFormatted)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("TIME")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
                 
-                // Add Heart Rate and Cadence in a row
-                GridRow {
-                    // Heart Rate Display
-                    MetricDisplay(
-                        label: "HEART RATE",
-                        value: viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM",
-                        icon: "heart.fill",
-                        iconColor: AppTheme.GeneratedColors.error
-                    )
+                // Second row: Avg Pace and Current Pace
+                HStack(spacing: 16) {
+                    // Avg Pace
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.brassGold.opacity(0.15))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "speedometer")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        
+                        Text(viewModel.averagePaceFormatted)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("AVG PACE")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
                     
-                    // Cadence Display
-                    MetricDisplay(
-                        label: "CADENCE",
-                        value: viewModel.currentCadence != nil ? "\(viewModel.currentCadence!) SPM" : "-- SPM",
-                        icon: "metronome",
-                        iconColor: AppTheme.GeneratedColors.brassGold
-                    )
+                    // Current Pace
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.brassGold.opacity(0.15))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "gauge.with.dots.needle.33percent")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        
+                        Text(viewModel.currentPaceFormatted)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("CUR PACE")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                
+                // Third row: Heart Rate and Cadence
+                HStack(spacing: 16) {
+                    // Heart Rate
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.error.opacity(0.15))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "heart.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.error)
+                        }
+                        
+                        Text(viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("HEART RATE")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
+                    
+                    // Cadence
+                    VStack {
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                                .frame(width: 50, height: 50)
+                            
+                            Image(systemName: "metronome")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        
+                        Text(viewModel.currentCadence != nil ? "\(viewModel.currentCadence!) SPM" : "-- SPM")
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Text("CADENCE")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .frame(maxWidth: .infinity)
                 }
             }
-            .padding(AppTheme.GeneratedSpacing.contentPadding)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
-        .background(AppTheme.GeneratedColors.deepOps)
+        .padding(.horizontal, 16)
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     // Helper for single metric display
@@ -411,23 +658,95 @@ struct RunWorkoutView: View {
     }
     
     @ViewBuilder
-    private func runControls() -> some View {
+    private func startButtonSection() -> some View {
         HStack {
             Spacer()
             switch viewModel.runState {
             case .ready, .idle:
                 Button { viewModel.startRun() }
-                label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
+                label: { 
+                    VStack(spacing: 8) {
+                        Text("START RUN")
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.brassGold)
+                                .frame(width: 80, height: 80)
+                            
+                            Image(systemName: "play.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                    }
+                }
             case .running:
                 Button { viewModel.pauseRun() }
-                label: { controlButtonLabel(systemName: "pause.circle.fill", color: AppTheme.GeneratedColors.warning) }
+                label: { 
+                    VStack(spacing: 8) {
+                        Text("PAUSE RUN")
+                            .font(.system(size: 16, weight: .bold, design: .monospaced))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.warning)
+                                .frame(width: 80, height: 80)
+                            
+                            Image(systemName: "pause.fill")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                    }
+                }
             case .paused:
-                HStack(spacing: AppTheme.GeneratedSpacing.large) {
+                HStack(spacing: 40) {
                     Button { viewModel.resumeRun() }
-                    label: { controlButtonLabel(systemName: "play.circle.fill", color: AppTheme.GeneratedColors.success) }
+                    label: { 
+                        VStack(spacing: 8) {
+                            Text("RESUME")
+                                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            
+                            ZStack {
+                                Circle()
+                                    .fill(AppTheme.GeneratedColors.brassGold)
+                                    .frame(width: 80, height: 80)
+                                
+                                Image(systemName: "play.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            }
+                        }
+                    }
 
                     Button { viewModel.stopRun() }
-                    label: { controlButtonLabel(systemName: "stop.circle.fill", color: AppTheme.GeneratedColors.error) }
+                    label: { 
+                        VStack(spacing: 8) {
+                            Text("FINISH")
+                                .font(.system(size: 16, weight: .bold, design: .monospaced))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            
+                            ZStack {
+                                Circle()
+                                    .fill(AppTheme.GeneratedColors.error)
+                                    .frame(width: 80, height: 80)
+                                
+                                Image(systemName: "stop.fill")
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30)
+                                    .foregroundColor(.white)
+                            }
+                        }
+                    }
                 }
             case .finished, .error:
                 EmptyView() // Handled by navigation
@@ -436,19 +755,7 @@ struct RunWorkoutView: View {
             }
             Spacer()
         }
-        .padding(AppTheme.GeneratedSpacing.contentPadding)
-        .frame(height: 80) // Consistent height for control area
-        .background(AppTheme.GeneratedColors.backgroundOverlay.opacity(0.3))
-    }
-    
-    // Helper for styling control buttons
-    private func controlButtonLabel(systemName: String, color: Color) -> some View {
-        Image(systemName: systemName)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 50, height: 50)
-            .foregroundColor(color)
-            .padding(AppTheme.GeneratedSpacing.small)
+        .padding(.vertical, 16)
     }
     
     // Helper view for permission/error overlays

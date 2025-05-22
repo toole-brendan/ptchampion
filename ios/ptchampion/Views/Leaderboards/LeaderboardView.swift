@@ -51,7 +51,7 @@ struct LeaderboardView: View {
         let isSelected = viewModel.selectedBoard == type
         let foregroundColor = isSelected ? 
             AppTheme.GeneratedColors.textOnPrimary : 
-            AppTheme.GeneratedColors.textPrimary
+            Color.black // Use black color for non-selected text
         
         return Button(action: {
             // Wrap state change in withAnimation to make the transition smooth
@@ -61,7 +61,7 @@ struct LeaderboardView: View {
         }) {
             VStack {
                 Text(type.rawValue)
-                    .font(AppTheme.GeneratedTypography.bodyBold(size: AppTheme.GeneratedTypography.body))
+                    .font(.system(size: 16, weight: .semibold)) // Match ProfileView button font
                     .foregroundColor(foregroundColor)
                     .padding(.vertical, 10)
                     .padding(.horizontal, 20)

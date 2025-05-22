@@ -50,9 +50,11 @@ struct LeaderboardFilterBarView: View {
             Image(systemName: "calendar")
                 .foregroundColor(AppTheme.GeneratedColors.primary)
             Text(selectedCategory.rawValue)
-                .font(AppTheme.GeneratedTypography.body())
+                .font(.system(size: 16, weight: .semibold)) // Match ProfileView button font
+                .foregroundColor(.black)
             Image(systemName: "chevron.down")
                 .font(.caption)
+                .foregroundColor(.black)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
@@ -88,9 +90,11 @@ struct LeaderboardFilterBarView: View {
             Image(systemName: "figure.run")
                 .foregroundColor(AppTheme.GeneratedColors.primary)
             Text(selectedExercise.displayName)
-                .font(AppTheme.GeneratedTypography.body())
+                .font(.system(size: 16, weight: .semibold)) // Match ProfileView button font
+                .foregroundColor(.black)
             Image(systemName: "chevron.down")
                 .font(.caption)
+                .foregroundColor(.black)
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
@@ -120,9 +124,11 @@ struct RadiusSelectorView: View {
                 Image(systemName: "map")
                     .foregroundColor(AppTheme.GeneratedColors.primary)
                 Text("Radius: \(selectedRadius.displayName)")
-                    .font(AppTheme.GeneratedTypography.body())
+                    .font(.system(size: 16, weight: .semibold)) // Match ProfileView button font
+                    .foregroundColor(.black)
                 Image(systemName: "chevron.down")
                     .font(.caption)
+                    .foregroundColor(.black)
             }
             .padding(.vertical, 8)
             .padding(.horizontal, 12)
