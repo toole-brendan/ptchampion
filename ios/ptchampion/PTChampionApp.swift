@@ -519,6 +519,7 @@ struct PTChampionApp: App {
                     LoadingView()
                         .environmentObject(navigationState)
                         .environmentObject(authViewModel)
+                        .environmentObject(TabBarVisibilityManager.shared)
                 
                 case .login:
                     // Instantiate LoginView correctly and provide necessary environment objects
@@ -527,6 +528,7 @@ struct PTChampionApp: App {
                         .environmentObject(navigationState)
                         .environmentObject(featureFlagService)
                         .environmentObject(authViewModel)
+                        .environmentObject(TabBarVisibilityManager.shared)
                 
                 case .register:
                     // Show registration view when navigating to register
@@ -535,6 +537,7 @@ struct PTChampionApp: App {
                         .environmentObject(navigationState)
                         .environmentObject(featureFlagService)
                         .environmentObject(authViewModel)
+                        .environmentObject(TabBarVisibilityManager.shared)
                 
                 case .main:
                     // Use AuthViewModel's computed property for isAuthenticated
@@ -556,6 +559,7 @@ struct PTChampionApp: App {
                         .environmentObject(leaderboardViewModel)
                         .environmentObject(progressViewModel)
                         .environmentObject(fitnessDeviceManagerViewModel)
+                        .environmentObject(TabBarVisibilityManager.shared)
                 }
             }
             .modelContainer(sharedModelContainer)
@@ -590,6 +594,7 @@ enum Tab {
 // Main TabView Structure
 struct MainTabView: View {
     @State private var selectedTab: Tab = .home
+    @StateObject private var tabBarVisibility = TabBarVisibilityManager.shared
     @EnvironmentObject var authService: AuthService
     @EnvironmentObject var navigationState: NavigationState
     @EnvironmentObject var featureFlagService: FeatureFlagService
@@ -597,39 +602,33 @@ struct MainTabView: View {
     @EnvironmentObject var workoutHistoryViewModel: WorkoutHistoryViewModel // Direct reference to class
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // Each view already has a NavigationStack in their own file
-            // Don't add an additional NavigationView wrapper here
-            
-            DashboardView()
-                .tabItem { Label("Home", systemImage: "house.fill") }
-                .tag(Tab.home)
-
-            // Use a dedicated HistoryTabView to wrap WorkoutHistoryView
-            HistoryTabView()
-                .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
-                .tag(Tab.history)
-
-            LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
-                .tabItem { Label("Leaders", systemImage: "rosette") }
-                .tag(Tab.leaderboards)
-
-            ProfileView() 
-                .tabItem { Label("Profile", systemImage: "person.crop.circle") }
-                .tag(Tab.profile)
-        }
-        .tint(AppTheme.GeneratedColors.brassGold)
-        .onAppear { 
-            // Customize TabView appearance 
-            let tabBarAppearance = UITabBarAppearance()
-            tabBarAppearance.configureWithOpaqueBackground()
-            tabBarAppearance.backgroundColor = UIColor(AppTheme.GeneratedColors.deepOps)
-            UITabBar.appearance().standardAppearance = tabBarAppearance
-            
-            if #available(iOS 15.0, *) {
-                UITabBar.appearance().scrollEdgeAppearance = tabBarAppearance
+        ZStack(alignment: .bottom) {
+            // Content
+            Group {
+                switch selectedTab {
+                case .home:
+                    DashboardView()
+                        .environmentObject(tabBarVisibility)
+                    
+                case .history:
+                    HistoryTabView()
+                        .environmentObject(tabBarVisibility)
+                    
+                case .leaderboards:
+                    LeaderboardView(viewModel: leaderboardVM, viewId: "mainTabLeaderboard")
+                        .environmentObject(tabBarVisibility)
+                    
+                case .profile:
+                    ProfileView()
+                        .environmentObject(tabBarVisibility)
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            
+            // Custom Tab Bar
+            CustomTabBar(selectedTab: $selectedTab)
         }
+        .edgesIgnoringSafeArea(.bottom)
         .onChange(of: selectedTab) { _, newTab in
             print("Switched to tab: \(newTab)")
         }

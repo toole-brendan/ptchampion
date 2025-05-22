@@ -46,6 +46,8 @@
 		BF59ACCC2DDFC9F800242910 /* EnhancedSitupGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACCA2DDFC9F800242910 /* EnhancedSitupGrader.swift */; };
 		BF59ACCD2DDFC9F800242910 /* EnhancedPushupGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACC92DDFC9F800242910 /* EnhancedPushupGrader.swift */; };
 		BF59ACCE2DDFC9F800242910 /* APFTRepValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACC72DDFC9F800242910 /* APFTRepValidator.swift */; };
+		BF59ACD02DDFD3B900242910 /* TabBarVisibilityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACCF2DDFD3B900242910 /* TabBarVisibilityManager.swift */; };
+		BF59ACD32DDFD3FB00242910 /* CustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACD12DDFD3FB00242910 /* CustomTabBar.swift */; };
 		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
 		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
 		BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31842DC7F6C40042EE65 /* PTDesignSystem */; };
@@ -221,6 +223,8 @@
 		BF59ACC82DDFC9F800242910 /* EnhancedPullupGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedPullupGrader.swift; sourceTree = "<group>"; };
 		BF59ACC92DDFC9F800242910 /* EnhancedPushupGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedPushupGrader.swift; sourceTree = "<group>"; };
 		BF59ACCA2DDFC9F800242910 /* EnhancedSitupGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedSitupGrader.swift; sourceTree = "<group>"; };
+		BF59ACCF2DDFD3B900242910 /* TabBarVisibilityManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarVisibilityManager.swift; sourceTree = "<group>"; };
+		BF59ACD12DDFD3FB00242910 /* CustomTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBar.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -453,6 +457,14 @@
 			path = Scoring;
 			sourceTree = "<group>";
 		};
+		BF59ACD22DDFD3FB00242910 /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				BF59ACD12DDFD3FB00242910 /* CustomTabBar.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
 		BF63E3B02DB1C84E0037CD02 = {
 			isa = PBXGroup;
 			children = (
@@ -579,6 +591,7 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACCF2DDFD3B900242910 /* TabBarVisibilityManager.swift */,
 				BFB1EDB62DD0E3A400AC9653 /* NetworkMonitorService.swift */,
 				BFB1EDB72DD0E3A400AC9653 /* SynchronizationService.swift */,
 				BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */,
@@ -715,6 +728,7 @@
 		BF63E44A2DB1EB980037CD02 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACD22DDFD3FB00242910 /* Navigation */,
 				BF59ACBC2DDE7A3F00242910 /* Scoring */,
 				BF7B49C42DD567C500B50FE6 /* Layout */,
 				BFB1EDB02DD0E38E00AC9653 /* OfflineSyncStatusView.swift */,
@@ -1040,6 +1054,7 @@
 				BFADF9C82DC93E0A0016AF0B /* UnifiedNetworkService.swift in Sources */,
 				BF37B0522DCC232E00EC4D58 /* ExerciseHUDView.swift in Sources */,
 				BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */,
+				BF59ACD32DDFD3FB00242910 /* CustomTabBar.swift in Sources */,
 				BF63E44C2DB1EB980037CD02 /* RunWorkoutView.swift in Sources */,
 				BF63E4722DB1F3910037CD02 /* WorkoutHistoryRow.swift in Sources */,
 				BF63E44D2DB1EB980037CD02 /* PoseOverlayView.swift in Sources */,
@@ -1087,6 +1102,7 @@
 				BFADF9B92DC93D890016AF0B /* FocusableTextField.swift in Sources */,
 				BFADF9BA2DC93D890016AF0B /* WorkoutCard.swift in Sources */,
 				BF89EB492DC98E8A003F8FE3 /* CommonNetworkTypes.swift in Sources */,
+				BF59ACD02DDFD3B900242910 /* TabBarVisibilityManager.swift in Sources */,
 				BF7B49C52DD567C500B50FE6 /* ScreenLayout.swift in Sources */,
 				BF199EBF2DCE228800E23EFF /* UserProfileViewModel.swift in Sources */,
 				BFADF9BB2DC93D890016AF0B /* MetricCard.swift in Sources */,

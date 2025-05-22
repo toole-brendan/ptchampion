@@ -13,6 +13,7 @@ struct WorkoutSessionView: View {
     let exerciseType: ExerciseType
     
     @StateObject private var viewModel: WorkoutSessionViewModel
+    @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
@@ -128,8 +129,8 @@ struct WorkoutSessionView: View {
         .onAppear {
             print("DEBUG: [WorkoutSessionView] onAppear triggered for \(exerciseType.displayName)")
             
-            // Hide tab bar during workout
-            UITabBar.appearance().isHidden = true
+            // Hide tab bar using the visibility manager
+            tabBarVisibility.hideTabBar()
             
             // Setup model context
             DispatchQueue.main.async {
@@ -164,8 +165,8 @@ struct WorkoutSessionView: View {
             print("DEBUG: [WorkoutSessionView] onDisappear triggered - starting cleanup sequence")
             stopCountdownTimer()
             
-            // Show tab bar when leaving workout
-            UITabBar.appearance().isHidden = false
+            // Show tab bar using the visibility manager
+            tabBarVisibility.showTabBar()
             
             // Remove rotation observer
             NotificationCenter.default.removeObserver(

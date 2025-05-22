@@ -49,6 +49,7 @@ struct LoginView: View {
     // Make sure we're using the shared AuthViewModel
     @EnvironmentObject private var auth: AuthViewModel
     @EnvironmentObject private var navigationState: NavigationState
+    @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
     @State private var keyboardHeight: CGFloat = 0
     @State private var showDevOptions = false
     @State private var didLogBodyOnce = false
@@ -296,6 +297,8 @@ struct LoginView: View {
                 .onChange(of: auth.isAuthenticated) { _, isAuthenticated in
                     if isAuthenticated && !isTransitioning {
                         isTransitioning = true
+                        // Show tab bar when navigating to main
+                        tabBarVisibility.showTabBar()
                         // Delay navigation slightly to allow UI to settle if needed
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             print("LoginView: Navigating to main due to auth change.")
@@ -307,6 +310,9 @@ struct LoginView: View {
                 .onAppear {
                     print("DEBUG: LoginView onAppear called with AuthViewModel instance: \(ObjectIdentifier(auth))")
                     isTransitioning = false // Reset transitioning state
+                    
+                    // Hide tab bar on login screen
+                    tabBarVisibility.hideTabBar()
                     
                     // For debugging, verify if auth is already authenticated on appear
                     if auth.isAuthenticated {

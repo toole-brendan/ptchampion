@@ -5,6 +5,7 @@ import PTDesignSystem
 struct RegistrationView: View {
     @EnvironmentObject private var auth: AuthViewModel
     @EnvironmentObject private var navigationState: NavigationState
+    @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
     @Environment(\.dismiss) var dismiss
     @Environment(\.presentationMode) var presentationMode
     
@@ -169,6 +170,8 @@ struct RegistrationView: View {
                     // Back to login button
                     let secondaryButtonStyle: PTButton.ButtonStyle = .secondary
                     PTButton("Back to Login", style: secondaryButtonStyle, icon: Image(systemName: "arrow.left")) {
+                        // Show tab bar when navigating back
+                        tabBarVisibility.showTabBar()
                         // Use NavigationState to navigate back to login
                         navigationState.navigateTo(.login)
                     }
@@ -188,6 +191,9 @@ struct RegistrationView: View {
             hideKeyboard()
         }
         .onAppear {
+            // Hide tab bar on registration screen
+            tabBarVisibility.hideTabBar()
+            
             // Set up keyboard notifications
             NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
                 if let keyboardSize = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
@@ -205,6 +211,8 @@ struct RegistrationView: View {
             if let success = newValue, !success.isEmpty {
                 // If registration was successful, navigate back to login after a delay
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    // Show tab bar when navigating back
+                    tabBarVisibility.showTabBar()
                     // Use NavigationState instead of dismiss
                     navigationState.navigateTo(.login)
                 }

@@ -7,6 +7,7 @@ import PTDesignSystem
 struct RunWorkoutView: View {
     // MARK: - Properties
     @StateObject private var viewModel: RunWorkoutViewModel
+    @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel
@@ -102,6 +103,9 @@ struct RunWorkoutView: View {
             .foregroundColor(AppTheme.GeneratedColors.error)
         )
         .onAppear {
+            // Hide tab bar during run workout
+            tabBarVisibility.hideTabBar()
+            
             setupView()
             
             // Add location permission check with DispatchQueue.main.async
@@ -236,6 +240,9 @@ struct RunWorkoutView: View {
     private func handleEndWorkout() {
         // Always dismiss the pairing modal (if open) before exiting
         showingDeviceManagerSheet = false
+        
+        // Show tab bar when ending workout
+        tabBarVisibility.showTabBar()
         
         if viewModel.runState == .finished {
             if let completedWorkout = viewModel.completedWorkoutForDetail {

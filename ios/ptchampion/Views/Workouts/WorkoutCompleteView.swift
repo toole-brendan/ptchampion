@@ -16,6 +16,7 @@ struct WorkoutCompleteView: View {
     let result: WorkoutResultSwiftData?
     let exerciseGrader: AnyExerciseGraderBox // For additional feedback like lastFormIssue
 
+    @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
@@ -92,6 +93,7 @@ struct WorkoutCompleteView: View {
                 // Add a typed local variable to resolve ambiguity
                 let primaryButtonStyle: PTButton.ExtendedStyle = .primary
                 PTButton("Done", style: primaryButtonStyle) {
+                    tabBarVisibility.showTabBar()
                     dismiss()
                 }
                 .padding(.horizontal)
@@ -103,17 +105,21 @@ struct WorkoutCompleteView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
+                        tabBarVisibility.showTabBar()
                         dismiss()
                     }
                 }
+            }
+            .onAppear {
+                // Hide tab bar on workout complete screen
+                tabBarVisibility.hideTabBar()
             }
             .task {
                 await fetchRepDetails()
             }
             .onDisappear {
-                dismiss()
                 // Make sure tab bar is visible when returning to dashboard
-                UITabBar.appearance().isHidden = false
+                tabBarVisibility.showTabBar()
                 print("WorkoutCompleteView disappeared - dismissing workout session")
             }
         }
