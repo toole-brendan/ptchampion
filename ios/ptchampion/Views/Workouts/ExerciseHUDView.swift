@@ -12,7 +12,6 @@ struct ExerciseHUDView: View {
     @Binding var showFullBodyWarning: Bool // New parameter to show full body warning
 
     var toggleSoundAction: () -> Void
-    var switchCameraAction: () -> Void
 
     var body: some View {
         VStack {
@@ -74,15 +73,6 @@ struct ExerciseHUDView: View {
                             .frame(width: 50, height: 50)
                             .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     }
-                    
-                    // Camera flip button
-                    Button { switchCameraAction() } label: {
-                        Image(systemName: "camera.rotate.fill")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
                 }
                 .padding()
             }
@@ -109,8 +99,7 @@ struct ExerciseHUDView_Previews: PreviewProvider {
             isSoundEnabled: $isSoundEnabled,
             showControls: true, // Show controls in this preview
             showFullBodyWarning: $showFullBodyWarning,
-            toggleSoundAction: { },
-            switchCameraAction: { }
+            toggleSoundAction: { }
         )
         .background(Color.black.opacity(0.5)) // Lighter background for preview
         .previewLayout(.sizeThatFits)

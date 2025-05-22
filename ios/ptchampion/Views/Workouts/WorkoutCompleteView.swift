@@ -112,6 +112,8 @@ struct WorkoutCompleteView: View {
             }
             .onDisappear {
                 dismiss()
+                // Make sure tab bar is visible when returning to dashboard
+                UITabBar.appearance().isHidden = false
                 print("WorkoutCompleteView disappeared - dismissing workout session")
             }
         }

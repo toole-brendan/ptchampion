@@ -55,8 +55,7 @@ struct WorkoutSessionView: View {
                     isSoundEnabled: $viewModel.isSoundEnabled,
                     showControls: true,
                     showFullBodyWarning: $viewModel.showFullBodyWarning,
-                    toggleSoundAction: { viewModel.toggleSound() },
-                    switchCameraAction: { viewModel.switchCamera() }
+                    toggleSoundAction: { viewModel.toggleSound() }
                 )
             }
             
@@ -98,23 +97,34 @@ struct WorkoutSessionView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .navigationBarItems(leading: 
-            Button {
-                // Print statement moved outside ViewBuilder context
-                let _ = print("DEBUG: [WorkoutSessionView] End button tapped, workout state: \(viewModel.workoutState)")
-                handleEndWorkout()
-            } label: {
-                Text("End")
-                    .foregroundColor(.red)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .overlay(
-                        Rectangle()
-                            .stroke(Color.red, lineWidth: 2)
-                    )
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    // Print statement moved outside ViewBuilder context
+                    let _ = print("DEBUG: [WorkoutSessionView] End button tapped, workout state: \(viewModel.workoutState)")
+                    handleEndWorkout()
+                } label: {
+                    Text("End")
+                        .foregroundColor(.red)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .overlay(
+                            Rectangle()
+                                .stroke(Color.red, lineWidth: 2)
+                        )
+                }
             }
-        )
-        .toolbar(.hidden, for: .tabBar)
+            
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    viewModel.switchCamera()
+                } label: {
+                    Image(systemName: "camera.rotate.fill")
+                        .foregroundColor(.white)
+                        .font(.system(size: 22))
+                }
+            }
+        }
         .onAppear {
             print("DEBUG: [WorkoutSessionView] onAppear triggered for \(exerciseType.displayName)")
             
