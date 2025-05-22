@@ -108,11 +108,11 @@ func (s *service) GetGlobalAggregateLeaderboard(ctx context.Context, limit int, 
 
 	entries, err := s.leaderboardStore.GetGlobalAggregateLeaderboard(ctx, limit, startDate, endDate)
 	if err != nil {
-		s.logger.Error(ctx, "Failed to get global aggregate leaderboard from store", "error", err)
-		return nil, fmt.Errorf("failed to retrieve global aggregate leaderboard: %w", err)
+		s.logger.Error(ctx, "Failed to get global overall leaderboard from store", "error", err)
+		return nil, fmt.Errorf("failed to retrieve global overall leaderboard: %w", err)
 	}
 	assignRanks(entries)
-	s.logger.Info(ctx, "Global aggregate leaderboard retrieved", "count", len(entries))
+	s.logger.Info(ctx, "Global overall leaderboard retrieved", "count", len(entries))
 	return entries, nil
 }
 
@@ -160,10 +160,10 @@ func (s *service) GetLocalAggregateLeaderboard(ctx context.Context, latitude, lo
 
 	entries, err := s.leaderboardStore.GetLocalAggregateLeaderboard(ctx, latitude, longitude, radiusMeters, limit, startDate, endDate)
 	if err != nil {
-		s.logger.Error(ctx, "Failed to get local aggregate leaderboard from store", "error", err)
-		return nil, fmt.Errorf("failed to retrieve local aggregate leaderboard: %w", err)
+		s.logger.Error(ctx, "Failed to get local overall leaderboard from store", "error", err)
+		return nil, fmt.Errorf("failed to retrieve local overall leaderboard: %w", err)
 	}
 	assignRanks(entries)
-	s.logger.Info(ctx, "Local aggregate leaderboard retrieved", "count", len(entries))
+	s.logger.Info(ctx, "Local overall leaderboard retrieved", "count", len(entries))
 	return entries, nil
 }

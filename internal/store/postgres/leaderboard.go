@@ -36,12 +36,14 @@ type LocalLeaderboardParams struct {
 	RadiusMeters float64 // Search radius in meters
 	ExerciseType string  // Type of exercise (push_up, pull_up, etc.)
 	Limit        int     // Maximum number of results to return
+	TimeFrame    string  // Time period filter (daily, weekly, monthly, all_time)
 }
 
 // GlobalLeaderboardParams contains parameters for global leaderboard queries
 type GlobalLeaderboardParams struct {
 	ExerciseType string // Type of exercise (push_up, pull_up, etc.)
 	Limit        int    // Maximum number of results to return
+	TimeFrame    string // Time period filter (daily, weekly, monthly, all_time)
 }
 
 // GetLocalLeaderboard returns a leaderboard of users within a specified radius

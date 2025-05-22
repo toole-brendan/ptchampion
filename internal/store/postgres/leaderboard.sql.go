@@ -20,6 +20,7 @@ WITH user_best_scores AS (
     JOIN users u ON w.user_id = u.id
     JOIN exercises e ON w.exercise_id = e.id
     WHERE w.is_public = true
+      AND e.type IN ('pushup','situp','pullup','running')              -- NEW: limit to 4 core types
       AND ($2::timestamptz IS NULL OR w.completed_at >= $2::timestamptz)
       AND ($3::timestamptz IS NULL OR w.completed_at < $3::timestamptz)
     GROUP BY u.id, e.type
@@ -32,6 +33,7 @@ SELECT
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
 GROUP BY u.id, u.username, u.first_name, u.last_name
+HAVING COUNT(DISTINCT ubs.exercise_type) = 4                     -- NEW: require all 4 types
 ORDER BY score DESC
 LIMIT $1
 `
@@ -211,6 +213,7 @@ WITH user_best_scores AS (
     JOIN exercises e ON w.exercise_id = e.id
     WHERE 
         w.is_public = true
+        AND e.type IN ('pushup','situp','pullup','running')              -- NEW: limit to 4 core types
         AND ST_DWithin(
             u.last_location::geography,
             ST_MakePoint($1, $2)::geography, -- longitude, then latitude for ST_MakePoint
@@ -229,6 +232,7 @@ SELECT
 FROM users u
 JOIN user_best_scores ubs ON u.id = ubs.user_id
 GROUP BY u.id, u.username, u.first_name, u.last_name, u.last_location
+HAVING COUNT(DISTINCT ubs.exercise_type) = 4                     -- NEW: require all 4 types
 ORDER BY score DESC
 LIMIT $3
 `

@@ -61,6 +61,7 @@ func (s *LeaderboardService) GetLocalLeaderboard(ctx context.Context, params db.
 		params.RadiusMeters,
 		params.ExerciseType,
 		params.Limit,
+		params.TimeFrame,
 	)
 
 	// Try to get from cache first
@@ -114,7 +115,7 @@ func (s *LeaderboardService) GetLocalLeaderboard(ctx context.Context, params db.
 // GetGlobalLeaderboard returns a global leaderboard for a specific exercise type
 func (s *LeaderboardService) GetGlobalLeaderboard(ctx context.Context, params db.GlobalLeaderboardParams) (*GlobalLeaderboardResponse, error) {
 	// Generate cache key
-	cacheKey := redis_cache.GlobalLeaderboardKey(params.ExerciseType, params.Limit)
+	cacheKey := redis_cache.GlobalLeaderboardKey(params.ExerciseType, params.Limit, params.TimeFrame)
 
 	// Try to get from cache first
 	var response GlobalLeaderboardResponse

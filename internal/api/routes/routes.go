@@ -140,10 +140,12 @@ func RegisterLeaderboardRoutes(g *echo.Group, store *db.Store, logger logging.Lo
 	// Global leaderboards
 	g.GET("/global/exercise/:exerciseType", leaderboardHandler.GetGlobalExerciseLeaderboard)
 	g.GET("/global/aggregate", leaderboardHandler.GetGlobalAggregateLeaderboard)
+	g.GET("/global/overall", leaderboardHandler.GetGlobalAggregateLeaderboard) // NEW route for global "Overall"
 
 	// Local leaderboards
 	g.GET("/local/exercise/:exerciseType", leaderboardHandler.GetLocalExerciseLeaderboard)
 	g.GET("/local/aggregate", leaderboardHandler.GetLocalAggregateLeaderboard)
+	g.GET("/local/overall", leaderboardHandler.GetLocalAggregateLeaderboard) // NEW route for local "Overall"
 
 	// Support for legacy routes if needed - these can be removed in the future
 	g.GET("/overall", leaderboardHandler.GetGlobalAggregateLeaderboard)      // Map to aggregate

@@ -148,11 +148,17 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 		limit = defaultLeaderboardLimit
 	}
 
+	// Get time frame from query param, default to all_time if not provided
+	timeFrame := c.QueryParam("time_frame")
+	if timeFrame == "" {
+		timeFrame = "all_time"
+	}
+
 	// Check if we can use the Redis cache
 	redisClient := h.GetCacheClient()
 	if redisClient != nil {
 		cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
-		cacheKey := redis.GlobalLeaderboardKey(exerciseType, limit)
+		cacheKey := redis.GlobalLeaderboardKey(exerciseType, limit, timeFrame)
 
 		// Try to get from cache
 		var cachedEntries []LeaderboardEntry
@@ -210,7 +216,7 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 	// Cache the result if Redis is available
 	if redisClient != nil && len(respEntries) > 0 {
 		cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
-		cacheKey := redis.GlobalLeaderboardKey(exerciseType, limit)
+		cacheKey := redis.GlobalLeaderboardKey(exerciseType, limit, timeFrame)
 
 		ctx := c.Request().Context()
 		if err := cache.Set(ctx, cacheKey, respEntries); err != nil {
@@ -230,6 +236,11 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 	latStr := c.QueryParam("latitude")
 	lonStr := c.QueryParam("longitude")
 	radiusStr := c.QueryParam("radius_meters") // Optional
+	timeFrame := c.QueryParam("time_frame")    // Time frame parameter
+
+	if timeFrame == "" {
+		timeFrame = "all_time" // Default if not provided
+	}
 
 	if exerciseIDStr == "" || latStr == "" || lonStr == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "Missing required query parameters: exercise_id, latitude, longitude")
@@ -261,7 +272,7 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 
 	if redisClient != nil {
 		cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
-		cacheKey := redis.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit)
+		cacheKey := redis.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit, timeFrame)
 
 		// Try to get from cache
 		ctx := c.Request().Context()
@@ -389,7 +400,7 @@ func (h *Handler) HandleGetLocalLeaderboard(c echo.Context) error {
 	// Cache the result if Redis is available
 	if redisClient != nil && len(respEntries) > 0 {
 		cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
-		cacheKey := redis.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit)
+		cacheKey := redis.LocalLeaderboardKey(latitude, longitude, radiusMeters, exerciseIDStr, defaultLeaderboardLimit, timeFrame)
 
 		// Don't store the cachedResult flag in Redis
 		cacheCopy := make([]LocalLeaderboardEntry, len(respEntries))
@@ -534,14 +545,17 @@ func (h *LeaderboardHandler) GetGlobalAggregateLeaderboard(c echo.Context) error
 		timeFrame = "all_time" // Default to all_time if not provided
 	}
 
-	h.logger.Debug(ctx, "GetGlobalAggregateLeaderboard called", "limit", limit, "timeFrame", timeFrame)
+	// Log which endpoint is being accessed (overall or aggregate)
+	path := c.Path()
+	if strings.Contains(path, "/overall") {
+		h.logger.Debug(ctx, "GetGlobalOverallLeaderboard called", "limit", limit, "timeFrame", timeFrame)
+	} else {
+		h.logger.Debug(ctx, "GetGlobalAggregateLeaderboard called", "limit", limit, "timeFrame", timeFrame)
+	}
 
 	storeEntries, err := h.service.GetGlobalAggregateLeaderboard(ctx, limit, timeFrame) // Pass timeFrame
 	if err != nil {
 		h.logger.Error(ctx, "Error from GetGlobalAggregateLeaderboard service", "timeFrame", timeFrame, "error", err)
-		if err.Error() == "GetGlobalAggregateLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
-			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Global aggregate leaderboard is not fully implemented yet.")
-		}
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve global aggregate leaderboard")
 	}
 
@@ -644,14 +658,18 @@ func (h *LeaderboardHandler) GetLocalAggregateLeaderboard(c echo.Context) error 
 	if err != nil || limit <= 0 {
 		limit = defaultLeaderboardLimit
 	}
-	h.logger.Debug(ctx, "GetLocalAggregateLeaderboard called", "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit, "timeFrame", timeFrame)
+
+	// Log which endpoint is being accessed (overall or aggregate)
+	path := c.Path()
+	if strings.Contains(path, "/overall") {
+		h.logger.Debug(ctx, "GetLocalOverallLeaderboard called", "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit, "timeFrame", timeFrame)
+	} else {
+		h.logger.Debug(ctx, "GetLocalAggregateLeaderboard called", "lat", latitude, "lon", longitude, "radiusM", radiusMeters, "limit", limit, "timeFrame", timeFrame)
+	}
 
 	storeEntries, err := h.service.GetLocalAggregateLeaderboard(ctx, latitude, longitude, radiusMeters, limit, timeFrame) // Pass timeFrame
 	if err != nil {
 		h.logger.Error(ctx, "Error from GetLocalAggregateLeaderboard service", "timeFrame", timeFrame, "error", err)
-		if err.Error() == "GetLocalAggregateLeaderboard not implemented in store yet" || strings.Contains(err.Error(), "not implemented in store yet") {
-			return NewAPIError(http.StatusNotImplemented, ErrCodeNotImplemented, "Local aggregate leaderboard is not fully implemented yet.")
-		}
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve local aggregate leaderboard")
 	}
 

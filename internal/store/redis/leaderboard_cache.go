@@ -38,13 +38,21 @@ func (c *LeaderboardCache) WithTTL(ttl time.Duration) *LeaderboardCache {
 // lat and lon are the coordinates for the center point
 // radius is the search radius in meters
 // exerciseType filters by type of exercise
-func LocalLeaderboardKey(lat, lon float64, radius float64, exerciseType string, limit int) string {
-	return fmt.Sprintf("leaderboard:local:%f:%f:%f:%s:%d", lat, lon, radius, exerciseType, limit)
+// timeFrame is the time period (daily, weekly, monthly, all_time)
+func LocalLeaderboardKey(lat, lon float64, radius float64, exerciseType string, limit int, timeFrame string) string {
+	if timeFrame == "" {
+		timeFrame = "all_time" // Default if not provided
+	}
+	return fmt.Sprintf("leaderboard:local:%f:%f:%f:%s:%s:%d", lat, lon, radius, exerciseType, timeFrame, limit)
 }
 
 // GlobalLeaderboardKey generates a cache key for a global leaderboard
-func GlobalLeaderboardKey(exerciseType string, limit int) string {
-	return fmt.Sprintf("leaderboard:global:%s:%d", exerciseType, limit)
+// timeFrame is the time period (daily, weekly, monthly, all_time)
+func GlobalLeaderboardKey(exerciseType string, limit int, timeFrame string) string {
+	if timeFrame == "" {
+		timeFrame = "all_time" // Default if not provided
+	}
+	return fmt.Sprintf("leaderboard:global:%s:%s:%d", exerciseType, timeFrame, limit)
 }
 
 // Get retrieves data from the cache by key
