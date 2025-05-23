@@ -625,6 +625,9 @@ struct MainTabView: View {
         }
         .tint(AppTheme.GeneratedColors.brassGold)
         .edgesIgnoringSafeArea(.bottom) // Add this to ensure tab bar doesn't interfere
+        // Use the toolbar visibility modifier to hide/show the tab bar
+        .toolbar(tabBarVisibility.isTabBarVisible ? .visible : .hidden, for: .tabBar)
+        .animation(.easeInOut(duration: 0.2), value: tabBarVisibility.isTabBarVisible)
         .onAppear { 
             // Customize TabView appearance 
             let tabBarAppearance = UITabBarAppearance()

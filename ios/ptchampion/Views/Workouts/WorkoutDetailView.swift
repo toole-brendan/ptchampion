@@ -37,6 +37,7 @@ struct CadencePoint: Identifiable {
 
 struct WorkoutDetailView: View {
     let workoutResult: WorkoutResultSwiftData
+    @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
     @Environment(\.modelContext) private var modelContext
     @AppStorage("useImperialUnits") private var useImperialUnits = false
     

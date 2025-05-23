@@ -2,6 +2,8 @@ import SwiftUI
 import PTDesignSystem
 
 struct WorkoutSelectionView: View {
+    @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
+    
     // TODO: Add ViewModel for workout logic
 
     // Example list of exercises
@@ -75,7 +77,11 @@ struct WorkoutSelectionView: View {
         .navigationTitle("Choose Exercise")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
+            tabBarVisibility.hideTabBar()
             animateContent()
+        }
+        .onDisappear {
+            tabBarVisibility.showTabBar()
         }
     }
     
