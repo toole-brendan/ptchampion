@@ -1,0 +1,14 @@
+import Foundation
+
+// MARK: - App Configuration Template
+// This is a template for Config.swift
+// Copy this file to Config.swift and replace placeholder values with your actual credentials
+// Do NOT commit the Config.swift file to git
+
+enum Config {
+    // OAuth Configuration
+    static let googleClientID = "YOUR_GOOGLE_CLIENT_ID"
+    
+    // API Configuration
+    static let apiBaseURL = "YOUR_API_BASE_URL"
+} 
