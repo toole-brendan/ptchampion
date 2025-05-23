@@ -42,6 +42,47 @@ final class EnhancedSitupGrader: ObservableObject, ExerciseGraderProtocol {
     // Access to form issues for external components
     var situpFormIssues: [String] { return apftValidator.situpFormIssues }
     
+    // MARK: - Form Quality Calculation
+    private func calculateGraduatedFormQuality(
+        formIssues: [String],
+        phase: String,
+        additionalData: [String: Any]
+    ) -> Double {
+        var score: Double = 1.0
+        
+        // Deduct based on severity of form issues
+        for issue in formIssues {
+            switch issue.lowercased() {
+            // Critical issues - major deductions
+            case let str where str.contains("knees") && str.contains("90"):
+                score -= 0.2  // Knee angle is critical for proper form
+            case let str where str.contains("vertical"):
+                score -= 0.15 // Not reaching vertical position
+                
+            // Moderate issues
+            case let str where str.contains("shoulders") && str.contains("ground"):
+                score -= 0.1  // Not lowering shoulders fully
+            case let str where str.contains("torso"):
+                score -= 0.1
+                
+            // Minor issues
+            case let str where str.contains("higher"):
+                score -= 0.05
+            case let str where str.contains("lower"):
+                score -= 0.05
+            default:
+                score -= 0.05
+            }
+        }
+        
+        // Bonus for excellent form indicators
+        if phase == "lowering" && formIssues.isEmpty {
+            score = min(1.0, score + 0.05) // Small bonus for controlled lowering
+        }
+        
+        return max(0.0, min(1.0, score))
+    }
+    
     // MARK: - Protocol Methods
     func resetState() {
         apftValidator.resetExercise("situp")
@@ -112,10 +153,25 @@ final class EnhancedSitupGrader: ObservableObject, ExerciseGraderProtocol {
         
         // Handle rep completion
         if repCompleted {
-            // Perfect form for APFT-compliant reps
-            let formQuality = 1.0
+            // Calculate graduated form quality based on issues during rep
+            let formQuality = calculateGraduatedFormQuality(
+                formIssues: apftValidator.situpFormIssues,
+                phase: currentPhase,
+                additionalData: result
+            )
             formScores.append(formQuality)
-            currentFeedback = "Great rep!"
+            
+            // Provide feedback based on form quality
+            if formQuality >= 0.95 {
+                currentFeedback = "Excellent rep!"
+            } else if formQuality >= 0.85 {
+                currentFeedback = "Great rep!"
+            } else if formQuality >= 0.70 {
+                currentFeedback = "Rep counted - maintain knee angle"
+            } else {
+                currentFeedback = "Rep counted - work on form"
+            }
+            
             _lastFormIssue = nil
             return .repCompleted(formQuality: formQuality)
         }

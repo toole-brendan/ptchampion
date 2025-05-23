@@ -97,10 +97,7 @@
 		BF63E4632DB1EBA40037CD02 /* AuthViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4592DB1EBA40037CD02 /* AuthViewModel.swift */; };
 		BF63E4642DB1EBA40037CD02 /* DeviceScanningViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E45A2DB1EBA40037CD02 /* DeviceScanningViewModel.swift */; };
 		BF63E4652DB1EBA40037CD02 /* RunWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E45D2DB1EBA40037CD02 /* RunWorkoutViewModel.swift */; };
-		BF63E46B2DB1EBAF0037CD02 /* PullupGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4672DB1EBAF0037CD02 /* PullupGrader.swift */; };
 		BF63E46C2DB1EBAF0037CD02 /* ExerciseGraderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4662DB1EBAF0037CD02 /* ExerciseGraderProtocol.swift */; };
-		BF63E46D2DB1EBAF0037CD02 /* SitupGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4692DB1EBAF0037CD02 /* SitupGrader.swift */; };
-		BF63E46E2DB1EBAF0037CD02 /* PushupGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4682DB1EBAF0037CD02 /* PushupGrader.swift */; };
 		BF63E4722DB1F3910037CD02 /* WorkoutHistoryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4712DB1F3910037CD02 /* WorkoutHistoryRow.swift */; };
 		BF63E4742DB2937C0037CD02 /* PTChampionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */; };
 		BF63E4762DB453140037CD02 /* pt_champion_logo.png in Resources */ = {isa = PBXBuildFile; fileRef = BF63E4752DB453140037CD02 /* pt_champion_logo.png */; };
@@ -280,9 +277,6 @@
 		BF63E45C2DB1EBA40037CD02 /* ProgressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModel.swift; sourceTree = "<group>"; };
 		BF63E45D2DB1EBA40037CD02 /* RunWorkoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunWorkoutViewModel.swift; sourceTree = "<group>"; };
 		BF63E4662DB1EBAF0037CD02 /* ExerciseGraderProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseGraderProtocol.swift; sourceTree = "<group>"; };
-		BF63E4672DB1EBAF0037CD02 /* PullupGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PullupGrader.swift; sourceTree = "<group>"; };
-		BF63E4682DB1EBAF0037CD02 /* PushupGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushupGrader.swift; sourceTree = "<group>"; };
-		BF63E4692DB1EBAF0037CD02 /* SitupGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SitupGrader.swift; sourceTree = "<group>"; };
 		BF63E4712DB1F3910037CD02 /* WorkoutHistoryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryRow.swift; sourceTree = "<group>"; };
 		BF63E4732DB2937C0037CD02 /* PTChampionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PTChampionApp.swift; sourceTree = "<group>"; };
 		BF63E4752DB453140037CD02 /* pt_champion_logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = pt_champion_logo.png; sourceTree = "<group>"; };
@@ -790,9 +784,6 @@
 				BF59ACC32DDEB9DF00242910 /* ScoreRubrics.swift */,
 				BF37B0432DCACAE200EC4D58 /* AnyExerciseGraderBox.swift */,
 				BF63E4662DB1EBAF0037CD02 /* ExerciseGraderProtocol.swift */,
-				BF63E4672DB1EBAF0037CD02 /* PullupGrader.swift */,
-				BF63E4682DB1EBAF0037CD02 /* PushupGrader.swift */,
-				BF63E4692DB1EBAF0037CD02 /* SitupGrader.swift */,
 			);
 			path = Grading;
 			sourceTree = "<group>";
@@ -1103,7 +1094,6 @@
 				BF63E4612DB1EBA40037CD02 /* LeaderboardViewModel.swift in Sources */,
 				BF37B0542DCC233F00EC4D58 /* WorkoutTimer.swift in Sources */,
 				BFBF2EC52DCFE5A700FFCF4F /* LocationPermissionRequestView.swift in Sources */,
-				BF63E46B2DB1EBAF0037CD02 /* PullupGrader.swift in Sources */,
 				BFADF9B12DC93D890016AF0B /* Toast.swift in Sources */,
 				BF7960E72DCFD2CE00B03835 /* LeaderboardFilterBarView.swift in Sources */,
 				BF37B0572DCC2CD600EC4D58 /* ProfileView.swift in Sources */,
@@ -1135,10 +1125,8 @@
 				BF7960E42DCFCE9F00B03835 /* WorkoutChartView.swift in Sources */,
 				BF7960E52DCFCE9F00B03835 /* WorkoutStreaksView.swift in Sources */,
 				BF89EB522DC9A18C003F8FE3 /* BadgeType.swift in Sources */,
-				BF63E46D2DB1EBAF0037CD02 /* SitupGrader.swift in Sources */,
 				BFBF2ECB2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift in Sources */,
 				BF89EB4B2DC98E9B003F8FE3 /* WorkoutDataPoint.swift in Sources */,
-				BF63E46E2DB1EBAF0037CD02 /* PushupGrader.swift in Sources */,
 				BF63E4632DB1EBA40037CD02 /* AuthViewModel.swift in Sources */,
 				BF63E4642DB1EBA40037CD02 /* DeviceScanningViewModel.swift in Sources */,
 				BF8F67A32DC931750065A2D7 /* AppModels.swift in Sources */,

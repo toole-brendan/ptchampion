@@ -45,6 +45,53 @@ final class EnhancedPullupGrader: ObservableObject, ExerciseGraderProtocol {
     // Access to form issues for external components
     var pullupFormIssues: [String] { return apftValidator.pullupFormIssues }
     
+    // MARK: - Form Quality Calculation
+    private func calculateGraduatedFormQuality(
+        formIssues: [String],
+        phase: String,
+        additionalData: [String: Any],
+        chinPosition: Float? = nil
+    ) -> Double {
+        var score: Double = 1.0
+        
+        // Deduct based on severity of form issues
+        for issue in formIssues {
+            switch issue.lowercased() {
+            // Critical issues - major deductions
+            case let str where str.contains("swing") || str.contains("body"):
+                score -= 0.25  // Swinging is very critical for pullups
+            case let str where str.contains("chin") && str.contains("bar"):
+                score -= 0.2   // Not getting chin over bar
+            case let str where str.contains("dead hang"):
+                score -= 0.15  // Not achieving full dead hang
+                
+            // Moderate issues
+            case let str where str.contains("arms") && str.contains("extend"):
+                score -= 0.1
+            case let str where str.contains("pull") && str.contains("higher"):
+                score -= 0.1
+                
+            // Minor issues
+            case let str where str.contains("lower"):
+                score -= 0.05
+            default:
+                score -= 0.05
+            }
+        }
+        
+        // Bonus for exceptional form
+        if phase == "lowering" && formIssues.isEmpty {
+            score = min(1.0, score + 0.05) // Bonus for controlled descent
+        }
+        
+        // Extra bonus for getting chin well over bar
+        if let chinPos = chinPosition, chinPos < -0.05 { // More than 5cm over bar
+            score = min(1.0, score + 0.03)
+        }
+        
+        return max(0.0, min(1.0, score))
+    }
+    
     // MARK: - Bar Height Configuration
     func setBarHeight(_ height: Float) {
         barHeightY = height
@@ -142,10 +189,29 @@ final class EnhancedPullupGrader: ObservableObject, ExerciseGraderProtocol {
         
         // Handle rep completion
         if repCompleted {
-            // Perfect form for APFT-compliant reps
-            let formQuality = 1.0
+            // Get chin position for bonus calculation
+            let chinRelativePosition = getChinBarRelativePosition(from: body)
+            
+            // Calculate graduated form quality based on issues during rep
+            let formQuality = calculateGraduatedFormQuality(
+                formIssues: apftValidator.pullupFormIssues,
+                phase: currentPhase,
+                additionalData: result,
+                chinPosition: chinRelativePosition
+            )
             formScores.append(formQuality)
-            currentFeedback = "Excellent rep!"
+            
+            // Provide feedback based on form quality
+            if formQuality >= 0.95 {
+                currentFeedback = "Excellent rep!"
+            } else if formQuality >= 0.85 {
+                currentFeedback = "Good rep!"
+            } else if formQuality >= 0.70 {
+                currentFeedback = "Rep counted - minimize swinging"
+            } else {
+                currentFeedback = "Rep counted - work on form"
+            }
+            
             _lastFormIssue = nil
             return .repCompleted(formQuality: formQuality)
         }

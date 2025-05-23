@@ -42,6 +42,45 @@ final class EnhancedPushupGrader: ObservableObject, ExerciseGraderProtocol {
     // Access to form issues for external components
     var pushupFormIssues: [String] { return apftValidator.pushupFormIssues }
     
+    // MARK: - Form Quality Calculation
+    private func calculateGraduatedFormQuality(
+        formIssues: [String],
+        phase: String,
+        additionalData: [String: Any]
+    ) -> Double {
+        var score: Double = 1.0
+        
+        // Deduct based on severity of form issues
+        for issue in formIssues {
+            switch issue.lowercased() {
+            // Critical issues - major deductions
+            case let str where str.contains("body") && str.contains("straight"):
+                score -= 0.2  // Body not straight is critical
+            case let str where str.contains("extend") && str.contains("fully"):
+                score -= 0.15 // Not extending arms fully
+                
+            // Moderate issues
+            case let str where str.contains("shoulders") || str.contains("level"):
+                score -= 0.1
+            case let str where str.contains("lower") || str.contains("parallel"):
+                score -= 0.1
+                
+            // Minor issues
+            case let str where str.contains("go") && str.contains("lower"):
+                score -= 0.05
+            default:
+                score -= 0.05
+            }
+        }
+        
+        // Bonus for excellent form indicators
+        if phase == "ascending" && formIssues.isEmpty {
+            score = min(1.0, score + 0.05) // Small bonus for perfect ascent
+        }
+        
+        return max(0.0, min(1.0, score))
+    }
+    
     // MARK: - Protocol Methods
     func resetState() {
         apftValidator.resetExercise("pushup")
@@ -114,10 +153,25 @@ final class EnhancedPushupGrader: ObservableObject, ExerciseGraderProtocol {
         
         // Handle rep completion
         if repCompleted {
-            // Perfect form for APFT-compliant reps
-            let formQuality = 1.0
+            // Calculate graduated form quality based on issues during rep
+            let formQuality = calculateGraduatedFormQuality(
+                formIssues: apftValidator.pushupFormIssues,
+                phase: currentPhase,
+                additionalData: result
+            )
             formScores.append(formQuality)
-            currentFeedback = "Good rep!"
+            
+            // Provide feedback based on form quality
+            if formQuality >= 0.95 {
+                currentFeedback = "Excellent rep!"
+            } else if formQuality >= 0.85 {
+                currentFeedback = "Good rep!"
+            } else if formQuality >= 0.70 {
+                currentFeedback = "Rep counted - work on form"
+            } else {
+                currentFeedback = "Rep counted - improve form"
+            }
+            
             _lastFormIssue = nil
             return .repCompleted(formQuality: formQuality)
         }

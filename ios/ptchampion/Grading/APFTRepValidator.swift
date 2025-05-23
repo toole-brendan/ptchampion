@@ -94,6 +94,77 @@ class APFTRepValidator: ObservableObject {
         static let situpTorsoVerticalMin: Float = 75.0     // Near vertical top position
     }
     
+    // MARK: - Adaptive Thresholds
+    struct AdaptiveThresholds {
+        var pushupArmExtension: Float = APFTStandards.pushupArmExtensionAngle
+        var pullupArmExtension: Float = APFTStandards.pullupArmExtensionAngle
+        var calibrationFrames: Int = 0
+        let requiredCalibrationFrames: Int = 30
+        
+        mutating func updatePushupCalibration(armAngle: Float) {
+            guard calibrationFrames < requiredCalibrationFrames else { return }
+            
+            if armAngle > pushupArmExtension * 0.95 {
+                // User's natural extension is less than standard
+                pushupArmExtension = max(pushupArmExtension * 0.95, armAngle)
+                calibrationFrames += 1
+                
+                if calibrationFrames == requiredCalibrationFrames {
+                    print("📊 Pushup calibration complete: Extension threshold adjusted to \(pushupArmExtension)°")
+                }
+            }
+        }
+    }
+
+    private var adaptiveThresholds = AdaptiveThresholds()
+
+    // Add method to reset calibration
+    func resetCalibration() {
+        adaptiveThresholds = AdaptiveThresholds()
+    }
+    
+    // MARK: - Dynamic Stability
+    struct MovementTracker {
+        private var previousAngles: [String: Float] = [:]
+        private var movementSpeeds: [String: Float] = [:]
+        private let smoothingFactor: Float = 0.8
+        
+        mutating func updateMovement(exercise: String, currentAngle: Float) -> Float {
+            let key = exercise + "_angle"
+            let speedKey = exercise + "_speed"
+            
+            if let prevAngle = previousAngles[key] {
+                let angleChange = abs(currentAngle - prevAngle)
+                let currentSpeed = movementSpeeds[speedKey] ?? 0
+                let smoothedSpeed = (currentSpeed * smoothingFactor) + (angleChange * (1 - smoothingFactor))
+                movementSpeeds[speedKey] = smoothedSpeed
+                previousAngles[key] = currentAngle
+                return smoothedSpeed
+            } else {
+                previousAngles[key] = currentAngle
+                movementSpeeds[speedKey] = 0
+                return 0
+            }
+        }
+        
+        func getDynamicStabilityFrames(exercise: String, baseFrames: Int = 5) -> Int {
+            let speedKey = exercise + "_speed"
+            let speed = movementSpeeds[speedKey] ?? 0
+            
+            if speed > 15.0 {  // Very fast movement
+                return Int(Float(baseFrames) * 1.5)
+            } else if speed > 10.0 {  // Fast movement
+                return Int(Float(baseFrames) * 1.2)
+            } else if speed < 3.0 {  // Slow movement
+                return max(2, Int(Float(baseFrames) * 0.7))
+            }
+            
+            return baseFrames
+        }
+    }
+
+    private var movementTracker = MovementTracker()
+    
     // MARK: - Public Interface
     var pushupRepCount: Int { pushupState.repCount }
     var pullupRepCount: Int { pullupState.repCount }
@@ -106,6 +177,48 @@ class APFTRepValidator: ObservableObject {
     var pushupFormIssues: [String] { pushupState.formIssues }
     var pullupFormIssues: [String] { pullupState.formIssues }
     var situpFormIssues: [String] { situpState.formIssues }
+    
+    // MARK: - Rejection Logging
+    struct RejectionLog {
+        let timestamp: Date
+        let exerciseType: String
+        let phase: String
+        let formIssues: [String]
+        let angleData: [String: Float]
+        let reason: String
+    }
+
+    private var rejectionLogs: [RejectionLog] = []
+
+    func logRejection(
+        exerciseType: String,
+        phase: String,
+        formIssues: [String],
+        angleData: [String: Float],
+        reason: String
+    ) {
+        let log = RejectionLog(
+            timestamp: Date(),
+            exerciseType: exerciseType,
+            phase: phase,
+            formIssues: formIssues,
+            angleData: angleData,
+            reason: reason
+        )
+        rejectionLogs.append(log)
+        
+        // Keep only last 50 rejections to avoid memory issues
+        if rejectionLogs.count > 50 {
+            rejectionLogs.removeFirst()
+        }
+        
+        print("❌ Rep Rejected [\(exerciseType)] Phase: \(phase), Reason: \(reason)")
+        print("   Angles: \(angleData)")
+        print("   Issues: \(formIssues.joined(separator: ", "))")
+    }
+
+    // Add getter for rejection logs
+    var recentRejections: [RejectionLog] { rejectionLogs }
     
     // MARK: - Angle Calculation
     private func calculateAngle(point1: CGPoint, vertex: CGPoint, point3: CGPoint) -> Float {
@@ -192,6 +305,14 @@ class APFTRepValidator: ObservableObject {
             return false
         }
         
+        // Add angle tracking at the beginning of validatePushup
+        var angleData: [String: Float] = [
+            "leftArmAngle": leftArmAngle,
+            "rightArmAngle": rightArmAngle,
+            "avgArmAngle": avgArmAngle,
+            "bodyAlignment": bodyAlignment
+        ]
+        
         let isBodyStraight = bodyAlignment <= APFTStandards.pushupBodyAlignmentTolerance
         if !isBodyStraight {
             pushupState.formIssues.append("Keep body straight")
@@ -204,7 +325,8 @@ class APFTRepValidator: ObservableObject {
         switch PushupPhase(rawValue: pushupState.phase) ?? .invalid {
         case .up:
             // Check if starting position is valid (arms extended, body straight)
-            let armsExtended = avgArmAngle > APFTStandards.pushupArmExtensionAngle
+            adaptiveThresholds.updatePushupCalibration(armAngle: avgArmAngle)
+            let armsExtended = avgArmAngle > adaptiveThresholds.pushupArmExtension
             
             if armsExtended && isBodyStraight {
                 // Ready to start descent
@@ -230,14 +352,24 @@ class APFTRepValidator: ObservableObject {
                 if !sufficientDescent { pushupState.formIssues.append("Go lower") }
                 if !isBodyStraight {
                     // Body alignment lost - invalidate rep
+                    logRejection(
+                        exerciseType: "pushup",
+                        phase: pushupState.phase,
+                        formIssues: pushupState.formIssues,
+                        angleData: angleData,
+                        reason: "Body alignment lost during descent"
+                    )
                     pushupState.phase = PushupPhase.up.rawValue
                     pushupState.inValidRep = false
+                    pushupState.additionalData.removeValue(forKey: "bottomReached")
+                    pushupState.additionalData.removeValue(forKey: "startShoulderHeight")
                 }
             }
             
         case .ascending:
             // Check return to full extension
-            let armsExtended = avgArmAngle > APFTStandards.pushupArmExtensionAngle
+            adaptiveThresholds.updatePushupCalibration(armAngle: avgArmAngle)
+            let armsExtended = avgArmAngle > adaptiveThresholds.pushupArmExtension
             let startHeight = pushupState.additionalData["startShoulderHeight"] as? CGFloat ?? shoulderMidY
             let returnedToStart = Float(abs(shoulderMidY - startHeight)) < APFTStandards.pushupPositionTolerance
             let bottomReached = pushupState.additionalData["bottomReached"] as? Bool ?? false
@@ -254,6 +386,13 @@ class APFTRepValidator: ObservableObject {
                 if !armsExtended { pushupState.formIssues.append("Extend arms fully") }
                 if !isBodyStraight {
                     // Body alignment lost - invalidate rep
+                    logRejection(
+                        exerciseType: "pushup",
+                        phase: pushupState.phase,
+                        formIssues: pushupState.formIssues,
+                        angleData: angleData,
+                        reason: "Body alignment lost during ascent"
+                    )
                     pushupState.phase = PushupPhase.up.rawValue
                     pushupState.inValidRep = false
                     pushupState.additionalData.removeValue(forKey: "bottomReached")
