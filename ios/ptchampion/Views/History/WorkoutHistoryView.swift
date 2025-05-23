@@ -11,6 +11,7 @@ struct WorkoutHistoryView: View {
     @State private var shareText = ""
     @State private var selectedWorkout: WorkoutResultSwiftData?
     @State private var isEditMode: EditMode = .inactive
+    @State private var isViewActive = false
     
     // Add initialFilterType parameter with default value
     var initialFilterType: WorkoutFilter = .all
@@ -217,70 +218,29 @@ struct WorkoutHistoryView: View {
                                     .padding(.vertical, 40)
                                     .frame(maxWidth: .infinity)
                                 } else {
-                                    // List of workouts
-                                    ScrollView {
-                                        LazyVStack(spacing: 8) {
-                                            ForEach(Array(viewModel.workoutsFiltered.enumerated()), id: \.element.id) { index, workout in
-                                                HStack {
-                                                    // Workout row
-                                                    WorkoutHistoryRowAdapter(workout: workout)
-                                                        .contentShape(Rectangle())
-                                                        .onTapGesture {
-                                                            if !isEditMode.isEditing {
-                                                                selectedWorkout = workout.toWorkoutResult()
-                                                            }
-                                                        }
-                                                    
-                                                    if isEditMode.isEditing {
-                                                        Spacer()
-                                                        
-                                                        HStack(spacing: AppTheme.GeneratedSpacing.small) {
-                                                            Button {
-                                                                shareWorkout(result: workout.toWorkoutResult())
-                                                            } label: {
-                                                                Image(systemName: "square.and.arrow.up")
-                                                                    .font(.system(size: 16, weight: .medium))
-                                                                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                                                                    .frame(width: 40, height: 40)
-                                                                    .background(
-                                                                        Circle()
-                                                                            .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
-                                                                    )
-                                                            }
-                                                            
-                                                            Button {
-                                                                Task {
-                                                                    await viewModel.deleteWorkout(id: workout.id)
-                                                                }
-                                                            } label: {
-                                                                Image(systemName: "trash")
-                                                                    .font(.system(size: 16, weight: .medium))
-                                                                    .foregroundColor(AppTheme.GeneratedColors.error)
-                                                                    .frame(width: 40, height: 40)
-                                                                    .background(
-                                                                        Circle()
-                                                                            .fill(AppTheme.GeneratedColors.error.opacity(0.1))
-                                                                    )
-                                                            }
-                                                        }
+                                    // Simplified list of workouts - removed LazyVStack for better performance
+                                    VStack(spacing: 8) {
+                                        ForEach(Array(viewModel.workoutsFiltered.enumerated()), id: \.element.id) { index, workout in
+                                            WorkoutRowView(
+                                                workout: workout,
+                                                index: index,
+                                                isEditMode: isEditMode,
+                                                totalCount: viewModel.workoutsFiltered.count,
+                                                onTap: { 
+                                                    if !isEditMode.isEditing {
+                                                        selectedWorkout = workout.toWorkoutResult()
+                                                    }
+                                                },
+                                                onShare: { shareWorkout(result: workout.toWorkoutResult()) },
+                                                onDelete: { 
+                                                    Task {
+                                                        await viewModel.deleteWorkout(id: workout.id)
                                                     }
                                                 }
-                                                .padding(.vertical, 12)
-                                                .padding(.horizontal, 16)
-                                                .background(Color.clear)
-                                                
-                                                if index < viewModel.workoutsFiltered.count - 1 {
-                                                    Divider()
-                                                        .background(Color.gray.opacity(0.2))
-                                                        .padding(.horizontal, 16)
-                                                }
-                                            }
+                                            )
                                         }
-                                        .padding(.vertical, 8)
                                     }
-                                    .refreshable {
-                                        await viewModel.fetchWorkouts()
-                                    }
+                                    .padding(.vertical, 8)
                                 }
                             }
                             .background(Color.white)
@@ -290,8 +250,13 @@ struct WorkoutHistoryView: View {
                     }
                     .padding(AppTheme.GeneratedSpacing.contentPadding)
                 }
+                .refreshable {
+                    if isViewActive {
+                        await viewModel.fetchWorkouts()
+                    }
+                }
             }
-            .contentContainer() // Add this line
+            .contentContainer()
             .environment(\.editMode, $isEditMode)
             .sheet(isPresented: $isShowingShareSheet) {
                 ActivityView(activityItems: [shareText])
@@ -300,6 +265,7 @@ struct WorkoutHistoryView: View {
                 WorkoutDetailView(workoutResult: workout)
             }
             .onAppear {
+                isViewActive = true
                 viewModel.modelContext = modelContext
                 
                 // Set initial filter when view appears
@@ -310,6 +276,11 @@ struct WorkoutHistoryView: View {
                 Task {
                     await viewModel.fetchWorkouts()
                 }
+            }
+            .onDisappear {
+                isViewActive = false
+                // Cancel any pending operations when switching away from this tab
+                viewModel.cancelPendingOperations()
             }
         }
     }
@@ -388,6 +359,69 @@ struct WorkoutHistoryView_Previews: PreviewProvider {
     static var previews: some View {
         WorkoutHistoryView()
             .modelContainer(createSampleDataContainer())
+    }
+}
+
+// Simplified WorkoutRowView component
+struct WorkoutRowView: View {
+    let workout: WorkoutHistory
+    let index: Int
+    let isEditMode: EditMode
+    let totalCount: Int
+    let onTap: () -> Void
+    let onShare: () -> Void
+    let onDelete: () -> Void
+    
+    var body: some View {
+        HStack {
+            // Workout row
+            WorkoutHistoryRowAdapter(workout: workout)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    onTap()
+                }
+            
+            if isEditMode.isEditing {
+                Spacer()
+                
+                HStack(spacing: AppTheme.GeneratedSpacing.small) {
+                    Button {
+                        onShare()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                Circle()
+                                    .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                            )
+                    }
+                    
+                    Button {
+                        onDelete()
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.error)
+                            .frame(width: 40, height: 40)
+                            .background(
+                                Circle()
+                                    .fill(AppTheme.GeneratedColors.error.opacity(0.1))
+                            )
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color.clear)
+        
+        if index < totalCount - 1 {
+            Divider()
+                .background(Color.gray.opacity(0.2))
+                .padding(.horizontal, 16)
+        }
     }
 }
 

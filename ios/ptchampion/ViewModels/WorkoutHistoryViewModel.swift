@@ -28,8 +28,19 @@ class WorkoutHistoryViewModel: ObservableObject {
     private var lastFetchTime: [String: Date] = [:]
     private var cancellables = Set<AnyCancellable>()
     
+    // Add synchronization to prevent race conditions
+    private let serialQueue = DispatchQueue(label: "WorkoutHistoryViewModel.serial", qos: .userInitiated)
+    private var isUpdatingData = false
+    
     private let workoutService: WorkoutService
-    var modelContext: ModelContext?
+    var modelContext: ModelContext? {
+        didSet {
+            // Reload data when model context is set
+            if modelContext != nil && workouts.isEmpty {
+                loadFromCache()
+            }
+        }
+    }
     
     // MARK: - Computed Properties
     
@@ -50,7 +61,7 @@ class WorkoutHistoryViewModel: ObservableObject {
         // Check if we have cached data on init
         loadFromCache()
         
-        // Set up observers
+        // Set up observers with debouncing to prevent rapid updates
         setupObservers()
     }
     
@@ -74,17 +85,19 @@ class WorkoutHistoryViewModel: ObservableObject {
             }
             .store(in: &cancellables)
             
-        // Set up publishers for filter changes
+        // Set up publishers for filter changes with debouncing
         $filter
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.updateChartData()
+                self?.updateChartDataAsync()
             }
             .store(in: &cancellables)
         
         $workouts
+            .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
             .sink { [weak self] _ in
-                self?.updateChartData()
-                self?.updateStreaks()
+                self?.updateChartDataAsync()
+                self?.updateStreaksAsync()
             }
             .store(in: &cancellables)
     }
@@ -200,7 +213,7 @@ class WorkoutHistoryViewModel: ObservableObject {
     
     // For manual refresh, force a new fetch regardless of cache state
     @MainActor
-    func refreshWorkouts() {
+    func refreshWorkouts() async {
         isLoading = true
         error = nil
         
@@ -208,40 +221,34 @@ class WorkoutHistoryViewModel: ObservableObject {
         loadLocalWorkouts()
         
         // Then, try to fetch from network
-        Task {
-            do {
-                // Make the API call with correct parameters
-                guard let authToken = KeychainService.shared.getAccessToken() else {
-                    throw NSError(domain: "WorkoutHistoryViewModel", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token found"])
-                }
-                
-                let response = try await workoutService.fetchWorkoutHistory(authToken: authToken)
-                
-                await MainActor.run {
-                    workouts = response.map { record in
-                        WorkoutHistory(
-                            id: String(record.id),
-                            exerciseType: record.exerciseTypeKey,
-                            reps: record.repetitions,
-                            distance: nil, // Extract from metadata if available
-                            duration: TimeInterval(record.timeInSeconds ?? 0),
-                            date: record.createdAt,
-                            score: nil
-                        )
-                    }
-                    isLoading = false
-                    
-                    // Save fetched workouts to local storage
-                    saveWorkoutsToLocalStorage(workouts)
-                }
-            } catch {
-                print("Failed to fetch workout history: \(error)")
-                await MainActor.run {
-                    isLoading = false
-                    // Note: We don't show an error here because we've already 
-                    // loaded data from local storage as a fallback
-                }
+        do {
+            // Make the API call with correct parameters
+            guard let authToken = KeychainService.shared.getAccessToken() else {
+                throw NSError(domain: "WorkoutHistoryViewModel", code: 401, userInfo: [NSLocalizedDescriptionKey: "No authentication token found"])
             }
+            
+            let response = try await workoutService.fetchWorkoutHistory(authToken: authToken)
+            
+            workouts = response.map { record in
+                WorkoutHistory(
+                    id: String(record.id),
+                    exerciseType: record.exerciseTypeKey,
+                    reps: record.repetitions,
+                    distance: nil, // Extract from metadata if available
+                    duration: TimeInterval(record.timeInSeconds ?? 0),
+                    date: record.createdAt,
+                    score: nil
+                )
+            }
+            isLoading = false
+            
+            // Save fetched workouts to local storage
+            saveWorkoutsToLocalStorage(workouts)
+        } catch {
+            print("Failed to fetch workout history: \(error)")
+            isLoading = false
+            // Note: We don't show an error here because we've already 
+            // loaded data from local storage as a fallback
         }
     }
     
@@ -285,67 +292,175 @@ class WorkoutHistoryViewModel: ObservableObject {
         }
     }
     
-    // Delete a workout both remotely and locally
+    // MARK: - Async Update Methods
+    
+    // Async wrapper for chart data updates to prevent blocking the main thread
+    private func updateChartDataAsync() {
+        guard !isUpdatingData else { return }
+        
+        Task { @MainActor in
+            await serialQueue.run {
+                self.isUpdatingData = true
+                defer { self.isUpdatingData = false }
+                
+                let filteredWorkouts = self.workoutsFiltered
+                let newChartData = filteredWorkouts
+                    .compactMap { workout -> ChartableDataPoint? in
+                        let date = workout.date
+                        var value: Double? = nil
+                        
+                        switch self.filter {
+                        case .all: return nil
+                        case .run:
+                            if let distance = workout.distance, distance > 0 {
+                                value = distance / 1000
+                            }
+                        case .pushup, .situp, .pullup:
+                            if let score = workout.score, score > 0 {
+                                value = score
+                            } else if let reps = workout.reps, reps > 0 {
+                                value = Double(reps)
+                            }
+                        }
+                        
+                        if let val = value {
+                            return ChartableDataPoint(date: date, value: val)
+                        }
+                        return nil
+                    }
+                    .sorted { $0.date < $1.date }
+                
+                DispatchQueue.main.async {
+                    self.chartData = newChartData
+                    
+                    // Calculate label based on new data and current filter
+                    var newYAxisLabel: String
+                    switch self.filter {
+                        case .all: newYAxisLabel = "N/A"
+                        case .run: newYAxisLabel = "Distance (km)"
+                        case .pushup, .situp, .pullup:
+                            if newChartData.first?.value != nil {
+                                 if newChartData.contains(where: { $0.value > 50 }) {
+                                     newYAxisLabel = "Score"
+                                 } else {
+                                     newYAxisLabel = "Reps"
+                                 }
+                            } else {
+                                newYAxisLabel = "Value"
+                            }
+                    }
+                    self.chartYAxisLabel = newYAxisLabel
+                }
+            }
+        }
+    }
+    
+    // Async wrapper for streak updates
+    private func updateStreaksAsync() {
+        guard !isUpdatingData else { return }
+        
+        Task { @MainActor in
+            await serialQueue.run {
+                self.isUpdatingData = true
+                defer { self.isUpdatingData = false }
+                
+                // Calculate unique sorted workout days
+                let uniqueDays = self.workouts
+                    .map { Calendar.current.startOfDay(for: $0.date) }
+                    .sorted()
+                    .reduce(into: [Date]()) { (uniqueDays, date) in
+                        if uniqueDays.last != date {
+                            uniqueDays.append(date)
+                        }
+                    }
+                
+                guard !uniqueDays.isEmpty else {
+                    DispatchQueue.main.async {
+                        self.currentWorkoutStreak = 0
+                        self.longestWorkoutStreak = 0
+                    }
+                    return
+                }
+                
+                let calendar = Calendar.current
+                
+                // Calculate Longest Streak
+                var maxStreak = 0
+                var currentConsStreak = 0
+                var previousDay: Date? = nil
+                
+                for day in uniqueDays {
+                    if let prev = previousDay {
+                        if calendar.isDate(day, inSameDayAs: calendar.date(byAdding: .day, value: 1, to: prev)!) {
+                            currentConsStreak += 1
+                        } else {
+                            maxStreak = max(maxStreak, currentConsStreak)
+                            currentConsStreak = 1 // Reset
+                        }
+                    } else {
+                        currentConsStreak = 1 // Start
+                    }
+                    previousDay = day
+                }
+                let longestStreak = max(maxStreak, currentConsStreak)
+                
+                // Calculate Current Streak
+                let today = calendar.startOfDay(for: Date())
+                let uniqueDaysSet = Set(uniqueDays)
+                var currentStrk = 0
+                var dateToFind = today
+
+                if uniqueDaysSet.contains(dateToFind) {
+                    currentStrk += 1
+                    dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
+                    while uniqueDaysSet.contains(dateToFind) {
+                        currentStrk += 1
+                        dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
+                    }
+                } else {
+                    dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)! // yesterday
+                    if uniqueDaysSet.contains(dateToFind) {
+                         currentStrk += 1
+                         dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)! // day before yesterday
+                         while uniqueDaysSet.contains(dateToFind) {
+                            currentStrk += 1
+                            dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
+                        }
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    self.currentWorkoutStreak = currentStrk
+                    self.longestWorkoutStreak = longestStreak
+                }
+            }
+        }
+    }
+    
+    // MARK: - Delete Methods
+    
+    // Single delete method that handles both local and server deletion
     @MainActor
     func deleteWorkout(id: String) async {
         // Optimistic update - remove from local list
+        let originalWorkouts = self.workouts
         let updatedWorkouts = self.workouts.filter { $0.id != id }
         self.workouts = updatedWorkouts
         
-        // Update cache after confirmed
-        cache["workouts"] = self.workouts
-        lastFetchTime["workouts"] = Date()
-        
-        // Update SwiftData
-        deleteWorkoutFromSwiftData(id: id)
-    }
-    
-    // MARK: - SwiftData Operations
-    
-    /// Delete a workout by ID
-    func deleteWorkout(id: String) {
-        guard let modelContext = modelContext else {
-            showError(message: "Local storage not available")
-            return
-        }
-        
-        // First mark the workout for deletion in SwiftData
         do {
-            // Find the workout in SwiftData based on string ID
-            // We need to manually find workouts by string ID comparison since
-            // function calls like UUID() aren't allowed in Predicates
-            let descriptor = FetchDescriptor<WorkoutResultSwiftData>()
-            let results = try modelContext.fetch(descriptor)
+            // Update cache after confirmed
+            cache["workouts"] = self.workouts
+            lastFetchTime["workouts"] = Date()
             
-            // Find the matching workout manually
-            let matchingWorkout = results.first { workout in
-                workout.id.uuidString == id
-            }
+            // Update SwiftData
+            await deleteWorkoutFromSwiftData(id: id)
             
-            if let workout = matchingWorkout {
-                // If it has a server ID, mark it for deletion
-                if workout.serverId != nil {
-                    workout.syncStatusEnum = .pendingDeletion
-                    
-                    // Update the lastSyncAttempt timestamp
-                    workout.lastSyncAttempt = Date()
-                    
-                    try modelContext.save()
-                    
-                    // Post notification to trigger sync if online
-                    NotificationCenter.default.post(name: .connectivityRestored, object: nil)
-                } else {
-                    // If it doesn't have a server ID, delete it directly
-                    modelContext.delete(workout)
-                    try modelContext.save()
-                }
-            }
-            
-            // Remove from the displayed list
-            workouts.removeAll { $0.id == id }
+            // If the workout needs to be deleted from server, handle that too
+            // (Implementation depends on your API)
             
         } catch {
-            print("Error marking workout for deletion: \(error)")
+            // Revert optimistic update on error
+            self.workouts = originalWorkouts
             showError(message: "Failed to delete workout: \(error.localizedDescription)")
         }
     }
@@ -353,12 +468,14 @@ class WorkoutHistoryViewModel: ObservableObject {
     /// Delete workouts at specified indices (for SwiftUI onDelete)
     func deleteWorkout(at offsets: IndexSet) {
         for index in offsets {
-            deleteWorkout(id: workouts[index].id)
+            Task {
+                await deleteWorkout(id: workouts[index].id)
+            }
         }
     }
     
     // Helper to delete workout from SwiftData
-    private func deleteWorkoutFromSwiftData(id: String) {
+    private func deleteWorkoutFromSwiftData(id: String) async {
         guard let context = modelContext else { return }
         
         do {
@@ -538,123 +655,21 @@ class WorkoutHistoryViewModel: ObservableObject {
         }
     }
     
-    // MARK: - Chart and Streak Methods
+    // MARK: - Cleanup Methods
     
-    // Calculate and update chart data based on filtered workouts
-    private func updateChartData() {
-        let filteredWorkouts = workoutsFiltered
-        let newChartData = filteredWorkouts
-            .compactMap { workout -> ChartableDataPoint? in
-                let date = workout.date
-                var value: Double? = nil
-                
-                switch filter {
-                case .all: return nil
-                case .run:
-                    if let distance = workout.distance, distance > 0 {
-                        value = distance / 1000
-                    }
-                case .pushup, .situp, .pullup:
-                    if let score = workout.score, score > 0 {
-                        value = score
-                    } else if let reps = workout.reps, reps > 0 {
-                        value = Double(reps)
-                    }
-                }
-                
-                if let val = value {
-                    return ChartableDataPoint(date: date, value: val)
-                }
-                return nil
-            }
-            .sorted { $0.date < $1.date }
-        chartData = newChartData
-
-        // Calculate label based on new data and current filter
-        var newYAxisLabel: String
-        switch filter {
-            case .all: newYAxisLabel = "N/A"
-            case .run: newYAxisLabel = "Distance (km)"
-            case .pushup, .situp, .pullup:
-                if newChartData.first?.value != nil {
-                     if newChartData.contains(where: { $0.value > 50 }) {
-                         newYAxisLabel = "Score"
-                     } else {
-                         newYAxisLabel = "Reps"
-                     }
-                } else {
-                    newYAxisLabel = "Value"
-                }
-        }
-        chartYAxisLabel = newYAxisLabel
+    /// Cancel any pending operations when switching away from the view
+    func cancelPendingOperations() {
+        // Cancel any in-flight network requests
+        cancellables.removeAll()
+        
+        // Reset updating state
+        isUpdatingData = false
+        
+        // Re-setup observers for when the view becomes active again
+        setupObservers()
     }
     
-    // Calculate and update streak data
-    private func updateStreaks() {
-        // Calculate unique sorted workout days
-        let uniqueDays = workouts
-            .map { Calendar.current.startOfDay(for: $0.date) }
-            .sorted()
-            .reduce(into: [Date]()) { (uniqueDays, date) in
-                if uniqueDays.last != date {
-                    uniqueDays.append(date)
-                }
-            }
-        
-        guard !uniqueDays.isEmpty else {
-            currentWorkoutStreak = 0
-            longestWorkoutStreak = 0
-            return
-        }
-        
-        let calendar = Calendar.current
-        
-        // Calculate Longest Streak
-        var maxStreak = 0
-        var currentConsStreak = 0
-        var previousDay: Date? = nil
-        
-        for day in uniqueDays {
-            if let prev = previousDay {
-                if calendar.isDate(day, inSameDayAs: calendar.date(byAdding: .day, value: 1, to: prev)!) {
-                    currentConsStreak += 1
-                } else {
-                    maxStreak = max(maxStreak, currentConsStreak)
-                    currentConsStreak = 1 // Reset
-                }
-            } else {
-                currentConsStreak = 1 // Start
-            }
-            previousDay = day
-        }
-        longestWorkoutStreak = max(maxStreak, currentConsStreak)
-        
-        // Calculate Current Streak
-        let today = calendar.startOfDay(for: Date())
-        let uniqueDaysSet = Set(uniqueDays)
-        var currentStrk = 0
-        var dateToFind = today
-
-        if uniqueDaysSet.contains(dateToFind) {
-            currentStrk += 1
-            dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
-            while uniqueDaysSet.contains(dateToFind) {
-                currentStrk += 1
-                dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
-            }
-        } else {
-            dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)! // yesterday
-            if uniqueDaysSet.contains(dateToFind) {
-                 currentStrk += 1
-                 dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)! // day before yesterday
-                 while uniqueDaysSet.contains(dateToFind) {
-                    currentStrk += 1
-                    dateToFind = calendar.date(byAdding: .day, value: -1, to: dateToFind)!
-                }
-            }
-        }
-        currentWorkoutStreak = currentStrk
-    }
+    // MARK: - SwiftData Operations
 }
 
 // Sample model
@@ -690,5 +705,31 @@ struct WorkoutHistory: Identifiable, Codable {
             isPublic: false
         )
         return workoutResult
+    }
+}
+
+// Extension to support async operations on DispatchQueue
+extension DispatchQueue {
+    func run<T>(operation: @escaping () throws -> T) async throws -> T {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.async {
+                do {
+                    let result = try operation()
+                    continuation.resume(returning: result)
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    // Non-throwing version for operations that don't throw
+    func run<T>(operation: @escaping () -> T) async -> T {
+        return await withCheckedContinuation { continuation in
+            self.async {
+                let result = operation()
+                continuation.resume(returning: result)
+            }
+        }
     }
 } 

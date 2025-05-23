@@ -752,6 +752,7 @@ struct MainTabView_Previews: PreviewProvider {
 struct HistoryTabView: View {
     @EnvironmentObject var workoutHistoryViewModel: WorkoutHistoryViewModel
     @Environment(\.modelContext) private var modelContext
+    @State private var hasAppeared = false
     
     var body: some View {
         NavigationStack {
@@ -763,10 +764,17 @@ struct HistoryTabView: View {
                         // Ensure the view model has the context
                         workoutHistoryViewModel.modelContext = modelContext
                         
-                        // Fetch workouts when the view appears
-                        Task {
-                            await workoutHistoryViewModel.fetchWorkouts()
+                        // Only fetch workouts on first appearance to avoid rapid re-fetching
+                        if !hasAppeared {
+                            hasAppeared = true
+                            Task {
+                                await workoutHistoryViewModel.fetchWorkouts()
+                            }
                         }
+                    }
+                    .onDisappear {
+                        // Reset the appeared flag when view disappears completely
+                        hasAppeared = false
                     }
             )
         }

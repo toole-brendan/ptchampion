@@ -183,7 +183,9 @@ struct WorkoutHistoryItemView: View {
         .padding(.vertical, 8)
         .contextMenu {
             Button(role: .destructive) {
-                viewModel.deleteWorkout(id: workout.id)
+                Task {
+                    await viewModel.deleteWorkout(id: workout.id)
+                }
             } label: {
                 Label("Delete", systemImage: "trash")
             }
