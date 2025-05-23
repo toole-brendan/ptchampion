@@ -11,12 +11,8 @@ fileprivate let destructiveButtonStyle = PTButton.ExtendedStyle.destructive
 struct FitnessDeviceManagerView: View {
     @EnvironmentObject var viewModel: FitnessDeviceManagerViewModel
     @State private var showingDeviceDetails = false
-    @State private var activeBanner: BannerType?     // nil = none
     @AppStorage("useImperialUnits") private var useImperialUnits = false
-    @AppStorage("dismissedBluetoothWarning") private var dismissedBluetoothWarning = false
 
-    enum BannerType { case bluetooth, healthKit }
-    
     var body: some View {
         ZStack {
             // Ambient Background Gradient (matching Dashboard)
@@ -32,9 +28,6 @@ struct FitnessDeviceManagerView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Banner at the top
-                bannerView
-                
                 ScrollView {
                     VStack(spacing: AppTheme.GeneratedSpacing.medium) {
                         // Header
@@ -61,153 +54,9 @@ struct FitnessDeviceManagerView: View {
             }
         }
         .navigationTitle("Fitness Devices")
-        .onAppear {
-            // This fires after the NavigationView is on-screen.
-            print("DEBUG: [FitnessDeviceManagerView] onAppear")
-            print("DEBUG: [FitnessDeviceManagerView] Current activeBanner: \(String(describing: activeBanner))")
-            print("DEBUG: [FitnessDeviceManagerView] dismissedBluetoothWarning: \(viewModel.dismissedBluetoothWarning)")
-            
-            // Track state
-            viewModel.showBluetoothError = false
-            print("DEBUG: [FitnessDeviceManagerView] Reset showBluetoothError to false")
-            
-            if viewModel.bluetoothState != .poweredOn && !dismissedBluetoothWarning {
-                print("DEBUG: [FitnessDeviceManagerView] Bluetooth state is \(viewModel.bluetoothState.stateDescription), showing banner")
-                DispatchQueue.main.async {
-                    showBluetoothBanner()
-                }
-            } else {
-                print("DEBUG: [FitnessDeviceManagerView] No banner needed: Bluetooth=\(viewModel.bluetoothState.stateDescription), dismissedWarning=\(dismissedBluetoothWarning)")
-            }
-        }
-        .onDisappear {
-            print("DEBUG: [FitnessDeviceManagerView] onDisappear - activeBanner: \(String(describing: activeBanner))")
-            print("DEBUG: [FitnessDeviceManagerView] onDisappear - dismissedBluetoothWarning: \(viewModel.dismissedBluetoothWarning)")
-            print("DEBUG: [FitnessDeviceManagerView] onDisappear - bluetoothState: \(viewModel.bluetoothState.stateDescription)")
-            
-            // Reset banner state on disappear to ensure it can be shown again
-            if activeBanner != nil {
-                print("DEBUG: [FitnessDeviceManagerView] Resetting activeBanner from \(String(describing: activeBanner)) to nil on disappear")
-                activeBanner = nil
-            } else {
-                print("DEBUG: [FitnessDeviceManagerView] activeBanner already nil on disappear")
-            }
-        }
         .sheet(isPresented: $showingDeviceDetails) {
             deviceDetailsView()
         }
-        .onReceive(viewModel.$showBluetoothError) { hasError in
-            print("DEBUG: [FitnessDeviceManagerView] onReceive showBluetoothError: \(hasError)")
-            print("DEBUG: [FitnessDeviceManagerView] onReceive dismissedBluetoothWarning: \(dismissedBluetoothWarning)")
-            
-            guard hasError, 
-                  !dismissedBluetoothWarning,
-                  activeBanner == nil   // Prevent rebuild loop
-            else {
-                if hasError {
-                    print("DEBUG: [FitnessDeviceManagerView] Ignoring showBluetoothError because dismissedBluetoothWarning=\(dismissedBluetoothWarning) or banner exists=\(activeBanner != nil)")
-                }
-                return
-            }
-            
-            print("DEBUG: [FitnessDeviceManagerView] Showing banner and auto-resetting trigger")
-            DispatchQueue.main.async {
-                showBluetoothBanner()
-                viewModel.showBluetoothError = false
-            }
-        }
-        // Removed automatic HealthKit authorization to prevent auto-dismissal
-        // Now authorization only happens when user explicitly taps "Connect" button
-    }
-    
-    // MARK: - Banner Helpers
-    private func showBluetoothBanner() {
-        print("DEBUG: [FitnessDeviceManagerView] Showing Bluetooth Banner - activeBanner was \(String(describing: activeBanner))")
-        print("DEBUG: [FitnessDeviceManagerView] dismissedBluetoothWarning = \(dismissedBluetoothWarning)")
-        print("DEBUG: [FitnessDeviceManagerView] Bluetooth state = \(viewModel.bluetoothState.stateDescription)")
-        
-        // Guard against showing banner that's already dismissed or showing
-        guard activeBanner == nil, !dismissedBluetoothWarning else {
-            print("DEBUG: [FitnessDeviceManagerView] NOT showing banner because: activeBanner=\(String(describing: activeBanner)), dismissedWarning=\(dismissedBluetoothWarning)")
-            return
-        }
-            
-        print("DEBUG: [FitnessDeviceManagerView] Setting activeBanner to .bluetooth")
-        activeBanner = .bluetooth
-        viewModel.showBluetoothError = false  // reset trigger
-        print("DEBUG: [FitnessDeviceManagerView] Set activeBanner to .bluetooth")
-    }
-    
-    private func showHealthKitBanner() {
-        print("DEBUG: Showing HealthKit Banner - activeBanner was \(String(describing: activeBanner))")
-        if activeBanner == nil { 
-            activeBanner = .healthKit
-            print("DEBUG: Set activeBanner to .healthKit")
-        }
-    }
-    
-    // Add banner debugging
-    private var bannerView: some View {
-        Group {
-            if let banner = activeBanner {
-                WarningBanner(
-                    title: banner == .bluetooth ? "Bluetooth Error"
-                                                : "HealthKit Authorization",
-                    message: banner == .bluetooth
-                             ? viewModel.bluetoothErrorMessage
-                             : "Please allow PT Champion to access your health data to use Apple Watch features.",
-                    primary: .init(label: "OK") { 
-                        print("DEBUG: [FitnessDeviceManagerView] Banner primary button (OK) tapped - banner type: \(banner)")
-                        // Set the dismissal flag first, then dismiss the banner
-                        if banner == .bluetooth {
-                            print("DEBUG: [FitnessDeviceManagerView] Setting dismissedBluetoothWarning = true")
-                            dismissedBluetoothWarning = true
-                        }
-                        
-                        // Slight delay before dismissing to ensure the tap is fully processed
-                        print("DEBUG: [FitnessDeviceManagerView] Scheduling banner dismissal after 0.1s delay")
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            print("DEBUG: [FitnessDeviceManagerView] Inside delayed dismissal block")
-                            print("DEBUG: [FitnessDeviceManagerView] Setting activeBanner = nil")
-                            activeBanner = nil 
-                            print("DEBUG: [FitnessDeviceManagerView] Banner dismissal complete")
-                        }
-                    },
-                    secondary: banner == .bluetooth
-                        ? .init(label: "Settings") {
-                              print("DEBUG: [FitnessDeviceManagerView] Banner settings button tapped")
-                              if let url = URL(string: UIApplication.openSettingsURLString) {
-                                  print("DEBUG: [FitnessDeviceManagerView] Opening settings URL")
-                                  UIApplication.shared.open(url)
-                              }
-                              
-                              // Set dismissed flag FIRST to prevent race condition
-                              print("DEBUG: [FitnessDeviceManagerView] Setting dismissedBluetoothWarning = true")
-                              dismissedBluetoothWarning = true
-                              
-                              print("DEBUG: [FitnessDeviceManagerView] Scheduling banner dismissal after settings opened (0.5s delay)")
-                              DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                  print("DEBUG: [FitnessDeviceManagerView] Inside settings delayed dismissal block")
-                                  print("DEBUG: [FitnessDeviceManagerView] Setting activeBanner = nil")
-                                  activeBanner = nil
-                                  print("DEBUG: [FitnessDeviceManagerView] Banner dismissal after settings complete")
-                              }
-                          }
-                        : nil
-                )
-                .onAppear {
-                    print("DEBUG: [FitnessDeviceManagerView] Banner appeared - type: \(banner)")
-                    print("DEBUG: [FitnessDeviceManagerView] Current dismissedBluetoothWarning: \(viewModel.dismissedBluetoothWarning)")
-                }
-                .onDisappear {
-                    print("DEBUG: [FitnessDeviceManagerView] Banner disappeared - type: \(banner)")
-                    print("DEBUG: [FitnessDeviceManagerView] dismissedBluetoothWarning at disappear: \(viewModel.dismissedBluetoothWarning)")
-                    print("DEBUG: [FitnessDeviceManagerView] activeBanner at disappear: \(String(describing: activeBanner))")
-                }
-                .id(banner) // Force view recreation when banner type changes
-            }
-        }
-        .animation(.easeInOut, value: activeBanner)
     }
     
     // MARK: - Sections
@@ -469,11 +318,12 @@ struct FitnessDeviceManagerView: View {
                     if !viewModel.isHealthKitAuthorized {
                         Button {
                             Task {
+                                print("DEBUG: Requesting HealthKit authorization")
                                 let authorized = await viewModel.requestHealthKitAuthorization()
+                                print("DEBUG: HealthKit authorization result: \(authorized)")
                                 if authorized {
                                     await viewModel.fetchRecentWorkouts()
-                                } else {
-                                    showHealthKitBanner()
+                                    viewModel.startMonitoringHealthKitData()
                                 }
                             }
                         } label: {
@@ -485,6 +335,10 @@ struct FitnessDeviceManagerView: View {
                                 .background(AppTheme.GeneratedColors.brassGold)
                                 .cornerRadius(8)
                         }
+                    } else {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.success)
+                            .font(.system(size: 20))
                     }
                 }
                 
@@ -563,7 +417,18 @@ struct FitnessDeviceManagerView: View {
                     if viewModel.isBluetoothScanning {
                         viewModel.stopBluetoothScan()
                     } else {
-                        viewModel.startBluetoothScan()
+                        // Check Bluetooth state and show appropriate error if needed
+                        if viewModel.bluetoothState == .poweredOff {
+                            // Show alert or handle error
+                            print("DEBUG: Bluetooth is powered off")
+                        } else if viewModel.bluetoothState == .unauthorized {
+                            // Open settings
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        } else {
+                            viewModel.startBluetoothScan()
+                        }
                     }
                 } label: {
                     HStack {
@@ -597,6 +462,33 @@ struct FitnessDeviceManagerView: View {
                     .opacity(viewModel.bluetoothState != .poweredOn ? 0.5 : 1.0)
                 }
                 .disabled(viewModel.bluetoothState != .poweredOn)
+                
+                // Bluetooth State Warning
+                if viewModel.bluetoothState != .poweredOn {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(AppTheme.GeneratedColors.warning)
+                            .font(.system(size: 14))
+                        
+                        Text(bluetoothStateMessage)
+                            .font(.system(size: 14))
+                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        
+                        if viewModel.bluetoothState == .poweredOff || viewModel.bluetoothState == .unauthorized {
+                            Button("Settings") {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                        }
+                    }
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .background(AppTheme.GeneratedColors.warning.opacity(0.1))
+                    .cornerRadius(6)
+                }
                 
                 // Scanning Indicator
                 if viewModel.isBluetoothScanning {
@@ -643,153 +535,152 @@ struct FitnessDeviceManagerView: View {
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
-    @ViewBuilder
-    private func connectedDeviceView(_ device: CBPeripheral) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("CONNECTED DEVICE")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-            
-            VStack {
-                HStack {
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.GeneratedColors.success.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                        
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.success)
-                    }
-                    
-                    VStack(alignment: .leading) {
-                        Text("\(device.name ?? "Unknown Device")")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                        
-                        HStack {
-                            Text(viewModel.deviceDisplayName())
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                            
-                            if let batteryLevel = viewModel.deviceBatteryLevel {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "battery.50")
-                                        .foregroundColor(AppTheme.GeneratedColors.success)
-                                    
-                                    Text("\(batteryLevel)%")
-                                        .font(.system(size: 12))
-                                        .foregroundColor(AppTheme.GeneratedColors.success)
-                                }
-                            }
-                        }
-                    }
-                    
-                    Spacer()
-                    
-                    HStack(spacing: 8) {
-                        Button {
-                            showingDeviceDetails = true
-                        } label: {
-                            Text("Details")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 6)
-                                        .stroke(AppTheme.GeneratedColors.deepOps.opacity(0.3), lineWidth: 1)
-                                )
-                        }
-                        
-                        Button {
-                            viewModel.disconnectFromDevice()
-                        } label: {
-                            Text("Disconnect")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(AppTheme.GeneratedColors.error)
-                                .cornerRadius(6)
-                        }
-                    }
-                }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
-            }
-            .background(Color.white)
-            .cornerRadius(8)
-            .padding(.horizontal, 16)
+    private var bluetoothStateMessage: String {
+        switch viewModel.bluetoothState {
+        case .poweredOff:
+            return "Bluetooth is off. Turn on in Settings."
+        case .unauthorized:
+            return "Bluetooth permission denied. Allow in Settings."
+        case .unsupported:
+            return "Bluetooth is not supported on this device."
+        case .resetting:
+            return "Bluetooth is resetting..."
+        case .unknown:
+            return "Bluetooth state unknown."
+        default:
+            return ""
         }
     }
     
     @ViewBuilder
-    private func autoConnectDeviceView() -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("SAVED DEVICE")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-            
-            VStack {
-                HStack {
-                    ZStack {
-                        Circle()
-                            .fill(AppTheme.GeneratedColors.brassGold.opacity(0.2))
-                            .frame(width: 40, height: 40)
-                        
-                        Image(systemName: "star.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                    }
+    private func connectedDeviceView(_ device: CBPeripheral) -> some View {
+        VStack {
+            HStack {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.success.opacity(0.2))
+                        .frame(width: 40, height: 40)
                     
-                    VStack(alignment: .leading) {
-                        Text("Previous Device")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                        
-                        Text("You have a preferred device saved")
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(AppTheme.GeneratedColors.success)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("\(device.name ?? "Unknown Device")")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    
+                    HStack {
+                        Text(viewModel.deviceDisplayName())
                             .font(.system(size: 14))
                             .foregroundColor(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    HStack(spacing: 8) {
-                        Button {
-                            viewModel.reconnectToPreferredDevice()
-                        } label: {
-                            Text("Reconnect")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(AppTheme.GeneratedColors.brassGold)
-                                .cornerRadius(6)
-                        }
                         
-                        Button {
-                            viewModel.forgetPreferredDevice()
-                        } label: {
-                            Text("Forget")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(AppTheme.GeneratedColors.error)
-                                .cornerRadius(6)
+                        if let batteryLevel = viewModel.deviceBatteryLevel {
+                            HStack(spacing: 4) {
+                                Image(systemName: "battery.50")
+                                    .foregroundColor(AppTheme.GeneratedColors.success)
+                                
+                                Text("\(batteryLevel)%")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(AppTheme.GeneratedColors.success)
+                            }
                         }
                     }
                 }
-                .padding(.vertical, 12)
-                .padding(.horizontal, 16)
+                
+                Spacer()
+                
+                HStack(spacing: 8) {
+                    Button {
+                        showingDeviceDetails = true
+                    } label: {
+                        Text("Details")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(AppTheme.GeneratedColors.deepOps.opacity(0.3), lineWidth: 1)
+                            )
+                    }
+                    
+                    Button {
+                        viewModel.disconnectFromDevice()
+                    } label: {
+                        Text("Disconnect")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(AppTheme.GeneratedColors.error)
+                            .cornerRadius(6)
+                    }
+                }
             }
-            .background(Color.white)
-            .cornerRadius(8)
-            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
+        .padding(.horizontal, 12)
+        .background(Color.white)
+        .cornerRadius(8)
+    }
+    
+    @ViewBuilder
+    private func autoConnectDeviceView() -> some View {
+        VStack {
+            HStack {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.GeneratedColors.brassGold.opacity(0.2))
+                        .frame(width: 40, height: 40)
+                    
+                    Image(systemName: "star.fill")
+                        .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text("Previous Device")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    
+                    Text("You have a preferred device saved")
+                        .font(.system(size: 14))
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                HStack(spacing: 8) {
+                    Button {
+                        viewModel.reconnectToPreferredDevice()
+                    } label: {
+                        Text("Reconnect")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(AppTheme.GeneratedColors.brassGold)
+                            .cornerRadius(6)
+                    }
+                    
+                    Button {
+                        viewModel.forgetPreferredDevice()
+                    } label: {
+                        Text("Forget")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(AppTheme.GeneratedColors.error)
+                            .cornerRadius(6)
+                    }
+                }
+            }
+            .padding(.vertical, 12)
+        }
+        .padding(.horizontal, 12)
+        .background(Color.white)
+        .cornerRadius(8)
     }
     
     @ViewBuilder

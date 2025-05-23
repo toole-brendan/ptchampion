@@ -13,7 +13,6 @@ struct RunWorkoutView: View {
     @EnvironmentObject var fitnessDeviceManagerViewModel: FitnessDeviceManagerViewModel
     @State private var workoutToNavigate: WorkoutResultSwiftData? = nil
     @State private var showingDeviceManagerSheet = false
-    @State private var showDeviceConnectionBanner = false
     
     // MARK: - Constants
     private struct Constants {
@@ -54,11 +53,6 @@ struct RunWorkoutView: View {
             // Main Content
             ScrollView {
                 VStack(spacing: 20) {
-                    // Device Connection Banner (visible when needed)
-                    if showDeviceConnectionBanner {
-                        deviceConnectionBanner()
-                    }
-                    
                     // Device Connection Status Header
                     deviceStatusHeader()
                     
@@ -115,47 +109,6 @@ struct RunWorkoutView: View {
                     viewModel.runState = .requestingPermission
                 }
             }
-            
-            // Avoid automatic device detection in simulator
-            if isRunningInSimulator {
-                // Show banner instead of auto sheet presentation - wrap in async
-                DispatchQueue.main.async { 
-                    showDeviceConnectionBanner = true 
-                }
-            } else {
-                // Only do this check on real device after a slight delay
-                if #available(iOS 15, *) {
-                    // Defer to .task for iOS 15+ (no immediate modal presentation here)
-                } else {
-                    // iOS 14 fallback: schedule modal presentation after view appears
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        let noDeviceConnected = (fitnessDeviceManagerViewModel.connectedBluetoothDevice == nil
-                                               && !fitnessDeviceManagerViewModel.isHealthKitAuthorized)
-                        if noDeviceConnected {
-                            DispatchQueue.main.async {
-                                showDeviceConnectionBanner = true
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        .task {
-            if #available(iOS 15, *) {
-                // On iOS 15+, run after the view appears
-                if !isRunningInSimulator {
-                    // Add a small delay to ensure the view is fully loaded
-                    try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second delay
-                    let noDeviceConnected = (fitnessDeviceManagerViewModel.connectedBluetoothDevice == nil
-                                         && !fitnessDeviceManagerViewModel.isHealthKitAuthorized)
-                    if noDeviceConnected {
-                        // Ensure UI updates are on the main thread
-                        await MainActor.run {
-                            showDeviceConnectionBanner = true   // Show banner instead of immediate sheet
-                        }
-                    }
-                }
-            }
         }
         .onChange(of: viewModel.completedWorkoutForDetail) { newWorkoutDetail in
             if let workout = newWorkoutDetail {
@@ -169,7 +122,6 @@ struct RunWorkoutView: View {
             if newDevice != nil {
                 DispatchQueue.main.async {
                     showingDeviceManagerSheet = false   // device paired, dismiss modal
-                    showDeviceConnectionBanner = false  // hide banner
                 }
             }
         }
@@ -177,12 +129,8 @@ struct RunWorkoutView: View {
             if authorized {
                 DispatchQueue.main.async {
                     showingDeviceManagerSheet = false   // watch authorized, dismiss modal
-                    showDeviceConnectionBanner = false  // hide banner
                 }
             }
-        }
-        .onChange(of: showingDeviceManagerSheet) { isPresented in
-            print("DEBUG: showingDeviceManagerSheet changed to \(isPresented)")
         }
         .background(
             NavigationLink(
@@ -196,38 +144,16 @@ struct RunWorkoutView: View {
             .opacity(0) // Keep it hidden
         )
         // Replace the sheet with a full-screen cover for the device manager
-        .fullScreenCover(isPresented: $showingDeviceManagerSheet, onDismiss: {
-            print("DEBUG: [RunWorkoutView] FullScreenCover dismissing")
-            print("DEBUG: [RunWorkoutView] FullScreenCover was dismissed")
-            print("DEBUG: [RunWorkoutView] showingDeviceManagerSheet is now \(showingDeviceManagerSheet)")
-            print("DEBUG: [RunWorkoutView] showDeviceConnectionBanner is now \(showDeviceConnectionBanner)")
-            
-            // Add extra debug info about the device connection state
-            let hasBTDevice = fitnessDeviceManagerViewModel.connectedBluetoothDevice != nil
-            let hasHealthKit = fitnessDeviceManagerViewModel.isHealthKitAuthorized
-            print("DEBUG: [RunWorkoutView] After dismiss - Connected device: \(hasBTDevice), HealthKit authorized: \(hasHealthKit)")
-        }) {
+        .fullScreenCover(isPresented: $showingDeviceManagerSheet) {
             NavigationView {
                 FitnessDeviceManagerView()
                     .environmentObject(fitnessDeviceManagerViewModel)
                     .navigationBarBackButtonHidden(true)
                     .navigationBarItems(leading: 
                         Button("Cancel") { 
-                            print("DEBUG: [RunWorkoutView] Cancel button tapped in FitnessDeviceManagerView")
-                            print("DEBUG: [RunWorkoutView] About to set showingDeviceManagerSheet = false")
                             showingDeviceManagerSheet = false 
-                            print("DEBUG: [RunWorkoutView] showingDeviceManagerSheet set to false")
                         }
                     )
-                    .onAppear {
-                        print("DEBUG: [RunWorkoutView] FitnessDeviceManagerView appeared in fullScreenCover")
-                        print("DEBUG: [RunWorkoutView] Bluetooth state: \(fitnessDeviceManagerViewModel.bluetoothState.stateDescription)")
-                        print("DEBUG: [RunWorkoutView] HealthKit authorized: \(fitnessDeviceManagerViewModel.isHealthKitAuthorized)")
-                    }
-                    .onDisappear {
-                        print("DEBUG: [RunWorkoutView] FitnessDeviceManagerView disappeared from fullScreenCover")
-                        print("DEBUG: [RunWorkoutView] Current value of dismissedBluetoothWarning: \(fitnessDeviceManagerViewModel.dismissedBluetoothWarning)")
-                    }
             }
         }
     }
@@ -818,52 +744,6 @@ struct RunWorkoutView: View {
         if case .error = viewModel.runState { return true }
         return false
     }
-    
-    // MARK: - Device Connection Banner
-    private func deviceConnectionBanner() -> some View {
-        Button {
-            print("DEBUG: [RunWorkoutView] Banner button tapped - transition sequence starting")
-            // Better two-step transition - first hide banner, then show sheet
-            print("DEBUG: [RunWorkoutView] Step 1: Hiding banner (showDeviceConnectionBanner = false)")
-            DispatchQueue.main.async {
-                showDeviceConnectionBanner = false
-                print("DEBUG: [RunWorkoutView] Banner hidden in first async")
-                
-                DispatchQueue.main.async { // next run loop
-                    print("DEBUG: [RunWorkoutView] Step 2: About to show device manager sheet in second async")
-                    showingDeviceManagerSheet = true
-                    print("DEBUG: [RunWorkoutView] showingDeviceManagerSheet set to true")
-                }
-            }
-        } label: {
-            HStack {
-                Image(systemName: "antenna.radiowaves.left.and.right")
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimaryOnDark)
-                    .font(.system(size: 16))
-                
-                PTLabel("Connect a fitness device for heart rate tracking", style: .body)
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimaryOnDark)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .foregroundColor(AppTheme.GeneratedColors.textPrimaryOnDark.opacity(0.8))
-                    .font(.system(size: 12))
-            }
-            .padding(.vertical, AppTheme.GeneratedSpacing.small)
-            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
-            .background(AppTheme.GeneratedColors.brassGold)
-            .cornerRadius(AppTheme.GeneratedRadius.badge)
-            .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
-            .padding(.vertical, AppTheme.GeneratedSpacing.small)
-        }
-        .onAppear {
-            print("DEBUG: [RunWorkoutView] Device connection banner appeared")
-        }
-        .onDisappear {
-            print("DEBUG: [RunWorkoutView] Device connection banner disappeared")
-        }
-    }
 }
 
 // MapView Placeholder (Replace with actual MapKit view if desired)
@@ -883,8 +763,4 @@ struct MapViewPlaceholder: View {
             .environmentObject(FitnessDeviceManagerViewModel())
     }
     .modelContainer(for: WorkoutResultSwiftData.self, inMemory: true)
-}
-
-// Remove duplicate protocol definitions - use the shared protocols from the Services folder instead
-
-// No more duplicate protocol definitions here 
+} 

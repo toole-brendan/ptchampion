@@ -8,6 +8,7 @@ enum FitnessDeviceType: String, Codable {
     case polar = "Polar"
     case suunto = "Suunto"
     case appleWatch = "Apple Watch"
+    case wahoo = "Wahoo"
     case genericHeartRateMonitor = "Heart Rate Monitor"
     case genericFitnessTracker = "Fitness Tracker"
     
@@ -23,6 +24,8 @@ enum FitnessDeviceType: String, Codable {
             return .suunto
         } else if name.contains("apple") {
             return .appleWatch
+        } else if name.contains("wahoo") {
+            return .wahoo
         } else {
             return .genericFitnessTracker
         }
@@ -31,12 +34,14 @@ enum FitnessDeviceType: String, Codable {
     // Helper method to determine if the device supports location data
     static func supportsLocation(_ type: FitnessDeviceType) -> Bool {
         switch type {
-        case .garmin, .suunto, .polar:
+        case .garmin, .suunto:
             return true // Most modern fitness watches support location
         case .appleWatch:
             return false // Apple Watch location comes through HealthKit, not BLE
-        default:
-            return false
+        case .polar, .wahoo:
+            return false // These are typically HR straps without GPS
+        case .unknown, .genericHeartRateMonitor, .genericFitnessTracker:
+            return false // Assume no GPS unless proven otherwise
         }
     }
 }

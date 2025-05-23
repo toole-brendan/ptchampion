@@ -65,35 +65,42 @@ struct DiscoveredPeripheral: Identifiable, Equatable {
     
     // Helper to detect device type from advertisement data
     var deviceType: FitnessDeviceType {
-        // Check for known manufacturer data or service UUIDs
-        if let serviceUUIDs = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] {
-            if serviceUUIDs.contains(KnownServiceUUIDs.runningSpeedAndCadence) {
-                // It's a running device, try to identify brand from name
-                if let name = peripheral.name?.lowercased() {
-                    if name.contains("garmin") {
-                        return .garmin
-                    } else if name.contains("polar") {
-                        return .polar
-                    } else if name.contains("suunto") {
-                        return .suunto
-                    }
-                }
+        // First check name patterns (most reliable)
+        if let name = peripheral.name?.lowercased() {
+            if name.contains("garmin") || name.contains("forerunner") || name.contains("fenix") || name.contains("edge") || name.contains("venu") {
+                return .garmin
+            } else if name.contains("polar") || name.contains("h9") || name.contains("h10") || name.contains("oh1") || name.contains("verity") || name.contains("vantage") {
+                return .polar
+            } else if name.contains("suunto") {
+                return .suunto
+            } else if name.contains("wahoo") || name.contains("tickr") || name.contains("elemnt") {
+                return .wahoo
+            } else if name.contains("apple") || name.contains("watch") {
+                return .appleWatch
             }
         }
         
-        // Check for manufacturer data to identify vendor
+        // Then check manufacturer data
         if let manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
            manufacturerData.count >= 2 {
-            // First two bytes are company identifier
             let companyID = UInt16(manufacturerData[0]) | (UInt16(manufacturerData[1]) << 8)
             
-            // Known company IDs (from Bluetooth SIG)
             switch companyID {
-            case 76: return .appleWatch    // Apple
-            case 89: return .garmin        // Garmin International, Inc.
-            case 193: return .polar        // Polar Electro Oy
-            case 299: return .suunto       // Suunto
+            case 76: return .appleWatch
+            case 89: return .garmin
+            case 193: return .polar
+            case 299: return .suunto
+            case 427: return .wahoo
             default: break
+            }
+        }
+        
+        // Finally check advertised services
+        if let serviceUUIDs = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] {
+            // If it has heart rate or RSC service, it's likely a fitness device
+            if serviceUUIDs.contains(KnownServiceUUIDs.heartRate) || 
+               serviceUUIDs.contains(KnownServiceUUIDs.runningSpeedAndCadence) {
+                return .genericHeartRateMonitor
             }
         }
         
@@ -271,21 +278,42 @@ class BluetoothService: NSObject, BluetoothServiceProtocol, ObservableObject {
         // Clear previously discovered peripherals when starting a new scan
         discoveredPeripheralsSubject.send([]) 
         
-        print("BluetoothService: Starting scan for fitness device services...")
+        print("BluetoothService: Starting scan for fitness devices...")
+        
+        // IMPORTANT CHANGE: Scan for ALL devices first, then filter by name/services
+        // Many fitness devices don't advertise their services in the advertisement packet
+        // Instead, scan for all devices and filter by name patterns
+        centralManager.scanForPeripherals(withServices: nil, options: [
+            CBCentralManagerScanOptionAllowDuplicatesKey: false
+        ])
+        
+        // Alternative approach if you want to be more selective:
+        // Scan for specific services but include more comprehensive list
+        /*
         let serviceUUIDs: [CBUUID] = [
             KnownServiceUUIDs.heartRate,
             KnownServiceUUIDs.locationAndNavigation,
             KnownServiceUUIDs.runningSpeedAndCadence,
             KnownServiceUUIDs.Garmin.fitnessMachine,
-            KnownServiceUUIDs.Garmin.userData
+            KnownServiceUUIDs.Garmin.userData,
+            // Add generic fitness services
+            CBUUID(string: "1816"), // Cycling Speed and Cadence
+            CBUUID(string: "181A"), // Environmental Sensing
+            CBUUID(string: "1826"), // Fitness Machine
+            CBUUID(string: "FE00"), // Common proprietary service
+            // Add Garmin proprietary services
+            CBUUID(string: "6A4E2200-667B-11E3-949A-0800200C9A66"), // Garmin Connect IQ
+            CBUUID(string: "6A4ECD28-667B-11E3-949A-0800200C9A66"), // Garmin Fit
+            // Add Polar proprietary services
+            CBUUID(string: "6217FF4B-FB31-1140-AD5A-A45545D7ECF3"), // Polar PMD Service
+            // Add Wahoo proprietary services
+            CBUUID(string: "A026E005-0A7D-4AB3-97FA-F1500F9FEB8B"), // Wahoo Fitness
         ]
         
-        // Scan only for peripherals advertising the specified services
-        // Set allowDuplicates to true if you want updates for already discovered peripherals (e.g., RSSI changes)
-        centralManager.scanForPeripherals(withServices: serviceUUIDs, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
-        
-        // To scan for *all* devices (useful for finding devices not advertising specific services):
-        // centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey: false])
+        centralManager.scanForPeripherals(withServices: serviceUUIDs, options: [
+            CBCentralManagerScanOptionAllowDuplicatesKey: false
+        ])
+        */
     }
     
     func stopScan() {
@@ -385,6 +413,69 @@ class BluetoothService: NSObject, BluetoothServiceProtocol, ObservableObject {
         UserDefaults.standard.removeObject(forKey: preferredDeviceUUIDKey)
         print("BluetoothService: Cleared preferred device")
     }
+    
+    // Add this helper method to identify fitness devices:
+    private func checkIfFitnessDevice(peripheral: CBPeripheral, advertisementData: [String: Any]) -> Bool {
+        // Check by name patterns first (most reliable)
+        if let name = peripheral.name?.lowercased() {
+            let fitnessKeywords = [
+                "garmin", "polar", "wahoo", "suunto", "coros",
+                "fitbit", "whoop", "heart", "hr", "hrm", "cadence",
+                "speed", "fitness", "run", "cycle", "bike", "watch",
+                "band", "strap", "sensor", "forerunner", "fenix",
+                "venu", "edge", "elemnt", "tickr", "h9", "h10",
+                "oh1", "verity", "vantage", "grit", "pacer"
+            ]
+            
+            for keyword in fitnessKeywords {
+                if name.contains(keyword) {
+                    return true
+                }
+            }
+        }
+        
+        // Check for advertised services
+        if let serviceUUIDs = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] {
+            let fitnessServiceUUIDs = [
+                KnownServiceUUIDs.heartRate,
+                KnownServiceUUIDs.runningSpeedAndCadence,
+                KnownServiceUUIDs.locationAndNavigation,
+                CBUUID(string: "1816"), // Cycling Speed and Cadence
+                CBUUID(string: "1826"), // Fitness Machine
+            ]
+            
+            for serviceUUID in serviceUUIDs {
+                if fitnessServiceUUIDs.contains(serviceUUID) {
+                    return true
+                }
+            }
+        }
+        
+        // Check manufacturer data for known fitness device manufacturers
+        if let manufacturerData = advertisementData[CBAdvertisementDataManufacturerDataKey] as? Data,
+           manufacturerData.count >= 2 {
+            let companyID = UInt16(manufacturerData[0]) | (UInt16(manufacturerData[1]) << 8)
+            
+            let fitnessCompanyIDs: [UInt16] = [
+                76,   // Apple
+                89,   // Garmin
+                193,  // Polar
+                299,  // Suunto
+                224,  // Google (Fitbit)
+                427,  // Wahoo Fitness
+                418,  // Whoop
+                1157, // Coros
+            ]
+            
+            if fitnessCompanyIDs.contains(companyID) {
+                return true
+            }
+        }
+        
+        // If it's advertising but we can't identify it, show it anyway 
+        // if it has a name (unnamed devices are usually not fitness devices)
+        return peripheral.name != nil
+    }
 }
 
 // MARK: - CBCentralManagerDelegate
@@ -426,33 +517,42 @@ extension BluetoothService: CBCentralManagerDelegate {
     }
     
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        // This is where discovered peripherals are handled
+        // Filter out very weak signals that are likely too far away
+        guard RSSI.intValue > -90 else { return }
+        
+        // Log all discovered devices for debugging
         print("BluetoothService: Discovered peripheral: \(peripheral.name ?? "Unnamed") [\(peripheral.identifier.uuidString)] RSSI: \(RSSI)")
         
-        let discovered = DiscoveredPeripheral(peripheral: peripheral, advertisementData: advertisementData, rssi: RSSI)
+        // Check if this looks like a fitness device based on name
+        let isLikelyFitnessDevice = checkIfFitnessDevice(peripheral: peripheral, advertisementData: advertisementData)
         
-        // Update the list of discovered peripherals
-        var currentList = discoveredPeripheralsSubject.value
-        if let existingIndex = currentList.firstIndex(where: { $0.id == discovered.id }) {
-            // Update existing entry (e.g., RSSI)
-            currentList[existingIndex].rssi = RSSI
-            // Optionally update advertisementData if needed
-        } else {
-            // Add new peripheral
-            currentList.append(discovered)
-        }
-        
-        // Publish the updated list (consider sorting by RSSI or name)
-        discoveredPeripheralsSubject.send(currentList.sorted { $0.name < $1.name })
-        
-        // Check if this is our preferred device to auto-connect
-        if shouldAttemptReconnect, 
-           let preferredUUID = getPreferredDeviceUUID(),
-           peripheral.identifier == preferredUUID {
-            print("BluetoothService: Found preferred device, attempting to auto-connect")
-            shouldAttemptReconnect = false
-            stopScan()
-            connect(to: peripheral)
+        if isLikelyFitnessDevice {
+            print("BluetoothService: Identified as potential fitness device")
+            
+            let discovered = DiscoveredPeripheral(peripheral: peripheral, advertisementData: advertisementData, rssi: RSSI)
+            
+            // Update the list of discovered peripherals
+            var currentList = discoveredPeripheralsSubject.value
+            if let existingIndex = currentList.firstIndex(where: { $0.id == discovered.id }) {
+                // Update existing entry (e.g., RSSI)
+                currentList[existingIndex].rssi = RSSI
+            } else {
+                // Add new peripheral
+                currentList.append(discovered)
+            }
+            
+            // Publish the updated list (sorted by RSSI - strongest signal first)
+            discoveredPeripheralsSubject.send(currentList.sorted { $0.rssi.intValue > $1.rssi.intValue })
+            
+            // Check if this is our preferred device to auto-connect
+            if shouldAttemptReconnect, 
+               let preferredUUID = getPreferredDeviceUUID(),
+               peripheral.identifier == preferredUUID {
+                print("BluetoothService: Found preferred device, attempting to auto-connect")
+                shouldAttemptReconnect = false
+                stopScan()
+                connect(to: peripheral)
+            }
         }
     }
     
