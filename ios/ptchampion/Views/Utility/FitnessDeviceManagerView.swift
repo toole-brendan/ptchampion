@@ -11,6 +11,9 @@ fileprivate let destructiveButtonStyle = PTButton.ExtendedStyle.destructive
 struct FitnessDeviceManagerView: View {
     @EnvironmentObject var viewModel: FitnessDeviceManagerViewModel
     @State private var showingDeviceDetails = false
+    @State private var showHealthKitDeniedAlert = false
+    @State private var isRequestingHealthKitAuth = false
+    @State private var hasCheckedExistingAuth = false
     @AppStorage("useImperialUnits") private var useImperialUnits = false
 
     var body: some View {
@@ -56,6 +59,16 @@ struct FitnessDeviceManagerView: View {
         .navigationTitle("Fitness Devices")
         .sheet(isPresented: $showingDeviceDetails) {
             deviceDetailsView()
+        }
+        .alert("HealthKit Access Required", isPresented: $showHealthKitDeniedAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Please enable HealthKit access in Settings > Privacy & Security > Health > PT Champion")
         }
     }
     
@@ -317,28 +330,74 @@ struct FitnessDeviceManagerView: View {
                     
                     if !viewModel.isHealthKitAuthorized {
                         Button {
+                            isRequestingHealthKitAuth = true
                             Task {
-                                print("DEBUG: Requesting HealthKit authorization")
+                                print("DEBUG: About to request HealthKit auth")
+                                
+                                // Add a small delay to ensure the view is fully presented
+                                try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+                                
                                 let authorized = await viewModel.requestHealthKitAuthorization()
-                                print("DEBUG: HealthKit authorization result: \(authorized)")
+                                print("DEBUG: HealthKit auth result: \(authorized)")
+                                
+                                isRequestingHealthKitAuth = false
+                                
                                 if authorized {
-                                    await viewModel.fetchRecentWorkouts()
+                                    print("DEBUG: Starting to monitor HealthKit data")
+                                    // Start monitoring immediately after authorization
                                     viewModel.startMonitoringHealthKitData()
+                                    await viewModel.fetchRecentWorkouts()
+                                    
+                                    // Show success feedback
+                                    let generator = UINotificationFeedbackGenerator()
+                                    generator.notificationOccurred(.success)
+                                } else {
+                                    print("DEBUG: HealthKit auth failed or was denied")
+                                    // Check if it's a permission issue or a real denial
+                                    let status = HKHealthStore().authorizationStatus(for: HKObjectType.quantityType(forIdentifier: .heartRate)!)
+                                    
+                                    if status == .notDetermined {
+                                        print("DEBUG: HealthKit authorization still not determined")
+                                    } else if status == .sharingDenied {
+                                        print("DEBUG: HealthKit authorization was denied by user")
+                                        // Show alert to guide user to Settings
+                                        showHealthKitDeniedAlert = true
+                                    }
                                 }
                             }
                         } label: {
-                            Text("Connect")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 8)
-                                .background(AppTheme.GeneratedColors.brassGold)
-                                .cornerRadius(8)
+                            HStack {
+                                if isRequestingHealthKitAuth {
+                                    ProgressView()
+                                        .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.deepOps))
+                                        .scaleEffect(0.8)
+                                    Text("Connecting...")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                } else {
+                                    Text("Connect")
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(AppTheme.GeneratedColors.brassGold)
+                            .cornerRadius(8)
+                            .opacity(isRequestingHealthKitAuth ? 0.7 : 1.0)
                         }
+                        .disabled(isRequestingHealthKitAuth)
                     } else {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.success)
-                            .font(.system(size: 20))
+                        // Show connected state with checkmark
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(AppTheme.GeneratedColors.success)
+                                .font(.system(size: 20))
+                            
+                            Text("Connected")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppTheme.GeneratedColors.success)
+                        }
                     }
                 }
                 
@@ -359,7 +418,25 @@ struct FitnessDeviceManagerView: View {
             .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
             .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
+        .cornerRadius(8)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .onAppear {
+            // Check if we already have authorization
+            if !hasCheckedExistingAuth {
+                hasCheckedExistingAuth = true
+                Task {
+                    // Force a check of current authorization status
+                    if UserDefaults.standard.bool(forKey: "HasRequestedHealthKitAuth") {
+                        print("DEBUG: Checking existing HealthKit authorization")
+                        let authorized = await viewModel.requestHealthKitAuthorization()
+                        if authorized {
+                            print("DEBUG: Already authorized, starting monitoring")
+                            viewModel.startMonitoringHealthKitData()
+                        }
+                    }
+                }
+            }
+        }
     }
     
     @ViewBuilder

@@ -303,14 +303,25 @@ class RunWorkoutViewModel: ObservableObject {
         healthKitService.heartRatePublisher
             .receive(on: DispatchQueue.main)
             .sink(
-                receiveCompletion: { _ in },
+                receiveCompletion: { completion in
+                    if case .failure(let error) = completion {
+                        print("RunWorkoutViewModel: HealthKit heart rate error: \(error)")
+                    }
+                },
                 receiveValue: { [weak self] heartRate in
-                    guard let self = self, 
-                          self.preferAppleWatchForHeartRate,
-                          self.runState == .running else { return }
+                    guard let self = self else { return }
+                    
+                    print("DEBUG: 🏃‍♂️ RunWorkoutViewModel received HealthKit heart rate: \(heartRate) BPM")
+                    
+                    // Only process heart rate during active runs
+                    guard self.runState == .running else { 
+                        print("DEBUG: ⚠️ Not running - ignoring heart rate data")
+                        return 
+                    }
                     
                     // Only use Apple Watch heart rate if we prefer it or don't have a BLE device
                     if self.preferAppleWatchForHeartRate || self.currentHeartRate == nil {
+                        print("DEBUG: ✅ Using HealthKit heart rate: \(heartRate) BPM")
                         self.currentHeartRate = heartRate
                         
                         // Log the heart rate sample
@@ -322,6 +333,8 @@ class RunWorkoutViewModel: ObservableObject {
                             // Attempt to create a complete metric sample
                             self.collectMetricSample(at: now)
                         }
+                    } else {
+                        print("DEBUG: ⚠️ Ignoring HealthKit heart rate - using Bluetooth device instead")
                     }
                 }
             )
@@ -581,19 +594,28 @@ class RunWorkoutViewModel: ObservableObject {
         startTimer()
         updateLocationSubscription() // Decide source and subscribe
         
-        // If HealthKit is available and authorized, start a workout session
+        // Start HealthKit workout session if authorized
         Task {
             do {
-                // Check authorization
+                print("DEBUG: Starting HealthKit workout session")
+                // Start workout session - this triggers Apple Watch to stream data
                 let isAuthorized = try await healthKitService.requestAuthorization()
                 if isAuthorized {
                     try await healthKitService.startWorkoutSession(workoutType: .running)
+                    
+                    // Start monitoring heart rate from Apple Watch
+                    healthKitService.startHeartRateQuery(withStartDate: Date())
+                    
+                    print("DEBUG: HealthKit workout session started successfully")
+                } else {
+                    print("DEBUG: HealthKit authorization denied")
                 }
             } catch {
-                print("RunWorkoutViewModel: Failed to start HealthKit workout session: \(error.localizedDescription)")
-                // Continue the run even if HealthKit fails - we'll use device sensors
+                print("DEBUG: Failed to start HealthKit workout session: \(error)")
             }
         }
+        
+        print("RunWorkoutViewModel: Run started")
     }
 
     func pauseRun() {

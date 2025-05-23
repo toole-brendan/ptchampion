@@ -327,10 +327,20 @@ class FitnessDeviceManagerViewModel: ObservableObject {
                     }
                 },
                 receiveValue: { [weak self] heartRate in
-                    guard let self = self, self.preferAppleWatchForHeartRate else { return }
-                    self.heartRate = heartRate
-                    self.isReceivingHeartRateData = true
-                    print("FitnessDeviceManagerViewModel: Received HealthKit heart rate: \(heartRate) BPM")
+                    guard let self = self else { return }
+                    
+                    print("DEBUG: ✅ Received heart rate from HealthKit: \(heartRate) BPM")
+                    
+                    // Always use HealthKit data when available and authorized
+                    if self.isHealthKitAuthorized {
+                        print("DEBUG: ✅ HealthKit authorized - updating heart rate to \(heartRate)")
+                        self.heartRate = heartRate
+                        self.isReceivingHeartRateData = true
+                        self.lastHeartRateUpdate = Date()
+                        print("DEBUG: ✅ Heart rate updated successfully from HealthKit: \(heartRate) BPM")
+                    } else {
+                        print("DEBUG: ⚠️ HealthKit not authorized - ignoring heart rate data")
+                    }
                 }
             )
             .store(in: &cancellables)
@@ -421,25 +431,28 @@ class FitnessDeviceManagerViewModel: ObservableObject {
     
     // HealthKit methods
     func requestHealthKitAuthorization() async -> Bool {
+        guard isHealthKitAvailable else { 
+            print("FitnessDeviceManagerViewModel: HealthKit not available")
+            return false 
+        }
+        
+        print("FitnessDeviceManagerViewModel: About to request HealthKit authorization")
+        
+        // Check current status before requesting
+        healthKitService.debugAuthorizationStatus()
+        
         do {
+            print("FitnessDeviceManagerViewModel: Calling healthKitService.requestAuthorization()")
             let authorized = try await healthKitService.requestAuthorization()
             print("FitnessDeviceManagerViewModel: HealthKit authorization result: \(authorized)")
+            
+            // Debug the final status
+            healthKitService.debugAuthorizationStatus()
+            
             return authorized
         } catch {
-            print("FitnessDeviceManagerViewModel: Error requesting HealthKit authorization: \(error.localizedDescription)")
-            
-            #if targetEnvironment(simulator)
-            // In simulator, handle gracefully and fake success
-            print("FitnessDeviceManagerViewModel: Running in simulator - simulating successful authorization")
-            return true
-            #else
-            // In real device, show proper error
-            await MainActor.run {
-                showBluetoothError = true
-                bluetoothErrorMessage = "Could not access HealthKit: \(error.localizedDescription)"
-            }
+            print("FitnessDeviceManagerViewModel: HealthKit authorization error: \(error)")
             return false
-            #endif
         }
     }
     
@@ -451,6 +464,21 @@ class FitnessDeviceManagerViewModel: ObservableObject {
     func stopMonitoringHealthKitData() {
         print("FitnessDeviceManagerViewModel: Stopping HealthKit data monitoring")
         healthKitService.stopHeartRateQuery()
+    }
+    
+    // New method for workout-specific monitoring
+    func startMonitoringForWorkout() {
+        guard isHealthKitAuthorized else { 
+            print("FitnessDeviceManagerViewModel: Cannot start workout monitoring - HealthKit not authorized")
+            return 
+        }
+        
+        print("FitnessDeviceManagerViewModel: Starting HealthKit monitoring for workout")
+        
+        // Start monitoring heart rate from the current moment
+        healthKitService.startHeartRateQuery(withStartDate: Date())
+        
+        print("DEBUG: Started monitoring HealthKit data for workout")
     }
     
     func fetchRecentWorkouts() async {

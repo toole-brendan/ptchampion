@@ -255,9 +255,20 @@ struct RunWorkoutView: View {
                                 ProgressView().scaleEffect(0.7)
                             }
                         } else {
-                            Text("No heart rate data available")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
+                            // Show the actual data source for heart rate
+                            if fitnessDeviceManagerViewModel.isHealthKitAuthorized && fitnessDeviceManagerViewModel.heartRate > 0 {
+                                Text("Apple Watch (via HealthKit)")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                            } else if viewModel.currentHeartRate != nil {
+                                Text("Bluetooth device connected")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                            } else {
+                                Text("No heart rate source")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
                     
@@ -280,7 +291,7 @@ struct RunWorkoutView: View {
                 }
                 
                 // Heart Rate Indicator Row if connected
-                if case .connected = viewModel.deviceConnectionState, viewModel.currentHeartRate != nil {
+                if case .connected = viewModel.deviceConnectionState, hasHeartRateData {
                     Divider()
                         .background(Color.gray.opacity(0.2))
                     
@@ -289,18 +300,18 @@ struct RunWorkoutView: View {
                         HStack(spacing: 8) {
                             Image(systemName: "heart.fill")
                                 .foregroundColor(AppTheme.GeneratedColors.error)
-                                .opacity(viewModel.currentHeartRate != nil ? 1.0 : 0.5)
-                                .scaleEffect(viewModel.currentHeartRate != nil ? 1.0 : 0.9)
+                                .opacity(hasHeartRateData ? 1.0 : 0.5)
+                                .scaleEffect(hasHeartRateData ? 1.0 : 0.9)
                                 .font(.system(size: 16))
                                 .animation(
-                                    viewModel.currentHeartRate != nil ? 
+                                    hasHeartRateData ? 
                                         Animation.easeInOut(duration: 0.5).repeatForever(autoreverses: true) : 
                                         .default, 
-                                    value: viewModel.currentHeartRate != nil
+                                    value: hasHeartRateData
                                 )
                             
-                            Text("\(viewModel.currentHeartRate!) BPM")
-                                .font(.system(size: 16, weight: .semibold))
+                            Text(currentHeartRateDisplay)
+                                .font(.system(size: 24, weight: .bold))
                                 .foregroundColor(AppTheme.GeneratedColors.deepOps)
                         }
                         
@@ -524,7 +535,7 @@ struct RunWorkoutView: View {
                                 .foregroundColor(AppTheme.GeneratedColors.error)
                         }
                         
-                        Text(viewModel.currentHeartRate != nil ? "\(viewModel.currentHeartRate!) BPM" : "-- BPM")
+                        Text(currentHeartRateDisplay)
                             .font(.system(size: 24, weight: .bold))
                             .foregroundColor(AppTheme.GeneratedColors.deepOps)
                         
@@ -743,6 +754,29 @@ struct RunWorkoutView: View {
         if case .permissionDenied = viewModel.runState { return true }
         if case .error = viewModel.runState { return true }
         return false
+    }
+    
+    // Helper computed property to get current heart rate from the best available source
+    private var currentHeartRateDisplay: String {
+        // Check HealthKit first (for Apple Watch)
+        if fitnessDeviceManagerViewModel.isHealthKitAuthorized && 
+           fitnessDeviceManagerViewModel.heartRate > 0 {
+            return "\(fitnessDeviceManagerViewModel.heartRate) BPM"
+        }
+        // Then check Bluetooth device
+        else if let heartRate = viewModel.currentHeartRate {
+            return "\(heartRate) BPM"
+        }
+        // No data available
+        else {
+            return "-- BPM"
+        }
+    }
+    
+    // Helper to check if we have any heart rate data
+    private var hasHeartRateData: Bool {
+        return (fitnessDeviceManagerViewModel.isHealthKitAuthorized && fitnessDeviceManagerViewModel.heartRate > 0) ||
+               (viewModel.currentHeartRate != nil)
     }
 }
 

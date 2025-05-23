@@ -24,6 +24,10 @@ protocol HealthKitServiceProtocol {
     func resumeWorkoutSession() async throws
     func endWorkoutSession() async throws
     func discardWorkoutSession() throws
+    
+    // Debug methods
+    func debugAuthorizationStatus()
+    func checkCurrentAuthorizationStatus()
 }
 
 // MARK: - HealthKit Service Implementation
@@ -102,38 +106,72 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
             throw HealthKitError.healthDataNotAvailable
         }
         
-        // Detect if running in simulator
+        // Check if we've already requested (iOS won't show dialog again)
+        let hasRequestedBefore = UserDefaults.standard.bool(forKey: "HasRequestedHealthKitAuth")
+        
+        if hasRequestedBefore {
+            // If we've requested before, just check current status
+            print("HealthKit: Already requested authorization before, checking current status")
+            let authorized = try await checkAuthorizationStatus()
+            authorizationStatusSubject.send(authorized)
+            
+            // If Settings show authorized but we're getting false, force it to true
+            if !authorized {
+                print("HealthKit: Forcing authorization check via read test")
+                // Try to read recent heart rate data as a test
+                let authorized = await testHealthKitAccess()
+                authorizationStatusSubject.send(authorized)
+                return authorized
+            }
+            
+            return authorized
+        }
+        
+        // First time requesting
         #if targetEnvironment(simulator)
         print("HealthKitService: Running in simulator - using mock HealthKit authorization")
-        authorizationStatusSubject.send(true) // Simulate authorization in simulator
+        authorizationStatusSubject.send(true)
         return true
         #else
+        
         // Define the data types we want to read
         let typesToRead: Set<HKObjectType> = [
             HKObjectType.quantityType(forIdentifier: .heartRate)!,
             HKObjectType.quantityType(forIdentifier: .stepCount)!,
             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!,
             HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
-            HKSeriesType.workoutType(),
-            HKObjectType.quantityType(forIdentifier: .runningSpeed)!,
-            HKObjectType.quantityType(forIdentifier: .runningPower)!,
-            HKObjectType.quantityType(forIdentifier: .runningStrideLength)!,
-            HKObjectType.quantityType(forIdentifier: .runningGroundContactTime)!
+            HKObjectType.workoutType()
         ]
         
-        // Define the data types we want to write (workouts and metrics)
+        // Define the data types we want to write
         let typesToWrite: Set<HKSampleType> = [
             HKObjectType.quantityType(forIdentifier: .distanceWalkingRunning)!,
             HKObjectType.quantityType(forIdentifier: .activeEnergyBurned)!,
-            HKSeriesType.workoutType()
+            HKObjectType.workoutType()
         ]
         
-        // Request authorization for the specified types
         do {
+            // This should present the authorization dialog
+            print("HealthKit: Requesting authorization from HealthKit...")
             try await healthStore.requestAuthorization(toShare: typesToWrite, read: typesToRead)
+            
+            // Mark that we've requested
+            UserDefaults.standard.set(true, forKey: "HasRequestedHealthKitAuth")
+            
+            // Wait a moment for permissions to propagate
+            try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
             
             // Check if we got permission
             let authorized = try await checkAuthorizationStatus()
+            
+            // If still showing as not authorized but we just requested, test with actual read
+            if !authorized {
+                print("HealthKit: Authorization unclear, testing with actual read")
+                let testResult = await testHealthKitAccess()
+                authorizationStatusSubject.send(testResult)
+                return testResult
+            }
+            
             authorizationStatusSubject.send(authorized)
             return authorized
         } catch {
@@ -148,11 +186,95 @@ class HealthKitService: NSObject, HealthKitServiceProtocol, ObservableObject {
             return false
         }
         
-        // Check authorization status for heart rate - one of our key metrics
+        // Check multiple key types, not just heart rate
+        let typesToCheck = [
+            HKObjectType.quantityType(forIdentifier: .heartRate)!,
+            HKObjectType.workoutType()
+        ]
+        
+        // Check if we have permission for all required types
+        for type in typesToCheck {
+            let status = healthStore.authorizationStatus(for: type)
+            print("HealthKit: Authorization status for \(type): \(status.rawValue)")
+            
+            // For sharing authorization, we need to check if we can save data
+            // For reading, the status is less clear in iOS
+            if status != .sharingAuthorized {
+                // Don't immediately return false - check all types
+                print("HealthKit: Type \(type) not fully authorized")
+            }
+        }
+        
+        // Special handling: iOS doesn't clearly report read permissions
+        // If we've previously requested authorization, assume it's granted
+        // unless explicitly denied
         let heartRateType = HKObjectType.quantityType(forIdentifier: .heartRate)!
         let status = healthStore.authorizationStatus(for: heartRateType)
         
+        // Check if we've stored that we've requested before
+        let hasRequestedBefore = UserDefaults.standard.bool(forKey: "HasRequestedHealthKitAuth")
+        
+        if hasRequestedBefore && status != .sharingDenied {
+            // If we've asked before and it's not explicitly denied, assume authorized
+            print("HealthKit: Previously requested, assuming authorized")
+            return true
+        }
+        
         return status == .sharingAuthorized
+    }
+    
+    // Add a test method to check if we can actually read data:
+    private func testHealthKitAccess() async -> Bool {
+        let heartRateType = HKObjectType.quantityType(forIdentifier: .heartRate)!
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+        
+        // Try to execute a query - if it works, we have permission
+        return await withCheckedContinuation { continuation in
+            let testQuery = HKSampleQuery(sampleType: heartRateType,
+                                          predicate: nil,
+                                          limit: 1,
+                                          sortDescriptors: [sortDescriptor]) { _, samples, error in
+                if let error = error {
+                    print("HealthKit: Cannot read data - \(error.localizedDescription)")
+                    continuation.resume(returning: false)
+                } else {
+                    print("HealthKit: Can read data - access confirmed")
+                    continuation.resume(returning: true)
+                }
+            }
+            
+            healthStore.execute(testQuery)
+        }
+    }
+    
+    // MARK: - Debug Methods
+    
+    func debugAuthorizationStatus() {
+        guard isHealthDataAvailable else {
+            print("HealthKit: Health data not available on this device")
+            return
+        }
+        
+        let heartRateType = HKObjectType.quantityType(forIdentifier: .heartRate)!
+        let status = healthStore.authorizationStatus(for: heartRateType)
+        
+        switch status {
+        case .notDetermined:
+            print("HealthKit: Authorization not determined")
+        case .sharingDenied:
+            print("HealthKit: Sharing denied")
+        case .sharingAuthorized:
+            print("HealthKit: Sharing authorized")
+        @unknown default:
+            print("HealthKit: Unknown status (\(status.rawValue))")
+        }
+        
+        print("HealthKit: Raw status value: \(status.rawValue)")
+        // 0 = notDetermined, 1 = sharingDenied, 2 = sharingAuthorized
+    }
+    
+    func checkCurrentAuthorizationStatus() {
+        debugAuthorizationStatus()
     }
     
     // MARK: - Heart Rate Monitoring
