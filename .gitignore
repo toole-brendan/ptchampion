@@ -30,7 +30,7 @@ bin/
 server_binary
 main
 cmd/server/server
-ptchampion
+/ptchampion
 
 # Generated files
 PTChampion-Swift/Sources/GeneratedAPI/
