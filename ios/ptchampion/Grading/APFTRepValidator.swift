@@ -1,6 +1,7 @@
 // ios/ptchampion/Grading/APFTRepValidator.swift
 
 import Foundation
+import UIKit
 import Vision
 import CoreGraphics
 import simd
@@ -66,18 +67,18 @@ class APFTRepValidator: ObservableObject {
     }
     
     // MARK: - State Tracking
-    @Published private var pushupState = ExerciseState(phase: PushupPhase.up.rawValue)
+    @Published internal var pushupState = ExerciseState(phase: PushupPhase.up.rawValue)
     @Published private var pullupState = ExerciseState(phase: PullupPhase.down.rawValue)
     @Published private var situpState = ExerciseState(phase: SitupPhase.down.rawValue)
     
     // MARK: - APFT Standards (adjustable for different fitness levels)
     struct APFTStandards {
-        // Pushup standards
-        static let pushupArmExtensionAngle: Float = 160.0  // Nearly straight arms
-        static let pushupArmParallelAngle: Float = 95.0    // Upper arms parallel to ground
-        static let pushupBodyAlignmentTolerance: Float = 15.0  // Degrees from straight
-        static let pushupMinDescentThreshold: Float = 0.02  // Minimum descent distance
-        static let pushupPositionTolerance: Float = 0.01   // Return to start position tolerance
+        // Pushup standards - made more lenient for real-world use
+        static let pushupArmExtensionAngle: Float = 150.0  // Reduced from 160 for more natural extension
+        static let pushupArmParallelAngle: Float = 100.0   // Increased from 95 for comfort
+        static let pushupBodyAlignmentTolerance: Float = 25.0  // Increased from 15 for more flexibility
+        static let pushupMinDescentThreshold: Float = 0.015  // Reduced from 0.02
+        static let pushupPositionTolerance: Float = 0.02   // Increased from 0.01
         
         // Pullup standards
         static let pullupArmExtensionAngle: Float = 160.0  // Dead hang position
@@ -104,12 +105,19 @@ class APFTRepValidator: ObservableObject {
         mutating func updatePushupCalibration(armAngle: Float) {
             guard calibrationFrames < requiredCalibrationFrames else { return }
             
-            if armAngle > pushupArmExtension * 0.95 {
-                // User's natural extension is less than standard
-                pushupArmExtension = max(pushupArmExtension * 0.95, armAngle)
+            // Only calibrate if the angle is reasonable (between 140-170 degrees)
+            if armAngle > 140 && armAngle < 170 {
+                // Gradually adjust the threshold towards the user's natural extension
+                let weight: Float = 0.1  // How much to adjust each frame
+                let currentWeight = pushupArmExtension * (1 - weight)
+                let newWeight = armAngle * weight
+                pushupArmExtension = currentWeight + newWeight
                 calibrationFrames += 1
                 
                 if calibrationFrames == requiredCalibrationFrames {
+                    // Ensure the final threshold is reasonable
+                    pushupArmExtension = min(pushupArmExtension, 165.0)  // Cap at 165 degrees
+                    pushupArmExtension = max(pushupArmExtension, 140.0)  // Floor at 140 degrees
                     print("📊 Pushup calibration complete: Extension threshold adjusted to \(pushupArmExtension)°")
                 }
             }
@@ -221,7 +229,7 @@ class APFTRepValidator: ObservableObject {
     var recentRejections: [RejectionLog] { rejectionLogs }
     
     // MARK: - Angle Calculation
-    private func calculateAngle(point1: CGPoint, vertex: CGPoint, point3: CGPoint) -> Float {
+    internal func calculateAngle(point1: CGPoint, vertex: CGPoint, point3: CGPoint) -> Float {
         let vector1 = simd_float2(Float(point1.x - vertex.x), Float(point1.y - vertex.y))
         let vector2 = simd_float2(Float(point3.x - vertex.x), Float(point3.y - vertex.y))
         
@@ -281,6 +289,15 @@ class APFTRepValidator: ObservableObject {
     
     // MARK: - Pushup Validation
     func validatePushup(body: DetectedBody) -> Bool {
+        // Check orientation first
+        let orientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
+        
+        // Use landscape-specific validation if in landscape mode
+        if orientation.isLandscape {
+            return validatePushupLandscapeMode(body: body)
+        }
+        
+        // Normal portrait mode validation
         guard let leftShoulder = body.point(.leftShoulder),
               let rightShoulder = body.point(.rightShoulder),
               let leftElbow = body.point(.leftElbow),
@@ -299,11 +316,14 @@ class APFTRepValidator: ObservableObject {
         let rightArmAngle = calculateAngle(point1: rightShoulder.location, vertex: rightElbow.location, point3: rightWrist.location)
         let avgArmAngle = (leftArmAngle + rightArmAngle) / 2
         
-        // Check body alignment
+        // Check body alignment with pushup-specific landscape support
         guard let bodyAlignment = getBodyAlignmentAngle(body: body) else {
             pushupState.formIssues.append("Cannot calculate body alignment")
             return false
         }
+        
+        // Log orientation info for debugging
+        print("DEBUG: Pushup validation - Orientation: \(orientation.rawValue), Body alignment: \(bodyAlignment)°")
         
         // Add angle tracking at the beginning of validatePushup
         var angleData: [String: Float] = [
@@ -328,25 +348,50 @@ class APFTRepValidator: ObservableObject {
             adaptiveThresholds.updatePushupCalibration(armAngle: avgArmAngle)
             let armsExtended = avgArmAngle > adaptiveThresholds.pushupArmExtension
             
-            if armsExtended && isBodyStraight {
+            // More lenient body alignment check for starting position
+            // In landscape mode, be VERY lenient as the calculations are not optimized for that orientation
+            let startingPositionBodyTolerance: Float = orientation.isLandscape ? 60.0 : 35.0
+            let isBodyReasonablyStraight = bodyAlignment <= startingPositionBodyTolerance
+            
+            print("DEBUG: Pushup UP phase - Arms extended: \(armsExtended) (angle: \(avgArmAngle)°), Body straight: \(isBodyReasonablyStraight) (alignment: \(bodyAlignment)°)")
+            
+            if armsExtended && isBodyReasonablyStraight {
                 // Ready to start descent
+                let shoulderMidX = (leftShoulder.location.x + rightShoulder.location.x) / 2
                 pushupState.additionalData["startShoulderHeight"] = shoulderMidY
+                pushupState.additionalData["startShoulderX"] = shoulderMidX
                 pushupState.phase = PushupPhase.descending.rawValue
                 pushupState.inValidRep = true
+                print("DEBUG: Transitioning to DESCENDING phase - Start position X: \(shoulderMidX), Y: \(shoulderMidY)")
             } else {
                 if !armsExtended { pushupState.formIssues.append("Extend arms fully") }
+                if !isBodyReasonablyStraight { pushupState.formIssues.append("Straighten your body to begin") }
             }
             
         case .descending:
             // Check if upper arms are parallel to ground
             let armsParallel = avgArmAngle <= APFTStandards.pushupArmParallelAngle
             let startHeight = pushupState.additionalData["startShoulderHeight"] as? CGFloat ?? shoulderMidY
-            let descentDistance = shoulderMidY - startHeight
+            
+            // In landscape mode, movement might be horizontal instead of vertical
+            // So check both vertical and horizontal movement
+            let shoulderMidX = (leftShoulder.location.x + rightShoulder.location.x) / 2
+            let startX = pushupState.additionalData["startShoulderX"] as? CGFloat ?? shoulderMidX
+            
+            let verticalDescent = abs(shoulderMidY - startHeight)
+            let horizontalDescent = abs(shoulderMidX - startX)
+            
+            // Use the larger of the two movements
+            let descentDistance = max(verticalDescent, horizontalDescent)
             let sufficientDescent = Float(descentDistance) > APFTStandards.pushupMinDescentThreshold
+            
+            print("DEBUG: Pushup DESCENDING - Arms angle: \(avgArmAngle)° (parallel: \(armsParallel)), Body alignment: \(bodyAlignment)° (straight: \(isBodyStraight))")
+            print("DEBUG: Movement - Vertical: \(verticalDescent), Horizontal: \(horizontalDescent), Sufficient: \(sufficientDescent)")
             
             if armsParallel && isBodyStraight && sufficientDescent {
                 pushupState.phase = PushupPhase.ascending.rawValue
                 pushupState.additionalData["bottomReached"] = true
+                print("DEBUG: Transitioning to ASCENDING phase")
             } else {
                 if !armsParallel { pushupState.formIssues.append("Lower until upper arms are parallel to ground") }
                 if !sufficientDescent { pushupState.formIssues.append("Go lower") }
@@ -363,6 +408,7 @@ class APFTRepValidator: ObservableObject {
                     pushupState.inValidRep = false
                     pushupState.additionalData.removeValue(forKey: "bottomReached")
                     pushupState.additionalData.removeValue(forKey: "startShoulderHeight")
+                    pushupState.additionalData.removeValue(forKey: "startShoulderX")
                 }
             }
             
@@ -683,4 +729,4 @@ class APFTRepValidator: ObservableObject {
         pullupState = ExerciseState(phase: PullupPhase.down.rawValue)
         situpState = ExerciseState(phase: SitupPhase.down.rawValue)
     }
-} 
+}

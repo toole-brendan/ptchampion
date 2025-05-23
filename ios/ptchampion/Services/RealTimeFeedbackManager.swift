@@ -17,7 +17,7 @@ class RealTimeFeedbackManager: ObservableObject {
     @Published var suggestions: [FeedbackSuggestion] = []
     
     // MARK: - Dependencies
-    private let poseDetectorService: PoseDetectorService
+    private let poseDetectorService: PoseDetectorServiceProtocol
     private let apftValidator: APFTRepValidator
     private var cancellables = Set<AnyCancellable>()
     
@@ -51,7 +51,7 @@ class RealTimeFeedbackManager: ObservableObject {
     }
     
     // MARK: - Initialization
-    init(poseDetectorService: PoseDetectorService, apftValidator: APFTRepValidator) {
+    init(poseDetectorService: PoseDetectorServiceProtocol, apftValidator: APFTRepValidator) {
         self.poseDetectorService = poseDetectorService
         self.apftValidator = apftValidator
         

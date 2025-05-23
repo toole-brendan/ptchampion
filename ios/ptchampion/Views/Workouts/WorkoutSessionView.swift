@@ -60,15 +60,7 @@ struct WorkoutSessionView: View {
                 )
             }
             
-            // Real-time Feedback Overlay
-            if viewModel.realTimeFeedbackManager.isActive {
-                RealTimeFeedbackOverlay(
-                    feedbackManager: viewModel.realTimeFeedbackManager,
-                    showDetailedFeedback: true,
-                    compactMode: false
-                )
-                .zIndex(1)
-            }
+            // Simple Rep Feedback removed to prevent distraction
             
             // Start Button Overlay (shown only when in ready state)
             if viewModel.workoutState == .ready && countdown == nil && !viewModel.needsCalibration {
@@ -437,9 +429,7 @@ struct WorkoutSessionView: View {
             if viewModel.isSoundEnabled {
                 print("DEBUG: [WorkoutSessionView] Playing workout start sound")
                 AudioServicesPlaySystemSound(1104) // Stronger beep
-                let impactGenerator = UIImpactFeedbackGenerator(style: .heavy)
-                impactGenerator.prepare()
-                impactGenerator.impactOccurred()
+                // Haptic feedback completely removed to prevent device vibration
             }
             
             // Start the actual workout in the next render cycle

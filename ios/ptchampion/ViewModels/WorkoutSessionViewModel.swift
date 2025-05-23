@@ -46,6 +46,10 @@ class WorkoutSessionViewModel: ObservableObject {
     @Published var isSoundEnabled: Bool = true
     @Published var workoutState: WorkoutSessionState = .initializing
     
+    // Simple rep feedback
+    @Published var showRepFeedback: Bool = false
+    @Published var isRepSuccess: Bool = false
+    
     // Add published property for elapsed time to ensure UI updates
     @Published var elapsedTimeFormatted: String = "00:00"
     
@@ -537,18 +541,25 @@ class WorkoutSessionViewModel: ObservableObject {
             newFeedbackMessage = "Good rep!"
             newShowFullBodyWarning = false
             
+            // Show success feedback
+            showRepFeedback = true
+            isRepSuccess = true
+            
             if isSoundEnabled {
                 AudioServicesPlaySystemSound(1104) // System beep sound
-                let impactGenerator = UIImpactFeedbackGenerator(style: .medium)
-                impactGenerator.prepare()
-                impactGenerator.impactOccurred()
             }
+            // Haptic feedback completely removed
             
             saveRepData(formQuality: formQuality)
             
             // Reset form feedback state since we've completed a rep
             lastFormFeedback = ""
             lastFormFeedbackTimestamp = Date.distantPast
+            
+            // Hide feedback after 1 second
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.showRepFeedback = false
+            }
             
         case .inProgress(let phase):
             // Check if we should still display the previous form feedback
@@ -568,9 +579,18 @@ class WorkoutSessionViewModel: ObservableObject {
             newFeedbackMessage = feedback
             newShowFullBodyWarning = false
             
+            // Show failure feedback (red X)
+            showRepFeedback = true
+            isRepSuccess = false
+            
             // Store this form feedback to persist it
             lastFormFeedback = feedback
             lastFormFeedbackTimestamp = Date()
+            
+            // Hide feedback after 1 second
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+                self?.showRepFeedback = false
+            }
             
         case .noChange:
             // Check if we should still display the previous form feedback
