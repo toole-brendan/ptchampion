@@ -591,6 +591,104 @@ enum Tab {
     case home, history, /*workout,*/ leaderboards, profile // Workout tab commented out
 }
 
+// Helper struct to handle tab bar visibility via UIKit
+struct TabBarVisibilityHandler: UIViewRepresentable {
+    let isVisible: Bool
+    
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        view.backgroundColor = UIColor.clear
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIView, context: Context) {
+        DispatchQueue.main.async {
+            // Find the tab bar controller more reliably
+            guard let windowScene = UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+                  let window = windowScene.windows.first(where: \.isKeyWindow) else {
+                return
+            }
+            
+            // Traverse the view hierarchy to find the UITabBarController
+            func findTabBarController(in viewController: UIViewController?) -> UITabBarController? {
+                if let tabBarController = viewController as? UITabBarController {
+                    return tabBarController
+                }
+                
+                if let navigationController = viewController as? UINavigationController {
+                    return findTabBarController(in: navigationController.viewControllers.first)
+                }
+                
+                for child in viewController?.children ?? [] {
+                    if let found = findTabBarController(in: child) {
+                        return found
+                    }
+                }
+                
+                return nil
+            }
+            
+            if let tabBarController = findTabBarController(in: window.rootViewController) {
+                let wasHidden = tabBarController.tabBar.isHidden
+                let shouldHide = !isVisible
+                
+                if wasHidden != shouldHide {
+                    print("DEBUG: [TabBarVisibilityHandler] Changing tab bar visibility from \(wasHidden) to \(shouldHide)")
+                    
+                    UIView.animate(withDuration: 0.3, animations: {
+                        tabBarController.tabBar.isHidden = shouldHide
+                        
+                        // Also adjust the alpha for smoother transition
+                        tabBarController.tabBar.alpha = isVisible ? 1.0 : 0.0
+                    })
+                }
+            } else {
+                print("DEBUG: [TabBarVisibilityHandler] Could not find UITabBarController")
+            }
+        }
+    }
+}
+
+// Alternative approach using hidesBottomBarWhenPushed
+struct HideTabBarModifier: ViewModifier {
+    let isHidden: Bool
+    
+    func body(content: Content) -> some View {
+        content
+            .background(
+                TabBarHidingHelper(isHidden: isHidden)
+            )
+    }
+}
+
+struct TabBarHidingHelper: UIViewControllerRepresentable {
+    let isHidden: Bool
+    
+    func makeUIViewController(context: Context) -> UIViewController {
+        return UIViewController()
+    }
+    
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        DispatchQueue.main.async {
+            // Find the current navigation controller and set hidesBottomBarWhenPushed
+            if let navigationController = uiViewController.navigationController {
+                navigationController.hidesBottomBarWhenPushed = isHidden
+                print("DEBUG: [TabBarHidingHelper] Set hidesBottomBarWhenPushed = \(isHidden)")
+            }
+            
+            // Also try to set it on the view controller itself
+            uiViewController.hidesBottomBarWhenPushed = isHidden
+        }
+    }
+}
+
+extension View {
+    func hideTabBar(_ isHidden: Bool) -> some View {
+        self.modifier(HideTabBarModifier(isHidden: isHidden))
+    }
+}
+
 // Main TabView Structure
 struct MainTabView: View {
     @State private var selectedTab: Tab = .home
@@ -625,9 +723,6 @@ struct MainTabView: View {
         }
         .tint(AppTheme.GeneratedColors.brassGold)
         .edgesIgnoringSafeArea(.bottom) // Add this to ensure tab bar doesn't interfere
-        // Use the toolbar visibility modifier to hide/show the tab bar
-        .toolbar(tabBarVisibility.isTabBarVisible ? .visible : .hidden, for: .tabBar)
-        .animation(.easeInOut(duration: 0.2), value: tabBarVisibility.isTabBarVisible)
         .onAppear { 
             // Customize TabView appearance 
             let tabBarAppearance = UITabBarAppearance()
@@ -679,6 +774,7 @@ struct MainTabView: View {
         .onChange(of: selectedTab) { _, newTab in
             print("Switched to tab: \(newTab)")
         }
+        .background(TabBarVisibilityHandler(isVisible: tabBarVisibility.isTabBarVisible))
     }
 }
 

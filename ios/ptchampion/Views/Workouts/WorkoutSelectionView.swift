@@ -76,6 +76,7 @@ struct WorkoutSelectionView: View {
         )
         .navigationTitle("Choose Exercise")
         .navigationBarTitleDisplayMode(.inline)
+        .hideTabBar(!tabBarVisibility.isTabBarVisible)
         .onAppear {
             tabBarVisibility.hideTabBar()
             animateContent()

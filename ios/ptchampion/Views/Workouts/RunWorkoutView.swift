@@ -96,6 +96,7 @@ struct RunWorkoutView: View {
         .navigationTitle("Run Tracking")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .hideTabBar(!tabBarVisibility.isTabBarVisible)
         .navigationBarItems(leading: 
             Button("End") {
                 handleEndWorkout()

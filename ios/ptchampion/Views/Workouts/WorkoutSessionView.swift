@@ -98,6 +98,7 @@ struct WorkoutSessionView: View {
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .hideTabBar(!tabBarVisibility.isTabBarVisible)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {

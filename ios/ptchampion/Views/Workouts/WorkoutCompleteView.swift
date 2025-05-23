@@ -144,6 +144,7 @@ struct WorkoutCompleteView: View {
                 }
             }
             .navigationBarHidden(true)
+            .hideTabBar(!tabBarVisibility.isTabBarVisible)
             .onAppear {
                 tabBarVisibility.hideTabBar()
                 animateContentIn()
