@@ -13,8 +13,8 @@ struct PoseOverlayView: View {
     @State private var bodyNotDetectedCounter: Int = 0
     private let showGuidanceThreshold = 45 // About 1.5 seconds at 30fps
     
-    // Orientation management
-    @StateObject private var orientationManager = OrientationManager.shared
+    // Orientation management - removed as it's causing double transformation
+    // MediaPipe already handles orientation internally
     
     // Initialize with default empty set for bad joints
     init(detectedBody: DetectedBody?, badJointNames: Set<VNHumanBodyPoseObservation.JointName> = []) {
@@ -22,14 +22,15 @@ struct PoseOverlayView: View {
         self.badJointNames = badJointNames
     }
     
-    // Helper function to transform coordinates based on orientation
-    private func transformPoint(_ normalizedPoint: CGPoint, to viewSize: CGSize) -> CGPoint {
-        let interfaceOrientation = orientationManager.interfaceOrientation
-        
-        // Use OrientationManager for consistent coordinate transformation
-        let transformedPoint = orientationManager.transformNormalizedPoint(normalizedPoint, for: interfaceOrientation)
-        
-        return CGPoint(x: transformedPoint.x * viewSize.width, y: transformedPoint.y * viewSize.height)
+    // Helper function to convert normalized coordinates to view coordinates
+    // MediaPipe already provides orientation-corrected normalized coordinates
+    private func normalizedToViewCoordinates(_ normalizedPoint: CGPoint, viewSize: CGSize) -> CGPoint {
+        // Direct conversion without additional transformation
+        // MediaPipe coordinates are already oriented correctly
+        return CGPoint(
+            x: normalizedPoint.x * viewSize.width,
+            y: normalizedPoint.y * viewSize.height
+        )
     }
     
     // Specify which joints to draw connections between
@@ -71,8 +72,8 @@ struct PoseOverlayView: View {
                           let p2 = body.point(joint2Name),
                           p1.confidence > 0.2, p2.confidence > 0.2 else { continue } // Min confidence for line
 
-                    let point1 = transformPoint(p1.location, to: size)
-                    let point2 = transformPoint(p2.location, to: size)
+                    let point1 = normalizedToViewCoordinates(p1.location, viewSize: size)
+                    let point2 = normalizedToViewCoordinates(p2.location, viewSize: size)
 
                     var path = Path()
                     path.move(to: point1)
@@ -91,7 +92,7 @@ struct PoseOverlayView: View {
 
                 // Draw points (circles)
                 for point in body.allPoints where point.confidence > 0.3 { // Min confidence for point
-                    let location = transformPoint(point.location, to: size)
+                    let location = normalizedToViewCoordinates(point.location, viewSize: size)
                     let circleRadius: CGFloat = 5
 
                     let circleRect = CGRect(x: location.x - circleRadius,
@@ -173,4 +174,4 @@ struct PoseOverlayView: View {
 
     return PoseOverlayView(detectedBody: mockBody, badJointNames: badJoints)
         .background(Color.gray) // Add background for visibility
-} 
+}

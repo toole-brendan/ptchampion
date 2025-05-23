@@ -91,7 +91,8 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
         
         // Get interface orientation for more reliable orientation detection
         let interfaceOrientation = orientationManager.interfaceOrientation
-        let imageOrientation = orientationManager.imageOrientation(for: interfaceOrientation)
+        // Use back camera orientation since CameraService uses .back for exercise tracking
+        let imageOrientation = orientationManager.imageOrientationBackCamera(for: interfaceOrientation)
         
         do {
             // Wrap the CMSampleBuffer in an MPImage with the proper orientation
@@ -239,4 +240,4 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
         
         print("PoseDetectorService deinitialized.")
     }
-} 
+}

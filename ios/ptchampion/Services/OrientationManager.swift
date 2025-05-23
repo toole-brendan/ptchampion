@@ -1,6 +1,7 @@
 import Foundation
 import UIKit
 import Combine
+import AVFoundation
 
 /// Centralized orientation management service
 class OrientationManager: ObservableObject {
@@ -116,7 +117,32 @@ class OrientationManager: ObservableObject {
     }
     
     // Convert interface orientation to UIImage.Orientation for MediaPipe
+    // FIXED: Adjusted mapping for correct MediaPipe orientation handling
     func imageOrientation(for interfaceOrientation: UIInterfaceOrientation) -> UIImage.Orientation {
+        // For front camera (selfie mode), the mapping is:
+        // The image from the camera is always captured in landscape right orientation
+        // We need to tell MediaPipe how to rotate it to match the current interface orientation
+        
+        switch interfaceOrientation {
+        case .portrait:
+            // Camera is rotated 90° clockwise from portrait
+            return .leftMirrored  // Changed from .right to handle front camera mirroring
+        case .portraitUpsideDown:
+            // Camera is rotated 90° counter-clockwise from portrait upside down
+            return .rightMirrored  // Changed from .left to handle front camera mirroring
+        case .landscapeLeft:
+            // Camera matches landscape left (home button on left)
+            return .upMirrored  // Changed from .up to handle front camera mirroring
+        case .landscapeRight:
+            // Camera is 180° from landscape right
+            return .downMirrored  // Changed from .down to handle front camera mirroring
+        default:
+            return .leftMirrored
+        }
+    }
+    
+    // Convert interface orientation to UIImage.Orientation for back camera
+    func imageOrientationBackCamera(for interfaceOrientation: UIInterfaceOrientation) -> UIImage.Orientation {
         switch interfaceOrientation {
         case .portrait:
             return .right
@@ -132,6 +158,7 @@ class OrientationManager: ObservableObject {
     }
     
     // Transform normalized coordinates based on orientation
+    // NOTE: This should NOT be used for MediaPipe coordinates as they are already transformed
     func transformNormalizedPoint(_ point: CGPoint, for orientation: UIInterfaceOrientation) -> CGPoint {
         var x = point.x
         var y = point.y
@@ -187,5 +214,3 @@ extension UIInterfaceOrientation {
         }
     }
 }
-
-import AVFoundation 

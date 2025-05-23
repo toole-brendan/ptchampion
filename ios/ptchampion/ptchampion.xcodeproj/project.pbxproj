@@ -53,6 +53,17 @@
 		BF59ACD92DDFDBB400242910 /* ContentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACD62DDFDBB400242910 /* ContentContainer.swift */; };
 		BF59ACDB2DDFDBC000242910 /* SafeAreaTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACDA2DDFDBC000242910 /* SafeAreaTabView.swift */; };
 		BF59ACDD2DE0B09900242910 /* SyncStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACDC2DE0B09900242910 /* SyncStatus.swift */; };
+		BF59ACE12DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACDE2DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift */; };
+		BF59ACE22DE0E99B00242910 /* CalibrationModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACE02DE0E99B00242910 /* CalibrationModels.swift */; };
+		BF59ACE32DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACDF2DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift */; };
+		BF59ACE52DE0E9AD00242910 /* CalibratedAPFTValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACE42DE0E9AD00242910 /* CalibratedAPFTValidator.swift */; };
+		BF59ACEA2DE0E9C900242910 /* CalibrationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACE62DE0E9C900242910 /* CalibrationManager.swift */; };
+		BF59ACEB2DE0E9C900242910 /* DevicePositionDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACE82DE0E9C900242910 /* DevicePositionDetector.swift */; };
+		BF59ACEC2DE0E9C900242910 /* CalibrationRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACE72DE0E9C900242910 /* CalibrationRepository.swift */; };
+		BF59ACED2DE0E9C900242910 /* RealTimeFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACE92DE0E9C900242910 /* RealTimeFeedbackManager.swift */; };
+		BF59ACF12DE0E9EA00242910 /* CalibrationOverlayViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACEE2DE0E9EA00242910 /* CalibrationOverlayViews.swift */; };
+		BF59ACF22DE0E9EA00242910 /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACEF2DE0E9EA00242910 /* CalibrationView.swift */; };
+		BF59ACF32DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACF02DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift */; };
 		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
 		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
 		BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31842DC7F6C40042EE65 /* PTDesignSystem */; };
@@ -232,6 +243,17 @@
 		BF59ACD72DDFDBB400242910 /* TabBarAware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarAware.swift; sourceTree = "<group>"; };
 		BF59ACDA2DDFDBC000242910 /* SafeAreaTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeAreaTabView.swift; sourceTree = "<group>"; };
 		BF59ACDC2DE0B09900242910 /* SyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
+		BF59ACDE2DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CalibrationEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		BF59ACDF2DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CalibrationEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		BF59ACE02DE0E99B00242910 /* CalibrationModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationModels.swift; sourceTree = "<group>"; };
+		BF59ACE42DE0E9AD00242910 /* CalibratedAPFTValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibratedAPFTValidator.swift; sourceTree = "<group>"; };
+		BF59ACE62DE0E9C900242910 /* CalibrationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationManager.swift; sourceTree = "<group>"; };
+		BF59ACE72DE0E9C900242910 /* CalibrationRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationRepository.swift; sourceTree = "<group>"; };
+		BF59ACE82DE0E9C900242910 /* DevicePositionDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePositionDetector.swift; sourceTree = "<group>"; };
+		BF59ACE92DE0E9C900242910 /* RealTimeFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealTimeFeedbackManager.swift; sourceTree = "<group>"; };
+		BF59ACEE2DE0E9EA00242910 /* CalibrationOverlayViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationOverlayViews.swift; sourceTree = "<group>"; };
+		BF59ACEF2DE0E9EA00242910 /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
+		BF59ACF02DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealTimeFeedbackOverlay.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -565,6 +587,9 @@
 		BF63E4042DB1CF5A0037CD02 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACDE2DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift */,
+				BF59ACDF2DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift */,
+				BF59ACE02DE0E99B00242910 /* CalibrationModels.swift */,
 				BF59ACDC2DE0B09900242910 /* SyncStatus.swift */,
 				BFBF2EC62DCFF6B900FFCF4F /* FitnessDeviceModels.swift */,
 				BFBF2EC72DCFF6B900FFCF4F /* RunMetricSample.swift */,
@@ -597,6 +622,10 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACE62DE0E9C900242910 /* CalibrationManager.swift */,
+				BF59ACE72DE0E9C900242910 /* CalibrationRepository.swift */,
+				BF59ACE82DE0E9C900242910 /* DevicePositionDetector.swift */,
+				BF59ACE92DE0E9C900242910 /* RealTimeFeedbackManager.swift */,
 				BF59ACD42DDFD9C300242910 /* OrientationManager.swift */,
 				BF59ACCF2DDFD3B900242910 /* TabBarVisibilityManager.swift */,
 				BFB1EDB62DD0E3A400AC9653 /* NetworkMonitorService.swift */,
@@ -719,6 +748,9 @@
 		BF63E4482DB1EB980037CD02 /* Workouts */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACEE2DE0E9EA00242910 /* CalibrationOverlayViews.swift */,
+				BF59ACEF2DE0E9EA00242910 /* CalibrationView.swift */,
+				BF59ACF02DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift */,
 				BF37B0512DCC232E00EC4D58 /* ExerciseHUDView.swift */,
 				BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */,
 				BF8F67922DC930C90065A2D7 /* WorkoutDetailView.swift */,
@@ -780,6 +812,7 @@
 		BF63E46A2DB1EBAF0037CD02 /* Grading */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACE42DE0E9AD00242910 /* CalibratedAPFTValidator.swift */,
 				BF59ACC72DDFC9F800242910 /* APFTRepValidator.swift */,
 				BF59ACC82DDFC9F800242910 /* EnhancedPullupGrader.swift */,
 				BF59ACC92DDFC9F800242910 /* EnhancedPushupGrader.swift */,
@@ -1034,6 +1067,9 @@
 			files = (
 				BF63E4052DB1CF5A0037CD02 /* Enums.swift in Sources */,
 				BF63E4062DB1CF5A0037CD02 /* UserProfileModels.swift in Sources */,
+				BF59ACF12DE0E9EA00242910 /* CalibrationOverlayViews.swift in Sources */,
+				BF59ACF22DE0E9EA00242910 /* CalibrationView.swift in Sources */,
+				BF59ACF32DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift in Sources */,
 				BF63E4072DB1CF5A0037CD02 /* LeaderboardModels.swift in Sources */,
 				BF7960DA2DCFC60500B03835 /* ProfileHeaderView.swift in Sources */,
 				BF63E4082DB1CF5A0037CD02 /* User.swift in Sources */,
@@ -1052,6 +1088,7 @@
 				BFADF9A22DC93D280016AF0B /* UIColorContrastChecker.swift in Sources */,
 				BF8F678E2DC920D80065A2D7 /* BodyPoseDetectionView.swift in Sources */,
 				BFADF9C42DC93E0A0016AF0B /* WorkoutPersistenceService.swift in Sources */,
+				BF59ACE52DE0E9AD00242910 /* CalibratedAPFTValidator.swift in Sources */,
 				BF89EB552DC9A1A7003F8FE3 /* WorkoutProgressChart.swift in Sources */,
 				BFADF9C52DC93E0A0016AF0B /* WasmerGrading.swift in Sources */,
 				BFADF9C62DC93E0A0016AF0B /* NetworkService.swift in Sources */,
@@ -1061,6 +1098,10 @@
 				BF37B0522DCC232E00EC4D58 /* ExerciseHUDView.swift in Sources */,
 				BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */,
 				BF59ACD32DDFD3FB00242910 /* CustomTabBar.swift in Sources */,
+				BF59ACEA2DE0E9C900242910 /* CalibrationManager.swift in Sources */,
+				BF59ACEB2DE0E9C900242910 /* DevicePositionDetector.swift in Sources */,
+				BF59ACEC2DE0E9C900242910 /* CalibrationRepository.swift in Sources */,
+				BF59ACED2DE0E9C900242910 /* RealTimeFeedbackManager.swift in Sources */,
 				BF63E44C2DB1EB980037CD02 /* RunWorkoutView.swift in Sources */,
 				BF63E4722DB1F3910037CD02 /* WorkoutHistoryRow.swift in Sources */,
 				BF63E44D2DB1EB980037CD02 /* PoseOverlayView.swift in Sources */,
@@ -1165,6 +1206,9 @@
 				BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */,
 				BFBF2EC22DCFE59500FFCF4F /* WorkoutSessionViewModel.swift in Sources */,
 				BFBF2EC32DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift in Sources */,
+				BF59ACE12DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift in Sources */,
+				BF59ACE22DE0E99B00242910 /* CalibrationModels.swift in Sources */,
+				BF59ACE32DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift in Sources */,
 				BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */,
 				BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */,
 				BF8F67962DC931190065A2D7 /* DashboardViewModel.swift in Sources */,
