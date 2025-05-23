@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 // MARK: - Exercise Type Enum
 enum ExerciseType: String, CaseIterable, Codable {
@@ -6,6 +7,7 @@ enum ExerciseType: String, CaseIterable, Codable {
     case pullup = "pullup"
     case situp = "situp"
     case run = "run"
+    case unknown = "unknown"
     
     var displayName: String {
         switch self {
@@ -13,6 +15,7 @@ enum ExerciseType: String, CaseIterable, Codable {
         case .pullup: return "Pull-ups"
         case .situp: return "Sit-ups"
         case .run: return "2-mile Run"
+        case .unknown: return "Unknown Exercise"
         }
     }
     
@@ -22,6 +25,7 @@ enum ExerciseType: String, CaseIterable, Codable {
         case .pullup: return 2
         case .situp: return 3
         case .run: return 4
+        case .unknown: return 0
         }
     }
 }
@@ -316,6 +320,110 @@ struct LogWorkoutRequest: Codable {
     }
 }
 
+/// Legacy model for inserting user exercises - use CreateWorkoutRequest instead
+struct InsertUserExerciseRequest: Codable {
+    let exerciseId: Int
+    let exerciseType: String
+    let repetitions: Int?
+    let formScore: Int?
+    let timeInSeconds: Int?
+    let grade: Int?
+    let completed: Bool
+    let metadata: String?
+    let deviceId: String?
+    let createdAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case exerciseId = "exercise_id"
+        case exerciseType = "exercise_type"
+        case repetitions
+        case formScore = "form_score"
+        case timeInSeconds = "time_in_seconds"
+        case grade
+        case completed
+        case metadata
+        case deviceId = "device_id"
+        case createdAt = "created_at"
+    }
+    
+    // Primary initializer matching the usage pattern in RunWorkoutViewModel
+    init(exerciseId: Int, repetitions: Int? = nil, formScore: Int? = nil, timeInSeconds: Int? = nil, grade: Int? = nil, completedAt: Date = Date()) {
+        self.exerciseId = exerciseId
+        self.repetitions = repetitions
+        self.formScore = formScore
+        self.timeInSeconds = timeInSeconds
+        self.grade = grade
+        self.completed = true
+        self.metadata = nil
+        self.deviceId = UIDevice.current.identifierForVendor?.uuidString
+        self.createdAt = completedAt
+        
+        // Map exerciseId to exerciseType string
+        switch exerciseId {
+        case 1:
+            self.exerciseType = "pushup"
+        case 2:
+            self.exerciseType = "pullup"
+        case 3:
+            self.exerciseType = "situp"
+        case 4:
+            self.exerciseType = "run"
+        case 0:
+            self.exerciseType = "unknown"
+        default:
+            self.exerciseType = "unknown"
+        }
+    }
+    
+    // Alternative initializer for backwards compatibility
+    init(exerciseType: ExerciseType, repetitions: Int? = nil, timeInSeconds: Int? = nil, formScore: Int? = nil, grade: Int? = nil) {
+        self.exerciseId = exerciseType.exerciseId
+        self.exerciseType = exerciseType.rawValue
+        self.repetitions = repetitions
+        self.formScore = formScore
+        self.timeInSeconds = timeInSeconds
+        self.grade = grade
+        self.completed = true
+        self.metadata = nil
+        self.deviceId = UIDevice.current.identifierForVendor?.uuidString
+        self.createdAt = Date()
+    }
+}
+
+/// Legacy paginated response - use PaginatedWorkoutsResponse instead
+struct PaginatedUserExerciseResponse: Codable {
+    let items: [UserExerciseRecord]
+    let totalCount: Int
+    let currentPage: Int
+    let pageSize: Int
+    let totalPages: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case items
+        case totalCount = "total_count"
+        case currentPage = "current_page"
+        case pageSize = "page_size"
+        case totalPages = "total_pages"
+    }
+}
+
+/// Legacy exercise model for API responses
+struct Exercise: Codable, Identifiable {
+    let id: Int
+    let name: String
+    let type: String
+    let description: String?
+    let category: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case type
+        case description
+        case category
+    }
+}
+
 /// Legacy model - use Workout instead
 struct UserExerciseRecord: Codable, Identifiable {
     let id: Int
@@ -346,6 +454,17 @@ struct UserExerciseRecord: Codable, Identifiable {
         case syncStatus = "sync_status"
         case createdAt = "created_at"
         case updatedAt = "updated_at"
+    }
+    
+    /// Computed property to get exercise type string from exerciseId
+    var exerciseTypeKey: String {
+        switch exerciseId {
+        case 1: return "pushup"
+        case 2: return "pullup"
+        case 3: return "situp"
+        case 4: return "run"
+        default: return "unknown"
+        }
     }
 }
 
@@ -481,6 +600,9 @@ extension CreateWorkoutRequest {
             guard repetitions != nil else {
                 throw WorkoutValidationError.missingRepetitions
             }
+        case .unknown:
+            // No specific validation for unknown exercise types
+            break
         }
     }
 }
