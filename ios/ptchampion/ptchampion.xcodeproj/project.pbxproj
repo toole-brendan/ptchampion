@@ -64,6 +64,7 @@
 		BF59ACF12DE0E9EA00242910 /* CalibrationOverlayViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACEE2DE0E9EA00242910 /* CalibrationOverlayViews.swift */; };
 		BF59ACF22DE0E9EA00242910 /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACEF2DE0E9EA00242910 /* CalibrationView.swift */; };
 		BF59ACF32DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACF02DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift */; };
+		BF59ACF52DE0FA7200242910 /* WorkoutSessionViewModel+Calibration.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACF42DE0FA7200242910 /* WorkoutSessionViewModel+Calibration.swift */; };
 		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
 		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
 		BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31842DC7F6C40042EE65 /* PTDesignSystem */; };
@@ -254,6 +255,7 @@
 		BF59ACEE2DE0E9EA00242910 /* CalibrationOverlayViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationOverlayViews.swift; sourceTree = "<group>"; };
 		BF59ACEF2DE0E9EA00242910 /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
 		BF59ACF02DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealTimeFeedbackOverlay.swift; sourceTree = "<group>"; };
+		BF59ACF42DE0FA7200242910 /* WorkoutSessionViewModel+Calibration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "WorkoutSessionViewModel+Calibration.swift"; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -792,6 +794,7 @@
 		BF63E45F2DB1EBA40037CD02 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACF42DE0FA7200242910 /* WorkoutSessionViewModel+Calibration.swift */,
 				BF59ACC52DDFC9EC00242910 /* APFTWorkoutViewModel.swift */,
 				BFBF2ECE2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift */,
 				BFBF2EC02DCFE59500FFCF4F /* WorkoutSessionViewModel.swift */,
@@ -1195,6 +1198,7 @@
 				BF63E42F2DB1EB830037CD02 /* WorkoutService.swift in Sources */,
 				BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */,
 				BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */,
+				BF59ACF52DE0FA7200242910 /* WorkoutSessionViewModel+Calibration.swift in Sources */,
 				BFBF2EC82DCFF6B900FFCF4F /* FitnessDeviceModels.swift in Sources */,
 				BFBF2EC92DCFF6B900FFCF4F /* RunMetricSample.swift in Sources */,
 				BF63E4302DB1EB830037CD02 /* CameraServiceProtocol.swift in Sources */,

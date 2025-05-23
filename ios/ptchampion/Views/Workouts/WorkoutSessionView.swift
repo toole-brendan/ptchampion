@@ -60,8 +60,18 @@ struct WorkoutSessionView: View {
                 )
             }
             
+            // Real-time Feedback Overlay
+            if viewModel.realTimeFeedbackManager.isActive {
+                RealTimeFeedbackOverlay(
+                    feedbackManager: viewModel.realTimeFeedbackManager,
+                    showDetailedFeedback: true,
+                    compactMode: false
+                )
+                .zIndex(1)
+            }
+            
             // Start Button Overlay (shown only when in ready state)
-            if viewModel.workoutState == .ready && countdown == nil {
+            if viewModel.workoutState == .ready && countdown == nil && !viewModel.needsCalibration {
                 startButtonOverlay()
                     .zIndex(1) // Ensure it's on top
             }
@@ -238,10 +248,43 @@ struct WorkoutSessionView: View {
         } message: {
             Text(viewModel.saveErrorMessage)
         }
+        // Show calibration view if needed
+        .fullScreenCover(isPresented: $viewModel.showCalibrationView) {
+            NavigationView {
+                CalibrationView(
+                    calibrationManager: CalibrationManager(
+                        poseDetectorService: PoseDetectorService(),
+                        cameraService: viewModel.cameraService
+                    ),
+                    exercise: exerciseType
+                ) { calibrationData in
+                    // Handle calibration completion
+                    viewModel.handleCalibrationComplete(calibrationData)
+                }
+                .navigationBarItems(
+                    leading: Button("Skip") {
+                        viewModel.skipCalibration()
+                    }
+                    .foregroundColor(.orange),
+                    trailing: Button("Cancel") {
+                        viewModel.showCalibrationView = false
+                        dismiss()
+                    }
+                    .foregroundColor(.red)
+                )
+            }
+        }
         // Listen for countdown timer
         .onReceive(countdownTimer) { _ in
             print("DEBUG: [WorkoutSessionView] Countdown timer tick received")
             handleCountdownTick()
+        }
+        // Check if calibration is needed after loading
+        .onChange(of: viewModel.hasCheckedCalibration) { _, hasChecked in
+            if hasChecked && viewModel.needsCalibration && viewModel.workoutState == .ready {
+                print("DEBUG: [WorkoutSessionView] Calibration needed, showing calibration view")
+                viewModel.showCalibrationView = true
+            }
         }
     }
     
@@ -492,4 +535,4 @@ struct WorkoutSessionView_Previews: PreviewProvider {
 extension ExerciseType {
     static var preview: ExerciseType { .pushup }
 }
-#endif 
+#endif

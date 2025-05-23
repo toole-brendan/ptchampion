@@ -73,6 +73,16 @@ class WorkoutSessionViewModel: ObservableObject {
     // Track device orientation for pose detection adjustments
     @Published var currentOrientation: UIInterfaceOrientation = .portrait
     
+    // MARK: - Calibration Properties
+    @Published var showCalibrationView: Bool = false
+    @Published var calibrationData: CalibrationData?
+    @Published var calibrationQuality: CalibrationQuality = .invalid
+    @Published var hasCheckedCalibration: Bool = false
+    
+    // MARK: - Real-time Feedback
+    let realTimeFeedbackManager: RealTimeFeedbackManager
+    let calibrationRepository: CalibrationRepository?
+    
     // MARK: - Feedback Message Persistence
     // To prevent form feedback from flickering away too quickly
     private var lastFormFeedback: String = ""
@@ -84,7 +94,7 @@ class WorkoutSessionViewModel: ObservableObject {
     var cameraService: CameraServiceProtocol { _cameraService }
     
     private let poseDetectorService: PoseDetectorServiceProtocol
-    private var exerciseGrader: any ExerciseGraderProtocol
+    internal var exerciseGrader: any ExerciseGraderProtocol
     private let workoutTimer: WorkoutTimer
     private var currentWorkoutSessionID: UUID?
     
@@ -114,6 +124,16 @@ class WorkoutSessionViewModel: ObservableObject {
         self.workoutTimer = workoutTimer
         self.modelContext = modelContext
         
+        // Initialize calibration repository
+        self.calibrationRepository = CalibrationRepository()
+        
+        // Initialize real-time feedback manager with APFTRepValidator
+        let apftValidator = APFTRepValidator()
+        self.realTimeFeedbackManager = RealTimeFeedbackManager(
+            poseDetectorService: poseDetectorService,
+            apftValidator: apftValidator
+        )
+        
         if let providedGrader = exerciseGrader {
             self.exerciseGrader = providedGrader
         } else {
@@ -132,6 +152,8 @@ class WorkoutSessionViewModel: ObservableObject {
         
         // Initialize current orientation
         currentOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
+        
+        // Don't check calibration in init - wait until the view is ready
     }
     
     deinit {
@@ -359,6 +381,10 @@ class WorkoutSessionViewModel: ObservableObject {
             self.exerciseGrader.resetState()
             self.updateUIFromGraderState()
             
+            // Start real-time feedback with calibration data
+            print("DEBUG: [WorkoutSessionViewModel] Starting real-time feedback with calibration: \(self.calibrationData != nil)")
+            self.realTimeFeedbackManager.startFeedback(for: self.exerciseType, with: self.calibrationData)
+            
             // Force workout state to counting and ensure isPaused is false
             self.workoutState = .counting
             self.isPaused = false
@@ -436,6 +462,9 @@ class WorkoutSessionViewModel: ObservableObject {
         // Always stop timer and set paused
         isPaused = true
         workoutTimer.stop()
+        
+        // Stop real-time feedback
+        realTimeFeedbackManager.stopFeedback()
         
         // Stop camera session immediately to prevent frames from continuing to process
         cameraService.stopSession()
@@ -671,4 +700,4 @@ internal final class WorkoutSessionPlaceholderGrader: ObservableObject, Exercise
     func calculateFinalScore() -> Double? {
         return nil
     }
-} 
+}
