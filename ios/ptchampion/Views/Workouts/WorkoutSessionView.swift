@@ -402,7 +402,9 @@ struct WorkoutSessionView: View {
             // Start the actual workout in the next render cycle
             DispatchQueue.main.async {
                 print("DEBUG: [WorkoutSessionView] Starting workout (async)")
+                print("DEBUG: [WorkoutSessionView] About to call viewModel.startWorkout()")
                 viewModel.startWorkout()
+                print("DEBUG: [WorkoutSessionView] viewModel.startWorkout() completed")
             }
         }
     }

@@ -13,22 +13,42 @@ class WorkoutTimer: ObservableObject {
     private var internalPauseState: Bool = false
 
     init() {
+        print("DEBUG: [WorkoutTimer] Initializing WorkoutTimer")
         // Update formatted time whenever elapsedTime changes
         $elapsedTime
-            .map { self.formatTime($0) }
+            .map { seconds in
+                print("DEBUG: [WorkoutTimer] elapsedTime changed to \(seconds)")
+                return self.formatTime(seconds)
+            }
             .assign(to: &$formattedElapsedTime)
+        
+        print("DEBUG: [WorkoutTimer] WorkoutTimer initialized - initial formattedElapsedTime: \(formattedElapsedTime)")
     }
 
     func start() {
-        guard !isRunning else { return }
+        guard !isRunning else { 
+            print("DEBUG: [WorkoutTimer] start() called but timer is already running")
+            return 
+        }
+        
+        print("DEBUG: [WorkoutTimer] Starting timer...")
         resetState() // Reset before starting a new timer session
         workoutStartTime = Date()
         internalPauseState = false
         isRunning = true
+        
+        print("DEBUG: [WorkoutTimer] Creating timer subscription...")
         timerSubscription = Timer.publish(every: 1, on: .main, in: .common).autoconnect().sink { [weak self] _ in
-            guard let self = self, self.isRunning, !self.internalPauseState else { return }
+            guard let self = self, self.isRunning, !self.internalPauseState else { 
+                print("DEBUG: [WorkoutTimer] Timer tick skipped - isRunning: \(self?.isRunning ?? false), paused: \(self?.internalPauseState ?? false)")
+                return 
+            }
+            
             self.elapsedTime = self.accumulatedTime + Int(Date().timeIntervalSince(self.workoutStartTime ?? Date()))
+            print("DEBUG: [WorkoutTimer] Timer tick - elapsedTime: \(self.elapsedTime), formatted: \(self.formattedElapsedTime)")
         }
+        
+        print("DEBUG: [WorkoutTimer] Timer started successfully, isRunning: \(isRunning)")
     }
 
     func pause() {
@@ -64,17 +84,20 @@ class WorkoutTimer: ObservableObject {
     }
 
     func reset() {
+        print("DEBUG: [WorkoutTimer] reset() called")
         stop() // Ensure current timer is stopped
         resetState()
-        print("Timer reset.")
+        print("DEBUG: [WorkoutTimer] Timer reset completed.")
     }
     
     private func resetState() {
+        print("DEBUG: [WorkoutTimer] resetState() called - resetting all timer state")
         elapsedTime = 0
         accumulatedTime = 0
         workoutStartTime = nil
         internalPauseState = false
         // isRunning will be set by start()
+        print("DEBUG: [WorkoutTimer] resetState() completed - elapsedTime: \(elapsedTime), formattedElapsedTime: \(formattedElapsedTime)")
     }
 
     private func formatTime(_ totalSeconds: Int) -> String {

@@ -46,6 +46,9 @@ class WorkoutSessionViewModel: ObservableObject {
     @Published var isSoundEnabled: Bool = true
     @Published var workoutState: WorkoutSessionState = .initializing
     
+    // Add published property for elapsed time to ensure UI updates
+    @Published var elapsedTimeFormatted: String = "00:00"
+    
     // For workout completion
     @Published var showWorkoutCompleteView: Bool = false
     @Published var completedWorkoutResult: WorkoutResultSwiftData?
@@ -96,11 +99,6 @@ class WorkoutSessionViewModel: ObservableObject {
     // Add a property to track if cleanup has already been performed
     private var hasPerformedCleanup: Bool = false
     
-    // MARK: - Computed Properties
-    var elapsedTimeFormatted: String {
-        workoutTimer.formattedElapsedTime
-    }
-    
     // MARK: - Initialization
     init(
         exerciseType: ExerciseType,
@@ -147,6 +145,14 @@ class WorkoutSessionViewModel: ObservableObject {
     
     // MARK: - Setup and Cleanup
     private func setupSubscribers() {
+        // Timer updates - observe the timer's formatted elapsed time
+        workoutTimer.$formattedElapsedTime
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] formattedTime in
+                self?.elapsedTimeFormatted = formattedTime
+            }
+            .store(in: &cancellables)
+        
         // Camera authorization status
         cameraService.authorizationStatusPublisher
             .removeDuplicates()
@@ -342,6 +348,7 @@ class WorkoutSessionViewModel: ObservableObject {
             
             // Mark workout as active
             self.isWorkoutActive = true
+            print("DEBUG: [WorkoutSessionViewModel] Set isWorkoutActive = true")
             
             // Only create a new session ID if we don't already have one
             if self.currentWorkoutSessionID == nil {
@@ -356,10 +363,13 @@ class WorkoutSessionViewModel: ObservableObject {
             self.workoutState = .counting
             self.isPaused = false
             self.feedbackMessage = "Workout active"
+            print("DEBUG: [WorkoutSessionViewModel] Set workoutState = .counting, isPaused = false")
             
             // Always start the timer fresh
+            print("DEBUG: [WorkoutSessionViewModel] About to reset and start timer")
             self.workoutTimer.reset()
             self.workoutTimer.start()
+            print("DEBUG: [WorkoutSessionViewModel] Timer started, isRunning: \(self.workoutTimer.isRunning)")
             
             // Start camera in next run loop
             DispatchQueue.main.async {
