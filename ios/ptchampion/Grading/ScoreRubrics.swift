@@ -1,3 +1,5 @@
+// ios/ptchampion/Grading/ScoreRubrics.swift
+
 import Foundation
 
 /// Scoring rubrics for each exercise type based on the APFT (17-21 Male) standards
