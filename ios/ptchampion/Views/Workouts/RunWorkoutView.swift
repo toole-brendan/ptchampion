@@ -292,7 +292,7 @@ struct RunWorkoutView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .background(AppTheme.GeneratedColors.deepOps)
-            .cornerRadius(8, corners: [.topLeft, .topRight])
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
             
             // Device status content with cream background
             VStack(spacing: 12) {
@@ -396,8 +396,8 @@ struct RunWorkoutView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color(hex: "#EDE9DB")) // cream-dark from web
-            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
         .padding(.horizontal, 16)
         .padding(.top, 16)
@@ -485,7 +485,7 @@ struct RunWorkoutView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AppTheme.GeneratedColors.deepOps)
-            .cornerRadius(8, corners: [.topLeft, .topRight])
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
             
             // Metrics content with cream background
             VStack(spacing: 20) {
@@ -632,8 +632,8 @@ struct RunWorkoutView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color(hex: "#EDE9DB")) // cream-dark from web
-            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
         .padding(.horizontal, 16)
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)

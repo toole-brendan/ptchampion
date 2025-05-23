@@ -98,12 +98,15 @@ struct ProfileView: View {
     @State private var passwordMessage: String? = nil
     @State private var hapticGenerator = UIImpactFeedbackGenerator(style: .medium)
     @State private var showingSettings = false
+    
+    // Animation states
+    @State private var headerVisible = false
+    @State private var sectionsVisible = false
 
     var body: some View {
-        // Replace ScreenContainer with custom view matching WorkoutHistoryView style
         NavigationStack {
             ZStack {
-                // Ambient Background Gradient
+                // Ambient Background Gradient - matching Dashboard and WorkoutHistory
                 RadialGradient(
                     gradient: Gradient(colors: [
                         AppTheme.GeneratedColors.background.opacity(0.9),
@@ -117,7 +120,7 @@ struct ProfileView: View {
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                        // Custom styled header matching WorkoutHistoryView
+                        // Updated header matching WorkoutHistoryView style
                         VStack(spacing: 16) {
                             HStack {
                                 Text("PROFILE")
@@ -127,7 +130,7 @@ struct ProfileView: View {
                                 
                                 Spacer()
                                 
-                                // Add Settings button
+                                // Settings button
                                 Button {
                                     hapticGenerator.impactOccurred(intensity: 0.3)
                                     showingSettings = true
@@ -135,6 +138,11 @@ struct ProfileView: View {
                                     Image(systemName: "gearshape.fill")
                                         .font(.system(size: 22))
                                         .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                        .frame(width: 44, height: 44)
+                                        .background(
+                                            Circle()
+                                                .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
+                                        )
                                 }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -143,49 +151,34 @@ struct ProfileView: View {
                                 .frame(width: 120, height: 1.5)
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text("MANAGE YOUR ACCOUNT")
+                                .font(.system(size: 16, weight: .regular))
+                                .tracking(1.5)
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .padding(.top, 20)
                         .padding(.bottom, 20)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(headerVisible ? 1 : 0)
+                        .offset(y: headerVisible ? 0 : 10)
                         
-                        // Edit Profile Section
+                        // Edit Profile Section - Dashboard style
                         profileEditSection
+                            .opacity(sectionsVisible ? 1 : 0)
+                            .offset(y: sectionsVisible ? 0 : 15)
                         
-                        // Password Management Section
+                        // Password Management Section - Dashboard style
                         passwordManagementSection
+                            .opacity(sectionsVisible ? 1 : 0)
+                            .offset(y: sectionsVisible ? 0 : 15)
+                            .animation(.spring(response: 0.4, dampingFraction: 0.6).delay(0.1), value: sectionsVisible)
                         
-                        // Logout Button (replaces Account Actions / Danger Zone section)
-                        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-                            Button {
-                                hapticGenerator.impactOccurred(intensity: 0.5)
-                                authViewModel.logout()
-                                navigationState.navigateTo(.login)
-                            } label: {
-                                HStack {
-                                    if false { // Placeholder for consistency with other buttons
-                                        ProgressView()
-                                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                            .padding(.trailing, 8)
-                                    }
-                                    Image(systemName: "rectangle.portrait.and.arrow.right")
-                                        .padding(.trailing, 4)
-                                        .foregroundColor(AppTheme.GeneratedColors.error)
-                                    Text("Log Out")
-                                        .font(.system(size: 16, weight: .semibold))
-                                        .foregroundColor(AppTheme.GeneratedColors.error)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(AppTheme.GeneratedColors.deepOps)
-                                .cornerRadius(8)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(AppTheme.GeneratedColors.error, lineWidth: 1.5)
-                                )
-                            }
-                            .padding(.top, 8)
-                        }
-                        .padding(.bottom, 8)
+                        // Account Actions Section - Dashboard style
+                        accountActionsSection
+                            .opacity(sectionsVisible ? 1 : 0)
+                            .offset(y: sectionsVisible ? 0 : 15)
+                            .animation(.spring(response: 0.4, dampingFraction: 0.6).delay(0.2), value: sectionsVisible)
                     }
                     .padding(AppTheme.GeneratedSpacing.contentPadding)
                 }
@@ -194,32 +187,47 @@ struct ProfileView: View {
                 if showSuccessMessage {
                     VStack {
                         Spacer()
-                        Text("Profile updated successfully")
-                            .padding()
-                            .background(AppTheme.GeneratedColors.success)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .padding(.bottom, 20)
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.white)
+                            Text("Profile updated successfully")
+                                .foregroundColor(.white)
+                                .font(AppTheme.GeneratedTypography.bodyBold())
+                        }
+                        .padding()
+                        .background(AppTheme.GeneratedColors.success)
+                        .cornerRadius(8)
+                        .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                        .padding(.bottom, 20)
                     }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
                 
                 if showPasswordSuccessMessage {
                     VStack {
                         Spacer()
-                        Text("Password updated successfully")
-                            .padding()
-                            .background(AppTheme.GeneratedColors.success)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .padding(.bottom, 20)
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.white)
+                            Text("Password updated successfully")
+                                .foregroundColor(.white)
+                                .font(AppTheme.GeneratedTypography.bodyBold())
+                        }
+                        .padding()
+                        .background(AppTheme.GeneratedColors.success)
+                        .cornerRadius(8)
+                        .shadow(color: Color.black.opacity(0.2), radius: 4, x: 0, y: 2)
+                        .padding(.bottom, 20)
                     }
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
         }
-        .contentContainer() // Add this line
+        .contentContainer()
         .onAppear {
             hapticGenerator.prepare()
             loadUserData()
+            animateContentIn()
         }
         .sheet(isPresented: $showingSettings) {
             NavigationView {
@@ -233,219 +241,283 @@ struct ProfileView: View {
     
     // MARK: - Profile Edit Section
     private var profileEditSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            PTCard(style: .standard) {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                    HStack {
-                        Image(systemName: "person.circle")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .font(.system(size: 20))
-                        Text("Edit Profile")
-                            .font(AppTheme.GeneratedTypography.heading(size: 18))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
+        VStack(alignment: .leading, spacing: 0) {
+            // Dark header with brass-gold text
+            VStack(alignment: .leading, spacing: 4) {
+                Text("EDIT PROFILE")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     .padding(.bottom, 4)
-                    
-                    Text("Update your personal information.")
-                        .font(AppTheme.GeneratedTypography.body(size: 14))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    
-                    // Display message if any
-                    if let message = message {
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("UPDATE YOUR PERSONAL INFORMATION")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
+            
+            // Light content area
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                // Display message if any
+                if let message = message {
+                    HStack {
+                        Image(systemName: showSuccessMessage ? "checkmark.circle" : "exclamationmark.circle")
+                            .foregroundColor(showSuccessMessage ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.error)
                         Text(message)
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(showSuccessMessage ? AppTheme.GeneratedColors.success.opacity(0.1) : AppTheme.GeneratedColors.error.opacity(0.1))
-                            )
+                            .font(AppTheme.GeneratedTypography.body())
                             .foregroundColor(showSuccessMessage ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.error)
                     }
-                    
-                    // First Name
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("First Name")
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        TextField("Your first name", text: $firstName)
-                            .font(.system(size: 16))
-                            .padding()
-                            .background(AppTheme.GeneratedColors.background)
-                            .cornerRadius(8)
-                            .disabled(isSubmitting)
-                    }
-                    
-                    // Last Name
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Last Name")
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        TextField("Your last name", text: $lastName)
-                            .font(.system(size: 16))
-                            .padding()
-                            .background(AppTheme.GeneratedColors.background)
-                            .cornerRadius(8)
-                            .disabled(isSubmitting)
-                    }
-                    
-                    // Username
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Username")
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        TextField("Your unique username", text: $username)
-                            .font(.system(size: 16))
-                            .padding()
-                            .background(AppTheme.GeneratedColors.background)
-                            .cornerRadius(8)
-                            .disabled(isSubmitting)
-                    }
-                    
-                    // Email
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Email")
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        TextField("Your email address", text: $email)
-                            .font(.system(size: 16))
-                            .padding()
-                            .background(AppTheme.GeneratedColors.background)
-                            .cornerRadius(8)
-                            .keyboardType(.emailAddress)
-                            .autocapitalization(.none)
-                            .disabled(isSubmitting)
-                    }
-                    
-                    // Save button
-                    Button {
-                        saveProfile()
-                    } label: {
-                        HStack {
-                            if isSubmitting {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .padding(.trailing, 8)
-                            }
-                            Text(isSubmitting ? "Saving..." : "Save Changes")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(AppTheme.GeneratedColors.deepOps)
-                        .cornerRadius(8)
-                    }
-                    .disabled(isSubmitting || !formDataHasChanges())
-                    .padding(.top, 8)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(showSuccessMessage ? AppTheme.GeneratedColors.success.opacity(0.1) : AppTheme.GeneratedColors.error.opacity(0.1))
+                    )
                 }
-                .padding()
+                
+                // Form fields with consistent styling
+                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                    formField(title: "FIRST NAME", text: $firstName, placeholder: "Your first name")
+                    formField(title: "LAST NAME", text: $lastName, placeholder: "Your last name")
+                    formField(title: "USERNAME", text: $username, placeholder: "Your unique username")
+                    formField(title: "EMAIL", text: $email, placeholder: "Your email address", keyboardType: .emailAddress)
+                }
+                
+                // Save button - matching dashboard style
+                Button {
+                    saveProfile()
+                } label: {
+                    HStack {
+                        if isSubmitting {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.brassGold))
+                                .scaleEffect(0.8)
+                                .padding(.trailing, 8)
+                        }
+                        Text(isSubmitting ? "SAVING..." : "SAVE CHANGES")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(AppTheme.GeneratedColors.deepOps)
+                    .cornerRadius(8)
+                }
+                .disabled(isSubmitting || !formDataHasChanges())
+                .opacity((!isSubmitting && formDataHasChanges()) ? 1 : 0.6)
             }
-            .padding(.bottom, 8)
+            .padding()
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     // MARK: - Password Management Section
     private var passwordManagementSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            PTCard(style: .standard) {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                    HStack {
-                        Image(systemName: "lock.circle")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .font(.system(size: 20))
-                        Text("Password Management")
-                            .font(AppTheme.GeneratedTypography.heading(size: 18))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
+        VStack(alignment: .leading, spacing: 0) {
+            // Dark header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("PASSWORD MANAGEMENT")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     .padding(.bottom, 4)
-                    
-                    Text("Update your password regularly for security.")
-                        .font(AppTheme.GeneratedTypography.body(size: 14))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    
-                    // Display password message if any
-                    if let passwordMessage = passwordMessage {
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("UPDATE YOUR PASSWORD REGULARLY FOR SECURITY")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
+            
+            // Light content area
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                // Display password message if any
+                if let passwordMessage = passwordMessage {
+                    HStack {
+                        Image(systemName: showPasswordSuccessMessage ? "checkmark.circle" : "exclamationmark.circle")
+                            .foregroundColor(showPasswordSuccessMessage ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.error)
                         Text(passwordMessage)
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .padding()
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(showPasswordSuccessMessage ? AppTheme.GeneratedColors.success.opacity(0.1) : AppTheme.GeneratedColors.error.opacity(0.1))
-                            )
+                            .font(AppTheme.GeneratedTypography.body())
                             .foregroundColor(showPasswordSuccessMessage ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.error)
                     }
-                    
-                    // New Password
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("New Password")
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        SecureField("Enter new password", text: $newPassword)
-                            .font(.system(size: 16))
-                            .padding()
-                            .background(AppTheme.GeneratedColors.background)
-                            .cornerRadius(8)
-                            .disabled(isChangingPassword)
-                            .onChange(of: newPassword) { _, newValue in
-                                validatePasswords()
-                            }
-                    }
-                    
-                    // Confirm Password
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Confirm Password")
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        SecureField("Confirm new password", text: $confirmPassword)
-                            .font(.system(size: 16))
-                            .padding()
-                            .background(AppTheme.GeneratedColors.background)
-                            .cornerRadius(8)
-                            .disabled(isChangingPassword)
-                            .onChange(of: confirmPassword) { _, newValue in
-                                validatePasswords()
-                            }
-                    }
-                    
-                    if !passwordsMatch && !newPassword.isEmpty && !confirmPassword.isEmpty {
-                        Text("Passwords do not match")
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                    }
-                    
-                    // Change Password button
-                    Button {
-                        changePassword()
-                    } label: {
-                        HStack {
-                            if isChangingPassword {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .padding(.trailing, 8)
-                            }
-                            Text(isChangingPassword ? "Updating..." : "Change Password")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(AppTheme.GeneratedColors.deepOps)
-                        .cornerRadius(8)
-                    }
-                    .disabled(isChangingPassword || newPassword.isEmpty || confirmPassword.isEmpty || !passwordsMatch)
-                    .padding(.top, 8)
+                    .padding()
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(showPasswordSuccessMessage ? AppTheme.GeneratedColors.success.opacity(0.1) : AppTheme.GeneratedColors.error.opacity(0.1))
+                    )
                 }
-                .padding()
+                
+                // Password fields
+                VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                    secureFormField(title: "NEW PASSWORD", text: $newPassword, placeholder: "Enter new password")
+                    secureFormField(title: "CONFIRM PASSWORD", text: $confirmPassword, placeholder: "Confirm new password")
+                }
+                
+                if !passwordsMatch && !newPassword.isEmpty && !confirmPassword.isEmpty {
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 14))
+                        Text("Passwords do not match")
+                            .font(AppTheme.GeneratedTypography.caption())
+                    }
+                    .foregroundColor(AppTheme.GeneratedColors.error)
+                }
+                
+                // Change Password button
+                Button {
+                    changePassword()
+                } label: {
+                    HStack {
+                        if isChangingPassword {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: AppTheme.GeneratedColors.brassGold))
+                                .scaleEffect(0.8)
+                                .padding(.trailing, 8)
+                        }
+                        Text(isChangingPassword ? "UPDATING..." : "CHANGE PASSWORD")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(AppTheme.GeneratedColors.deepOps)
+                    .cornerRadius(8)
+                }
+                .disabled(isChangingPassword || newPassword.isEmpty || confirmPassword.isEmpty || !passwordsMatch)
+                .opacity((newPassword.isEmpty || confirmPassword.isEmpty || !passwordsMatch || isChangingPassword) ? 0.6 : 1)
             }
-            .padding(.bottom, 8)
+            .padding()
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86))
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
+        }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // MARK: - Account Actions Section
+    private var accountActionsSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Dark header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("ACCOUNT ACTIONS")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("MANAGE YOUR ACCOUNT SESSION")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
+            
+            // Light content area with logout button
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.5)
+                    authViewModel.logout()
+                    navigationState.navigateTo(.login)
+                } label: {
+                    HStack {
+                        Image(systemName: "rectangle.portrait.and.arrow.right")
+                            .font(.system(size: 16))
+                        Text("LOG OUT")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .foregroundColor(AppTheme.GeneratedColors.error)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(Color.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(AppTheme.GeneratedColors.error, lineWidth: 1.5)
+                    )
+                    .cornerRadius(8)
+                }
+            }
+            .padding()
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86))
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
+        }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // MARK: - Helper Views
+    @ViewBuilder
+    private func formField(
+        title: String,
+        text: Binding<String>,
+        placeholder: String,
+        keyboardType: UIKeyboardType = .default
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(AppTheme.GeneratedColors.deepOps.opacity(0.8))
+                .tracking(1)
+            
+            TextField(placeholder, text: text)
+                .font(AppTheme.GeneratedTypography.body())
+                .padding()
+                .background(Color.white)
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(AppTheme.GeneratedColors.deepOps.opacity(0.2), lineWidth: 1)
+                )
+                .disabled(isSubmitting)
+                .keyboardType(keyboardType)
+                .autocapitalization(keyboardType == .emailAddress ? .none : .words)
+        }
+    }
+    
+    @ViewBuilder
+    private func secureFormField(
+        title: String,
+        text: Binding<String>,
+        placeholder: String
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(AppTheme.GeneratedColors.deepOps.opacity(0.8))
+                .tracking(1)
+            
+            SecureField(placeholder, text: text)
+                .font(AppTheme.GeneratedTypography.body())
+                .padding()
+                .background(Color.white)
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(AppTheme.GeneratedColors.deepOps.opacity(0.2), lineWidth: 1)
+                )
+                .disabled(isChangingPassword)
+                .onChange(of: text.wrappedValue) { _, _ in
+                    validatePasswords()
+                }
         }
     }
     
@@ -476,14 +548,15 @@ struct ProfileView: View {
                 user.lastName = self.lastName
                 user.username = self.username
                 user.email = self.email
-                // Update the auth state with the modified user
                 self.authViewModel.setMockUser(user)
             }
             
             // Auto-dismiss success message
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                self.showSuccessMessage = false
-                self.message = nil
+                withAnimation {
+                    self.showSuccessMessage = false
+                    self.message = nil
+                }
             }
         }
     }
@@ -495,7 +568,6 @@ struct ProfileView: View {
     private func changePassword() {
         hapticGenerator.impactOccurred(intensity: 0.5)
         
-        // Validate passwords
         if newPassword.isEmpty {
             passwordMessage = "Please enter a new password"
             return
@@ -521,13 +593,14 @@ struct ProfileView: View {
             
             // Auto-dismiss success message
             DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-                self.showPasswordSuccessMessage = false
-                self.passwordMessage = nil
+                withAnimation {
+                    self.showPasswordSuccessMessage = false
+                    self.passwordMessage = nil
+                }
             }
         }
     }
     
-    // Compares form data with original user data to see if anything changed
     private func formDataHasChanges() -> Bool {
         guard case .authenticated(let user) = authViewModel.authState else { return false }
         
@@ -538,7 +611,23 @@ struct ProfileView: View {
             email != (user.email ?? "")
         )
     }
+    
+    private func animateContentIn() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                headerVisible = true
+            }
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                sectionsVisible = true
+            }
+        }
+    }
 }
+
+
 
 // Preview
 struct ProfileView_Previews: PreviewProvider {
@@ -549,6 +638,7 @@ struct ProfileView_Previews: PreviewProvider {
         }
     }
 }
+
 
 // Mock AuthViewModel for Previews
 class MockAuthViewModel: AuthViewModel {

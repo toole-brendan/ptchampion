@@ -65,17 +65,17 @@ struct DashboardView: View {
                             Text("PT CHAMPION")
                                 .font(.system(size: 48, weight: .heavy))
                                 .tracking(2) // Add letter spacing
-                                .foregroundColor(Color(hex: "#C0A860")) // More accurate gold color
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold) // More accurate gold color
                                 .frame(maxWidth: .infinity, alignment: .center)
                             
                             Rectangle()
                                 .frame(width: 120, height: 1.5)
-                                .foregroundColor(Color(hex: "#C0A860"))
+                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
                             
                             Text("FITNESS EVALUATION SYSTEM")
                                 .font(.system(size: 18, weight: .regular))
                                 .tracking(1.5) // Add letter spacing
-                                .foregroundColor(Color(hex: "#4A4A3A"))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
                                 .frame(maxWidth: .infinity, alignment: .center)
                         }
                         .padding(.top, 20)
@@ -221,7 +221,7 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
             .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
         }
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
@@ -336,7 +336,7 @@ struct DashboardView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color(hex: "#EDE9DB")) // cream-dark from web
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
             .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             .opacity(quickLinksVisible ? 1 : 0)
             .offset(y: quickLinksVisible ? 0 : 15)
@@ -508,7 +508,7 @@ struct DashboardView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-                .background(Color(hex: "#EDE9DB")) // cream-dark from web
+                .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
                 .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             }
             .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
@@ -577,7 +577,7 @@ struct DashboardView: View {
                 }
                 .padding(.vertical, 40)
                 .frame(maxWidth: .infinity)
-                .background(Color(hex: "#EDE9DB")) // cream-dark from web
+                .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
                 .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             }
             .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
@@ -690,29 +690,4 @@ struct DashboardView: View {
 
 
 
-// Helper for hex color
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue: Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-} 
+ 

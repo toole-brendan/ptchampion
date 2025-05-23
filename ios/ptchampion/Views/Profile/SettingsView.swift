@@ -21,6 +21,10 @@ struct SettingsView: View {
     @AppStorage("geolocation") private var geolocationEnabled: Bool = false
     @AppStorage("notifications") private var notificationsEnabled: Bool = false
     
+    // Animation states
+    @State private var headerVisible = false
+    @State private var sectionsVisible = [false, false, false, false]
+    
     // App version
     private let appVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
     
@@ -31,7 +35,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Ambient Background Gradient
+                // Ambient Background Gradient - matching Dashboard style
                 RadialGradient(
                     gradient: Gradient(colors: [
                         AppTheme.GeneratedColors.background.opacity(0.9),
@@ -45,10 +49,10 @@ struct SettingsView: View {
                 
                 ScrollView {
                     VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                        // Page Header
+                        // Updated header matching other views
                         VStack(spacing: 16) {
                             HStack {
-                                Text("Settings")
+                                Text("SETTINGS")
                                     .font(.system(size: 32, weight: .bold))
                                     .tracking(2)
                                     .foregroundColor(AppTheme.GeneratedColors.deepOps)
@@ -59,11 +63,11 @@ struct SettingsView: View {
                                     hapticGenerator.impactOccurred(intensity: 0.3)
                                     dismiss()
                                 } label: {
-                                    HStack {
+                                    HStack(spacing: 6) {
                                         Image(systemName: "arrow.left")
-                                            .font(.system(size: 14))
-                                        Text("BACK TO PROFILE")
-                                            .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
+                                            .font(.system(size: 12))
+                                        Text("BACK")
+                                            .font(.system(size: 12, weight: .semibold))
                                     }
                                     .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                     .padding(.vertical, 8)
@@ -77,27 +81,46 @@ struct SettingsView: View {
                                 .frame(width: 120, height: 1.5)
                                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                                 .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text("CONFIGURE YOUR PREFERENCES")
+                                .font(.system(size: 16, weight: .regular))
+                                .tracking(1.5)
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                         }
-                        .padding(.bottom, AppTheme.GeneratedSpacing.small)
+                        .padding(.top, 20)
+                        .padding(.bottom, 20)
+                        .opacity(headerVisible ? 1 : 0)
+                        .offset(y: headerVisible ? 0 : 10)
                         
                         // General Settings Section
                         generalSettingsSection
+                            .opacity(sectionsVisible[0] ? 1 : 0)
+                            .offset(y: sectionsVisible[0] ? 0 : 15)
                         
                         // Fitness Devices Section
                         fitnessDevicesSection
+                            .opacity(sectionsVisible[1] ? 1 : 0)
+                            .offset(y: sectionsVisible[1] ? 0 : 15)
                         
                         // Legal & About Section
                         legalAndAboutSection
+                            .opacity(sectionsVisible[2] ? 1 : 0)
+                            .offset(y: sectionsVisible[2] ? 0 : 15)
                         
-                        // Danger Zone Section (moved from ProfileView)
+                        // Danger Zone Section
                         dangerZoneSection
+                            .opacity(sectionsVisible[3] ? 1 : 0)
+                            .offset(y: sectionsVisible[3] ? 0 : 15)
                     }
                     .padding(AppTheme.GeneratedSpacing.contentPadding)
                 }
             }
+            .contentContainer()
             .navigationBarHidden(true)
             .onAppear {
                 hapticGenerator.prepare()
+                animateContentIn()
             }
             .sheet(isPresented: $showingDeviceManagerSheet) {
                 NavigationView {
@@ -114,7 +137,6 @@ struct SettingsView: View {
                 Button("Delete", role: .destructive) {
                     isDeletingAccount = true
                     // In a real app, this would call the delete account API
-                    // Then log the user out
                     authViewModel.logout()
                     dismiss()
                     navigationState.navigateTo(.login)
@@ -126,283 +148,365 @@ struct SettingsView: View {
         }
     }
     
-    // MARK: - Danger Zone Section
-    private var dangerZoneSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            PTCard(style: .standard) {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle")
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                            .font(.system(size: 20))
-                        Text("Danger Zone")
-                            .font(.system(size: 18, weight: .bold, design: .monospaced))
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                    }
-                    .padding(.bottom, 4)
-                    
-                    Text("Permanently delete your account and all data.")
-                        .font(.system(size: 14, design: .monospaced))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    
-                    // Delete Account button
-                    Button {
-                        showingDeleteConfirmation = true
-                    } label: {
-                        HStack {
-                            if isDeletingAccount {
-                                ProgressView()
-                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                    .padding(.trailing, 8)
-                            }
-                            Text(isDeletingAccount ? "Deleting..." : "Delete Account")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.white)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(AppTheme.GeneratedColors.error)
-                        .cornerRadius(8)
-                    }
-                    .disabled(isDeletingAccount)
-                }
-                .padding()
-            }
-        }
-    }
-    
     // MARK: - General Settings Section
     private var generalSettingsSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            PTCard(style: .standard) {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                    HStack {
-                        Image(systemName: "gearshape.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .font(.system(size: 20))
-                        Text("General Settings")
-                            .font(AppTheme.GeneratedTypography.heading(size: 18))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
+        VStack(alignment: .leading, spacing: 0) {
+            // Dark header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("GENERAL SETTINGS")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     .padding(.bottom, 4)
-                    
-                    Text("Configure application preferences and permissions.")
-                        .font(AppTheme.GeneratedTypography.body(size: 14))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    
-                    // Geolocation Setting
-                    settingToggle(
-                        icon: "location.fill", 
-                        title: "Geolocation Tracking", 
-                        description: "Allow location tracking for runs and local leaderboards.",
-                        isOn: $geolocationEnabled,
-                        action: handleGeolocationToggle
-                    )
-                    
-                    Divider().padding(.vertical, 8)
-                    
-                    // Notifications Setting
-                    settingToggle(
-                        icon: "bell.fill", 
-                        title: "Notifications", 
-                        description: "Receive reminders and updates about your workouts.",
-                        isOn: $notificationsEnabled,
-                        action: handleNotificationsToggle
-                    )
-                }
-                .padding()
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("CONFIGURE APPLICATION PREFERENCES")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
             }
-            .padding(.bottom, 8)
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
+            
+            // Light content area
+            VStack(spacing: 0) {
+                // Geolocation Setting
+                settingToggleRow(
+                    icon: "location.fill",
+                    title: "GEOLOCATION TRACKING",
+                    description: "Allow location tracking for runs and local leaderboards",
+                    isOn: $geolocationEnabled,
+                    action: handleGeolocationToggle
+                )
+                
+                Divider()
+                    .background(AppTheme.GeneratedColors.deepOps.opacity(0.1))
+                    .padding(.horizontal, AppTheme.GeneratedSpacing.medium)
+                
+                // Notifications Setting
+                settingToggleRow(
+                    icon: "bell.fill",
+                    title: "NOTIFICATIONS",
+                    description: "Receive reminders and updates about your workouts",
+                    isOn: $notificationsEnabled,
+                    action: handleNotificationsToggle
+                )
+            }
+            .padding(.vertical, AppTheme.GeneratedSpacing.small)
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86))
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     // MARK: - Fitness Devices Section
     private var fitnessDevicesSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            PTCard(style: .standard) {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
-                    HStack {
-                        Image(systemName: "antenna.radiowaves.left.and.right")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .font(.system(size: 20))
-                        Text("Fitness Devices")
-                            .font(AppTheme.GeneratedTypography.heading(size: 18))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
+        VStack(alignment: .leading, spacing: 0) {
+            // Dark header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("FITNESS DEVICES")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
                     .padding(.bottom, 4)
-                    
-                    Text("Connect or manage fitness tracking devices like watches or heart rate monitors.")
-                        .font(AppTheme.GeneratedTypography.body(size: 14))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    
-                    Button {
-                        hapticGenerator.impactOccurred(intensity: 0.5)
-                        showingDeviceManagerSheet = true
-                    } label: {
-                        HStack {
-                            Label("Fitness Devices", systemImage: "antenna.radiowaves.left.and.right")
-                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.footnote)
-                                .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                        }
-                        .contentShape(Rectangle())
-                    }
-                    .frame(height: 44)
-                    .padding()
-                    .background(AppTheme.GeneratedColors.background.opacity(0.5))
-                    .cornerRadius(8)
-                }
-                .padding()
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("CONNECT FITNESS TRACKING DEVICES")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
             }
-            .padding(.bottom, 8)
-        }
-    }
-    
-    // MARK: - Legal & About Section
-    private var legalAndAboutSection: some View {
-        VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-            PTCard(style: .standard) {
-                VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.medium) {
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
+            
+            // Light content area
+            VStack(spacing: 0) {
+                Button {
+                    hapticGenerator.impactOccurred(intensity: 0.5)
+                    showingDeviceManagerSheet = true
+                } label: {
                     HStack {
-                        Image(systemName: "info.circle.fill")
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .font(.system(size: 20))
-                        Text("About & Legal")
-                            .font(AppTheme.GeneratedTypography.heading(size: 18))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
-                    .padding(.bottom, 4)
-                    
-                    Text("App information and legal documents.")
-                        .font(AppTheme.GeneratedTypography.body(size: 14))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    
-                    // App Version
-                    HStack {
-                        HStack {
-                            Image(systemName: "heart.fill")
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                                .font(.system(size: 16))
-                            Text("App Version")
-                                .font(AppTheme.GeneratedTypography.bodyBold(size: 16))
-                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
+                        // Icon in circular container
+                        ZStack {
+                            Circle()
+                                .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                                .frame(width: 40, height: 40)
+                            
+                            Image(systemName: "antenna.radiowaves.left.and.right")
+                                .font(.system(size: 20))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("MANAGE DEVICES")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                            
+                            Text("Connect watches and heart rate monitors")
+                                .font(.system(size: 14))
+                                .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         }
                         
                         Spacer()
                         
-                        Text(appVersion)
-                            .font(AppTheme.GeneratedTypography.body(size: 14))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 14))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
                     }
-                    .padding(.vertical, 8)
-                    
-                    Divider().padding(.vertical, 4)
-                    
-                    // Legal Documents
-                    VStack(alignment: .leading, spacing: AppTheme.GeneratedSpacing.small) {
-                        HStack {
-                            Image(systemName: "shield.fill")
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                                .font(.system(size: 16))
-                            Text("Legal Documents")
-                                .font(AppTheme.GeneratedTypography.bodyBold(size: 16))
-                                .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                        }
-                        
-                        // Terms of Service
-                        Button {
-                            // Open Terms of Service
-                            showTermsOfServiceSafari = true
-                        } label: {
-                            Text("Terms of Service")
-                                .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                        }
-                        .padding(.leading, 28)
-                        .sheet(isPresented: $showTermsOfServiceSafari) {
-                            SafariView(url: termsOfServiceURL)
-                                .edgesIgnoringSafeArea(.all)
-                        }
-                        
-                        // Privacy Policy
-                        Button {
-                            // Open Privacy Policy
-                            showPrivacyPolicySafari = true
-                        } label: {
-                            Text("Privacy Policy")
-                                .font(AppTheme.GeneratedTypography.bodyBold(size: 14))
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                        }
-                        .padding(.leading, 28)
-                        .sheet(isPresented: $showPrivacyPolicySafari) {
-                            SafariView(url: privacyPolicyURL)
-                                .edgesIgnoringSafeArea(.all)
-                        }
-                    }
-                    
-                    // Copyright Info
-                    Text("© \(String(Calendar.current.component(.year, from: Date()))) PT Champion. All rights reserved.")
-                        .font(AppTheme.GeneratedTypography.body(size: 12))
-                        .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, 16)
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 20)
+                    .contentShape(Rectangle())
                 }
-                .padding()
+                .buttonStyle(PlainButtonStyle())
             }
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86))
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // MARK: - Legal & About Section
+    private var legalAndAboutSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Dark header
+            VStack(alignment: .leading, spacing: 4) {
+                Text("ABOUT & LEGAL")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("APP INFORMATION AND LEGAL DOCUMENTS")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
+            
+            // Light content area
+            VStack(spacing: 0) {
+                // App Version
+                HStack {
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                            .frame(width: 40, height: 40)
+                        
+                        Image(systemName: "heart.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    
+                    Text("APP VERSION")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    
+                    Spacer()
+                    
+                    Text(appVersion)
+                        .font(.system(size: 16))
+                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                }
+                .padding(.vertical, 16)
+                .padding(.horizontal, 20)
+                
+                Divider()
+                    .background(AppTheme.GeneratedColors.deepOps.opacity(0.1))
+                    .padding(.horizontal, 20)
+                
+                // Terms of Service
+                Button {
+                    showTermsOfServiceSafari = true
+                } label: {
+                    HStack {
+                        Text("TERMS OF SERVICE")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.system(size: 12))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(PlainButtonStyle())
+                .sheet(isPresented: $showTermsOfServiceSafari) {
+                    SafariView(url: termsOfServiceURL)
+                        .edgesIgnoringSafeArea(.all)
+                }
+                
+                Divider()
+                    .background(AppTheme.GeneratedColors.deepOps.opacity(0.1))
+                    .padding(.horizontal, 20)
+                
+                // Privacy Policy
+                Button {
+                    showPrivacyPolicySafari = true
+                } label: {
+                    HStack {
+                        Text("PRIVACY POLICY")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        Spacer()
+                        
+                        Image(systemName: "arrow.up.right.square")
+                            .font(.system(size: 12))
+                            .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                    }
+                    .padding(.vertical, 12)
+                    .padding(.horizontal, 20)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(PlainButtonStyle())
+                .sheet(isPresented: $showPrivacyPolicySafari) {
+                    SafariView(url: privacyPolicyURL)
+                        .edgesIgnoringSafeArea(.all)
+                }
+                
+                // Copyright Info
+                Text("© \(String(Calendar.current.component(.year, from: Date()))) PT Champion. All rights reserved.")
+                    .font(.system(size: 12))
+                    .foregroundColor(AppTheme.GeneratedColors.textTertiary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 16)
+                    .padding(.bottom, 12)
+            }
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86))
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
+        }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    // MARK: - Danger Zone Section
+    private var dangerZoneSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Dark header with error color
+            VStack(alignment: .leading, spacing: 4) {
+                Text("DANGER ZONE")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(AppTheme.GeneratedColors.error)
+                    .padding(.bottom, 4)
+                
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(AppTheme.GeneratedColors.error.opacity(0.3))
+                    .padding(.bottom, 4)
+                
+                Text("PERMANENTLY DELETE YOUR ACCOUNT")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.error)
+            }
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(AppTheme.GeneratedColors.deepOps)
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
+            
+            // Light content area
+            VStack(spacing: AppTheme.GeneratedSpacing.medium) {
+                Text("Once you delete your account, there is no going back. All your data will be permanently removed.")
+                    .font(AppTheme.GeneratedTypography.body())
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .multilineTextAlignment(.leading)
+                
+                // Delete Account button
+                Button {
+                    showingDeleteConfirmation = true
+                } label: {
+                    HStack {
+                        if isDeletingAccount {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .scaleEffect(0.8)
+                                .padding(.trailing, 8)
+                        }
+                        Image(systemName: "trash")
+                            .font(.system(size: 16))
+                        Text(isDeletingAccount ? "DELETING..." : "DELETE ACCOUNT")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(AppTheme.GeneratedColors.error)
+                    .cornerRadius(8)
+                }
+                .disabled(isDeletingAccount)
+            }
+            .padding()
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86))
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
+        }
+        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
     
     // MARK: - Helper Views
     @ViewBuilder
-    private func settingToggle(
+    private func settingToggleRow(
         icon: String,
         title: String,
         description: String,
         isOn: Binding<Bool>,
         action: @escaping (Bool) -> Void
     ) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Image(systemName: icon)
-                            .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            .font(.system(size: 16))
-                        
-                        Text(title)
-                            .font(.system(size: 16, weight: .medium, design: .monospaced))
-                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
-                    }
-                    
-                    Text(description)
-                        .font(.system(size: 14, design: .monospaced))
-                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.leading, 24)
-                }
+        HStack {
+            // Icon in circular container
+            ZStack {
+                Circle()
+                    .fill(AppTheme.GeneratedColors.oliveMist.opacity(0.3))
+                    .frame(width: 40, height: 40)
                 
-                Spacer()
-                
-                Toggle("", isOn: isOn)
-                    .labelsHidden()
-                    .tint(AppTheme.GeneratedColors.brassGold)
-                    .onChange(of: isOn.wrappedValue) { _, newValue in
-                        hapticGenerator.impactOccurred(intensity: 0.4)
-                        action(newValue)
-                    }
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
             }
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                
+                Text(description)
+                    .font(.system(size: 14))
+                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            
+            Spacer()
+            
+            Toggle("", isOn: isOn)
+                .labelsHidden()
+                .tint(AppTheme.GeneratedColors.brassGold)
+                .onChange(of: isOn.wrappedValue) { _, newValue in
+                    hapticGenerator.impactOccurred(intensity: 0.4)
+                    action(newValue)
+                }
         }
-        .padding()
-        .background(AppTheme.GeneratedColors.background.opacity(0.5))
-        .cornerRadius(8)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 20)
     }
     
     // MARK: - Helper Methods
     private func handleGeolocationToggle(_ enabled: Bool) {
         if enabled {
-            // Request location permissions
             let locationManager = CLLocationManager()
             locationManager.requestWhenInUseAuthorization()
         }
@@ -410,15 +514,30 @@ struct SettingsView: View {
     
     private func handleNotificationsToggle(_ enabled: Bool) {
         if enabled {
-            // Request notification permissions
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { _, _ in
                 // Handle result
             }
         }
     }
+    
+    private func animateContentIn() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                headerVisible = true
+            }
+        }
+        
+        for i in 0..<sectionsVisible.count {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2 + (Double(i) * 0.1)) {
+                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                    sectionsVisible[i] = true
+                }
+            }
+        }
+    }
 }
 
-// Add Safari View Controller wrapper
+// Safari View Controller wrapper
 struct SafariView: UIViewControllerRepresentable {
     let url: URL
     
@@ -430,6 +549,8 @@ struct SafariView: UIViewControllerRepresentable {
         // No updates needed
     }
 }
+
+
 
 #Preview {
     NavigationStack {

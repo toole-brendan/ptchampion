@@ -234,7 +234,7 @@ struct FitnessDeviceManagerView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AppTheme.GeneratedColors.deepOps)
-            .cornerRadius(8, corners: [.topLeft, .topRight])
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
             
             // Content section with cream background
             HStack(spacing: AppTheme.GeneratedSpacing.medium) {
@@ -306,8 +306,8 @@ struct FitnessDeviceManagerView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color(hex: "#EDE9DB")) // cream-dark from web
-            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
@@ -334,7 +334,7 @@ struct FitnessDeviceManagerView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AppTheme.GeneratedColors.deepOps)
-            .cornerRadius(8, corners: [.topLeft, .topRight])
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
             
             // Metrics with cream background
             HStack(spacing: AppTheme.GeneratedSpacing.medium) {
@@ -409,8 +409,8 @@ struct FitnessDeviceManagerView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color(hex: "#EDE9DB")) // cream-dark from web
-            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
@@ -437,7 +437,7 @@ struct FitnessDeviceManagerView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AppTheme.GeneratedColors.deepOps)
-            .cornerRadius(8, corners: [.topLeft, .topRight])
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
             
             // Content with cream background
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
@@ -502,8 +502,8 @@ struct FitnessDeviceManagerView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color(hex: "#EDE9DB")) // cream-dark from web
-            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
@@ -546,7 +546,7 @@ struct FitnessDeviceManagerView: View {
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(AppTheme.GeneratedColors.deepOps)
-            .cornerRadius(8, corners: [.topLeft, .topRight])
+            .clipShape(RoundedCorner(radius: 8, corners: [.topLeft, .topRight]))
             
             // Content with cream background
             VStack(spacing: AppTheme.GeneratedSpacing.medium) {
@@ -637,8 +637,8 @@ struct FitnessDeviceManagerView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 16)
-            .background(Color(hex: "#EDE9DB")) // cream-dark from web
-            .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
+            .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+            .clipShape(RoundedCorner(radius: 8, corners: [.bottomLeft, .bottomRight]))
         }
         .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
