@@ -52,6 +52,7 @@
 		BF59ACD82DDFDBB400242910 /* TabBarAware.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACD72DDFDBB400242910 /* TabBarAware.swift */; };
 		BF59ACD92DDFDBB400242910 /* ContentContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACD62DDFDBB400242910 /* ContentContainer.swift */; };
 		BF59ACDB2DDFDBC000242910 /* SafeAreaTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACDA2DDFDBC000242910 /* SafeAreaTabView.swift */; };
+		BF59ACDD2DE0B09900242910 /* SyncStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACDC2DE0B09900242910 /* SyncStatus.swift */; };
 		BF5D31812DC7F6C40042EE65 /* Components in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31802DC7F6C40042EE65 /* Components */; };
 		BF5D31832DC7F6C40042EE65 /* DesignTokens in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31822DC7F6C40042EE65 /* DesignTokens */; };
 		BF5D31852DC7F6C40042EE65 /* PTDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = BF5D31842DC7F6C40042EE65 /* PTDesignSystem */; };
@@ -230,6 +231,7 @@
 		BF59ACD62DDFDBB400242910 /* ContentContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentContainer.swift; sourceTree = "<group>"; };
 		BF59ACD72DDFDBB400242910 /* TabBarAware.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarAware.swift; sourceTree = "<group>"; };
 		BF59ACDA2DDFDBC000242910 /* SafeAreaTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafeAreaTabView.swift; sourceTree = "<group>"; };
+		BF59ACDC2DE0B09900242910 /* SyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncStatus.swift; sourceTree = "<group>"; };
 		BF63E3B92DB1C84E0037CD02 /* ptchampion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ptchampion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3C82DB1C84F0037CD02 /* ptchampionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF63E3D22DB1C84F0037CD02 /* ptchampionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ptchampionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -563,6 +565,7 @@
 		BF63E4042DB1CF5A0037CD02 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BF59ACDC2DE0B09900242910 /* SyncStatus.swift */,
 				BFBF2EC62DCFF6B900FFCF4F /* FitnessDeviceModels.swift */,
 				BFBF2EC72DCFF6B900FFCF4F /* RunMetricSample.swift */,
 				BF7960DC2DCFCCD300B03835 /* ActivityFeedItem.swift */,
@@ -1073,6 +1076,7 @@
 				BF63E4572DB1EB980037CD02 /* DeviceScanningView.swift in Sources */,
 				BF63E4582DB1EB980037CD02 /* DashboardView.swift in Sources */,
 				BF7960ED2DCFD96400B03835 /* AppInfoView.swift in Sources */,
+				BF59ACDD2DE0B09900242910 /* SyncStatus.swift in Sources */,
 				BF7960EE2DCFD96400B03835 /* SettingsView.swift in Sources */,
 				BF7960EF2DCFD96400B03835 /* ProfilePreferencesView.swift in Sources */,
 				BF59ACDB2DDFDBC000242910 /* SafeAreaTabView.swift in Sources */,

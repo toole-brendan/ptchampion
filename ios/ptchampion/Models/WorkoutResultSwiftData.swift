@@ -1,15 +1,6 @@
 import Foundation
 import SwiftData
 
-// Define SyncStatus enum to track synchronization state
-enum SyncStatus: String, Codable {
-    case synced           // Successfully synced with server
-    case pendingUpload    // New local record that needs to be uploaded
-    case pendingUpdate    // Local changes that need to be synced
-    case pendingDeletion  // Marked for deletion, needs to be synced
-    case conflicted       // Conflict detected between server and local version
-}
-
 @Model
 final class WorkoutResultSwiftData {
     // Add unique ID property

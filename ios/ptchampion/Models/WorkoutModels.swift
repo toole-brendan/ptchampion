@@ -26,13 +26,6 @@ enum ExerciseType: String, CaseIterable, Codable {
     }
 }
 
-// MARK: - Sync Status Enum
-enum SyncStatus: String, Codable, CaseIterable {
-    case synced = "synced"
-    case pending = "pending"
-    case conflict = "conflict"
-}
-
 // MARK: - NEW: Workout Model (Unified Schema)
 /// Represents a workout in the new unified schema
 struct Workout: Codable, Identifiable, Hashable {
