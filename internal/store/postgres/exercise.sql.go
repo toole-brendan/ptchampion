@@ -8,6 +8,9 @@ package db
 import (
 	"context"
 	"database/sql"
+	"time"
+
+	"github.com/sqlc-dev/pqtype"
 )
 
 const getExercise = `-- name: GetExercise :one
@@ -66,17 +69,18 @@ SELECT
     u.id AS user_id,
     u.username,
     CONCAT(u.first_name, ' ', u.last_name) as display_name,
-    MAX(ue.grade) AS max_grade,
-    MAX(ue.created_at) AS last_attempt_date
+    MAX(w.grade) AS max_grade,
+    MAX(w.created_at) AS last_attempt_date
 FROM 
-    user_exercises ue
+    workouts w
 JOIN 
-    users u ON ue.user_id = u.id
+    users u ON w.user_id = u.id
 JOIN
-    exercises e ON ue.exercise_id = e.id
+    exercises e ON w.exercise_id = e.id
 WHERE 
     e.type = $1
-    AND ue.grade IS NOT NULL
+    AND w.grade IS NOT NULL
+    AND w.is_public = true
 GROUP BY 
     u.id, u.username, u.first_name, u.last_name
 ORDER BY 
@@ -121,140 +125,142 @@ func (q *Queries) GetLeaderboard(ctx context.Context, type_ string) ([]GetLeader
 	return items, nil
 }
 
-const getUserExercises = `-- name: GetUserExercises :many
+const getUserWorkoutsByType = `-- name: GetUserWorkoutsByType :many
+SELECT w.id, w.user_id, w.exercise_id, w.exercise_type, w.repetitions, w.duration_seconds, w.form_score, w.grade, w.is_public, w.completed_at, w.created_at, w.device_id, w.metadata, w.notes, e.name as exercise_name, e.type as exercise_type
+FROM workouts w
+JOIN exercises e ON e.id = w.exercise_id
+WHERE w.user_id = $1 AND e.type = $2
+ORDER BY w.created_at DESC
+`
+
+type GetUserWorkoutsByTypeParams struct {
+	UserID int32  `json:"user_id"`
+	Type   string `json:"type"`
+}
+
+type GetUserWorkoutsByTypeRow struct {
+	ID              int32                 `json:"id"`
+	UserID          int32                 `json:"user_id"`
+	ExerciseID      int32                 `json:"exercise_id"`
+	ExerciseType    string                `json:"exercise_type"`
+	Repetitions     sql.NullInt32         `json:"repetitions"`
+	DurationSeconds sql.NullInt32         `json:"duration_seconds"`
+	FormScore       sql.NullInt32         `json:"form_score"`
+	Grade           int32                 `json:"grade"`
+	IsPublic        bool                  `json:"is_public"`
+	CompletedAt     time.Time             `json:"completed_at"`
+	CreatedAt       time.Time             `json:"created_at"`
+	DeviceID        sql.NullString        `json:"device_id"`
+	Metadata        pqtype.NullRawMessage `json:"metadata"`
+	Notes           sql.NullString        `json:"notes"`
+	ExerciseName    string                `json:"exercise_name"`
+	ExerciseType_2  string                `json:"exercise_type_2"`
+}
+
+func (q *Queries) GetUserWorkoutsByType(ctx context.Context, arg GetUserWorkoutsByTypeParams) ([]GetUserWorkoutsByTypeRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserWorkoutsByType, arg.UserID, arg.Type)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetUserWorkoutsByTypeRow{}
+	for rows.Next() {
+		var i GetUserWorkoutsByTypeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.ExerciseID,
+			&i.ExerciseType,
+			&i.Repetitions,
+			&i.DurationSeconds,
+			&i.FormScore,
+			&i.Grade,
+			&i.IsPublic,
+			&i.CompletedAt,
+			&i.CreatedAt,
+			&i.DeviceID,
+			&i.Metadata,
+			&i.Notes,
+			&i.ExerciseName,
+			&i.ExerciseType_2,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserWorkoutsHistory = `-- name: GetUserWorkoutsHistory :many
 SELECT
-    ue.id,
-    ue.user_id,
-    ue.exercise_id,
-    ue.repetitions,
-    ue.time_in_seconds,
-    ue.distance,
-    ue.grade,
-    ue.notes,
-    ue.created_at,
+    w.id,
+    w.user_id,
+    w.exercise_id,
+    w.repetitions,
+    w.duration_seconds,
+    w.grade,
+    w.form_score,
+    w.created_at,
+    w.completed_at,
     e.name AS exercise_name,
     e.type AS exercise_type
 FROM
-    user_exercises ue
+    workouts w
 JOIN
-    exercises e ON ue.exercise_id = e.id
+    exercises e ON w.exercise_id = e.id
 WHERE
-    ue.user_id = $1
+    w.user_id = $1
 ORDER BY
-    ue.created_at DESC
+    w.created_at DESC
 LIMIT $2
 OFFSET $3
 `
 
-type GetUserExercisesParams struct {
+type GetUserWorkoutsHistoryParams struct {
 	UserID int32 `json:"user_id"`
 	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
 }
 
-type GetUserExercisesRow struct {
-	ID            int32          `json:"id"`
-	UserID        int32          `json:"user_id"`
-	ExerciseID    int32          `json:"exercise_id"`
-	Repetitions   sql.NullInt32  `json:"repetitions"`
-	TimeInSeconds sql.NullInt32  `json:"time_in_seconds"`
-	Distance      sql.NullInt32  `json:"distance"`
-	Grade         sql.NullInt32  `json:"grade"`
-	Notes         sql.NullString `json:"notes"`
-	CreatedAt     sql.NullTime   `json:"created_at"`
-	ExerciseName  string         `json:"exercise_name"`
-	ExerciseType  string         `json:"exercise_type"`
+type GetUserWorkoutsHistoryRow struct {
+	ID              int32         `json:"id"`
+	UserID          int32         `json:"user_id"`
+	ExerciseID      int32         `json:"exercise_id"`
+	Repetitions     sql.NullInt32 `json:"repetitions"`
+	DurationSeconds sql.NullInt32 `json:"duration_seconds"`
+	Grade           int32         `json:"grade"`
+	FormScore       sql.NullInt32 `json:"form_score"`
+	CreatedAt       time.Time     `json:"created_at"`
+	CompletedAt     time.Time     `json:"completed_at"`
+	ExerciseName    string        `json:"exercise_name"`
+	ExerciseType    string        `json:"exercise_type"`
 }
 
-func (q *Queries) GetUserExercises(ctx context.Context, arg GetUserExercisesParams) ([]GetUserExercisesRow, error) {
-	rows, err := q.db.QueryContext(ctx, getUserExercises, arg.UserID, arg.Limit, arg.Offset)
+func (q *Queries) GetUserWorkoutsHistory(ctx context.Context, arg GetUserWorkoutsHistoryParams) ([]GetUserWorkoutsHistoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, getUserWorkoutsHistory, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []GetUserExercisesRow{}
+	items := []GetUserWorkoutsHistoryRow{}
 	for rows.Next() {
-		var i GetUserExercisesRow
+		var i GetUserWorkoutsHistoryRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
 			&i.ExerciseID,
 			&i.Repetitions,
-			&i.TimeInSeconds,
-			&i.Distance,
+			&i.DurationSeconds,
 			&i.Grade,
-			&i.Notes,
-			&i.CreatedAt,
-			&i.ExerciseName,
-			&i.ExerciseType,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getUserExercisesByType = `-- name: GetUserExercisesByType :many
-SELECT ue.id, ue.user_id, ue.exercise_id, ue.repetitions, ue.time_in_seconds, ue.distance, ue.form_score, ue.grade, ue.completed, ue.metadata, ue.notes, ue.device_id, ue.created_at, e.name as exercise_name, e.type as exercise_type
-FROM user_exercises ue
-JOIN exercises e ON e.id = ue.exercise_id
-WHERE ue.user_id = $1 AND e.type = $2
-ORDER BY ue.created_at DESC
-`
-
-type GetUserExercisesByTypeParams struct {
-	UserID int32  `json:"user_id"`
-	Type   string `json:"type"`
-}
-
-type GetUserExercisesByTypeRow struct {
-	ID            int32          `json:"id"`
-	UserID        int32          `json:"user_id"`
-	ExerciseID    int32          `json:"exercise_id"`
-	Repetitions   sql.NullInt32  `json:"repetitions"`
-	TimeInSeconds sql.NullInt32  `json:"time_in_seconds"`
-	Distance      sql.NullInt32  `json:"distance"`
-	FormScore     sql.NullInt32  `json:"form_score"`
-	Grade         sql.NullInt32  `json:"grade"`
-	Completed     sql.NullBool   `json:"completed"`
-	Metadata      sql.NullString `json:"metadata"`
-	Notes         sql.NullString `json:"notes"`
-	DeviceID      sql.NullString `json:"device_id"`
-	CreatedAt     sql.NullTime   `json:"created_at"`
-	ExerciseName  string         `json:"exercise_name"`
-	ExerciseType  string         `json:"exercise_type"`
-}
-
-func (q *Queries) GetUserExercisesByType(ctx context.Context, arg GetUserExercisesByTypeParams) ([]GetUserExercisesByTypeRow, error) {
-	rows, err := q.db.QueryContext(ctx, getUserExercisesByType, arg.UserID, arg.Type)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []GetUserExercisesByTypeRow{}
-	for rows.Next() {
-		var i GetUserExercisesByTypeRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.ExerciseID,
-			&i.Repetitions,
-			&i.TimeInSeconds,
-			&i.Distance,
 			&i.FormScore,
-			&i.Grade,
-			&i.Completed,
-			&i.Metadata,
-			&i.Notes,
-			&i.DeviceID,
 			&i.CreatedAt,
+			&i.CompletedAt,
 			&i.ExerciseName,
 			&i.ExerciseType,
 		); err != nil {
@@ -269,18 +275,6 @@ func (q *Queries) GetUserExercisesByType(ctx context.Context, arg GetUserExercis
 		return nil, err
 	}
 	return items, nil
-}
-
-const getUserExercisesCount = `-- name: GetUserExercisesCount :one
-SELECT count(*) FROM user_exercises
-WHERE user_id = $1
-`
-
-func (q *Queries) GetUserExercisesCount(ctx context.Context, userID int32) (int64, error) {
-	row := q.db.QueryRowContext(ctx, getUserExercisesCount, userID)
-	var count int64
-	err := row.Scan(&count)
-	return count, err
 }
 
 const listExercises = `-- name: ListExercises :many
@@ -316,79 +310,72 @@ func (q *Queries) ListExercises(ctx context.Context) ([]Exercise, error) {
 	return items, nil
 }
 
-const logUserExercise = `-- name: LogUserExercise :one
-INSERT INTO user_exercises (
+const logWorkout = `-- name: LogWorkout :one
+INSERT INTO workouts (
   user_id, 
   exercise_id, 
+  exercise_type,
   repetitions, 
-  time_in_seconds, 
-  distance,
+  duration_seconds, 
   grade, -- Calculated grade based on performance
-  notes,
-  completed, 
-  metadata, -- Keep metadata for potential future use (e.g., raw analysis details)
-  device_id,
-  form_score -- Add form_score from client
+  form_score, -- Add form_score from client
+  completed_at,
+  is_public
 )
 VALUES (
     $1, -- user_id
     $2, -- exercise_id
-    $3, -- repetitions (sqlc.narg)
-    $4, -- time_in_seconds (sqlc.narg)
-    $5, -- distance (sqlc.narg)
+    $3, -- exercise_type
+    $4, -- repetitions (sqlc.narg)
+    $5, -- duration_seconds (sqlc.narg)
     $6, -- grade (calculated)
-    $7, -- notes (sqlc.narg)
-    $8, -- completed (sqlc.narg)
-    $9, -- metadata (sqlc.narg - placeholder for now)
-    $10, -- device_id (sqlc.narg)
-    $11 -- form_score (sqlc.narg)
+    $7, -- form_score (sqlc.narg)
+    $8, -- completed_at
+    $9  -- is_public
 )
-RETURNING id, user_id, exercise_id, repetitions, time_in_seconds, distance, form_score, grade, completed, metadata, notes, device_id, created_at
+RETURNING id, user_id, exercise_id, exercise_type, repetitions, duration_seconds, form_score, grade, is_public, completed_at, created_at, device_id, metadata, notes
 `
 
-type LogUserExerciseParams struct {
-	UserID        int32          `json:"user_id"`
-	ExerciseID    int32          `json:"exercise_id"`
-	Repetitions   sql.NullInt32  `json:"repetitions"`
-	TimeInSeconds sql.NullInt32  `json:"time_in_seconds"`
-	Distance      sql.NullInt32  `json:"distance"`
-	Grade         sql.NullInt32  `json:"grade"`
-	Notes         sql.NullString `json:"notes"`
-	Completed     sql.NullBool   `json:"completed"`
-	Metadata      sql.NullString `json:"metadata"`
-	DeviceID      sql.NullString `json:"device_id"`
-	FormScore     sql.NullInt32  `json:"form_score"`
+type LogWorkoutParams struct {
+	UserID          int32         `json:"user_id"`
+	ExerciseID      int32         `json:"exercise_id"`
+	ExerciseType    string        `json:"exercise_type"`
+	Repetitions     sql.NullInt32 `json:"repetitions"`
+	DurationSeconds sql.NullInt32 `json:"duration_seconds"`
+	Grade           int32         `json:"grade"`
+	FormScore       sql.NullInt32 `json:"form_score"`
+	CompletedAt     time.Time     `json:"completed_at"`
+	IsPublic        bool          `json:"is_public"`
 }
 
-func (q *Queries) LogUserExercise(ctx context.Context, arg LogUserExerciseParams) (UserExercise, error) {
-	row := q.db.QueryRowContext(ctx, logUserExercise,
+func (q *Queries) LogWorkout(ctx context.Context, arg LogWorkoutParams) (Workout, error) {
+	row := q.db.QueryRowContext(ctx, logWorkout,
 		arg.UserID,
 		arg.ExerciseID,
+		arg.ExerciseType,
 		arg.Repetitions,
-		arg.TimeInSeconds,
-		arg.Distance,
+		arg.DurationSeconds,
 		arg.Grade,
-		arg.Notes,
-		arg.Completed,
-		arg.Metadata,
-		arg.DeviceID,
 		arg.FormScore,
+		arg.CompletedAt,
+		arg.IsPublic,
 	)
-	var i UserExercise
+	var i Workout
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
 		&i.ExerciseID,
+		&i.ExerciseType,
 		&i.Repetitions,
-		&i.TimeInSeconds,
-		&i.Distance,
+		&i.DurationSeconds,
 		&i.FormScore,
 		&i.Grade,
-		&i.Completed,
+		&i.IsPublic,
+		&i.CompletedAt,
+		&i.CreatedAt,
+		&i.DeviceID,
 		&i.Metadata,
 		&i.Notes,
-		&i.DeviceID,
-		&i.CreatedAt,
 	)
 	return i, err
 }

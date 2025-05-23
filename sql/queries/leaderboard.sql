@@ -3,12 +3,13 @@ SELECT
     u.username,
     CONCAT(u.first_name, ' ', u.last_name) as display_name,
     e.type as exercise_type,
-    MAX(ue.grade) as best_grade -- Get the best grade for this exercise type per user
-FROM user_exercises ue
-JOIN users u ON ue.user_id = u.id
-JOIN exercises e ON ue.exercise_id = e.id
+    MAX(w.grade) as best_grade -- Get the best grade for this exercise type per user
+FROM workouts w
+JOIN users u ON w.user_id = u.id
+JOIN exercises e ON w.exercise_id = e.id
 WHERE e.type = $1
-AND ue.grade IS NOT NULL
+AND w.grade IS NOT NULL
+AND u.is_public = true
 GROUP BY u.id, e.type -- Group by user to find their best score for this exercise
 ORDER BY best_grade DESC
 LIMIT $2; -- Limit the number of results (e.g., top 10, 20) 
@@ -38,6 +39,8 @@ WHERE
         ST_SetSRID(ST_MakePoint($3, $2), 4326)::geography, -- Swapped $2 and $3
         $4
     )
+    AND w.is_public = true
+    AND u.is_public = true
 GROUP BY u.id, u.username, u.first_name, u.last_name, w.exercise_id
 ORDER BY score DESC
 LIMIT 50; -- Apply a reasonable limit 

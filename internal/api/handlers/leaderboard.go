@@ -4,9 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	db "ptchampion/internal/store/postgres"
 	redis_cache "ptchampion/internal/store/redis"
@@ -53,33 +53,15 @@ type GlobalLeaderboardResponse struct {
 }
 
 // GetLocalLeaderboard returns a leaderboard of users within a specified radius
-func (s *LeaderboardService) GetLocalLeaderboard(ctx context.Context, params db.LocalLeaderboardParams) (*LocalLeaderboardResponse, error) {
-	// Generate cache key
-	cacheKey := redis_cache.LocalLeaderboardKey(
-		params.Latitude,
-		params.Longitude,
-		params.RadiusMeters,
-		params.ExerciseType,
-		params.Limit,
-		params.TimeFrame,
-	)
-
-	// Try to get from cache first
-	var response LocalLeaderboardResponse
-	err := s.cache.Get(ctx, cacheKey, &response)
-	if err == nil {
-		// Cache hit - return cached data
-		return &response, nil
-	}
-
-	// Cache miss or error - query database
-	entries, err := s.repo.GetLocalLeaderboard(ctx, params)
+func (s *LeaderboardService) GetLocalLeaderboard(ctx context.Context, exerciseType string, lat, lng, radius float64, startDate, endDate *time.Time, limit, offset int) (*LocalLeaderboardResponse, error) {
+	// Cache miss or error - query database using new method signature
+	entries, err := s.repo.GetLocalLeaderboard(ctx, exerciseType, lat, lng, radius, startDate, endDate, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
 	// Build response
-	response = LocalLeaderboardResponse{
+	response := LocalLeaderboardResponse{
 		Entries: entries,
 		Metadata: struct {
 			Center struct {
@@ -94,59 +76,36 @@ func (s *LeaderboardService) GetLocalLeaderboard(ctx context.Context, params db.
 				Latitude  float64 `json:"latitude"`
 				Longitude float64 `json:"longitude"`
 			}{
-				Latitude:  params.Latitude,
-				Longitude: params.Longitude,
+				Latitude:  lat,
+				Longitude: lng,
 			},
-			RadiusMeters: params.RadiusMeters,
-			ExerciseType: params.ExerciseType,
+			RadiusMeters: radius,
+			ExerciseType: exerciseType,
 			Count:        len(entries),
 		},
-	}
-
-	// Store in cache
-	if err := s.cache.Set(ctx, cacheKey, response); err != nil {
-		// Just log the error, don't fail the request
-		log.Printf("Error caching local leaderboard: %v", err)
 	}
 
 	return &response, nil
 }
 
 // GetGlobalLeaderboard returns a global leaderboard for a specific exercise type
-func (s *LeaderboardService) GetGlobalLeaderboard(ctx context.Context, params db.GlobalLeaderboardParams) (*GlobalLeaderboardResponse, error) {
-	// Generate cache key
-	cacheKey := redis_cache.GlobalLeaderboardKey(params.ExerciseType, params.Limit, params.TimeFrame)
-
-	// Try to get from cache first
-	var response GlobalLeaderboardResponse
-	err := s.cache.Get(ctx, cacheKey, &response)
-	if err == nil {
-		// Cache hit - return cached data
-		return &response, nil
-	}
-
-	// Cache miss or error - query database
-	entries, err := s.repo.GetGlobalLeaderboard(ctx, params)
+func (s *LeaderboardService) GetGlobalLeaderboard(ctx context.Context, exerciseType string, startDate, endDate *time.Time, limit, offset int) (*GlobalLeaderboardResponse, error) {
+	// Cache miss or error - query database using new method signature
+	entries, err := s.repo.GetGlobalLeaderboard(ctx, exerciseType, startDate, endDate, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 
 	// Build response
-	response = GlobalLeaderboardResponse{
+	response := GlobalLeaderboardResponse{
 		Entries: entries,
 		Metadata: struct {
 			ExerciseType string `json:"exercise_type"`
 			Count        int    `json:"count"`
 		}{
-			ExerciseType: params.ExerciseType,
+			ExerciseType: exerciseType,
 			Count:        len(entries),
 		},
-	}
-
-	// Store in cache
-	if err := s.cache.Set(ctx, cacheKey, response); err != nil {
-		// Just log the error, don't fail the request
-		log.Printf("Error caching global leaderboard: %v", err)
 	}
 
 	return &response, nil
@@ -193,7 +152,7 @@ func (s *LeaderboardService) HandleGetLocalLeaderboard(c echo.Context) error {
 		Limit:        limit,
 	}
 
-	response, err := s.GetLocalLeaderboard(c.Request().Context(), params)
+	response, err := s.GetLocalLeaderboard(c.Request().Context(), params.ExerciseType, params.Latitude, params.Longitude, params.RadiusMeters, nil, nil, params.Limit, 0)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return c.JSON(http.StatusOK, map[string]interface{}{
@@ -229,7 +188,7 @@ func (s *LeaderboardService) HandleGetGlobalLeaderboard(c echo.Context) error {
 		Limit:        limit,
 	}
 
-	response, err := s.GetGlobalLeaderboard(c.Request().Context(), params)
+	response, err := s.GetGlobalLeaderboard(c.Request().Context(), params.ExerciseType, nil, nil, params.Limit, 0)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return c.JSON(http.StatusOK, map[string]interface{}{

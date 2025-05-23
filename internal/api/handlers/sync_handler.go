@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 	"time"
@@ -28,10 +27,25 @@ type SyncExercise struct {
 	CreatedAt     *time.Time `json:"created_at,omitempty"`
 }
 
+// LogExerciseResponse defines the response structure for logged exercises
+type LogExerciseResponse struct {
+	ID            int32      `json:"id"`
+	UserID        int32      `json:"user_id"`
+	ExerciseID    int32      `json:"exercise_id"`
+	ExerciseName  string     `json:"exercise_name"`
+	ExerciseType  string     `json:"exercise_type"`
+	Reps          *int32     `json:"reps,omitempty"`
+	TimeInSeconds *int32     `json:"time_in_seconds,omitempty"`
+	Distance      *int32     `json:"distance,omitempty"`
+	Notes         *string    `json:"notes,omitempty"`
+	Grade         int32      `json:"grade"`
+	CreatedAt     *time.Time `json:"created_at,omitempty"`
+}
+
 // SyncResponse defines the response for synchronization requests
 type SyncResponse struct {
-	SyncedAt      time.Time             `json:"synced_at"`
-	UserExercises []LogExerciseResponse `json:"user_exercises,omitempty"`
+	SyncedAt time.Time             `json:"synced_at"`
+	Workouts []LogExerciseResponse `json:"workouts,omitempty"`
 }
 
 // PostSync handles synchronization of exercise data between client and server
@@ -80,19 +94,21 @@ func (h *Handler) PostSync(c echo.Context) error {
 				grade = 70 // Placeholder
 			}
 
-			// Prepare DB params
-			params := dbStore.LogUserExerciseParams{
-				UserID:        userID,
-				ExerciseID:    syncEx.ExerciseID,
-				Repetitions:   int32PtrToNullInt32(syncEx.Reps),
-				TimeInSeconds: int32PtrToNullInt32(syncEx.TimeInSeconds),
-				Distance:      int32PtrToNullInt32(syncEx.Distance),
-				Notes:         stringPtrToNullString(syncEx.Notes),
-				Grade:         sql.NullInt32{Int32: grade, Valid: true},
+			// Prepare DB params for LogWorkout
+			params := dbStore.LogWorkoutParams{
+				UserID:          userID,
+				ExerciseID:      syncEx.ExerciseID,
+				ExerciseType:    exercise.Type,
+				Repetitions:     int32PtrToNullInt32(syncEx.Reps),
+				DurationSeconds: int32PtrToNullInt32(syncEx.TimeInSeconds),
+				Grade:           grade,
+				FormScore:       int32PtrToNullInt32(nil), // Default form score
+				CompletedAt:     time.Now(),
+				IsPublic:        true, // Default to public
 			}
 
-			// Save to database
-			loggedEx, err := h.Queries.LogUserExercise(c.Request().Context(), params)
+			// Save to database using LogWorkout
+			loggedEx, err := h.Queries.LogWorkout(c.Request().Context(), params)
 			if err != nil {
 				log.Printf("ERROR: Failed to log synced exercise %d for user %d: %v",
 					syncEx.ExerciseID, userID, err)
@@ -107,11 +123,11 @@ func (h *Handler) PostSync(c echo.Context) error {
 				ExerciseName:  exercise.Name,
 				ExerciseType:  exercise.Type,
 				Reps:          nullInt32ToInt32Ptr(loggedEx.Repetitions),
-				TimeInSeconds: nullInt32ToInt32Ptr(loggedEx.TimeInSeconds),
-				Distance:      nullInt32ToInt32Ptr(loggedEx.Distance),
-				Notes:         nullStringToStringPtr(loggedEx.Notes),
-				Grade:         loggedEx.Grade.Int32,
-				CreatedAt:     getNullTime(loggedEx.CreatedAt),
+				TimeInSeconds: nullInt32ToInt32Ptr(loggedEx.DurationSeconds),
+				Distance:      nil, // No longer supported in workouts table
+				Notes:         nil, // No longer supported in workouts table
+				Grade:         loggedEx.Grade,
+				CreatedAt:     &loggedEx.CreatedAt,
 			}
 			responseExercises = append(responseExercises, respEx)
 		}
@@ -140,8 +156,8 @@ func (h *Handler) PostSync(c echo.Context) error {
 
 	// 9. Return response
 	resp := SyncResponse{
-		SyncedAt:      now,
-		UserExercises: responseExercises,
+		SyncedAt: now,
+		Workouts: responseExercises,
 	}
 
 	return c.JSON(http.StatusOK, resp)

@@ -10,7 +10,6 @@ import (
 	"ptchampion/internal/api/middleware"
 	"ptchampion/internal/auth"
 	"ptchampion/internal/config"
-	"ptchampion/internal/exercises"
 	"ptchampion/internal/leaderboards"
 	"ptchampion/internal/logging"
 	db "ptchampion/internal/store/postgres"
@@ -21,13 +20,16 @@ import (
 
 // RegisterRoutes registers all routes for the application
 func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenService *auth.TokenService, logger logging.Logger, handler *handlers.Handler) {
-	// Create refresh store
+	// Create refresh store and leaderboard cache
 	var refreshStore redis.RefreshStore
+	var leaderboardCache *redis.LeaderboardCache
 
 	// For development, use memory store instead of Redis if RedisURL is not set
 	if cfg.AppEnv == "development" && cfg.RedisURL == "" {
 		logger.Info(context.Background(), "Routes using in-memory refresh token store for development")
 		refreshStore = redis.NewMemoryRefreshStore()
+		// For development without Redis, we'll use a nil cache (methods should handle gracefully)
+		leaderboardCache = nil
 	} else {
 		// Use Redis for production or if RedisURL is explicitly set
 		redisOptions := redis.DefaultOptions()
@@ -37,6 +39,7 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 			logger.Fatal(context.Background(), "Failed to connect to Redis", err)
 		}
 		refreshStore = redis.NewRedisRefreshStore(redisClient)
+		leaderboardCache = redis.NewLeaderboardCache(redisClient)
 	}
 
 	// Auth middleware with token store
@@ -50,15 +53,20 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	// If *db.Store is the concrete implementation of store.Store, this should be fine.
 	authHandlerInstance := handlers.NewAuthHandler(store, cfg, logger)
 
-	// Instantiate User Service and User Handler
+	// Instantiate User Service, Location Service, and User Handler
 	// The 'store' (*db.Store) is passed as store.UserStore.
 	// We need to ensure *db.Store implements store.UserStore.
-	userService := users.NewUserService(store, logger)
-	userHandler := handlers.NewUserHandler(userService, logger)
+	userService := users.NewUserService(store, leaderboardCache, logger)
 
-	// Instantiate Exercise Service and Exercise Handler
-	exerciseService := exercises.NewService(store, logger)
-	exerciseHandler := handlers.NewExerciseHandler(exerciseService, logger)
+	// Create location service
+	locationService := users.NewLocationService(store.Queries, leaderboardCache, logger)
+
+	// Create user handler with both services
+	userHandler := handlers.NewUserHandler(userService, locationService, logger)
+
+	// Exercise Service is available but no handler for now
+	// exerciseService := exercises.NewService(store, logger)
+	// TODO: Create minimal exercise handler for definitions endpoint if needed
 
 	// Instantiate Leaderboard Service and Leaderboard Handler
 	leaderboardService := leaderboards.NewService(store, logger)
@@ -105,9 +113,9 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	leaderboardRoutesGroup := protectedGroup.Group("/leaderboards")
 	RegisterLeaderboardRoutes(leaderboardRoutesGroup, store, logger, leaderboardHandler)
 
-	// Exercise Routes
-	exerciseRoutesGroup := protectedGroup.Group("/exercises")
-	RegisterExerciseRoutes(exerciseRoutesGroup, store, logger, exerciseHandler)
+	// Exercise Routes - Temporarily disabled until we create a minimal handler
+	// exerciseRoutesGroup := protectedGroup.Group("/exercises")
+	// RegisterExerciseRoutes(exerciseRoutesGroup, store, logger, exerciseHandler)
 
 	// --- Public (non-authenticated) feature flags endpoint ---
 	apiGroup.GET("/features", func(c echo.Context) error {
@@ -126,6 +134,8 @@ func RegisterUserRoutes(g *echo.Group, store *db.Store, logger logging.Logger, u
 	// Use handler methods
 	g.GET("/me", userHandler.GetCurrentUser)
 	g.PUT("/me", userHandler.UpdateCurrentUser)
+	// Add location update route
+	g.PATCH("/me/location", userHandler.UpdateLocation)
 }
 
 // RegisterWorkoutRoutes registers workout-related routes under the given group (e.g., /api/v1/workouts)
@@ -154,6 +164,8 @@ func RegisterLeaderboardRoutes(g *echo.Group, store *db.Store, logger logging.Lo
 }
 
 // RegisterExerciseRoutes registers exercise-related routes under the given group (e.g., /api/v1/exercises)
+// TEMPORARILY DISABLED - will be re-enabled when we create a minimal exercise handler
+/*
 func RegisterExerciseRoutes(g *echo.Group, store *db.Store, logger logging.Logger, exerciseHandler *handlers.ExerciseHandler) {
 	// User's logged exercises
 	g.GET("", exerciseHandler.GetUserExercises)
@@ -162,3 +174,4 @@ func RegisterExerciseRoutes(g *echo.Group, store *db.Store, logger logging.Logge
 	// Available exercise definitions (e.g., types of exercises like Pushup, Run)
 	g.GET("/definitions", exerciseHandler.HandleListExercises)
 }
+*/

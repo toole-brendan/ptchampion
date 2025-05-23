@@ -1,87 +1,344 @@
 import Foundation
 
-// Enum for different types of exercises tracked
-// Aligned with backend schema keys
-enum ExerciseType: String, Codable, CaseIterable {
-    case pushup = "pushup" // Use schema keys as raw values
-    case situp = "situp"
+// MARK: - Exercise Type Enum
+enum ExerciseType: String, CaseIterable, Codable {
+    case pushup = "pushup"
     case pullup = "pullup"
+    case situp = "situp"
     case run = "run"
-    case unknown = "unknown" // For safety
-
-    // Keep initializer if needed, but rawValue is now the key
-    init(key: String) {
-        self = ExerciseType(rawValue: key) ?? .unknown
-    }
     
-    // Computed property for display name if needed in UI
     var displayName: String {
         switch self {
         case .pushup: return "Push-ups"
-        case .situp: return "Sit-ups"
         case .pullup: return "Pull-ups"
-        case .run: return "Run"
-        case .unknown: return "Unknown"
+        case .situp: return "Sit-ups"
+        case .run: return "2-mile Run"
+        }
+    }
+    
+    var exerciseId: Int {
+        switch self {
+        case .pushup: return 1
+        case .pullup: return 2
+        case .situp: return 3
+        case .run: return 4
         }
     }
 }
 
-// Represents an exercise definition (Aligned with schema.ts Exercise)
-struct Exercise: Codable, Identifiable {
-    let id: Int
-    let name: String
-    let description: String?
-    let type: String // Raw value like "pushup", "run"
-
-    // No CodingKeys needed if property names match schema columns
+// MARK: - Sync Status Enum
+enum SyncStatus: String, Codable, CaseIterable {
+    case synced = "synced"
+    case pending = "pending"
+    case conflict = "conflict"
 }
 
-// Represents the data to be saved for a completed workout session
-// Aligned with schema.ts InsertUserExercise
-struct InsertUserExerciseRequest: Codable {
+// MARK: - NEW: Workout Model (Unified Schema)
+/// Represents a workout in the new unified schema
+struct Workout: Codable, Identifiable, Hashable {
+    let id: Int
+    let userId: Int
     let exerciseId: Int
+    let exerciseType: ExerciseType
     let repetitions: Int?
-    let formScore: Int? // 0-100
-    let timeInSeconds: Int?
-    let grade: Int? // 0-100
+    let durationSeconds: Int?
+    let distanceMeters: Decimal?
+    let formScore: Int // 0-100, now required (defaults to 0)
+    let grade: Int // 0-100, required
+    let isPublic: Bool
     let completedAt: Date
+    let createdAt: Date
+    let deviceId: String?
+    let metadata: WorkoutMetadata?
+    let notes: String?
+    let syncStatus: SyncStatus
+    
+    enum CodingKeys: String, CodingKey {
+        case id
+        case userId = "user_id"
+        case exerciseId = "exercise_id"
+        case exerciseType = "exercise_type"
+        case repetitions
+        case durationSeconds = "duration_seconds"
+        case distanceMeters = "distance_meters"
+        case formScore = "form_score"
+        case grade
+        case isPublic = "is_public"
+        case completedAt = "completed_at"
+        case createdAt = "created_at"
+        case deviceId = "device_id"
+        case metadata
+        case notes
+        case syncStatus = "sync_status"
+    }
+    
+    // Custom decoder to handle formScore defaulting
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        id = try container.decode(Int.self, forKey: .id)
+        userId = try container.decode(Int.self, forKey: .userId)
+        exerciseId = try container.decode(Int.self, forKey: .exerciseId)
+        exerciseType = try container.decode(ExerciseType.self, forKey: .exerciseType)
+        repetitions = try container.decodeIfPresent(Int.self, forKey: .repetitions)
+        durationSeconds = try container.decodeIfPresent(Int.self, forKey: .durationSeconds)
+        distanceMeters = try container.decodeIfPresent(Decimal.self, forKey: .distanceMeters)
+        
+        // Handle form_score with default value of 0
+        formScore = try container.decodeIfPresent(Int.self, forKey: .formScore) ?? 0
+        
+        grade = try container.decode(Int.self, forKey: .grade)
+        isPublic = try container.decodeIfPresent(Bool.self, forKey: .isPublic) ?? false
+        completedAt = try container.decode(Date.self, forKey: .completedAt)
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        deviceId = try container.decodeIfPresent(String.self, forKey: .deviceId)
+        metadata = try container.decodeIfPresent(WorkoutMetadata.self, forKey: .metadata)
+        notes = try container.decodeIfPresent(String.self, forKey: .notes)
+        
+        let syncStatusString = try container.decodeIfPresent(String.self, forKey: .syncStatus) ?? "synced"
+        syncStatus = SyncStatus(rawValue: syncStatusString) ?? .synced
+    }
+    
+    // Standard memberwise initializer
+    init(
+        id: Int,
+        userId: Int,
+        exerciseId: Int,
+        exerciseType: ExerciseType,
+        repetitions: Int? = nil,
+        durationSeconds: Int? = nil,
+        distanceMeters: Decimal? = nil,
+        formScore: Int = 0, // Default to 0
+        grade: Int,
+        isPublic: Bool = false,
+        completedAt: Date,
+        createdAt: Date,
+        deviceId: String? = nil,
+        metadata: WorkoutMetadata? = nil,
+        notes: String? = nil,
+        syncStatus: SyncStatus = .synced
+    ) {
+        self.id = id
+        self.userId = userId
+        self.exerciseId = exerciseId
+        self.exerciseType = exerciseType
+        self.repetitions = repetitions
+        self.durationSeconds = durationSeconds
+        self.distanceMeters = distanceMeters
+        self.formScore = max(0, min(100, formScore)) // Ensure valid range
+        self.grade = max(0, min(100, grade)) // Ensure valid range
+        self.isPublic = isPublic
+        self.completedAt = completedAt
+        self.createdAt = createdAt
+        self.deviceId = deviceId
+        self.metadata = metadata
+        self.notes = notes
+        self.syncStatus = syncStatus
+    }
+    
+    // Computed properties for backward compatibility
+    var timeInSeconds: Int? { durationSeconds }
+    var reps: Int? { repetitions }
+    
+    // Exercise display helpers
+    var exerciseDisplayName: String { exerciseType.displayName }
+    
+    // Performance categorization
+    var performanceLevel: PerformanceLevel {
+        switch grade {
+        case 90...100: return .excellent
+        case 80..<90: return .good
+        case 70..<80: return .satisfactory
+        case 60..<70: return .needsImprovement
+        default: return .unsatisfactory
+        }
+    }
+}
 
+// MARK: - Workout Request Models
+/// Request to create a new workout
+struct CreateWorkoutRequest: Codable {
+    let exerciseId: Int
+    let exerciseType: ExerciseType
+    let repetitions: Int?
+    let durationSeconds: Int?
+    let distanceMeters: Decimal?
+    let formScore: Int // Required field with default
+    let grade: Int
+    let isPublic: Bool
+    let completedAt: Date
+    let deviceId: String?
+    let metadata: WorkoutMetadata?
+    let notes: String?
+    let idempotencyKey: String?
+    
     enum CodingKeys: String, CodingKey {
         case exerciseId = "exercise_id"
-        case repetitions = "reps"
+        case exerciseType = "exercise_type"
+        case repetitions
+        case durationSeconds = "duration_seconds"
+        case distanceMeters = "distance_meters"
         case formScore = "form_score"
-        case timeInSeconds = "duration_seconds"
         case grade
+        case isPublic = "is_public"
+        case completedAt = "completed_at"
+        case deviceId = "device_id"
+        case metadata
+        case notes
+        case idempotencyKey = "idempotency_key"
+    }
+    
+    init(
+        exerciseType: ExerciseType,
+        repetitions: Int? = nil,
+        durationSeconds: Int? = nil,
+        distanceMeters: Decimal? = nil,
+        formScore: Int = 0, // Default to 0
+        grade: Int,
+        isPublic: Bool = false,
+        completedAt: Date = Date(),
+        deviceId: String? = UIDevice.current.identifierForVendor?.uuidString,
+        metadata: WorkoutMetadata? = nil,
+        notes: String? = nil,
+        idempotencyKey: String? = UUID().uuidString
+    ) {
+        self.exerciseId = exerciseType.exerciseId
+        self.exerciseType = exerciseType
+        self.repetitions = repetitions
+        self.durationSeconds = durationSeconds
+        self.distanceMeters = distanceMeters
+        self.formScore = max(0, min(100, formScore)) // Validate range
+        self.grade = max(0, min(100, grade)) // Validate range
+        self.isPublic = isPublic
+        self.completedAt = completedAt
+        self.deviceId = deviceId
+        self.metadata = metadata
+        self.notes = notes
+        self.idempotencyKey = idempotencyKey
+    }
+}
+
+// MARK: - Workout Metadata
+/// Flexible metadata structure for workouts
+struct WorkoutMetadata: Codable, Hashable {
+    let heartRateData: HeartRateData?
+    let poseAnalysis: PoseAnalysisData?
+    let environmentalData: EnvironmentalData?
+    let deviceInfo: DeviceInfo?
+    
+    // Custom properties for different exercise types
+    let runningMetrics: RunningMetrics?
+    let strengthMetrics: StrengthMetrics?
+    
+    enum CodingKeys: String, CodingKey {
+        case heartRateData = "heart_rate_data"
+        case poseAnalysis = "pose_analysis"
+        case environmentalData = "environmental_data"
+        case deviceInfo = "device_info"
+        case runningMetrics = "running_metrics"
+        case strengthMetrics = "strength_metrics"
+    }
+}
+
+// MARK: - Metadata Components
+struct HeartRateData: Codable, Hashable {
+    let averageHeartRate: Int?
+    let maxHeartRate: Int?
+    let heartRateZones: [HeartRateZone]?
+}
+
+struct HeartRateZone: Codable, Hashable {
+    let zone: Int // 1-5
+    let timeInSeconds: Int
+    let percentage: Double
+}
+
+struct PoseAnalysisData: Codable, Hashable {
+    let averageFormScore: Double?
+    let formBreakdowns: [FormBreakdown]?
+    let repTimings: [Double]? // Time for each rep
+}
+
+struct FormBreakdown: Codable, Hashable {
+    let timestamp: TimeInterval
+    let score: Double
+    let feedback: String?
+}
+
+struct EnvironmentalData: Codable, Hashable {
+    let temperature: Double?
+    let humidity: Double?
+    let altitude: Double?
+    let weather: String?
+}
+
+struct DeviceInfo: Codable, Hashable {
+    let deviceModel: String?
+    let osVersion: String?
+    let appVersion: String?
+    let cameraUsed: Bool?
+    let bluetoothDevices: [String]?
+}
+
+struct RunningMetrics: Codable, Hashable {
+    let pace: Double? // minutes per mile
+    let cadence: Int? // steps per minute
+    let strideLength: Double? // meters
+    let route: RouteData?
+}
+
+struct RouteData: Codable, Hashable {
+    let coordinates: [Coordinate]?
+    let elevationGain: Double?
+    let totalDistance: Double?
+}
+
+struct Coordinate: Codable, Hashable {
+    let latitude: Double
+    let longitude: Double
+    let timestamp: TimeInterval
+}
+
+struct StrengthMetrics: Codable, Hashable {
+    let repTimings: [Double]? // Time for each rep
+    let restPeriods: [Double]? // Rest between sets
+    let powerOutput: [Double]? // If available from sensors
+}
+
+// MARK: - Legacy Models for Backward Compatibility
+/// Legacy model - use Workout instead
+struct LogWorkoutRequest: Codable {
+    let exerciseID: Int32
+    let reps: Int32?
+    let durationSeconds: Int32?
+    let formScore: Int32? // Optional for legacy compatibility
+    let completedAt: Date
+    
+    enum CodingKeys: String, CodingKey {
+        case exerciseID = "exercise_id"
+        case reps
+        case durationSeconds = "duration_seconds"
+        case formScore = "form_score"
         case completedAt = "completed_at"
     }
 }
 
-// Represents a workout record fetched from the backend (e.g., for history)
-// Aligned with schema.ts UserExercise
+/// Legacy model - use Workout instead
 struct UserExerciseRecord: Codable, Identifiable {
     let id: Int
     let userId: Int
     let exerciseId: Int
     let repetitions: Int?
-    let formScore: Int? // 0-100
+    let formScore: Int?
     let timeInSeconds: Int?
-    let grade: Int? // 0-100
+    let grade: Int?
     let completed: Bool?
-    let metadata: String? // JSON string
+    let metadata: String?
     let deviceId: String?
     let syncStatus: String?
-    let createdAt: Date // Assuming non-optional based on schema default
-    let updatedAt: Date // Assuming non-optional based on schema default
+    let createdAt: Date
+    let updatedAt: Date
     
-    // Computed property to get ExerciseType enum
-    var exerciseTypeKey: String {
-        // This relies on having the Exercise definitions available
-        // or assuming the backend includes the type key directly
-        // If backend includes type key:
-         return metadata?.extractExerciseTypeKey() ?? "unknown"
-        // If not, we'd need to fetch Exercises separately and match by exerciseId
-    }
-
     enum CodingKeys: String, CodingKey {
         case id
         case userId = "user_id"
@@ -99,34 +356,203 @@ struct UserExerciseRecord: Codable, Identifiable {
     }
 }
 
-// Helper extension (optional) to extract type from metadata if stored there
-// This is just an example, adapt based on actual metadata structure
-extension String {
-    func extractExerciseTypeKey() -> String? {
-        // Example: Assuming metadata is JSON like {"type": "pushup", ...}
-        guard let data = self.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let type = json["type"] as? String else {
-            return nil
-        }
-        return type
+// MARK: - API Response Models
+/// Paginated workout response from API
+struct PaginatedWorkoutsResponse: Codable {
+    let items: [Workout]
+    let totalCount: Int
+    let page: Int
+    let pageSize: Int
+    let totalPages: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case items
+        case totalCount = "total_count"
+        case page
+        case pageSize = "page_size"
+        case totalPages = "total_pages"
     }
 }
 
-
-// Structure for paginated workout history response
-struct PaginatedUserExerciseResponse: Codable {
-    let items: [UserExerciseRecord] // The list of workout records for the current page
-    let totalCount: Int           // Total number of records available
-    let totalPages: Int           // Total number of pages
-    let currentPage: Int          // The current page number
-    let pageSize: Int             // Number of items per page
-
+/// Workout response from API (matches backend WorkoutResponse schema)
+struct WorkoutAPIResponse: Codable {
+    let id: Int
+    let userId: Int
+    let exerciseId: Int
+    let exerciseName: String
+    let exerciseType: String
+    let reps: Int?
+    let durationSeconds: Int?
+    let distanceMeters: Decimal?
+    let formScore: Int // Required field
+    let grade: Int
+    let isPublic: Bool
+    let completedAt: Date
+    let createdAt: Date
+    let deviceId: String?
+    let metadata: WorkoutMetadata?
+    let notes: String?
+    
     enum CodingKeys: String, CodingKey {
-        case items
-        case totalCount = "totalCount"
-        case totalPages = "totalPages"
-        case currentPage = "page"
-        case pageSize = "pageSize"
+        case id
+        case userId = "user_id"
+        case exerciseId = "exercise_id"
+        case exerciseName = "exercise_name"
+        case exerciseType = "exercise_type"
+        case reps
+        case durationSeconds = "duration_seconds"
+        case distanceMeters = "distance_meters"
+        case formScore = "form_score"
+        case grade
+        case isPublic = "is_public"
+        case completedAt = "completed_at"
+        case createdAt = "created_at"
+        case deviceId = "device_id"
+        case metadata
+        case notes
+    }
+    
+    /// Convert API response to Workout model
+    func toWorkout() -> Workout {
+        return Workout(
+            id: id,
+            userId: userId,
+            exerciseId: exerciseId,
+            exerciseType: ExerciseType(rawValue: exerciseType) ?? .pushup,
+            repetitions: reps,
+            durationSeconds: durationSeconds,
+            distanceMeters: distanceMeters,
+            formScore: formScore, // Now guaranteed to be present
+            grade: grade,
+            isPublic: isPublic,
+            completedAt: completedAt,
+            createdAt: createdAt,
+            deviceId: deviceId,
+            metadata: metadata,
+            notes: notes,
+            syncStatus: .synced
+        )
+    }
+}
+
+// MARK: - Performance Level Enum
+enum PerformanceLevel: String, CaseIterable {
+    case excellent = "excellent"
+    case good = "good"
+    case satisfactory = "satisfactory"
+    case needsImprovement = "needs_improvement"
+    case unsatisfactory = "unsatisfactory"
+    
+    var displayName: String {
+        switch self {
+        case .excellent: return "Excellent"
+        case .good: return "Good"
+        case .satisfactory: return "Satisfactory"
+        case .needsImprovement: return "Needs Improvement"
+        case .unsatisfactory: return "Unsatisfactory"
+        }
+    }
+    
+    var color: String {
+        switch self {
+        case .excellent: return "green"
+        case .good: return "blue"
+        case .satisfactory: return "yellow"
+        case .needsImprovement: return "orange"
+        case .unsatisfactory: return "red"
+        }
+    }
+}
+
+// MARK: - Validation Extensions
+extension CreateWorkoutRequest {
+    /// Validates that the workout request has appropriate data for the exercise type
+    func validate() throws {
+        // Validate form_score range
+        guard formScore >= 0 && formScore <= 100 else {
+            throw WorkoutValidationError.invalidFormScore
+        }
+        
+        // Validate grade range
+        guard grade >= 0 && grade <= 100 else {
+            throw WorkoutValidationError.invalidGrade
+        }
+        
+        // Exercise type specific validation
+        switch exerciseType {
+        case .run:
+            guard distanceMeters != nil && durationSeconds != nil else {
+                throw WorkoutValidationError.missingRunMetrics
+            }
+        case .pushup, .pullup, .situp:
+            guard repetitions != nil else {
+                throw WorkoutValidationError.missingRepetitions
+            }
+        }
+    }
+}
+
+// MARK: - Validation Errors
+enum WorkoutValidationError: LocalizedError {
+    case invalidFormScore
+    case invalidGrade
+    case missingRunMetrics
+    case missingRepetitions
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidFormScore:
+            return "Form score must be between 0 and 100"
+        case .invalidGrade:
+            return "Grade must be between 0 and 100"
+        case .missingRunMetrics:
+            return "Running exercises require distance and duration"
+        case .missingRepetitions:
+            return "Strength exercises require repetition count"
+        }
+    }
+}
+
+// MARK: - Extensions
+extension String {
+    func extractExerciseTypeKey() -> String {
+        // Try to parse metadata JSON and extract exercise type
+        guard let data = self.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let exerciseType = json["exercise_type"] as? String else {
+            return "unknown"
+        }
+        return exerciseType
+    }
+}
+
+extension Workout {
+    /// Create a workout for testing purposes
+    static func mock(
+        id: Int = 1,
+        exerciseType: ExerciseType = .pushup,
+        repetitions: Int? = 50,
+        formScore: Int = 85,
+        grade: Int = 85,
+        completedAt: Date = Date()
+    ) -> Workout {
+        Workout(
+            id: id,
+            userId: 1,
+            exerciseId: exerciseType.exerciseId,
+            exerciseType: exerciseType,
+            repetitions: repetitions,
+            durationSeconds: exerciseType == .run ? 600 : nil,
+            distanceMeters: exerciseType == .run ? Decimal(3218.69) : nil, // 2 miles in meters
+            formScore: formScore, // Now always provided
+            grade: grade,
+            isPublic: false,
+            completedAt: completedAt,
+            createdAt: completedAt,
+            deviceId: "test-device",
+            metadata: nil,
+            notes: nil,
+            syncStatus: .synced
+        )
     }
 } 

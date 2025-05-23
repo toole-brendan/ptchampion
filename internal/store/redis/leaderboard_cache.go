@@ -109,3 +109,22 @@ func (c *LeaderboardCache) FlushLeaderboards(ctx context.Context) error {
 
 	return nil
 }
+
+// InvalidateUserLeaderboards clears cache when user privacy changes
+func (c *LeaderboardCache) InvalidateUserLeaderboards(ctx context.Context, userID int) error {
+	// Clear all leaderboard caches when privacy settings change
+	pattern := "leaderboard:*"
+
+	keys, err := c.client.Keys(ctx, pattern).Result()
+	if err != nil {
+		return fmt.Errorf("failed to get cache keys: %w", err)
+	}
+
+	if len(keys) > 0 {
+		if err := c.client.Del(ctx, keys...).Err(); err != nil {
+			return fmt.Errorf("failed to delete cache keys: %w", err)
+		}
+	}
+
+	return nil
+}

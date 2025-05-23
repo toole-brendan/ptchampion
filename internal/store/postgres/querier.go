@@ -26,14 +26,13 @@ type Querier interface {
 	GetUser(ctx context.Context, id int32) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsername(ctx context.Context, username string) (User, error)
-	GetUserExercises(ctx context.Context, arg GetUserExercisesParams) ([]GetUserExercisesRow, error)
-	GetUserExercisesByType(ctx context.Context, arg GetUserExercisesByTypeParams) ([]GetUserExercisesByTypeRow, error)
-	GetUserExercisesCount(ctx context.Context, userID int32) (int64, error)
 	GetUserWorkouts(ctx context.Context, arg GetUserWorkoutsParams) ([]GetUserWorkoutsRow, error)
+	GetUserWorkoutsByType(ctx context.Context, arg GetUserWorkoutsByTypeParams) ([]GetUserWorkoutsByTypeRow, error)
 	GetUserWorkoutsCount(ctx context.Context, userID int32) (int64, error)
+	GetUserWorkoutsHistory(ctx context.Context, arg GetUserWorkoutsHistoryParams) ([]GetUserWorkoutsHistoryRow, error)
 	GetWorkoutRecordByID(ctx context.Context, id int32) (Workout, error)
 	ListExercises(ctx context.Context) ([]Exercise, error)
-	LogUserExercise(ctx context.Context, arg LogUserExerciseParams) (UserExercise, error)
+	LogWorkout(ctx context.Context, arg LogWorkoutParams) (Workout, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 	UpdateUserLocation(ctx context.Context, arg UpdateUserLocationParams) error
 	UpdateWorkoutVisibility(ctx context.Context, arg UpdateWorkoutVisibilityParams) error

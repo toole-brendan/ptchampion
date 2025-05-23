@@ -5,12 +5,13 @@ INSERT INTO workouts (
     exercise_type, -- Consider removing if always joining
     repetitions,
     duration_seconds,
+    form_score,
     grade,
     completed_at,
     is_public
     -- created_at is handled by DEFAULT NOW()
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
 RETURNING *;
 

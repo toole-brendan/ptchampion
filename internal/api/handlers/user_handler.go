@@ -35,6 +35,12 @@ type UpdateCurrentUserRequest struct {
 	// Note: Password changes handled separately
 }
 
+// UpdateLocationRequest defines the request structure for updating user location
+type UpdateLocationRequest struct {
+	Latitude  float64 `json:"latitude" validate:"required,min=-90,max=90"`
+	Longitude float64 `json:"longitude" validate:"required,min=-180,max=180"`
+}
+
 // mapStoreUserToUserResponse converts the service/store user model to the API response model.
 func mapStoreUserToUserResponse(user *store.User) UserResponse {
 	return UserResponse{
@@ -52,15 +58,17 @@ func mapStoreUserToUserResponse(user *store.User) UserResponse {
 
 // UserHandler handles user-related API requests.
 type UserHandler struct {
-	service users.Service
-	logger  logging.Logger
+	service         users.Service
+	locationService *users.LocationService
+	logger          logging.Logger
 }
 
 // NewUserHandler creates a new UserHandler instance.
-func NewUserHandler(service users.Service, logger logging.Logger) *UserHandler {
+func NewUserHandler(service users.Service, locationService *users.LocationService, logger logging.Logger) *UserHandler {
 	return &UserHandler{
-		service: service,
-		logger:  logger,
+		service:         service,
+		locationService: locationService,
+		logger:          logger,
 	}
 }
 
@@ -156,4 +164,51 @@ func (h *UserHandler) UpdateCurrentUser(c echo.Context) error {
 
 	// 6. Send response
 	return c.JSON(http.StatusOK, resp)
+}
+
+// UpdateLocation handles requests to update the authenticated user's location
+func (h *UserHandler) UpdateLocation(c echo.Context) error {
+	ctx := c.Request().Context()
+	h.logger.Debug(ctx, "UpdateLocation handler called")
+
+	// 1. Get User ID from context
+	userID, err := GetUserIDFromContext(c)
+	if err != nil {
+		h.logger.Error(ctx, "Could not get user ID from context in UpdateLocation", "error", err)
+		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication required: User ID not found")
+	}
+
+	h.logger.Debug(ctx, "Found user_id for location update", "userID", userID)
+
+	// 2. Decode and validate request body
+	var req UpdateLocationRequest
+	if err := c.Bind(&req); err != nil {
+		h.logger.Error(ctx, "Failed to decode update location request", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid request body")
+	}
+
+	if err := c.Validate(&req); err != nil {
+		h.logger.Warn(ctx, "Invalid update location request", "error", err)
+		return NewAPIError(http.StatusBadRequest, ErrCodeValidation, err.Error())
+	}
+
+	h.logger.Debug(ctx, "Updating user location", "userID", userID, "lat", req.Latitude, "lng", req.Longitude)
+
+	// 3. Call the location service to update the user's location
+	if err := h.locationService.UpdateUserLocation(
+		ctx,
+		userID,
+		req.Latitude,
+		req.Longitude,
+	); err != nil {
+		h.logger.Error(ctx, "Failed to update user location", "userID", userID, "error", err)
+		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, err.Error())
+	}
+
+	h.logger.Info(ctx, "User location updated successfully", "userID", userID)
+
+	// 4. Return success response
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Location updated successfully",
+	})
 }

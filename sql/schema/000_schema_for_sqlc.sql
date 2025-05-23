@@ -64,7 +64,10 @@ CREATE TABLE IF NOT EXISTS workouts (
     grade INT NOT NULL,
     is_public BOOLEAN NOT NULL DEFAULT false,
     completed_at TIMESTAMPTZ NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    device_id VARCHAR(255),
+    metadata JSONB,
+    notes TEXT
 );
 
 -- Create indexes for better performance

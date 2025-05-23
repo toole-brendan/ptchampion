@@ -20,6 +20,15 @@ components:
           type: integer
         username:
           type: string
+        email:
+          type: string
+          format: email
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
         displayName:
           type: string
           nullable: true
@@ -48,15 +57,76 @@ components:
       required:
         - id
         - username
-        - displayName
-        - profilePictureUrl
-        - location
-        - latitude
-        - longitude
-        - lastSyncedAt
-        - createdAt
-        - updatedAt
+        - email
       description: User profile information
+    
+    Workout:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        exerciseId:
+          type: integer
+        exerciseType:
+          type: string
+          enum: [pushup, pullup, situp, run]
+        repetitions:
+          type: integer
+          nullable: true
+        durationSeconds:
+          type: integer
+          nullable: true
+        distanceMeters:
+          type: number
+          format: decimal
+          nullable: true
+        formScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 0
+        grade:
+          type: integer
+          minimum: 0
+          maximum: 100
+        isPublic:
+          type: boolean
+          default: false
+        completedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        deviceId:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        syncStatus:
+          type: string
+          nullable: true
+          enum:
+            - synced
+            - pending
+            - conflict
+      required:
+        - id
+        - userId
+        - exerciseId
+        - exerciseType
+        - formScore
+        - grade
+        - completedAt
+        - createdAt
+      description: A completed workout session
+    
     UserExercise:
       type: object
       properties:
@@ -107,24 +177,25 @@ components:
         - id
         - userId
         - exerciseId
-        - repetitions
-        - formScore
-        - timeInSeconds
-        - grade
         - completed
-        - metadata
-        - deviceId
-        - syncStatus
-        - createdAt
-        - updatedAt
-      description: Details of a completed or tracked exercise
+      description: Legacy exercise record (deprecated, use Workout instead)
+      
     InsertUser:
       type: object
       properties:
         username:
           type: string
+        email:
+          type: string
+          format: email
         password:
           type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
         displayName:
           type: string
           nullable: true
@@ -142,21 +213,108 @@ components:
           nullable: true
       required:
         - username
+        - email
         - password
       description: Data required to register a new user
-    UpdateProfile:
+    
+    UpdateUserRequest:
       type: object
       properties:
-        displayName:
+        username:
           type: string
-          nullable: true
-        profilePictureUrl:
+          minLength: 3
+          maxLength: 30
+        display_name:
           type: string
-          nullable: true
+          maxLength: 100
+        profile_picture_url:
+          type: string
+          format: uri
         location:
           type: string
+          maxLength: 100
+        latitude:
+          type: number
+        longitude:
+          type: number
+      description: Fields to update in user profile
+      
+    UpdateLocationRequest:
+      type: object
+      properties:
+        latitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+          description: User's latitude coordinate
+        longitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+          description: User's longitude coordinate
+      required:
+        - latitude
+        - longitude
+      description: User location coordinates for updating position
+      
+    InsertWorkout:
+      type: object
+      properties:
+        exerciseId:
+          type: integer
+          minimum: 1
+        exerciseType:
+          type: string
+          enum: [pushup, pullup, situp, run]
+        repetitions:
+          type: integer
+          minimum: 0
           nullable: true
-      description: Data for updating a user profile
+        durationSeconds:
+          type: integer
+          minimum: 0
+          nullable: true
+        distanceMeters:
+          type: number
+          format: decimal
+          minimum: 0
+          nullable: true
+        formScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 0
+        grade:
+          type: integer
+          minimum: 0
+          maximum: 100
+        isPublic:
+          type: boolean
+          default: false
+        completedAt:
+          type: string
+          format: date-time
+        deviceId:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        idempotencyKey:
+          type: string
+          nullable: true
+      required:
+        - exerciseId
+        - exerciseType
+        - grade
+        - completedAt
+      description: Data for logging a new workout (formScore defaults to 0 if not provided)
+      
     InsertUserExercise:
       type: object
       properties:
@@ -203,7 +361,8 @@ components:
       required:
         - userId
         - exerciseId
-      description: Data for recording a new user exercise attempt
+      description: Legacy data for recording a user exercise (deprecated)
+    
     SyncRequest:
       type: object
       properties:
@@ -217,54 +376,15 @@ components:
         data:
           type: object
           properties:
+            workouts:
+              type: array
+              items:
+                $ref: '#/components/schemas/InsertWorkout'
             userExercises:
               type: array
               items:
-                type: object
-                properties:
-                  userId:
-                    type: integer
-                    minimum: -2147483648
-                    maximum: 2147483647
-                  exerciseId:
-                    type: integer
-                    minimum: -2147483648
-                    maximum: 2147483647
-                  repetitions:
-                    type: integer
-                    nullable: true
-                    minimum: -2147483648
-                    maximum: 2147483647
-                  formScore:
-                    type: integer
-                    nullable: true
-                    minimum: -2147483648
-                    maximum: 2147483647
-                  timeInSeconds:
-                    type: integer
-                    nullable: true
-                    minimum: -2147483648
-                    maximum: 2147483647
-                  grade:
-                    type: integer
-                    nullable: true
-                    minimum: -2147483648
-                    maximum: 2147483647
-                  completed:
-                    type: boolean
-                    nullable: true
-                  metadata:
-                    type: string
-                    nullable: true
-                  deviceId:
-                    type: string
-                    nullable: true
-                  syncStatus:
-                    type: string
-                    nullable: true
-                required:
-                  - userId
-                  - exerciseId
+                $ref: '#/components/schemas/InsertUserExercise'
+              description: Legacy field for backward compatibility
             profile:
               type: object
               properties:
@@ -282,6 +402,7 @@ components:
         - deviceId
         - lastSyncTimestamp
       description: Request payload for synchronizing data
+      
     SyncResponse:
       type: object
       properties:
@@ -293,20 +414,26 @@ components:
         data:
           type: object
           properties:
+            workouts:
+              type: array
+              items:
+                $ref: '#/components/schemas/Workout'
             userExercises:
               type: array
               items:
                 $ref: '#/components/schemas/UserExercise'
+              description: Legacy field for backward compatibility
             profile:
               $ref: '#/components/schemas/User'
         conflicts:
           type: array
           items:
-            $ref: '#/components/schemas/UserExercise'
+            $ref: '#/components/schemas/Workout'
       required:
         - success
         - timestamp
       description: Response payload after data synchronization
+      
     WorkoutResponse:
       type: object
       properties:
@@ -326,75 +453,75 @@ components:
         duration_seconds:
           type: integer
           nullable: true
+        distance_meters:
+          type: number
+          nullable: true
         form_score:
           type: integer
-          nullable: true
+          minimum: 0
+          maximum: 100
         grade:
           type: integer
+        is_public:
+          type: boolean
         completed_at:
           type: string
           format: date-time
         created_at:
           type: string
           format: date-time
+        device_id:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+        notes:
+          type: string
+          nullable: true
       required:
         - id
         - user_id
         - exercise_id
         - exercise_name
         - exercise_type
-        - reps
-        - duration_seconds
         - form_score
         - grade
+        - is_public
         - completed_at
         - created_at
-      description: A single recorded workout session
+      description: A single recorded workout session (API response format)
+      
     LoginResponse:
       type: object
       properties:
         token:
           type: string
+        refreshToken:
+          type: string
         user:
           $ref: '#/components/schemas/User'
       required:
         - token
+        - refreshToken
         - user
       description: Authentication token and user profile
+      
     LoginRequest:
       type: object
       properties:
-        username:
+        email:
           type: string
+          format: email
           minLength: 1
         password:
           type: string
           minLength: 1
       required:
-        - username
+        - email
         - password
       description: User credentials for login
-    UpdateUserRequest:
-      type: object
-      properties:
-        username:
-          type: string
-          minLength: 3
-          maxLength: 30
-        display_name:
-          type: string
-          maxLength: 100
-        profile_picture_url:
-          type: string
-          format: uri
-        location:
-          type: string
-          maxLength: 100
-        latitude:
-          type: number
-        longitude:
-          type: number
-      description: Fields to update in user profile
+      
     LogExerciseResponse:
       type: object
       properties:
@@ -429,7 +556,8 @@ components:
         - exercise_type
         - grade
         - created_at
-      description: Logged exercise data with calculated grade
+      description: Legacy logged exercise data (deprecated, use WorkoutResponse)
+      
     LogExerciseRequest:
       type: object
       properties:
@@ -450,7 +578,8 @@ components:
           type: string
       required:
         - exercise_id
-      description: Exercise data to log
+      description: Legacy exercise data (deprecated, use InsertWorkout)
+    
     PaginatedExerciseHistoryResponse:
       type: object
       properties:
@@ -501,7 +630,8 @@ components:
         - total_count
         - page
         - page_size
-      description: Paginated exercise history for user
+      description: Legacy paginated exercise history (deprecated, use PaginatedWorkoutsResponse)
+    
     LeaderboardResponse:
       type: array
       items:
@@ -518,6 +648,7 @@ components:
           - display_name
           - best_grade
       description: Leaderboard entries with best scores
+      
     PaginatedWorkoutsResponse:
       type: object
       properties:
@@ -539,6 +670,7 @@ components:
         - page
         - pageSize
         - totalPages
+        
     LocalLeaderboardResponse:
       type: array
       items:
@@ -587,9 +719,10 @@ paths:
         '400':
           description: Invalid input (e.g., validation error)
         '409':
-          description: Username already exists
+          description: Username or email already exists
         '500':
           description: Internal Server Error
+          
   /auth/login:
     post:
       summary: Authenticate a user and get JWT token
@@ -610,9 +743,10 @@ paths:
         '400':
           description: Invalid input
         '401':
-          description: Invalid username or password
+          description: Invalid email or password
         '500':
           description: Internal Server Error
+          
   /users/me:
     patch:
       summary: Update current user profile
@@ -640,11 +774,116 @@ paths:
           description: Username already taken
         '500':
           description: Internal Server Error
+          
+  /users/me/location:
+    patch:
+      summary: Update current user's location
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateLocationRequest'
+      responses:
+        '200':
+          description: Location updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Location updated successfully"
+                required:
+                  - message
+        '400':
+          description: Invalid input or validation error
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal Server Error
+          
+  /workouts:
+    post:
+      summary: Log a completed workout
+      tags:
+        - Workouts
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InsertWorkout'
+      responses:
+        '201':
+          description: Workout logged successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutResponse'
+        '400':
+          description: Invalid input or missing required metrics for exercise type
+        '401':
+          description: Unauthorized - missing or invalid token
+        '409':
+          description: Duplicate workout (idempotency key conflict)
+        '500':
+          description: Internal Server Error
+    get:
+      summary: Get workout history for the current user
+      tags:
+        - Workouts
+      operationId: getWorkouts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+          required: false
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+          required: false
+        - name: exerciseType
+          in: query
+          schema:
+            type: string
+            enum: [pushup, pullup, situp, run]
+          description: Filter by exercise type
+          required: false
+      responses:
+        '200':
+          description: Workout history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkoutsResponse'
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal Server Error
+          
   /exercises:
     post:
-      summary: Log a completed exercise
+      summary: Log a completed exercise (legacy endpoint)
       tags:
         - Exercises
+      deprecated: true
       security:
         - BearerAuth: []
       requestBody:
@@ -666,9 +905,10 @@ paths:
         '500':
           description: Internal Server Error
     get:
-      summary: Get exercise history for the current user
+      summary: Get exercise history for the current user (legacy endpoint)
       tags:
         - Exercises
+      deprecated: true
       security:
         - BearerAuth: []
       parameters:
@@ -700,6 +940,7 @@ paths:
           description: Unauthorized - missing or invalid token
         '500':
           description: Internal Server Error
+          
   /leaderboard/{exerciseType}:
     get:
       summary: Get leaderboard for a specific exercise type
@@ -736,68 +977,7 @@ paths:
           description: Invalid exercise type
         '500':
           description: Internal Server Error
-  /sync:
-    post:
-      summary: Synchronize client data with the server
-      tags:
-        - Sync
-      security:
-        - BearerAuth: []
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/SyncRequest'
-      responses:
-        '200':
-          description: Sync successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SyncResponse'
-        '400':
-          description: Invalid sync request
-        '401':
-          description: Unauthorized - missing or invalid token
-        '500':
-          description: Internal Server Error during sync
-  /workouts:
-    get:
-      summary: Get workout history for the current user (tracked sessions)
-      tags:
-        - Workouts
-      operationId: getWorkouts
-      security:
-        - BearerAuth: []
-      parameters:
-        - name: page
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-          description: Page number for pagination
-          required: false
-        - name: pageSize
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-          description: Number of items per page
-          required: false
-      responses:
-        '200':
-          description: Workout history retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaginatedWorkoutsResponse'
-        '401':
-          description: Unauthorized - missing or invalid token
-        '500':
-          description: Internal Server Error
+          
   /leaderboards/local:
     get:
       summary: Get leaderboard filtered by proximity to user location
@@ -846,3 +1026,29 @@ paths:
           description: Missing or invalid required query parameters
         '500':
           description: Internal Server Error retrieving local leaderboard
+          
+  /sync:
+    post:
+      summary: Synchronize client data with the server
+      tags:
+        - Sync
+      security:
+        - BearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncRequest'
+      responses:
+        '200':
+          description: Sync successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncResponse'
+        '400':
+          description: Invalid sync request
+        '401':
+          description: Unauthorized - missing or invalid token
+        '500':
+          description: Internal Server Error during sync

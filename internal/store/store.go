@@ -123,12 +123,15 @@ type ExerciseStore interface {
 
 // LeaderboardStore defines methods for leaderboard data access
 type LeaderboardStore interface {
-	// GetExerciseTypeLeaderboard is effectively GetGlobalExerciseLeaderboard now
+	GetGlobalLeaderboard(ctx context.Context, exerciseType string,
+		startDate, endDate *time.Time, limit, offset int) ([]*LeaderboardEntry, error)
+	GetLocalLeaderboard(ctx context.Context, exerciseType string, lat, lng, radiusMeters float64,
+		startDate, endDate *time.Time, limit, offset int) ([]*LeaderboardEntry, error)
+	// Keep existing methods for backward compatibility
 	GetGlobalExerciseLeaderboard(ctx context.Context, exerciseType string, limit int, startDate time.Time, endDate time.Time) ([]*LeaderboardEntry, error)
 	GetGlobalAggregateLeaderboard(ctx context.Context, limit int, startDate time.Time, endDate time.Time) ([]*LeaderboardEntry, error)
 	GetLocalExerciseLeaderboard(ctx context.Context, exerciseType string, latitude, longitude float64, radiusMeters int, limit int, startDate time.Time, endDate time.Time) ([]*LeaderboardEntry, error)
 	GetLocalAggregateLeaderboard(ctx context.Context, latitude, longitude float64, radiusMeters int, limit int, startDate time.Time, endDate time.Time) ([]*LeaderboardEntry, error)
-	// Remove or comment out old/generic GetOverallLeaderboard, GetExerciseTypeLeaderboard, GetLocalLeaderboard if they are fully replaced
 }
 
 // WorkoutStore defines methods for workout data access

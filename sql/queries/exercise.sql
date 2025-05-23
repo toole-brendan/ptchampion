@@ -11,86 +11,79 @@ SELECT * FROM exercises
 WHERE type = $1
 ORDER BY name;
 
--- name: LogUserExercise :one
-INSERT INTO user_exercises (
+-- name: LogWorkout :one
+INSERT INTO workouts (
   user_id, 
   exercise_id, 
+  exercise_type,
   repetitions, 
-  time_in_seconds, 
-  distance,
+  duration_seconds, 
   grade, -- Calculated grade based on performance
-  notes,
-  completed, 
-  metadata, -- Keep metadata for potential future use (e.g., raw analysis details)
-  device_id,
-  form_score -- Add form_score from client
+  form_score, -- Add form_score from client
+  completed_at,
+  is_public
 )
 VALUES (
     $1, -- user_id
     $2, -- exercise_id
-    $3, -- repetitions (sqlc.narg)
-    $4, -- time_in_seconds (sqlc.narg)
-    $5, -- distance (sqlc.narg)
+    $3, -- exercise_type
+    $4, -- repetitions (sqlc.narg)
+    $5, -- duration_seconds (sqlc.narg)
     $6, -- grade (calculated)
-    $7, -- notes (sqlc.narg)
-    $8, -- completed (sqlc.narg)
-    $9, -- metadata (sqlc.narg - placeholder for now)
-    $10, -- device_id (sqlc.narg)
-    $11 -- form_score (sqlc.narg)
+    $7, -- form_score (sqlc.narg)
+    $8, -- completed_at
+    $9  -- is_public
 )
 RETURNING *;
 
--- name: GetUserExercises :many
+-- name: GetUserWorkoutsHistory :many
 SELECT
-    ue.id,
-    ue.user_id,
-    ue.exercise_id,
-    ue.repetitions,
-    ue.time_in_seconds,
-    ue.distance,
-    ue.grade,
-    ue.notes,
-    ue.created_at,
+    w.id,
+    w.user_id,
+    w.exercise_id,
+    w.repetitions,
+    w.duration_seconds,
+    w.grade,
+    w.form_score,
+    w.created_at,
+    w.completed_at,
     e.name AS exercise_name,
     e.type AS exercise_type
 FROM
-    user_exercises ue
+    workouts w
 JOIN
-    exercises e ON ue.exercise_id = e.id
+    exercises e ON w.exercise_id = e.id
 WHERE
-    ue.user_id = $1
+    w.user_id = $1
 ORDER BY
-    ue.created_at DESC
+    w.created_at DESC
 LIMIT $2
 OFFSET $3;
 
--- name: GetUserExercisesCount :one
-SELECT count(*) FROM user_exercises
-WHERE user_id = $1;
-
--- name: GetUserExercisesByType :many
-SELECT ue.*, e.name as exercise_name, e.type as exercise_type
-FROM user_exercises ue
-JOIN exercises e ON e.id = ue.exercise_id
-WHERE ue.user_id = $1 AND e.type = $2
-ORDER BY ue.created_at DESC;
+-- name: GetUserWorkoutsByType :many
+SELECT w.*, e.name as exercise_name, e.type as exercise_type
+FROM workouts w
+JOIN exercises e ON e.id = w.exercise_id
+WHERE w.user_id = $1 AND e.type = $2
+ORDER BY w.created_at DESC;
 
 -- name: GetLeaderboard :many
 SELECT 
     u.id AS user_id,
     u.username,
     CONCAT(u.first_name, ' ', u.last_name) as display_name,
-    MAX(ue.grade) AS max_grade,
-    MAX(ue.created_at) AS last_attempt_date
+    MAX(w.grade) AS max_grade,
+    MAX(w.created_at) AS last_attempt_date
 FROM 
-    user_exercises ue
+    workouts w
 JOIN 
-    users u ON ue.user_id = u.id
+    users u ON w.user_id = u.id
 JOIN
-    exercises e ON ue.exercise_id = e.id
+    exercises e ON w.exercise_id = e.id
 WHERE 
     e.type = $1
-    AND ue.grade IS NOT NULL
+    AND w.grade IS NOT NULL
+    AND w.is_public = true
 GROUP BY 
     u.id, u.username, u.first_name, u.last_name
 ORDER BY 

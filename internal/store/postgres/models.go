@@ -7,6 +7,8 @@ package db
 import (
 	"database/sql"
 	"time"
+
+	"github.com/sqlc-dev/pqtype"
 )
 
 type Exercise struct {
@@ -50,15 +52,18 @@ type UserExercise struct {
 }
 
 type Workout struct {
-	ID              int32         `json:"id"`
-	UserID          int32         `json:"user_id"`
-	ExerciseID      int32         `json:"exercise_id"`
-	ExerciseType    string        `json:"exercise_type"`
-	Repetitions     sql.NullInt32 `json:"repetitions"`
-	DurationSeconds sql.NullInt32 `json:"duration_seconds"`
-	FormScore       sql.NullInt32 `json:"form_score"`
-	Grade           int32         `json:"grade"`
-	IsPublic        bool          `json:"is_public"`
-	CompletedAt     time.Time     `json:"completed_at"`
-	CreatedAt       time.Time     `json:"created_at"`
+	ID              int32                 `json:"id"`
+	UserID          int32                 `json:"user_id"`
+	ExerciseID      int32                 `json:"exercise_id"`
+	ExerciseType    string                `json:"exercise_type"`
+	Repetitions     sql.NullInt32         `json:"repetitions"`
+	DurationSeconds sql.NullInt32         `json:"duration_seconds"`
+	FormScore       sql.NullInt32         `json:"form_score"`
+	Grade           int32                 `json:"grade"`
+	IsPublic        bool                  `json:"is_public"`
+	CompletedAt     time.Time             `json:"completed_at"`
+	CreatedAt       time.Time             `json:"created_at"`
+	DeviceID        sql.NullString        `json:"device_id"`
+	Metadata        pqtype.NullRawMessage `json:"metadata"`
+	Notes           sql.NullString        `json:"notes"`
 }

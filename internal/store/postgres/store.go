@@ -358,36 +358,36 @@ func toStoreExercise(dbEx Exercise) *store.Exercise {
 	}
 }
 
-// toStoreUserExerciseRecord converts db.UserExercise or db.GetUserExercisesRow to store.UserExerciseRecord
+// toStoreUserExerciseRecord converts db.Workout or db.GetUserWorkoutsHistoryRow to store.UserExerciseRecord
 func toStoreUserExerciseRecord(dbRecord interface{}) *store.UserExerciseRecord {
 	switch v := dbRecord.(type) {
-	case UserExercise: // From LogUserExercise query result
+	case Workout: // From LogWorkout query result
 		return &store.UserExerciseRecord{
 			ID:         v.ID,
 			UserID:     v.UserID,
 			ExerciseID: v.ExerciseID,
-			// ExerciseName and ExerciseType are not in db.UserExercise model directly
+			// ExerciseName and ExerciseType not available in Workout model
 			// These are usually populated by the service layer after fetching definition or if joined in query
 			Reps:          nullInt32ToInt32Ptr(v.Repetitions),
-			TimeInSeconds: nullInt32ToInt32Ptr(v.TimeInSeconds),
-			Distance:      nullInt32ToInt32Ptr(v.Distance),
-			Notes:         nullStringToStringPtr(v.Notes),
-			Grade:         v.Grade.Int32, // Assuming grade is always valid after logging
-			CreatedAt:     nullTimeToTime(v.CreatedAt),
+			TimeInSeconds: nullInt32ToInt32Ptr(v.DurationSeconds),
+			Distance:      nil, // Not supported in workouts table
+			Notes:         nil, // Not supported in workouts table
+			Grade:         v.Grade,
+			CreatedAt:     v.CreatedAt,
 		}
-	case GetUserExercisesRow: // From GetUserExercises query result
+	case GetUserWorkoutsHistoryRow: // From GetUserWorkoutsHistory query result
 		return &store.UserExerciseRecord{
 			ID:            v.ID,
 			UserID:        v.UserID,
 			ExerciseID:    v.ExerciseID,
-			ExerciseName:  v.ExerciseName, // Available in GetUserExercisesRow
-			ExerciseType:  v.ExerciseType, // Available in GetUserExercisesRow
+			ExerciseName:  v.ExerciseName, // Available in GetUserWorkoutsHistoryRow
+			ExerciseType:  v.ExerciseType, // Available in GetUserWorkoutsHistoryRow
 			Reps:          nullInt32ToInt32Ptr(v.Repetitions),
-			TimeInSeconds: nullInt32ToInt32Ptr(v.TimeInSeconds),
-			Distance:      nullInt32ToInt32Ptr(v.Distance),
-			Notes:         nullStringToStringPtr(v.Notes),
-			Grade:         v.Grade.Int32, // Assuming grade is valid
-			CreatedAt:     nullTimeToTime(v.CreatedAt),
+			TimeInSeconds: nullInt32ToInt32Ptr(v.DurationSeconds),
+			Distance:      nil, // Not supported in workouts table
+			Notes:         nil, // Not supported in workouts table
+			Grade:         v.Grade,
+			CreatedAt:     v.CreatedAt,
 		}
 	default:
 		// Optionally log an error here if an unexpected type is passed
@@ -410,30 +410,32 @@ func (s *Store) GetExerciseDefinition(ctx context.Context, exerciseID int32) (*s
 // LogUserExercise implements store.ExerciseStore
 // Note: The input `record` is a store.UserExerciseRecord which contains denormalized ExerciseName and ExerciseType.
 // These are not used for DB insertion directly but are part of the domain model.
-// The SQLC generated LogUserExerciseParams expects only essential IDs and metric values.
+// The SQLC generated LogWorkoutParams expects only essential IDs and metric values.
 func (s *Store) LogUserExercise(ctx context.Context, record *store.UserExerciseRecord) (*store.UserExerciseRecord, error) {
-	params := LogUserExerciseParams{
-		UserID:        record.UserID,
-		ExerciseID:    record.ExerciseID,
-		Repetitions:   int32PtrToNullInt32(record.Reps),
-		TimeInSeconds: int32PtrToNullInt32(record.TimeInSeconds),
-		Distance:      int32PtrToNullInt32(record.Distance),
-		Notes:         stringPtrToNullString(record.Notes),
-		Grade:         sql.NullInt32{Int32: record.Grade, Valid: true}, // Grade is calculated by service
+	params := LogWorkoutParams{
+		UserID:          record.UserID,
+		ExerciseID:      record.ExerciseID,
+		ExerciseType:    record.ExerciseType,
+		Repetitions:     int32PtrToNullInt32(record.Reps),
+		DurationSeconds: int32PtrToNullInt32(record.TimeInSeconds),
+		Grade:           record.Grade,
+		FormScore:       int32PtrToNullInt32(nil), // Default form score
+		CompletedAt:     time.Now(),
+		IsPublic:        true, // Default to public
 	}
-	dbLoggedExercise, err := s.Queries.LogUserExercise(ctx, params)
+	dbLoggedExercise, err := s.Queries.LogWorkout(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("failed to log user exercise in DB: %w", err)
 	}
 
-	// The LogUserExerciseRow doesn't have ExerciseName and ExerciseType.
+	// The LogWorkout doesn't have ExerciseName and ExerciseType.
 	// These need to be added back if we are to return a complete store.UserExerciseRecord.
-	// For now, we return what the DB gives back directly from LogUserExerciseRow,
+	// For now, we return what the DB gives back directly from Workout,
 	// the service layer will be responsible for enriching it if needed.
 	resultRecord := toStoreUserExerciseRecord(dbLoggedExercise)
 	if resultRecord != nil {
 		// We copy over the potentially denormalized fields from the input if they were set,
-		// as LogUserExerciseRow doesn't include them.
+		// as Workout doesn't include them.
 		resultRecord.ExerciseName = record.ExerciseName
 		resultRecord.ExerciseType = record.ExerciseType
 	}
@@ -442,7 +444,7 @@ func (s *Store) LogUserExercise(ctx context.Context, record *store.UserExerciseR
 
 // GetUserExerciseLogs implements store.ExerciseStore
 func (s *Store) GetUserExerciseLogs(ctx context.Context, userID int32, limit, offset int32) (*store.PaginatedUserExerciseRecords, error) {
-	count, err := s.Queries.GetUserExercisesCount(ctx, userID)
+	count, err := s.Queries.GetUserWorkoutsCount(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user exercises count from DB: %w", err)
 	}
@@ -454,12 +456,12 @@ func (s *Store) GetUserExerciseLogs(ctx context.Context, userID int32, limit, of
 		}, nil
 	}
 
-	params := GetUserExercisesParams{
+	params := GetUserWorkoutsHistoryParams{
 		UserID: userID,
 		Limit:  limit,
 		Offset: offset,
 	}
-	dbUserExercises, err := s.Queries.GetUserExercises(ctx, params)
+	dbUserExercises, err := s.Queries.GetUserWorkoutsHistory(ctx, params)
 	if err != nil {
 		// sql.ErrNoRows is not an error if count > 0 and we just fetched an empty page
 		// but if count was 0, we wouldn't be here. If dbUserExercises is empty but no error, it's fine.
@@ -695,23 +697,89 @@ func (s *Store) GetLocalAggregateLeaderboard(ctx context.Context, latitude, long
 	return entries, nil
 }
 
-// Comment out or remove old generic leaderboard methods to avoid conflict with the updated interface
-/*
-func (s *Store) GetExerciseTypeLeaderboard(ctx context.Context, exerciseType string, limit int) ([]*store.LeaderboardEntry, error) {
-	// ... old implementation or stub ...
-	return nil, fmt.Errorf("use GetGlobalExerciseLeaderboard instead")
+// GetGlobalLeaderboard implements store.LeaderboardStore with time filtering and offset support
+func (s *Store) GetGlobalLeaderboard(ctx context.Context, exerciseType string, startDate, endDate *time.Time, limit, offset int) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetGlobalLeaderboard called", "type", exerciseType, "limit", limit, "offset", offset, "startDate", startDate, "endDate", endDate)
+
+	// Create the repository and call the method
+	repo := NewLeaderboardRepository(s.db)
+	entries, err := repo.GetGlobalLeaderboard(ctx, exerciseType, startDate, endDate, limit, offset)
+	if err != nil {
+		s.logger.Error(ctx, "Failed to get global leaderboard with time filter from DB", "type", exerciseType, "error", err)
+		return nil, fmt.Errorf("failed to get global leaderboard with time filter from DB: %w", err)
+	}
+
+	// Convert db.LeaderboardEntry to store.LeaderboardEntry
+	result := make([]*store.LeaderboardEntry, len(entries))
+	for i, entry := range entries {
+		result[i] = &store.LeaderboardEntry{
+			UserID:    strconv.Itoa(entry.UserID),
+			Username:  entry.Username,
+			FirstName: nil, // Will be set by splitting DisplayName if needed
+			LastName:  nil, // Will be set by splitting DisplayName if needed
+			Score:     int32(entry.Score),
+			Rank:      int32(entry.Rank),
+		}
+
+		// Split display_name into first_name and last_name if available
+		if entry.DisplayName != "" {
+			parts := strings.SplitN(entry.DisplayName, " ", 2)
+			if len(parts) > 0 {
+				firstNameVal := parts[0]
+				result[i].FirstName = &firstNameVal
+
+				if len(parts) > 1 {
+					lastNameVal := parts[1]
+					result[i].LastName = &lastNameVal
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
 
-func (s *Store) GetOverallLeaderboard(ctx context.Context, limit int) ([]*store.LeaderboardEntry, error) {
-	// ... old implementation or stub ...
-	return nil, fmt.Errorf("use specific global leaderboard methods instead")
-}
+// GetLocalLeaderboard implements store.LeaderboardStore with time filtering and offset support
+func (s *Store) GetLocalLeaderboard(ctx context.Context, exerciseType string, lat, lng, radiusMeters float64, startDate, endDate *time.Time, limit, offset int) ([]*store.LeaderboardEntry, error) {
+	s.logger.Debug(ctx, "Store: GetLocalLeaderboard called", "type", exerciseType, "lat", lat, "lng", lng, "radius", radiusMeters, "limit", limit, "offset", offset, "startDate", startDate, "endDate", endDate)
 
-func (s *Store) GetLocalLeaderboard(ctx context.Context, exerciseID int32, latitude, longitude float64, radiusMeters int, limit int) ([]*store.LeaderboardEntry, error) {
-	// ... old implementation or stub ...
-	return nil, fmt.Errorf("use specific local leaderboard methods instead")
+	// Create the repository and call the method
+	repo := NewLeaderboardRepository(s.db)
+	entries, err := repo.GetLocalLeaderboard(ctx, exerciseType, lat, lng, radiusMeters, startDate, endDate, limit, offset)
+	if err != nil {
+		s.logger.Error(ctx, "Failed to get local leaderboard with time filter from DB", "type", exerciseType, "error", err)
+		return nil, fmt.Errorf("failed to get local leaderboard with time filter from DB: %w", err)
+	}
+
+	// Convert db.LeaderboardEntry to store.LeaderboardEntry
+	result := make([]*store.LeaderboardEntry, len(entries))
+	for i, entry := range entries {
+		result[i] = &store.LeaderboardEntry{
+			UserID:    strconv.Itoa(entry.UserID),
+			Username:  entry.Username,
+			FirstName: nil, // Will be set by splitting DisplayName if needed
+			LastName:  nil, // Will be set by splitting DisplayName if needed
+			Score:     int32(entry.Score),
+			Rank:      int32(entry.Rank),
+		}
+
+		// Split display_name into first_name and last_name if available
+		if entry.DisplayName != "" {
+			parts := strings.SplitN(entry.DisplayName, " ", 2)
+			if len(parts) > 0 {
+				firstNameVal := parts[0]
+				result[i].FirstName = &firstNameVal
+
+				if len(parts) > 1 {
+					lastNameVal := parts[1]
+					result[i].LastName = &lastNameVal
+				}
+			}
+		}
+	}
+
+	return result, nil
 }
-*/
 
 // --- WorkoutStore Implementation ---
 

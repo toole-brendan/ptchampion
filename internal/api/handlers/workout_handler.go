@@ -20,9 +20,9 @@ type LogWorkoutRequest struct {
 	ExerciseID      int32     `json:"exercise_id" validate:"required,gt=0"`
 	Reps            *int32    `json:"reps,omitempty" validate:"omitempty,min=0"`
 	DurationSeconds *int32    `json:"duration_seconds,omitempty" validate:"omitempty,min=0"`
-	Grade           int32     `json:"grade" validate:"min=0,max=100"`
-	CompletedAt     time.Time `json:"completed_at" validate:"required"`
 	FormScore       *int32    `json:"form_score,omitempty" validate:"omitempty,min=0,max=100"`
+	CompletedAt     time.Time `json:"completed_at" validate:"required"`
+	// Grade removed - calculate server-side only
 }
 
 // WorkoutResponse defines the API response for a single workout record.
@@ -88,40 +88,33 @@ func mapStoreWorkoutRecordToResponse(record *store.WorkoutRecord) WorkoutRespons
 
 // LogWorkout handles POST requests to log a new workout record.
 func (h *WorkoutHandler) LogWorkout(c echo.Context) error {
-	ctx := c.Request().Context()
-	userID, err := GetUserIDFromContext(c)
-	if err != nil {
-		h.logger.Error(ctx, "Could not get user ID from context for LogWorkout", "error", err)
-		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Authentication error: User ID not found")
-	}
-
 	var req LogWorkoutRequest
 	if err := c.Bind(&req); err != nil {
-		h.logger.Error(ctx, "Failed to decode LogWorkout request", "error", err)
-		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid request body")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	if err := c.Validate(&req); err != nil {
-		h.logger.Warn(ctx, "Invalid LogWorkout request payload", "error", err)
-		return NewAPIError(http.StatusBadRequest, ErrCodeValidation, err.Error())
+	if err := c.Validate(req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	userID := c.Get("user_id").(int32)
+
+	// Server calculates grade - no client input accepted
 	serviceData := &workouts.LogWorkoutData{
 		ExerciseID:      req.ExerciseID,
 		Reps:            req.Reps,
 		DurationSeconds: req.DurationSeconds,
-		Grade:           req.Grade,
-		CompletedAt:     req.CompletedAt,
 		FormScore:       req.FormScore,
+		CompletedAt:     req.CompletedAt,
+		// Grade calculated in service layer
 	}
 
-	loggedRecord, err := h.service.LogWorkout(ctx, userID, serviceData)
+	workout, err := h.service.LogWorkout(c.Request().Context(), userID, serviceData)
 	if err != nil {
-		h.logger.Error(ctx, "Service failed to log workout", "userID", userID, "exerciseID", req.ExerciseID, "error", err)
-		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to log workout record")
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.JSON(http.StatusCreated, mapStoreWorkoutRecordToResponse(loggedRecord))
+	return c.JSON(http.StatusCreated, mapStoreWorkoutRecordToResponse(workout))
 }
 
 // ListUserWorkouts handles GET requests to list a user's workout records.

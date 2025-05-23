@@ -2,9 +2,11 @@ package workouts
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
+	"ptchampion/internal/grading"
 	"ptchampion/internal/logging"
 	"ptchampion/internal/store"
 )
@@ -46,24 +48,47 @@ func NewService(workoutStore store.WorkoutStore, exerciseStore store.ExerciseSto
 
 // LogWorkout handles the business logic for logging a new workout record.
 func (s *service) LogWorkout(ctx context.Context, userID int32, data *LogWorkoutData) (*store.WorkoutRecord, error) {
-	s.logger.Debug(ctx, "WorkoutService: LogWorkout called", "userID", userID, "exerciseID", data.ExerciseID)
-
-	// Fetch exercise definition to ensure ExerciseName and ExerciseType are consistent
-	exerciseDef, err := s.exerciseStore.GetExerciseDefinition(ctx, data.ExerciseID)
+	// Validate exercise exists
+	exercise, err := s.exerciseStore.GetExerciseDefinition(ctx, data.ExerciseID)
 	if err != nil {
-		s.logger.Error(ctx, "Failed to get exercise definition for workout log", "exerciseID", data.ExerciseID, "error", err)
-		return nil, fmt.Errorf("invalid exercise ID %d: %w", data.ExerciseID, err)
+		return nil, fmt.Errorf("failed to get exercise: %w", err)
 	}
 
+	// Calculate grade server-side based ONLY on performance
+	var grade int
+	switch exercise.Type {
+	case "pushup", "situp", "pullup":
+		if data.Reps == nil {
+			return nil, errors.New("reps required for this exercise type")
+		}
+		var calcErr error
+		grade, calcErr = grading.CalculateScore(exercise.Type, float64(*data.Reps))
+		if calcErr != nil {
+			return nil, fmt.Errorf("failed to calculate score: %w", calcErr)
+		}
+	case "run":
+		if data.DurationSeconds == nil {
+			return nil, errors.New("duration required for running")
+		}
+		grade = grading.CalculateRunScoreSeconds(int(*data.DurationSeconds))
+	default:
+		return nil, fmt.Errorf("unsupported exercise type: %s", exercise.Type)
+	}
+
+	// Override any client-provided grade
+	data.Grade = int32(grade)
+
+	// Form score is stored separately for analytics only
+	// It does NOT affect the grade/score
 	recordToStore := &store.WorkoutRecord{
 		UserID:          userID,
 		ExerciseID:      data.ExerciseID,
-		ExerciseName:    exerciseDef.Name, // Use name from definition
-		ExerciseType:    exerciseDef.Type, // Use type from definition
+		ExerciseName:    exercise.Name, // Use name from definition
+		ExerciseType:    exercise.Type, // Use type from definition
 		Reps:            data.Reps,
 		DurationSeconds: data.DurationSeconds,
-		FormScore:       data.FormScore,
-		Grade:           data.Grade,
+		Grade:           int32(grade),   // Based ONLY on reps/time
+		FormScore:       data.FormScore, // Stored for analytics
 		CompletedAt:     data.CompletedAt,
 		// CreatedAt will be set by the database
 	}

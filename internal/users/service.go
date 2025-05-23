@@ -7,6 +7,7 @@ import (
 
 	"ptchampion/internal/logging"
 	"ptchampion/internal/store" // Using the store interface and model
+	redis_cache "ptchampion/internal/store/redis"
 
 	"github.com/lib/pq" // Added for pq.Error type assertion
 )
@@ -25,20 +26,23 @@ type UpdateUserProfileRequest struct {
 type Service interface {
 	GetUserProfile(ctx context.Context, userID string) (*store.User, error)
 	UpdateUserProfile(ctx context.Context, userID string, req *UpdateUserProfileRequest) (*store.User, error)
+	UpdatePrivacySettings(ctx context.Context, userID int32, isPublic bool) error
 }
 
 // service implements the Service interface.
 type service struct {
-	userStore store.UserStore // Depend on the UserStore part of the store interface
-	logger    logging.Logger
+	userStore        store.UserStore // Depend on the UserStore part of the store interface
+	leaderboardCache *redis_cache.LeaderboardCache
+	logger           logging.Logger
 }
 
 // NewUserService creates a new UserService with the given dependencies.
 // It uses a concrete *db.Store assuming it fulfills the store.UserStore interface.
-func NewUserService(userStore store.UserStore, logger logging.Logger) Service {
+func NewUserService(userStore store.UserStore, leaderboardCache *redis_cache.LeaderboardCache, logger logging.Logger) Service {
 	return &service{
-		userStore: userStore,
-		logger:    logger,
+		userStore:        userStore,
+		leaderboardCache: leaderboardCache,
+		logger:           logger,
 	}
 }
 
@@ -138,4 +142,22 @@ var emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
 
 func isValidEmailFormat(email string) bool {
 	return emailRegex.MatchString(email)
+}
+
+// UpdatePrivacySettings updates user privacy settings and invalidates leaderboard cache
+func (s *service) UpdatePrivacySettings(ctx context.Context, userID int32, isPublic bool) error {
+	// TODO: Add UpdateUserPrivacy method to store interface and implementation
+	// For now, we'll return an error indicating the method needs to be implemented
+	// if err := s.userStore.UpdateUserPrivacy(ctx, userID, isPublic); err != nil {
+	//     return fmt.Errorf("failed to update user privacy: %w", err)
+	// }
+
+	// Invalidate leaderboard cache when privacy settings change
+	if err := s.leaderboardCache.InvalidateUserLeaderboards(ctx, int(userID)); err != nil {
+		s.logger.Error(ctx, "Failed to invalidate leaderboard cache after privacy update", "userID", userID, "error", err)
+		// Don't fail the whole operation if cache invalidation fails, just log it
+	}
+
+	s.logger.Info(ctx, "User privacy settings updated", "userID", userID, "isPublic", isPublic)
+	return fmt.Errorf("UpdateUserPrivacy store method not yet implemented")
 }

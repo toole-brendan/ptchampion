@@ -88,6 +88,7 @@ require (
 	github.com/prometheus/procfs v0.16.0 // indirect
 	github.com/redis/go-redis/v9 v9.7.3 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
+	github.com/sqlc-dev/pqtype v0.3.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f // indirect

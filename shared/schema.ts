@@ -5,7 +5,10 @@ import { z } from "zod";
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  email: text("email").notNull().unique(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  passwordHash: text("password_hash").notNull(),
   displayName: text("display_name"),
   profilePictureUrl: text("profile_picture_url"),
   location: text("location"),
@@ -23,6 +26,27 @@ export const exercises = pgTable("exercises", {
   type: text("type").notNull(), // "pushup", "pullup", "situp", "run"
 });
 
+// New unified workouts table replacing user_exercises
+export const workouts = pgTable("workouts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  exerciseId: integer("exercise_id").notNull().references(() => exercises.id),
+  exerciseType: text("exercise_type").notNull(), // Denormalized for performance
+  repetitions: integer("repetitions"),
+  durationSeconds: integer("duration_seconds"),
+  distanceMeters: decimal("distance_meters", { precision: 10, scale: 2 }),
+  formScore: integer("form_score").notNull().default(0), // 0-100, now required with default
+  grade: integer("grade").notNull(), // 0-100 based on performance metrics
+  isPublic: boolean("is_public").default(false),
+  completedAt: timestamp("completed_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  deviceId: text("device_id"), // ID of the device that created the workout
+  metadata: json("metadata"), // JSON for additional exercise data (heart rate, pose analysis, etc.)
+  notes: text("notes"), // User-provided notes
+  syncStatus: text("sync_status").default('synced'), // synced, pending, conflict
+});
+
+// Keep user_exercises for backward compatibility during migration
 export const userExercises = pgTable("user_exercises", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
@@ -32,7 +56,7 @@ export const userExercises = pgTable("user_exercises", {
   timeInSeconds: integer("time_in_seconds"),
   grade: integer("grade"), // 0-100 based on performance metrics
   completed: boolean("completed").default(false),
-  metadata: text("metadata"), // JSON string for additional exercise data (distance, heart rate, etc.)
+  metadata: text("metadata"), // JSON string for additional exercise data
   deviceId: text("device_id"), // ID of the device that created the exercise record
   syncStatus: text("sync_status").default('synced'), // synced, pending, conflict
   createdAt: timestamp("created_at").defaultNow(),
@@ -42,7 +66,10 @@ export const userExercises = pgTable("user_exercises", {
 // Schema for inserting a new user
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
-  password: true,
+  email: true,
+  firstName: true,
+  lastName: true,
+  passwordHash: true,
   displayName: true,
   profilePictureUrl: true,
   location: true,
@@ -60,7 +87,30 @@ export const updateProfileSchema = createInsertSchema(users).pick({
 // Schema for inserting a new exercise
 export const insertExerciseSchema = createInsertSchema(exercises);
 
-// Schema for inserting a new user exercise
+// NEW: Schema for inserting workouts (replaces insertUserExerciseSchema)
+export const insertWorkoutSchema = createInsertSchema(workouts).pick({
+  userId: true,
+  exerciseId: true,
+  exerciseType: true,
+  repetitions: true,
+  durationSeconds: true,
+  distanceMeters: true,
+  formScore: true,
+  grade: true,
+  isPublic: true,
+  completedAt: true,
+  deviceId: true,
+  metadata: true,
+  notes: true,
+  syncStatus: true,
+}).extend({
+  // Add validation for form_score range
+  formScore: z.number().int().min(0).max(100).default(0),
+  // Add validation for grade range  
+  grade: z.number().int().min(0).max(100),
+});
+
+// Legacy schema for backward compatibility
 export const insertUserExerciseSchema = createInsertSchema(userExercises).pick({
   userId: true,
   exerciseId: true,
@@ -82,16 +132,22 @@ export type UpdateProfile = z.infer<typeof updateProfileSchema>;
 export type Exercise = typeof exercises.$inferSelect;
 export type InsertExercise = z.infer<typeof insertExerciseSchema>;
 
+// NEW: Workout types
+export type Workout = typeof workouts.$inferSelect;
+export type InsertWorkout = z.infer<typeof insertWorkoutSchema>;
+
+// Legacy types for backward compatibility
 export type UserExercise = typeof userExercises.$inferSelect;
 export type InsertUserExercise = z.infer<typeof insertUserExerciseSchema>;
 
-// Sync types
+// Updated sync types to use workouts
 export type SyncRequest = {
   userId: number;
   deviceId: string;
   lastSyncTimestamp: string;
   data?: {
-    userExercises?: InsertUserExercise[];
+    workouts?: InsertWorkout[];
+    userExercises?: InsertUserExercise[]; // Keep for backward compatibility
     profile?: UpdateProfile;
   };
 };
@@ -100,10 +156,11 @@ export type SyncResponse = {
   success: boolean;
   timestamp: string;
   data?: {
-    userExercises?: UserExercise[];
+    workouts?: Workout[];
+    userExercises?: UserExercise[]; // Keep for backward compatibility
     profile?: User;
   };
-  conflicts?: UserExercise[];
+  conflicts?: Workout[];
 };
 
 // Seed data for exercises

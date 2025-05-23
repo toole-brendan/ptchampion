@@ -100,7 +100,7 @@ func CalculateScore(exerciseType string, performanceValue float64) (int, error) 
 	case ExerciseTypePullup:
 		return lookup(pullupScoreMap, v, true), nil
 	case ExerciseTypeRun:
-		return lookup(runScoreMap, v, false), nil
+		return CalculateRunScore(v), nil
 	default:
 		return 0, ErrUnknownExerciseType
 	}

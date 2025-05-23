@@ -18,14 +18,15 @@ INSERT INTO workouts (
     exercise_type, -- Consider removing if always joining
     repetitions,
     duration_seconds,
+    form_score,
     grade,
     completed_at,
     is_public
     -- created_at is handled by DEFAULT NOW()
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8
+    $1, $2, $3, $4, $5, $6, $7, $8, $9
 )
-RETURNING id, user_id, exercise_id, exercise_type, repetitions, duration_seconds, form_score, grade, is_public, completed_at, created_at
+RETURNING id, user_id, exercise_id, exercise_type, repetitions, duration_seconds, form_score, grade, is_public, completed_at, created_at, device_id, metadata, notes
 `
 
 type CreateWorkoutParams struct {
@@ -34,6 +35,7 @@ type CreateWorkoutParams struct {
 	ExerciseType    string        `json:"exercise_type"`
 	Repetitions     sql.NullInt32 `json:"repetitions"`
 	DurationSeconds sql.NullInt32 `json:"duration_seconds"`
+	FormScore       sql.NullInt32 `json:"form_score"`
 	Grade           int32         `json:"grade"`
 	CompletedAt     time.Time     `json:"completed_at"`
 	IsPublic        bool          `json:"is_public"`
@@ -46,6 +48,7 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 		arg.ExerciseType,
 		arg.Repetitions,
 		arg.DurationSeconds,
+		arg.FormScore,
 		arg.Grade,
 		arg.CompletedAt,
 		arg.IsPublic,
@@ -63,6 +66,9 @@ func (q *Queries) CreateWorkout(ctx context.Context, arg CreateWorkoutParams) (W
 		&i.IsPublic,
 		&i.CompletedAt,
 		&i.CreatedAt,
+		&i.DeviceID,
+		&i.Metadata,
+		&i.Notes,
 	)
 	return i, err
 }
@@ -154,7 +160,7 @@ func (q *Queries) GetUserWorkoutsCount(ctx context.Context, userID int32) (int64
 }
 
 const getWorkoutRecordByID = `-- name: GetWorkoutRecordByID :one
-SELECT id, user_id, exercise_id, exercise_type, repetitions, duration_seconds, form_score, grade, is_public, completed_at, created_at FROM workouts WHERE id = $1 LIMIT 1
+SELECT id, user_id, exercise_id, exercise_type, repetitions, duration_seconds, form_score, grade, is_public, completed_at, created_at, device_id, metadata, notes FROM workouts WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetWorkoutRecordByID(ctx context.Context, id int32) (Workout, error) {
@@ -172,6 +178,9 @@ func (q *Queries) GetWorkoutRecordByID(ctx context.Context, id int32) (Workout, 
 		&i.IsPublic,
 		&i.CompletedAt,
 		&i.CreatedAt,
+		&i.DeviceID,
+		&i.Metadata,
+		&i.Notes,
 	)
 	return i, err
 }
