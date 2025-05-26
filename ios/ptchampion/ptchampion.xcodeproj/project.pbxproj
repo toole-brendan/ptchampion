@@ -191,6 +191,9 @@
 		BFF57A562DE5217C00B65EFF /* EnvironmentAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A522DE5217C00B65EFF /* EnvironmentAnalyzer.swift */; };
 		BFF57A592DE5219E00B65EFF /* EnhancedPositioningGuides.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A582DE5219E00B65EFF /* EnhancedPositioningGuides.swift */; };
 		BFF57A5A2DE5219E00B65EFF /* EnhancedCalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A572DE5219E00B65EFF /* EnhancedCalibrationView.swift */; };
+		BFF57A5D2DE52EB200B65EFF /* EnhancedFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A5B2DE52EB200B65EFF /* EnhancedFeedbackManager.swift */; };
+		BFF57A5E2DE52EB200B65EFF /* StartingPositionValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A5C2DE52EB200B65EFF /* StartingPositionValidator.swift */; };
+		BFF57A602DE52EDC00B65EFF /* StartingPositionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A5F2DE52EDC00B65EFF /* StartingPositionOverlay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -398,6 +401,9 @@
 		BFF57A532DE5217C00B65EFF /* PerformanceOptimizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceOptimizer.swift; sourceTree = "<group>"; };
 		BFF57A572DE5219E00B65EFF /* EnhancedCalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedCalibrationView.swift; sourceTree = "<group>"; };
 		BFF57A582DE5219E00B65EFF /* EnhancedPositioningGuides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedPositioningGuides.swift; sourceTree = "<group>"; };
+		BFF57A5B2DE52EB200B65EFF /* EnhancedFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedFeedbackManager.swift; sourceTree = "<group>"; };
+		BFF57A5C2DE52EB200B65EFF /* StartingPositionValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartingPositionValidator.swift; sourceTree = "<group>"; };
+		BFF57A5F2DE52EDC00B65EFF /* StartingPositionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartingPositionOverlay.swift; sourceTree = "<group>"; };
 		C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.release.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.release.xcconfig"; sourceTree = "<group>"; };
 		D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ptchampion.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.debug.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.debug.xcconfig"; sourceTree = "<group>"; };
@@ -645,6 +651,8 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A5B2DE52EB200B65EFF /* EnhancedFeedbackManager.swift */,
+				BFF57A5C2DE52EB200B65EFF /* StartingPositionValidator.swift */,
 				BFF57A512DE5217C00B65EFF /* CalibrationStrategy.swift */,
 				BFF57A522DE5217C00B65EFF /* EnvironmentAnalyzer.swift */,
 				BFF57A532DE5217C00B65EFF /* PerformanceOptimizer.swift */,
@@ -774,6 +782,7 @@
 		BF63E4482DB1EB980037CD02 /* Workouts */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A5F2DE52EDC00B65EFF /* StartingPositionOverlay.swift */,
 				BFF57A572DE5219E00B65EFF /* EnhancedCalibrationView.swift */,
 				BFF57A582DE5219E00B65EFF /* EnhancedPositioningGuides.swift */,
 				BF59ACF62DE0FE9E00242910 /* SimpleRepFeedbackView.swift */,
@@ -1180,6 +1189,8 @@
 				BFBF2EC52DCFE5A700FFCF4F /* LocationPermissionRequestView.swift in Sources */,
 				BFADF9B12DC93D890016AF0B /* Toast.swift in Sources */,
 				BF7960E72DCFD2CE00B03835 /* LeaderboardFilterBarView.swift in Sources */,
+				BFF57A5D2DE52EB200B65EFF /* EnhancedFeedbackManager.swift in Sources */,
+				BFF57A5E2DE52EB200B65EFF /* StartingPositionValidator.swift in Sources */,
 				BF37B0572DCC2CD600EC4D58 /* ProfileView.swift in Sources */,
 				BFADF9B32DC93D890016AF0B /* StatCard.swift in Sources */,
 				BFADF9B52DC93D890016AF0B /* SettingsSheet.swift in Sources */,
@@ -1228,6 +1239,7 @@
 				BF25ED342DCE323700620C84 /* LoadingView.swift in Sources */,
 				BF63E42C2DB1EB830037CD02 /* PoseDetectorServiceProtocol.swift in Sources */,
 				BF63E42D2DB1EB830037CD02 /* LeaderboardServiceProtocol.swift in Sources */,
+				BFF57A602DE52EDC00B65EFF /* StartingPositionOverlay.swift in Sources */,
 				BF63E42E2DB1EB830037CD02 /* KeychainServiceProtocol.swift in Sources */,
 				BF7B49C72DD56EB600B50FE6 /* EmptyHistoryDisplayView.swift in Sources */,
 				BF199EB72DCD8CFE00E23EFF /* UserProfileView.swift in Sources */,

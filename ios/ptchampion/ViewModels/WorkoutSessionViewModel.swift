@@ -6,6 +6,9 @@ import AVFoundation
 import SwiftData
 import Vision // Only used for VNHumanBodyPoseObservation.JointName constants - no Vision detection
 import AudioToolbox
+#if canImport(UIKit)
+import UIKit
+#endif
 
 // Workout state enumeration to track the current state of a workout session
 enum WorkoutSessionState: Equatable {
@@ -13,6 +16,7 @@ enum WorkoutSessionState: Equatable {
     case requestingPermission
     case permissionDenied
     case ready
+    case positionValidation  // New state for position checking
     case counting
     case paused
     case finished
@@ -24,6 +28,7 @@ enum WorkoutSessionState: Equatable {
              (.requestingPermission, .requestingPermission),
              (.permissionDenied, .permissionDenied),
              (.ready, .ready),
+             (.positionValidation, .positionValidation),
              (.counting, .counting),
              (.paused, .paused),
              (.finished, .finished):
