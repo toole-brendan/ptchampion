@@ -185,6 +185,12 @@
 		BFBF2ECB2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECA2DCFF6DC00FFCF4F /* FitnessDeviceManagerView.swift */; };
 		BFBF2ECD2DCFF6F100FFCF4F /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */; };
 		BFBF2ECF2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFBF2ECE2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift */; };
+		BFF57A502DE5216700B65EFF /* CalibrationMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A4F2DE5216700B65EFF /* CalibrationMode.swift */; };
+		BFF57A542DE5217C00B65EFF /* CalibrationStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A512DE5217C00B65EFF /* CalibrationStrategy.swift */; };
+		BFF57A552DE5217C00B65EFF /* PerformanceOptimizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A532DE5217C00B65EFF /* PerformanceOptimizer.swift */; };
+		BFF57A562DE5217C00B65EFF /* EnvironmentAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A522DE5217C00B65EFF /* EnvironmentAnalyzer.swift */; };
+		BFF57A592DE5219E00B65EFF /* EnhancedPositioningGuides.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A582DE5219E00B65EFF /* EnhancedPositioningGuides.swift */; };
+		BFF57A5A2DE5219E00B65EFF /* EnhancedCalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A572DE5219E00B65EFF /* EnhancedCalibrationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -386,6 +392,12 @@
 		BFBF2ECC2DCFF6F100FFCF4F /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
 		BFBF2ECE2DCFF71F00FFCF4F /* FitnessDeviceManagerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitnessDeviceManagerViewModel.swift; sourceTree = "<group>"; };
 		BFD43D5A2DDB707800C9745D /* PTDesignSystem */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = PTDesignSystem; path = ../PTDesignSystem; sourceTree = SOURCE_ROOT; };
+		BFF57A4F2DE5216700B65EFF /* CalibrationMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationMode.swift; sourceTree = "<group>"; };
+		BFF57A512DE5217C00B65EFF /* CalibrationStrategy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationStrategy.swift; sourceTree = "<group>"; };
+		BFF57A522DE5217C00B65EFF /* EnvironmentAnalyzer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentAnalyzer.swift; sourceTree = "<group>"; };
+		BFF57A532DE5217C00B65EFF /* PerformanceOptimizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceOptimizer.swift; sourceTree = "<group>"; };
+		BFF57A572DE5219E00B65EFF /* EnhancedCalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedCalibrationView.swift; sourceTree = "<group>"; };
+		BFF57A582DE5219E00B65EFF /* EnhancedPositioningGuides.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedPositioningGuides.swift; sourceTree = "<group>"; };
 		C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.release.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.release.xcconfig"; sourceTree = "<group>"; };
 		D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ptchampion.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.debug.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.debug.xcconfig"; sourceTree = "<group>"; };
@@ -597,6 +609,7 @@
 		BF63E4042DB1CF5A0037CD02 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A4F2DE5216700B65EFF /* CalibrationMode.swift */,
 				BF59ACDE2DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift */,
 				BF59ACDF2DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift */,
 				BF59ACE02DE0E99B00242910 /* CalibrationModels.swift */,
@@ -632,6 +645,9 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A512DE5217C00B65EFF /* CalibrationStrategy.swift */,
+				BFF57A522DE5217C00B65EFF /* EnvironmentAnalyzer.swift */,
+				BFF57A532DE5217C00B65EFF /* PerformanceOptimizer.swift */,
 				BF59ACE62DE0E9C900242910 /* CalibrationManager.swift */,
 				BF59ACE72DE0E9C900242910 /* CalibrationRepository.swift */,
 				BF59ACE82DE0E9C900242910 /* DevicePositionDetector.swift */,
@@ -758,6 +774,8 @@
 		BF63E4482DB1EB980037CD02 /* Workouts */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A572DE5219E00B65EFF /* EnhancedCalibrationView.swift */,
+				BFF57A582DE5219E00B65EFF /* EnhancedPositioningGuides.swift */,
 				BF59ACF62DE0FE9E00242910 /* SimpleRepFeedbackView.swift */,
 				BF59ACEE2DE0E9EA00242910 /* CalibrationOverlayViews.swift */,
 				BF59ACEF2DE0E9EA00242910 /* CalibrationView.swift */,
@@ -1095,6 +1113,7 @@
 				BF59ACCB2DDFC9F800242910 /* EnhancedPullupGrader.swift in Sources */,
 				BF59ACCC2DDFC9F800242910 /* EnhancedSitupGrader.swift in Sources */,
 				BF59ACCD2DDFC9F800242910 /* EnhancedPushupGrader.swift in Sources */,
+				BFF57A502DE5216700B65EFF /* CalibrationMode.swift in Sources */,
 				BF59ACCE2DDFC9F800242910 /* APFTRepValidator.swift in Sources */,
 				BF63E40A2DB1CF5A0037CD02 /* WorkoutModels.swift in Sources */,
 				BF63E40B2DB1CF5A0037CD02 /* WorkoutResultSwiftData.swift in Sources */,
@@ -1107,6 +1126,9 @@
 				BF89EB552DC9A1A7003F8FE3 /* WorkoutProgressChart.swift in Sources */,
 				BFADF9C52DC93E0A0016AF0B /* WasmerGrading.swift in Sources */,
 				BFADF9C62DC93E0A0016AF0B /* NetworkService.swift in Sources */,
+				BFF57A542DE5217C00B65EFF /* CalibrationStrategy.swift in Sources */,
+				BFF57A552DE5217C00B65EFF /* PerformanceOptimizer.swift in Sources */,
+				BFF57A562DE5217C00B65EFF /* EnvironmentAnalyzer.swift in Sources */,
 				BF199EBD2DCE226E00E23EFF /* UserProfileData.swift in Sources */,
 				BFADF9C72DC93E0A0016AF0B /* FeatureFlagService.swift in Sources */,
 				BFADF9C82DC93E0A0016AF0B /* UnifiedNetworkService.swift in Sources */,
@@ -1233,6 +1255,8 @@
 				BFB1EDBA2DD0F33D00AC9653 /* WorkoutHistoryView.swift in Sources */,
 				BF59ACF72DE0FE9E00242910 /* SimpleRepFeedbackView.swift in Sources */,
 				BF59ACD52DDFD9C300242910 /* OrientationManager.swift in Sources */,
+				BFF57A592DE5219E00B65EFF /* EnhancedPositioningGuides.swift in Sources */,
+				BFF57A5A2DE5219E00B65EFF /* EnhancedCalibrationView.swift in Sources */,
 				BF8F67972DC931190065A2D7 /* WorkoutHistoryViewModel.swift in Sources */,
 				BF59ACF92DE1021900242910 /* APFTRepValidator+OrientationFix.swift in Sources */,
 				BF63E40C2DB1CF5A0037CD02 /* PoseModels.swift in Sources */,

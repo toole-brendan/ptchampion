@@ -21,15 +21,15 @@ class CalibrationManager: NSObject, ObservableObject {
     @Published var positionStability: Float = 0.0
     
     // MARK: - Dependencies
-    private let poseDetectorService: PoseDetectorService
+    let poseDetectorService: PoseDetectorService
     private let motionManager = CMMotionManager()
     private let calibrationRepository: CalibrationRepository
-    private var cancellables = Set<AnyCancellable>()
+    var cancellables = Set<AnyCancellable>()
     
     // MARK: - Calibration State
     private var currentExercise: ExerciseType = .pushup
-    private var calibrationFrames: [CalibrationFrame] = []
-    private let requiredFrames = 60 // Increased for better accuracy
+    var calibrationFrames: [CalibrationFrame] = []
+    var requiredFrames = 60 // Increased for better accuracy
     private var frameCollectionTimer: Timer?
     private var deviceOrientation: DeviceMotionData?
     private var lastFrameTimestamp: TimeInterval = 0
@@ -724,7 +724,7 @@ class CalibrationManager: NSObject, ObservableObject {
         return score / 100.0
     }
     
-    private func evaluateCalibrationQuality(_ calibration: CalibrationData) -> CalibrationQuality {
+    func evaluateCalibrationQuality(_ calibration: CalibrationData) -> CalibrationQuality {
         let score = calibration.calibrationScore
         
         switch score {
