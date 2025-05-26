@@ -225,8 +225,8 @@ struct EnhancedCalibrationView: View {
             // Select appropriate strategy
             calibrationManager.poseDetectorService.detectedBodyPublisher
                 .first()
-                .sink { [weak self] body in
-                    self?.strategyManager.selectStrategy(for: body)
+                .sink { body in
+                    strategyManager.selectStrategy(for: body)
                 }
                 .store(in: &calibrationManager.cancellables)
             

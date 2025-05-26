@@ -748,4 +748,18 @@ struct EnhancedPositioningGuides_Previews: PreviewProvider {
             
             EnhancedPositioningGuideOverlay(
                 currentFraming: .tooFar,
-                targetFraming: Targ
+                targetFraming: TargetFraming.getTargetFraming(for: .pushup),
+                suggestions: [
+                    CalibrationSuggestion(
+                        type: .userPosition,
+                        priority: .critical,
+                        message: "Move closer to the camera",
+                        actionRequired: true
+                    )
+                ],
+                environmentAnalyzer: EnvironmentAnalyzer()
+            )
+        }
+        .edgesIgnoringSafeArea(.all)
+    }
+}
