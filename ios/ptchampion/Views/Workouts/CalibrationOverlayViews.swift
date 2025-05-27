@@ -9,18 +9,12 @@ struct PositioningGuideOverlay: View {
     let suggestions: [CalibrationSuggestion]
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Visual framing guide
-            FramingGuideBox(
-                framing: currentFraming,
-                exerciseType: targetFraming.exercise
-            )
-            
-            // Real-time suggestions
-            if !suggestions.isEmpty {
-                SuggestionsCard(suggestions: suggestions.filter { $0.priority == .critical || $0.priority == .important })
-            }
-        }
+        // Use the new adaptive guide instead of the old components
+        AdaptiveCalibrationGuide(
+            framing: currentFraming,
+            exerciseType: targetFraming.exercise,
+            suggestions: suggestions
+        )
     }
 }
 
@@ -817,56 +811,185 @@ struct CalibrationResultsDetails: View {
     }
 }
 
-// MARK: - Dynamic Framing Guide
+// MARK: - Adaptive Calibration Guide
 
-/// Alternative approach - Use the actual pose overlay bounds
-struct DynamicFramingGuide: View {
-    let currentFraming: FramingStatus
-    let targetFraming: TargetFraming
-    @State private var showFullBodyGuide = true
+/// Full-screen zone-based guide that works in any orientation
+struct AdaptiveCalibrationGuide: View {
+    let framing: FramingStatus
+    let exerciseType: ExerciseType
+    let suggestions: [CalibrationSuggestion]
+    
+    @State private var orientation = UIDevice.current.orientation
+    @State private var pulseAnimation = false
     
     var body: some View {
         GeometryReader { geometry in
-            if showFullBodyGuide {
-                // Full screen guide with zones
-                ZStack {
-                    // Outer warning zone (red tint)
-                    Rectangle()
-                        .fill(Color.red.opacity(0.05))
-                        .edgesIgnoringSafeArea(.all)
-                    
-                    // Acceptable zone (yellow)
-                    RoundedRectangle(cornerRadius: 30)
-                        .fill(Color.yellow.opacity(0.05))
-                        .frame(
-                            width: geometry.size.width * 0.9,
-                            height: geometry.size.height * 0.85
-                        )
-                    
-                    // Optimal zone (green)
-                    RoundedRectangle(cornerRadius: 25)
-                        .fill(Color.green.opacity(0.05))
-                        .frame(
-                            width: geometry.size.width * 0.8,
-                            height: geometry.size.height * 0.75
-                        )
-                    
-                    // Border for current zone
-                    RoundedRectangle(cornerRadius: 25)
-                        .stroke(frameColor, lineWidth: 3)
-                        .frame(
-                            width: geometry.size.width * frameWidthMultiplier,
-                            height: geometry.size.height * frameHeightMultiplier
-                        )
-                        .animation(.easeInOut(duration: 0.3), value: currentFraming)
-                }
-                .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+            let isLandscape = orientation.isLandscape || 
+                (orientation.isFlat && geometry.size.width > geometry.size.height)
+            
+            ZStack {
+                // Layer 1: Background zones (outer to inner)
+                zonesLayer(geometry: geometry, isLandscape: isLandscape)
+                
+                // Layer 2: Body silhouette
+                bodyOutlineLayer(isLandscape: isLandscape)
+                
+                // Layer 3: Instructions and feedback
+                overlayLayer(geometry: geometry, isLandscape: isLandscape)
+            }
+            .edgesIgnoringSafeArea(.all)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                orientation = UIDevice.current.orientation
+            }
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+                pulseAnimation = true
             }
         }
     }
     
+    // MARK: - Zone Layers
+    
+    @ViewBuilder
+    private func zonesLayer(geometry: GeometryProxy, isLandscape: Bool) -> some View {
+        // Too far zone (subtle red background)
+        Rectangle()
+            .fill(Color.red.opacity(0.05))
+            .edgesIgnoringSafeArea(.all)
+        
+        // Acceptable zone (yellow)
+        RoundedRectangle(cornerRadius: 40)
+            .fill(Color.yellow.opacity(0.1))
+            .frame(
+                width: geometry.size.width * (isLandscape ? 0.8 : 0.9),
+                height: geometry.size.height * (isLandscape ? 0.9 : 0.85)
+            )
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+        
+        // Optimal zone (green)
+        RoundedRectangle(cornerRadius: 30)
+            .fill(Color.green.opacity(0.15))
+            .frame(
+                width: geometry.size.width * (isLandscape ? 0.65 : 0.75),
+                height: geometry.size.height * (isLandscape ? 0.8 : 0.7)
+            )
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+        
+        // Current position indicator (animated border)
+        RoundedRectangle(cornerRadius: 25)
+            .stroke(frameColor, lineWidth: 4)
+            .frame(
+                width: geometry.size.width * currentZoneWidth(isLandscape),
+                height: geometry.size.height * currentZoneHeight(isLandscape)
+            )
+            .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+            .scaleEffect(pulseAnimation && framing == .optimal ? 1.02 : 1.0)
+            .animation(.easeInOut(duration: 0.5), value: framing)
+    }
+    
+    // MARK: - Body Outline Layer
+    
+    @ViewBuilder
+    private func bodyOutlineLayer(isLandscape: Bool) -> some View {
+        // Exercise-specific body outline
+        ExerciseBodyOutline(exercise: exerciseType)
+            .foregroundColor(bodyOutlineColor)
+            .scaleEffect(isLandscape ? 2.5 : 3.0)
+            .rotationEffect(isLandscape ? .degrees(90) : .degrees(0))
+            .opacity(0.4)
+            .animation(.easeInOut(duration: 0.3), value: isLandscape)
+    }
+    
+    // MARK: - Overlay Layer (Instructions & Feedback)
+    
+    @ViewBuilder
+    private func overlayLayer(geometry: GeometryProxy, isLandscape: Bool) -> some View {
+        VStack {
+            // Top section: Distance indicator
+            if isLandscape {
+                HStack {
+                    distanceIndicator
+                        .padding(.leading, 40)
+                    Spacer()
+                }
+                .padding(.top, 20)
+            } else {
+                HStack {
+                    Spacer()
+                    distanceIndicator
+                    Spacer()
+                }
+                .padding(.top, 50)
+            }
+            
+            Spacer()
+            
+            // Bottom section: Instructions and suggestions
+            VStack(spacing: 20) {
+                // Main instruction
+                instructionBadge
+                
+                // Critical suggestions (if any)
+                if !suggestions.filter({ $0.priority == .critical }).isEmpty {
+                    SuggestionsCard(suggestions: suggestions.filter { $0.priority == .critical })
+                        .frame(maxWidth: isLandscape ? 400 : .infinity)
+                }
+            }
+            .padding(.horizontal, isLandscape ? 40 : 20)
+            .padding(.bottom, isLandscape ? 20 : 100)
+        }
+    }
+    
+    // MARK: - UI Components
+    
+    private var distanceIndicator: some View {
+        VStack(spacing: 4) {
+            Text(distanceText)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+            Text("Distance")
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 10)
+        .background(
+            Capsule()
+                .fill(frameColor.opacity(0.9))
+        )
+    }
+    
+    private var instructionBadge: some View {
+        HStack(spacing: 12) {
+            Image(systemName: directionIcon)
+                .font(.title3)
+                .foregroundColor(.white)
+            
+            Text(framing.instruction)
+                .font(.body)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 24)
+        .padding(.vertical, 14)
+        .background(
+            Capsule()
+                .fill(Color.black.opacity(0.8))
+                .overlay(
+                    Capsule()
+                        .stroke(frameColor.opacity(0.5), lineWidth: 1)
+                )
+        )
+    }
+    
+    // MARK: - Helper Properties
+    
     private var frameColor: Color {
-        switch currentFraming {
+        switch framing {
         case .optimal: return .green
         case .acceptable: return .blue
         case .tooClose, .tooFar: return .orange
@@ -875,24 +998,84 @@ struct DynamicFramingGuide: View {
         }
     }
     
-    private var frameWidthMultiplier: CGFloat {
-        switch currentFraming {
-        case .optimal: return 0.8
-        case .acceptable: return 0.85
-        case .tooClose: return 0.95
-        case .tooFar: return 0.6
-        default: return 0.85
+    private var bodyOutlineColor: Color {
+        switch framing {
+        case .optimal: return .green
+        case .acceptable: return .white
+        default: return .orange
         }
     }
     
-    private var frameHeightMultiplier: CGFloat {
-        switch currentFraming {
-        case .optimal: return 0.75
-        case .acceptable: return 0.8
-        case .tooClose: return 0.9
-        case .tooFar: return 0.55
-        default: return 0.8
+    private var distanceText: String {
+        switch framing {
+        case .optimal: return "~5 ft"
+        case .acceptable: return "~6 ft"
+        case .tooClose: return "<3 ft"
+        case .tooFar: return ">8 ft"
+        default: return "---"
         }
+    }
+    
+    private var directionIcon: String {
+        switch framing {
+        case .tooClose: return "arrow.backward"
+        case .tooFar: return "arrow.forward"
+        case .tooLeft: return "arrow.right"
+        case .tooRight: return "arrow.left"
+        case .tooHigh: return "arrow.down"
+        case .tooLow: return "arrow.up"
+        case .optimal: return "checkmark.circle"
+        case .acceptable: return "circle"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+    
+    private func currentZoneWidth(_ isLandscape: Bool) -> CGFloat {
+        let baseWidth = switch framing {
+        case .optimal: 0.75
+        case .acceptable: 0.85
+        case .tooClose: 0.95
+        case .tooFar: 0.6
+        case .tooLeft: 0.9
+        case .tooRight: 0.9
+        default: 0.85
+        }
+        
+        // Adjust for landscape
+        return isLandscape ? baseWidth * 0.85 : baseWidth
+    }
+    
+    private func currentZoneHeight(_ isLandscape: Bool) -> CGFloat {
+        let baseHeight = switch framing {
+        case .optimal: 0.7
+        case .acceptable: 0.8
+        case .tooClose: 0.9
+        case .tooFar: 0.55
+        case .tooHigh: 0.85
+        case .tooLow: 0.85
+        default: 0.8
+        }
+        
+        // Adjust for landscape
+        return isLandscape ? baseHeight * 1.1 : baseHeight
+    }
+}
+
+// MARK: - Dynamic Framing Guide (Legacy - kept for compatibility)
+
+/// Alternative approach - Use the actual pose overlay bounds
+struct DynamicFramingGuide: View {
+    let currentFraming: FramingStatus
+    let targetFraming: TargetFraming
+    @State private var showFullBodyGuide = true
+    
+    var body: some View {
+        // Use the new adaptive guide instead
+        AdaptiveCalibrationGuide(
+            framing: currentFraming,
+            exerciseType: targetFraming.exercise,
+            suggestions: []
+        )
     }
 }
 
