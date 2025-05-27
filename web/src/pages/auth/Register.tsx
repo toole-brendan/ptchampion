@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import { Button } from '../../components/ui/button';
-import { MilitaryTextField } from '../../components/ui/text-field';
+import { TextField } from '../../components/ui/text-field';
 import { ChevronLeftIcon, PersonIcon, EnvelopeClosedIcon, LockClosedIcon, LockOpen2Icon, PersonIcon as Person2Icon, IdCardIcon } from '@radix-ui/react-icons';
 import logoImage from '../../assets/pt_champion_logo_2.png';
 
@@ -125,70 +125,102 @@ const RegisterPage: React.FC = () => {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4 px-4">
             {/* First Name */}
-            <MilitaryTextField
-              id="firstName"
-              label="FIRST NAME"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              required
-              fullWidth
-              icon={<PersonIcon className="w-5 h-5" />}
-              aria-label="First Name"
-            />
+            <div className="space-y-1">
+              <label 
+                htmlFor="firstName" 
+                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+              >
+                First Name
+              </label>
+              <TextField
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                fullWidth
+                placeholder=""
+                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+              />
+            </div>
             
             {/* Last Name */}
-            <MilitaryTextField
-              id="lastName"
-              label="LAST NAME"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              required
-              fullWidth
-              icon={<Person2Icon className="w-5 h-5" />}
-              aria-label="Last Name"
-            />
+            <div className="space-y-1">
+              <label 
+                htmlFor="lastName" 
+                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+              >
+                Last Name
+              </label>
+              <TextField
+                id="lastName"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                fullWidth
+                placeholder=""
+                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+              />
+            </div>
             
             {/* Email */}
-            <MilitaryTextField
-              id="email"
-              label="EMAIL"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              fullWidth
-              icon={<EnvelopeClosedIcon className="w-5 h-5" />}
-              keyboardType="email"
-              autoComplete="email"
-              aria-label="Email"
-            />
+            <div className="space-y-1">
+              <label 
+                htmlFor="email" 
+                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+              >
+                Email
+              </label>
+              <TextField
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                fullWidth
+                autoComplete="email"
+                placeholder=""
+                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+              />
+            </div>
             
             {/* Username */}
-            <MilitaryTextField
-              id="username"
-              label="USERNAME"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              fullWidth
-              icon={<IdCardIcon className="w-5 h-5" />}
-              autoComplete="username"
-              aria-label="Username"
-            />
+            <div className="space-y-1">
+              <label 
+                htmlFor="username" 
+                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+              >
+                Username
+              </label>
+              <TextField
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                fullWidth
+                autoComplete="username"
+                placeholder=""
+                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+              />
+            </div>
             
             {/* Password */}
-            <div>
-              <MilitaryTextField
+            <div className="space-y-1">
+              <label 
+                htmlFor="password" 
+                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+              >
+                Password
+              </label>
+              <TextField
                 id="password"
-                label="PASSWORD"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 fullWidth
-                icon={<LockClosedIcon className="w-5 h-5" />}
                 autoComplete="new-password"
-                aria-label="Password"
+                placeholder=""
+                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
               />
               {passwordTooShort && (
                 <p className="mt-1 text-xs text-error">
@@ -198,18 +230,23 @@ const RegisterPage: React.FC = () => {
             </div>
             
             {/* Confirm Password */}
-            <div>
-              <MilitaryTextField
+            <div className="space-y-1">
+              <label 
+                htmlFor="confirmPassword" 
+                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+              >
+                Confirm Password
+              </label>
+              <TextField
                 id="confirmPassword"
-                label="CONFIRM PASSWORD"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 fullWidth
-                icon={<LockOpen2Icon className="w-5 h-5" />}
                 autoComplete="new-password"
-                aria-label="Confirm Password"
+                placeholder=""
+                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
               />
               {passwordMismatch && (
                 <p className="mt-1 text-xs text-error">
@@ -249,16 +286,16 @@ const RegisterPage: React.FC = () => {
             
             {/* Back to Login Button */}
             <div className="pt-2">
-              <Button
+              <button
                 type="button"
-                variant="secondary"
-                fullWidth
-                icon={<ChevronLeftIcon className="w-4 h-4" />}
                 onClick={() => navigate('/login')}
-                className="font-medium"
+                className="relative inline-flex shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap rounded-button font-semibold transition-all duration-base focus-visible:ring-2 focus-visible:ring-brass-gold focus-visible:ring-opacity-50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hit-target w-full h-10 px-4 py-3 text-sm uppercase tracking-wide font-medium bg-deep-ops hover:bg-deep-ops/90 text-brass-gold border border-deep-ops"
               >
-                Back to Login
-              </Button>
+                <span className="inline-flex items-center gap-2">
+                  <ChevronLeftIcon className="w-4 h-4" />
+                  Back to Login
+                </span>
+              </button>
             </div>
           </form>
         </div>
