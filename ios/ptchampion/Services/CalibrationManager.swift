@@ -99,9 +99,9 @@ class CalibrationManager: NSObject, ObservableObject {
         // Start motion tracking
         startMotionTracking()
         
-        DispatchQueue.main.async {
-            self.currentFraming = .unknown
-            self.isFramingAcceptable = false
+        DispatchQueue.main.async { [weak self] in
+            self?.currentFraming = .unknown
+            self?.isFramingAcceptable = false
         }
     }
     
@@ -117,10 +117,10 @@ class CalibrationManager: NSObject, ObservableObject {
         collectionProgress = 0.0
         isReadyForNextPhase = false
         
-        DispatchQueue.main.async {
-            self.currentFraming = .unknown
-            self.isFramingAcceptable = false
-            self.adjustmentSuggestions.removeAll()
+        DispatchQueue.main.async { [weak self] in
+            self?.currentFraming = .unknown
+            self?.isFramingAcceptable = false
+            self?.adjustmentSuggestions.removeAll()
         }
     }
     
@@ -194,12 +194,12 @@ class CalibrationManager: NSObject, ObservableObject {
             motionHistory: motionHistory
         )
         
-        DispatchQueue.main.async {
-            self.detectedPosition = position
-            self.positionStability = position.isStable ? 1.0 : 0.0
+        DispatchQueue.main.async { [weak self] in
+            self?.detectedPosition = position
+            self?.positionStability = position.isStable ? 1.0 : 0.0
             
             // Update suggestions based on position
-            self.updatePositionSuggestions(position)
+            self?.updatePositionSuggestions(position)
         }
     }
     
@@ -247,10 +247,10 @@ class CalibrationManager: NSObject, ObservableObject {
         // Analyze framing
         let framing = evaluateFraming(body)
         
-        DispatchQueue.main.async {
-            self.currentFraming = framing
-            self.isFramingAcceptable = framing.isAcceptable
-            self.generateSuggestions(for: body, framing: framing)
+        DispatchQueue.main.async { [weak self] in
+            self?.currentFraming = framing
+            self?.isFramingAcceptable = framing.isAcceptable
+            self?.generateSuggestions(for: body, framing: framing)
         }
         
         // Collect calibration frames when framing is acceptable
@@ -258,7 +258,8 @@ class CalibrationManager: NSObject, ObservableObject {
             let frame = createCalibrationFrame(from: body)
             calibrationFrames.append(frame)
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.collectionProgress = Double(self.calibrationFrames.count) / Double(self.requiredFrames)
             }
         }
@@ -541,12 +542,14 @@ class CalibrationManager: NSObject, ObservableObject {
                 validationRanges: self.calculateValidationRanges()
             )
             
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 self.calibrationData = calibration
                 self.calibrationQuality = self.evaluateCalibrationQuality(calibration)
                 
                 // Save to repository
-                Task {
+                Task { [weak self] in
+                    guard let self = self else { return }
                     do {
                         try await self.calibrationRepository.saveCalibration(calibration)
                         print("✅ Calibration saved to repository with quality: \(self.calibrationQuality)")
