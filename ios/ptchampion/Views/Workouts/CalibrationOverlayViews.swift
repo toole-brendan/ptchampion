@@ -1,5 +1,19 @@
 import SwiftUI
 
+/*
+ * CalibrationOverlayViews.swift
+ * 
+ * CURRENT ARCHITECTURE:
+ * - AdaptiveCalibrationGuide: Main full-screen zone-based guide (NEW)
+ * - PositioningGuideOverlay: Updated to use AdaptiveCalibrationGuide
+ * - Body Outline Components: Still active (used by AdaptiveCalibrationGuide)
+ * - SuggestionsCard: Still active (used by AdaptiveCalibrationGuide)
+ * 
+ * LEGACY COMPONENTS (Commented out):
+ * - FramingGuideBox: Replaced by AdaptiveCalibrationGuide
+ * - StatusDot: No longer needed
+ */
+
 // MARK: - Positioning Guide Overlay
 
 /// Overlay that guides users to position themselves correctly for calibration
@@ -18,87 +32,28 @@ struct PositioningGuideOverlay: View {
     }
 }
 
-/// Visual guide showing optimal body positioning
+// MARK: - Legacy FramingGuideBox (Replaced by AdaptiveCalibrationGuide)
+// This component has been replaced by AdaptiveCalibrationGuide for better orientation support
+// Keeping commented for reference:
+
+/*
+/// Visual guide showing optimal body positioning (LEGACY - use AdaptiveCalibrationGuide instead)
 struct FramingGuideBox: View {
     let framing: FramingStatus
     let exerciseType: ExerciseType
     
     var body: some View {
-        GeometryReader { geometry in
-            let screenWidth = geometry.size.width
-            let screenHeight = geometry.size.height
-            
-            // Dynamic box size based on exercise type and screen size
-            // For full body exercises, use most of the screen
-            let boxWidth = screenWidth * 0.85  // 85% of screen width
-            let boxHeight = screenHeight * 0.75 // 75% of screen height
-            
-            ZStack {
-                // Frame outline - now much larger!
-                RoundedRectangle(cornerRadius: 20)
-                    .stroke(frameColor, lineWidth: 3)
-                    .frame(width: boxWidth, height: boxHeight)
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .fill(frameColor.opacity(0.1))
-                    )
-                
-                // Exercise-specific body outline - scaled up
-                ExerciseBodyOutline(exercise: exerciseType)
-                    .foregroundColor(frameColor.opacity(0.6))
-                    .scaleEffect(3.0) // Scale up the body outline
-                
-                // Status indicators at corners
-                VStack {
-                    HStack {
-                        StatusDot(color: frameColor)
-                        Spacer()
-                        StatusDot(color: frameColor)
-                    }
-                    Spacer()
-                    HStack {
-                        StatusDot(color: frameColor)
-                        Spacer()
-                        StatusDot(color: frameColor)
-                    }
-                }
-                .frame(width: boxWidth, height: boxHeight)
-                .padding(20)
-                
-                // Framing feedback text
-                VStack {
-                    Spacer()
-                    Text(framing.instruction)
-                        .font(.body) // Larger font
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            Capsule()
-                                .fill(Color.black.opacity(0.8))
-                        )
-                }
-                .frame(width: boxWidth, height: boxHeight)
-                .offset(y: 40)
-            }
-            .position(x: screenWidth / 2, y: screenHeight / 2)
-        }
-    }
-    
-    private var frameColor: Color {
-        switch framing {
-        case .optimal:
-            return .green
-        case .acceptable:
-            return .blue
-        case .tooClose, .tooFar, .tooLeft, .tooRight, .tooHigh, .tooLow:
-            return .orange
-        case .unknown:
-            return .gray
-        }
+        // This has been replaced by AdaptiveCalibrationGuide
+        AdaptiveCalibrationGuide(
+            framing: framing,
+            exerciseType: exerciseType,
+            suggestions: []
+        )
     }
 }
+*/
+
+// MARK: - Body Outline Components (ACTIVE - Used by AdaptiveCalibrationGuide)
 
 /// Exercise-specific body outline for positioning guidance
 struct ExerciseBodyOutline: View {
@@ -235,6 +190,10 @@ struct DefaultBodyOutline: View {
     }
 }
 
+// MARK: - Legacy StatusDot (No longer used)
+// This component was used by the old FramingGuideBox and is no longer needed
+
+/*
 struct StatusDot: View {
     let color: Color
     
@@ -248,6 +207,7 @@ struct StatusDot: View {
             )
     }
 }
+*/
 
 // MARK: - Analyzing View
 
@@ -493,7 +453,7 @@ struct SuggestionCard: View {
     }
 }
 
-// MARK: - Suggestions Card (for positioning overlay)
+// MARK: - Suggestions Card (ACTIVE - Used by AdaptiveCalibrationGuide)
 
 struct SuggestionsCard: View {
     let suggestions: [CalibrationSuggestion]

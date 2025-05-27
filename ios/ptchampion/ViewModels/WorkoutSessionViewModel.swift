@@ -473,8 +473,8 @@ class WorkoutSessionViewModel: ObservableObject {
             self.lastOrientation = currentOrientation
             self.currentOrientation = currentOrientation
             
-            // Stop current detection before reinitializing
-            self.poseDetectorService.stopDetection()
+            // Note: PoseDetectorService doesn't need explicit stopping - it processes frames as they come
+            // Detection will naturally stop when camera frames stop coming
             
             // Update camera orientation first
             self.cameraService.updateOutputOrientation()
