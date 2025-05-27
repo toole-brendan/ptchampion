@@ -182,6 +182,9 @@ module.exports = {
         lg: '0 8px 16px var(--tw-shadow-color)',
         none: 'none',
       },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
     },
   },
   plugins: [

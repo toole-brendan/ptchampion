@@ -17,9 +17,11 @@ export * from "./select";
 export * from "./table";
 export * from "./tooltip";
 export * from "./heart-rate-monitor";
-export * from "./corner-decor";
 export * from "./section";
 export * from "./modal";
+export * from "./military-settings-header";
+export * from "./settings-section";
+export * from "./settings-row";
 
 // Card exports
 export { 

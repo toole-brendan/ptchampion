@@ -1,15 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Settings as SettingsIcon, ArrowLeft, Globe, Bell, Heart, Info, Shield } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { Globe, Bell, Heart, Radio, ExternalLink, Trash2 } from 'lucide-react';
 import { useSettings } from '@/lib/SettingsContext';
 import { useToast } from "@/components/ui/use-toast";
-import { Separator } from "@/components/ui/separator";
 import { useDeviceCapabilities } from '@/lib/hooks/useDeviceCapabilities';
+import { MilitarySettingsHeader } from '@/components/ui/military-settings-header';
+import { SettingsSection } from '@/components/ui/settings-section';
+import { SettingsToggleRow, SettingsActionRow, SettingsDivider } from '@/components/ui/settings-row';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // Get package version (would normally come from package.json)
 const APP_VERSION = '1.0.0';
@@ -20,6 +19,14 @@ const Settings: React.FC = () => {
   const navigate = useNavigate();
   const capabilities = useDeviceCapabilities();
 
+  // Animation states
+  const [headerVisible, setHeaderVisible] = useState(false);
+  const [sectionsVisible, setSectionsVisible] = useState([false, false, false, false]);
+  
+  // Dialog states
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
   // Handle geolocation toggle
   const handleGeolocationToggle = (enabled: boolean) => {
     if (enabled) {
@@ -27,7 +34,6 @@ const Settings: React.FC = () => {
       navigator.geolocation.getCurrentPosition(
         // Success callback
         () => {
-          // Store geolocation setting
           updateSetting('geolocation', true);
           toast({
             title: "Location Access Granted",
@@ -46,7 +52,6 @@ const Settings: React.FC = () => {
         }
       );
     } else {
-      // User turned off geolocation
       updateSetting('geolocation', false);
     }
   };
@@ -55,7 +60,6 @@ const Settings: React.FC = () => {
   const handleNotificationsToggle = async (enabled: boolean) => {
     if (enabled) {
       try {
-        // Request notification permission
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
           updateSetting('notifications', true);
@@ -81,138 +85,236 @@ const Settings: React.FC = () => {
         updateSetting('notifications', false);
       }
     } else {
-      // User turned off notifications
       updateSetting('notifications', false);
     }
   };
 
+  // Handle device management
+  const handleDeviceManagement = () => {
+    toast({
+      title: "Feature Coming Soon",
+      description: "Fitness device management will be available in a future update.",
+      variant: "default",
+    });
+  };
+
+  // Handle account deletion
+  const handleDeleteAccount = async () => {
+    setIsDeletingAccount(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+        variant: "destructive",
+      });
+      setIsDeletingAccount(false);
+      setShowDeleteConfirmation(false);
+      // In a real app, this would redirect to login
+      navigate('/login');
+    }, 2000);
+  };
+
+  // Animate content in on mount
+  useEffect(() => {
+    const timer1 = setTimeout(() => {
+      setHeaderVisible(true);
+    }, 100);
+
+    const sectionTimers = sectionsVisible.map((_, index) => 
+      setTimeout(() => {
+        setSectionsVisible(prev => {
+          const newState = [...prev];
+          newState[index] = true;
+          return newState;
+        });
+      }, 200 + (index * 100))
+    );
+
+    return () => {
+      clearTimeout(timer1);
+      sectionTimers.forEach(clearTimeout);
+    };
+  }, []);
+
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-semibold text-2xl text-foreground">Settings</h1>
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate('/profile')}
-          className="flex items-center gap-1"
+    <div className="min-h-screen bg-gradient-radial from-cream/90 to-cream">
+      <div className="max-w-3xl mx-auto px-4">
+        {/* Military Header */}
+        <div 
+          className={`transition-all duration-300 ${
+            headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+          }`}
         >
-          <ArrowLeft className="size-4" />
-          Back to Profile
-        </Button>
+          <MilitarySettingsHeader
+            title="SETTINGS"
+            description="CONFIGURE YOUR PREFERENCES"
+            onBack={() => navigate('/profile')}
+          />
+        </div>
+
+        <div className="space-y-6 pb-8">
+          {/* General Settings Section */}
+          <div 
+            className={`transition-all duration-300 ${
+              sectionsVisible[0] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <SettingsSection
+              title="GENERAL SETTINGS"
+              description="CONFIGURE APPLICATION PREFERENCES"
+            >
+              <SettingsToggleRow
+                icon={<Globe className="w-5 h-5" />}
+                title="GEOLOCATION TRACKING"
+                description="Allow location tracking for runs and local leaderboards"
+                checked={settings.geolocation}
+                onCheckedChange={handleGeolocationToggle}
+                disabled={!capabilities.geolocation}
+              />
+              
+              <SettingsDivider />
+              
+              <SettingsToggleRow
+                icon={<Bell className="w-5 h-5" />}
+                title="NOTIFICATIONS"
+                description="Receive reminders and updates about your workouts"
+                checked={settings.notifications}
+                onCheckedChange={handleNotificationsToggle}
+                disabled={!capabilities.pushNotifications}
+              />
+            </SettingsSection>
+          </div>
+
+          {/* Fitness Devices Section */}
+          <div 
+            className={`transition-all duration-300 ${
+              sectionsVisible[1] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <SettingsSection
+              title="FITNESS DEVICES"
+              description="CONNECT FITNESS TRACKING DEVICES"
+            >
+              <SettingsActionRow
+                icon={<Radio className="w-5 h-5" />}
+                title="MANAGE DEVICES"
+                description="Connect watches and heart rate monitors"
+                onClick={handleDeviceManagement}
+              />
+            </SettingsSection>
+          </div>
+
+          {/* Legal & About Section */}
+          <div 
+            className={`transition-all duration-300 ${
+              sectionsVisible[2] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <SettingsSection
+              title="ABOUT & LEGAL"
+              description="APP INFORMATION AND LEGAL DOCUMENTS"
+            >
+              <SettingsActionRow
+                icon={<Heart className="w-5 h-5" />}
+                title="APP VERSION"
+                description=""
+                value={APP_VERSION}
+                onClick={() => {}}
+              />
+              
+              <SettingsDivider />
+              
+              <SettingsActionRow
+                icon={<ExternalLink className="w-4 h-4" />}
+                title="TERMS OF SERVICE"
+                description=""
+                onClick={() => window.open('/terms.html', '_blank')}
+              />
+              
+              <SettingsDivider />
+              
+              <SettingsActionRow
+                icon={<ExternalLink className="w-4 h-4" />}
+                title="PRIVACY POLICY"
+                description=""
+                onClick={() => window.open('/privacy.html', '_blank')}
+              />
+              
+              {/* Copyright */}
+              <div className="text-center py-4 text-xs text-tactical-gray">
+                © {new Date().getFullYear()} PT Champion. All rights reserved.
+              </div>
+            </SettingsSection>
+          </div>
+
+          {/* Danger Zone Section */}
+          <div 
+            className={`transition-all duration-300 ${
+              sectionsVisible[3] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <SettingsSection
+              title="DANGER ZONE"
+              description="PERMANENTLY DELETE YOUR ACCOUNT"
+              variant="danger"
+            >
+              <div className="p-4 space-y-4">
+                <p className="text-sm text-tactical-gray leading-relaxed">
+                  Once you delete your account, there is no going back. All your data will be permanently removed.
+                </p>
+                
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteConfirmation(true)}
+                  disabled={isDeletingAccount}
+                  className="w-full flex items-center gap-2"
+                >
+                  {isDeletingAccount ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm font-semibold uppercase">DELETING...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      <span className="text-sm font-semibold uppercase">DELETE ACCOUNT</span>
+                    </>
+                  )}
+                </Button>
+              </div>
+            </SettingsSection>
+          </div>
+        </div>
       </div>
 
-      {/* General Settings Section */}
-      <Card className="transition-shadow hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="flex items-center font-semibold text-lg">
-            <SettingsIcon className="mr-2 size-5 text-muted-foreground" />
-            General Settings
-          </CardTitle>
-          <CardDescription>Configure application preferences and permissions.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Geolocation Setting */}
-          <div className={cn(
-             "flex items-center justify-between space-x-3 rounded-lg border p-4",
-             "transition-colors hover:bg-muted/50",
-             !capabilities.geolocation && "opacity-50"
-          )}>
-            <div className="space-y-0.5">
-              <div className="flex items-center">
-                <Globe className="mr-2 size-4 text-brass-gold" />
-                <Label htmlFor="geolocation-switch" className="text-base">
-                  Geolocation Tracking
-                </Label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Allow location tracking for runs and local leaderboards.
-              </p>
-            </div>
-            <Switch
-              id="geolocation-switch"
-              checked={settings.geolocation}
-              onCheckedChange={handleGeolocationToggle}
-              disabled={!capabilities.geolocation}
-            />
-          </div>
-
-          {/* Notifications Setting */}
-          <div className={cn(
-             "flex items-center justify-between space-x-3 rounded-lg border p-4",
-             "transition-colors hover:bg-muted/50",
-             !capabilities.pushNotifications && "opacity-50"
-          )}>
-            <div className="space-y-0.5">
-              <div className="flex items-center">
-                <Bell className="mr-2 size-4 text-brass-gold" />
-                <Label htmlFor="notifications-switch" className="text-base">
-                  Notifications
-                </Label>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Receive reminders and updates about your workouts.
-              </p>
-            </div>
-            <Switch
-              id="notifications-switch"
-              checked={settings.notifications}
-              onCheckedChange={handleNotificationsToggle}
-              disabled={!capabilities.pushNotifications}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Legal & About Section */}
-      <Card className="transition-shadow hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="flex items-center font-semibold text-lg">
-            <Info className="mr-2 size-5 text-muted-foreground" />
-            About & Legal
-          </CardTitle>
-          <CardDescription>App information and legal documents.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Heart className="mr-2 size-4 text-brass-gold" />
-                <span className="text-sm">App Version</span>
-              </div>
-              <span className="font-mono text-sm text-muted-foreground">{APP_VERSION}</span>
-            </div>
-            
-            <Separator />
-            
-            <div className="flex flex-col space-y-2">
-              <div className="flex items-center">
-                <Shield className="mr-2 size-4 text-brass-gold" />
-                <span className="font-semibold text-sm">Legal Documents</span>
-              </div>
-              
-              <div className="ml-6 space-y-2">
-                <Button 
-                  variant="link" 
-                  className="h-auto p-0 text-sm text-brass-gold"
-                  onClick={() => window.open('/terms.html', '_blank')}
-                >
-                  Terms of Service
-                </Button>
-                
-                <Button 
-                  variant="link" 
-                  className="h-auto p-0 text-sm text-brass-gold"
-                  onClick={() => window.open('/privacy.html', '_blank')}
-                >
-                  Privacy Policy
-                </Button>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="border-t pt-4 text-center text-xs text-muted-foreground">
-          © {new Date().getFullYear()} PT Champion. All rights reserved.
-        </CardFooter>
-      </Card>
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteConfirmation} onOpenChange={setShowDeleteConfirmation}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete your account? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirmation(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={isDeletingAccount}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

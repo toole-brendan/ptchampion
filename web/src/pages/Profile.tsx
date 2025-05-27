@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { SectionCard } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 import { Loader2, UserCircle, LogOut, Settings, CheckCircle, AlertCircle } from 'lucide-react';
@@ -11,6 +10,8 @@ import { UpdateUserRequest } from '../lib/types';
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import useStaggeredAnimation from '@/hooks/useStaggeredAnimation';
+import { MilitarySettingsHeader } from '@/components/ui/military-settings-header';
+import { SettingsSection } from '@/components/ui/settings-section';
 
 // Check if dev auth bypass is enabled
 const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
@@ -87,7 +88,7 @@ const Profile: React.FC = () => {
   
   // Animation states
   const [headerVisible, setHeaderVisible] = useState(false);
-  const [sectionsVisible, setSectionsVisible] = useState(false);
+  const [sectionsVisible, setSectionsVisible] = useState([false, false, false]);
   
   // Toast states
   const [showSuccessToast, setShowSuccessToast] = useState(false);
@@ -146,12 +147,23 @@ const Profile: React.FC = () => {
 
   // Animate content in on mount
   useEffect(() => {
-    const timer1 = setTimeout(() => setHeaderVisible(true), 100);
-    const timer2 = setTimeout(() => setSectionsVisible(true), 200);
-    
+    const timer1 = setTimeout(() => {
+      setHeaderVisible(true);
+    }, 100);
+
+    const sectionTimers = sectionsVisible.map((_, index) => 
+      setTimeout(() => {
+        setSectionsVisible(prev => {
+          const newState = [...prev];
+          newState[index] = true;
+          return newState;
+        });
+      }, 200 + (index * 100))
+    );
+
     return () => {
       clearTimeout(timer1);
-      clearTimeout(timer2);
+      sectionTimers.forEach(clearTimeout);
     };
   }, []);
 
@@ -328,8 +340,6 @@ const Profile: React.FC = () => {
     }
   };
 
-
-
   const formDataHasChanges = (): boolean => {
     if (!user) return false;
     
@@ -367,22 +377,12 @@ const Profile: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen">
-        {/* Radial gradient background matching iOS */}
-        <div 
-          className="fixed inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at center, rgba(244, 241, 230, 0.9) 0%, rgb(244, 241, 230) 60%)`
-          }}
-        />
-        
-        <div className="relative z-10 px-4 py-8 md:py-12 lg:px-8">
-          <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
-            <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
-              <div className="text-center">
-                <Loader2 className="mx-auto mb-4 size-10 animate-spin text-brass-gold"/>
-                <p className="font-heading text-lg uppercase tracking-wider text-deep-ops">Loading profile...</p>
-              </div>
+      <div className="min-h-screen bg-gradient-radial from-cream/90 to-cream">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
+            <div className="text-center">
+              <Loader2 className="mx-auto mb-4 size-10 animate-spin text-brass-gold"/>
+              <p className="font-heading text-lg uppercase tracking-wider text-deep-ops">Loading profile...</p>
             </div>
           </div>
         </div>
@@ -392,90 +392,54 @@ const Profile: React.FC = () => {
 
   if (!user && !DEV_AUTH_BYPASS) {
     return (
-      <div className="min-h-screen">
-        {/* Radial gradient background */}
-        <div 
-          className="fixed inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at center, rgba(244, 241, 230, 0.9) 0%, rgb(244, 241, 230) 60%)`
-          }}
-        />
-        
-        <div className="relative z-10 px-4 py-8 md:py-12 lg:px-8">
-          <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
-            <SectionCard
-              title="Profile"
-              description="Please log in to view and edit your profile"
-            >
-              <div className="text-center py-8">
-                <Button 
-                  onClick={() => navigate('/login')} 
-                  className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
-                >
-                  LOGIN
-                </Button>
-              </div>
-            </SectionCard>
-          </div>
+      <div className="min-h-screen bg-gradient-radial from-cream/90 to-cream">
+        <div className="max-w-3xl mx-auto px-4">
+          <SettingsSection
+            title="PROFILE"
+            description="PLEASE LOG IN TO VIEW AND EDIT YOUR PROFILE"
+          >
+            <div className="text-center py-8">
+              <Button 
+                onClick={() => navigate('/login')} 
+                className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
+              >
+                LOGIN
+              </Button>
+            </div>
+          </SettingsSection>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
-      {/* Radial gradient background matching iOS */}
-      <div 
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          background: `radial-gradient(circle at center, rgba(244, 241, 230, 0.9) 0%, rgb(244, 241, 230) 60%)`
-        }}
-      />
-      
-      <div className="relative z-10 px-4 py-8 md:py-12 lg:px-8">
-        <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
-          {/* Military-styled header matching iOS */}
-          <header className={cn(
-            "text-left transition-all duration-300 ease-out",
-            headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-          )}>
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="font-heading text-3xl md:text-4xl uppercase tracking-wider text-deep-ops font-bold">
-                  PROFILE
-                </h1>
-                
-                {/* Brass gold separator line */}
-                <div className="my-4 h-0.5 w-32 bg-brass-gold" />
-                
-                <p className="text-sm md:text-base font-semibold tracking-wide text-deep-ops uppercase">
-                  MANAGE YOUR ACCOUNT
-                </p>
-              </div>
-              
-              {/* Settings button */}
-              <Button
-                variant="outline"
-                size="icon"
-                className="border-brass-gold/30 text-deep-ops hover:bg-brass-gold/10"
-                onClick={() => navigate('/settings')}
-              >
-                <Settings className="w-5 h-5" />
-              </Button>
-            </div>
-          </header>
+    <div className="min-h-screen bg-gradient-radial from-cream/90 to-cream">
+      <div className="max-w-3xl mx-auto px-4">
+        {/* Military Header */}
+        <div 
+          className={`transition-all duration-300 ${
+            headerVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+          }`}
+        >
+          <MilitarySettingsHeader
+            title="PROFILE"
+            description="MANAGE YOUR ACCOUNT"
+            onBack={() => navigate('/settings')}
+          />
+        </div>
 
+        <div className="space-y-6 pb-8">
           {/* Edit Profile Section */}
-          <div className={cn(
-            "transition-all duration-300 ease-out",
-            visibleSections[0] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          )}>
-            <SectionCard
+          <div 
+            className={`transition-all duration-300 ${
+              sectionsVisible[0] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <SettingsSection
               title="EDIT PROFILE"
               description="UPDATE YOUR PERSONAL INFORMATION"
-              icon={<UserCircle className="w-5 h-5" />}
             >
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="p-4 space-y-6">
                 {/* Status message */}
                 {message && (
                   <StatusAlert 
@@ -543,19 +507,20 @@ const Profile: React.FC = () => {
                   {isSubmitting ? 'SAVING...' : 'SAVE CHANGES'}
                 </Button>
               </form>
-            </SectionCard>
+            </SettingsSection>
           </div>
 
           {/* Password Management Section */}
-          <div className={cn(
-            "transition-all duration-300 ease-out",
-            visibleSections[1] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          )}>
-            <SectionCard
+          <div 
+            className={`transition-all duration-300 ${
+              sectionsVisible[1] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <SettingsSection
               title="PASSWORD MANAGEMENT"
               description="UPDATE YOUR PASSWORD REGULARLY FOR SECURITY"
             >
-              <form onSubmit={handlePasswordSubmit} className="space-y-6">
+              <form onSubmit={handlePasswordSubmit} className="p-4 space-y-6">
                 {/* Password status message */}
                 {passwordMessage && (
                   <StatusAlert 
@@ -606,32 +571,33 @@ const Profile: React.FC = () => {
                   {isChangingPassword ? 'UPDATING...' : 'CHANGE PASSWORD'}
                 </Button>
               </form>
-            </SectionCard>
+            </SettingsSection>
           </div>
 
           {/* Account Actions Section */}
-          <div className={cn(
-            "transition-all duration-300 ease-out",
-            visibleSections[2] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          )}>
-            <SectionCard
+          <div 
+            className={`transition-all duration-300 ${
+              sectionsVisible[2] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <SettingsSection
               title="ACCOUNT ACTIONS"
               description="MANAGE YOUR ACCOUNT SESSION"
             >
-                             <div className="space-y-4">
-                 <Button
-                   onClick={() => {
-                     logout();
-                     navigate('/login');
-                   }}
-                   variant="outline"
-                   className="w-full border-error text-error hover:bg-error/10 font-semibold uppercase tracking-wider"
-                 >
-                   <LogOut className="mr-2 w-4 h-4" />
-                   LOG OUT
-                 </Button>
-               </div>
-            </SectionCard>
+              <div className="p-4 space-y-4">
+                <Button
+                  onClick={() => {
+                    logout();
+                    navigate('/login');
+                  }}
+                  variant="outline"
+                  className="w-full border-error text-error hover:bg-error/10 font-semibold uppercase tracking-wider"
+                >
+                  <LogOut className="mr-2 w-4 h-4" />
+                  LOG OUT
+                </Button>
+              </div>
+            </SettingsSection>
           </div>
         </div>
       </div>
