@@ -36,6 +36,12 @@ const RunningTracker = lazy(() => import('./pages/exercises/RunningTracker'));
 // Import workout completion page
 const WorkoutComplete = lazy(() => import('./pages/WorkoutComplete'));
 
+// Import rubric pages
+const PushUpsRubric = lazy(() => import('./pages/rubrics/PushUpsRubric'));
+const SitUpsRubric = lazy(() => import('./pages/rubrics/SitUpsRubric'));
+const PullUpsRubric = lazy(() => import('./pages/rubrics/PullUpsRubric'));
+const TwoMileRunRubric = lazy(() => import('./pages/rubrics/TwoMileRunRubric'));
+
 // Loading component for suspense
 const Loading = () => (
   <div className="flex h-screen items-center justify-center bg-cream">
@@ -130,6 +136,12 @@ function App({ queryClient }: AppProps) {
                           
                           {/* Workout completion page */}
                           <Route path="complete" element={<WorkoutComplete />} />
+
+                          {/* Rubric pages */}
+                          <Route path="rubrics/pushups" element={<PushUpsRubric />} />
+                          <Route path="rubrics/situps" element={<SitUpsRubric />} />
+                          <Route path="rubrics/pullups" element={<PullUpsRubric />} />
+                          <Route path="rubrics/running" element={<TwoMileRunRubric />} />
 
                           {/* Redirect from trackers paths to exercises paths */}
                           <Route path="trackers/*" element={<Navigate to="/exercises" replace />} />

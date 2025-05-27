@@ -100,6 +100,9 @@ module.exports = {
         'content': 'var(--spacing-content-padding)',
         'item': 'var(--spacing-item)',
         'adaptive': 'var(--spacing-adaptive)',
+        '15': '3.75rem', // 60px for stat card icons
+        '18': '4.5rem',  // 72px for quick link icons
+        '30': '7.5rem',  // 120px for separator lines
       },
       keyframes: {
         "accordion-down": {
@@ -139,6 +142,10 @@ module.exports = {
           "0%": { transform: "scale(1)" },
           "40%": { transform: "scale(0.97)" },
           "100%": { transform: "scale(1)" }
+        },
+        "fadeIn": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" }
         }
       },
       animation: {
@@ -150,7 +157,15 @@ module.exports = {
         "pop": "pop 0.3s ease-out",
         "float-up": "float-up 0.3s ease-out forwards",
         "press": "press var(--animation-duration-fast) var(--animation-easing-default)",
-        "spring": "spring var(--animation-duration-slow) var(--animation-easing-spring)"
+        "spring": "spring var(--animation-duration-slow) var(--animation-easing-spring)",
+        "fade-in": "fadeIn 0.4s ease-out forwards"
+      },
+      animationDelay: {
+        '100': '100ms',
+        '200': '200ms',
+        '300': '300ms',
+        '400': '400ms',
+        '500': '500ms',
       },
       transitionDuration: {
         'fast': 'var(--animation-duration-fast)',
@@ -185,6 +200,21 @@ module.exports = {
         {}
       )
       addUtilities(textShadowUtilities)
+      
+      // Add animation delay utilities
+      const animationDelays = theme('animationDelay', {})
+      const animationDelayUtilities = Object.entries(animationDelays).reduce(
+        (acc, [key, value]) => {
+          return {
+            ...acc,
+            [`.${e(`animation-delay-${key}`)}`]: {
+              animationDelay: value,
+            },
+          }
+        },
+        {}
+      )
+      addUtilities(animationDelayUtilities)
     },
   ],
 }

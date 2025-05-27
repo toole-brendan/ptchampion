@@ -1,57 +1,34 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // For user avatars
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"; // For filtering
-import { Label } from "@/components/ui/label"; // For filter labels
-import { cn, formatLeaderboardScore } from "@/lib/utils"; // Import utilities
+import { cn, formatLeaderboardScore } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { 
   Alert,
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
-import { useApi } from "@/lib/apiClient"; // Import API client hook
-import { Player } from '@lottiefiles/react-lottie-player'; // Import Lottie player
-import emptyLeaderboardAnimation from '@/assets/empty-leaderboard.json';
+import { useApi } from "@/lib/apiClient";
 import { useQuery } from '@tanstack/react-query';
-import { AlertCircle, Loader2, Trophy, Medal, MapPin } from 'lucide-react';
-import { SkeletonRow } from '@/components/ui/skeleton';
+import { AlertCircle, MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { SectionCard, CardDivider } from "@/components/ui/card"; // Import card components from design system
+
+// Import new leaderboard components
+import LeaderboardSegmentedControl from '@/components/leaderboard/LeaderboardSegmentedControl';
+import LeaderboardFilterBar from '@/components/leaderboard/LeaderboardFilterBar';
+import EnhancedLeaderboardRow from '@/components/leaderboard/EnhancedLeaderboardRow';
+import LeaderboardRowSkeleton from '@/components/leaderboard/LeaderboardRowSkeleton';
+import LeaderboardErrorState from '@/components/leaderboard/LeaderboardErrorState';
+import LeaderboardEmptyState from '@/components/leaderboard/LeaderboardEmptyState';
+import useStaggeredAnimation from '@/hooks/useStaggeredAnimation';
 
 // Header divider component removed as we'll use a simple div for the separator
 
-const exerciseOptions = ['overall', 'pushup', 'situp', 'pullup', 'running'];
 const exerciseDisplayNames = {
   'overall': 'Overall',
   'pushup': 'Push-ups',
   'situp': 'Sit-ups',
   'pullup': 'Pull-ups',
   'running': 'Running'
-};
-const scopeOptions = ['Global', 'Local (5 Miles)']; // Local needs implementation
-
-// Helper to get initials from name
-const getInitials = (name: string) => {
-  return name
-    .split(' ')
-    .map((n) => n[0])
-    .join('');
-};
-
-// Get medal component based on rank
-const getRankMedal = (rank: number) => {
-  if (rank === 1) return <Medal className="size-6 text-yellow-500" />;
-  if (rank === 2) return <Medal className="size-6 text-gray-400" />;
-  if (rank === 3) return <Medal className="size-6 text-amber-700" />;
-  return null;
-};
+} as const;
 
 // Geolocation state type
 interface GeolocationState {
@@ -65,8 +42,12 @@ interface GeolocationState {
 const Leaderboard: React.FC = () => {
   const api = useApi();
   const { toast } = useToast();
-  const [exerciseFilter, setExerciseFilter] = useState<string>(exerciseOptions[0]); // Default to overall
-  const [scopeFilter, setScopeFilter] = useState<string>(scopeOptions[0]); // Default to Global
+  
+  // New state variables matching iOS structure
+  const [selectedBoard, setSelectedBoard] = useState<'Global' | 'Local'>('Global');
+  const [selectedExercise, setSelectedExercise] = useState<string>('overall');
+  const [selectedCategory, setSelectedCategory] = useState<string>('weekly');
+  const [selectedRadius, setSelectedRadius] = useState<string>('5');
   
   // Geolocation state
   const [geoState, setGeoState] = useState<GeolocationState>({
@@ -131,9 +112,9 @@ const Leaderboard: React.FC = () => {
     error,
     refetch
   } = useQuery({
-    queryKey: ['leaderboard', exerciseFilter, scopeFilter, geoState.coordinates],
+    queryKey: ['leaderboard', selectedExercise, selectedBoard, selectedCategory, selectedRadius, geoState.coordinates],
     queryFn: async () => {
-      const isLocalScope = scopeFilter === scopeOptions[1];
+      const isLocalScope = selectedBoard === 'Local';
       
       if (isLocalScope && !geoState.coordinates) {
         // If local scope selected but no coordinates, throw error to trigger request
@@ -142,266 +123,233 @@ const Leaderboard: React.FC = () => {
 
       if (isLocalScope) {
         // Call local leaderboard API
+        const radiusInMeters = parseInt(selectedRadius) * 1609.34; // Convert miles to meters
         return api.leaderboard.getLocalLeaderboard(
-          exerciseFilter,
+          selectedExercise,
           geoState.coordinates!.latitude,
           geoState.coordinates!.longitude,
-          8047 // ~5 miles in meters
+          radiusInMeters
         );
       } else {
         // Call global leaderboard API
-        return api.leaderboard.getLeaderboard(exerciseFilter);
+        return api.leaderboard.getLeaderboard(selectedExercise);
       }
     },
-    enabled: !(scopeFilter === scopeOptions[1] && !geoState.coordinates && !geoState.isLoading),
+    enabled: !(selectedBoard === 'Local' && !geoState.coordinates && !geoState.isLoading),
     retry: 1,
     retryDelay: 1000,
   });
 
   // Effect to handle scope change
   useEffect(() => {
-    const isLocalScope = scopeFilter === scopeOptions[1];
+    const isLocalScope = selectedBoard === 'Local';
     
     if (isLocalScope && !geoState.coordinates && !geoState.error) {
       // If local scope selected but no coordinates, request them
       requestGeolocation();
     }
-  }, [scopeFilter, geoState.coordinates, geoState.error, requestGeolocation]);
+  }, [selectedBoard, geoState.coordinates, geoState.error, requestGeolocation]);
 
   // Process the leaderboard data for display
   const processedLeaderboard = useMemo(() => {
     if (!leaderboardData || !Array.isArray(leaderboardData)) return [];
     
     // Convert API data to display format with ranks
-    return leaderboardData.map((entry, index) => ({
+    return leaderboardData.map((entry: any, index: number) => ({
       rank: index + 1,
       name: entry.display_name || entry.username,
       username: entry.username,
-      userId: entry.user_id,
+      userId: String(entry.user_id), // Convert to string to match interface
       score: entry.max_grade !== undefined ? entry.max_grade : 0,
-      formattedScore: formatLeaderboardScore(exerciseFilter, entry.max_grade || 0),
-      avatar: entry.profile_picture_url || null // Use profile pic if available
+      formattedScore: formatLeaderboardScore(selectedExercise, entry.max_grade || 0),
+      avatar: entry.profile_picture_url || null,
+      unit: entry.unit || undefined,
+      location: entry.location || undefined,
+      isPersonalBest: entry.is_personal_best || false,
+      performanceChange: entry.performance_change ? {
+        type: entry.performance_change.type as 'improved' | 'declined' | 'maintained',
+        positions: entry.performance_change.positions
+      } : undefined,
+      displaySubtitle: entry.display_subtitle || undefined
     }));
-  }, [leaderboardData, exerciseFilter]);
+  }, [leaderboardData, selectedExercise]);
+
+  // Staggered animation for rows
+  const visibleRows = useStaggeredAnimation({
+    itemCount: processedLeaderboard.length,
+    baseDelay: 200,
+    staggerDelay: 50
+  });
 
   return (
-    <div className="bg-cream min-h-screen px-4 py-section md:py-12 lg:px-8">
-      <div className="flex flex-col space-y-section max-w-7xl mx-auto">
-        {/* Page Header - full-width, no card, left aligned */}
-        <header className="text-left mb-section animate-fade-in px-content">
-          <h1 className="font-heading text-heading3 md:text-heading2 uppercase tracking-wider text-deep-ops">
-            Leaderboard
-          </h1>
+    <div className="min-h-screen">
+      {/* Radial gradient background matching iOS */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at center, rgba(244, 241, 230, 0.9) 0%, rgb(244, 241, 230) 60%)`
+        }}
+      />
+      
+      <div className="relative z-10 px-4 py-8 md:py-12 lg:px-8">
+        <div className="flex flex-col space-y-6 max-w-7xl mx-auto">
+          {/* Military-styled header matching iOS */}
+          <header className="text-left animate-fade-in">
+            <h1 className="font-heading text-3xl md:text-4xl uppercase tracking-wider text-deep-ops font-bold">
+              {selectedBoard.toUpperCase()} LEADERBOARD
+            </h1>
 
-          {/* thin gold separator, left aligned */}
-          <div className="my-4 h-px w-24 bg-brass-gold" />
+            {/* Brass gold separator line */}
+            <div className="my-4 h-0.5 w-32 bg-brass-gold" />
 
-          <p className="text-sm md:text-base font-semibold tracking-wide text-deep-ops">
-            Track your progress against other athletes
-          </p>
-        </header>
-        
-        {/* Geolocation Alert - Show if needed */}
-        {scopeFilter === scopeOptions[1] && geoState.error && (
-          <Alert variant="destructive" className="rounded-card">
-            <AlertCircle className="size-5" />
-            <AlertTitle className="font-heading text-sm">Location Error</AlertTitle>
-            <AlertDescription>
-              {geoState.error}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2 border-brass-gold text-brass-gold" 
-                onClick={requestGeolocation}
-              >
-                TRY AGAIN
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        {/* Location Status Alert - Only show when actively looking for location */}
-        {geoState.isLoading && (
-          <Alert className="rounded-card border-olive-mist bg-olive-mist/10">
-            <MapPin className="size-5 text-brass-gold" />
-            <AlertTitle className="font-heading text-sm">Getting your location</AlertTitle>
-            <AlertDescription>
-              Please allow location access to view the local leaderboard.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* API Error Alert */}
-        {isError && !geoState.isLoading && error instanceof Error && error.message !== 'Location permission required' && (
-          <Alert variant="destructive" className="rounded-card">
-            <AlertCircle className="size-5" />
-            <AlertTitle className="font-heading text-sm">Error loading leaderboard</AlertTitle>
-            <AlertDescription>
-              {error.message}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="mt-2 border-brass-gold text-brass-gold" 
-                onClick={() => refetch()}
-              >
-                RETRY
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {/* Main Leaderboard Section Card */}
-        <SectionCard
-          title={`${exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Rankings`}
-          icon={<Trophy className="size-5" />}
-          className="animate-fade-in animation-delay-100"
-          showDivider
-        >
-          {/* Filter Controls - Improved for responsiveness */}
-          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="min-w-[140px] space-y-2">
-              <Label htmlFor="exercise-filter" className="font-semibold text-xs uppercase tracking-wide text-tactical-gray">Exercise Type</Label>
-              <Select value={exerciseFilter} onValueChange={setExerciseFilter}>
-                <SelectTrigger 
-                  id="exercise-filter" 
-                  className="border-army-tan/30 bg-white"
-                  aria-label="Select exercise type"
-                >
-                  <SelectValue placeholder="Select Exercise" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-army-tan/30">
-                  {exerciseOptions.map(option => (
-                    <SelectItem key={option} value={option}>
-                      {exerciseDisplayNames[option as keyof typeof exerciseDisplayNames]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="min-w-[140px] space-y-2">
-              <Label htmlFor="scope-filter" className="font-semibold text-xs uppercase tracking-wide text-tactical-gray">Leaderboard Scope</Label>
-              <Select value={scopeFilter} onValueChange={setScopeFilter}>
-                <SelectTrigger 
-                  id="scope-filter" 
-                  className="border-army-tan/30 bg-white"
-                  aria-label="Select leaderboard scope"
-                >
-                  <SelectValue placeholder="Select Scope" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-army-tan/30">
-                  {scopeOptions.map(option => (
-                    <SelectItem key={option} value={option}>{option}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <p className="text-sm md:text-base font-semibold tracking-wide text-deep-ops uppercase">
+              {exerciseDisplayNames[selectedExercise as keyof typeof exerciseDisplayNames]} • {selectedCategory}
+            </p>
+          </header>
+          
+          {/* Segmented Control for Global/Local */}
+          <div className="animate-fade-in animation-delay-100">
+            <LeaderboardSegmentedControl
+              selectedBoard={selectedBoard}
+              onBoardChange={setSelectedBoard}
+            />
           </div>
 
-          {isLoading ? (
-            // Skeleton loading state
-            <div className="relative overflow-hidden rounded-card border border-olive-mist/20">
-              <Table className="w-full">
-                <TableHeader>
-                  <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
-                    <TableHead className="w-[80px] font-heading text-xs uppercase tracking-wider text-tactical-gray">Rank</TableHead>
-                    <TableHead className="font-heading text-xs uppercase tracking-wider text-tactical-gray">User</TableHead>
-                    <TableHead className="text-right font-heading text-xs uppercase tracking-wider text-tactical-gray">Score</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.from({ length: 10 }).map((_, i) => (
-                    <SkeletonRow key={i} />
-                  ))}
-                </TableBody>
-              </Table>
-              
-              {/* Floating loading indicator */}
-              <div className="absolute inset-0 flex items-center justify-center bg-background/30">
-                <div className="bg-card-background rounded-md p-3 shadow-lg">
-                  <Loader2 className="size-6 animate-spin text-brass-gold" />
-                </div>
-              </div>
-            </div>
-          ) : processedLeaderboard.length > 0 ? (
-            <div className="relative overflow-hidden rounded-card border border-olive-mist/20 bg-white">
-              <Table className="w-full">
-                <caption className="sr-only">
-                  {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]} Leaderboard - {scopeFilter}
-                </caption>
-                <TableHeader>
-                  <TableRow className="bg-tactical-gray/10 hover:bg-transparent">
-                    <TableHead className="w-[80px] font-heading text-xs uppercase tracking-wider text-tactical-gray">Rank</TableHead>
-                    <TableHead className="font-heading text-xs uppercase tracking-wider text-tactical-gray">User</TableHead>
-                    <TableHead className="text-right font-heading text-xs uppercase tracking-wider text-tactical-gray">Score</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {processedLeaderboard.map((user) => (
-                    <TableRow 
-                      key={`${user.username}-${user.rank}`} 
-                      className={cn(
-                        "border-b border-olive-mist/10 transition-colors hover:bg-brass-gold/5 bg-white",
-                        user.rank <= 3 && "bg-white"
-                      )}
-                    >
-                      <TableCell className="flex items-center space-x-2">
-                        <span className={cn(
-                          "font-heading text-lg",
-                          user.rank === 1 && "text-yellow-600",
-                          user.rank === 2 && "text-gray-500",
-                          user.rank === 3 && "text-amber-800"
-                        )}>{user.rank}</span>
-                        {getRankMedal(user.rank)}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center space-x-3">
-                          <Avatar className={cn(
-                            "border-brass-gold/20 size-8 border-2",
-                            // Add shadow highlight to top 3
-                            user.rank <= 3 && "shadow-md shadow-brass-gold/20"
-                          )}>
-                            <AvatarImage src={user.avatar || undefined} alt={user.name} />
-                            <AvatarFallback className="bg-army-tan/20 text-xs font-medium text-tactical-gray">
-                              {getInitials(user.name)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-semibold text-command-black">{user.name}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right font-heading text-lg tabular-nums text-brass-gold">
-                        {user.formattedScore}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8">
-              <Player
-                autoplay
-                loop
-                src={emptyLeaderboardAnimation}
-                style={{ height: '200px', width: '200px' }}
-                className="text-brass-gold"
-              />
-              <p className="mt-4 text-center font-semibold text-tactical-gray">
-                No rankings found for {exerciseDisplayNames[exerciseFilter as keyof typeof exerciseDisplayNames]}.
-              </p>
-              <p className="text-center text-sm text-tactical-gray">
-                {scopeFilter === scopeOptions[1]
-                  ? "Try changing to Global scope or completing an exercise in this area."
-                  : "Try selecting a different exercise type or complete your first workout to get on the board."
+          {/* Filter Controls */}
+          <div className="animate-fade-in animation-delay-200">
+            <LeaderboardFilterBar
+              selectedExercise={selectedExercise}
+              selectedCategory={selectedCategory}
+              selectedRadius={selectedRadius}
+              showRadiusSelector={selectedBoard === 'Local'}
+              onExerciseChange={setSelectedExercise}
+              onCategoryChange={setSelectedCategory}
+              onRadiusChange={setSelectedRadius}
+            />
+          </div>
+          
+          {/* Geolocation Alert - Show if needed */}
+          {selectedBoard === 'Local' && geoState.error && (
+            <Alert variant="destructive" className="rounded-lg">
+              <AlertCircle className="w-5 h-5" />
+              <AlertTitle className="font-heading text-sm">Location Error</AlertTitle>
+              <AlertDescription>
+                {geoState.error}
+                <Button 
+                  variant="outline" 
+                  size="small" 
+                  className="mt-2 border-brass-gold text-brass-gold" 
+                  onClick={requestGeolocation}
+                >
+                  TRY AGAIN
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {/* Location Status Alert - Only show when actively looking for location */}
+          {geoState.isLoading && (
+            <Alert className="rounded-lg border-olive-mist bg-olive-mist/10">
+              <MapPin className="w-5 h-5 text-brass-gold" />
+              <AlertTitle className="font-heading text-sm">Getting your location</AlertTitle>
+              <AlertDescription>
+                Please allow location access to view the local leaderboard.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* API Error Alert */}
+          {isError && !geoState.isLoading && error instanceof Error && error.message !== 'Location permission required' && (
+            <Alert variant="destructive" className="rounded-lg">
+              <AlertCircle className="w-5 h-5" />
+              <AlertTitle className="font-heading text-sm">Error loading leaderboard</AlertTitle>
+              <AlertDescription>
+                {error.message}
+                <Button 
+                  variant="outline" 
+                  size="small" 
+                  className="mt-2 border-brass-gold text-brass-gold" 
+                  onClick={() => refetch()}
+                >
+                  RETRY
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Main Leaderboard Content Card */}
+          <div className="bg-white rounded-lg shadow-md overflow-hidden animate-fade-in animation-delay-300">
+            {/* Header with dark background */}
+            <div className="bg-deep-ops text-cream p-4">
+              <h3 className="text-xl font-bold text-brass-gold">TOP PERFORMERS</h3>
+              <div className="h-px bg-brass-gold/30 my-2" />
+              <p className="text-sm font-medium text-brass-gold">
+                {selectedBoard === 'Local' 
+                  ? `ATHLETES WITHIN ${selectedRadius} MILES`
+                  : 'NATIONWIDE RANKINGS'
                 }
               </p>
             </div>
-          )}
+
+            {/* Content area */}
+            <div className="min-h-[300px]">
+              {isLoading ? (
+                // Enhanced loading state with skeletons
+                <div className="space-y-0">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <LeaderboardRowSkeleton key={i} />
+                  ))}
+                  
+                  {/* Floating loading indicator */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/30">
+                    <div className="bg-white rounded-md p-3 shadow-lg">
+                      <Loader2 className="w-6 h-6 animate-spin text-brass-gold" />
+                    </div>
+                  </div>
+                </div>
+              ) : isError && error instanceof Error && error.message !== 'Location permission required' ? (
+                <LeaderboardErrorState
+                  message={error.message}
+                  onRetry={() => refetch()}
+                />
+              ) : processedLeaderboard.length > 0 ? (
+                // Enhanced leaderboard rows
+                <div className="divide-y divide-gray-100">
+                  {processedLeaderboard.map((entry, index) => (
+                    <div
+                      key={`${entry.username}-${entry.rank}`}
+                      className={cn(
+                        "transition-all duration-300 ease-out",
+                        visibleRows[index] 
+                          ? "opacity-100 translate-y-0" 
+                          : "opacity-0 translate-y-4"
+                      )}
+                    >
+                      <EnhancedLeaderboardRow
+                        entry={entry}
+                        isCurrentUser={false} // TODO: Add current user detection
+                        onClick={() => {
+                          // TODO: Add navigation to user profile
+                          console.log('Navigate to user:', entry.userId);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <LeaderboardEmptyState
+                  exerciseType={selectedExercise}
+                  boardType={selectedBoard}
+                />
+              )}
+            </div>
+          </div>
           
-          <div className="mt-4 text-center text-xs text-tactical-gray">
+          {/* Footer note */}
+          <div className="mt-6 text-center text-xs text-tactical-gray">
             <p>Rankings reset weekly. Complete exercises to improve your position.</p>
           </div>
-        </SectionCard>
+        </div>
       </div>
     </div>
   );

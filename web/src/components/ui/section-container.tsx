@@ -41,6 +41,11 @@ export interface SectionContainerProps
   as?: React.ElementType
   maxWidth?: "sm" | "md" | "lg" | "xl" | "full"
   center?: boolean
+  title: string
+  description?: string
+  headerClassName?: string
+  contentClassName?: string
+  showDivider?: boolean
 }
 
 const SectionContainer = React.forwardRef<HTMLDivElement, SectionContainerProps>(
@@ -53,6 +58,11 @@ const SectionContainer = React.forwardRef<HTMLDivElement, SectionContainerProps>
     maxWidth,
     center,
     children,
+    title,
+    description,
+    headerClassName,
+    contentClassName,
+    showDivider = true,
     ...props 
   }, ref) => {
     const maxWidthClasses = {
@@ -74,7 +84,25 @@ const SectionContainer = React.forwardRef<HTMLDivElement, SectionContainerProps>
         )}
         {...props}
       >
-        {children}
+        {/* Dark header matching iOS pattern */}
+        <div className={cn("p-4 bg-deep-ops", headerClassName)}>
+          <h2 className="font-heading text-2xl font-bold uppercase tracking-wider text-brass-gold mb-1">
+            {title}
+          </h2>
+          {showDivider && (
+            <div className="h-px w-30 bg-brass-gold opacity-30 mb-1"></div>
+          )}
+          {description && (
+            <p className="text-sm font-medium uppercase tracking-wide text-brass-gold">
+              {description}
+            </p>
+          )}
+        </div>
+        
+        {/* Light content area */}
+        <div className={cn("p-4 bg-cream-dark", contentClassName)}>
+          {children}
+        </div>
       </Component>
     )
   }
