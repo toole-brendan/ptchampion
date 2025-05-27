@@ -116,7 +116,15 @@ html {
   }
   
   .bottom-nav-item.active {
-    @apply text-brass-gold;
+    @apply text-deep-ops bg-brass-gold bg-opacity-90 rounded-lg px-2 py-1 opacity-100 !important;
+  }
+
+  .bottom-nav-item.active .bottom-nav-label {
+    @apply text-deep-ops !important;
+  }
+
+  .bottom-nav-item.active svg {
+    color: var(--color-deep-ops) !important;
   }
 
   .bottom-nav-item:hover {

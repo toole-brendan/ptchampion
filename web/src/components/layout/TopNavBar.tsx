@@ -69,9 +69,9 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    "flex items-center h-11 rounded-md px-2 transition-colors duration-150 ease-in-out focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none",
+                    "flex items-center h-11 rounded-md px-3 py-2 transition-colors duration-150 ease-in-out focus-visible:ring-[var(--ring-focus)] focus-visible:outline-none",
                     isActive
-                      ? 'text-brass-gold bg-brass-gold bg-opacity-20 font-medium'
+                      ? 'text-deep-ops bg-brass-gold bg-opacity-90 font-medium'
                       : 'text-olive-mist opacity-80 hover:text-brass-gold hover:opacity-90'
                   )}
                 >

@@ -60,7 +60,7 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
         return 'Pull-ups';
       case 'run':
       case 'running':
-        return 'Run';
+        return 'Two-Mile Run';
       default:
         return type.charAt(0).toUpperCase() + type.slice(1);
     }

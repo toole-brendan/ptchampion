@@ -19,7 +19,7 @@ const exercises = [
   { id: 'pushup', name: 'pushup', displayName: 'Push-ups' },
   { id: 'situp', name: 'situp', displayName: 'Sit-ups' },
   { id: 'pullup', name: 'pullup', displayName: 'Pull-ups' },
-  { id: 'running', name: 'running', displayName: 'Running' },
+  { id: 'running', name: 'running', displayName: 'Two-Mile Run' },
 ];
 
 const categoryOptions = [

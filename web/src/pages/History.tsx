@@ -731,7 +731,7 @@ const History: React.FC = () => {
                         session.exercise_type.toUpperCase().includes('SIT') ? 
                           <img src={situpImage} alt="Sit-ups" className="size-6" /> :
                         session.exercise_type.toUpperCase().includes('RUN') ? 
-                          <img src={runningImage} alt="Running" className="size-6" /> :
+                          <img src={runningImage} alt="Two-Mile Run" className="size-6" /> :
                           <Dumbbell className="size-5 text-brass-gold" />
                       )}
                     </div>
@@ -773,7 +773,7 @@ const History: React.FC = () => {
               <div className="space-x-2">
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="small"
                   onClick={() => setPage(prev => Math.max(prev - 1, 1))}
                   disabled={page <= 1 || isFetching}
                   className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"
@@ -782,7 +782,7 @@ const History: React.FC = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="small"
                   onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={page >= totalPages || isFetching}
                   className="border-brass-gold text-brass-gold hover:bg-brass-gold/10"

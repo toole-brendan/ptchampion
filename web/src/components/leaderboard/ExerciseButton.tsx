@@ -1,12 +1,12 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { 
-  Trophy, 
-  Dumbbell, 
-  Activity, 
-  Target, 
-  Timer 
-} from 'lucide-react';
+import { Trophy } from 'lucide-react';
+
+// Import exercise PNG images matching Workout History page
+import pushupImage from '../../assets/pushup.png';
+import pullupImage from '../../assets/pullup.png';
+import situpImage from '../../assets/situp.png';
+import runningImage from '../../assets/running.png';
 
 interface ExerciseButtonProps {
   exercise: {
@@ -18,12 +18,12 @@ interface ExerciseButtonProps {
   onClick: () => void;
 }
 
-const exerciseIcons = {
-  overall: Trophy,
-  pushup: Dumbbell,
-  situp: Activity,
-  pullup: Target,
-  running: Timer,
+const exerciseAssets = {
+  overall: null, // Will use Trophy icon for overall
+  pushup: pushupImage,
+  situp: situpImage,
+  pullup: pullupImage,
+  running: runningImage,
 } as const;
 
 const ExerciseButton: React.FC<ExerciseButtonProps> = ({
@@ -31,7 +31,7 @@ const ExerciseButton: React.FC<ExerciseButtonProps> = ({
   isSelected,
   onClick
 }) => {
-  const IconComponent = exerciseIcons[exercise.id as keyof typeof exerciseIcons] || Trophy;
+  const assetImage = exerciseAssets[exercise.id as keyof typeof exerciseAssets];
 
   return (
     <button
@@ -47,12 +47,20 @@ const ExerciseButton: React.FC<ExerciseButtonProps> = ({
       aria-pressed={isSelected}
       aria-label={`Filter by ${exercise.displayName}`}
     >
-      <IconComponent 
-        className={cn(
-          "w-4 h-4 transition-colors",
-          isSelected ? "text-brass-gold" : "text-deep-ops"
-        )} 
-      />
+      {assetImage ? (
+        <img 
+          src={assetImage} 
+          alt={exercise.displayName}
+          className="w-4 h-4 transition-opacity"
+        />
+      ) : (
+        <Trophy 
+          className={cn(
+            "w-4 h-4 transition-colors",
+            isSelected ? "text-brass-gold" : "text-deep-ops"
+          )} 
+        />
+      )}
       <span className="text-xs font-mono uppercase tracking-wide font-medium">
         {exercise.displayName}
       </span>

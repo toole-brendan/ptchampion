@@ -147,7 +147,7 @@ const Dashboard: React.FC = () => {
     { name: "PUSH-UPS", image: pushupImage, path: '/exercises/pushups' },
     { name: "PULL-UPS", image: pullupImage, path: '/exercises/pullups' },
     { name: "SIT-UPS", image: situpImage, path: '/exercises/situps' },
-    { name: "RUNNING", image: runningImage, path: '/exercises/running' },
+    { name: "TWO-MILE RUN", image: runningImage, path: '/exercises/running' },
   ];
 
   // Define rubric options
@@ -169,7 +169,7 @@ const Dashboard: React.FC = () => {
     {
       title: "LAST ACTIVITY",
       value: dashboardMetrics.lastWorkoutType ? 
-        (dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Running' : 
+        (dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Two-Mile Run' : 
          dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
          dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
          dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :

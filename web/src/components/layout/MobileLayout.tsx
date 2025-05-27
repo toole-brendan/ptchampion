@@ -95,16 +95,32 @@ const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
       {/* Bottom navigation bar (moved from top) */}
       <nav className="bottom-nav">
-        {navItems.map((item) => (
-          <Link
-            key={item.to}
-            to={item.to}
-            className={`bottom-nav-item ${isNavItemActive(item.to) ? 'active' : ''}`}
-          >
-            {item.icon}
-            <span className="bottom-nav-label">{item.label}</span>
-          </Link>
-        ))}
+        {navItems.map((item) => {
+          const isActive = isNavItemActive(item.to);
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={`bottom-nav-item ${isActive ? 'active' : ''}`}
+              style={isActive ? {
+                backgroundColor: 'rgba(191, 162, 77, 0.9)',
+                color: '#1E241E',
+                borderRadius: '8px',
+                padding: '4px 8px'
+              } : {}}
+            >
+              <div style={isActive ? { color: '#1E241E' } : {}}>
+                {item.icon}
+              </div>
+              <span 
+                className="bottom-nav-label"
+                style={isActive ? { color: '#1E241E' } : {}}
+              >
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
       </nav>
     </div>
   );

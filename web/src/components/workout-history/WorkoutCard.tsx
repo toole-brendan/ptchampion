@@ -54,7 +54,7 @@ export function WorkoutCard({
       };
     } else if (type.includes('RUN')) {
       return { 
-        name: 'Running',
+        name: 'Two-Mile Run',
         icon: runningImage,
         metric: distance ? formatDistance(distance) : '-'
       };

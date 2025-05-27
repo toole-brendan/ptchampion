@@ -24,8 +24,7 @@ const filterOptions: FilterOption[] = [
   {
     id: 'all',
     label: 'All Exercises',
-    value: 'All',
-    systemIcon: 'figure.run.circle.fill'
+    value: 'All'
   },
   {
     id: 'pushup',
@@ -47,7 +46,7 @@ const filterOptions: FilterOption[] = [
   },
   {
     id: 'run',
-    label: 'Run',
+    label: 'Two-Mile Run',
     value: 'run',
     icon: runningImage
   }
@@ -68,32 +67,26 @@ export const ExerciseFilterBar: React.FC<ExerciseFilterBarProps> = ({
               key={option.id}
               onClick={() => onFilterChange(option.value)}
               className={cn(
-                "flex items-center space-x-2 px-3 py-2 rounded-full text-sm font-semibold transition-all duration-300 whitespace-nowrap",
-                "transform hover:scale-105 active:scale-95",
-                "shadow-sm",
+                "flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-300 ease-spring",
+                "border whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-brass-gold focus:ring-offset-2",
+                "active:scale-95 transform",
                 isActive
-                  ? "bg-brass-gold text-deep-ops shadow-md"
-                  : "bg-white text-command-black hover:bg-brass-gold/10"
+                  ? "bg-deep-ops text-brass-gold border-deep-ops shadow-md"
+                  : "bg-white text-deep-ops border-deep-ops/30 hover:bg-gray-50 hover:border-deep-ops/50"
               )}
+              aria-pressed={isActive}
+              aria-label={`Filter by ${option.label}`}
             >
-              {option.icon ? (
+              {option.icon && (
                 <img 
                   src={option.icon} 
                   alt={option.label}
-                  className="w-4 h-4"
+                  className="w-4 h-4 transition-opacity"
                 />
-              ) : (
-                <div className="w-4 h-4 flex items-center justify-center">
-                  <svg 
-                    className="w-3 h-3" 
-                    fill="currentColor" 
-                    viewBox="0 0 20 20"
-                  >
-                    <circle cx="10" cy="10" r="8" />
-                  </svg>
-                </div>
               )}
-              <span>{option.label}</span>
+              <span className="text-xs font-mono uppercase tracking-wide font-medium">
+                {option.label}
+              </span>
             </button>
           );
         })}

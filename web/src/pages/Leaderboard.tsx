@@ -27,7 +27,7 @@ const exerciseDisplayNames = {
   'pushup': 'Push-ups',
   'situp': 'Sit-ups',
   'pullup': 'Pull-ups',
-  'running': 'Running'
+  'running': 'Two-Mile Run'
 } as const;
 
 // Geolocation state type
