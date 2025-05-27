@@ -1,26 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { SectionCard } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, UserCircle, LogOut, AlertTriangle, KeyRound } from 'lucide-react';
-import { updateCurrentUser, deleteCurrentUser } from '../lib/apiClient';
+import { TextField } from "@/components/ui/text-field";
+import { Loader2, UserCircle, LogOut, Settings, CheckCircle, AlertCircle } from 'lucide-react';
+import { updateCurrentUser } from '../lib/apiClient';
 import { useAuth } from '../lib/authContext';
 import { UpdateUserRequest } from '../lib/types';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import useStaggeredAnimation from '@/hooks/useStaggeredAnimation';
 
 // Check if dev auth bypass is enabled
 const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
@@ -29,6 +19,53 @@ const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYP
 interface ProfileFormData extends UpdateUserRequest {
   confirmPassword?: string;
 }
+
+// Status Alert Component
+interface StatusAlertProps {
+  message: string;
+  type: 'success' | 'error';
+  className?: string;
+}
+
+const StatusAlert: React.FC<StatusAlertProps> = ({ message, type, className }) => (
+  <div className={cn(
+    "flex items-center p-4 rounded-lg",
+    type === 'success' 
+      ? "bg-success/10 border border-success/20" 
+      : "bg-error/10 border border-error/20",
+    className
+  )}>
+    {type === 'success' ? (
+      <CheckCircle className="w-5 h-5 text-success mr-3 flex-shrink-0" />
+    ) : (
+      <AlertCircle className="w-5 h-5 text-error mr-3 flex-shrink-0" />
+    )}
+    <p className={cn(
+      "text-sm font-medium",
+      type === 'success' ? "text-success" : "text-error"
+    )}>
+      {message}
+    </p>
+  </div>
+);
+
+// Toast Notification Component
+interface ToastNotificationProps {
+  message: string;
+  visible: boolean;
+}
+
+const ToastNotification: React.FC<ToastNotificationProps> = ({ message, visible }) => (
+  <div className={cn(
+    "fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50",
+    "bg-success text-white px-6 py-3 rounded-lg shadow-lg",
+    "flex items-center space-x-2 transition-all duration-300",
+    visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
+  )}>
+    <CheckCircle className="w-5 h-5" />
+    <span className="font-medium">{message}</span>
+  </div>
+);
 
 const Profile: React.FC = () => {
   const { user, logout, isLoading: authLoading } = useAuth();
@@ -43,17 +80,33 @@ const Profile: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [passwordMessage, setPasswordMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
+  
+  // Animation states
+  const [headerVisible, setHeaderVisible] = useState(false);
+  const [sectionsVisible, setSectionsVisible] = useState(false);
+  
+  // Toast states
+  const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [showPasswordSuccessToast, setShowPasswordSuccessToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Staggered animation for sections
+  const visibleSections = useStaggeredAnimation({
+    itemCount: 3, // Edit Profile, Password Management, Account Actions
+    baseDelay: 200,
+    staggerDelay: 100
+  });
 
   // Message auto-dismiss timer
   useEffect(() => {
     if (message) {
       const timer = setTimeout(() => {
         setMessage(null);
-      }, 5000); // 5 seconds
+      }, 5000);
       
       return () => clearTimeout(timer);
     }
@@ -64,7 +117,7 @@ const Profile: React.FC = () => {
     if (passwordMessage) {
       const timer = setTimeout(() => {
         setPasswordMessage(null);
-      }, 5000); // 5 seconds
+      }, 5000);
       
       return () => clearTimeout(timer);
     }
@@ -87,20 +140,46 @@ const Profile: React.FC = () => {
     if (passwordData.password || passwordData.confirmPassword) {
       setPasswordsMatch(passwordData.password === passwordData.confirmPassword);
     } else {
-      setPasswordsMatch(true); // If both fields are empty, they technically match
+      setPasswordsMatch(true);
     }
   }, [passwordData.password, passwordData.confirmPassword]);
+
+  // Animate content in on mount
+  useEffect(() => {
+    const timer1 = setTimeout(() => setHeaderVisible(true), 100);
+    const timer2 = setTimeout(() => setSectionsVisible(true), 200);
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, []);
+
+  // Toast auto-dismiss
+  useEffect(() => {
+    if (showSuccessToast) {
+      const timer = setTimeout(() => setShowSuccessToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccessToast]);
+
+  useEffect(() => {
+    if (showPasswordSuccessToast) {
+      const timer = setTimeout(() => setShowPasswordSuccessToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showPasswordSuccessToast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setMessage(null); // Clear message on change
+    setMessage(null);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
-    setPasswordMessage(null); // Clear message on change
+    setPasswordMessage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,33 +190,31 @@ const Profile: React.FC = () => {
       return;
     }
     
-    // In dev mode with auth bypass, just simulate a successful update
     if (DEV_AUTH_BYPASS) {
       setIsSubmitting(true);
       setMessage(null);
       
-      // Simulate API delay
       setTimeout(() => {
-        // Update the mock user with the new data
         const updatedUser = { ...user, ...changes };
-        
-        // Update the user in the React Query cache
         queryClient.setQueryData(['currentUser'], updatedUser);
         
-        // Also update localStorage mock user for consistency
         if (user) {
           localStorage.setItem('userData', JSON.stringify(updatedUser));
         }
         
-        setMessage({ text: 'Profile updated successfully (Dev Mode)', type: 'success' });
+        setMessage({ text: 'Profile updated successfully', type: 'success' });
         setIsSubmitting(false);
+        
+        // Show toast
+        setToastMessage('Profile updated successfully');
+        setShowSuccessToast(true);
         
         toast({
           title: "Profile Updated",
-          description: "Your profile has been successfully updated (Dev Mode).",
+          description: "Your profile has been successfully updated.",
           variant: "default",
         });
-      }, 500);
+      }, 1000);
       
       return;
     }
@@ -149,8 +226,11 @@ const Profile: React.FC = () => {
       const updated = await updateCurrentUser(changes);
       setMessage({ text: 'Profile updated successfully', type: 'success' });
       
-      // Update the user in the React Query cache
       queryClient.setQueryData(['currentUser'], updated);
+      
+      // Show toast
+      setToastMessage('Profile updated successfully');
+      setShowSuccessToast(true);
       
       toast({
         title: "Profile Updated",
@@ -172,7 +252,6 @@ const Profile: React.FC = () => {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate passwords match if attempting to change password
     if (!passwordData.password) {
       setPasswordMessage({ text: 'Please enter a new password', type: 'error' });
       return;
@@ -183,28 +262,29 @@ const Profile: React.FC = () => {
       return;
     }
     
-    // In dev mode with auth bypass, just simulate a successful update
     if (DEV_AUTH_BYPASS) {
       setIsChangingPassword(true);
       setPasswordMessage(null);
       
-      // Simulate API delay
       setTimeout(() => {
-        setPasswordMessage({ text: 'Password updated successfully (Dev Mode)', type: 'success' });
+        setPasswordMessage({ text: 'Password updated successfully', type: 'success' });
         setIsChangingPassword(false);
         
-        // Reset password fields
         setPasswordData({
           password: '',
           confirmPassword: ''
         });
         
+        // Show toast
+        setToastMessage('Password updated successfully');
+        setShowPasswordSuccessToast(true);
+        
         toast({
           title: "Password Updated",
-          description: "Your password has been successfully updated (Dev Mode).",
+          description: "Your password has been successfully updated.",
           variant: "default",
         });
-      }, 500);
+      }, 1000);
       
       return;
     }
@@ -220,14 +300,16 @@ const Profile: React.FC = () => {
       const updated = await updateCurrentUser(changes);
       setPasswordMessage({ text: 'Password updated successfully', type: 'success' });
       
-      // Update the user in the React Query cache
       queryClient.setQueryData(['currentUser'], updated);
       
-      // Reset password fields
       setPasswordData({
         password: '',
         confirmPassword: ''
       });
+      
+      // Show toast
+      setToastMessage('Password updated successfully');
+      setShowPasswordSuccessToast(true);
       
       toast({
         title: "Password Updated",
@@ -246,49 +328,8 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    // In dev mode with auth bypass, just simulate account deletion
-    if (DEV_AUTH_BYPASS) {
-      setIsDeletingAccount(true);
-      
-      // Simulate API delay
-      setTimeout(() => {
-        toast({
-          title: "Account Deleted",
-          description: "Your account has been permanently deleted (Dev Mode).",
-          variant: "default",
-        });
-        
-        logout();
-        navigate('/login');
-      }, 1000);
-      
-      return;
-    }
-    
-    setIsDeletingAccount(true);
-    try {
-      await deleteCurrentUser();
-      toast({
-        title: "Account Deleted",
-        description: "Your account has been permanently deleted.",
-        variant: "default",
-      });
-      logout();
-      navigate('/login');
-    } catch (error) {
-      toast({
-        title: "Deletion Failed",
-        description: error instanceof Error ? error.message : 'Failed to delete account',
-        variant: "destructive",
-      });
-      setIsDeletingAccount(false);
-    }
-  };
 
 
-  
-  // Compares formData with original user data to see if anything changed
   const formDataHasChanges = (): boolean => {
     if (!user) return false;
     
@@ -300,7 +341,6 @@ const Profile: React.FC = () => {
     );
   };
   
-  // Returns only the fields that have changed compared to original user data
   const getChangedFields = (): UpdateUserRequest => {
     if (!user) return {};
     
@@ -327,224 +367,280 @@ const Profile: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className="mx-auto max-w-3xl animate-pulse space-y-6"> {/* Consistent spacing */}
-        <div className="h-8 w-1/2 rounded bg-muted"></div> {/* Header placeholder */}
-        {[1, 2, 3].map((i) => ( // Card placeholders
-          <div key={i} className="space-y-4 rounded-lg bg-muted p-6">
-            <div className="h-6 w-1/3 rounded bg-muted-foreground/20"></div>
-            <div className="h-4 w-2/3 rounded bg-muted-foreground/10"></div>
-            <div className="space-y-2 pt-2">
-              <div className="h-4 w-1/4 rounded bg-muted-foreground/10"></div>
-              <div className="h-10 rounded bg-muted-foreground/20"></div>
+      <div className="min-h-screen">
+        {/* Radial gradient background matching iOS */}
+        <div 
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at center, rgba(244, 241, 230, 0.9) 0%, rgb(244, 241, 230) 60%)`
+          }}
+        />
+        
+        <div className="relative z-10 px-4 py-8 md:py-12 lg:px-8">
+          <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
+            <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="mx-auto mb-4 size-10 animate-spin text-brass-gold"/>
+                <p className="font-heading text-lg uppercase tracking-wider text-deep-ops">Loading profile...</p>
+              </div>
             </div>
-            <div className="space-y-2 pt-2">
-              <div className="h-4 w-1/4 rounded bg-muted-foreground/10"></div>
-              <div className="h-10 rounded bg-muted-foreground/20"></div>
-            </div>
-             <div className="border-border/50 border-t pt-4">
-               <div className="h-10 w-1/4 rounded bg-muted-foreground/20"></div>
-             </div>
           </div>
-        ))}
+        </div>
       </div>
     );
   }
 
-  // If no user data and we're not bypassing auth, show the login prompt
   if (!user && !DEV_AUTH_BYPASS) {
     return (
-      <div className="mx-auto max-w-3xl space-y-6"> {/* Consistent layout */}
-        <h1 className="font-semibold text-2xl text-foreground">Profile</h1>
-        <Card>
-          <CardContent className="pt-6 text-center text-muted-foreground">
-             Please log in to view and edit your profile.
-             <Button onClick={() => navigate('/login')} className="mt-4">
-               Login
-             </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen">
+        {/* Radial gradient background */}
+        <div 
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at center, rgba(244, 241, 230, 0.9) 0%, rgb(244, 241, 230) 60%)`
+          }}
+        />
+        
+        <div className="relative z-10 px-4 py-8 md:py-12 lg:px-8">
+          <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
+            <SectionCard
+              title="Profile"
+              description="Please log in to view and edit your profile"
+            >
+              <div className="text-center py-8">
+                <Button 
+                  onClick={() => navigate('/login')} 
+                  className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
+                >
+                  LOGIN
+                </Button>
+              </div>
+            </SectionCard>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6"> {/* Reduced space, kept max-width */}
-      <h1 className="font-semibold text-2xl text-foreground">Profile</h1>
-
-      {/* Edit Profile Section */}
-      <Card className="transition-shadow hover:shadow-md"> {/* Hover effect */}
-        <CardHeader>
-          <CardTitle className="flex items-center font-semibold text-lg"> {/* Standardized */}
-              <UserCircle className="mr-2 size-5 text-muted-foreground" /> {/* Muted icon */}
-              Edit Profile
-          </CardTitle>
-          <CardDescription>Update your personal information.</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {/* Message Display */}
-             {message && (
-               <Alert variant={message.type === 'error' ? 'destructive' : 'default'} className="transition-opacity duration-300">
-                 <AlertTitle>{message.type === 'success' ? 'Success' : 'Error'}</AlertTitle>
-                 <AlertDescription>{message.text}</AlertDescription>
-               </Alert>
-             )}
-            
-            <div className="space-y-1.5"> {/* Reduced space */}
-              <Label htmlFor="first_name">First Name</Label>
-              <Input 
-                id="first_name" name="first_name"
-                value={formData.first_name || ''} onChange={handleChange} 
-                placeholder="Your first name"
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="last_name">Last Name</Label>
-              <Input 
-                id="last_name" name="last_name"
-                value={formData.last_name || ''} onChange={handleChange} 
-                placeholder="Your last name"
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="username">Username</Label>
-              <Input 
-                id="username" name="username"
-                value={formData.username || ''} onChange={handleChange} 
-                placeholder="Your unique username"
-                disabled={isSubmitting} required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" name="email"
-                type="email"
-                value={formData.email || ''} onChange={handleChange} 
-                placeholder="Your email address"
-                disabled={isSubmitting}
-              />
-            </div>
-          </CardContent>
-          <CardFooter className="border-t pt-4"> {/* Adjusted padding */}
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !formDataHasChanges()}
-              className="bg-brass-gold hover:bg-brass-gold/90"
-            >
-              {isSubmitting ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+    <div className="min-h-screen">
+      {/* Radial gradient background matching iOS */}
+      <div 
+        className="fixed inset-0 pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at center, rgba(244, 241, 230, 0.9) 0%, rgb(244, 241, 230) 60%)`
+        }}
+      />
       
-      {/* Password Management Section */}
-      <Card className="transition-shadow hover:shadow-md">
-        <CardHeader>
-          <CardTitle className="flex items-center font-semibold text-lg">
-              <KeyRound className="mr-2 size-5 text-muted-foreground" />
-              Password Management
-          </CardTitle>
-          <CardDescription>Update your password.</CardDescription>
-        </CardHeader>
-        <form onSubmit={handlePasswordSubmit}>
-          <CardContent className="space-y-4">
-            {/* Password Message Display */}
-            {passwordMessage && (
-              <Alert variant={passwordMessage.type === 'error' ? 'destructive' : 'default'} className="transition-opacity duration-300">
-                <AlertTitle>{passwordMessage.type === 'success' ? 'Success' : 'Error'}</AlertTitle>
-                <AlertDescription>{passwordMessage.text}</AlertDescription>
-              </Alert>
-            )}
-            
-            <div className="space-y-1.5">
-              <Label htmlFor="password">New Password</Label>
-              <Input 
-                id="password" name="password"
-                type="password"
-                value={passwordData.password} 
-                onChange={handlePasswordChange} 
-                placeholder="Enter your new password"
-                disabled={isChangingPassword}
-                className={!passwordsMatch && Boolean(passwordData.password) ? "border-destructive" : ""}
-              />
+      <div className="relative z-10 px-4 py-8 md:py-12 lg:px-8">
+        <div className="flex flex-col space-y-6 max-w-3xl mx-auto">
+          {/* Military-styled header matching iOS */}
+          <header className={cn(
+            "text-left transition-all duration-300 ease-out",
+            headerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+          )}>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="font-heading text-3xl md:text-4xl uppercase tracking-wider text-deep-ops font-bold">
+                  PROFILE
+                </h1>
+                
+                {/* Brass gold separator line */}
+                <div className="my-4 h-0.5 w-32 bg-brass-gold" />
+                
+                <p className="text-sm md:text-base font-semibold tracking-wide text-deep-ops uppercase">
+                  MANAGE YOUR ACCOUNT
+                </p>
+              </div>
+              
+              {/* Settings button */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="border-brass-gold/30 text-deep-ops hover:bg-brass-gold/10"
+                onClick={() => navigate('/settings')}
+              >
+                <Settings className="w-5 h-5" />
+              </Button>
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input 
-                id="confirmPassword" name="confirmPassword"
-                type="password"
-                value={passwordData.confirmPassword} 
-                onChange={handlePasswordChange} 
-                placeholder="Confirm your new password"
-                disabled={isChangingPassword}
-                className={!passwordsMatch && Boolean(passwordData.confirmPassword) ? "border-destructive" : ""}
-              />
-              {!passwordsMatch && Boolean(passwordData.password) && (
-                <p className="mt-1 text-xs text-destructive">Passwords do not match</p>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="border-t pt-4">
-            <Button 
-              type="submit" 
-              disabled={isChangingPassword || !passwordData.password || !passwordsMatch}
-              className="bg-brass-gold hover:bg-brass-gold/90"
-            >
-              {isChangingPassword ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-              {isChangingPassword ? 'Updating...' : 'Update Password'}
-            </Button>
-          </CardFooter>
-        </form>
-      </Card>
+          </header>
 
-      {/* Account Actions Section */}
-      <Card className="border-destructive/50 transition-shadow hover:shadow-md"> {/* Destructive border hint */}
-        <CardHeader>
-          <CardTitle className="flex items-center font-semibold text-lg text-destructive"> {/* Destructive color */}
-              Account Actions
-          </CardTitle>
-          <CardDescription>Manage your account.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <Button variant="destructive" onClick={logout} className="w-full sm:w-auto"> {/* Use context logout */}
-              <LogOut className="mr-2 size-4" /> Logout
-            </Button>
-            
-            {/* Delete Account button with confirmation dialog */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="ml-0 w-full border-destructive text-destructive hover:bg-destructive/10 sm:ml-2 sm:w-auto">
-                  <AlertTriangle className="mr-2 size-4" /> Delete Account
+          {/* Edit Profile Section */}
+          <div className={cn(
+            "transition-all duration-300 ease-out",
+            visibleSections[0] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          )}>
+            <SectionCard
+              title="EDIT PROFILE"
+              description="UPDATE YOUR PERSONAL INFORMATION"
+              icon={<UserCircle className="w-5 h-5" />}
+            >
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Status message */}
+                {message && (
+                  <StatusAlert 
+                    message={message.text} 
+                    type={message.type}
+                  />
+                )}
+                
+                {/* Form fields */}
+                <div className="space-y-4">
+                  <TextField
+                    label="FIRST NAME"
+                    name="first_name"
+                    value={formData.first_name || ''}
+                    onChange={handleChange}
+                    placeholder="Your first name"
+                    fullWidth
+                    disabled={isSubmitting}
+                  />
+                  
+                  <TextField
+                    label="LAST NAME"
+                    name="last_name"
+                    value={formData.last_name || ''}
+                    onChange={handleChange}
+                    placeholder="Your last name"
+                    fullWidth
+                    disabled={isSubmitting}
+                  />
+                  
+                  <TextField
+                    label="USERNAME"
+                    name="username"
+                    value={formData.username || ''}
+                    onChange={handleChange}
+                    placeholder="Your unique username"
+                    fullWidth
+                    disabled={isSubmitting}
+                    required
+                  />
+                  
+                  <TextField
+                    label="EMAIL"
+                    name="email"
+                    type="email"
+                    value={formData.email || ''}
+                    onChange={handleChange}
+                    placeholder="Your email address"
+                    fullWidth
+                    disabled={isSubmitting}
+                  />
+                </div>
+                
+                {/* Save button */}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting || !formDataHasChanges()}
+                  className={cn(
+                    "w-full bg-deep-ops text-brass-gold hover:bg-deep-ops/90",
+                    "font-semibold uppercase tracking-wider",
+                    (!isSubmitting && formDataHasChanges()) ? "opacity-100" : "opacity-60"
+                  )}
+                >
+                  {isSubmitting && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
+                  {isSubmitting ? 'SAVING...' : 'SAVE CHANGES'}
                 </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Delete Your Account?</DialogTitle>
-                  <DialogDescription>
-                    This will permanently remove your account and all associated data. This action cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button 
-                    onClick={handleDeleteAccount}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                    disabled={isDeletingAccount}
-                  >
-                    {isDeletingAccount && <Loader2 className="mr-2 size-4 animate-spin" />}
-                    {isDeletingAccount ? 'Deleting...' : 'Delete Account'}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-        </CardContent>
-      </Card>
+              </form>
+            </SectionCard>
+          </div>
+
+          {/* Password Management Section */}
+          <div className={cn(
+            "transition-all duration-300 ease-out",
+            visibleSections[1] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          )}>
+            <SectionCard
+              title="PASSWORD MANAGEMENT"
+              description="UPDATE YOUR PASSWORD REGULARLY FOR SECURITY"
+            >
+              <form onSubmit={handlePasswordSubmit} className="space-y-6">
+                {/* Password status message */}
+                {passwordMessage && (
+                  <StatusAlert 
+                    message={passwordMessage.text} 
+                    type={passwordMessage.type}
+                  />
+                )}
+                
+                {/* Password fields */}
+                <div className="space-y-4">
+                  <TextField
+                    label="NEW PASSWORD"
+                    name="password"
+                    type="password"
+                    value={passwordData.password}
+                    onChange={handlePasswordChange}
+                    placeholder="Enter new password"
+                    fullWidth
+                    disabled={isChangingPassword}
+                    error={!passwordsMatch && Boolean(passwordData.password)}
+                  />
+                  
+                  <TextField
+                    label="CONFIRM PASSWORD"
+                    name="confirmPassword"
+                    type="password"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    placeholder="Confirm new password"
+                    fullWidth
+                    disabled={isChangingPassword}
+                    error={!passwordsMatch && Boolean(passwordData.confirmPassword)}
+                    errorMessage={!passwordsMatch && Boolean(passwordData.password) ? "Passwords do not match" : undefined}
+                  />
+                </div>
+                
+                {/* Change Password button */}
+                <Button
+                  type="submit"
+                  disabled={isChangingPassword || !passwordData.password || !passwordsMatch}
+                  className={cn(
+                    "w-full bg-deep-ops text-brass-gold hover:bg-deep-ops/90",
+                    "font-semibold uppercase tracking-wider",
+                    (passwordData.password && passwordsMatch && !isChangingPassword) ? "opacity-100" : "opacity-60"
+                  )}
+                >
+                  {isChangingPassword && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
+                  {isChangingPassword ? 'UPDATING...' : 'CHANGE PASSWORD'}
+                </Button>
+              </form>
+            </SectionCard>
+          </div>
+
+          {/* Account Actions Section */}
+          <div className={cn(
+            "transition-all duration-300 ease-out",
+            visibleSections[2] ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          )}>
+            <SectionCard
+              title="ACCOUNT ACTIONS"
+              description="MANAGE YOUR ACCOUNT SESSION"
+            >
+                             <div className="space-y-4">
+                 <Button
+                   onClick={() => {
+                     logout();
+                     navigate('/login');
+                   }}
+                   variant="outline"
+                   className="w-full border-error text-error hover:bg-error/10 font-semibold uppercase tracking-wider"
+                 >
+                   <LogOut className="mr-2 w-4 h-4" />
+                   LOG OUT
+                 </Button>
+               </div>
+            </SectionCard>
+          </div>
+        </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <ToastNotification 
+        message={toastMessage}
+        visible={showSuccessToast || showPasswordSuccessToast}
+      />
     </div>
   );
 };
