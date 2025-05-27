@@ -35,7 +35,8 @@ struct LeaderboardView: View {
     init(viewModel: LeaderboardViewModel, viewId: String) {
         self.viewModel = viewModel
         self.viewId = viewId
-        logger.debug("Initialized LeaderboardView with ID: \(viewId)")
+        // Use the new logging extension to prevent spam
+        logDebug("Initialized LeaderboardView with ID: \(viewId)")
     }
     
     // Function to get formatted title - breaking up complex expression
@@ -101,14 +102,14 @@ struct LeaderboardView: View {
                 }
                 .refreshable {
                     impactFeedback.impactOccurred()
-                    await viewModel.fetch()
+                    await viewModel.fetchWithDebouncing()
                 }
             }
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 animateContentIn()
                 fetchTask = Task {
-                    await viewModel.fetch()
+                    await viewModel.fetchWithDebouncing()
                 }
             }
             .onDisappear {
@@ -300,7 +301,7 @@ struct LeaderboardView: View {
             
             PTButton("RETRY", style: PTButton.ButtonStyle.primary, action: {
                 impactFeedback.impactOccurred()
-                Task { await viewModel.fetch() }
+                Task { await viewModel.fetchWithDebouncing() }
             })
             .padding(.horizontal, 40)
             .padding(.top, 8)
@@ -383,7 +384,7 @@ struct LeaderboardView: View {
         }
         
         fetchTask = Task {
-            await viewModel.fetch()
+            await viewModel.fetchWithDebouncing()
         }
     }
     

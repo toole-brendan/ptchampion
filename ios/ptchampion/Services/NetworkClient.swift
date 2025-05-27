@@ -38,6 +38,11 @@ struct NetworkClientEmptyResponse: Decodable {}
 class NetworkClient {
 
     private let baseURL: URL
+    
+    // Public property to access base URL
+    var apiBaseURL: String {
+        return baseURL.absoluteString
+    }
 
     // Read Base URL from Info.plist
     private static func getBaseURL() -> URL {

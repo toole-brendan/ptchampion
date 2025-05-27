@@ -194,6 +194,10 @@
 		BFF57A5D2DE52EB200B65EFF /* EnhancedFeedbackManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A5B2DE52EB200B65EFF /* EnhancedFeedbackManager.swift */; };
 		BFF57A5E2DE52EB200B65EFF /* StartingPositionValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A5C2DE52EB200B65EFF /* StartingPositionValidator.swift */; };
 		BFF57A602DE52EDC00B65EFF /* StartingPositionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A5F2DE52EDC00B65EFF /* StartingPositionOverlay.swift */; };
+		BFF57A622DE5FD1E00B65EFF /* LeaderboardView+Fix.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A612DE5FD1E00B65EFF /* LeaderboardView+Fix.swift */; };
+		BFF57A662DE5FD4200B65EFF /* AppInitializationFix.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A632DE5FD4200B65EFF /* AppInitializationFix.swift */; };
+		BFF57A672DE5FD4200B65EFF /* ConsoleLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A642DE5FD4200B65EFF /* ConsoleLogger.swift */; };
+		BFF57A6A2DE5FD5800B65EFF /* AuthenticationFix.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A692DE5FD5800B65EFF /* AuthenticationFix.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -404,6 +408,10 @@
 		BFF57A5B2DE52EB200B65EFF /* EnhancedFeedbackManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedFeedbackManager.swift; sourceTree = "<group>"; };
 		BFF57A5C2DE52EB200B65EFF /* StartingPositionValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartingPositionValidator.swift; sourceTree = "<group>"; };
 		BFF57A5F2DE52EDC00B65EFF /* StartingPositionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartingPositionOverlay.swift; sourceTree = "<group>"; };
+		BFF57A612DE5FD1E00B65EFF /* LeaderboardView+Fix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LeaderboardView+Fix.swift"; sourceTree = "<group>"; };
+		BFF57A632DE5FD4200B65EFF /* AppInitializationFix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppInitializationFix.swift; sourceTree = "<group>"; };
+		BFF57A642DE5FD4200B65EFF /* ConsoleLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConsoleLogger.swift; sourceTree = "<group>"; };
+		BFF57A692DE5FD5800B65EFF /* AuthenticationFix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationFix.swift; sourceTree = "<group>"; };
 		C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.release.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.release.xcconfig"; sourceTree = "<group>"; };
 		D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ptchampion.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.debug.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.debug.xcconfig"; sourceTree = "<group>"; };
@@ -641,6 +649,8 @@
 		BF63E40E2DB1EB650037CD02 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A632DE5FD4200B65EFF /* AppInitializationFix.swift */,
+				BFF57A642DE5FD4200B65EFF /* ConsoleLogger.swift */,
 				BF59ACB62DDD531C00242910 /* PoseValidationHelper.swift */,
 				BFADF99F2DC93D280016AF0B /* AppAppearance.swift */,
 				BFADF9A02DC93D280016AF0B /* UIColorContrastChecker.swift */,
@@ -651,6 +661,7 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A692DE5FD5800B65EFF /* AuthenticationFix.swift */,
 				BFF57A5B2DE52EB200B65EFF /* EnhancedFeedbackManager.swift */,
 				BFF57A5C2DE52EB200B65EFF /* StartingPositionValidator.swift */,
 				BFF57A512DE5217C00B65EFF /* CalibrationStrategy.swift */,
@@ -727,6 +738,7 @@
 		BF63E43B2DB1EB980037CD02 /* Leaderboards */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A612DE5FD1E00B65EFF /* LeaderboardView+Fix.swift */,
 				BF7960E62DCFD2CE00B03835 /* LeaderboardFilterBarView.swift */,
 				BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */,
 				BFADF9BD2DC93DE90016AF0B /* LeaderboardRowPlaceholder.swift */,
@@ -1203,6 +1215,7 @@
 				BFADF9BA2DC93D890016AF0B /* WorkoutCard.swift in Sources */,
 				BF89EB492DC98E8A003F8FE3 /* CommonNetworkTypes.swift in Sources */,
 				BF59ACD02DDFD3B900242910 /* TabBarVisibilityManager.swift in Sources */,
+				BFF57A622DE5FD1E00B65EFF /* LeaderboardView+Fix.swift in Sources */,
 				BF7B49C52DD567C500B50FE6 /* ScreenLayout.swift in Sources */,
 				BF199EBF2DCE228800E23EFF /* UserProfileViewModel.swift in Sources */,
 				BFADF9BB2DC93D890016AF0B /* MetricCard.swift in Sources */,
@@ -1241,6 +1254,7 @@
 				BF63E42D2DB1EB830037CD02 /* LeaderboardServiceProtocol.swift in Sources */,
 				BFF57A602DE52EDC00B65EFF /* StartingPositionOverlay.swift in Sources */,
 				BF63E42E2DB1EB830037CD02 /* KeychainServiceProtocol.swift in Sources */,
+				BFF57A6A2DE5FD5800B65EFF /* AuthenticationFix.swift in Sources */,
 				BF7B49C72DD56EB600B50FE6 /* EmptyHistoryDisplayView.swift in Sources */,
 				BF199EB72DCD8CFE00E23EFF /* UserProfileView.swift in Sources */,
 				BF63E42F2DB1EB830037CD02 /* WorkoutService.swift in Sources */,
@@ -1248,6 +1262,8 @@
 				BF8F67912DC928E40065A2D7 /* CameraPermissionRequestView.swift in Sources */,
 				BF59ACF52DE0FA7200242910 /* WorkoutSessionViewModel+Calibration.swift in Sources */,
 				BFBF2EC82DCFF6B900FFCF4F /* FitnessDeviceModels.swift in Sources */,
+				BFF57A662DE5FD4200B65EFF /* AppInitializationFix.swift in Sources */,
+				BFF57A672DE5FD4200B65EFF /* ConsoleLogger.swift in Sources */,
 				BFBF2EC92DCFF6B900FFCF4F /* RunMetricSample.swift in Sources */,
 				BF63E4302DB1EB830037CD02 /* CameraServiceProtocol.swift in Sources */,
 				BF63E4312DB1EB830037CD02 /* KeychainService.swift in Sources */,
