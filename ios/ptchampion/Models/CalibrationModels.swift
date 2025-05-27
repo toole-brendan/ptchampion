@@ -345,60 +345,69 @@ struct TargetFraming {
         case .pushup:
             return TargetFraming(
                 exercise: exercise,
-                bodyParts: [VNHumanBodyPoseObservation.JointName.leftShoulder, 
-                           VNHumanBodyPoseObservation.JointName.rightShoulder, 
-                           VNHumanBodyPoseObservation.JointName.leftElbow, 
-                           VNHumanBodyPoseObservation.JointName.rightElbow, 
-                           VNHumanBodyPoseObservation.JointName.leftWrist, 
-                           VNHumanBodyPoseObservation.JointName.rightWrist, 
-                           VNHumanBodyPoseObservation.JointName.leftHip, 
-                           VNHumanBodyPoseObservation.JointName.rightHip, 
-                           VNHumanBodyPoseObservation.JointName.leftAnkle, 
-                           VNHumanBodyPoseObservation.JointName.rightAnkle],
-                optimalDistance: 0.7,
-                acceptableDistanceRange: 0.5...0.9,
-                verticalCenterRange: 0.4...0.6,
-                horizontalCenterRange: 0.3...0.7,
-                minBodyCoverage: 0.8
+                bodyParts: [
+                    VNHumanBodyPoseObservation.JointName.leftShoulder, 
+                    VNHumanBodyPoseObservation.JointName.rightShoulder, 
+                    VNHumanBodyPoseObservation.JointName.leftElbow, 
+                    VNHumanBodyPoseObservation.JointName.rightElbow, 
+                    VNHumanBodyPoseObservation.JointName.leftWrist, 
+                    VNHumanBodyPoseObservation.JointName.rightWrist, 
+                    VNHumanBodyPoseObservation.JointName.leftHip, 
+                    VNHumanBodyPoseObservation.JointName.rightHip, 
+                    VNHumanBodyPoseObservation.JointName.leftAnkle, 
+                    VNHumanBodyPoseObservation.JointName.rightAnkle
+                ],
+                optimalDistance: 1.5,              // Changed from 0.7
+                acceptableDistanceRange: 1.2...2.0, // Changed from 0.5...0.9
+                verticalCenterRange: 0.4...0.6,     // Keep the same
+                horizontalCenterRange: 0.2...0.8,   // Changed from 0.3...0.7
+                minBodyCoverage: 0.7                // Changed from 0.8
             )
+            
         case .situp:
             return TargetFraming(
                 exercise: exercise,
-                bodyParts: [VNHumanBodyPoseObservation.JointName.leftShoulder, 
-                           VNHumanBodyPoseObservation.JointName.rightShoulder, 
-                           VNHumanBodyPoseObservation.JointName.leftElbow, 
-                           VNHumanBodyPoseObservation.JointName.rightElbow,
-                           VNHumanBodyPoseObservation.JointName.leftHip, 
-                           VNHumanBodyPoseObservation.JointName.rightHip, 
-                           VNHumanBodyPoseObservation.JointName.leftKnee, 
-                           VNHumanBodyPoseObservation.JointName.rightKnee, 
-                           VNHumanBodyPoseObservation.JointName.nose],
-                optimalDistance: 0.6,
-                acceptableDistanceRange: 0.4...0.8,
-                verticalCenterRange: 0.3...0.7,
-                horizontalCenterRange: 0.3...0.7,
-                minBodyCoverage: 0.75
+                bodyParts: [
+                    VNHumanBodyPoseObservation.JointName.leftShoulder, 
+                    VNHumanBodyPoseObservation.JointName.rightShoulder, 
+                    VNHumanBodyPoseObservation.JointName.leftElbow, 
+                    VNHumanBodyPoseObservation.JointName.rightElbow,
+                    VNHumanBodyPoseObservation.JointName.leftHip, 
+                    VNHumanBodyPoseObservation.JointName.rightHip, 
+                    VNHumanBodyPoseObservation.JointName.leftKnee, 
+                    VNHumanBodyPoseObservation.JointName.rightKnee, 
+                    VNHumanBodyPoseObservation.JointName.nose
+                ],
+                optimalDistance: 1.4,               // Changed from 0.6
+                acceptableDistanceRange: 1.1...1.9, // Changed from 0.4...0.8
+                verticalCenterRange: 0.25...0.75,   // Changed from 0.3...0.7
+                horizontalCenterRange: 0.2...0.8,   // Changed from 0.3...0.7
+                minBodyCoverage: 0.65               // Changed from 0.75
             )
+            
         case .pullup:
             return TargetFraming(
                 exercise: exercise,
-                bodyParts: [VNHumanBodyPoseObservation.JointName.leftShoulder, 
-                           VNHumanBodyPoseObservation.JointName.rightShoulder, 
-                           VNHumanBodyPoseObservation.JointName.leftElbow, 
-                           VNHumanBodyPoseObservation.JointName.rightElbow,
-                           VNHumanBodyPoseObservation.JointName.leftWrist, 
-                           VNHumanBodyPoseObservation.JointName.rightWrist, 
-                           VNHumanBodyPoseObservation.JointName.leftHip, 
-                           VNHumanBodyPoseObservation.JointName.rightHip, 
-                           VNHumanBodyPoseObservation.JointName.leftKnee, 
-                           VNHumanBodyPoseObservation.JointName.rightKnee, 
-                           VNHumanBodyPoseObservation.JointName.nose],
-                optimalDistance: 0.8,
-                acceptableDistanceRange: 0.6...1.0,
-                verticalCenterRange: 0.2...0.8,
-                horizontalCenterRange: 0.3...0.7,
-                minBodyCoverage: 0.85
+                bodyParts: [
+                    VNHumanBodyPoseObservation.JointName.leftShoulder, 
+                    VNHumanBodyPoseObservation.JointName.rightShoulder, 
+                    VNHumanBodyPoseObservation.JointName.leftElbow, 
+                    VNHumanBodyPoseObservation.JointName.rightElbow,
+                    VNHumanBodyPoseObservation.JointName.leftWrist, 
+                    VNHumanBodyPoseObservation.JointName.rightWrist, 
+                    VNHumanBodyPoseObservation.JointName.leftHip, 
+                    VNHumanBodyPoseObservation.JointName.rightHip, 
+                    VNHumanBodyPoseObservation.JointName.leftKnee, 
+                    VNHumanBodyPoseObservation.JointName.rightKnee, 
+                    VNHumanBodyPoseObservation.JointName.nose
+                ],
+                optimalDistance: 1.6,               // Changed from 0.8
+                acceptableDistanceRange: 1.3...2.2, // Changed from 0.6...1.0
+                verticalCenterRange: 0.15...0.85,   // Changed from 0.2...0.8
+                horizontalCenterRange: 0.2...0.8,   // Changed from 0.3...0.7
+                minBodyCoverage: 0.75               // Changed from 0.85
             )
+            
         case .run, .unknown:
             // Running doesn't use pose detection calibration
             return TargetFraming(

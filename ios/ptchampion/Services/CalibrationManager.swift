@@ -417,7 +417,7 @@ class CalibrationManager: NSObject, ObservableObject {
               let rightShoulder = body.point(.rightShoulder),
               let leftHip = body.point(.leftHip),
               let rightHip = body.point(.rightHip) else {
-            return 0.5 // Default medium size
+            return 1.5 // Updated default to match new optimal distance
         }
         
         // Calculate shoulder width and torso height
@@ -425,8 +425,12 @@ class CalibrationManager: NSObject, ObservableObject {
         let hipWidth = leftHip.distance(to: rightHip)
         let torsoHeight = abs(leftShoulder.location.y - leftHip.location.y)
         
-        // Combine measurements for overall body size estimate
-        return Float((shoulderWidth + hipWidth + torsoHeight) / 3.0)
+        // ADJUSTED CALCULATION for better close-range detection
+        // Weight torso height more heavily as it's more reliable at close range
+        let bodySize = Float((shoulderWidth * 0.3 + hipWidth * 0.3 + torsoHeight * 0.4))
+        
+        // Apply scaling factor to match new distance ranges
+        return bodySize * 2.2  // Scaling factor to align with new ranges
     }
     
     // MARK: - Calibration Frame Creation
@@ -945,6 +949,58 @@ class CalibrationManager: NSObject, ObservableObject {
         // Stop camera session if running
         if cameraSession.isRunning {
             cameraSession.stopRunning()
+        }
+    }
+}
+
+// MARK: - Orientation Handling
+extension CalibrationManager {
+    
+    /// Adjust target framing based on device orientation
+    private func adjustTargetFramingForOrientation(_ baseFraming: TargetFraming) -> TargetFraming {
+        let orientation = UIDevice.current.orientation
+        
+        // Determine if we're in landscape mode
+        let isLandscape = orientation.isLandscape || 
+            (orientation.isFlat && UIScreen.main.bounds.width > UIScreen.main.bounds.height)
+        
+        if isLandscape {
+            // In landscape, we have more horizontal space but less vertical
+            return TargetFraming(
+                exercise: baseFraming.exercise,
+                bodyParts: baseFraming.bodyParts,
+                optimalDistance: baseFraming.optimalDistance * 1.1, // Slightly further in landscape
+                acceptableDistanceRange: 
+                    (baseFraming.acceptableDistanceRange.lowerBound * 1.1)...
+                    (baseFraming.acceptableDistanceRange.upperBound * 1.2),
+                // Adjust ranges for landscape aspect ratio
+                verticalCenterRange: 0.25...0.75,  // Tighter vertical range
+                horizontalCenterRange: 0.15...0.85, // Wider horizontal range
+                minBodyCoverage: baseFraming.minBodyCoverage * 0.9 // Slightly more forgiving
+            )
+        } else {
+            // Portrait mode - return base framing with minor adjustments
+            return baseFraming
+        }
+    }
+    
+    /// Override getTargetFraming to include orientation awareness
+    func getTargetFraming(for exercise: ExerciseType) -> TargetFraming {
+        let baseFraming = TargetFraming.getTargetFraming(for: exercise)
+        return adjustTargetFramingForOrientation(baseFraming)
+    }
+    
+    /// Re-evaluate framing with current orientation
+    func reevaluateFraming() {
+        guard let lastBody = calibrationFrames.last?.poseData else { return }
+        
+        // Re-evaluate with current orientation
+        let framing = evaluateFraming(lastBody)
+        
+        DispatchQueue.main.async { [weak self] in
+            self?.currentFraming = framing
+            self?.isFramingAcceptable = framing.isAcceptable
+            self?.generateSuggestions(for: lastBody, framing: framing)
         }
     }
 }

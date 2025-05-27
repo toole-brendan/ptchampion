@@ -7,6 +7,7 @@ struct CalibrationView: View {
     @State private var calibrationPhase: CalibrationPhase = .positioning
     @State private var frameAnalysisProgress: Double = 0
     @State private var showingCompletionSheet = false
+    @State private var currentOrientation = UIDevice.current.orientation
     @Environment(\.dismiss) private var dismiss
     
     let exercise: ExerciseType
@@ -125,6 +126,13 @@ struct CalibrationView: View {
         }
         .onDisappear {
             calibrationManager.stopCalibration()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+            withAnimation(.easeInOut(duration: 0.3)) {
+                currentOrientation = UIDevice.current.orientation
+                // Force recalculation of framing
+                calibrationManager.reevaluateFraming()
+            }
         }
         .onChange(of: calibrationManager.calibrationData) { calibrationData in
             if calibrationData != nil && calibrationPhase != .complete {

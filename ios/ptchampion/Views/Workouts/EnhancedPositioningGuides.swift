@@ -409,6 +409,21 @@ struct DistanceIndicatorBar: View {
     let targetRange: ClosedRange<Float>
     let optimalDistance: Float
     
+    private func estimateDistance(from framing: FramingStatus) -> Float {
+        switch framing {
+        case .tooClose:
+            return 1.0  // ~3 feet
+        case .tooFar:
+            return 2.5  // ~8 feet
+        case .optimal:
+            return 1.5  // ~5 feet
+        case .acceptable:
+            return 1.6  // ~5.5 feet
+        default:
+            return 1.5
+        }
+    }
+    
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
@@ -443,8 +458,25 @@ struct DistanceIndicatorBar: View {
                     )
                     .offset(x: currentPosition - 10)
                 
-                // Labels
+                // Add distance labels
                 VStack {
+                    HStack {
+                        Text("3 ft")
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.5))
+                        Spacer()
+                        Text("5 ft")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                            .fontWeight(.bold)
+                        Spacer()
+                        Text("8 ft")
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.bottom, 4)
+                    Spacer()
                     HStack {
                         Text("Too Close")
                             .font(.caption)
@@ -460,7 +492,6 @@ struct DistanceIndicatorBar: View {
                     }
                     .padding(.horizontal, 8)
                     .padding(.top, 4)
-                    Spacer()
                 }
             }
         }
