@@ -19,8 +19,6 @@ struct WorkoutSessionView: View {
     @Environment(\.dismiss) private var dismiss
     
     // Add new state objects for simplified calibration
-    @StateObject private var quickCalibrationManager = QuickCalibrationManager()
-    @StateObject private var fullBodyFramingValidator = FullBodyFramingValidator()
     @StateObject private var startingPositionValidator = StartingPositionValidator()
     
     // New state for position-based auto-start
@@ -62,8 +60,7 @@ struct WorkoutSessionView: View {
             if showPositionGuide && viewModel.workoutState == .ready {
                 FullBodyFramingGuideView(
                     exercise: exerciseType,
-                    orientation: UIDevice.current.orientation,
-                    framingValidator: fullBodyFramingValidator
+                    orientation: UIDevice.current.orientation
                 )
                 .transition(.opacity)
             }
@@ -171,12 +168,8 @@ struct WorkoutSessionView: View {
                 viewModel.modelContext = modelContext
             }
             
-            // Quick calibration setup
-            quickCalibrationManager.quickSetup(for: exerciseType)
-            quickCalibrationManager.cameraService = viewModel.cameraService as? CameraService
-            
-            // Apply quick calibration to view model
-            viewModel.applyQuickCalibration(from: quickCalibrationManager)
+            // Apply quick calibration to view model (using simplified approach)
+            viewModel.applyQuickCalibration(from: "simplified")
             
             // Register for rotation events with improved debouncing
             NotificationCenter.default.addObserver(
@@ -194,7 +187,7 @@ struct WorkoutSessionView: View {
                     if !viewModel.isRecalibrating {
                         viewModel.handleOrientationChange()
                         // Update quick calibration for new orientation
-                        viewModel.updateQuickCalibrationForOrientation(quickCalibrationManager)
+                        viewModel.updateQuickCalibrationForOrientation("simplified")
                     }
                 }
             }
@@ -472,7 +465,6 @@ struct WorkoutSessionView: View {
         
         // Reset validators
         startingPositionValidator.reset()
-        fullBodyFramingValidator.reset()
         
         print("DEBUG: [WorkoutSessionView] Started position checking")
     }
@@ -483,19 +475,15 @@ struct WorkoutSessionView: View {
             return
         }
         
-        // Step 1: Check full body framing
-        let isFramedCorrectly = fullBodyFramingValidator.validateFraming(
-            body: body,
-            exercise: exerciseType,
-            orientation: UIDevice.current.orientation
-        )
+        // Simplified position checking - just check if body is detected
+        let isFramedCorrectly = body.allPoints.count > 5 // Basic check for body detection
         
         guard isFramedCorrectly else {
             positionHoldProgress = 0.0
             return
         }
         
-        // Step 2: Check starting position
+        // Check starting position
         startingPositionValidator.validatePosition(body: body, exerciseType: exerciseType)
         
         if startingPositionValidator.isInPosition {

@@ -100,197 +100,65 @@ struct EnhancedPositionHoldProgressView: View {
     let isInCorrectPosition: Bool
     
     @State private var pulseAnimation = false
-    @State private var glowAnimation = false
     
     var body: some View {
-        VStack(spacing: 20) {
-            // Main progress indicator
+        VStack(spacing: 16) {
+            // Main progress circle
             ZStack {
-                // Outer glow ring (when in correct position)
-                if isInCorrectPosition {
-                    Circle()
-                        .stroke(Color.green.opacity(0.3), lineWidth: 4)
-                        .frame(width: 140, height: 140)
-                        .scaleEffect(glowAnimation ? 1.1 : 1.0)
-                        .opacity(glowAnimation ? 0.5 : 0.8)
-                }
-                
                 // Background circle
                 Circle()
-                    .stroke(Color.white.opacity(0.2), lineWidth: 6)
+                    .stroke(Color.white.opacity(0.3), lineWidth: 8)
                     .frame(width: 120, height: 120)
                 
                 // Progress circle
                 Circle()
                     .trim(from: 0, to: CGFloat(progress))
                     .stroke(
-                        progressGradient,
-                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                isInCorrectPosition ? .green : .orange,
+                                isInCorrectPosition ? .blue : .red
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
                     )
                     .frame(width: 120, height: 120)
                     .rotationEffect(.degrees(-90))
-                    .animation(.easeOut(duration: 0.3), value: progress)
+                    .animation(.easeInOut(duration: 0.3), value: progress)
                 
-                // Center icon and percentage
-                VStack(spacing: 6) {
-                    Image(systemName: centerIcon)
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundColor(iconColor)
-                        .scaleEffect(pulseAnimation ? 1.15 : 1.0)
-                    
-                    Text("\(Int(progress * 100))%")
-                        .font(.system(size: 18, weight: .bold))
+                // Center content
+                VStack(spacing: 4) {
+                    Text("\(Int(timeRemaining))")
+                        .font(.title)
+                        .fontWeight(.bold)
                         .foregroundColor(.white)
+                    
+                    Text("seconds")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
                 }
+                .scaleEffect(pulseAnimation ? 1.1 : 1.0)
+                .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true), value: pulseAnimation)
             }
             
-            // Status and instruction
-            VStack(spacing: 8) {
-                Text(statusText)
-                    .font(.title3)
-                    .fontWeight(.bold)
-                    .foregroundColor(statusColor)
-                
-                Text(instructionText)
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.9))
-                    .multilineTextAlignment(.center)
-                
-                // Time remaining (only when actively progressing)
-                if progress > 0 && isInCorrectPosition {
-                    HStack(spacing: 6) {
-                        Image(systemName: "timer")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
-                        
-                        Text("\(String(format: "%.1f", timeRemaining))s")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white.opacity(0.7))
-                    }
-                    .padding(.top, 4)
-                }
-            }
-        }
-        .padding(24)
-        .background(
-            RoundedRectangle(cornerRadius: 24)
-                .fill(backgroundColor)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(borderGradient, lineWidth: 2)
+            // Status text
+            Text(isInCorrectPosition ? "Hold Position" : "Get in Position")
+                .font(.headline)
+                .fontWeight(.semibold)
+                .foregroundColor(.white)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .fill(isInCorrectPosition ? Color.green.opacity(0.8) : Color.orange.opacity(0.8))
                 )
-        )
-        .shadow(color: .black.opacity(0.4), radius: 15, x: 0, y: 8)
+        }
         .onAppear {
-            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+            withAnimation {
                 pulseAnimation = true
             }
-            
-            if isInCorrectPosition {
-                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                    glowAnimation = true
-                }
-            }
-        }
-        .onChange(of: isInCorrectPosition) { _, newValue in
-            if newValue {
-                withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
-                    glowAnimation = true
-                }
-            } else {
-                glowAnimation = false
-            }
-        }
-        .scaleEffect(progress > 0.9 ? 1.02 : 1.0)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: progress)
-    }
-    
-    // MARK: - Computed Properties
-    
-    private var progressGradient: LinearGradient {
-        if isInCorrectPosition {
-            return LinearGradient(
-                gradient: Gradient(colors: [.green, .blue]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        } else {
-            return LinearGradient(
-                gradient: Gradient(colors: [.orange, .red]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
-    }
-    
-    private var centerIcon: String {
-        if progress >= 1.0 {
-            return "checkmark.circle.fill"
-        } else if isInCorrectPosition {
-            return "figure.stand"
-        } else {
-            return "exclamationmark.triangle.fill"
-        }
-    }
-    
-    private var iconColor: Color {
-        if progress >= 1.0 {
-            return .green
-        } else if isInCorrectPosition {
-            return .white
-        } else {
-            return .orange
-        }
-    }
-    
-    private var statusText: String {
-        if progress >= 1.0 {
-            return "Ready!"
-        } else if isInCorrectPosition {
-            return "Hold Position"
-        } else {
-            return "Get in Position"
-        }
-    }
-    
-    private var statusColor: Color {
-        if progress >= 1.0 {
-            return .green
-        } else if isInCorrectPosition {
-            return .white
-        } else {
-            return .orange
-        }
-    }
-    
-    private var instructionText: String {
-        if progress >= 1.0 {
-            return "Starting workout..."
-        } else if isInCorrectPosition {
-            return "Stay in starting position"
-        } else {
-            return "Move to starting position"
-        }
-    }
-    
-    private var backgroundColor: Color {
-        Color.black.opacity(0.85)
-    }
-    
-    private var borderGradient: LinearGradient {
-        if isInCorrectPosition {
-            return LinearGradient(
-                gradient: Gradient(colors: [.green.opacity(0.6), .blue.opacity(0.6)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        } else {
-            return LinearGradient(
-                gradient: Gradient(colors: [.orange.opacity(0.6), .red.opacity(0.6)]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
         }
     }
 }

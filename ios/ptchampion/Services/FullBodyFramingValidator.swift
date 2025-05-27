@@ -2,18 +2,18 @@ import Foundation
 import Vision
 import UIKit
 
-public class FullBodyFramingValidator: ObservableObject {
+class FullBodyFramingValidator: ObservableObject {
     @Published var framingStatus: FramingStatus = .notDetected
     @Published var guideFeedback: String = "Position yourself in frame"
     @Published var requiredAdjustment: FramingAdjustment = .none
     
-    public enum FramingStatus {
+    enum FramingStatus {
         case perfect
         case needsAdjustment
         case notDetected
     }
     
-    public enum FramingAdjustment {
+    enum FramingAdjustment {
         case none
         case moveCloser
         case moveBack

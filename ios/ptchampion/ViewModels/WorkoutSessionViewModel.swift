@@ -767,6 +767,167 @@ class WorkoutSessionViewModel: ObservableObject {
         }
         return false
     }
+    
+    // MARK: - Simplified Calibration Methods
+    var isQuickCalibrated: Bool {
+        // Always return true since we use quick calibration with smart defaults
+        return true
+    }
+    
+    func applyQuickCalibration(from manager: Any) {
+        print("DEBUG: [WorkoutSessionViewModel] Applying quick calibration for \(exerciseType.displayName)")
+        
+        // Create a simplified calibration data using default values
+        let quickCalibrationData = createQuickCalibrationData()
+        
+        // Apply to real-time feedback manager
+        realTimeFeedbackManager.startFeedback(for: exerciseType, with: quickCalibrationData)
+        
+        // Update grader with calibration data if supported
+        if let calibratableGrader = exerciseGrader as? CalibratableExerciseGrader {
+            calibratableGrader.applyCalibration(quickCalibrationData)
+        }
+        
+        print("DEBUG: [WorkoutSessionViewModel] Quick calibration applied successfully")
+    }
+    
+    private func createQuickCalibrationData() -> CalibrationData {
+        // Create default angle adjustments based on exercise type and current orientation
+        let currentOrientation = UIDevice.current.orientation
+        let angleAdjustments = createDefaultAngleAdjustments(for: exerciseType, orientation: currentOrientation)
+        
+        // Create default visibility thresholds
+        let visibilityThresholds = VisibilityThresholds(
+            minimumConfidence: 0.5,
+            criticalJoints: 0.6,
+            supportJoints: 0.4,
+            faceJoints: 0.3
+        )
+        
+        // Create default pose normalization
+        let poseNormalization = PoseNormalization(
+            shoulderWidth: 0.4,
+            hipWidth: 0.3,
+            armLength: 0.6,
+            legLength: 0.8,
+            headSize: 0.15
+        )
+        
+        // Create default validation ranges
+        let validationRanges = ValidationRanges(
+            angleTolerances: [
+                "pushup_elbow": 15.0,
+                "situp_torso": 20.0,
+                "pullup_arm": 15.0,
+                "body_alignment": 25.0
+            ],
+            positionTolerances: [
+                "horizontal_drift": 0.15,
+                "vertical_drift": 0.15,
+                "distance_variation": 0.25
+            ],
+            movementThresholds: [
+                "max_speed": 35.0,
+                "min_speed": 1.5,
+                "stability_window": 6.0
+            ]
+        )
+        
+        return CalibrationData(
+            id: UUID(),
+            timestamp: Date(),
+            exercise: exerciseType,
+            deviceHeight: 1.0, // Default height
+            deviceAngle: currentOrientation.isLandscape ? 90.0 : 0.0,
+            deviceDistance: getDefaultOptimalDistance(for: exerciseType),
+            deviceStability: 0.8, // Assume good stability for quick calibration
+            userHeight: 1.7, // Average height
+            armSpan: 1.7, // Approximate arm span
+            torsoLength: 0.6, // Approximate torso length
+            legLength: 0.9, // Approximate leg length
+            angleAdjustments: angleAdjustments,
+            visibilityThresholds: visibilityThresholds,
+            poseNormalization: poseNormalization,
+            calibrationScore: 75.0, // Good default score
+            confidenceLevel: 0.75,
+            frameCount: 0, // No frames collected for quick calibration
+            validationRanges: validationRanges
+        )
+    }
+    
+    private func createDefaultAngleAdjustments(for exercise: ExerciseType, orientation: UIDeviceOrientation) -> AngleAdjustments {
+        // Adjust angles based on exercise and orientation
+        let orientationAdjustment: Float = orientation.isLandscape ? 5.0 : 0.0
+        
+        switch exercise {
+        case .pushup:
+            return AngleAdjustments(
+                pushupElbowUp: 170.0 + orientationAdjustment,
+                pushupElbowDown: 90.0 - orientationAdjustment,
+                pushupBodyAlignment: 20.0 + orientationAdjustment,
+                situpTorsoUp: 90.0,
+                situpTorsoDown: 45.0,
+                situpKneeAngle: 90.0,
+                pullupArmExtended: 170.0,
+                pullupArmFlexed: 90.0,
+                pullupBodyVertical: 15.0
+            )
+        case .situp:
+            return AngleAdjustments(
+                pushupElbowUp: 170.0,
+                pushupElbowDown: 90.0,
+                pushupBodyAlignment: 20.0,
+                situpTorsoUp: 90.0 + orientationAdjustment,
+                situpTorsoDown: 45.0 - orientationAdjustment,
+                situpKneeAngle: 90.0,
+                pullupArmExtended: 170.0,
+                pullupArmFlexed: 90.0,
+                pullupBodyVertical: 15.0
+            )
+        case .pullup:
+            return AngleAdjustments(
+                pushupElbowUp: 170.0,
+                pushupElbowDown: 90.0,
+                pushupBodyAlignment: 20.0,
+                situpTorsoUp: 90.0,
+                situpTorsoDown: 45.0,
+                situpKneeAngle: 90.0,
+                pullupArmExtended: 170.0 + orientationAdjustment,
+                pullupArmFlexed: 90.0 - orientationAdjustment,
+                pullupBodyVertical: 15.0 + orientationAdjustment
+            )
+        default:
+            return AngleAdjustments(
+                pushupElbowUp: 170.0,
+                pushupElbowDown: 90.0,
+                pushupBodyAlignment: 20.0,
+                situpTorsoUp: 90.0,
+                situpTorsoDown: 45.0,
+                situpKneeAngle: 90.0,
+                pullupArmExtended: 170.0,
+                pullupArmFlexed: 90.0,
+                pullupBodyVertical: 15.0
+            )
+        }
+    }
+    
+    func updateQuickCalibrationForOrientation(_ manager: Any) {
+        // Simply reapply quick calibration with current orientation
+        applyQuickCalibration(from: manager)
+    }
+    
+    private func getDefaultOptimalDistance(for exercise: ExerciseType) -> Float {
+        switch exercise {
+        case .pushup:
+            return UIDevice.current.orientation.isLandscape ? 2.5 : 3.0
+        case .situp:
+            return UIDevice.current.orientation.isLandscape ? 2.8 : 3.2
+        case .pullup:
+            return UIDevice.current.orientation.isLandscape ? 3.5 : 4.0
+        default:
+            return 2.5
+        }
+    }
 }
 
 // MARK: - UIDeviceOrientation Extension

@@ -3,7 +3,7 @@ import Vision
 import AVFoundation
 import UIKit
 
-public class QuickCalibrationManager: ObservableObject {
+class QuickCalibrationManager: ObservableObject {
     
     // MARK: - Simple Properties
     @Published var isCalibrated = false
@@ -17,7 +17,7 @@ public class QuickCalibrationManager: ObservableObject {
     private var calibrationProfiles: [ExerciseType: SimpleCalibrationProfile] = [:]
     
     // MARK: - Simplified Calibration Profile
-    public struct SimpleCalibrationProfile {
+    struct SimpleCalibrationProfile {
         let exerciseType: ExerciseType
         let deviceOrientation: UIDeviceOrientation
         let optimalDistance: Double // meters

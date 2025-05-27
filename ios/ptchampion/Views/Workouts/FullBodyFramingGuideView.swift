@@ -2,12 +2,31 @@ import SwiftUI
 import Vision
 import Foundation
 
+// Simplified framing guide that doesn't depend on complex validator types
 struct FullBodyFramingGuideView: View {
     let exercise: ExerciseType
     let orientation: UIDeviceOrientation
-    @ObservedObject var framingValidator: FullBodyFramingValidator
     
+    // Use simple properties instead of complex validator
+    @State private var framingStatus: SimpleFramingStatus = .needsAdjustment
+    @State private var guideFeedback: String = "Position yourself in frame"
+    @State private var requiredAdjustment: SimpleFramingAdjustment = .none
     @State private var pulseAnimation = false
+    
+    enum SimpleFramingStatus {
+        case perfect
+        case needsAdjustment
+        case notDetected
+    }
+    
+    enum SimpleFramingAdjustment {
+        case none
+        case moveCloser
+        case moveBack
+        case moveLeft
+        case moveRight
+        case rotateDevice
+    }
     
     var body: some View {
         ZStack {
@@ -21,7 +40,7 @@ struct FullBodyFramingGuideView: View {
                 .foregroundColor(strokeColor)
                 .opacity(0.8)
                 .padding(guidePadding)
-                .scaleEffect(pulseAnimation && framingValidator.framingStatus == .perfect ? 1.05 : 1.0)
+                .scaleEffect(pulseAnimation && framingStatus == .perfect ? 1.05 : 1.0)
                 .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true), value: pulseAnimation)
             
             // Feedback text
@@ -33,7 +52,7 @@ struct FullBodyFramingGuideView: View {
                         .font(.title2)
                         .foregroundColor(.white)
                     
-                    Text(framingValidator.guideFeedback)
+                    Text(guideFeedback)
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
@@ -52,17 +71,37 @@ struct FullBodyFramingGuideView: View {
             }
             
             // Directional arrows based on adjustment needed
-            DirectionalArrows(adjustment: framingValidator.requiredAdjustment)
+            DirectionalArrows(adjustment: requiredAdjustment)
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
                 pulseAnimation = true
             }
+            
+            // Set default feedback based on exercise
+            updateFeedbackForExercise()
+        }
+    }
+    
+    private func updateFeedbackForExercise() {
+        switch exercise {
+        case .pushup:
+            guideFeedback = "Position for push-ups"
+            requiredAdjustment = .moveCloser
+        case .situp:
+            guideFeedback = "Position for sit-ups"
+            requiredAdjustment = .moveBack
+        case .pullup:
+            guideFeedback = "Position for pull-ups"
+            requiredAdjustment = .moveBack
+        default:
+            guideFeedback = "Position yourself in frame"
+            requiredAdjustment = .none
         }
     }
     
     private var strokeColor: Color {
-        switch framingValidator.framingStatus {
+        switch framingStatus {
         case .perfect:
             return .green
         case .needsAdjustment:
@@ -73,7 +112,7 @@ struct FullBodyFramingGuideView: View {
     }
     
     private var feedbackIcon: String {
-        switch framingValidator.framingStatus {
+        switch framingStatus {
         case .perfect:
             return "checkmark.circle.fill"
         case .needsAdjustment:
@@ -240,7 +279,7 @@ struct BodyOutlineShape: Shape {
 
 // MARK: - Directional Arrows
 struct DirectionalArrows: View {
-    let adjustment: FullBodyFramingValidator.FramingAdjustment
+    let adjustment: FullBodyFramingGuideView.SimpleFramingAdjustment
     @State private var animateArrows = false
     
     var body: some View {
@@ -369,15 +408,9 @@ struct RotateDeviceIndicator: View {
 // MARK: - Preview
 struct FullBodyFramingGuideView_Previews: PreviewProvider {
     static var previews: some View {
-        let validator = FullBodyFramingValidator()
-        validator.framingStatus = .needsAdjustment
-        validator.guideFeedback = "Move closer to camera"
-        validator.requiredAdjustment = .moveCloser
-        
-        return FullBodyFramingGuideView(
+        FullBodyFramingGuideView(
             exercise: .pushup,
-            orientation: .portrait,
-            framingValidator: validator
+            orientation: .portrait
         )
         .background(Color.black)
     }

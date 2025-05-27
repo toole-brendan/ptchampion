@@ -1,9 +1,10 @@
 import Foundation
 import Vision
 import CoreGraphics
+import simd
 
 /// Validates if the user is in the correct starting position for each exercise
-public class StartingPositionValidator: ObservableObject {
+class StartingPositionValidator: ObservableObject {
     
     // MARK: - Position Requirements
     struct PositionRequirements {
