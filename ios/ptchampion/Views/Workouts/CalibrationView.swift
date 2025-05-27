@@ -129,10 +129,15 @@ struct CalibrationView: View {
             calibrationManager.stopCalibration()
         }
         .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-            withAnimation(.easeInOut(duration: 0.3)) {
-                currentOrientation = UIDevice.current.orientation
-                // Force recalculation of framing
-                calibrationManager.reevaluateFraming()
+            // Debounce the calibration manager's response too
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    currentOrientation = UIDevice.current.orientation
+                    // Only reevaluate if calibration is active
+                    if calibrationManager.isCalibrating {
+                        calibrationManager.reevaluateFraming()
+                    }
+                }
             }
         }
         .onChange(of: calibrationManager.calibrationData) { calibrationData in

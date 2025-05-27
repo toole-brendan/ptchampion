@@ -83,9 +83,10 @@ class WorkoutSessionViewModel: ObservableObject {
     @Published var currentOrientation: UIInterfaceOrientation = .portrait
     
     // Add these properties to prevent race conditions
-    private var isRecalibrating = false
+    private(set) var isRecalibrating = false
     private var orientationChangeDebouncer: Timer?
     private var lastOrientation: UIInterfaceOrientation = .portrait
+    private var lastProcessedOrientation: UIInterfaceOrientation?
     
     // MARK: - Calibration Properties
     @Published var showCalibrationView: Bool = false
@@ -167,6 +168,7 @@ class WorkoutSessionViewModel: ObservableObject {
         // Initialize current orientation
         currentOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
         lastOrientation = currentOrientation
+        lastProcessedOrientation = currentOrientation
         
         // Don't check calibration in init - wait until the view is ready
     }
@@ -446,53 +448,82 @@ class WorkoutSessionViewModel: ObservableObject {
     
     // MARK: - Orientation Handling
     func handleOrientationChange() {
+        // Get current orientation
+        let currentOrientation = UIDevice.current.orientation.interfaceOrientation
+        
+        // Skip if same as last processed
+        guard currentOrientation != lastProcessedOrientation else {
+            print("DEBUG: [WorkoutSessionViewModel] Skipping same orientation: \(currentOrientation.rawValue)")
+            return
+        }
+        
         // Cancel any pending orientation change
         orientationChangeDebouncer?.invalidate()
         
-        // Debounce orientation changes to prevent rapid reinitializations
-        orientationChangeDebouncer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { [weak self] _ in
+        print("DEBUG: [WorkoutSessionViewModel] Scheduling orientation change from \(lastProcessedOrientation?.rawValue ?? 0) to \(currentOrientation.rawValue)")
+        
+        // Debounce with longer delay to prevent rapid changes
+        orientationChangeDebouncer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: false) { [weak self] _ in
             guard let self = self else { return }
             
-            // Prevent concurrent recalibrations
-            guard !self.isRecalibrating else { 
-                print("DEBUG: [WorkoutSessionViewModel] Skipping orientation change - already recalibrating")
-                return 
-            }
-            
-            let currentOrientation = UIApplication.shared.windows.first?.windowScene?.interfaceOrientation ?? .portrait
-            
-            // Only handle significant orientation changes
-            guard currentOrientation != self.lastOrientation,
-                  currentOrientation.isPortrait || currentOrientation.isLandscape else {
+            // Double-check orientation hasn't changed again
+            let finalOrientation = UIDevice.current.orientation.interfaceOrientation
+            guard finalOrientation == currentOrientation else {
+                print("DEBUG: [WorkoutSessionViewModel] Orientation changed during debounce, skipping")
                 return
             }
             
-            print("DEBUG: [WorkoutSessionViewModel] Orientation changed from \(self.lastOrientation.rawValue) to \(currentOrientation.rawValue)")
+            // Prevent concurrent recalibrations
+            guard !self.isRecalibrating else { 
+                print("DEBUG: [WorkoutSessionViewModel] Already recalibrating, skipping")
+                return 
+            }
             
-            self.isRecalibrating = true
-            self.lastOrientation = currentOrientation
-            self.currentOrientation = currentOrientation
+            // Only handle significant orientation changes
+            guard finalOrientation.isPortrait || finalOrientation.isLandscape else {
+                print("DEBUG: [WorkoutSessionViewModel] Not a valid orientation, skipping")
+                return
+            }
             
-            // Note: PoseDetectorService doesn't need explicit stopping - it processes frames as they come
-            // Detection will naturally stop when camera frames stop coming
+            print("DEBUG: [WorkoutSessionViewModel] Processing orientation change to \(finalOrientation.rawValue)")
             
-            // Update camera orientation first
-            self.cameraService.updateOutputOrientation()
-            
-            // Delay pose detection reinitialization to ensure camera is ready
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            // Run the actual orientation change on main queue
+            DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
                 
-                print("DEBUG: [WorkoutSessionViewModel] Reinitializing pose detection for new orientation")
+                self.isRecalibrating = true
+                self.lastProcessedOrientation = finalOrientation
+                self.lastOrientation = finalOrientation
+                self.currentOrientation = finalOrientation
                 
-                // Reset grader state
-                self.exerciseGrader.resetState()
-                self.updateUIFromGraderState()
+                // Note: PoseDetectorService doesn't need explicit stopping - it processes frames as they come
+                // Detection will naturally stop when camera frames stop coming
                 
-                // Reload calibration for new orientation
-                Task {
-                    await self.checkCalibrationStatus()
-                    self.isRecalibrating = false
+                // Important: Give the service time to fully stop
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+                    guard let self = self else { return }
+                    
+                    // Update camera orientation
+                    self.cameraService.updateOutputOrientation()
+                    
+                    // Wait for camera to update
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+                        guard let self = self else { return }
+                        
+                        print("DEBUG: [WorkoutSessionViewModel] Reinitializing for new orientation")
+                        
+                        // Reset grader state
+                        self.exerciseGrader.resetState()
+                        self.updateUIFromGraderState()
+                        
+                        // Reload calibration for new orientation
+                        Task { @MainActor [weak self] in
+                            guard let self = self else { return }
+                            await self.checkCalibrationStatus()
+                            self.isRecalibrating = false
+                            print("DEBUG: [WorkoutSessionViewModel] Orientation change complete")
+                        }
+                    }
                 }
             }
         }
@@ -735,6 +766,24 @@ class WorkoutSessionViewModel: ObservableObject {
             return true
         }
         return false
+    }
+}
+
+// MARK: - UIDeviceOrientation Extension
+extension UIDeviceOrientation {
+    var interfaceOrientation: UIInterfaceOrientation {
+        switch self {
+        case .portrait:
+            return .portrait
+        case .portraitUpsideDown:
+            return .portraitUpsideDown
+        case .landscapeLeft:
+            return .landscapeRight // Note: Device and interface orientations are opposite
+        case .landscapeRight:
+            return .landscapeLeft  // Note: Device and interface orientations are opposite
+        default:
+            return .portrait
+        }
     }
 }
 

@@ -145,22 +145,21 @@ struct WorkoutSessionView: View {
                 await viewModel.checkCalibrationStatus()
             }
             
-            // Register for rotation events with immediate update
+            // Register for rotation events with improved debouncing
             NotificationCenter.default.addObserver(
                 forName: UIDevice.orientationDidChangeNotification,
                 object: nil, 
                 queue: .main
-            ) { _ in
-                print("DEBUG: [WorkoutSessionView] Device orientation changed")
-                
-                // Use the ViewModel's orientation handler
-                viewModel.handleOrientationChange()
-                
-                // Also update the UI after a small delay
+            ) { [weak viewModel] _ in
+                // Add delay to prevent rapid calls
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    // Force view refresh if needed
-                    if let windowScene = UIApplication.shared.windows.first?.windowScene {
-                        windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .all))
+                    guard let viewModel = viewModel else { return }
+                    
+                    print("DEBUG: [WorkoutSessionView] Device orientation changed")
+                    
+                    // Only call if not already processing
+                    if !viewModel.isRecalibrating {
+                        viewModel.handleOrientationChange()
                     }
                 }
             }
