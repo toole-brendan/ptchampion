@@ -43,6 +43,14 @@ const DEV_AUTH_USER = import.meta.env.VITE_DEV_AUTH_USER
   ? JSON.parse(import.meta.env.VITE_DEV_AUTH_USER as string) 
   : null;
 
+// Debug environment variables
+console.log('Environment Variable Debug:', {
+  'import.meta.env.DEV': import.meta.env.DEV,
+  'import.meta.env.VITE_DEV_AUTH_BYPASS': import.meta.env.VITE_DEV_AUTH_BYPASS,
+  'DEV_AUTH_BYPASS': DEV_AUTH_BYPASS,
+  'DEV_AUTH_USER': DEV_AUTH_USER
+});
+
 // Create the context with undefined default value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -332,4 +340,4 @@ export const useAuth = (): AuthContextType => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};
