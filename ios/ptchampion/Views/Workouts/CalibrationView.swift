@@ -52,12 +52,12 @@ struct CalibrationView: View {
                 Group {
                     switch calibrationPhase {
                     case .positioning:
-                        PositioningGuideOverlay(
+                        DynamicFramingGuide(
                             currentFraming: calibrationManager.currentFraming,
-                            targetFraming: calibrationManager.getTargetFraming(for: exercise),
-                            suggestions: calibrationManager.adjustmentSuggestions
+                            targetFraming: calibrationManager.getOrientationAwareTargetFraming(for: exercise)
                         )
                         .transition(.opacity)
+                        .edgesIgnoringSafeArea(.all) // Make it full screen
                         
                     case .analyzing:
                         AnalyzingView(progress: frameAnalysisProgress)

@@ -30,54 +30,66 @@ struct FramingGuideBox: View {
     let exerciseType: ExerciseType
     
     var body: some View {
-        ZStack {
-            // Frame outline
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(frameColor, lineWidth: 3)
-                .frame(width: 200, height: 280)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(frameColor.opacity(0.1))
-                )
+        GeometryReader { geometry in
+            let screenWidth = geometry.size.width
+            let screenHeight = geometry.size.height
             
-            // Exercise-specific body outline
-            ExerciseBodyOutline(exercise: exerciseType)
-                .foregroundColor(frameColor.opacity(0.6))
+            // Dynamic box size based on exercise type and screen size
+            // For full body exercises, use most of the screen
+            let boxWidth = screenWidth * 0.85  // 85% of screen width
+            let boxHeight = screenHeight * 0.75 // 75% of screen height
             
-            // Status indicators
-            VStack {
-                HStack {
-                    StatusDot(color: frameColor)
-                    Spacer()
-                    StatusDot(color: frameColor)
-                }
-                Spacer()
-                HStack {
-                    StatusDot(color: frameColor)
-                    Spacer()
-                    StatusDot(color: frameColor)
-                }
-            }
-            .frame(width: 200, height: 280)
-            .padding(20)
-        }
-        .overlay(
-            // Framing feedback text
-            VStack {
-                Spacer()
-                Text(framing.instruction)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+            ZStack {
+                // Frame outline - now much larger!
+                RoundedRectangle(cornerRadius: 20)
+                    .stroke(frameColor, lineWidth: 3)
+                    .frame(width: boxWidth, height: boxHeight)
                     .background(
-                        Capsule()
-                            .fill(Color.black.opacity(0.7))
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(frameColor.opacity(0.1))
                     )
+                
+                // Exercise-specific body outline - scaled up
+                ExerciseBodyOutline(exercise: exerciseType)
+                    .foregroundColor(frameColor.opacity(0.6))
+                    .scaleEffect(3.0) // Scale up the body outline
+                
+                // Status indicators at corners
+                VStack {
+                    HStack {
+                        StatusDot(color: frameColor)
+                        Spacer()
+                        StatusDot(color: frameColor)
+                    }
+                    Spacer()
+                    HStack {
+                        StatusDot(color: frameColor)
+                        Spacer()
+                        StatusDot(color: frameColor)
+                    }
+                }
+                .frame(width: boxWidth, height: boxHeight)
+                .padding(20)
+                
+                // Framing feedback text
+                VStack {
+                    Spacer()
+                    Text(framing.instruction)
+                        .font(.body) // Larger font
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            Capsule()
+                                .fill(Color.black.opacity(0.8))
+                        )
+                }
+                .frame(width: boxWidth, height: boxHeight)
+                .offset(y: 40)
             }
-            .offset(y: 20)
-        )
+            .position(x: screenWidth / 2, y: screenHeight / 2)
+        }
     }
     
     private var frameColor: Color {
@@ -114,33 +126,33 @@ struct ExerciseBodyOutline: View {
 
 struct PushupBodyOutline: View {
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 8) { // Increased spacing
             // Head
             Circle()
-                .frame(width: 20, height: 20)
+                .frame(width: 40, height: 40) // Doubled from 20
             
             // Torso and arms
             ZStack {
                 // Torso
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 12, height: 60)
+                RoundedRectangle(cornerRadius: 8)
+                    .frame(width: 24, height: 120) // Doubled dimensions
                 
                 // Arms
-                HStack(spacing: 40) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .frame(width: 4, height: 30)
-                    RoundedRectangle(cornerRadius: 2)
-                        .frame(width: 4, height: 30)
+                HStack(spacing: 80) { // Doubled spacing
+                    RoundedRectangle(cornerRadius: 4)
+                        .frame(width: 8, height: 60) // Doubled
+                    RoundedRectangle(cornerRadius: 4)
+                        .frame(width: 8, height: 60)
                 }
-                .offset(y: -15)
+                .offset(y: -30)
             }
             
             // Legs
-            HStack(spacing: 8) {
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 50)
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 50)
+            HStack(spacing: 16) { // Doubled spacing
+                RoundedRectangle(cornerRadius: 4)
+                    .frame(width: 8, height: 100) // Doubled
+                RoundedRectangle(cornerRadius: 4)
+                    .frame(width: 8, height: 100)
             }
         }
     }
@@ -148,31 +160,31 @@ struct PushupBodyOutline: View {
 
 struct SitupBodyOutline: View {
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 8) { // Increased spacing
             // Head
             Circle()
-                .frame(width: 20, height: 20)
+                .frame(width: 40, height: 40) // Doubled from 20
             
             // Torso
-            RoundedRectangle(cornerRadius: 4)
-                .frame(width: 12, height: 40)
+            RoundedRectangle(cornerRadius: 8)
+                .frame(width: 24, height: 80) // Doubled dimensions
             
             // Bent legs
-            HStack(spacing: 8) {
-                VStack(spacing: 2) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .frame(width: 4, height: 25)
+            HStack(spacing: 16) { // Doubled spacing
+                VStack(spacing: 4) { // Doubled spacing
+                    RoundedRectangle(cornerRadius: 4)
+                        .frame(width: 8, height: 50) // Doubled
                         .rotationEffect(.degrees(30))
-                    RoundedRectangle(cornerRadius: 2)
-                        .frame(width: 4, height: 20)
+                    RoundedRectangle(cornerRadius: 4)
+                        .frame(width: 8, height: 40) // Doubled
                         .rotationEffect(.degrees(-30))
                 }
-                VStack(spacing: 2) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .frame(width: 4, height: 25)
+                VStack(spacing: 4) { // Doubled spacing
+                    RoundedRectangle(cornerRadius: 4)
+                        .frame(width: 8, height: 50) // Doubled
                         .rotationEffect(.degrees(-30))
-                    RoundedRectangle(cornerRadius: 2)
-                        .frame(width: 4, height: 20)
+                    RoundedRectangle(cornerRadius: 4)
+                        .frame(width: 8, height: 40) // Doubled
                         .rotationEffect(.degrees(30))
                 }
             }
@@ -182,31 +194,31 @@ struct SitupBodyOutline: View {
 
 struct PullupBodyOutline: View {
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 8) { // Increased spacing
             // Arms reaching up
-            HStack(spacing: 30) {
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 35)
+            HStack(spacing: 60) { // Doubled spacing
+                RoundedRectangle(cornerRadius: 4)
+                    .frame(width: 8, height: 70) // Doubled
                     .rotationEffect(.degrees(-20))
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 35)
+                RoundedRectangle(cornerRadius: 4)
+                    .frame(width: 8, height: 70) // Doubled
                     .rotationEffect(.degrees(20))
             }
             
             // Head
             Circle()
-                .frame(width: 20, height: 20)
+                .frame(width: 40, height: 40) // Doubled from 20
             
             // Torso
-            RoundedRectangle(cornerRadius: 4)
-                .frame(width: 12, height: 50)
+            RoundedRectangle(cornerRadius: 8)
+                .frame(width: 24, height: 100) // Doubled dimensions
             
             // Legs
-            HStack(spacing: 8) {
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 45)
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 45)
+            HStack(spacing: 16) { // Doubled spacing
+                RoundedRectangle(cornerRadius: 4)
+                    .frame(width: 8, height: 90) // Doubled
+                RoundedRectangle(cornerRadius: 4)
+                    .frame(width: 8, height: 90) // Doubled
             }
         }
     }
@@ -214,16 +226,16 @@ struct PullupBodyOutline: View {
 
 struct DefaultBodyOutline: View {
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: 8) {
             Circle()
-                .frame(width: 20, height: 20)
-            RoundedRectangle(cornerRadius: 4)
-                .frame(width: 12, height: 60)
-            HStack(spacing: 8) {
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 50)
-                RoundedRectangle(cornerRadius: 2)
-                    .frame(width: 4, height: 50)
+                .frame(width: 40, height: 40)
+            RoundedRectangle(cornerRadius: 8)
+                .frame(width: 24, height: 120)
+            HStack(spacing: 16) {
+                RoundedRectangle(cornerRadius: 4)
+                    .frame(width: 8, height: 100)
+                RoundedRectangle(cornerRadius: 4)
+                    .frame(width: 8, height: 100)
             }
         }
     }
@@ -802,6 +814,85 @@ struct CalibrationResultsDetails: View {
         .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
         .padding(.horizontal)
+    }
+}
+
+// MARK: - Dynamic Framing Guide
+
+/// Alternative approach - Use the actual pose overlay bounds
+struct DynamicFramingGuide: View {
+    let currentFraming: FramingStatus
+    let targetFraming: TargetFraming
+    @State private var showFullBodyGuide = true
+    
+    var body: some View {
+        GeometryReader { geometry in
+            if showFullBodyGuide {
+                // Full screen guide with zones
+                ZStack {
+                    // Outer warning zone (red tint)
+                    Rectangle()
+                        .fill(Color.red.opacity(0.05))
+                        .edgesIgnoringSafeArea(.all)
+                    
+                    // Acceptable zone (yellow)
+                    RoundedRectangle(cornerRadius: 30)
+                        .fill(Color.yellow.opacity(0.05))
+                        .frame(
+                            width: geometry.size.width * 0.9,
+                            height: geometry.size.height * 0.85
+                        )
+                    
+                    // Optimal zone (green)
+                    RoundedRectangle(cornerRadius: 25)
+                        .fill(Color.green.opacity(0.05))
+                        .frame(
+                            width: geometry.size.width * 0.8,
+                            height: geometry.size.height * 0.75
+                        )
+                    
+                    // Border for current zone
+                    RoundedRectangle(cornerRadius: 25)
+                        .stroke(frameColor, lineWidth: 3)
+                        .frame(
+                            width: geometry.size.width * frameWidthMultiplier,
+                            height: geometry.size.height * frameHeightMultiplier
+                        )
+                        .animation(.easeInOut(duration: 0.3), value: currentFraming)
+                }
+                .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
+            }
+        }
+    }
+    
+    private var frameColor: Color {
+        switch currentFraming {
+        case .optimal: return .green
+        case .acceptable: return .blue
+        case .tooClose, .tooFar: return .orange
+        case .tooLeft, .tooRight, .tooHigh, .tooLow: return .yellow
+        case .unknown: return .gray
+        }
+    }
+    
+    private var frameWidthMultiplier: CGFloat {
+        switch currentFraming {
+        case .optimal: return 0.8
+        case .acceptable: return 0.85
+        case .tooClose: return 0.95
+        case .tooFar: return 0.6
+        default: return 0.85
+        }
+    }
+    
+    private var frameHeightMultiplier: CGFloat {
+        switch currentFraming {
+        case .optimal: return 0.75
+        case .acceptable: return 0.8
+        case .tooClose: return 0.9
+        case .tooFar: return 0.55
+        default: return 0.8
+        }
     }
 }
 
