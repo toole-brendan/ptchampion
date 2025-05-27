@@ -243,13 +243,14 @@ const Dashboard: React.FC = () => {
           <IOSSection
             title="Recent Activity"
             description="Your latest workout sessions"
+            contentClassName="p-0 bg-white"
           >
             {dashboardMetrics.recentWorkouts.length > 0 ? (
               <div className="space-y-0">
                 {dashboardMetrics.recentWorkouts.map((workout, index) => (
                   <div key={workout.id || index}>
                     <button
-                      className="flex items-center justify-between w-full py-3 px-4 hover:bg-brass-gold hover:bg-opacity-5 transition-colors duration-150"
+                      className="flex items-center justify-between w-full py-3 px-4 hover:bg-black hover:bg-opacity-5 transition-colors duration-150 bg-white"
                       onClick={() => navigate(`/history/${workout.id}`)}
                     >
                       <div className="flex items-center">
@@ -308,7 +309,7 @@ const Dashboard: React.FC = () => {
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-10 text-center">
+              <div className="flex flex-col items-center justify-center py-10 text-center bg-white">
                 <div className="mb-4 rounded-full bg-brass-gold bg-opacity-10 p-4">
                   <Flame className="w-8 h-8 text-brass-gold" />
                 </div>
