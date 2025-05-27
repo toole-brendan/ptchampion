@@ -1,4 +1,5 @@
 import './index.css';
+import './styles/design-tokens.css';
 import './styles/ios-tokens.css';
 import './styles/fonts.css';
 import { StrictMode } from 'react';

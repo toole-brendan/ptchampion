@@ -1,0 +1,194 @@
+/* 
+ * PT Champion Design Tokens
+ * Comprehensive Design System matching iOS module
+ */
+
+:root {
+  /* ===== Base Colors ===== */
+  --color-cream: #F4F1E6;
+  --color-cream-dark: #EDE9DB;
+  --color-deep-ops: #1E241E;
+  --color-brass-gold: #BFA24D;
+  --color-army-tan: #E0D4A6;
+  --color-olive-mist: #C9CCA6;
+  --color-command-black: #1E1E1E;
+  --color-tactical-gray: #4E5A48;
+  --color-success: #4CAF50;
+  --color-warning: #FF9800;
+  --color-error: #F44336;
+  --color-info: #2196F3;
+
+  /* ===== Semantic Colors ===== */
+  --color-primary: var(--color-brass-gold);
+  --color-secondary: var(--color-army-tan);
+  --color-accent: var(--color-brass-gold);
+  --color-background: var(--color-cream);
+  --color-card-background: var(--color-cream-dark);
+  --color-text-primary: var(--color-command-black);
+  --color-text-secondary: var(--color-tactical-gray);
+  --color-text-tertiary: var(--color-tactical-gray);
+  --color-text-on-primary: var(--color-cream);
+  --color-text-primary-on-dark: #FFFFFF;
+  --color-text-secondary-on-dark: #9CA3AF;
+  --color-background-overlay: rgba(0, 0, 0, 0.7);
+
+  /* ===== Gradients ===== */
+  --gradient-card: linear-gradient(to bottom, var(--color-card-background), rgba(237, 233, 219, 0.97));
+  --gradient-primary: linear-gradient(135deg, var(--color-brass-gold), #D4B05A);
+  --gradient-military: linear-gradient(180deg, var(--color-deep-ops), var(--color-command-black));
+
+  /* ===== Typography ===== */
+  --font-size-heading1: 40px;
+  --font-size-heading2: 32px;
+  --font-size-heading3: 26px;
+  --font-size-heading4: 22px;
+  --font-size-body: 16px;
+  --font-size-small: 14px;
+  --font-size-tiny: 12px;
+
+  /* Font Families */
+  --font-heading: 'Futura', system-ui, sans-serif;
+  --font-body: 'Futura', system-ui, sans-serif;
+  --font-mono: 'RobotoMono-Medium', monospace;
+
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ===== Border Radius ===== */
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-button: 8px;
+  --radius-input: 8px;
+  --radius-small: 4px;
+  --radius-medium: 8px;
+  --radius-large: 12px;
+  --radius-full: 9999px;
+  --radius-badge: 4px;
+
+  /* ===== Spacing ===== */
+  --spacing-section: 32px;
+  --spacing-card-gap: 16px;
+  --spacing-content-padding: 16px;
+  --spacing-item: 8px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* ===== Shadows ===== */
+  --shadow-small: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-large: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-card: var(--shadow-small);
+  --shadow-card-hover: 0 6px 12px rgba(0, 0, 0, 0.15);
+  --shadow-button-primary: 0 2px 4px rgba(191, 162, 77, 0.3);
+  --ring-focus: 0 0 0 2px var(--color-brass-gold);
+
+  /* ===== Animation ===== */
+  --animation-duration-fast: 100ms;
+  --animation-duration-base: 200ms;
+  --animation-duration-slow: 300ms;
+  --animation-easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-easing-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ===== Breakpoints ===== */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+
+  /* ===== Interactive States ===== */
+  --state-hover-opacity: 0.9;
+  --state-active-scale: 0.97;
+  --state-disabled-opacity: 0.5;
+
+  /* ===== Z-Index Scale ===== */
+  --z-base: 0;
+  --z-dropdown: 10;
+  --z-sticky: 20;
+  --z-overlay: 30;
+  --z-modal: 40;
+  --z-popover: 50;
+  --z-tooltip: 60;
+  --z-notification: 70;
+}
+
+/* ===== Dark Mode Support ===== */
+[data-theme="dark"] {
+  --color-background: var(--color-deep-ops);
+  --color-card-background: var(--color-command-black);
+  --color-text-primary: var(--color-cream);
+  --color-text-secondary: var(--color-olive-mist);
+  --color-text-tertiary: var(--color-tactical-gray);
+  --gradient-card: linear-gradient(to bottom, var(--color-command-black), rgba(30, 30, 30, 0.97));
+}
+
+/* ===== Utility Classes ===== */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Adaptive spacing utilities */
+@media (max-width: 375px) {
+  :root {
+    --spacing-adaptive: var(--spacing-sm);
+  }
+}
+
+@media (min-width: 375px) and (max-width: 428px) {
+  :root {
+    --spacing-adaptive: var(--spacing-md);
+  }
+}
+
+@media (min-width: 428px) {
+  :root {
+    --spacing-adaptive: var(--spacing-lg);
+  }
+}
+
+/* Military corner cut mask for cards */
+.military-corner-mask {
+  --corner-size: 15px;
+  clip-path: polygon(
+    var(--corner-size) 0,
+    100% 0,
+    100% calc(100% - var(--corner-size)),
+    calc(100% - var(--corner-size)) 100%,
+    0 100%,
+    0 var(--corner-size)
+  );
+}
+
+/* Standard hit target size */
+.hit-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Focus visible styles */
+.focus-visible:focus-visible {
+  outline: 2px solid var(--color-brass-gold);
+  outline-offset: 2px;
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

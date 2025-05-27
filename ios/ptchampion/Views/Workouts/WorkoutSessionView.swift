@@ -140,6 +140,11 @@ struct WorkoutSessionView: View {
                 viewModel.modelContext = modelContext
             }
             
+            // Check calibration status
+            Task {
+                await viewModel.checkCalibrationStatus()
+            }
+            
             // Register for rotation events with immediate update
             NotificationCenter.default.addObserver(
                 forName: UIDevice.orientationDidChangeNotification,
@@ -259,8 +264,8 @@ struct WorkoutSessionView: View {
                     }
                     .foregroundColor(.orange),
                     trailing: Button("Cancel") {
+                        print("DEBUG: [WorkoutSessionView] Calibration Cancel button tapped")
                         viewModel.showCalibrationView = false
-                        dismiss()
                     }
                     .foregroundColor(.red)
                 )

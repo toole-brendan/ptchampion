@@ -17,67 +17,68 @@ module.exports = {
         mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
       },
       colors: {
-        // Base PT Champion colors from iOS
-        'cream': '#F4F1E6',
-        'cream-dark': '#EDE9DB',
+        // Base PT Champion colors from CSS variables
+        'cream': 'var(--color-cream)',
+        'cream-dark': 'var(--color-cream-dark)',
         'cream-light': '#FAF8F1',
-        'deep-ops': '#1E241E',
-        'brass-gold': '#BFA24D',
-        'army-tan': '#E0D4A6',
-        'olive-mist': '#C9CCA6',
-        'command-black': '#1E1E1E',
-        'tactical-gray': '#4E5A48',
+        'deep-ops': 'var(--color-deep-ops)',
+        'brass-gold': 'var(--color-brass-gold)',
+        'army-tan': 'var(--color-army-tan)',
+        'olive-mist': 'var(--color-olive-mist)',
+        'command-black': 'var(--color-command-black)',
+        'tactical-gray': 'var(--color-tactical-gray)',
         'hunter-green': '#355E3B',
-        'success': '#4CAF50',
-        'warning': '#FF9800',
-        'error': '#F44336',
-        'info': '#2196F3',
+        'success': 'var(--color-success)',
+        'warning': 'var(--color-warning)',
+        'error': 'var(--color-error)',
+        'info': 'var(--color-info)',
         
-        // Semantic colors matching iOS AppTheme
-        background: "#F4F1E6",
-        foreground: "#1E1E1E",
+        // Semantic colors from CSS variables
+        background: "var(--color-background)",
+        foreground: "var(--color-text-primary)",
         primary: {
-          DEFAULT: "#BFA24D",
-          foreground: "#1E241E",
+          DEFAULT: "var(--color-primary)",
+          foreground: "var(--color-text-on-primary)",
         },
         secondary: {
-          DEFAULT: "#E0D4A6",
-          foreground: "#1E1E1E",
+          DEFAULT: "var(--color-secondary)",
+          foreground: "var(--color-text-primary)",
         },
         destructive: {
-          DEFAULT: "#F44336",
+          DEFAULT: "var(--color-error)",
           foreground: "#FFFFFF",
         },
         muted: {
-          DEFAULT: "#C9CCA6",
-          foreground: "#4E5A48",
+          DEFAULT: "var(--color-olive-mist)",
+          foreground: "var(--color-tactical-gray)",
         },
         accent: {
-          DEFAULT: "#BFA24D",
-          foreground: "#1E241E",
+          DEFAULT: "var(--color-accent)",
+          foreground: "var(--color-text-on-primary)",
         },
         card: {
-          DEFAULT: "#F4F1E6",
-          foreground: "#1E1E1E",
+          DEFAULT: "var(--color-card-background)",
+          foreground: "var(--color-text-primary)",
         },
       },
       borderRadius: {
         lg: "var(--radius-large)",
         md: "var(--radius-medium)",
         sm: "var(--radius-small)",
-        card: 'var(--radius-card, 0.75rem)',
-        panel: 'var(--radius-panel, 0.5rem)',
+        card: 'var(--radius-card)',
+        panel: 'var(--radius-panel)',
         button: 'var(--radius-button)',
         input: 'var(--radius-input)',
         badge: 'var(--radius-badge)',
         full: 'var(--radius-full)',
       },
       boxShadow: {
-        'small': 'var(--shadow-small, 0 2px 4px rgba(0, 0, 0, 0.05))',
-        'medium': 'var(--shadow-medium, 0 4px 8px rgba(0, 0, 0, 0.1))',
-        'large': 'var(--shadow-large, 0 10px 15px rgba(0, 0, 0, 0.1))',
-        'card': 'var(--shadow-card, 0 4px 8px rgba(0, 0, 0, 0.08))',
-        'card-hover': 'var(--shadow-card-hover, 0 6px 12px rgba(0, 0, 0, 0.1))',
+        'small': 'var(--shadow-small)',
+        'medium': 'var(--shadow-medium)',
+        'large': 'var(--shadow-large)',
+        'card': 'var(--shadow-card)',
+        'card-hover': 'var(--shadow-card-hover)',
+        'button-primary': 'var(--shadow-button-primary)',
       },
       fontSize: {
         'heading1': 'var(--font-size-heading1)',
@@ -93,10 +94,12 @@ module.exports = {
         'sm': 'var(--spacing-sm)',
         'md': 'var(--spacing-md)',
         'lg': 'var(--spacing-lg)',
+        'xl': 'var(--spacing-xl)',
         'section': 'var(--spacing-section)',
         'card-gap': 'var(--spacing-card-gap)',
         'content': 'var(--spacing-content-padding)',
         'item': 'var(--spacing-item)',
+        'adaptive': 'var(--spacing-adaptive)',
       },
       keyframes: {
         "accordion-down": {
@@ -127,6 +130,15 @@ module.exports = {
         "float-up": {
           "0%": { transform: "translateY(0)" },
           "100%": { transform: "translateY(-4px)" }
+        },
+        "press": {
+          "0%": { transform: "scale(1)" },
+          "100%": { transform: "scale(var(--state-active-scale))" }
+        },
+        "spring": {
+          "0%": { transform: "scale(1)" },
+          "40%": { transform: "scale(0.97)" },
+          "100%": { transform: "scale(1)" }
         }
       },
       animation: {
@@ -136,7 +148,18 @@ module.exports = {
         "shimmer": "shimmer 2s infinite linear",
         "card-hover": "card-hover 0.3s ease-out forwards",
         "pop": "pop 0.3s ease-out",
-        "float-up": "float-up 0.3s ease-out forwards"
+        "float-up": "float-up 0.3s ease-out forwards",
+        "press": "press var(--animation-duration-fast) var(--animation-easing-default)",
+        "spring": "spring var(--animation-duration-slow) var(--animation-easing-spring)"
+      },
+      transitionDuration: {
+        'fast': 'var(--animation-duration-fast)',
+        'base': 'var(--animation-duration-base)',
+        'slow': 'var(--animation-duration-slow)',
+      },
+      transitionTimingFunction: {
+        'default': 'var(--animation-easing-default)',
+        'spring': 'var(--animation-easing-spring)',
       },
       textShadow: {
         sm: '0 1px 2px var(--tw-shadow-color)',
@@ -165,4 +188,3 @@ module.exports = {
     },
   ],
 }
-
