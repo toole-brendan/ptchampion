@@ -43,7 +43,7 @@ struct EnhancedCalibrationView: View {
             CameraPreviewView(session: calibrationManager.cameraSession, cameraService: calibrationManager.cameraService)
                 .edgesIgnoringSafeArea(.all)
                 .onAppear {
-                    startCameraSession()
+                    checkCameraPermission()
                     setupEnvironmentAnalysis()
                 }
                 .onDisappear {
@@ -173,10 +173,31 @@ struct EnhancedCalibrationView: View {
     
     // MARK: - Setup Methods
     
+    private func checkCameraPermission() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            startCameraSession()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { granted in
+                if granted {
+                    DispatchQueue.main.async {
+                        self.startCameraSession()
+                    }
+                }
+            }
+        default:
+            print("❌ Camera permission denied")
+        }
+    }
+    
     private func startCameraSession() {
-        DispatchQueue.global(qos: .userInitiated).async {
-            if !calibrationManager.cameraSession.isRunning {
-                calibrationManager.cameraSession.startRunning()
+        // Add a small delay to ensure the view is fully loaded
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            DispatchQueue.global(qos: .userInitiated).async {
+                if !self.calibrationManager.cameraSession.isRunning {
+                    self.calibrationManager.cameraSession.startRunning()
+                    print("📷 Camera session started")
+                }
             }
         }
     }

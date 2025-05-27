@@ -57,6 +57,10 @@ class CalibrationManager: NSObject, ObservableObject {
         self.cameraService = cameraService ?? CameraService()
         self.calibrationRepository = calibrationRepository ?? CalibrationRepository()
         super.init()
+        
+        // Configure camera session before setup
+        configureCameraSession()
+        
         setupMotionManager()
         setupPoseDetection()
         
@@ -67,6 +71,47 @@ class CalibrationManager: NSObject, ObservableObject {
     }
     
     // MARK: - Setup Methods
+    
+    // Add this method to properly configure the camera session
+    private func configureCameraSession() {
+        cameraSession.beginConfiguration()
+        
+        // Set session preset for optimal performance
+        if cameraSession.canSetSessionPreset(.high) {
+            cameraSession.sessionPreset = .high
+        }
+        
+        // Add camera input
+        guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .front) else {
+            print("❌ No front camera available")
+            cameraSession.commitConfiguration()
+            return
+        }
+        
+        do {
+            let input = try AVCaptureDeviceInput(device: device)
+            if cameraSession.canAddInput(input) {
+                cameraSession.addInput(input)
+            }
+            
+            // Add video output for the preview
+            let output = AVCaptureVideoDataOutput()
+            output.videoSettings = [
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+            ]
+            
+            if cameraSession.canAddOutput(output) {
+                cameraSession.addOutput(output)
+            }
+            
+            print("✅ Camera session configured successfully")
+        } catch {
+            print("❌ Failed to configure camera session: \(error)")
+        }
+        
+        cameraSession.commitConfiguration()
+    }
+    
     private func setupMotionManager() {
         guard motionManager.isDeviceMotionAvailable else {
             print("⚠️ Device motion not available")
@@ -117,10 +162,19 @@ class CalibrationManager: NSObject, ObservableObject {
         collectionProgress = 0.0
         isReadyForNextPhase = false
         
-        DispatchQueue.main.async { [weak self] in
-            self?.currentFraming = .unknown
-            self?.isFramingAcceptable = false
-            self?.adjustmentSuggestions.removeAll()
+        // Remove the DispatchQueue.main.async call to prevent weak reference during deallocation
+        // Instead, directly update the properties if we're on the main thread
+        if Thread.isMainThread {
+            self.currentFraming = .unknown
+            self.isFramingAcceptable = false
+            self.adjustmentSuggestions.removeAll()
+        } else {
+            // Only dispatch if we're not being deallocated
+            DispatchQueue.main.sync {
+                self.currentFraming = .unknown
+                self.isFramingAcceptable = false
+                self.adjustmentSuggestions.removeAll()
+            }
         }
     }
     
@@ -879,8 +933,19 @@ class CalibrationManager: NSObject, ObservableObject {
     
     // MARK: - Cleanup
     deinit {
-        stopCalibration()
+        // Cancel all subscriptions first
         cancellables.forEach { $0.cancel() }
+        cancellables.removeAll()
+        
+        // Stop timers and motion updates without updating UI
+        frameCollectionTimer?.invalidate()
+        frameCollectionTimer = nil
+        motionManager.stopDeviceMotionUpdates()
+        
+        // Stop camera session if running
+        if cameraSession.isRunning {
+            cameraSession.stopRunning()
+        }
     }
 }
 
