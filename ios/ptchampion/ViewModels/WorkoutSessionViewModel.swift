@@ -10,14 +10,16 @@ import AudioToolbox
 import UIKit
 #endif
 
-// Workout state enumeration to track the current state of a workout session
+// Enhanced workout state enumeration following the progressive enhancement model
 enum WorkoutSessionState: Equatable {
     case initializing
     case requestingPermission
     case permissionDenied
     case ready
-    case positionValidation  // New state for position checking
-    case counting
+    case waitingForPosition    // New: User pressed GO, waiting for correct position
+    case positionDetected      // New: Correct position detected, ready to start
+    case countdown             // New: 3-2-1 countdown before exercise begins
+    case counting              // Exercise in progress
     case paused
     case finished
     case error(String)
@@ -28,7 +30,9 @@ enum WorkoutSessionState: Equatable {
              (.requestingPermission, .requestingPermission),
              (.permissionDenied, .permissionDenied),
              (.ready, .ready),
-             (.positionValidation, .positionValidation),
+             (.waitingForPosition, .waitingForPosition),
+             (.positionDetected, .positionDetected),
+             (.countdown, .countdown),
              (.counting, .counting),
              (.paused, .paused),
              (.finished, .finished):
@@ -88,6 +92,11 @@ class WorkoutSessionViewModel: ObservableObject {
     private var lastOrientation: UIInterfaceOrientation = .portrait
     private var lastProcessedOrientation: UIInterfaceOrientation?
     
+    // MARK: - Auto Position Detection
+    @Published var autoPositionDetector: AutoPositionDetector
+    @Published var positionHoldProgress: Float = 0.0
+    @Published var countdownValue: Int? = nil
+    
     // MARK: - Calibration Properties
     @Published var showCalibrationView: Bool = false
     @Published var calibrationData: CalibrationData?
@@ -138,6 +147,9 @@ class WorkoutSessionViewModel: ObservableObject {
         self.poseDetectorService = poseDetectorService
         self.workoutTimer = workoutTimer
         self.modelContext = modelContext
+        
+        // Initialize auto position detector
+        self.autoPositionDetector = AutoPositionDetector()
         
         // Initialize calibration repository
         self.calibrationRepository = CalibrationRepository()
@@ -220,7 +232,7 @@ class WorkoutSessionViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Pose detection
+        // Pose detection with auto position detection
         poseDetectorService.detectedBodyPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] body in
@@ -234,7 +246,10 @@ class WorkoutSessionViewModel: ObservableObject {
                     self.detectedBody = body
                     
                     if let body = body {
-                        if self.workoutState == .counting && !self.isPaused {
+                        // Handle auto position detection for new states
+                        if self.workoutState == .waitingForPosition {
+                            self.handleAutoPositionDetection(body: body)
+                        } else if self.workoutState == .counting && !self.isPaused {
                             self.consecutiveFramesWithoutBody = 0
                             let result = self.exerciseGrader.gradePose(body: body)
                             // Already in main queue context
@@ -244,6 +259,25 @@ class WorkoutSessionViewModel: ObservableObject {
                         self.handleBodyLost()
                     }
                 }
+            }
+            .store(in: &cancellables)
+        
+        // Auto position detector state changes
+        autoPositionDetector.$isInPosition
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] isInPosition in
+                guard let self = self else { return }
+                
+                if self.workoutState == .waitingForPosition && isInPosition {
+                    self.handlePositionDetected()
+                }
+            }
+            .store(in: &cancellables)
+        
+        autoPositionDetector.$positionQuality
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] quality in
+                self?.positionHoldProgress = self?.autoPositionDetector.getPositionHoldProgress() ?? 0.0
             }
             .store(in: &cancellables)
         
@@ -374,25 +408,91 @@ class WorkoutSessionViewModel: ObservableObject {
     }
     
     // MARK: - Workout Session Controls
-    func startWorkout() {
-        print("DEBUG: [WorkoutSessionViewModel] startWorkout() called, permission granted: \(isCameraPermissionGranted)")
+    
+    /// New "Just Press GO" method - starts position detection flow
+    func startPositionDetection() {
+        print("DEBUG: [WorkoutSessionViewModel] startPositionDetection() called - implementing 'Just Press GO' flow")
         
         guard isCameraPermissionGranted else {
-            print("DEBUG: [WorkoutSessionViewModel] Cannot start workout - missing camera permission")
+            print("DEBUG: [WorkoutSessionViewModel] Cannot start position detection - missing camera permission")
             DispatchQueue.main.async {
                 self.workoutState = .requestingPermission
             }
             return
         }
         
-        // Updating all state in a single async block to batch changes
         DispatchQueue.main.async {
-            print("DEBUG: [WorkoutSessionViewModel] Starting workout (async)")
+            print("DEBUG: [WorkoutSessionViewModel] Starting position detection flow")
             
-            // Mark workout as active
+            // Mark workout as active for frame processing
             self.isWorkoutActive = true
-            print("DEBUG: [WorkoutSessionViewModel] Set isWorkoutActive = true")
             
+            // Reset auto position detector
+            self.autoPositionDetector.reset()
+            
+            // Transition to waiting for position state
+            self.workoutState = .waitingForPosition
+            self.feedbackMessage = "Get into starting position"
+            
+            // Start camera session
+            DispatchQueue.main.async {
+                print("DEBUG: [WorkoutSessionViewModel] Starting camera session for position detection")
+                self.cameraService.startSession()
+            }
+        }
+    }
+    
+    /// Legacy method - now calls the new position detection flow
+    func startWorkout() {
+        print("DEBUG: [WorkoutSessionViewModel] startWorkout() called - redirecting to position detection flow")
+        startPositionDetection()
+    }
+    
+    /// Called when correct position is detected and held
+    private func handlePositionDetected() {
+        print("DEBUG: [WorkoutSessionViewModel] Position detected! Starting countdown")
+        
+        DispatchQueue.main.async {
+            self.workoutState = .positionDetected
+            self.feedbackMessage = "Perfect! Starting in..."
+            
+            // Start 3-second countdown
+            self.startCountdown()
+        }
+    }
+    
+    /// Starts the 3-2-1 countdown before exercise begins
+    private func startCountdown() {
+        print("DEBUG: [WorkoutSessionViewModel] Starting countdown sequence")
+        
+        var countdown = 3
+        self.countdownValue = countdown
+        self.workoutState = .countdown
+        
+        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            countdown -= 1
+            
+            if countdown > 0 {
+                self.countdownValue = countdown
+                self.feedbackMessage = "Starting in \(countdown)..."
+            } else {
+                timer.invalidate()
+                self.countdownValue = nil
+                self.beginExercise()
+            }
+        }
+    }
+    
+    /// Actually begins the exercise after countdown
+    private func beginExercise() {
+        print("DEBUG: [WorkoutSessionViewModel] Beginning exercise after countdown")
+        
+        DispatchQueue.main.async {
             // Only create a new session ID if we don't already have one
             if self.currentWorkoutSessionID == nil {
                 print("DEBUG: [WorkoutSessionViewModel] Creating new workout session ID")
@@ -406,23 +506,28 @@ class WorkoutSessionViewModel: ObservableObject {
             print("DEBUG: [WorkoutSessionViewModel] Starting real-time feedback with calibration: \(self.calibrationData != nil)")
             self.realTimeFeedbackManager.startFeedback(for: self.exerciseType, with: self.calibrationData)
             
-            // Force workout state to counting and ensure isPaused is false
+            // Transition to counting state
             self.workoutState = .counting
             self.isPaused = false
             self.feedbackMessage = "Workout active"
             print("DEBUG: [WorkoutSessionViewModel] Set workoutState = .counting, isPaused = false")
             
-            // Always start the timer fresh
+            // Start the timer
             print("DEBUG: [WorkoutSessionViewModel] About to reset and start timer")
             self.workoutTimer.reset()
             self.workoutTimer.start()
             print("DEBUG: [WorkoutSessionViewModel] Timer started, isRunning: \(self.workoutTimer.isRunning)")
-            
-            // Start camera in next run loop
-            DispatchQueue.main.async {
-                print("DEBUG: [WorkoutSessionViewModel] Starting camera session for workout")
-                self.cameraService.startSession()
-            }
+        }
+    }
+    
+    /// Handles auto position detection during waitingForPosition state
+    private func handleAutoPositionDetection(body: DetectedBody) {
+        let result = autoPositionDetector.detectPosition(body: body, expectedExercise: exerciseType)
+        
+        // Update feedback message with position guidance
+        DispatchQueue.main.async {
+            self.feedbackMessage = result.feedback.primaryInstruction
+            self.positionHoldProgress = self.autoPositionDetector.getPositionHoldProgress()
         }
     }
     

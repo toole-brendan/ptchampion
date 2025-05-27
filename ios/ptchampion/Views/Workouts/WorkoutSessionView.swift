@@ -18,18 +18,8 @@ struct WorkoutSessionView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     
-    // Add new state objects for simplified calibration
+    // Legacy state objects (kept for compatibility but no longer used in new flow)
     @StateObject private var startingPositionValidator = StartingPositionValidator()
-    
-    // New state for position-based auto-start
-    @State private var isCheckingPosition = false
-    @State private var positionHoldProgress: Double = 0.0
-    @State private var showPositionGuide = false
-    
-    // Add countdown state
-    @State private var countdown: Int? = nil
-    @State private var countdownTimer: Timer.TimerPublisher = Timer.publish(every: 1, on: .main, in: .common)
-    @State private var countdownCancellable: Cancellable? = nil
     
     // MARK: - Initialization
     init(exerciseType: ExerciseType) {
@@ -56,24 +46,7 @@ struct WorkoutSessionView: View {
                     .edgesIgnoringSafeArea(.all)
             }
             
-            // New: Full Body Framing Guide Overlay
-            if showPositionGuide && viewModel.workoutState == .ready {
-                FullBodyFramingGuideView(
-                    exercise: exerciseType,
-                    orientation: UIDevice.current.orientation
-                )
-                .transition(.opacity)
-            }
-            
-            // New: Position Hold Progress Indicator
-            if isCheckingPosition && positionHoldProgress > 0 {
-                EnhancedPositionHoldProgressView(
-                    progress: positionHoldProgress,
-                    timeRemaining: (1.0 - positionHoldProgress) * 2.0,
-                    isInCorrectPosition: startingPositionValidator.isInPosition
-                )
-                .transition(.scale)
-            }
+            // Visual guides are now integrated into AutoPositionOverlay
             
             // UI Overlay (Rep Counter, Feedback, Controls)
             if viewModel.workoutState == .counting {
@@ -90,16 +63,19 @@ struct WorkoutSessionView: View {
             
             // Simple Rep Feedback removed to prevent distraction
             
-            // Start Button Overlay (shown only when in ready state)
-            if viewModel.workoutState == .ready && countdown == nil && !isCheckingPosition {
-                enhancedStartButtonOverlay()
-                    .zIndex(1) // Ensure it's on top
-            }
-            
-            // Countdown Overlay (shown during countdown)
-            if let currentCount = countdown {
-                countdownOverlay(count: currentCount)
-                    .zIndex(2)
+            // New Auto Position Overlay (replaces old start button and countdown)
+            if [.ready, .waitingForPosition, .positionDetected, .countdown].contains(viewModel.workoutState) {
+                AutoPositionOverlay(
+                    autoPositionDetector: viewModel.autoPositionDetector,
+                    workoutState: viewModel.workoutState,
+                    positionHoldProgress: viewModel.positionHoldProgress,
+                    countdownValue: viewModel.countdownValue,
+                    onStartPressed: {
+                        print("DEBUG: [WorkoutSessionView] GO button pressed - starting position detection")
+                        viewModel.startPositionDetection()
+                    }
+                )
+                .zIndex(1)
             }
             
             // Camera Permission Request View
@@ -196,9 +172,7 @@ struct WorkoutSessionView: View {
             viewModel.handleOrientationChange()
         }
         .onDisappear {
-            // Stop the countdown timer first
             print("DEBUG: [WorkoutSessionView] onDisappear triggered - starting cleanup sequence")
-            stopCountdownTimer()
             
             // Show tab bar using the visibility manager
             tabBarVisibility.showTabBar()
@@ -273,17 +247,7 @@ struct WorkoutSessionView: View {
             Text(viewModel.saveErrorMessage)
         }
 
-        // Listen for countdown timer
-        .onReceive(countdownTimer) { _ in
-            print("DEBUG: [WorkoutSessionView] Countdown timer tick received")
-            handleCountdownTick()
-        }
-        // Monitor detected body for position checking
-        .onChange(of: viewModel.detectedBody) { _, newBody in
-            if isCheckingPosition {
-                checkPositionAndAutoStart(body: newBody)
-            }
-        }
+        // Auto position detection is now handled by the ViewModel
 
     }
     
@@ -300,225 +264,9 @@ struct WorkoutSessionView: View {
         }
     }
     
-    // MARK: - Enhanced Start Button
-    @ViewBuilder
-    private func enhancedStartButtonOverlay() -> some View {
-        // Print statement moved outside ViewBuilder context
-        let _ = print("DEBUG: [WorkoutSessionView] Rendering enhancedStartButtonOverlay()")
-        
-        return VStack {
-            // Top: Exercise name and subheadline
-            Text(exerciseType.displayName.uppercased())
-                .font(.system(size: 48, weight: .heavy))
-                .tracking(2) // Add letter spacing
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                .multilineTextAlignment(.center)
-            Text("Press GO and get into starting position")
-                .font(.body)
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                .multilineTextAlignment(.center)
-                .padding(.top, 4)
-            
-            Spacer()  // pushes content to top and bottom
-            
-            // Bottom: Instruction and GO button
-            Text("The workout will start automatically when you're in position.")
-                .font(.system(.body, design: .monospaced))
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                .multilineTextAlignment(.center)
-                .italic()
-                .padding(.bottom, 16)
-            
-            VStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .fill(AppTheme.GeneratedColors.brassGold)
-                        .frame(width: 80, height: 80)
-                    
-                    Image(systemName: "play.fill")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 30, height: 30)
-                        .foregroundColor(.black)
-                        .padding(.leading, 3) // Adjust visual centering due to triangle shape
-                }
-            }
-            .onTapGesture {
-                print("DEBUG: [WorkoutSessionView] Start button tapped, beginning position check")
-                startPositionCheck()
-            }
-            .padding(.bottom, 40)
-        }
-        .padding(.horizontal)
-        .padding(.top, 50) // ensure content is within safe area at top
-    }
-    
-    // MARK: - Countdown Overlay
-    @ViewBuilder
-    private func countdownOverlay(count: Int) -> some View {
-        // Print statement moved outside ViewBuilder context
-        let _ = print("DEBUG: [WorkoutSessionView] Rendering countdownOverlay() with count: \(count)")
-        
-        return VStack {
-            Spacer()
-            
-            Text("\(count)")
-                .font(.system(size: 80, weight: .bold))
-                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                .padding(30)
-                .background(
-                    Circle()
-                        .fill(Color.black.opacity(0.5))
-                        .frame(width: 150, height: 150)
-                )
-            
-            Spacer()
-        }
-    }
-    
-    // MARK: - Countdown Logic
-    private func startCountdown() {
-        print("DEBUG: [WorkoutSessionView] Starting countdown sequence")
-        
-        // Stop any existing countdown
-        stopCountdownTimer()
-        
-        // Defer setting the countdown to the next render cycle
-        DispatchQueue.main.async {
-            // Set initial countdown
-            print("DEBUG: [WorkoutSessionView] Setting countdown to 5 (async)")
-            self.countdown = 5
-            
-            // Start the timer
-            self.countdownTimer = Timer.publish(every: 1, on: .main, in: .common)
-            self.countdownCancellable = self.countdownTimer.connect()
-            
-            // Play sound feedback
-            if self.viewModel.isSoundEnabled {
-                print("DEBUG: [WorkoutSessionView] Playing countdown start sound")
-                AudioServicesPlaySystemSound(1103) // System beep
-            }
-        }
-    }
-    
-    private func handleCountdownTick() {
-        guard var count = countdown else {
-            print("DEBUG: [WorkoutSessionView] Countdown tick received but countdown is nil!")
-            return
-        }
-        
-        count -= 1
-        print("DEBUG: [WorkoutSessionView] Countdown tick: \(count)")
-        
-        // Play tick sound
-        if viewModel.isSoundEnabled && count > 0 {
-            AudioServicesPlaySystemSound(1103) // System beep
-        }
-        
-        if count > 0 {
-            // Update countdown value
-            DispatchQueue.main.async {
-                print("DEBUG: [WorkoutSessionView] Updating countdown to \(count) (async)")
-                countdown = count
-            }
-        } else {
-            // Countdown complete, prepare to start workout
-            print("DEBUG: [WorkoutSessionView] Countdown complete, preparing to start workout")
-            
-            // Clear countdown and stop timer first
-            DispatchQueue.main.async {
-                print("DEBUG: [WorkoutSessionView] Clearing countdown (async)")
-                countdown = nil
-            }
-            stopCountdownTimer()
-            
-            // Play start sound
-            if viewModel.isSoundEnabled {
-                print("DEBUG: [WorkoutSessionView] Playing workout start sound")
-                AudioServicesPlaySystemSound(1104) // Stronger beep
-                // Haptic feedback completely removed to prevent device vibration
-            }
-            
-            // Start the actual workout in the next render cycle
-            DispatchQueue.main.async {
-                print("DEBUG: [WorkoutSessionView] Starting workout (async)")
-                print("DEBUG: [WorkoutSessionView] About to call viewModel.startWorkout()")
-                viewModel.startWorkout()
-                print("DEBUG: [WorkoutSessionView] viewModel.startWorkout() completed")
-            }
-        }
-    }
-    
-    private func stopCountdownTimer() {
-        if countdownCancellable != nil {
-            print("DEBUG: [WorkoutSessionView] Stopping countdown timer")
-            countdownCancellable?.cancel()
-            countdownCancellable = nil
-        }
-    }
-    
-    // MARK: - Position Check and Auto-Start
-    private func startPositionCheck() {
-        isCheckingPosition = true
-        showPositionGuide = true
-        positionHoldProgress = 0.0
-        
-        // Reset validators
-        startingPositionValidator.reset()
-        
-        print("DEBUG: [WorkoutSessionView] Started position checking")
-    }
-    
-    private func checkPositionAndAutoStart(body: DetectedBody?) {
-        guard let body = body else {
-            positionHoldProgress = 0.0
-            return
-        }
-        
-        // Simplified position checking - just check if body is detected
-        let isFramedCorrectly = body.allPoints.count > 5 // Basic check for body detection
-        
-        guard isFramedCorrectly else {
-            positionHoldProgress = 0.0
-            return
-        }
-        
-        // Check starting position
-        startingPositionValidator.validatePosition(body: body, exerciseType: exerciseType)
-        
-        if startingPositionValidator.isInPosition {
-            // User is in correct position, update progress
-            withAnimation(.linear(duration: 0.1)) {
-                positionHoldProgress = startingPositionValidator.timeInCorrectPosition / 2.0
-            }
-            
-            // Auto-start when held for 2 seconds
-            if startingPositionValidator.timeInCorrectPosition >= 2.0 {
-                autoStartWorkout()
-            }
-        } else {
-            // Reset progress if position is lost
-            withAnimation {
-                positionHoldProgress = 0.0
-            }
-        }
-    }
-    
-    private func autoStartWorkout() {
-        isCheckingPosition = false
-        showPositionGuide = false
-        positionHoldProgress = 0.0
-        
-        // Play ready sound
-        if viewModel.isSoundEnabled {
-            AudioServicesPlaySystemSound(1104)
-        }
-        
-        print("DEBUG: [WorkoutSessionView] Auto-starting workout")
-        
-        // Start the workout directly (skip countdown)
-        viewModel.startWorkout()
-    }
+    // MARK: - Legacy Methods (Replaced by AutoPositionOverlay and ViewModel)
+    // All countdown and position checking logic has been moved to the ViewModel
+    // and is now handled by the AutoPositionOverlay component
     
     // MARK: - UI Components
     @ViewBuilder
