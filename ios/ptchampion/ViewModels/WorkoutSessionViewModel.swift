@@ -93,9 +93,19 @@ class WorkoutSessionViewModel: ObservableObject {
     private var lastProcessedOrientation: UIInterfaceOrientation?
     
     // MARK: - Auto Position Detection
-    @Published var autoPositionDetector: AutoPositionDetector
+    private let autoPositionDetector = AutoPositionDetector()
     @Published var positionHoldProgress: Float = 0.0
     @Published var countdownValue: Int? = nil
+    
+    // Additional properties for position detection feedback
+    @Published var currentInstruction: String = ""
+    @Published var positioningConfidence: Double = 0.0
+    @Published var missingRequirements: [String] = []
+    
+    // Computed property to expose autoPositionDetector for UI
+    var autoPositionDetectorForUI: AutoPositionDetector {
+        return autoPositionDetector
+    }
     
     // MARK: - Calibration Properties
     @Published var showCalibrationView: Bool = false
@@ -148,8 +158,7 @@ class WorkoutSessionViewModel: ObservableObject {
         self.workoutTimer = workoutTimer
         self.modelContext = modelContext
         
-        // Initialize auto position detector
-        self.autoPositionDetector = AutoPositionDetector()
+        // Auto position detector is initialized as a property
         
         // Initialize calibration repository
         self.calibrationRepository = CalibrationRepository()
@@ -262,21 +271,18 @@ class WorkoutSessionViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Auto position detector state changes
-        autoPositionDetector.$isInPosition
+        // Auto position detector state changes - Fixed with proper type annotations
+        autoPositionDetector.$currentDetection
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] isInPosition in
-                guard let self = self else { return }
-                
-                if self.workoutState == .waitingForPosition && isInPosition {
-                    self.handlePositionDetected()
-                }
+            .sink { [weak self] (detection: PositionDetectionResult?) in
+                guard let self = self, let detection = detection else { return }
+                self.handlePositionDetection(detection)
             }
             .store(in: &cancellables)
         
         autoPositionDetector.$positionQuality
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] quality in
+            .sink { [weak self] (quality: Float) in
                 self?.positionHoldProgress = self?.autoPositionDetector.getPositionHoldProgress() ?? 0.0
             }
             .store(in: &cancellables)
@@ -311,6 +317,9 @@ class WorkoutSessionViewModel: ObservableObject {
         
         // Mark workout as inactive to prevent late callbacks from processing
         isWorkoutActive = false
+        
+        // Stop automatic position detection
+        stopAutomaticPositionDetection()
         
         // Cancel orientation debouncer
         orientationChangeDebouncer?.invalidate()
@@ -430,9 +439,13 @@ class WorkoutSessionViewModel: ObservableObject {
             // Reset auto position detector
             self.autoPositionDetector.reset()
             
+            // Start automatic position detection
+            self.startAutomaticPositionDetection()
+            
             // Transition to waiting for position state
             self.workoutState = .waitingForPosition
             self.feedbackMessage = "Get into starting position"
+            self.currentInstruction = "Get into starting position"
             
             // Start camera session
             DispatchQueue.main.async {
@@ -522,13 +535,66 @@ class WorkoutSessionViewModel: ObservableObject {
     
     /// Handles auto position detection during waitingForPosition state
     private func handleAutoPositionDetection(body: DetectedBody) {
+        // Process the detected body through MediaPipe landmarks
+        processDetectedBody(body)
+    }
+    
+    /// Process detected body and convert to landmarks for position analysis
+    private func processDetectedBody(_ body: DetectedBody) {
+        guard autoPositionDetector.isDetecting else { return }
+        
         let result = autoPositionDetector.detectPosition(body: body, expectedExercise: exerciseType)
         
-        // Update feedback message with position guidance
-        DispatchQueue.main.async {
-            self.feedbackMessage = result.feedback.primaryInstruction
-            self.positionHoldProgress = self.autoPositionDetector.getPositionHoldProgress()
+        // Update the current detection
+        DispatchQueue.main.async { [weak self] in
+            self?.autoPositionDetector.currentDetection = result
         }
+    }
+    
+    /// Handle position detection results with proper type safety
+    private func handlePositionDetection(_ detection: PositionDetectionResult) {
+        // Update UI based on detection
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Update feedback properties
+            self.currentInstruction = detection.feedback.primaryInstruction
+            self.positioningConfidence = detection.feedback.confidenceScore
+            self.missingRequirements = detection.feedback.missingRequirements
+            self.feedbackMessage = detection.feedback.primaryInstruction
+            
+            // Handle state transitions based on position detection
+            if self.workoutState == .waitingForPosition {
+                if detection.isInPosition {
+                    // User is correctly positioned, start countdown
+                    self.handlePositionDetected()
+                } else {
+                    // Continue showing positioning guidance
+                    self.showPositioningFeedback(detection.feedback)
+                }
+            }
+        }
+    }
+    
+    /// Show positioning feedback to user
+    private func showPositioningFeedback(_ feedback: PositioningFeedback) {
+        // Update UI with positioning guidance
+        self.currentInstruction = feedback.primaryInstruction
+        self.positioningConfidence = feedback.confidenceScore
+        self.missingRequirements = feedback.missingRequirements
+        self.feedbackMessage = feedback.primaryInstruction
+    }
+    
+    /// Start automatic position detection
+    func startAutomaticPositionDetection() {
+        autoPositionDetector.isDetecting = true
+        print("DEBUG: [WorkoutSessionViewModel] Started automatic position detection")
+    }
+    
+    /// Stop automatic position detection
+    func stopAutomaticPositionDetection() {
+        autoPositionDetector.isDetecting = false
+        print("DEBUG: [WorkoutSessionViewModel] Stopped automatic position detection")
     }
     
     func togglePause() {

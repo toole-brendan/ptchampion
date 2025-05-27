@@ -66,7 +66,7 @@ struct WorkoutSessionView: View {
             // New Auto Position Overlay (replaces old start button and countdown)
             if [.ready, .waitingForPosition, .positionDetected, .countdown].contains(viewModel.workoutState) {
                 AutoPositionOverlay(
-                    autoPositionDetector: viewModel.autoPositionDetector,
+                    autoPositionDetector: viewModel.autoPositionDetectorForUI,
                     workoutState: viewModel.workoutState,
                     positionHoldProgress: viewModel.positionHoldProgress,
                     countdownValue: viewModel.countdownValue,

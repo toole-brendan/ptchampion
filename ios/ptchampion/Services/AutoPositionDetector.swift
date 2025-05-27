@@ -1,8 +1,9 @@
 import Foundation
 import Vision
 import Combine
+import MediaPipeTasksVision
 
-/// Automatic position detection service that leverages existing exercise analyzers
+/// Automatic position detection service that leverages MediaPipe landmarks
 /// to detect when users are in correct starting positions without manual calibration
 class AutoPositionDetector: ObservableObject {
     
@@ -13,37 +14,13 @@ class AutoPositionDetector: ObservableObject {
     @Published var primaryInstruction: String = "Get into starting position"
     @Published var missingRequirements: [String] = []
     @Published var confidenceScore: Float = 0.0
+    @Published var currentDetection: PositionDetectionResult?
+    @Published var isDetecting = false
     
-    // MARK: - Position Detection Result
-    struct PositionDetectionResult {
-        let detectedExercise: ExerciseType?
-        let isInPosition: Bool
-        let positionQuality: Float
-        let feedback: PositioningFeedback
-        let confidenceScore: Float
-    }
-    
-    struct PositioningFeedback {
-        let primaryInstruction: String
-        let visualGuide: FramingGuide
-        let confidenceScore: Float
-        let missingRequirements: [String]
-    }
-    
-    struct FramingGuide {
-        let tooClose: Bool
-        let tooFar: Bool
-        let moveLeft: Bool
-        let moveRight: Bool
-        let bodyNotVisible: Bool
-        let optimalDistance: Float
-    }
-    
-    // MARK: - Dependencies
-    private let pushupAnalyzer: PushupPositionAnalyzer
-    private let situpAnalyzer: SitupPositionAnalyzer
-    private let pullupAnalyzer: PullupPositionAnalyzer
-    private let framingAnalyzer: BodyFramingAnalyzer
+    // MARK: - Exercise-Specific Thresholds
+    private let pushupThresholds = PushupThresholds()
+    private let situpThresholds = SitupThresholds()
+    private let pullupThresholds = PullupThresholds()
     
     // MARK: - State
     private var recentDetections: [PositionDetectionResult] = []
@@ -53,156 +30,461 @@ class AutoPositionDetector: ObservableObject {
     
     // MARK: - Initialization
     init() {
-        self.pushupAnalyzer = PushupPositionAnalyzer()
-        self.situpAnalyzer = SitupPositionAnalyzer()
-        self.pullupAnalyzer = PullupPositionAnalyzer()
-        self.framingAnalyzer = BodyFramingAnalyzer()
+        // Initialize with default state
     }
     
     // MARK: - Main Detection Method
     func detectPosition(body: DetectedBody, expectedExercise: ExerciseType? = nil) -> PositionDetectionResult {
-        // First check body framing
-        let framingAnalysis = framingAnalyzer.analyzeBodyFraming(body: body)
+        // Convert DetectedBody to MediaPipe landmarks for analysis
+        let landmarks = convertDetectedBodyToLandmarks(body)
+        return detectExercisePosition(landmarks: landmarks, expectedExercise: expectedExercise)
+    }
+    
+    func detectExercisePosition(landmarks: [NormalizedLandmark], expectedExercise: ExerciseType? = nil) -> PositionDetectionResult {
+        isDetecting = true
         
-        // If framing is poor, focus on that first
-        if !framingAnalysis.isAcceptable {
-            let feedback = createFramingFeedback(framingAnalysis)
+        // Analyze body framing first
+        let framingAnalysis = analyzeBodyFraming(landmarks)
+        
+        // If not properly framed, return early with framing feedback
+        guard framingAnalysis.isFullyInFrame else {
             let result = PositionDetectionResult(
                 detectedExercise: nil,
                 isInPosition: false,
-                positionQuality: 0.0,
-                feedback: feedback,
-                confidenceScore: 0.0
+                feedback: createFramingFeedback(framingAnalysis),
+                confidence: 0.0
             )
             updateState(with: result)
             return result
         }
         
-        // Analyze position for each exercise type
-        let analyses = [
-            (ExerciseType.pushup, pushupAnalyzer.detectStartingPosition(body: body)),
-            (ExerciseType.situp, situpAnalyzer.detectStartingPosition(body: body)),
-            (ExerciseType.pullup, pullupAnalyzer.detectStartingPosition(body: body))
+        // If expected exercise is provided, analyze only that exercise
+        if let expectedExercise = expectedExercise {
+            let score = analyzeSpecificExercise(landmarks, exercise: expectedExercise)
+            let result = PositionDetectionResult(
+                detectedExercise: expectedExercise,
+                isInPosition: score.isInPosition,
+                feedback: score.feedback,
+                confidence: score.confidence
+            )
+            updateState(with: result)
+            return result
+        }
+        
+        // Detect which exercise the user is attempting
+        let pushupScore = analyzePushupPosition(landmarks)
+        let situpScore = analyzeSitupPosition(landmarks)
+        let pullupScore = analyzePullupPosition(landmarks)
+        
+        // Find the most likely exercise based on position scores
+        let scores = [
+            (ExerciseType.pushup, pushupScore),
+            (ExerciseType.situp, situpScore),
+            (ExerciseType.pullup, pullupScore)
         ]
         
-        // Select most likely exercise or use expected
-        let detectedExercise = expectedExercise ?? selectMostLikelyExercise(analyses)
-        
-        // Get position analysis for detected/expected exercise
-        let positionAnalysis = getPositionAnalysis(for: detectedExercise, from: analyses)
-        
-        // Create feedback
-        let feedback = createPositionFeedback(
-            exercise: detectedExercise,
-            analysis: positionAnalysis,
-            framingAnalysis: framingAnalysis
-        )
+        guard let bestMatch = scores.max(by: { $0.1.confidence < $1.1.confidence }),
+              bestMatch.1.confidence > 0.6 else {
+            let result = PositionDetectionResult(
+                detectedExercise: nil,
+                isInPosition: false,
+                feedback: PositioningFeedback(
+                    primaryInstruction: "Please get into starting position for your exercise",
+                    visualGuide: framingAnalysis,
+                    confidenceScore: 0.0,
+                    missingRequirements: ["No clear exercise position detected"]
+                ),
+                confidence: 0.0
+            )
+            updateState(with: result)
+            return result
+        }
         
         let result = PositionDetectionResult(
-            detectedExercise: detectedExercise,
-            isInPosition: positionAnalysis.isInStartingPosition,
-            positionQuality: positionAnalysis.positionQuality,
-            feedback: feedback,
-            confidenceScore: positionAnalysis.confidence
+            detectedExercise: bestMatch.0,
+            isInPosition: bestMatch.1.isInPosition,
+            feedback: bestMatch.1.feedback,
+            confidence: bestMatch.1.confidence
         )
-        
         updateState(with: result)
         return result
     }
     
-    // MARK: - Exercise Selection Logic
-    private func selectMostLikelyExercise(_ analyses: [(ExerciseType, ExercisePositionAnalysis)]) -> ExerciseType? {
-        let validAnalyses = analyses.filter { $0.1.confidence > 0.3 }
-        
-        guard !validAnalyses.isEmpty else { return nil }
-        
-        // Return exercise with highest confidence
-        return validAnalyses.max(by: { $0.1.confidence < $1.1.confidence })?.0
+    // MARK: - Exercise-Specific Analysis
+    private func analyzeSpecificExercise(_ landmarks: [NormalizedLandmark], exercise: ExerciseType) -> PositionScore {
+        switch exercise {
+        case .pushup:
+            return analyzePushupPosition(landmarks)
+        case .situp:
+            return analyzeSitupPosition(landmarks)
+        case .pullup:
+            return analyzePullupPosition(landmarks)
+        default:
+            return PositionScore(confidence: 0, isInPosition: false, feedback: createDefaultFeedback())
+        }
     }
     
-    private func getPositionAnalysis(for exercise: ExerciseType?, from analyses: [(ExerciseType, ExercisePositionAnalysis)]) -> ExercisePositionAnalysis {
-        guard let exercise = exercise else {
-            return ExercisePositionAnalysis.unknown()
+    private func analyzePushupPosition(_ landmarks: [NormalizedLandmark]) -> PositionScore {
+        guard landmarks.count >= 33 else {
+            return PositionScore(confidence: 0, isInPosition: false, feedback: createDefaultFeedback())
         }
         
-        return analyses.first { $0.0 == exercise }?.1 ?? ExercisePositionAnalysis.unknown()
-    }
-    
-    // MARK: - Feedback Creation
-    private func createFramingFeedback(_ framingAnalysis: BodyFramingAnalysis) -> PositioningFeedback {
-        var instruction = "Position your body in frame"
-        var requirements: [String] = []
+        // Get key landmarks for pushup analysis
+        let leftShoulder = landmarks[11]
+        let rightShoulder = landmarks[12]
+        let leftElbow = landmarks[13]
+        let rightElbow = landmarks[14]
+        let leftWrist = landmarks[15]
+        let rightWrist = landmarks[16]
+        let leftHip = landmarks[23]
+        let rightHip = landmarks[24]
         
-        if framingAnalysis.tooClose {
-            instruction = "Step back from camera"
-            requirements.append("Move further from camera")
-        } else if framingAnalysis.tooFar {
-            instruction = "Move closer to camera"
-            requirements.append("Move closer to camera")
-        } else if !framingAnalysis.isFullyInFrame {
-            instruction = "Center your body in frame"
-            requirements.append("Full body must be visible")
+        // Calculate arm extension
+        let leftArmAngle = calculateAngle(
+            pointA: leftShoulder,
+            pointB: leftElbow,
+            pointC: leftWrist
+        )
+        let rightArmAngle = calculateAngle(
+            pointA: rightShoulder,
+            pointB: rightElbow,
+            pointC: rightWrist
+        )
+        
+        // Check if arms are extended (starting position)
+        let armsExtended = leftArmAngle >= pushupThresholds.minArmExtension && rightArmAngle >= pushupThresholds.minArmExtension
+        
+        // Check body alignment
+        let bodyAlignment = checkBodyAlignment(
+            shoulders: [leftShoulder, rightShoulder],
+            hips: [leftHip, rightHip]
+        )
+        
+        // Check if hands are on ground (wrists below shoulders)
+        let handsOnGround = leftWrist.y > leftShoulder.y && rightWrist.y > rightShoulder.y
+        
+        var missingRequirements: [String] = []
+        if !armsExtended {
+            missingRequirements.append("Extend your arms fully")
+        }
+        if !bodyAlignment {
+            missingRequirements.append("Keep your body straight")
+        }
+        if !handsOnGround {
+            missingRequirements.append("Place hands on the ground")
         }
         
-        let visualGuide = FramingGuide(
-            tooClose: framingAnalysis.tooClose,
-            tooFar: framingAnalysis.tooFar,
-            moveLeft: framingAnalysis.needsMoveLeft,
-            moveRight: framingAnalysis.needsMoveRight,
-            bodyNotVisible: !framingAnalysis.isFullyInFrame,
-            optimalDistance: framingAnalysis.optimalDistance
+        let isInPosition = armsExtended && bodyAlignment && handsOnGround
+        let confidence = calculateConfidence(
+            factors: [armsExtended, bodyAlignment, handsOnGround]
         )
         
-        return PositioningFeedback(
-            primaryInstruction: instruction,
-            visualGuide: visualGuide,
-            confidenceScore: framingAnalysis.quality,
-            missingRequirements: requirements
-        )
-    }
-    
-    private func createPositionFeedback(
-        exercise: ExerciseType?,
-        analysis: ExercisePositionAnalysis,
-        framingAnalysis: BodyFramingAnalysis
-    ) -> PositioningFeedback {
-        
-        guard let exercise = exercise else {
-            return PositioningFeedback(
-                primaryInstruction: "Position yourself for exercise",
+        return PositionScore(
+            confidence: confidence,
+            isInPosition: isInPosition,
+            feedback: PositioningFeedback(
+                primaryInstruction: missingRequirements.first ?? "Hold position",
                 visualGuide: FramingGuide(
-                    tooClose: false, tooFar: false, moveLeft: false, 
-                    moveRight: false, bodyNotVisible: true, optimalDistance: 1.5
+                    isFullyInFrame: true,
+                    tooClose: false,
+                    tooFar: false,
+                    optimalDistance: 1.0,
+                    currentDistance: 1.0
                 ),
-                confidenceScore: 0.0,
-                missingRequirements: ["Cannot detect exercise position"]
+                confidenceScore: confidence,
+                missingRequirements: missingRequirements
+            )
+        )
+    }
+    
+    private func analyzeSitupPosition(_ landmarks: [NormalizedLandmark]) -> PositionScore {
+        guard landmarks.count >= 33 else {
+            return PositionScore(confidence: 0, isInPosition: false, feedback: createDefaultFeedback())
+        }
+        
+        // Get key landmarks for situp analysis
+        let leftShoulder = landmarks[11]
+        let rightShoulder = landmarks[12]
+        let leftHip = landmarks[23]
+        let rightHip = landmarks[24]
+        let leftKnee = landmarks[25]
+        let rightKnee = landmarks[26]
+        
+        // Check if person is lying down (shoulders near hip level)
+        let shouldersNearGround = abs(leftShoulder.y - leftHip.y) < situpThresholds.maxShoulderHeight
+        
+        // Check knee bend
+        let kneesAboveHips = leftKnee.y < leftHip.y && rightKnee.y < rightHip.y
+        
+        // Calculate hip angle to ensure proper starting position
+        let hipAngle = calculateAngle(
+            pointA: leftShoulder,
+            pointB: leftHip,
+            pointC: leftKnee
+        )
+        
+        let properHipAngle = hipAngle >= situpThresholds.minHipAngle && hipAngle <= 180
+        
+        var missingRequirements: [String] = []
+        if !shouldersNearGround {
+            missingRequirements.append("Lie down on your back")
+        }
+        if !kneesAboveHips {
+            missingRequirements.append("Bend your knees")
+        }
+        if !properHipAngle {
+            missingRequirements.append("Adjust your position")
+        }
+        
+        let isInPosition = shouldersNearGround && kneesAboveHips && properHipAngle
+        let confidence = calculateConfidence(
+            factors: [shouldersNearGround, kneesAboveHips, properHipAngle]
+        )
+        
+        return PositionScore(
+            confidence: confidence,
+            isInPosition: isInPosition,
+            feedback: PositioningFeedback(
+                primaryInstruction: missingRequirements.first ?? "Hold position",
+                visualGuide: FramingGuide(
+                    isFullyInFrame: true,
+                    tooClose: false,
+                    tooFar: false,
+                    optimalDistance: 1.0,
+                    currentDistance: 1.0
+                ),
+                confidenceScore: confidence,
+                missingRequirements: missingRequirements
+            )
+        )
+    }
+    
+    private func analyzePullupPosition(_ landmarks: [NormalizedLandmark]) -> PositionScore {
+        guard landmarks.count >= 33 else {
+            return PositionScore(confidence: 0, isInPosition: false, feedback: createDefaultFeedback())
+        }
+        
+        // Get key landmarks for pullup analysis
+        let leftWrist = landmarks[15]
+        let rightWrist = landmarks[16]
+        let leftShoulder = landmarks[11]
+        let rightShoulder = landmarks[12]
+        let leftElbow = landmarks[13]
+        let rightElbow = landmarks[14]
+        
+        // Check if hands are above head (dead hang position)
+        let handsAboveHead = leftWrist.y < leftShoulder.y && rightWrist.y < rightShoulder.y
+        
+        // Check arm extension for dead hang
+        let leftArmAngle = calculateAngle(
+            pointA: leftShoulder,
+            pointB: leftElbow,
+            pointC: leftWrist
+        )
+        let rightArmAngle = calculateAngle(
+            pointA: rightShoulder,
+            pointB: rightElbow,
+            pointC: rightWrist
+        )
+        
+        let armsExtended = leftArmAngle >= pullupThresholds.minArmExtension && rightArmAngle >= pullupThresholds.minArmExtension
+        
+        // Check body is hanging (feet likely off ground)
+        let leftAnkle = landmarks[27]
+        let rightAnkle = landmarks[28]
+        let feetPosition = (leftAnkle.y + rightAnkle.y) / 2
+        let bodyHanging = feetPosition > 0.7 // Lower portion of frame
+        
+        var missingRequirements: [String] = []
+        if !handsAboveHead {
+            missingRequirements.append("Grab the bar above your head")
+        }
+        if !armsExtended {
+            missingRequirements.append("Extend your arms fully")
+        }
+        if !bodyHanging {
+            missingRequirements.append("Hang from the bar")
+        }
+        
+        let isInPosition = handsAboveHead && armsExtended && bodyHanging
+        let confidence = calculateConfidence(
+            factors: [handsAboveHead, armsExtended, bodyHanging]
+        )
+        
+        return PositionScore(
+            confidence: confidence,
+            isInPosition: isInPosition,
+            feedback: PositioningFeedback(
+                primaryInstruction: missingRequirements.first ?? "Hold dead hang position",
+                visualGuide: FramingGuide(
+                    isFullyInFrame: true,
+                    tooClose: false,
+                    tooFar: false,
+                    optimalDistance: 1.0,
+                    currentDistance: 1.0
+                ),
+                confidenceScore: confidence,
+                missingRequirements: missingRequirements
+            )
+        )
+    }
+    
+    // MARK: - Helper Methods
+    private func convertDetectedBodyToLandmarks(_ body: DetectedBody) -> [NormalizedLandmark] {
+        // Convert DetectedBody points to MediaPipe NormalizedLandmark format
+        var landmarks: [NormalizedLandmark] = []
+        
+        // MediaPipe BlazePose has 33 landmarks, initialize with default values
+        for i in 0..<33 {
+            landmarks.append(NormalizedLandmark(x: 0, y: 0, z: 0))
+        }
+        
+        // Map known joint points to MediaPipe landmark indices
+        let jointMapping: [(VNHumanBodyPoseObservation.JointName, Int)] = [
+            (.nose, 0),
+            (.leftEye, 1), (.rightEye, 2),
+            (.leftEar, 3), (.rightEar, 4),
+            (.leftShoulder, 11), (.rightShoulder, 12),
+            (.leftElbow, 13), (.rightElbow, 14),
+            (.leftWrist, 15), (.rightWrist, 16),
+            (.leftHip, 23), (.rightHip, 24),
+            (.leftKnee, 25), (.rightKnee, 26),
+            (.leftAnkle, 27), (.rightAnkle, 28)
+        ]
+        
+        // Fill in the landmarks from DetectedBody
+        for (jointName, index) in jointMapping {
+            if let point = body.point(jointName) {
+                landmarks[index] = NormalizedLandmark(
+                    x: Float(point.location.x),
+                    y: Float(point.location.y),
+                    z: 0 // DetectedBody doesn't provide z coordinate
+                )
+            }
+        }
+        
+        return landmarks
+    }
+    
+    private func analyzeBodyFraming(_ landmarks: [NormalizedLandmark]) -> FramingGuide {
+        guard !landmarks.isEmpty else {
+            return FramingGuide(
+                isFullyInFrame: false,
+                tooClose: false,
+                tooFar: true,
+                optimalDistance: 1.0,
+                currentDistance: 0.0
             )
         }
         
-        var instruction = analysis.primaryFeedback
-        var requirements = analysis.missingRequirements
+        // Calculate bounding box of all landmarks
+        let xCoordinates = landmarks.map { $0.x }
+        let yCoordinates = landmarks.map { $0.y }
         
-        // Override with exercise-specific guidance if in position
-        if analysis.isInStartingPosition {
-            instruction = "Perfect! Hold this position"
+        guard let minX = xCoordinates.min(),
+              let maxX = xCoordinates.max(),
+              let minY = yCoordinates.min(),
+              let maxY = yCoordinates.max() else {
+            return FramingGuide(
+                isFullyInFrame: false,
+                tooClose: false,
+                tooFar: true,
+                optimalDistance: 1.0,
+                currentDistance: 0.0
+            )
         }
         
-        let visualGuide = FramingGuide(
-            tooClose: framingAnalysis.tooClose,
-            tooFar: framingAnalysis.tooFar,
-            moveLeft: framingAnalysis.needsMoveLeft,
-            moveRight: framingAnalysis.needsMoveRight,
-            bodyNotVisible: !framingAnalysis.isFullyInFrame,
-            optimalDistance: framingAnalysis.optimalDistance
+        let width = maxX - minX
+        let height = maxY - minY
+        
+        // Check if all landmarks are within normalized bounds (0-1)
+        let isFullyInFrame = minX > 0.05 && maxX < 0.95 && minY > 0.05 && maxY < 0.95
+        
+        // Determine if too close or too far
+        let area = width * height
+        let tooClose = area > 0.8
+        let tooFar = area < 0.3
+        
+        let currentDistance = 1.0 / Double(area)
+        let optimalDistance = 1.0 / 0.5 // Optimal area is 0.5
+        
+        return FramingGuide(
+            isFullyInFrame: isFullyInFrame,
+            tooClose: tooClose,
+            tooFar: tooFar,
+            optimalDistance: optimalDistance,
+            currentDistance: currentDistance
         )
+    }
+    
+    private func calculateAngle(pointA: NormalizedLandmark, pointB: NormalizedLandmark, pointC: NormalizedLandmark) -> Double {
+        let radians = atan2(pointC.y - pointB.y, pointC.x - pointB.x) - atan2(pointA.y - pointB.y, pointA.x - pointB.x)
+        var degrees = abs(Double(radians) * 180.0 / .pi)
+        if degrees > 180.0 {
+            degrees = 360.0 - degrees
+        }
+        return degrees
+    }
+    
+    private func checkBodyAlignment(shoulders: [NormalizedLandmark], hips: [NormalizedLandmark]) -> Bool {
+        let shoulderCenter = CGPoint(
+            x: CGFloat((shoulders[0].x + shoulders[1].x) / 2),
+            y: CGFloat((shoulders[0].y + shoulders[1].y) / 2)
+        )
+        let hipCenter = CGPoint(
+            x: CGFloat((hips[0].x + hips[1].x) / 2),
+            y: CGFloat((hips[0].y + hips[1].y) / 2)
+        )
+        
+        // Check if shoulders and hips are reasonably aligned
+        let horizontalAlignment = abs(shoulderCenter.x - hipCenter.x) < 0.1
+        return horizontalAlignment
+    }
+    
+    private func calculateConfidence(factors: [Bool]) -> Double {
+        let trueCount = factors.filter { $0 }.count
+        return Double(trueCount) / Double(factors.count)
+    }
+    
+    private func createFramingFeedback(_ framing: FramingGuide) -> PositioningFeedback {
+        var instruction = "Please position yourself in the camera frame"
+        var requirements: [String] = []
+        
+        if !framing.isFullyInFrame {
+            requirements.append("Move so your entire body is visible")
+        }
+        if framing.tooClose {
+            instruction = "Step back from the camera"
+            requirements.append("You're too close to the camera")
+        } else if framing.tooFar {
+            instruction = "Step closer to the camera"
+            requirements.append("You're too far from the camera")
+        }
         
         return PositioningFeedback(
             primaryInstruction: instruction,
-            visualGuide: visualGuide,
-            confidenceScore: analysis.confidence,
+            visualGuide: framing,
+            confidenceScore: 0.0,
             missingRequirements: requirements
         )
     }
+    
+    private func createDefaultFeedback() -> PositioningFeedback {
+        return PositioningFeedback(
+            primaryInstruction: "Unable to detect body position",
+            visualGuide: FramingGuide(
+                isFullyInFrame: false,
+                tooClose: false,
+                tooFar: false,
+                optimalDistance: 1.0,
+                currentDistance: 0.0
+            ),
+            confidenceScore: 0.0,
+            missingRequirements: ["Ensure you're visible in the camera"]
+        )
+    }
+    
+
     
     // MARK: - State Management
     private func updateState(with result: PositionDetectionResult) {
@@ -216,11 +498,12 @@ class AutoPositionDetector: ObservableObject {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             
+            self.currentDetection = result
             self.detectedExercise = result.detectedExercise
-            self.positionQuality = result.positionQuality
+            self.positionQuality = Float(result.confidence)
             self.primaryInstruction = result.feedback.primaryInstruction
             self.missingRequirements = result.feedback.missingRequirements
-            self.confidenceScore = result.confidenceScore
+            self.confidenceScore = Float(result.confidence)
             
             // Handle position hold timing
             if result.isInPosition {
@@ -260,6 +543,67 @@ class AutoPositionDetector: ObservableObject {
 }
 
 // MARK: - Supporting Types
+
+struct PositionDetectionResult {
+    let detectedExercise: ExerciseType?
+    let isInPosition: Bool
+    let feedback: PositioningFeedback
+    let confidence: Double
+}
+
+struct PositioningFeedback {
+    let primaryInstruction: String
+    let visualGuide: FramingGuide
+    let confidenceScore: Double
+    let missingRequirements: [String]
+}
+
+struct FramingGuide {
+    let isFullyInFrame: Bool
+    let tooClose: Bool
+    let tooFar: Bool
+    let optimalDistance: Double
+    let currentDistance: Double
+}
+
+struct PositionScore {
+    let confidence: Double
+    let isInPosition: Bool
+    let feedback: PositioningFeedback
+}
+
+struct PushupThresholds {
+    let minArmExtension: Double = 160.0
+    let maxBodyAngle: Double = 20.0
+}
+
+struct SitupThresholds {
+    let minHipAngle: Double = 150.0
+    let maxShoulderHeight: Float = 0.15
+}
+
+struct PullupThresholds {
+    let minArmExtension: Double = 160.0
+    let minHandHeight: Double = 0.2
+}
+
+// MARK: - Exercise Type Extension
+extension ExerciseType {
+    var startingPositionDescription: String {
+        switch self {
+        case .pushup:
+            return "High plank position with arms extended"
+        case .situp:
+            return "Lying on back with knees bent"
+        case .pullup:
+            return "Dead hang from bar with arms extended"
+        default:
+            return "Starting position for exercise"
+        }
+    }
+}
+
+// MARK: - Legacy Supporting Types (for backward compatibility)
 
 struct ExercisePositionAnalysis {
     let isInStartingPosition: Bool
