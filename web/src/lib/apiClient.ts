@@ -405,9 +405,57 @@ export const logExercise = (data: LogExerciseRequest): Promise<ExerciseResponse>
   return apiRequest<ExerciseResponse>('/exercises', 'POST', data, true);
 };
 
-export const getUserExercises = (page: number, pageSize: number): Promise<PaginatedExercisesResponse> => {
-  // Use the correct endpoint from the backend router, add query params
-  return apiRequest<PaginatedExercisesResponse>(`/exercises?page=${page}&pageSize=${pageSize}`, 'GET', null, true);
+// Interface for the backend's workout response format
+interface BackendWorkoutResponse {
+  id: number;
+  user_id: number;
+  exercise_id: number;
+  exercise_name: string;
+  exercise_type: string;
+  reps?: number;
+  duration_seconds?: number;
+  form_score?: number;
+  grade: number;
+  completed_at: string;
+  created_at: string;
+}
+
+interface BackendPaginatedWorkoutsResponse {
+  items: BackendWorkoutResponse[];
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+// Function to transform backend workout format to frontend exercise format
+const transformWorkoutToExercise = (workout: BackendWorkoutResponse): ExerciseResponse => {
+  return {
+    id: workout.id,
+    user_id: workout.user_id,
+    exercise_id: workout.exercise_id,
+    exercise_name: workout.exercise_name,
+    exercise_type: workout.exercise_type,
+    reps: workout.reps,
+    time_in_seconds: workout.duration_seconds,
+    distance: undefined, // Not available in workout response
+    notes: undefined, // Not available in workout response
+    grade: workout.grade,
+    created_at: workout.created_at
+  };
+};
+
+export const getUserExercises = async (page: number, pageSize: number): Promise<PaginatedExercisesResponse> => {
+  // Use the new /workouts endpoint that replaced /exercises
+  const response = await apiRequest<BackendPaginatedWorkoutsResponse>(`/workouts?page=${page}&pageSize=${pageSize}`, 'GET', null, true);
+  
+  // Transform the backend response to match frontend format
+  return {
+    items: response.items.map(transformWorkoutToExercise),
+    total_count: response.totalCount, // Convert camelCase to snake_case
+    page: response.page,
+    page_size: response.pageSize // Convert camelCase to snake_case
+  };
 };
 
 export const getExerciseById = (id: string): Promise<ExerciseResponse> => {
@@ -578,4 +626,4 @@ export const loginWithSocialProvider = async (data: import('./types').SocialSign
     console.error('Social login error:', error);
     throw error;
   }
-}; 
+};
