@@ -815,32 +815,51 @@ struct AdaptiveCalibrationGuide: View {
     
     @ViewBuilder
     private func zonesLayer(geometry: GeometryProxy, isLandscape: Bool) -> some View {
-        // Too far zone (subtle red background)
+        // Too far zone - very subtle
         Rectangle()
-            .fill(Color.red.opacity(0.05))
+            .fill(
+                RadialGradient(
+                    gradient: Gradient(colors: [
+                        Color.clear,
+                        Color.red.opacity(0.03)
+                    ]),
+                    center: .center,
+                    startRadius: geometry.size.width * 0.4,
+                    endRadius: geometry.size.width * 0.8
+                )
+            )
             .edgesIgnoringSafeArea(.all)
         
-        // Acceptable zone (yellow)
+        // Acceptable zone - subtle yellow
         RoundedRectangle(cornerRadius: 40)
-            .fill(Color.yellow.opacity(0.1))
+            .stroke(Color.yellow.opacity(0.3), lineWidth: 2)
+            .background(
+                RoundedRectangle(cornerRadius: 40)
+                    .fill(Color.yellow.opacity(0.05))
+            )
             .frame(
                 width: geometry.size.width * (isLandscape ? 0.8 : 0.9),
                 height: geometry.size.height * (isLandscape ? 0.9 : 0.85)
             )
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         
-        // Optimal zone (green)
+        // Optimal zone - subtle green
         RoundedRectangle(cornerRadius: 30)
-            .fill(Color.green.opacity(0.15))
+            .stroke(Color.green.opacity(0.4), lineWidth: 2)
+            .background(
+                RoundedRectangle(cornerRadius: 30)
+                    .fill(Color.green.opacity(0.08))
+            )
             .frame(
                 width: geometry.size.width * (isLandscape ? 0.65 : 0.75),
                 height: geometry.size.height * (isLandscape ? 0.8 : 0.7)
             )
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
         
-        // Current position indicator (animated border)
+        // Current position indicator - more prominent
         RoundedRectangle(cornerRadius: 25)
             .stroke(frameColor, lineWidth: 4)
+            .shadow(color: frameColor.opacity(0.5), radius: 10)
             .frame(
                 width: geometry.size.width * currentZoneWidth(isLandscape),
                 height: geometry.size.height * currentZoneHeight(isLandscape)
@@ -889,6 +908,9 @@ struct AdaptiveCalibrationGuide: View {
             
             // Bottom section: Instructions and suggestions
             VStack(spacing: 20) {
+                // Body detection status
+                bodyDetectionStatus
+                
                 // Main instruction
                 instructionBadge
                 
@@ -907,20 +929,31 @@ struct AdaptiveCalibrationGuide: View {
     
     private var distanceIndicator: some View {
         VStack(spacing: 4) {
+            // Add an icon for better visual
+            Image(systemName: distanceIcon)
+                .font(.title3)
+                .foregroundColor(.white)
+            
             Text(distanceText)
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
+            
             Text("Distance")
                 .font(.caption)
                 .foregroundColor(.white.opacity(0.8))
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 12)
         .background(
             Capsule()
-                .fill(frameColor.opacity(0.9))
+                .fill(backgroundGradient)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
         )
+        .shadow(color: .black.opacity(0.3), radius: 5, x: 0, y: 2)
     }
     
     private var instructionBadge: some View {
@@ -946,6 +979,25 @@ struct AdaptiveCalibrationGuide: View {
         )
     }
     
+    // Add visual feedback for body detection:
+    private var bodyDetectionStatus: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(bodyDetected ? Color.green : Color.orange)
+                .frame(width: 8, height: 8)
+            
+            Text(bodyDetected ? "Body Detected" : "No Body Detected")
+                .font(.caption)
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(
+            Capsule()
+                .fill(Color.black.opacity(0.6))
+        )
+    }
+    
     // MARK: - Helper Properties
     
     private var frameColor: Color {
@@ -968,11 +1020,20 @@ struct AdaptiveCalibrationGuide: View {
     
     private var distanceText: String {
         switch framing {
-        case .optimal: return "~5 ft"
-        case .acceptable: return "~6 ft"
-        case .tooClose: return "<3 ft"
-        case .tooFar: return ">8 ft"
-        default: return "---"
+        case .optimal: 
+            return "~5 ft"
+        case .acceptable: 
+            return "~6 ft"
+        case .tooClose: 
+            return "<3 ft"
+        case .tooFar: 
+            return ">8 ft"
+        case .tooLeft, .tooRight:
+            return "~5-6 ft"  // Add distance for left/right
+        case .tooHigh, .tooLow:
+            return "~5-6 ft"  // Add distance for up/down
+        case .unknown:
+            return "Detecting..."  // Better than "---"
         }
     }
     
@@ -988,6 +1049,34 @@ struct AdaptiveCalibrationGuide: View {
         case .acceptable: return "circle"
         case .unknown: return "questionmark.circle"
         }
+    }
+    
+    // Add distance icon:
+    private var distanceIcon: String {
+        switch framing {
+        case .optimal: return "checkmark.circle.fill"
+        case .acceptable: return "circle.fill"
+        case .tooClose: return "arrow.down.circle.fill"
+        case .tooFar: return "arrow.up.circle.fill"
+        default: return "circle.dashed"
+        }
+    }
+    
+    // Add gradient for better visibility:
+    private var backgroundGradient: LinearGradient {
+        LinearGradient(
+            gradient: Gradient(colors: [
+                frameColor.opacity(0.9),
+                frameColor.opacity(0.7)
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+    }
+    
+    // Add property to track body detection:
+    private var bodyDetected: Bool {
+        framing != .unknown
     }
     
     private func currentZoneWidth(_ isLandscape: Bool) -> CGFloat {
