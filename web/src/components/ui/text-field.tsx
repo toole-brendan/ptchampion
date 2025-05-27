@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { Label } from "./label"
 
 const textFieldVariants = cva(
-  "flex w-full rounded-input border bg-background px-3 py-2 text-sm ring-offset-background transition-all duration-base file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+  "flex w-full rounded-input border bg-white px-3 py-2 text-sm ring-offset-background transition-all duration-base file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
   {
     variants: {
       variant: {
@@ -34,6 +34,8 @@ export interface TextFieldProps
   errorMessage?: string
   required?: boolean
   fullWidth?: boolean
+  icon?: React.ReactNode
+  keyboardType?: string
 }
 
 const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
@@ -48,26 +50,36 @@ const TextField = React.forwardRef<HTMLInputElement, TextFieldProps>(
     required,
     fullWidth,
     id,
+    icon,
+    keyboardType,
     ...props 
   }, ref) => {
     const inputId = id || React.useId()
     const computedVariant = error ? 'error' : variant
     
     const input = (
-      <input
-        id={inputId}
-        className={cn(
-          textFieldVariants({ variant: computedVariant, size }),
-          fullWidth && "w-full",
-          className
+      <div className="relative w-full">
+        {icon && (
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-tactical-gray">
+            {icon}
+          </div>
         )}
-        ref={ref}
-        aria-invalid={error}
-        aria-describedby={
-          helperText || errorMessage ? `${inputId}-helper` : undefined
-        }
-        {...props}
-      />
+        <input
+          id={inputId}
+          className={cn(
+            textFieldVariants({ variant: computedVariant, size }),
+            fullWidth && "w-full",
+            icon && "pl-10",
+            className
+          )}
+          ref={ref}
+          aria-invalid={error}
+          aria-describedby={
+            helperText || errorMessage ? `${inputId}-helper` : undefined
+          }
+          {...props}
+        />
+      </div>
     )
     
     if (!label && !helperText && !errorMessage) {
