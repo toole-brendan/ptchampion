@@ -3,7 +3,7 @@ import Vision
 import CoreGraphics
 
 /// Validates if the user is in the correct starting position for each exercise
-class StartingPositionValidator: ObservableObject {
+public class StartingPositionValidator: ObservableObject {
     
     // MARK: - Position Requirements
     struct PositionRequirements {
