@@ -4,6 +4,7 @@ import CoreMotion
 import AVFoundation
 import simd
 import Vision
+import UIKit
 
 /// Manages device calibration for accurate pose detection across different devices and user setups
 class CalibrationManager: NSObject, ObservableObject {
@@ -320,7 +321,7 @@ class CalibrationManager: NSObject, ObservableObject {
     }
     
     private func evaluateFraming(_ body: DetectedBody) -> FramingStatus {
-        let targetFraming = getTargetFraming(for: currentExercise)
+        let targetFraming = getOrientationAwareTargetFraming(for: currentExercise)
         
         // Check if required body parts are visible
         let visibleParts = targetFraming.bodyParts.filter { joint in
@@ -446,7 +447,7 @@ class CalibrationManager: NSObject, ObservableObject {
     }
     
     private func assessFrameQuality(_ body: DetectedBody) -> CalibrationFrame.FrameQuality {
-        let targetFraming = getTargetFraming(for: currentExercise)
+        let targetFraming = getOrientationAwareTargetFraming(for: currentExercise)
         
         // Calculate joint visibility scores
         var jointVisibility: [VNHumanBodyPoseObservation.JointName: Float] = [:]
@@ -535,7 +536,7 @@ class CalibrationManager: NSObject, ObservableObject {
         }
         
         // Body visibility suggestions
-        let targetFraming = getTargetFraming(for: currentExercise)
+        let targetFraming = getOrientationAwareTargetFraming(for: currentExercise)
         let visibleParts = targetFraming.bodyParts.filter { joint in
             body.point(joint)?.confidence ?? 0 > CalibrationConstants.minConfidenceThreshold
         }
@@ -970,9 +971,12 @@ extension CalibrationManager {
                 exercise: baseFraming.exercise,
                 bodyParts: baseFraming.bodyParts,
                 optimalDistance: baseFraming.optimalDistance * 1.1, // Slightly further in landscape
-                acceptableDistanceRange: 
-                    (baseFraming.acceptableDistanceRange.lowerBound * 1.1)...
-                    (baseFraming.acceptableDistanceRange.upperBound * 1.2),
+                acceptableDistanceRange: ClosedRange(
+                    uncheckedBounds: (
+                        lower: baseFraming.acceptableDistanceRange.lowerBound * 1.1,
+                        upper: baseFraming.acceptableDistanceRange.upperBound * 1.2
+                    )
+                ),
                 // Adjust ranges for landscape aspect ratio
                 verticalCenterRange: 0.25...0.75,  // Tighter vertical range
                 horizontalCenterRange: 0.15...0.85, // Wider horizontal range
@@ -985,7 +989,7 @@ extension CalibrationManager {
     }
     
     /// Override getTargetFraming to include orientation awareness
-    func getTargetFraming(for exercise: ExerciseType) -> TargetFraming {
+    func getOrientationAwareTargetFraming(for exercise: ExerciseType) -> TargetFraming {
         let baseFraming = TargetFraming.getTargetFraming(for: exercise)
         return adjustTargetFramingForOrientation(baseFraming)
     }
