@@ -42,8 +42,8 @@ struct PNGOverlayView: View {
             imageName = "situp_position"
         case .pullup:
             imageName = "pullup_position"
-        case .run:
-            imageName = "run_position"
+        case .run, .unknown:
+            imageName = "unknown_position"
         }
         
         // Try multiple variations of the image name

@@ -41,8 +41,8 @@ struct EnhancedExerciseOverlay: View {
                 workoutState: workoutState,
                 positionHoldProgress: positionHoldProgress,
                 countdownValue: countdownValue,
-                exerciseType: exerciseType,
-                onStartPressed: onStartPressed
+                onStartPressed: onStartPressed,
+                exerciseType: exerciseType
             )
             
             // Layer 5: Alignment guide (top)

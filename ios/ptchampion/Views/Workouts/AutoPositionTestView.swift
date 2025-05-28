@@ -66,7 +66,8 @@ struct AutoPositionTestView: View {
                         print("GO button pressed in test")
                         workoutState = .waitingForPosition
                         simulatePositionDetection()
-                    }
+                    },
+                    exerciseType: .pushup
                 )
             }
         }
