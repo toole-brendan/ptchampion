@@ -46,9 +46,9 @@ struct SinglePositionOverlay: View {
                 )
             }
             
-            // Directional arrows (if needed)
+            // Directional arrows (if needed) - using existing component
             if framingValidator.framingStatus == .needsAdjustment {
-                DirectionalArrows(adjustment: framingValidator.requiredAdjustment)
+                DirectionalArrows(adjustment: mapToSimpleFramingAdjustment(framingValidator.requiredAdjustment))
             }
         }
         .onAppear {
@@ -72,6 +72,24 @@ struct SinglePositionOverlay: View {
     private var uniformPadding: EdgeInsets {
         // Same padding regardless of orientation
         EdgeInsets(top: 100, leading: 60, bottom: 180, trailing: 60)
+    }
+    
+    // Map FullBodyFramingValidator.FramingAdjustment to FullBodyFramingGuideView.SimpleFramingAdjustment
+    private func mapToSimpleFramingAdjustment(_ adjustment: FullBodyFramingValidator.FramingAdjustment) -> FullBodyFramingGuideView.SimpleFramingAdjustment {
+        switch adjustment {
+        case .none:
+            return .none
+        case .moveCloser:
+            return .moveCloser
+        case .moveBack:
+            return .moveBack
+        case .moveLeft:
+            return .moveLeft
+        case .moveRight:
+            return .moveRight
+        case .rotateDevice:
+            return .rotateDevice
+        }
     }
 }
 

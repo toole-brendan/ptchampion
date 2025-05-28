@@ -210,7 +210,6 @@
 		BFF57A822DE752E000B65EFF /* FullBodyFramingValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A7F2DE752E000B65EFF /* FullBodyFramingValidator.swift */; };
 		BFF57A832DE752E000B65EFF /* QuickCalibrationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A802DE752E000B65EFF /* QuickCalibrationManager.swift */; };
 		BFF57A8D2DE77EA900B65EFF /* PositionFeedbackBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A8A2DE77EA900B65EFF /* PositionFeedbackBar.swift */; };
-		BFF57A8E2DE77EA900B65EFF /* DirectionalArrows.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A892DE77EA900B65EFF /* DirectionalArrows.swift */; };
 		BFF57A8F2DE77EA900B65EFF /* PositionInstructionBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A8B2DE77EA900B65EFF /* PositionInstructionBanner.swift */; };
 		BFF57A902DE77EA900B65EFF /* SinglePositionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A8C2DE77EA900B65EFF /* SinglePositionOverlay.swift */; };
 		BFF57A912DE77EA900B65EFF /* DevicePlacementTip.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A882DE77EA900B65EFF /* DevicePlacementTip.swift */; };
@@ -440,7 +439,6 @@
 		BFF57A7F2DE752E000B65EFF /* FullBodyFramingValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullBodyFramingValidator.swift; sourceTree = "<group>"; };
 		BFF57A802DE752E000B65EFF /* QuickCalibrationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCalibrationManager.swift; sourceTree = "<group>"; };
 		BFF57A882DE77EA900B65EFF /* DevicePlacementTip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePlacementTip.swift; sourceTree = "<group>"; };
-		BFF57A892DE77EA900B65EFF /* DirectionalArrows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectionalArrows.swift; sourceTree = "<group>"; };
 		BFF57A8A2DE77EA900B65EFF /* PositionFeedbackBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionFeedbackBar.swift; sourceTree = "<group>"; };
 		BFF57A8B2DE77EA900B65EFF /* PositionInstructionBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionInstructionBanner.swift; sourceTree = "<group>"; };
 		BFF57A8C2DE77EA900B65EFF /* SinglePositionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SinglePositionOverlay.swift; sourceTree = "<group>"; };
@@ -831,7 +829,6 @@
 			isa = PBXGroup;
 			children = (
 				BFF57A882DE77EA900B65EFF /* DevicePlacementTip.swift */,
-				BFF57A892DE77EA900B65EFF /* DirectionalArrows.swift */,
 				BFF57A8A2DE77EA900B65EFF /* PositionFeedbackBar.swift */,
 				BFF57A8B2DE77EA900B65EFF /* PositionInstructionBanner.swift */,
 				BFF57A8C2DE77EA900B65EFF /* SinglePositionOverlay.swift */,
@@ -1190,7 +1187,6 @@
 				BF59ACCB2DDFC9F800242910 /* EnhancedPullupGrader.swift in Sources */,
 				BF59ACCC2DDFC9F800242910 /* EnhancedSitupGrader.swift in Sources */,
 				BFF57A8D2DE77EA900B65EFF /* PositionFeedbackBar.swift in Sources */,
-				BFF57A8E2DE77EA900B65EFF /* DirectionalArrows.swift in Sources */,
 				BFF57A8F2DE77EA900B65EFF /* PositionInstructionBanner.swift in Sources */,
 				BFF57A902DE77EA900B65EFF /* SinglePositionOverlay.swift in Sources */,
 				BFF57A912DE77EA900B65EFF /* DevicePlacementTip.swift in Sources */,
