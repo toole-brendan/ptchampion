@@ -14,10 +14,21 @@ struct AutoPositionOverlay: View {
     let exerciseType: ExerciseType
     let isInLandscape: Bool
     
+    // Add computed property to determine if landscape is required
+    private var requiresLandscape: Bool {
+        switch exerciseType {
+        case .pushup, .situp:
+            return true
+        case .pullup, .run, .unknown:
+            return false
+        }
+    }
+    
     // Control PNG visibility based on state
     private var showPNGOverlay: Bool {
         // Only show overlay if we're in landscape AND in the right state
-        guard isInLandscape else { return false }
+        // For pull-ups, we can show it even in portrait
+        guard requiresLandscape ? isInLandscape : true else { return false }
         
         switch workoutState {
         case .waitingForPosition, .positionDetected:
@@ -65,7 +76,7 @@ struct AutoPositionOverlay: View {
             // Main content optimized for landscape
             VStack {
                 // Position the instruction box at the top
-                if workoutState == .waitingForPosition && isInLandscape {
+                if workoutState == .waitingForPosition && (isInLandscape || !requiresLandscape) {
                     landscapeWaitingForPositionContent
                         .padding(.top, 40)
                     
@@ -84,7 +95,7 @@ struct AutoPositionOverlay: View {
                                 case .ready:
                                     landscapeReadyStateContent
                                 case .waitingForPosition:
-                                    if !isInLandscape {
+                                    if !isInLandscape && requiresLandscape {
                                         portraitPromptContent
                                     }
                                     // Instruction box is shown above, not here
@@ -275,7 +286,7 @@ struct AutoPositionOverlay: View {
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.white)
                 
-                Text("This workout requires landscape orientation for accurate pose detection")
+                Text("\(exerciseType.displayName) workouts require landscape orientation for accurate pose detection")
                     .font(.system(size: 18))
                     .foregroundColor(.white.opacity(0.8))
                     .multilineTextAlignment(.center)

@@ -13,10 +13,20 @@ struct EnhancedExerciseOverlay: View {
     @State private var showAlignmentGrid = false
     @State private var isUserAligned = false
     
+    // Add computed property to determine if landscape is required
+    private var requiresLandscape: Bool {
+        switch exerciseType {
+        case .pushup, .situp:
+            return true
+        case .pullup, .run, .unknown:
+            return false
+        }
+    }
+    
     var body: some View {
         ZStack {
             // Single combined overlay instead of multiple layers
-            if shouldShowPNGOverlay && isInLandscape {
+            if shouldShowPNGOverlay && (isInLandscape || !requiresLandscape) {
                 PNGOverlayView(
                     exerciseType: exerciseType,
                     opacity: pngOpacity
@@ -56,9 +66,9 @@ struct EnhancedExerciseOverlay: View {
     private var pngOpacity: Double {
         switch workoutState {
         case .waitingForPosition:
-            return 0.4
+            return 0.35
         case .positionDetected:
-            return 0.2
+            return 0.15
         default:
             return 0.0
         }

@@ -39,6 +39,16 @@ struct WorkoutSessionView: View {
         print("DEBUG: [WorkoutSessionView] ViewModel created with @StateObject wrapper")
     }
     
+    // MARK: - Computed Properties
+    private var requiresLandscape: Bool {
+        switch exerciseType {
+        case .pushup, .situp:
+            return true
+        case .pullup, .run, .unknown:
+            return false
+        }
+    }
+    
     // MARK: - Body
     var body: some View {
         ZStack {
@@ -63,12 +73,13 @@ struct WorkoutSessionView: View {
                 countdownValue: viewModel.countdownValue,
                 onStartPressed: {
                     print("DEBUG: [WorkoutSessionView] GO button pressed")
-                    // Check if in landscape before starting
-                    if isInLandscape {
-                        viewModel.startPositionDetection()
-                    } else {
-                        // Just update the state to show the landscape prompt
+                    // Check if in landscape before starting (only for exercises that require it)
+                    if requiresLandscape && !isInLandscape {
+                        // Show the landscape prompt for exercises that require it
                         viewModel.workoutState = .waitingForPosition
+                    } else {
+                        // Either we're in landscape OR the exercise doesn't require it
+                        viewModel.startPositionDetection()
                     }
                 },
                 isInLandscape: isInLandscape
@@ -149,9 +160,11 @@ struct WorkoutSessionView: View {
             // Check initial orientation
             isInLandscape = UIDevice.current.orientation.isLandscape || UIDevice.current.orientation == .unknown
             
-            // Force landscape orientation
-            setLandscapeOrientation()
-            lockOrientation()
+            // Force landscape orientation only for exercises that require it
+            if requiresLandscape {
+                setLandscapeOrientation()
+                lockOrientation()
+            }
             
             // Hide tab bar using the visibility manager
             tabBarVisibility.hideTabBar()
@@ -176,18 +189,18 @@ struct WorkoutSessionView: View {
                 isInLandscape = currentOrientation.isLandscape
                 
                 // If we were waiting for landscape and now we're in landscape, start position detection
-                if isInLandscape && viewModel?.workoutState == .waitingForPosition {
+                if isInLandscape && viewModel?.workoutState == .waitingForPosition && requiresLandscape {
                     viewModel?.startPositionDetection()
                 }
                 
-                // Show alert if user tries to rotate to portrait during workout
-                if currentOrientation.isPortrait && viewModel?.workoutState == .counting {
+                // Show alert if user tries to rotate to portrait during workout (only for exercises that require landscape)
+                if requiresLandscape && currentOrientation.isPortrait && viewModel?.workoutState == .counting {
                     showOrientationAlert = true
                     // Force back to landscape
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                         setLandscapeOrientation()
                     }
-                } else if currentOrientation.isLandscape {
+                } else if currentOrientation.isLandscape || !requiresLandscape {
                     // Add delay to prevent rapid calls
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                         guard let viewModel = viewModel else { return }
@@ -316,7 +329,7 @@ struct WorkoutSessionView: View {
                 showOrientationAlert = false
             }
         } message: {
-            Text("This workout requires landscape orientation for accurate pose detection.")
+            Text("\(exerciseType.displayName) workouts require landscape orientation for accurate pose detection.")
         }
     }
     
