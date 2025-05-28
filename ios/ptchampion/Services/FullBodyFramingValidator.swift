@@ -173,18 +173,26 @@ class FullBodyFramingValidator: ObservableObject {
         }
         
         // Check which joints are missing to suggest direction
-        let missingJoints = Set(requiredJoints).subtracting(Set(visibleJoints.compactMap { joint in
-            body.point(joint) != nil ? joint : nil
-        }))
+        let missingJoints = Set(requiredJoints).subtracting(Set(visibleJoints))
         
         // Analyze missing joints to suggest movement
-        let hasLeftMissing = missingJoints.contains { $0.rawValue.rawValue.contains("left") }
-        let hasRightMissing = missingJoints.contains { $0.rawValue.rawValue.contains("right") }
-        let hasUpperMissing = missingJoints.contains { 
-            ["shoulder", "elbow", "wrist"].contains { $0.rawValue.rawValue.contains($0) }
+        let hasLeftMissing = missingJoints.contains { jointName in
+            jointName.rawValue.rawValue.contains("left")
         }
-        let hasLowerMissing = missingJoints.contains { 
-            ["hip", "knee", "ankle"].contains { $0.rawValue.rawValue.contains($0) }
+        let hasRightMissing = missingJoints.contains { jointName in
+            jointName.rawValue.rawValue.contains("right")
+        }
+        let upperJointNames = ["shoulder", "elbow", "wrist"]
+        let hasUpperMissing = missingJoints.contains { jointName in
+            upperJointNames.contains { upperName in
+                jointName.rawValue.rawValue.contains(upperName)
+            }
+        }
+        let lowerJointNames = ["hip", "knee", "ankle"]
+        let hasLowerMissing = missingJoints.contains { jointName in
+            lowerJointNames.contains { lowerName in
+                jointName.rawValue.rawValue.contains(lowerName)
+            }
         }
         
         if hasLeftMissing && !hasRightMissing {
