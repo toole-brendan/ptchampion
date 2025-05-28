@@ -282,10 +282,25 @@ class AuthService: ObservableObject, AuthServiceProtocol {
                 switch apiError {
                 case .requestFailed(let statusCode, let message):
                     print("AuthService: Request failed with status code: \(statusCode), message: \(message ?? "None")")
+                    
+                    // If we get a 400 or 401 error with Apple Sign In, log more details
+                    if provider == "apple" && (statusCode == 400 || statusCode == 401) {
+                        print("AuthService: Apple Sign In failed. Check if:")
+                        print("  - The identity token is valid and not expired")
+                        print("  - The backend is configured with correct Apple credentials")
+                        print("  - The token verification on backend is working properly")
+                    }
                 default:
                     break
                 }
             }
+            
+            // If it's a network error, provide more context
+            if let urlError = error as? URLError {
+                print("AuthService: Network error: \(urlError.localizedDescription)")
+                print("AuthService: Error code: \(urlError.code)")
+            }
+            
             throw error
         }
     }

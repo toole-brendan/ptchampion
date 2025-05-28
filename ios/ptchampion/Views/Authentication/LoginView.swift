@@ -230,23 +230,24 @@ struct LoginView: View {
                                     Image("logo3x")
                                         .resizable()
                                         .scaledToFit()
-                                        .frame(width: 24, height: 24)
-                                        .padding(.trailing, 8)
+                                        .frame(width: 20, height: 20)  // Slightly smaller to match Apple's icon size
+                                        .padding(.trailing, 6)
                                     
                                     Text("Sign in with Google")
-                                        .font(.system(size: 17, weight: .medium))
-                                        .foregroundColor(Color.black.opacity(0.87))
+                                        .font(.system(size: 19, weight: .semibold))  // Match Apple's default font
+                                        .foregroundColor(Color.black.opacity(0.9))   // Slightly darker for better contrast
                                     
                                     Spacer()
                                 }
-                                .padding(.horizontal, 12)
+                                .padding(.horizontal, 16)  // Match Apple's padding
                                 .frame(height: 50)
                                 .background(Color.white)
                                 .cornerRadius(8)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                        .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)  // Lighter border to match Apple's style
                                 )
+                                .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)  // Subtle shadow like Apple's button
                             }
                             .accessibilityLabel("Sign in with Google")
                             
