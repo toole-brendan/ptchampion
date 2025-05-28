@@ -12,11 +12,13 @@ struct PNGOverlayView: View {
         GeometryReader { geometry in
             ZStack {
                 if let image = exerciseImage {
-                    // Main overlay image - Fill entire screen
+                    // Main overlay image - Fit with scale for larger size
                     Image(uiImage: image)
                         .resizable()
-                        .scaledToFill()
+                        .aspectRatio(contentMode: .fit)  // Prevent cutoff
+                        .scaleEffect(exerciseScale)  // Scale up to make larger
                         .opacity(opacity)
+                        .padding(exercisePadding)  // Small padding
                         .frame(width: geometry.size.width,
                                height: geometry.size.height)
                         .position(x: geometry.size.width / 2,
@@ -28,7 +30,9 @@ struct PNGOverlayView: View {
                             // Add a subtle glow effect for better visibility
                             Image(uiImage: image)
                                 .resizable()
-                                .scaledToFill()
+                                .aspectRatio(contentMode: .fit)
+                                .scaleEffect(exerciseScale)  // Same scale for glow
+                                .padding(exercisePadding)
                                 .frame(width: geometry.size.width,
                                        height: geometry.size.height)
                                 .blur(radius: 25)
@@ -47,6 +51,37 @@ struct PNGOverlayView: View {
                         )
                 }
             }
+        }
+    }
+    
+    // Scale factor to make images larger while still fitting
+    private var exerciseScale: CGFloat {
+        switch exerciseType {
+        case .pushup:
+            return 1.50  // Scale up 50% for pushup
+        case .pullup, .situp:
+            return 1.40  // Scale up 40% for pullup and situp (with their added padding)
+        case .run:
+            return 1.45
+        case .unknown:
+            return 1.45
+        }
+    }
+    
+    // Add minimal padding
+    private var exercisePadding: EdgeInsets {
+        switch exerciseType {
+        case .pushup:
+            // Pushup already has visual padding in the image, so use very minimal padding
+            return EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
+        case .pullup, .situp:
+            // Pullup and situp need a bit more padding to match pushup appearance
+            return EdgeInsets(top: 15, leading: 15, bottom: 15, trailing: 15)
+        case .run:
+            // Running uses moderate padding
+            return EdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+        case .unknown:
+            return EdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
         }
     }
     
