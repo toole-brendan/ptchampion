@@ -44,9 +44,9 @@ struct AutoPositionOverlay: View {
     private var pngOpacity: Double {
         switch workoutState {
         case .waitingForPosition:
-            return 0.5 // More visible while positioning
+            return 0.8 // Increased from 0.5 to make it more visible
         case .positionDetected:
-            return 0.3 // Fade out when detected
+            return 0.5 // Increased from 0.3
         default:
             return 0.0
         }

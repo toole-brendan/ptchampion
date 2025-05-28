@@ -75,33 +75,33 @@ struct ExerciseBodyOutline: View {
 
 struct PushupBodyOutline: View {
     var body: some View {
-        VStack(spacing: 8) { // Increased spacing
+        VStack(spacing: 12) { // Increased spacing
             // Head
             Circle()
-                .frame(width: 40, height: 40) // Doubled from 20
+                .frame(width: 60, height: 60) // Increased from 40
             
             // Torso and arms
             ZStack {
                 // Torso
-                RoundedRectangle(cornerRadius: 8)
-                    .frame(width: 24, height: 120) // Doubled dimensions
+                RoundedRectangle(cornerRadius: 12)
+                    .frame(width: 36, height: 180) // Increased dimensions
                 
                 // Arms
-                HStack(spacing: 80) { // Doubled spacing
-                    RoundedRectangle(cornerRadius: 4)
-                        .frame(width: 8, height: 60) // Doubled
-                    RoundedRectangle(cornerRadius: 4)
-                        .frame(width: 8, height: 60)
+                HStack(spacing: 120) { // Increased spacing
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 12, height: 90) // Increased
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 12, height: 90)
                 }
-                .offset(y: -30)
+                .offset(y: -45)
             }
             
             // Legs
-            HStack(spacing: 16) { // Doubled spacing
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 8, height: 100) // Doubled
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 8, height: 100)
+            HStack(spacing: 24) { // Increased spacing
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 12, height: 150) // Increased
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 12, height: 150)
             }
         }
     }
@@ -109,31 +109,31 @@ struct PushupBodyOutline: View {
 
 struct SitupBodyOutline: View {
     var body: some View {
-        VStack(spacing: 8) { // Increased spacing
+        VStack(spacing: 12) { // Increased spacing
             // Head
             Circle()
-                .frame(width: 40, height: 40) // Doubled from 20
+                .frame(width: 60, height: 60) // Increased from 40
             
             // Torso
-            RoundedRectangle(cornerRadius: 8)
-                .frame(width: 24, height: 80) // Doubled dimensions
+            RoundedRectangle(cornerRadius: 12)
+                .frame(width: 36, height: 120) // Increased dimensions
             
             // Bent legs
-            HStack(spacing: 16) { // Doubled spacing
-                VStack(spacing: 4) { // Doubled spacing
-                    RoundedRectangle(cornerRadius: 4)
-                        .frame(width: 8, height: 50) // Doubled
+            HStack(spacing: 24) { // Increased spacing
+                VStack(spacing: 6) { // Increased spacing
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 12, height: 75) // Increased
                         .rotationEffect(.degrees(30))
-                    RoundedRectangle(cornerRadius: 4)
-                        .frame(width: 8, height: 40) // Doubled
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 12, height: 60) // Increased
                         .rotationEffect(.degrees(-30))
                 }
-                VStack(spacing: 4) { // Doubled spacing
-                    RoundedRectangle(cornerRadius: 4)
-                        .frame(width: 8, height: 50) // Doubled
+                VStack(spacing: 6) { // Increased spacing
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 12, height: 75) // Increased
                         .rotationEffect(.degrees(-30))
-                    RoundedRectangle(cornerRadius: 4)
-                        .frame(width: 8, height: 40) // Doubled
+                    RoundedRectangle(cornerRadius: 6)
+                        .frame(width: 12, height: 60) // Increased
                         .rotationEffect(.degrees(30))
                 }
             }
@@ -143,31 +143,31 @@ struct SitupBodyOutline: View {
 
 struct PullupBodyOutline: View {
     var body: some View {
-        VStack(spacing: 8) { // Increased spacing
+        VStack(spacing: 12) { // Increased spacing
             // Arms reaching up
-            HStack(spacing: 60) { // Doubled spacing
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 8, height: 70) // Doubled
+            HStack(spacing: 90) { // Increased spacing
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 12, height: 105) // Increased
                     .rotationEffect(.degrees(-20))
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 8, height: 70) // Doubled
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 12, height: 105) // Increased
                     .rotationEffect(.degrees(20))
             }
             
             // Head
             Circle()
-                .frame(width: 40, height: 40) // Doubled from 20
+                .frame(width: 60, height: 60) // Increased from 40
             
             // Torso
-            RoundedRectangle(cornerRadius: 8)
-                .frame(width: 24, height: 100) // Doubled dimensions
+            RoundedRectangle(cornerRadius: 12)
+                .frame(width: 36, height: 150) // Increased dimensions
             
             // Legs
-            HStack(spacing: 16) { // Doubled spacing
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 8, height: 90) // Doubled
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 8, height: 90) // Doubled
+            HStack(spacing: 24) { // Increased spacing
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 12, height: 135) // Increased
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 12, height: 135) // Increased
             }
         }
     }
@@ -175,16 +175,16 @@ struct PullupBodyOutline: View {
 
 struct DefaultBodyOutline: View {
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             Circle()
-                .frame(width: 40, height: 40)
-            RoundedRectangle(cornerRadius: 8)
-                .frame(width: 24, height: 120)
-            HStack(spacing: 16) {
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 8, height: 100)
-                RoundedRectangle(cornerRadius: 4)
-                    .frame(width: 8, height: 100)
+                .frame(width: 60, height: 60)
+            RoundedRectangle(cornerRadius: 12)
+                .frame(width: 36, height: 180)
+            HStack(spacing: 24) {
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 12, height: 150)
+                RoundedRectangle(cornerRadius: 6)
+                    .frame(width: 12, height: 150)
             }
         }
     }

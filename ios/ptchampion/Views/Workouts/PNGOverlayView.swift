@@ -10,41 +10,55 @@ struct PNGOverlayView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
+                // Debug background to see the full overlay area
+                Rectangle()
+                    .fill(Color.red.opacity(0.1))  // Light red to see the full area
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                
                 if let image = exerciseImage {
-                    // Main overlay image - Adjusted for better usability
+                    // Main overlay image - Fill entire screen without aspect ratio constraint
                     Image(uiImage: image)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)
+                        .scaledToFill()  // Changed from aspectRatio(contentMode: .fit) to scaledToFill
                         .opacity(opacity)
-                        .frame(maxWidth: geometry.size.width * 1.2,  // Reduced from 2.5 to 1.2 (120% of screen width)
-                               maxHeight: geometry.size.height * 1.0) // Reduced from 2.2 to 1.0 (100% of screen height)
+                        .frame(width: geometry.size.width,    // Full screen width
+                               height: geometry.size.height)   // Full screen height
                         .position(x: geometry.size.width / 2,
                                   y: geometry.size.height / 2)
                         .allowsHitTesting(false)
+                        .clipped()  // Important: clip the overflow
+                        .border(Color.green, width: 3)  // Debug border to see image bounds
                         .overlay(
                             // Add a subtle glow effect for better visibility
                             Image(uiImage: image)
                                 .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: geometry.size.width * 1.2,
-                                       maxHeight: geometry.size.height * 1.0)
-                                .blur(radius: 20)
-                                .opacity(opacity * 0.5)
+                                .scaledToFill()
+                                .frame(width: geometry.size.width,
+                                       height: geometry.size.height)
+                                .blur(radius: 25)
+                                .opacity(opacity * 0.2)  // Further reduced glow
                                 .allowsHitTesting(false)
+                                .clipped()
                         )
                         .background(
                             GeometryReader { imageGeometry in
                                 Color.clear
                                     .onAppear {
                                         imageSize = imageGeometry.size
+                                        print("DEBUG: PNG Overlay size - width: \(geometry.size.width), height: \(geometry.size.height)")
+                                        print("DEBUG: Image being displayed: \(exerciseType.rawValue)")
                                     }
                             }
                         )
-                        .clipped()
+                } else {
+                    // Debug text when no image is found
+                    Text("No PNG found for: \(exerciseType.rawValue)")
+                        .foregroundColor(.white)
+                        .font(.title)
+                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 }
             }
         }
-        .clipped()
     }
     
     private var exerciseImage: UIImage? {

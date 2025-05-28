@@ -211,40 +211,24 @@ struct StartingPositionOverlay: View {
             switch exerciseType {
             case .pushup:
                 PushupIdealPositionGuide()
-                    .stroke(style: StrokeStyle(lineWidth: 3, dash: [5, 5]))
-                    .foregroundColor(.green.opacity(0.5))
-                    .scaleEffect(calculateOverlayScale(for: geometry))
+                    .stroke(style: StrokeStyle(lineWidth: 4, dash: [8, 8]))
+                    .foregroundColor(.green.opacity(0.6))
                 
             case .pullup:
                 PullupIdealPositionGuide()
-                    .stroke(style: StrokeStyle(lineWidth: 3, dash: [5, 5]))
-                    .foregroundColor(.green.opacity(0.5))
-                    .scaleEffect(calculateOverlayScale(for: geometry))
+                    .stroke(style: StrokeStyle(lineWidth: 4, dash: [8, 8]))
+                    .foregroundColor(.green.opacity(0.6))
                 
             case .situp:
                 SitupIdealPositionGuide()
-                    .stroke(style: StrokeStyle(lineWidth: 3, dash: [5, 5]))
-                    .foregroundColor(.green.opacity(0.5))
-                    .scaleEffect(calculateOverlayScale(for: geometry))
+                    .stroke(style: StrokeStyle(lineWidth: 4, dash: [8, 8]))
+                    .foregroundColor(.green.opacity(0.6))
                 
             default:
                 EmptyView()
             }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
-    }
-    
-    // Helper function to calculate appropriate scale based on screen size
-    private func calculateOverlayScale(for geometry: GeometryProxy) -> CGFloat {
-        // Base scale factor - increased significantly
-        let baseScale: CGFloat = 3.5
-        
-        // Additional scaling based on screen size
-        // Using the smaller dimension to ensure it fits
-        let screenScale = min(geometry.size.width, geometry.size.height) / 400.0
-        
-        // Combine scales with a reasonable max to prevent it from being too large
-        return min(baseScale * screenScale, 5.0)
     }
 }
 
@@ -295,25 +279,32 @@ struct PushupIdealPositionGuide: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
-        // Draw a stick figure in push-up position
+        // Use proportional sizing based on rect dimensions
+        let scale = min(rect.width, rect.height)
         let centerX = rect.width / 2
         let centerY = rect.height / 2
         
-        // Head (increased from 15 to 30 radius)
-        path.addEllipse(in: CGRect(x: centerX - 30, y: centerY - 200, width: 60, height: 60))
+        // Head - proportional to screen size
+        let headRadius = scale * 0.08  // 8% of screen size
+        path.addEllipse(in: CGRect(
+            x: centerX - headRadius,
+            y: centerY - scale * 0.35,  // 35% up from center
+            width: headRadius * 2,
+            height: headRadius * 2
+        ))
         
-        // Body line (straight) - doubled the offsets
-        path.move(to: CGPoint(x: centerX, y: centerY - 140))
-        path.addLine(to: CGPoint(x: centerX + 120, y: centerY - 100))
+        // Body line (straight) - proportional positioning
+        path.move(to: CGPoint(x: centerX, y: centerY - scale * 0.25))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.25, y: centerY - scale * 0.15))
         
-        // Arms extended - doubled the offsets
-        path.move(to: CGPoint(x: centerX, y: centerY - 140))
-        path.addLine(to: CGPoint(x: centerX - 60, y: centerY - 60))
-        path.addLine(to: CGPoint(x: centerX - 80, y: centerY))
+        // Arms extended - proportional positioning
+        path.move(to: CGPoint(x: centerX, y: centerY - scale * 0.25))
+        path.addLine(to: CGPoint(x: centerX - scale * 0.15, y: centerY - scale * 0.05))
+        path.addLine(to: CGPoint(x: centerX - scale * 0.2, y: centerY + scale * 0.05))
         
-        // Legs - doubled the offsets
-        path.move(to: CGPoint(x: centerX + 120, y: centerY - 100))
-        path.addLine(to: CGPoint(x: centerX + 200, y: centerY - 60))
+        // Legs - proportional positioning
+        path.move(to: CGPoint(x: centerX + scale * 0.25, y: centerY - scale * 0.15))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.4, y: centerY))
         
         return path
     }
@@ -323,31 +314,39 @@ struct PullupIdealPositionGuide: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
+        // Use proportional sizing based on rect dimensions
+        let scale = min(rect.width, rect.height)
         let centerX = rect.width / 2
-        let topY = rect.height * 0.2
+        let topY = rect.height * 0.15  // Bar at 15% from top
         
-        // Bar - doubled the width
-        path.move(to: CGPoint(x: centerX - 120, y: topY))
-        path.addLine(to: CGPoint(x: centerX + 120, y: topY))
+        // Bar - proportional width
+        path.move(to: CGPoint(x: centerX - scale * 0.3, y: topY))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.3, y: topY))
         
-        // Head (increased from 15 to 30 radius)
-        path.addEllipse(in: CGRect(x: centerX - 30, y: topY + 80, width: 60, height: 60))
+        // Head - proportional to screen size
+        let headRadius = scale * 0.08
+        path.addEllipse(in: CGRect(
+            x: centerX - headRadius,
+            y: topY + scale * 0.2,
+            width: headRadius * 2,
+            height: headRadius * 2
+        ))
         
-        // Body (straight, hanging) - doubled the offsets
-        path.move(to: CGPoint(x: centerX, y: topY + 140))
-        path.addLine(to: CGPoint(x: centerX, y: topY + 300))
+        // Body (straight, hanging) - proportional
+        path.move(to: CGPoint(x: centerX, y: topY + scale * 0.35))
+        path.addLine(to: CGPoint(x: centerX, y: topY + scale * 0.7))
         
-        // Arms extended up - doubled the offsets
-        path.move(to: CGPoint(x: centerX - 60, y: topY))
-        path.addLine(to: CGPoint(x: centerX - 30, y: topY + 80))
-        path.move(to: CGPoint(x: centerX + 60, y: topY))
-        path.addLine(to: CGPoint(x: centerX + 30, y: topY + 80))
+        // Arms extended up - proportional
+        path.move(to: CGPoint(x: centerX - scale * 0.15, y: topY))
+        path.addLine(to: CGPoint(x: centerX - scale * 0.08, y: topY + scale * 0.2))
+        path.move(to: CGPoint(x: centerX + scale * 0.15, y: topY))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.08, y: topY + scale * 0.2))
         
-        // Legs - doubled the offsets
-        path.move(to: CGPoint(x: centerX, y: topY + 300))
-        path.addLine(to: CGPoint(x: centerX - 20, y: topY + 400))
-        path.move(to: CGPoint(x: centerX, y: topY + 300))
-        path.addLine(to: CGPoint(x: centerX + 20, y: topY + 400))
+        // Legs - proportional
+        path.move(to: CGPoint(x: centerX, y: topY + scale * 0.7))
+        path.addLine(to: CGPoint(x: centerX - scale * 0.05, y: topY + scale * 0.85))
+        path.move(to: CGPoint(x: centerX, y: topY + scale * 0.7))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.05, y: topY + scale * 0.85))
         
         return path
     }
@@ -357,26 +356,34 @@ struct SitupIdealPositionGuide: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
+        // Use proportional sizing based on rect dimensions
+        let scale = min(rect.width, rect.height)
         let centerX = rect.width / 2
         let centerY = rect.height / 2
         
-        // Head (increased from 15 to 30 radius)
-        path.addEllipse(in: CGRect(x: centerX - 100, y: centerY - 20, width: 60, height: 60))
+        // Head - proportional to screen size
+        let headRadius = scale * 0.08
+        path.addEllipse(in: CGRect(
+            x: centerX - scale * 0.25,
+            y: centerY - scale * 0.05,
+            width: headRadius * 2,
+            height: headRadius * 2
+        ))
         
-        // Torso (on ground) - doubled the offsets
-        path.move(to: CGPoint(x: centerX - 70, y: centerY + 10))
-        path.addLine(to: CGPoint(x: centerX + 60, y: centerY + 10))
+        // Torso (on ground) - proportional
+        path.move(to: CGPoint(x: centerX - scale * 0.18, y: centerY + scale * 0.03))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.15, y: centerY + scale * 0.03))
         
-        // Arms crossed on chest - doubled the offsets
-        path.move(to: CGPoint(x: centerX - 40, y: centerY))
-        path.addLine(to: CGPoint(x: centerX + 20, y: centerY - 20))
-        path.move(to: CGPoint(x: centerX - 40, y: centerY - 20))
-        path.addLine(to: CGPoint(x: centerX + 20, y: centerY))
+        // Arms crossed on chest - proportional
+        path.move(to: CGPoint(x: centerX - scale * 0.1, y: centerY))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.05, y: centerY - scale * 0.05))
+        path.move(to: CGPoint(x: centerX - scale * 0.1, y: centerY - scale * 0.05))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.05, y: centerY))
         
-        // Legs bent at 90 degrees - doubled the offsets
-        path.move(to: CGPoint(x: centerX + 60, y: centerY + 10))
-        path.addLine(to: CGPoint(x: centerX + 120, y: centerY + 60))
-        path.addLine(to: CGPoint(x: centerX + 120, y: centerY + 120))
+        // Legs bent at 90 degrees - proportional
+        path.move(to: CGPoint(x: centerX + scale * 0.15, y: centerY + scale * 0.03))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.3, y: centerY + scale * 0.15))
+        path.addLine(to: CGPoint(x: centerX + scale * 0.3, y: centerY + scale * 0.3))
         
         return path
     }
