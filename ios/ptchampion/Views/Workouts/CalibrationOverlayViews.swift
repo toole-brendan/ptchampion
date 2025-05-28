@@ -876,7 +876,7 @@ struct AdaptiveCalibrationGuide: View {
         // Exercise-specific body outline
         ExerciseBodyOutline(exercise: exerciseType)
             .foregroundColor(bodyOutlineColor)
-            .scaleEffect(isLandscape ? 2.5 : 3.0)
+            .scaleEffect(isLandscape ? 6.0 : 7.0)  // Increased from 4.0/4.5
             .rotationEffect(isLandscape ? .degrees(90) : .degrees(0))
             .opacity(0.4)
             .animation(.easeInOut(duration: 0.3), value: isLandscape)

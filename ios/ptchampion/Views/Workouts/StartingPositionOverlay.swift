@@ -211,24 +211,40 @@ struct StartingPositionOverlay: View {
             switch exerciseType {
             case .pushup:
                 PushupIdealPositionGuide()
-                    .stroke(style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
+                    .stroke(style: StrokeStyle(lineWidth: 3, dash: [5, 5]))
                     .foregroundColor(.green.opacity(0.5))
+                    .scaleEffect(calculateOverlayScale(for: geometry))
                 
             case .pullup:
                 PullupIdealPositionGuide()
-                    .stroke(style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
+                    .stroke(style: StrokeStyle(lineWidth: 3, dash: [5, 5]))
                     .foregroundColor(.green.opacity(0.5))
+                    .scaleEffect(calculateOverlayScale(for: geometry))
                 
             case .situp:
                 SitupIdealPositionGuide()
-                    .stroke(style: StrokeStyle(lineWidth: 2, dash: [5, 5]))
+                    .stroke(style: StrokeStyle(lineWidth: 3, dash: [5, 5]))
                     .foregroundColor(.green.opacity(0.5))
+                    .scaleEffect(calculateOverlayScale(for: geometry))
                 
             default:
                 EmptyView()
             }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
+    }
+    
+    // Helper function to calculate appropriate scale based on screen size
+    private func calculateOverlayScale(for geometry: GeometryProxy) -> CGFloat {
+        // Base scale factor - increased significantly
+        let baseScale: CGFloat = 3.5
+        
+        // Additional scaling based on screen size
+        // Using the smaller dimension to ensure it fits
+        let screenScale = min(geometry.size.width, geometry.size.height) / 400.0
+        
+        // Combine scales with a reasonable max to prevent it from being too large
+        return min(baseScale * screenScale, 5.0)
     }
 }
 
@@ -283,21 +299,21 @@ struct PushupIdealPositionGuide: Shape {
         let centerX = rect.width / 2
         let centerY = rect.height / 2
         
-        // Head
-        path.addEllipse(in: CGRect(x: centerX - 15, y: centerY - 100, width: 30, height: 30))
+        // Head (increased from 15 to 30 radius)
+        path.addEllipse(in: CGRect(x: centerX - 30, y: centerY - 200, width: 60, height: 60))
         
-        // Body line (straight)
-        path.move(to: CGPoint(x: centerX, y: centerY - 70))
-        path.addLine(to: CGPoint(x: centerX + 60, y: centerY - 50))
+        // Body line (straight) - doubled the offsets
+        path.move(to: CGPoint(x: centerX, y: centerY - 140))
+        path.addLine(to: CGPoint(x: centerX + 120, y: centerY - 100))
         
-        // Arms extended
-        path.move(to: CGPoint(x: centerX, y: centerY - 70))
-        path.addLine(to: CGPoint(x: centerX - 30, y: centerY - 30))
-        path.addLine(to: CGPoint(x: centerX - 40, y: centerY))
+        // Arms extended - doubled the offsets
+        path.move(to: CGPoint(x: centerX, y: centerY - 140))
+        path.addLine(to: CGPoint(x: centerX - 60, y: centerY - 60))
+        path.addLine(to: CGPoint(x: centerX - 80, y: centerY))
         
-        // Legs
-        path.move(to: CGPoint(x: centerX + 60, y: centerY - 50))
-        path.addLine(to: CGPoint(x: centerX + 100, y: centerY - 30))
+        // Legs - doubled the offsets
+        path.move(to: CGPoint(x: centerX + 120, y: centerY - 100))
+        path.addLine(to: CGPoint(x: centerX + 200, y: centerY - 60))
         
         return path
     }
@@ -310,28 +326,28 @@ struct PullupIdealPositionGuide: Shape {
         let centerX = rect.width / 2
         let topY = rect.height * 0.2
         
-        // Bar
+        // Bar - doubled the width
+        path.move(to: CGPoint(x: centerX - 120, y: topY))
+        path.addLine(to: CGPoint(x: centerX + 120, y: topY))
+        
+        // Head (increased from 15 to 30 radius)
+        path.addEllipse(in: CGRect(x: centerX - 30, y: topY + 80, width: 60, height: 60))
+        
+        // Body (straight, hanging) - doubled the offsets
+        path.move(to: CGPoint(x: centerX, y: topY + 140))
+        path.addLine(to: CGPoint(x: centerX, y: topY + 300))
+        
+        // Arms extended up - doubled the offsets
         path.move(to: CGPoint(x: centerX - 60, y: topY))
-        path.addLine(to: CGPoint(x: centerX + 60, y: topY))
+        path.addLine(to: CGPoint(x: centerX - 30, y: topY + 80))
+        path.move(to: CGPoint(x: centerX + 60, y: topY))
+        path.addLine(to: CGPoint(x: centerX + 30, y: topY + 80))
         
-        // Head
-        path.addEllipse(in: CGRect(x: centerX - 15, y: topY + 40, width: 30, height: 30))
-        
-        // Body (straight, hanging)
-        path.move(to: CGPoint(x: centerX, y: topY + 70))
-        path.addLine(to: CGPoint(x: centerX, y: topY + 150))
-        
-        // Arms extended up
-        path.move(to: CGPoint(x: centerX - 30, y: topY))
-        path.addLine(to: CGPoint(x: centerX - 15, y: topY + 40))
-        path.move(to: CGPoint(x: centerX + 30, y: topY))
-        path.addLine(to: CGPoint(x: centerX + 15, y: topY + 40))
-        
-        // Legs
-        path.move(to: CGPoint(x: centerX, y: topY + 150))
-        path.addLine(to: CGPoint(x: centerX - 10, y: topY + 200))
-        path.move(to: CGPoint(x: centerX, y: topY + 150))
-        path.addLine(to: CGPoint(x: centerX + 10, y: topY + 200))
+        // Legs - doubled the offsets
+        path.move(to: CGPoint(x: centerX, y: topY + 300))
+        path.addLine(to: CGPoint(x: centerX - 20, y: topY + 400))
+        path.move(to: CGPoint(x: centerX, y: topY + 300))
+        path.addLine(to: CGPoint(x: centerX + 20, y: topY + 400))
         
         return path
     }
@@ -344,23 +360,23 @@ struct SitupIdealPositionGuide: Shape {
         let centerX = rect.width / 2
         let centerY = rect.height / 2
         
-        // Head
-        path.addEllipse(in: CGRect(x: centerX - 50, y: centerY - 10, width: 30, height: 30))
+        // Head (increased from 15 to 30 radius)
+        path.addEllipse(in: CGRect(x: centerX - 100, y: centerY - 20, width: 60, height: 60))
         
-        // Torso (on ground)
-        path.move(to: CGPoint(x: centerX - 35, y: centerY + 5))
-        path.addLine(to: CGPoint(x: centerX + 30, y: centerY + 5))
+        // Torso (on ground) - doubled the offsets
+        path.move(to: CGPoint(x: centerX - 70, y: centerY + 10))
+        path.addLine(to: CGPoint(x: centerX + 60, y: centerY + 10))
         
-        // Arms crossed on chest
-        path.move(to: CGPoint(x: centerX - 20, y: centerY))
-        path.addLine(to: CGPoint(x: centerX + 10, y: centerY - 10))
-        path.move(to: CGPoint(x: centerX - 20, y: centerY - 10))
-        path.addLine(to: CGPoint(x: centerX + 10, y: centerY))
+        // Arms crossed on chest - doubled the offsets
+        path.move(to: CGPoint(x: centerX - 40, y: centerY))
+        path.addLine(to: CGPoint(x: centerX + 20, y: centerY - 20))
+        path.move(to: CGPoint(x: centerX - 40, y: centerY - 20))
+        path.addLine(to: CGPoint(x: centerX + 20, y: centerY))
         
-        // Legs bent at 90 degrees
-        path.move(to: CGPoint(x: centerX + 30, y: centerY + 5))
-        path.addLine(to: CGPoint(x: centerX + 60, y: centerY + 30))
-        path.addLine(to: CGPoint(x: centerX + 60, y: centerY + 60))
+        // Legs bent at 90 degrees - doubled the offsets
+        path.move(to: CGPoint(x: centerX + 60, y: centerY + 10))
+        path.addLine(to: CGPoint(x: centerX + 120, y: centerY + 60))
+        path.addLine(to: CGPoint(x: centerX + 120, y: centerY + 120))
         
         return path
     }

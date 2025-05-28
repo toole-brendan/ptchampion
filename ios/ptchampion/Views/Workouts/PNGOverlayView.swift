@@ -11,13 +11,13 @@ struct PNGOverlayView: View {
         GeometryReader { geometry in
             ZStack {
                 if let image = exerciseImage {
-                    // Main overlay image - Made significantly larger
+                    // Main overlay image - Adjusted for better usability
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .opacity(opacity)
-                        .frame(maxWidth: geometry.size.width * 1.5,  // Increased from 1.2 to 1.5 (150% of screen width)
-                               maxHeight: geometry.size.height * 1.3) // Increased from 1.1 to 1.3 (130% of screen height)
+                        .frame(maxWidth: geometry.size.width * 1.2,  // Reduced from 2.5 to 1.2 (120% of screen width)
+                               maxHeight: geometry.size.height * 1.0) // Reduced from 2.2 to 1.0 (100% of screen height)
                         .position(x: geometry.size.width / 2,
                                   y: geometry.size.height / 2)
                         .allowsHitTesting(false)
@@ -26,8 +26,8 @@ struct PNGOverlayView: View {
                             Image(uiImage: image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .frame(maxWidth: geometry.size.width * 1.5,
-                                       maxHeight: geometry.size.height * 1.3)
+                                .frame(maxWidth: geometry.size.width * 1.2,
+                                       maxHeight: geometry.size.height * 1.0)
                                 .blur(radius: 20)
                                 .opacity(opacity * 0.5)
                                 .allowsHitTesting(false)

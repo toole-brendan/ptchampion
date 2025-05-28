@@ -140,7 +140,7 @@ struct BodyOutlineShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         
-        let scale = min(rect.width, rect.height) / 400
+        let scale = min(rect.width, rect.height) / 200
         let centerX = rect.midX
         let centerY = rect.midY
         
