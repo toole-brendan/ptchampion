@@ -29,7 +29,7 @@ internal class AutoPositionDetector: ObservableObject {
     private let requiredHoldDuration: TimeInterval = 2.0
     
     // MARK: - Initialization
-    public init() {
+    internal init() {
         // Initialize with default state
     }
     
@@ -336,7 +336,16 @@ internal class AutoPositionDetector: ObservableObject {
         
         // MediaPipe BlazePose has 33 landmarks, initialize with default values
         for i in 0..<33 {
-            landmarks.append(NormalizedLandmark(x: 0, y: 0, z: 0))
+            // Create a landmark with default values
+            let landmark = NormalizedLandmark()
+            landmark.x = 0
+            landmark.y = 0
+            landmark.z = 0
+            // Set visibility and presence if available
+            if let visibility = landmark.visibility {
+                visibility.floatValue = 0.0
+            }
+            landmarks.append(landmark)
         }
         
         // Map known joint points to MediaPipe landmark indices
@@ -355,11 +364,15 @@ internal class AutoPositionDetector: ObservableObject {
         // Fill in the landmarks from DetectedBody
         for (jointName, index) in jointMapping {
             if let point = body.point(jointName) {
-                landmarks[index] = NormalizedLandmark(
-                    x: Float(point.location.x),
-                    y: Float(point.location.y),
-                    z: 0 // DetectedBody doesn't provide z coordinate
-                )
+                let landmark = NormalizedLandmark()
+                landmark.x = Float(point.location.x)
+                landmark.y = Float(point.location.y)
+                landmark.z = 0 // DetectedBody doesn't provide z coordinate
+                // Set visibility if available
+                if let visibility = landmark.visibility {
+                    visibility.floatValue = point.confidence
+                }
+                landmarks[index] = landmark
             }
         }
         
@@ -521,7 +534,7 @@ internal class AutoPositionDetector: ObservableObject {
     }
     
     // MARK: - Public Methods
-    public func reset() {
+    internal func reset() {
         recentDetections.removeAll()
         positionHoldStartTime = nil
         
@@ -535,7 +548,7 @@ internal class AutoPositionDetector: ObservableObject {
         }
     }
     
-    public func getPositionHoldProgress() -> Float {
+    internal func getPositionHoldProgress() -> Float {
         guard let startTime = positionHoldStartTime else { return 0.0 }
         let elapsed = Date().timeIntervalSince(startTime)
         return min(1.0, Float(elapsed / requiredHoldDuration))
@@ -544,13 +557,13 @@ internal class AutoPositionDetector: ObservableObject {
 
 // MARK: - Supporting Types
 
-public struct PositionDetectionResult {
-    public let detectedExercise: ExerciseType?
-    public let isInPosition: Bool
-    public let feedback: PositioningFeedback
-    public let confidence: Double
+internal struct PositionDetectionResult {
+    internal let detectedExercise: ExerciseType?
+    internal let isInPosition: Bool
+    internal let feedback: PositioningFeedback
+    internal let confidence: Double
     
-    public init(detectedExercise: ExerciseType?, isInPosition: Bool, feedback: PositioningFeedback, confidence: Double) {
+    internal init(detectedExercise: ExerciseType?, isInPosition: Bool, feedback: PositioningFeedback, confidence: Double) {
         self.detectedExercise = detectedExercise
         self.isInPosition = isInPosition
         self.feedback = feedback
@@ -558,13 +571,13 @@ public struct PositionDetectionResult {
     }
 }
 
-public struct PositioningFeedback {
-    public let primaryInstruction: String
-    public let visualGuide: FramingGuide
-    public let confidenceScore: Double
-    public let missingRequirements: [String]
+internal struct PositioningFeedback {
+    internal let primaryInstruction: String
+    internal let visualGuide: FramingGuide
+    internal let confidenceScore: Double
+    internal let missingRequirements: [String]
     
-    public init(primaryInstruction: String, visualGuide: FramingGuide, confidenceScore: Double, missingRequirements: [String]) {
+    internal init(primaryInstruction: String, visualGuide: FramingGuide, confidenceScore: Double, missingRequirements: [String]) {
         self.primaryInstruction = primaryInstruction
         self.visualGuide = visualGuide
         self.confidenceScore = confidenceScore
@@ -572,14 +585,14 @@ public struct PositioningFeedback {
     }
 }
 
-public struct FramingGuide {
-    public let isFullyInFrame: Bool
-    public let tooClose: Bool
-    public let tooFar: Bool
-    public let optimalDistance: Double
-    public let currentDistance: Double
+internal struct FramingGuide {
+    internal let isFullyInFrame: Bool
+    internal let tooClose: Bool
+    internal let tooFar: Bool
+    internal let optimalDistance: Double
+    internal let currentDistance: Double
     
-    public init(isFullyInFrame: Bool, tooClose: Bool, tooFar: Bool, optimalDistance: Double, currentDistance: Double) {
+    internal init(isFullyInFrame: Bool, tooClose: Bool, tooFar: Bool, optimalDistance: Double, currentDistance: Double) {
         self.isFullyInFrame = isFullyInFrame
         self.tooClose = tooClose
         self.tooFar = tooFar
