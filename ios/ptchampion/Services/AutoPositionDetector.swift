@@ -5,17 +5,17 @@ import MediaPipeTasksVision
 
 /// Automatic position detection service that leverages MediaPipe landmarks
 /// to detect when users are in correct starting positions without manual calibration
-class AutoPositionDetector: ObservableObject {
+public class AutoPositionDetector: ObservableObject {
     
     // MARK: - Published Properties
-    @Published var detectedExercise: ExerciseType?
-    @Published var isInPosition: Bool = false
-    @Published var positionQuality: Float = 0.0 // 0-1 score
-    @Published var primaryInstruction: String = "Get into starting position"
-    @Published var missingRequirements: [String] = []
-    @Published var confidenceScore: Float = 0.0
-    @Published var currentDetection: PositionDetectionResult?
-    @Published var isDetecting = false
+    @Published public var detectedExercise: ExerciseType?
+    @Published public var isInPosition: Bool = false
+    @Published public var positionQuality: Float = 0.0 // 0-1 score
+    @Published public var primaryInstruction: String = "Get into starting position"
+    @Published public var missingRequirements: [String] = []
+    @Published public var confidenceScore: Float = 0.0
+    @Published public var currentDetection: PositionDetectionResult?
+    @Published public var isDetecting = false
     
     // MARK: - Exercise-Specific Thresholds
     private let pushupThresholds = PushupThresholds()
@@ -29,12 +29,12 @@ class AutoPositionDetector: ObservableObject {
     private let requiredHoldDuration: TimeInterval = 2.0
     
     // MARK: - Initialization
-    init() {
+    public init() {
         // Initialize with default state
     }
     
     // MARK: - Main Detection Method
-    func detectPosition(body: DetectedBody, expectedExercise: ExerciseType? = nil) -> PositionDetectionResult {
+    public func detectPosition(body: DetectedBody, expectedExercise: ExerciseType? = nil) -> PositionDetectionResult {
         // Convert DetectedBody to MediaPipe landmarks for analysis
         let landmarks = convertDetectedBodyToLandmarks(body)
         return detectExercisePosition(landmarks: landmarks, expectedExercise: expectedExercise)
@@ -521,7 +521,7 @@ class AutoPositionDetector: ObservableObject {
     }
     
     // MARK: - Public Methods
-    func reset() {
+    public func reset() {
         recentDetections.removeAll()
         positionHoldStartTime = nil
         
@@ -535,7 +535,7 @@ class AutoPositionDetector: ObservableObject {
         }
     }
     
-    func getPositionHoldProgress() -> Float {
+    public func getPositionHoldProgress() -> Float {
         guard let startTime = positionHoldStartTime else { return 0.0 }
         let elapsed = Date().timeIntervalSince(startTime)
         return min(1.0, Float(elapsed / requiredHoldDuration))
@@ -544,26 +544,48 @@ class AutoPositionDetector: ObservableObject {
 
 // MARK: - Supporting Types
 
-struct PositionDetectionResult {
-    let detectedExercise: ExerciseType?
-    let isInPosition: Bool
-    let feedback: PositioningFeedback
-    let confidence: Double
+public struct PositionDetectionResult {
+    public let detectedExercise: ExerciseType?
+    public let isInPosition: Bool
+    public let feedback: PositioningFeedback
+    public let confidence: Double
+    
+    public init(detectedExercise: ExerciseType?, isInPosition: Bool, feedback: PositioningFeedback, confidence: Double) {
+        self.detectedExercise = detectedExercise
+        self.isInPosition = isInPosition
+        self.feedback = feedback
+        self.confidence = confidence
+    }
 }
 
-struct PositioningFeedback {
-    let primaryInstruction: String
-    let visualGuide: FramingGuide
-    let confidenceScore: Double
-    let missingRequirements: [String]
+public struct PositioningFeedback {
+    public let primaryInstruction: String
+    public let visualGuide: FramingGuide
+    public let confidenceScore: Double
+    public let missingRequirements: [String]
+    
+    public init(primaryInstruction: String, visualGuide: FramingGuide, confidenceScore: Double, missingRequirements: [String]) {
+        self.primaryInstruction = primaryInstruction
+        self.visualGuide = visualGuide
+        self.confidenceScore = confidenceScore
+        self.missingRequirements = missingRequirements
+    }
 }
 
-struct FramingGuide {
-    let isFullyInFrame: Bool
-    let tooClose: Bool
-    let tooFar: Bool
-    let optimalDistance: Double
-    let currentDistance: Double
+public struct FramingGuide {
+    public let isFullyInFrame: Bool
+    public let tooClose: Bool
+    public let tooFar: Bool
+    public let optimalDistance: Double
+    public let currentDistance: Double
+    
+    public init(isFullyInFrame: Bool, tooClose: Bool, tooFar: Bool, optimalDistance: Double, currentDistance: Double) {
+        self.isFullyInFrame = isFullyInFrame
+        self.tooClose = tooClose
+        self.tooFar = tooFar
+        self.optimalDistance = optimalDistance
+        self.currentDistance = currentDistance
+    }
 }
 
 struct PositionScore {

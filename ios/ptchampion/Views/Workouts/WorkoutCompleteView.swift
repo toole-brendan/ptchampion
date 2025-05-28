@@ -70,633 +70,359 @@ struct MetricCard: View {
 }
 
 struct WorkoutCompleteView: View {
-    let result: WorkoutResultSwiftData?
+    let result: WorkoutResult
     let exerciseGrader: AnyExerciseGraderBox
-
-    @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
-    @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
-
-    @State private var repDetailsForChart: [RepChartData] = []
-    @State private var isLoadingDetails: Bool = false
-    @State private var fetchError: String? = nil
+    @Environment(\.dismiss) var dismiss
+    @State private var showingShareSheet = false
+    @State private var celebrationAnimation = false
     
-    // Animation states
-    @State private var headerVisible = false
-    @State private var metricsVisible = false
-    @State private var chartVisible = false
-    @State private var buttonsVisible = false
-    @State private var celebrationVisible = false
-
     var body: some View {
-        NavigationStack {
-            ZStack {
-                // Background gradient matching dashboard
-                RadialGradient(
-                    gradient: Gradient(colors: [
-                        AppTheme.GeneratedColors.background.opacity(0.9),
-                        AppTheme.GeneratedColors.background
-                    ]),
-                    center: .center,
-                    startRadius: 50,
-                    endRadius: UIScreen.main.bounds.height * 0.6
-                )
-                .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: AppTheme.GeneratedSpacing.large) {
-                        if let workoutResult = result {
-                            // Celebration Header
-                            celebrationHeaderView()
-                                .opacity(headerVisible ? 1 : 0)
-                                .offset(y: headerVisible ? 0 : -20)
-                            
-                            // Performance Metrics
-                            performanceMetricsView(workoutResult: workoutResult)
-                                .opacity(metricsVisible ? 1 : 0)
-                                .offset(y: metricsVisible ? 0 : 20)
-                            
-                            // Form Feedback Section
-                            if let lastIssue = exerciseGrader.lastFormIssue, !lastIssue.isEmpty {
-                                formFeedbackView(feedback: lastIssue)
-                                    .opacity(metricsVisible ? 1 : 0)
-                                    .offset(y: metricsVisible ? 0 : 20)
-                            }
-                            
-                            // Rep Analysis Chart
-                            repAnalysisChartView()
-                                .opacity(chartVisible ? 1 : 0)
-                                .offset(y: chartVisible ? 0 : 20)
-                            
-                        } else {
-                            // Error state
-                            errorStateView()
-                        }
-                        
-                        // Action buttons
-                        actionButtonsView()
-                            .opacity(buttonsVisible ? 1 : 0)
-                            .offset(y: buttonsVisible ? 0 : 20)
-                        
-                        Spacer(minLength: 20)
-                    }
-                    .padding(AppTheme.GeneratedSpacing.contentPadding)
-                }
-            }
-            .navigationBarHidden(true)
-            .hideTabBar(!tabBarVisibility.isTabBarVisible)
-            .onAppear {
-                tabBarVisibility.hideTabBar()
-                animateContentIn()
-                Task {
-                    await fetchRepDetails()
-                }
-            }
-            .onDisappear {
-                tabBarVisibility.showTabBar()
-            }
-        }
-    }
-    
-    // MARK: - View Components
-    
-    @ViewBuilder
-    private func celebrationHeaderView() -> some View {
-        VStack(spacing: 24) {
-            // Success checkmark with animation
-            ZStack {
-                Circle()
-                    .fill(AppTheme.GeneratedColors.success.opacity(0.1))
-                    .frame(width: 80, height: 80)
-                
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 40))
-                    .foregroundColor(AppTheme.GeneratedColors.success)
-                    .scaleEffect(celebrationVisible ? 1.2 : 0.8)
-                    .animation(.spring(response: 0.6, dampingFraction: 0.6), value: celebrationVisible)
-            }
+        ZStack {
+            // Background gradient
+            LinearGradient(
+                gradient: Gradient(colors: [
+                    result.exerciseType.color.opacity(0.8),
+                    result.exerciseType.color.opacity(0.4)
+                ]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .edgesIgnoringSafeArea(.all)
             
-            VStack(spacing: 16) {
-                Text("WORKOUT COMPLETE!")
-                    .font(.system(size: 32, weight: .heavy))
-                    .tracking(2)
-                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                    .multilineTextAlignment(.center)
-                
-                Rectangle()
-                    .frame(width: 120, height: 2)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                
-                Text("MISSION ACCOMPLISHED")
-                    .font(.system(size: 16, weight: .medium))
-                    .tracking(1.5)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .padding(.top, 40)
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                celebrationVisible = true
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private func performanceMetricsView(workoutResult: WorkoutResultSwiftData) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header section
-            VStack(alignment: .leading, spacing: 4) {
-                Text("PERFORMANCE METRICS")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                    .padding(.bottom, 4)
-                
-                Rectangle()
-                    .frame(height: 1)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
-                    .padding(.bottom, 4)
-                
-                Text("YOUR WORKOUT RESULTS AND PERFORMANCE DATA")
-                    .militaryMonospaced(size: 12)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.GeneratedColors.deepOps)
-            
-            // Metrics content
-            VStack(spacing: 16) {
-                // 2x2 Grid of metrics
-                LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 12),
-                    GridItem(.flexible(), spacing: 12)
-                ], spacing: 12) {
-                    MetricCard(
-                        title: "EXERCISE TYPE",
-                        value: workoutResult.exerciseType.capitalized,
-                        iconName: getExerciseIcon(workoutResult.exerciseType),
-                        color: AppTheme.GeneratedColors.deepOps
-                    )
-                    
-                    MetricCard(
-                        title: "DURATION",
-                        value: formatDuration(workoutResult.durationSeconds),
-                        iconName: "timer",
-                        color: AppTheme.GeneratedColors.deepOps
-                    )
-                    
-                    MetricCard(
-                        title: "TOTAL REPS",
-                        value: "\(workoutResult.repCount ?? 0)",
-                        iconName: "number",
-                        color: AppTheme.GeneratedColors.deepOps
-                    )
-                    
-                    MetricCard(
-                        title: "FORM QUALITY",
-                        value: String(format: "%.0f%%", exerciseGrader.formQualityAverage * 100),
-                        iconName: "target",
-                        color: getFormQualityColor(exerciseGrader.formQualityAverage)
-                    )
-                }
-                
-                // Overall score card (full width)
-                if let score = workoutResult.score {
-                    VStack(spacing: 12) {
-                        HStack {
+            ScrollView {
+                VStack(spacing: 30) {
+                    // Header with celebration
+                    VStack(spacing: 20) {
+                        // Celebration icon
+                        ZStack {
+                            Circle()
+                                .fill(Color.white.opacity(0.2))
+                                .frame(width: 120, height: 120)
+                                .scaleEffect(celebrationAnimation ? 1.1 : 1.0)
+                            
                             Image(systemName: "trophy.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("OVERALL SCORE")
-                                    .militaryMonospaced(size: 14)
-                                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                                
-                                Text(String(format: "%.1f", score))
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                            }
-                            
-                            Spacer()
-                            
-                            VStack(alignment: .trailing, spacing: 4) {
-                                Text(getScoreInterpretation(score))
-                                    .militaryMonospaced(size: 12)
-                                    .foregroundColor(getScoreColor(score))
-                                    .fontWeight(.medium)
-                                
-                                Text("GRADE")
-                                    .militaryMonospaced(size: 10)
-                                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
+                                .font(.system(size: 60))
+                                .foregroundColor(.yellow)
+                        }
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                                celebrationAnimation = true
                             }
                         }
+                        
+                        VStack(spacing: 10) {
+                            Text("Workout Complete!")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(.white)
+                            
+                            Text("Great job on your \(result.exerciseType.displayName.lowercased())!")
+                                .font(.title3)
+                                .foregroundColor(.white.opacity(0.9))
+                        }
                     }
-                    .padding()
-                    .background(Color.white)
-                    .cornerRadius(12)
-                    .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+                    .padding(.top, 50)
+                    
+                    // Main stats cards
+                    VStack(spacing: 20) {
+                        // Rep count card
+                        WorkoutStatCard(
+                            title: "Total Reps",
+                            value: "\(result.totalReps)",
+                            icon: "number.circle.fill",
+                            color: .white
+                        )
+                        
+                        // Duration card
+                        WorkoutStatCard(
+                            title: "Duration",
+                            value: formatDuration(result.duration),
+                            icon: "clock.fill",
+                            color: .white
+                        )
+                        
+                        // Form score card
+                        WorkoutStatCard(
+                            title: "Average Form",
+                            value: "\(Int(exerciseGrader.formQualityAverage * 100))%",
+                            icon: "star.fill",
+                            color: formScoreColor
+                        )
+                    }
+                    .padding(.horizontal, 20)
+                    
+                    // Detailed breakdown
+                    if !result.repDetails.isEmpty {
+                        VStack(spacing: 15) {
+                            Text("Rep Breakdown")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.white)
+                            
+                            RepBreakdownChart(repDetails: result.repDetails)
+                                .frame(height: 200)
+                                .padding(.horizontal, 20)
+                        }
+                        .padding(.vertical, 20)
+                        .background(
+                            RoundedRectangle(cornerRadius: 20)
+                                .fill(Color.white.opacity(0.1))
+                        )
+                        .padding(.horizontal, 20)
+                    }
+                    
+                    // Personal best indicator
+                    if result.isPersonalBest {
+                        PersonalBestBanner()
+                            .padding(.horizontal, 20)
+                    }
+                    
+                    // Action buttons
+                    VStack(spacing: 15) {
+                        Button(action: {
+                            showingShareSheet = true
+                        }) {
+                            HStack {
+                                Image(systemName: "square.and.arrow.up")
+                                Text("Share Results")
+                            }
+                            .font(.headline)
+                            .foregroundColor(result.exerciseType.color)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 50)
+                            .background(Color.white)
+                            .cornerRadius(25)
+                        }
+                        
+                        Button("Done") {
+                            dismiss()
+                        }
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color.white.opacity(0.2))
+                        .cornerRadius(25)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 50)
                 }
             }
-            .padding(16)
-            .background(AppTheme.GeneratedColors.creamDark)
         }
-        .cornerRadius(8)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .sheet(isPresented: $showingShareSheet) {
+            ShareSheet(activityItems: [createShareText()])
+        }
     }
     
-    @ViewBuilder
-    private func formFeedbackView(feedback: String) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header section
-            VStack(alignment: .leading, spacing: 4) {
-                Text("FORM IMPROVEMENT")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                    .padding(.bottom, 4)
-                
-                Rectangle()
-                    .frame(height: 1)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
-                    .padding(.bottom, 4)
-                
-                Text("TECHNIQUE FEEDBACK AND RECOMMENDATIONS")
-                    .militaryMonospaced(size: 12)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.GeneratedColors.deepOps)
+    private var formScoreColor: Color {
+        let score = exerciseGrader.formQualityAverage
+        if score >= 0.8 {
+            return .green
+        } else if score >= 0.6 {
+            return .yellow
+        } else {
+            return .red
+        }
+    }
+    
+    private func formatDuration(_ duration: TimeInterval) -> String {
+        let minutes = Int(duration) / 60
+        let seconds = Int(duration) % 60
+        return String(format: "%d:%02d", minutes, seconds)
+    }
+    
+    private func createShareText() -> String {
+        let formPercentage = Int(exerciseGrader.formQualityAverage * 100)
+        return """
+        Just completed my \(result.exerciseType.displayName.lowercased()) workout! 💪
+        
+        📊 Results:
+        • \(result.totalReps) reps
+        • \(formatDuration(result.duration)) duration
+        • \(formPercentage)% average form
+        
+        #PTChampion #Fitness #\(result.exerciseType.displayName.replacingOccurrences(of: "-", with: ""))
+        """
+    }
+}
+
+// MARK: - Supporting Views
+
+struct WorkoutStatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        HStack(spacing: 20) {
+            Image(systemName: icon)
+                .font(.system(size: 30))
+                .foregroundColor(color)
+                .frame(width: 50, height: 50)
+                .background(Circle().fill(color.opacity(0.2)))
             
-            // Feedback content
-            HStack(alignment: .top, spacing: 16) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 24))
-                    .foregroundColor(AppTheme.GeneratedColors.warning)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(title)
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
                 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("TECHNIQUE TIP")
-                        .militaryMonospaced(size: 12)
-                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                        .fontWeight(.medium)
-                    
-                    Text(feedback)
-                        .font(.system(size: 14))
-                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
-                        .lineLimit(nil)
-                }
+                Text(value)
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+            }
+            
+            Spacer()
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 15)
+                .fill(Color.white.opacity(0.1))
+        )
+    }
+}
+
+struct RepBreakdownChart: View {
+    let repDetails: [RepDetail]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("Form Quality by Rep")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
                 
                 Spacer()
-            }
-            .padding(16)
-            .background(Color.white)
-        }
-        .cornerRadius(8)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-    }
-    
-    @ViewBuilder
-    private func repAnalysisChartView() -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Header section
-            VStack(alignment: .leading, spacing: 4) {
-                Text("REP ANALYSIS")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-                    .padding(.bottom, 4)
                 
-                Rectangle()
-                    .frame(height: 1)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold.opacity(0.3))
-                    .padding(.bottom, 4)
-                
-                Text("FORM QUALITY THROUGHOUT YOUR WORKOUT")
-                    .militaryMonospaced(size: 12)
-                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(AppTheme.GeneratedColors.deepOps)
-            
-            // Chart content
-            VStack {
-                if isLoadingDetails {
-                    VStack(spacing: 16) {
-                        ProgressView()
-                            .scaleEffect(1.2)
-                        Text("ANALYZING REPS...")
-                            .militaryMonospaced(size: 12)
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    }
-                    .frame(height: 200)
-                    .frame(maxWidth: .infinity)
-                } else if let error = fetchError {
-                    VStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 32))
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                        
-                        Text("ANALYSIS UNAVAILABLE")
-                            .militaryMonospaced(size: 12)
-                            .foregroundColor(AppTheme.GeneratedColors.error)
-                        
-                        Text(error)
-                            .font(.system(size: 12))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(height: 200)
-                    .frame(maxWidth: .infinity)
-                } else if !repDetailsForChart.isEmpty {
-                    Chart(repDetailsForChart) { data in
-                        // Target line
-                        RuleMark(y: .value("Target Quality", 0.75))
-                            .foregroundStyle(AppTheme.GeneratedColors.success.opacity(0.5))
-                            .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 3]))
-                        
-                        // Quality bars
-                        BarMark(
-                            x: .value("Rep", "Rep \(data.repNumber)"),
-                            y: .value("Quality", data.formQuality)
-                        )
-                        .foregroundStyle(data.formQuality >= 0.75 ? AppTheme.GeneratedColors.success : AppTheme.GeneratedColors.warning)
-                        .cornerRadius(4)
-                    }
-                    .chartYScale(domain: 0...1)
-                    .chartYAxis {
-                        AxisMarks(position: .leading) { value in
-                            AxisGridLine()
-                            AxisValueLabel {
-                                if let doubleValue = value.as(Double.self) {
-                                    Text("\(Int(doubleValue * 100))%")
-                                        .font(.system(size: 10))
-                                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                                }
-                            }
-                        }
-                    }
-                    .chartXAxis {
-                        AxisMarks(position: .bottom) { value in
-                            AxisValueLabel {
-                                if let stringValue = value.as(String.self) {
-                                    Text(stringValue)
-                                        .font(.system(size: 10))
-                                        .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                                }
-                            }
-                        }
-                    }
-                    .frame(height: 200)
-                    .padding(.top, 8)
-                } else {
-                    VStack(spacing: 16) {
-                        Image(systemName: "chart.bar")
-                            .font(.system(size: 32))
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        Text("NO REP DATA AVAILABLE")
-                            .militaryMonospaced(size: 12)
-                            .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                        
-                        Text("DETAILED REP ANALYSIS NOT FOUND FOR THIS SESSION")
-                            .font(.system(size: 12))
-                            .foregroundColor(AppTheme.GeneratedColors.textTertiary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .frame(height: 200)
-                    .frame(maxWidth: .infinity)
+                HStack(spacing: 15) {
+                    LegendItem(color: .green, label: "Good")
+                    LegendItem(color: .yellow, label: "Fair")
+                    LegendItem(color: .red, label: "Poor")
                 }
             }
-            .padding(16)
-            .background(Color.white)
-        }
-        .cornerRadius(8)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-    }
-    
-    @ViewBuilder
-    private func errorStateView() -> some View {
-        VStack(spacing: 24) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 60))
-                .foregroundColor(AppTheme.GeneratedColors.error)
             
-            VStack(spacing: 12) {
-                Text("WORKOUT DATA UNAVAILABLE")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(AppTheme.GeneratedColors.error)
-                    .multilineTextAlignment(.center)
-                
-                Text("There was an issue saving or loading the workout details.")
-                    .font(.system(size: 16))
-                    .foregroundColor(AppTheme.GeneratedColors.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .padding(40)
-        .background(Color.white)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
-    }
-    
-    @ViewBuilder
-    private func actionButtonsView() -> some View {
-        VStack(spacing: 16) {
-            // Primary CTA
-            PTButton(
-                "VIEW WORKOUT HISTORY",
-                style: PTButton.ButtonStyle.primary,
-                size: .large,
-                icon: Image(systemName: "chart.line.uptrend.xyaxis"),
-                fullWidth: true
-            ) {
-                tabBarVisibility.showTabBar()
-                // Navigate to workout history
-                dismiss()
-            }
-            
-            // Secondary action
-            PTButton(
-                "DONE",
-                style: PTButton.ButtonStyle.secondary,
-                size: .large,
-                fullWidth: true
-            ) {
-                tabBarVisibility.showTabBar()
-                dismiss()
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(Array(repDetails.enumerated()), id: \.offset) { index, rep in
+                        VStack(spacing: 5) {
+                            Rectangle()
+                                .fill(qualityColor(for: rep.formQuality))
+                                .frame(width: 20, height: CGFloat(rep.formQuality * 150))
+                                .cornerRadius(2)
+                            
+                            Text("\(index + 1)")
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.6))
+                        }
+                    }
+                }
+                .padding(.horizontal, 10)
             }
         }
     }
     
-    // MARK: - Helper Methods
-    
-    private func animateContentIn() {
-        // Staggered animations
-        withAnimation(.easeOut(duration: 0.6)) {
-            headerVisible = true
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            withAnimation(.easeOut(duration: 0.6)) {
-                metricsVisible = true
-            }
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-            withAnimation(.easeOut(duration: 0.6)) {
-                chartVisible = true
-            }
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-            withAnimation(.easeOut(duration: 0.6)) {
-                buttonsVisible = true
-            }
-        }
-    }
-    
-    private func getExerciseIcon(_ exerciseType: String) -> String {
-        switch exerciseType.lowercased() {
-        case "pushup", "push-up", "pushups":
-            return "figure.strengthtraining.traditional"
-        case "situp", "sit-up", "situps":
-            return "figure.core.training"
-        case "pullup", "pull-up", "pullups":
-            return "figure.strengthtraining.functional"
-        case "run", "running":
-            return "figure.run"
-        default:
-            return "figure.strengthtraining.traditional"
-        }
-    }
-    
-    private func getFormQualityColor(_ quality: Double) -> Color {
+    private func qualityColor(for quality: Double) -> Color {
         if quality >= 0.8 {
-            return AppTheme.GeneratedColors.success
+            return .green
         } else if quality >= 0.6 {
-            return AppTheme.GeneratedColors.warning
+            return .yellow
         } else {
-            return AppTheme.GeneratedColors.error
+            return .red
         }
-    }
-    
-    private func getScoreInterpretation(_ score: Double) -> String {
-        switch score {
-        case 90...100:
-            return "EXCELLENT"
-        case 80..<90:
-            return "GOOD"
-        case 70..<80:
-            return "AVERAGE"
-        case 60..<70:
-            return "BELOW AVERAGE"
-        default:
-            return "NEEDS IMPROVEMENT"
-        }
-    }
-    
-    private func getScoreColor(_ score: Double) -> Color {
-        switch score {
-        case 90...100:
-            return AppTheme.GeneratedColors.success
-        case 80..<90:
-            return AppTheme.GeneratedColors.brassGold
-        case 70..<80:
-            return AppTheme.GeneratedColors.warning
-        default:
-            return AppTheme.GeneratedColors.error
-        }
-    }
-    
-    private func fetchRepDetails() async {
-        guard let workoutID = result?.id else {
-            fetchError = "Workout session ID is missing."
-            print("Failed to fetch rep details: Workout session ID is missing")
-            return
-        }
-        
-        isLoadingDetails = true
-        fetchError = nil
-        print("Fetching rep details for workout ID: \(workoutID)")
-
-        let descriptor = FetchDescriptor<WorkoutDataPoint>(
-            predicate: #Predicate { $0.workoutID == workoutID },
-            sortBy: [SortDescriptor(\WorkoutDataPoint.timestamp)]
-        )
-
-        do {
-            let dataPoints = try modelContext.fetch(descriptor)
-            self.repDetailsForChart = dataPoints.map {
-                RepChartData(id: $0.id, repNumber: $0.repNumber, formQuality: $0.formQuality)
-            }
-            if dataPoints.isEmpty {
-                 print("No WorkoutDataPoint found for session \(workoutID.uuidString)")
-            } else {
-                 print("Found \(dataPoints.count) rep data points for workout")
-            }
-        } catch {
-            print("Failed to fetch rep details: \(error)")
-            fetchError = error.localizedDescription
-        }
-        isLoadingDetails = false
-    }
-
-    private func formatDuration(_ totalSeconds: Int) -> String {
-        let minutes = totalSeconds / 60
-        let seconds = totalSeconds % 60
-        return String(format: "%02d:%02d", minutes, seconds)
     }
 }
 
-#if DEBUG
-struct WorkoutCompleteView_Previews: PreviewProvider {
-    static var previews: some View {
-        // Create a mock WorkoutResultSwiftData
-        let mockResult = WorkoutResultSwiftData(
-            id: UUID().uuidString,
-            exerciseType: "Pushup",
-            startTime: Date().addingTimeInterval(-60 * 5), // 5 minutes ago
-            endTime: Date(),
-            durationSeconds: 300,
-            repCount: 25,
-            score: 85.5
-        )
-
-        // Create a mock ExerciseGraderBox
-        let mockGrader = WorkoutSessionPlaceholderGrader()
-        mockGrader.repCount = 25
-        mockGrader.formQualityAverage = 0.88
-        mockGrader.lastFormIssue = "Elbows flared out on last rep."
-        let mockGraderBox = AnyExerciseGraderBox(mockGrader)
-
-        // Create some mock rep data points for the chart preview
-        let mockRepDetails = [
-            RepChartData(id: UUID(), repNumber: 1, formQuality: 0.9),
-            RepChartData(id: UUID(), repNumber: 2, formQuality: 0.85),
-            RepChartData(id: UUID(), repNumber: 3, formQuality: 0.92),
-            RepChartData(id: UUID(), repNumber: 4, formQuality: 0.78),
-            RepChartData(id: UUID(), repNumber: 5, formQuality: 0.80)
-        ]
-        
-        // Create a mock model container and populate it for preview if needed for fetchRepDetails
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: WorkoutResultSwiftData.self, WorkoutDataPoint.self, configurations: config)
-        
-        // Insert the mock result so it can be "found" if view expects to fetch it by ID passed via result
-        container.mainContext.insert(mockResult)
-        
-        // Insert mock WorkoutDataPoints linked to mockResult for chart preview
-        if let workoutID = mockResult.id as? UUID {
-            mockRepDetails.forEach {
-                let dp = WorkoutDataPoint(id: $0.id, exerciseName: "Pushup", repNumber: $0.repNumber, formQuality: $0.formQuality, workoutID: workoutID)
-                container.mainContext.insert(dp)
-            }
+struct LegendItem: View {
+    let color: Color
+    let label: String
+    
+    var body: some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            
+            Text(label)
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.8))
         }
-        
-        return WorkoutCompleteView(result: mockResult, exerciseGrader: mockGraderBox)
-            .modelContainer(container)
-            .environmentObject(TabBarVisibilityManager.shared)
     }
 }
-#endif 
+
+struct PersonalBestBanner: View {
+    @State private var sparkleAnimation = false
+    
+    var body: some View {
+        HStack {
+            Image(systemName: "crown.fill")
+                .foregroundColor(.yellow)
+                .font(.title2)
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Personal Best!")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .foregroundColor(.white)
+                
+                Text("You've set a new record!")
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.8))
+            }
+            
+            Spacer()
+            
+            Image(systemName: "sparkles")
+                .foregroundColor(.yellow)
+                .font(.title2)
+                .scaleEffect(sparkleAnimation ? 1.2 : 1.0)
+                .onAppear {
+                    withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                        sparkleAnimation = true
+                    }
+                }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 15)
+                .fill(Color.yellow.opacity(0.2))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 15)
+                        .stroke(Color.yellow.opacity(0.5), lineWidth: 2)
+                )
+        )
+    }
+}
+
+struct ShareSheet: UIViewControllerRepresentable {
+    let activityItems: [Any]
+    
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+    
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+#Preview {
+    let sampleResult = WorkoutResult(
+        id: UUID(),
+        exerciseType: .pushup,
+        totalReps: 25,
+        duration: 180,
+        timestamp: Date(),
+        repDetails: [
+            RepDetail(repNumber: 1, formQuality: 0.9, timestamp: Date()),
+            RepDetail(repNumber: 2, formQuality: 0.8, timestamp: Date()),
+            RepDetail(repNumber: 3, formQuality: 0.7, timestamp: Date())
+        ],
+        isPersonalBest: true
+    )
+    
+    let grader = EnhancedPushupGrader()
+    
+    WorkoutCompleteView(
+        result: sampleResult,
+        exerciseGrader: AnyExerciseGraderBox(grader)
+    )
+} 

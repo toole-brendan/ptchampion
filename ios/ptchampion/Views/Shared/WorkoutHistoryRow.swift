@@ -207,7 +207,7 @@ extension String {
     }()
     
     // Return the preview view
-    return List {
+    List {
         WorkoutHistoryRow(result: try! previewContainer.mainContext.fetch(FetchDescriptor<WorkoutResultSwiftData>()).first ?? WorkoutResultSwiftData(exerciseType: "fallback", startTime: Date(), endTime: Date(), durationSeconds: 0))
     }
     .modelContainer(previewContainer)
@@ -228,7 +228,7 @@ extension String {
     }()
     
     // Return the preview view
-    return List {
+    List {
         WorkoutHistoryRow(result: try! previewContainer.mainContext.fetch(FetchDescriptor<WorkoutResultSwiftData>()).first ?? WorkoutResultSwiftData(exerciseType: "fallback", startTime: Date(), endTime: Date(), durationSeconds: 0))
     }
     .modelContainer(previewContainer)

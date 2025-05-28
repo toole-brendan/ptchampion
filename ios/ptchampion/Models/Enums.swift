@@ -1,18 +1,6 @@
 import Foundation
 import SwiftUI
 
-// REMOVE ExerciseType - Should be defined ONLY in WorkoutModels.swift
-/*
-enum ExerciseType: String, CaseIterable, Identifiable {
-    case pushup = "Push-ups"
-    case situp = "Sit-ups"
-    case pullup = "Pull-ups"
-    case run = "Run"
-
-    var id: String { self.rawValue }
-}
-*/
-
 // Uncomment DistanceUnit for RunWorkoutViewModel
 /* Commenting out to avoid duplicate declaration - already defined in RunWorkoutViewModel.swift
 enum DistanceUnit: String, CaseIterable, Identifiable {

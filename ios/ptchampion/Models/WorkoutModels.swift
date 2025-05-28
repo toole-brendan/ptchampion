@@ -1,13 +1,16 @@
 import Foundation
 import UIKit
+import SwiftUI
 
 // MARK: - Exercise Type Enum
-enum ExerciseType: String, CaseIterable, Codable {
+enum ExerciseType: String, CaseIterable, Codable, Identifiable {
     case pushup = "pushup"
     case pullup = "pullup"
     case situp = "situp"
     case run = "run"
     case unknown = "unknown"
+    
+    var id: String { self.rawValue }
     
     var displayName: String {
         switch self {
@@ -26,6 +29,26 @@ enum ExerciseType: String, CaseIterable, Codable {
         case .situp: return 3
         case .run: return 4
         case .unknown: return 0
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .pushup: return .blue
+        case .pullup: return .green
+        case .situp: return .orange
+        case .run: return .red
+        case .unknown: return .gray
+        }
+    }
+    
+    var icon: String {
+        switch self {
+        case .pushup: return "figure.strengthtraining.traditional"
+        case .pullup: return "figure.climbing"
+        case .situp: return "figure.core.training"
+        case .run: return "figure.run"
+        case .unknown: return "questionmark.circle"
         }
     }
 }

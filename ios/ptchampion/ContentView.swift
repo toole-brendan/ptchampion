@@ -13,6 +13,7 @@ struct ContentView: View {
     @StateObject private var workoutHistoryViewModel = WorkoutHistoryViewModel() // Assuming this exists
     // For ProfileView, if it's simple, it might not need its own ViewModel, or it might use AuthViewModel.
     @State private var showingStyleShowcase = false
+    @State private var showingExerciseSelection = false
 
     var body: some View {
         NavigationStack {
@@ -35,16 +36,30 @@ struct ContentView: View {
                     .foregroundColor(AppTheme.GeneratedColors.textTertiary)
                     .padding(.bottom, 40)
                 
-                Button {
-                    showingStyleShowcase = true
-                } label: {
-                    Text("VIEW MILITARY UI SHOWCASE")
-                        .militaryMonospaced()
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(AppTheme.GeneratedColors.primary)
-                        .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
-                        .cornerRadius(AppTheme.GeneratedRadius.button)
+                VStack(spacing: 15) {
+                    Button {
+                        showingExerciseSelection = true
+                    } label: {
+                        Text("START WORKOUT")
+                            .militaryMonospaced()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(AppTheme.GeneratedColors.primary)
+                            .foregroundColor(AppTheme.GeneratedColors.textOnPrimary)
+                            .cornerRadius(AppTheme.GeneratedRadius.button)
+                    }
+                    
+                    Button {
+                        showingStyleShowcase = true
+                    } label: {
+                        Text("VIEW MILITARY UI SHOWCASE")
+                            .militaryMonospaced()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(AppTheme.GeneratedColors.secondary)
+                            .foregroundColor(AppTheme.GeneratedColors.textOnSecondary)
+                            .cornerRadius(AppTheme.GeneratedRadius.button)
+                    }
                 }
                 .padding(.horizontal, 40)
                 
@@ -57,6 +72,9 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingStyleShowcase) {
                 MilitaryStyleShowcase()
+            }
+            .fullScreenCover(isPresented: $showingExerciseSelection) {
+                ExerciseSelectionView()
             }
         }
     }

@@ -132,7 +132,7 @@ struct StatCard_Previews: PreviewProvider {
             StatCard(title: "Time Trial", value: "03:45", unit: "min", color: .orange, iconName: "timer")
         }
         .padding()
-        .background(AppTheme.GeneratedColors.background) // Changed from backgroundPrimary
+        .background(AppTheme.GeneratedColors.background)
     }
 }
 #endif 

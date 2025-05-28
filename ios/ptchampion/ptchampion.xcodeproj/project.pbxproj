@@ -200,6 +200,12 @@
 		BFF57A6A2DE5FD5800B65EFF /* AuthenticationFix.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A692DE5FD5800B65EFF /* AuthenticationFix.swift */; };
 		BFF57A6D2DE6213300B65EFF /* PositionHoldProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A6C2DE6213300B65EFF /* PositionHoldProgressView.swift */; };
 		BFF57A6E2DE6213300B65EFF /* FullBodyFramingGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A6B2DE6213300B65EFF /* FullBodyFramingGuideView.swift */; };
+		BFF57A752DE74E9200B65EFF /* UnifiedWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A742DE74E9200B65EFF /* UnifiedWorkoutView.swift */; };
+		BFF57A762DE74E9200B65EFF /* AutoPositionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A712DE74E9200B65EFF /* AutoPositionOverlay.swift */; };
+		BFF57A772DE74E9200B65EFF /* ExerciseSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A732DE74E9200B65EFF /* ExerciseSelectionView.swift */; };
+		BFF57A782DE74E9200B65EFF /* AutoPositionTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A722DE74E9200B65EFF /* AutoPositionTestView.swift */; };
+		BFF57A7B2DE74EAD00B65EFF /* ExerciseUIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A792DE74EAD00B65EFF /* ExerciseUIComponents.swift */; };
+		BFF57A7D2DE74ED300B65EFF /* WorkoutResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A7C2DE74ED300B65EFF /* WorkoutResult.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -416,6 +422,12 @@
 		BFF57A692DE5FD5800B65EFF /* AuthenticationFix.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationFix.swift; sourceTree = "<group>"; };
 		BFF57A6B2DE6213300B65EFF /* FullBodyFramingGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullBodyFramingGuideView.swift; sourceTree = "<group>"; };
 		BFF57A6C2DE6213300B65EFF /* PositionHoldProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionHoldProgressView.swift; sourceTree = "<group>"; };
+		BFF57A712DE74E9200B65EFF /* AutoPositionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPositionOverlay.swift; sourceTree = "<group>"; };
+		BFF57A722DE74E9200B65EFF /* AutoPositionTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPositionTestView.swift; sourceTree = "<group>"; };
+		BFF57A732DE74E9200B65EFF /* ExerciseSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSelectionView.swift; sourceTree = "<group>"; };
+		BFF57A742DE74E9200B65EFF /* UnifiedWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnifiedWorkoutView.swift; sourceTree = "<group>"; };
+		BFF57A792DE74EAD00B65EFF /* ExerciseUIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseUIComponents.swift; sourceTree = "<group>"; };
+		BFF57A7C2DE74ED300B65EFF /* WorkoutResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutResult.swift; sourceTree = "<group>"; };
 		C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.release.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.release.xcconfig"; sourceTree = "<group>"; };
 		D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ptchampion.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.debug.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.debug.xcconfig"; sourceTree = "<group>"; };
@@ -627,6 +639,7 @@
 		BF63E4042DB1CF5A0037CD02 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A7C2DE74ED300B65EFF /* WorkoutResult.swift */,
 				BFF57A4F2DE5216700B65EFF /* CalibrationMode.swift */,
 				BF59ACDE2DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift */,
 				BF59ACDF2DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift */,
@@ -798,6 +811,11 @@
 		BF63E4482DB1EB980037CD02 /* Workouts */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A7A2DE74EAD00B65EFF /* Components */,
+				BFF57A712DE74E9200B65EFF /* AutoPositionOverlay.swift */,
+				BFF57A722DE74E9200B65EFF /* AutoPositionTestView.swift */,
+				BFF57A732DE74E9200B65EFF /* ExerciseSelectionView.swift */,
+				BFF57A742DE74E9200B65EFF /* UnifiedWorkoutView.swift */,
 				BFF57A6B2DE6213300B65EFF /* FullBodyFramingGuideView.swift */,
 				BFF57A6C2DE6213300B65EFF /* PositionHoldProgressView.swift */,
 				BFF57A5F2DE52EDC00B65EFF /* StartingPositionOverlay.swift */,
@@ -929,6 +947,14 @@
 				BF89EB532DC9A1A7003F8FE3 /* WorkoutProgressChart.swift */,
 			);
 			path = Charts;
+			sourceTree = "<group>";
+		};
+		BFF57A7A2DE74EAD00B65EFF /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				BFF57A792DE74EAD00B65EFF /* ExerciseUIComponents.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1191,6 +1217,7 @@
 				BF63E4222DB1EB830037CD02 /* NetworkClient.swift in Sources */,
 				BFB1EDB82DD0E3A400AC9653 /* SynchronizationService.swift in Sources */,
 				BFB1EDB92DD0E3A400AC9653 /* NetworkMonitorService.swift in Sources */,
+				BFF57A7D2DE74ED300B65EFF /* WorkoutResult.swift in Sources */,
 				BF59ACFC2DE1060B00242910 /* APFTRepValidator+LandscapeFix.swift in Sources */,
 				BF59ACFD2DE1060B00242910 /* APFTRepValidator+LandscapeOverride.swift in Sources */,
 				BF63E4232DB1EB830037CD02 /* BluetoothServiceProtocol.swift in Sources */,
@@ -1203,6 +1230,10 @@
 				BF59ACD82DDFDBB400242910 /* TabBarAware.swift in Sources */,
 				BF59ACD92DDFDBB400242910 /* ContentContainer.swift in Sources */,
 				BF63E4612DB1EBA40037CD02 /* LeaderboardViewModel.swift in Sources */,
+				BFF57A752DE74E9200B65EFF /* UnifiedWorkoutView.swift in Sources */,
+				BFF57A762DE74E9200B65EFF /* AutoPositionOverlay.swift in Sources */,
+				BFF57A772DE74E9200B65EFF /* ExerciseSelectionView.swift in Sources */,
+				BFF57A782DE74E9200B65EFF /* AutoPositionTestView.swift in Sources */,
 				BF37B0542DCC233F00EC4D58 /* WorkoutTimer.swift in Sources */,
 				BFBF2EC52DCFE5A700FFCF4F /* LocationPermissionRequestView.swift in Sources */,
 				BFADF9B12DC93D890016AF0B /* Toast.swift in Sources */,
@@ -1282,6 +1313,7 @@
 				BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */,
 				BFBF2EC22DCFE59500FFCF4F /* WorkoutSessionViewModel.swift in Sources */,
 				BFBF2EC32DCFE59500FFCF4F /* WorkoutViewModelProtocol.swift in Sources */,
+				BFF57A7B2DE74EAD00B65EFF /* ExerciseUIComponents.swift in Sources */,
 				BF59ACE12DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift in Sources */,
 				BF59ACE22DE0E99B00242910 /* CalibrationModels.swift in Sources */,
 				BF59ACE32DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift in Sources */,
