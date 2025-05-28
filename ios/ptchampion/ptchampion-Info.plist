@@ -2,6 +2,32 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>GoogleClientID</key>
+	<string>746387095278-uehvvv1m60l8j805jgkruamrv8da38r3.apps.googleusercontent.com</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.toole.ptchampion.new</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.toole.ptchampion.new</string>
+				<string>com.googleusercontent.apps.746387095278-uehvvv1m60l8j805jgkruamrv8da38r3</string>
+			</array>
+		</dict>
+	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>PT Champion uses the camera to analyse your exercise form in real time.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>PT Champion uses your location to track your runs and calculate distances for workouts, even in the background.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>PT Champion uses your location to track your runs and calculate distances for workouts.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>PT Champion needs Bluetooth access to connect to fitness devices for heart rate, GPS, pace, and cadence monitoring.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>PT Champion needs Bluetooth access to connect to fitness devices for heart rate, GPS, pace, and cadence monitoring.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
