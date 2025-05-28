@@ -13,6 +13,9 @@ struct EnhancedExerciseOverlay: View {
     @State private var showAlignmentGrid = false
     @State private var isUserAligned = false
     
+    // Add state for overlay flip preference to match AutoPositionOverlay
+    @AppStorage("overlayFlipped") private var isOverlayFlipped: Bool = false
+    
     // Add computed property to determine if landscape is required
     private var requiresLandscape: Bool {
         switch exerciseType {
@@ -29,7 +32,8 @@ struct EnhancedExerciseOverlay: View {
             if shouldShowPNGOverlay && (isInLandscape || !requiresLandscape) {
                 PNGOverlayView(
                     exerciseType: exerciseType,
-                    opacity: pngOpacity
+                    opacity: pngOpacity,
+                    isFlipped: isOverlayFlipped
                 )
                 .allowsHitTesting(false) // Don't block touches
             }

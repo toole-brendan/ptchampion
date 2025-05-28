@@ -14,6 +14,9 @@ struct AutoPositionOverlay: View {
     let exerciseType: ExerciseType
     let isInLandscape: Bool
     
+    // Add state for overlay flip preference
+    @AppStorage("overlayFlipped") private var isOverlayFlipped: Bool = false
+    
     // Add computed property to determine if landscape is required
     private var requiresLandscape: Bool {
         switch exerciseType {
@@ -67,7 +70,8 @@ struct AutoPositionOverlay: View {
             if showPNGOverlay {
                 PNGOverlayView(
                     exerciseType: exerciseType,
-                    opacity: pngOpacity
+                    opacity: pngOpacity,
+                    isFlipped: isOverlayFlipped
                 )
                 .transition(.opacity)
                 .animation(.easeInOut(duration: 0.5), value: showPNGOverlay)
@@ -75,6 +79,18 @@ struct AutoPositionOverlay: View {
             
             // Main content optimized for landscape
             VStack {
+                // Add flip toggle button for pushups and situps when in position detection state
+                if (exerciseType == .pushup || exerciseType == .situp) && 
+                   (workoutState == .waitingForPosition || workoutState == .positionDetected) &&
+                   (isInLandscape || !requiresLandscape) {
+                    HStack {
+                        Spacer()
+                        flipToggleButton
+                            .padding(.trailing, 20)
+                            .padding(.top, 20)
+                    }
+                }
+                
                 // Position the instruction box at the top
                 if workoutState == .waitingForPosition && (isInLandscape || !requiresLandscape) {
                     landscapeWaitingForPositionContent
@@ -123,6 +139,40 @@ struct AutoPositionOverlay: View {
                 pulseAnimation = true
             }
         }
+    }
+    
+    // MARK: - Flip Toggle Button
+    private var flipToggleButton: some View {
+        Button(action: {
+            withAnimation(.easeInOut(duration: 0.3)) {
+                isOverlayFlipped.toggle()
+            }
+        }) {
+            HStack(spacing: 8) {
+                // Show person icon facing the current direction
+                Image(systemName: isOverlayFlipped ? "person.fill.turn.left" : "person.fill.turn.right")
+                    .font(.system(size: 16, weight: .medium))
+                    .rotationEffect(.degrees(isOverlayFlipped ? 0 : 180), anchor: .center)
+                
+                Image(systemName: "arrow.left.arrow.right")
+                    .font(.system(size: 14, weight: .medium))
+                
+                Text(isOverlayFlipped ? "Head Right" : "Head Left")
+                    .font(.system(size: 14, weight: .medium))
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.black.opacity(0.6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
     }
     
     // MARK: - Landscape Ready State
@@ -506,6 +556,18 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
                 isInLandscape: true
             )
             .previewDisplayName("Waiting - Landscape")
+            .previewInterfaceOrientation(.landscapeRight)
+            
+            // Waiting for position - Landscape with flip toggle visible
+            AutoPositionOverlay(
+                workoutState: .waitingForPosition,
+                positionHoldProgress: 0.0,
+                countdownValue: nil,
+                onStartPressed: {},
+                exerciseType: .pushup,
+                isInLandscape: true
+            )
+            .previewDisplayName("Pushup - With Flip Toggle")
             .previewInterfaceOrientation(.landscapeRight)
             
             // Countdown

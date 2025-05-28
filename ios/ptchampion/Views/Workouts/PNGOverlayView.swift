@@ -5,6 +5,7 @@ import PTDesignSystem
 struct PNGOverlayView: View {
     let exerciseType: ExerciseType
     let opacity: Double
+    let isFlipped: Bool
     @State private var imageSize: CGSize = .zero
     
     var body: some View {
@@ -20,6 +21,7 @@ struct PNGOverlayView: View {
                                height: geometry.size.height)
                         .position(x: geometry.size.width / 2,
                                   y: geometry.size.height / 2)
+                        .scaleEffect(x: isFlipped ? -1 : 1, y: 1)
                         .allowsHitTesting(false)
                         .clipped()
                         .overlay(
@@ -31,6 +33,7 @@ struct PNGOverlayView: View {
                                        height: geometry.size.height)
                                 .blur(radius: 25)
                                 .opacity(opacity * 0.2)
+                                .scaleEffect(x: isFlipped ? -1 : 1, y: 1)
                                 .allowsHitTesting(false)
                                 .clipped()
                         )
@@ -79,13 +82,19 @@ struct PNGOverlayView: View {
 struct PNGOverlayView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            PNGOverlayView(exerciseType: .pushup, opacity: 0.5)
-                .previewDisplayName("Push-up Overlay")
+            PNGOverlayView(exerciseType: .pushup, opacity: 0.5, isFlipped: false)
+                .previewDisplayName("Push-up Overlay - Normal")
             
-            PNGOverlayView(exerciseType: .situp, opacity: 0.5)
-                .previewDisplayName("Sit-up Overlay")
+            PNGOverlayView(exerciseType: .pushup, opacity: 0.5, isFlipped: true)
+                .previewDisplayName("Push-up Overlay - Flipped")
             
-            PNGOverlayView(exerciseType: .pullup, opacity: 0.5)
+            PNGOverlayView(exerciseType: .situp, opacity: 0.5, isFlipped: false)
+                .previewDisplayName("Sit-up Overlay - Normal")
+            
+            PNGOverlayView(exerciseType: .situp, opacity: 0.5, isFlipped: true)
+                .previewDisplayName("Sit-up Overlay - Flipped")
+            
+            PNGOverlayView(exerciseType: .pullup, opacity: 0.5, isFlipped: false)
                 .previewDisplayName("Pull-up Overlay")
         }
         .background(Color.black)
