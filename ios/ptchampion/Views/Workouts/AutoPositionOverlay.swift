@@ -79,24 +79,23 @@ struct AutoPositionOverlay: View {
             
             // Main content optimized for landscape
             VStack {
-                // Add flip toggle button for pushups and situps when in position detection state
-                if (exerciseType == .pushup || exerciseType == .situp) && 
-                   (workoutState == .waitingForPosition || workoutState == .positionDetected) &&
-                   (isInLandscape || !requiresLandscape) {
-                    HStack {
-                        Spacer()
-                        flipToggleButton
-                            .padding(.trailing, 20)
-                            .padding(.top, 20)
-                    }
-                }
-                
                 // Position the instruction box at the top
                 if workoutState == .waitingForPosition && (isInLandscape || !requiresLandscape) {
+                    // Place instruction at very top
                     landscapeWaitingForPositionContent
-                        .padding(.top, 40)
+                        .padding(.top, 5) // Minimal padding from top edge
                     
                     Spacer()
+                    
+                    // Add flip toggle button at bottom for pushups and situps
+                    if (exerciseType == .pushup || exerciseType == .situp) {
+                        HStack {
+                            flipToggleButton
+                                .padding(.leading, 20)
+                            Spacer()
+                        }
+                        .padding(.bottom, 20)
+                    }
                 } else {
                     // Center other content
                     Spacer()
@@ -130,6 +129,18 @@ struct AutoPositionOverlay: View {
                     }
                     
                     Spacer()
+                    
+                    // Add flip toggle button at bottom for position detected state
+                    if workoutState == .positionDetected && 
+                       (exerciseType == .pushup || exerciseType == .situp) && 
+                       (isInLandscape || !requiresLandscape) {
+                        HStack {
+                            flipToggleButton
+                                .padding(.leading, 20)
+                            Spacer()
+                        }
+                        .padding(.bottom, 20)
+                    }
                 }
             }
             .padding(.horizontal, 60) // More padding for landscape
@@ -222,57 +233,27 @@ struct AutoPositionOverlay: View {
     
     // MARK: - Landscape Waiting for Position
     private var landscapeWaitingForPositionContent: some View {
-        VStack(spacing: 25) {
-            // Position guidance header with background
-            HStack(spacing: 16) {
-                Image(systemName: positionIcon)
-                    .font(.system(size: 48))
-                    .foregroundColor(positionColor)
-                    .scaleEffect(pulseAnimation ? 1.1 : 1.0)
-                
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(primaryInstruction)
-                        .font(.system(size: 24, weight: .bold))
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(1)
-                        .foregroundColor(.white)
-                    
-                    Text(secondaryInstruction)
-                        .font(.system(size: 18))
-                        .minimumScaleFactor(0.7)
-                        .lineLimit(2)
-                        .foregroundColor(.white.opacity(0.8))
-                }
-            }
-            .padding(.horizontal, 24)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.black.opacity(0.6))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(positionColor.opacity(0.5), lineWidth: 2)
-                    )
-            )
+        VStack(spacing: 16) {
+            // Ultra-compact position guidance - just text
+            Text(primaryInstruction)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule()
+                        .fill(Color.black.opacity(0.7))
+                        .overlay(
+                            Capsule()
+                                .stroke(positionColor.opacity(0.5), lineWidth: 1)
+                        )
+                )
             
-            // Only show these additional elements if they have values
-            VStack(spacing: 20) {
-                // Position quality indicator - larger
-                if positionQuality > 0 {
-                    LargePositionQualityBar(quality: positionQuality)
-                }
-                
-                // Hold progress indicator - larger
-                if positionHoldProgress > 0 {
-                    LargePositionHoldIndicator(progress: positionHoldProgress)
-                        .transition(.scale)
-                }
-                
-                // Missing requirements - clearer
-                if !missingRequirements.isEmpty {
-                    LandscapeRequirementsCard(requirements: missingRequirements)
-                        .transition(.move(edge: .bottom))
-                }
+            // Only show progress indicators below if they have values  
+            // These will appear below the instruction and shouldn't overlap with pose
+            if positionHoldProgress > 0 {
+                LargePositionHoldIndicator(progress: positionHoldProgress)
+                    .transition(.scale)
             }
         }
     }
