@@ -164,6 +164,7 @@ class StartingPositionValidator: ObservableObject {
     @Published var kneeAngle: Float = 0  // For situps
     @Published var isInPosition: Bool = false
     @Published var timeInCorrectPosition: TimeInterval = 0
+    @Published var detectedPoseConfidence: Float = 0.0  // Overall confidence of detected pose
     
     private var positionTimer: Timer?
     private var lastCorrectPositionTime: Date?
@@ -174,9 +175,13 @@ class StartingPositionValidator: ObservableObject {
         guard let body = body else {
             currentStatus = .notDetected
             isInPosition = false
+            detectedPoseConfidence = 0.0
             resetPositionTimer()
             return
         }
+        
+        // Update detected pose confidence
+        detectedPoseConfidence = body.confidence
         
         var feedback: [String] = []
         let requirements: PositionRequirements

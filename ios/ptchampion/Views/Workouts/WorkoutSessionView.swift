@@ -20,6 +20,7 @@ struct WorkoutSessionView: View {
     
     // Legacy state objects (kept for compatibility but no longer used in new flow)
     @StateObject private var startingPositionValidator = StartingPositionValidator()
+    @StateObject private var fullBodyFramingValidator = FullBodyFramingValidator()
     
     // MARK: - Initialization
     init(exerciseType: ExerciseType) {
@@ -63,8 +64,18 @@ struct WorkoutSessionView: View {
             
             // Simple Rep Feedback removed to prevent distraction
             
-            // New Auto Position Overlay (replaces old start button and countdown)
-            if [.ready, .waitingForPosition, .positionDetected, .countdown].contains(viewModel.workoutState) {
+            // Position Guide Overlay - Show SinglePositionOverlay when waiting for position
+            if viewModel.workoutState == .waitingForPosition {
+                SinglePositionOverlay(
+                    exercise: exerciseType,
+                    framingValidator: fullBodyFramingValidator,
+                    positionValidator: startingPositionValidator
+                )
+                .zIndex(1)
+            }
+            
+            // Auto Position Overlay for other states (ready, positionDetected, countdown)
+            else if [.ready, .positionDetected, .countdown].contains(viewModel.workoutState) {
                 AutoPositionOverlay(
                     workoutState: viewModel.workoutState,
                     positionHoldProgress: viewModel.positionHoldProgress,
@@ -169,6 +180,32 @@ struct WorkoutSessionView: View {
             
             // Initial orientation setup
             viewModel.handleOrientationChange()
+        }
+        .onChange(of: viewModel.detectedBody) { _, newBody in
+            // Update validators when pose detection changes
+            if viewModel.workoutState == .waitingForPosition {
+                let currentOrientation = UIDevice.current.orientation
+                fullBodyFramingValidator.validateFraming(
+                    body: newBody,
+                    exercise: exerciseType,
+                    orientation: currentOrientation
+                )
+                startingPositionValidator.validatePosition(
+                    body: newBody,
+                    exerciseType: exerciseType
+                )
+                
+                // Check if position is good enough to proceed
+                if fullBodyFramingValidator.framingStatus == .perfect && 
+                   startingPositionValidator.isInPosition {
+                    // Trigger position detected after a short delay
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        if viewModel.workoutState == .waitingForPosition {
+                            viewModel.handlePositionDetected()
+                        }
+                    }
+                }
+            }
         }
         .onDisappear {
             print("DEBUG: [WorkoutSessionView] onDisappear triggered - starting cleanup sequence")

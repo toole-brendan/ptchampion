@@ -464,7 +464,7 @@ class WorkoutSessionViewModel: ObservableObject {
     }
     
     /// Called when correct position is detected and held
-    private func handlePositionDetected() {
+    func handlePositionDetected() {
         print("DEBUG: [WorkoutSessionViewModel] Position detected! Starting countdown")
         
         DispatchQueue.main.async {
