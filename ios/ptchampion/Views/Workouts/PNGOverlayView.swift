@@ -22,7 +22,7 @@ struct PNGOverlayView: View {
                         .frame(width: geometry.size.width,
                                height: geometry.size.height)
                         .position(x: geometry.size.width / 2,
-                                  y: geometry.size.height / 2)
+                                  y: geometry.size.height / 2 + verticalOffset(for: geometry.size.height))
                         .scaleEffect(x: isFlipped ? -1 : 1, y: 1)
                         .allowsHitTesting(false)
                         .clipped()
@@ -41,6 +41,8 @@ struct PNGOverlayView: View {
                                 .allowsHitTesting(false)
                                 .clipped()
                         )
+                        .position(x: geometry.size.width / 2,
+                                  y: geometry.size.height / 2 + verticalOffset(for: geometry.size.height))
                         .background(
                             GeometryReader { imageGeometry in
                                 Color.clear
@@ -54,17 +56,27 @@ struct PNGOverlayView: View {
         }
     }
     
+    // Vertical offset to center certain exercises better
+    private func verticalOffset(for screenHeight: CGFloat) -> CGFloat {
+        switch exerciseType {
+        case .pushup:
+            return -screenHeight * 0.20  // Move up by 20% of screen height (negative is up)
+        default:
+            return 0
+        }
+    }
+    
     // Scale factor to make images larger while still fitting
     private var exerciseScale: CGFloat {
         switch exerciseType {
         case .pushup:
-            return 1.50  // Scale up 50% for pushup
+            return 1.65  // Scale up 65% for pushup
         case .pullup, .situp:
-            return 1.40  // Scale up 40% for pullup and situp (with their added padding)
+            return 1.55  // Scale up 55% for pullup and situp (with their added padding)
         case .run:
-            return 1.45
+            return 1.60
         case .unknown:
-            return 1.45
+            return 1.60
         }
     }
     
