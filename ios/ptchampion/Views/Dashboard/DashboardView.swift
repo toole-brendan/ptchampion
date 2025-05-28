@@ -437,7 +437,7 @@ struct DashboardView: View {
                 .background(AppTheme.GeneratedColors.deepOps)
                 .cornerRadius(8, corners: [.topLeft, .topRight])
                 
-                // Activity content with cream background
+                // Activity content with white background (matching web)
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(viewModel.recentWorkouts) { workout in
                         NavigationLink(destination: WorkoutHistoryView(initialFilterType: getFilterType(for: workout.exerciseType))) {
@@ -448,8 +448,10 @@ struct DashboardView: View {
                                         .fill(AppTheme.GeneratedColors.brassGold.opacity(0.1))
                                         .frame(width: 40, height: 40)
                                     
-                                    Image(systemName: iconForExerciseType(workout.exerciseType))
-                                        .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                                    // Use actual PNG assets instead of system icons
+                                    Image(imageNameForExerciseType(workout.exerciseType))
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
                                         .frame(width: 20, height: 20)
                                 }
                                 
@@ -508,7 +510,7 @@ struct DashboardView: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-                .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+                .background(Color.white) // Changed to white background to match web
                 .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             }
             .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
@@ -577,7 +579,7 @@ struct DashboardView: View {
                 }
                 .padding(.vertical, 40)
                 .frame(maxWidth: .infinity)
-                .background(Color(red: 0.93, green: 0.91, blue: 0.86)) // cream-dark from web
+                .background(Color.white) // Changed to white background to match web
                 .cornerRadius(8, corners: [.bottomLeft, .bottomRight])
             }
             .shadow(color: Color.black.opacity(0.1), radius: 4, x: 0, y: 2)
@@ -631,6 +633,22 @@ struct DashboardView: View {
             return "figure.run"
         default:
             return "figure.mixed.cardio"
+        }
+    }
+    
+    // Helper function to get image asset name for exercise type
+    private func imageNameForExerciseType(_ type: String) -> String {
+        switch type.lowercased() {
+        case "pushup":
+            return "pushup"
+        case "situp":
+            return "situp"
+        case "pullup":
+            return "pullup"
+        case "run", "running":
+            return "running"
+        default:
+            return "pushup" // Default to pushup if unknown
         }
     }
     
