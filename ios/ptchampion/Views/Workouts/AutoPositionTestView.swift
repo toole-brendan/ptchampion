@@ -3,16 +3,10 @@ import PTDesignSystem
 
 /// Test view to verify AutoPositionDetector functionality
 struct AutoPositionTestView: View {
-    // TODO: Re-enable when AutoPositionDetector is available
-    // @StateObject private var autoPositionDetector = AutoPositionDetector()
+    @StateObject private var autoPositionDetector = AutoPositionDetector()
     @State private var workoutState: WorkoutSessionState = .ready
     @State private var positionHoldProgress: Float = 0.0
     @State private var countdownValue: Int? = nil
-    
-    // Temporary state for testing without AutoPositionDetector
-    @State private var primaryInstruction: String = "Get into starting position"
-    @State private var positionQuality: Float = 0.0
-    @State private var isInPosition: Bool = false
     
     var body: some View {
         ZStack {
@@ -29,14 +23,18 @@ struct AutoPositionTestView: View {
                     Text("Current State: \(stateDescription)")
                         .foregroundColor(.white)
                     
-                    Text("Instruction: \(primaryInstruction)")
+                    Text("Instruction: \(autoPositionDetector.feedback)")
+                        .foregroundColor(.white)
+                        .font(.caption)
+                    
+                    Text("Quality: \(Int(autoPositionDetector.positionQuality * 100))%")
                         .foregroundColor(.white)
                         .font(.caption)
                     
                     HStack(spacing: 10) {
                         Button("Ready") {
                             workoutState = .ready
-                            resetState()
+                            autoPositionDetector.reset()
                         }
                         .buttonStyle(.bordered)
                         
@@ -84,34 +82,31 @@ struct AutoPositionTestView: View {
         }
     }
     
-    private func resetState() {
-        primaryInstruction = "Get into starting position"
-        positionQuality = 0.0
-        isInPosition = false
-        positionHoldProgress = 0.0
-        countdownValue = nil
-    }
-    
     private func simulatePositionDetection() {
-        // Simulate the position detection process
+        // Simulate the position detection process using the new AutoPositionDetector
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            primaryInstruction = "Move closer to camera"
-            positionQuality = 0.3
+            // Simulate analyzing with nil body (not in frame)
+            autoPositionDetector.analyzePosition(body: nil, exerciseType: .pushup)
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            primaryInstruction = "Center your body in frame"
-            positionQuality = 0.6
+            // Simulate partial detection
+            autoPositionDetector.positionQuality = 0.6
+            autoPositionDetector.feedback = "Center your body in frame"
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
-            primaryInstruction = "Perfect! Hold this position"
-            positionQuality = 0.9
+            // Simulate good position
+            autoPositionDetector.positionQuality = 0.9
+            autoPositionDetector.feedback = "Perfect! Hold this position"
+            autoPositionDetector.positionStatus = .holding
             positionHoldProgress = 0.5
         }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
-            isInPosition = true
+            // Simulate position confirmed
+            autoPositionDetector.isInCorrectPosition = true
+            autoPositionDetector.positionStatus = .correctPosition
             positionHoldProgress = 1.0
             workoutState = .positionDetected
         }

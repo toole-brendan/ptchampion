@@ -24,7 +24,7 @@ struct ExerciseSelectionView: View {
                         .padding(.top, 50)
                     
                     VStack(spacing: 20) {
-                        ExerciseCard(
+                        ExerciseSelectionCard(
                             exercise: .pushup,
                             icon: "figure.strengthtraining.traditional",
                             title: "Push-ups",
@@ -35,7 +35,7 @@ struct ExerciseSelectionView: View {
                             showWorkoutView = true
                         }
                         
-                        ExerciseCard(
+                        ExerciseSelectionCard(
                             exercise: .situp,
                             icon: "figure.core.training",
                             title: "Sit-ups",
@@ -46,7 +46,7 @@ struct ExerciseSelectionView: View {
                             showWorkoutView = true
                         }
                         
-                        ExerciseCard(
+                        ExerciseSelectionCard(
                             exercise: .pullup,
                             icon: "figure.climbing",
                             title: "Pull-ups",
@@ -71,7 +71,7 @@ struct ExerciseSelectionView: View {
     }
 }
 
-struct ExerciseCard: View {
+struct ExerciseSelectionCard: View {
     let exercise: ExerciseType
     let icon: String
     let title: String
