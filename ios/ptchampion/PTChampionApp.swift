@@ -261,6 +261,9 @@ class FontManager {
 
 // Add AppDelegate to handle Google Sign-In URL callbacks
 class AppDelegate: NSObject, UIApplicationDelegate {
+    // Add orientation lock property
+    static var orientationLock = UIInterfaceOrientationMask.all
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         // Configure Google Sign-In with iOS client ID from Info.plist
         if let clientID = Bundle.main.object(forInfoDictionaryKey: "GoogleClientID") as? String {
@@ -276,6 +279,11 @@ class AppDelegate: NSObject, UIApplicationDelegate {
                      options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         // Let GoogleSignIn handle the URL
         return GIDSignIn.sharedInstance.handle(url)
+    }
+    
+    // Add method to handle orientation locking
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return AppDelegate.orientationLock
     }
 }
 

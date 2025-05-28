@@ -22,6 +22,11 @@ struct WorkoutSessionView: View {
     @StateObject private var startingPositionValidator = StartingPositionValidator()
     @StateObject private var fullBodyFramingValidator = FullBodyFramingValidator()
     
+    // Orientation control
+    @State private var orientationLocked = false
+    @State private var showOrientationAlert = false
+    @State private var isInLandscape = UIDevice.current.orientation.isLandscape || UIDevice.current.orientation == .unknown
+    
     // MARK: - Initialization
     init(exerciseType: ExerciseType) {
         print("DEBUG: [WorkoutSessionView] Initializing view for \(exerciseType.rawValue)")
@@ -49,21 +54,6 @@ struct WorkoutSessionView: View {
             
             // Visual guides are now integrated into AutoPositionOverlay
             
-            // UI Overlay (Rep Counter, Feedback, Controls)
-            if viewModel.workoutState == .counting {
-                ExerciseHUDView(
-                    repCount: $viewModel.repCount,
-                    liveFeedback: $viewModel.feedbackMessage,
-                    elapsedTimeFormatted: viewModel.elapsedTimeFormatted,
-                    isSoundEnabled: $viewModel.isSoundEnabled,
-                    showControls: true,
-                    showFullBodyWarning: $viewModel.showFullBodyWarning,
-                    toggleSoundAction: { viewModel.toggleSound() }
-                )
-            }
-            
-            // Simple Rep Feedback removed to prevent distraction
-            
             // Enhanced overlay system with PNG guides
             EnhancedExerciseOverlay(
                 exerciseType: exerciseType,
@@ -73,33 +63,52 @@ struct WorkoutSessionView: View {
                 countdownValue: viewModel.countdownValue,
                 onStartPressed: {
                     print("DEBUG: [WorkoutSessionView] GO button pressed")
-                    viewModel.startPositionDetection()
-                }
+                    // Check if in landscape before starting
+                    if isInLandscape {
+                        viewModel.startPositionDetection()
+                    } else {
+                        // Just update the state to show the landscape prompt
+                        viewModel.workoutState = .waitingForPosition
+                    }
+                },
+                isInLandscape: isInLandscape
             )
             .edgesIgnoringSafeArea(.all)
             .zIndex(1)
+            
+            // UI Overlay (Rep Counter, Feedback, Controls) - Using improved landscape HUD
+            if viewModel.workoutState == .counting {
+                LandscapeExerciseHUD(
+                    repCount: $viewModel.repCount,
+                    liveFeedback: $viewModel.feedbackMessage,
+                    elapsedTimeFormatted: viewModel.elapsedTimeFormatted,
+                    isSoundEnabled: $viewModel.isSoundEnabled,
+                    showFullBodyWarning: $viewModel.showFullBodyWarning,
+                    toggleSoundAction: { viewModel.toggleSound() },
+                    exitAction: { handleEndWorkout() }
+                )
+                .zIndex(2)
+            }
             
             // Camera Permission Request View
             if viewModel.workoutState == .requestingPermission {
                 CameraPermissionRequestView(
                     onRequestPermission: {
-                        // Print statement moved outside ViewBuilder context
                         let _ = print("DEBUG: [WorkoutSessionView] Camera permission request button tapped")
                         viewModel.requestCameraPermission()
                     },
                     onCancel: {
-                        // Print statement moved outside ViewBuilder context
                         let _ = print("DEBUG: [WorkoutSessionView] Camera permission cancel button tapped")
                         dismiss()
                     }
                 )
-                .zIndex(2)
+                .zIndex(3)
             }
             
             // Permission Denied/Error Overlay
             if isInErrorOrPermissionDeniedState {
                 permissionOrErrorOverlay()
-                    .zIndex(1)
+                    .zIndex(3)
             }
         }
         .navigationTitle("")
@@ -107,9 +116,9 @@ struct WorkoutSessionView: View {
         .navigationBarBackButtonHidden(true)
         .hideTabBar(!tabBarVisibility.isTabBarVisible)
         .toolbar {
+            // Restore the End button
             ToolbarItem(placement: .navigationBarLeading) {
                 Button {
-                    // Print statement moved outside ViewBuilder context
                     let _ = print("DEBUG: [WorkoutSessionView] End button tapped, workout state: \(viewModel.workoutState)")
                     handleEndWorkout()
                 } label: {
@@ -137,6 +146,13 @@ struct WorkoutSessionView: View {
         .onAppear {
             print("DEBUG: [WorkoutSessionView] onAppear triggered for \(exerciseType.displayName)")
             
+            // Check initial orientation
+            isInLandscape = UIDevice.current.orientation.isLandscape || UIDevice.current.orientation == .unknown
+            
+            // Force landscape orientation
+            setLandscapeOrientation()
+            lockOrientation()
+            
             // Hide tab bar using the visibility manager
             tabBarVisibility.hideTabBar()
             
@@ -154,17 +170,36 @@ struct WorkoutSessionView: View {
                 object: nil, 
                 queue: .main
             ) { [weak viewModel] _ in
-                // Add delay to prevent rapid calls
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    guard let viewModel = viewModel else { return }
-                    
-                    print("DEBUG: [WorkoutSessionView] Device orientation changed")
-                    
-                    // Only call if not already processing
-                    if !viewModel.isRecalibrating {
-                        viewModel.handleOrientationChange()
-                        // Update quick calibration for new orientation
-                        viewModel.updateQuickCalibrationForOrientation("simplified")
+                let currentOrientation = UIDevice.current.orientation
+                
+                // Update landscape state
+                isInLandscape = currentOrientation.isLandscape
+                
+                // If we were waiting for landscape and now we're in landscape, start position detection
+                if isInLandscape && viewModel?.workoutState == .waitingForPosition {
+                    viewModel?.startPositionDetection()
+                }
+                
+                // Show alert if user tries to rotate to portrait during workout
+                if currentOrientation.isPortrait && viewModel?.workoutState == .counting {
+                    showOrientationAlert = true
+                    // Force back to landscape
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        setLandscapeOrientation()
+                    }
+                } else if currentOrientation.isLandscape {
+                    // Add delay to prevent rapid calls
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                        guard let viewModel = viewModel else { return }
+                        
+                        print("DEBUG: [WorkoutSessionView] Device orientation changed")
+                        
+                        // Only call if not already processing
+                        if !viewModel.isRecalibrating {
+                            viewModel.handleOrientationChange()
+                            // Update quick calibration for new orientation
+                            viewModel.updateQuickCalibrationForOrientation("simplified")
+                        }
                     }
                 }
             }
@@ -200,6 +235,9 @@ struct WorkoutSessionView: View {
         }
         .onDisappear {
             print("DEBUG: [WorkoutSessionView] onDisappear triggered - starting cleanup sequence")
+            
+            // Restore normal orientation
+            unlockOrientation()
             
             // Show tab bar using the visibility manager
             tabBarVisibility.showTabBar()
@@ -273,9 +311,34 @@ struct WorkoutSessionView: View {
         } message: {
             Text(viewModel.saveErrorMessage)
         }
-
-        // Auto position detection is now handled by the ViewModel
-
+        .alert("Please Keep Device in Landscape", isPresented: $showOrientationAlert) {
+            Button("OK", role: .cancel) {
+                showOrientationAlert = false
+            }
+        } message: {
+            Text("This workout requires landscape orientation for accurate pose detection.")
+        }
+    }
+    
+    // MARK: - Orientation Management
+    private func setLandscapeOrientation() {
+        // Force landscape right initially
+        UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
+        UINavigationController.attemptRotationToDeviceOrientation()
+    }
+    
+    private func lockOrientation() {
+        if let delegate = UIApplication.shared.delegate as? AppDelegate {
+            AppDelegate.orientationLock = .landscape
+        }
+        orientationLocked = true
+    }
+    
+    private func unlockOrientation() {
+        if let delegate = UIApplication.shared.delegate as? AppDelegate {
+            AppDelegate.orientationLock = .all
+        }
+        orientationLocked = false
     }
     
     // MARK: - End Workout Handler
@@ -356,12 +419,101 @@ struct WorkoutSessionView: View {
     }
 }
 
+// MARK: - Landscape Exercise HUD
+struct LandscapeExerciseHUD: View {
+    @Binding var repCount: Int
+    @Binding var liveFeedback: String
+    let elapsedTimeFormatted: String
+    @Binding var isSoundEnabled: Bool
+    @Binding var showFullBodyWarning: Bool
+    let toggleSoundAction: () -> Void
+    let exitAction: () -> Void
+    
+    var body: some View {
+        HStack {
+            // Left side: Rep counter
+            VStack(alignment: .leading, spacing: 8) {
+                Text("REPS")
+                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                Text("\(repCount)")
+                    .font(.system(size: 48, weight: .bold, design: .monospaced))
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+            }
+            .padding(.leading, 30)
+            
+            Spacer()
+            
+            // Center: Live feedback (only when meaningful)
+            if !liveFeedback.isEmpty && !liveFeedback.contains("Workout") && !showFullBodyWarning {
+                Text(liveFeedback)
+                    .font(.system(size: 18, weight: .medium))
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(2)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.black.opacity(0.6))
+                    .cornerRadius(12)
+                    .frame(maxWidth: 300)
+            }
+            
+            // Show warning if needed
+            if showFullBodyWarning {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 18))
+                    Text("Keep your full body in frame")
+                        .font(.system(size: 16, weight: .medium))
+                        .minimumScaleFactor(0.8)
+                        .lineLimit(1)
+                }
+                .foregroundColor(AppTheme.GeneratedColors.error)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.black.opacity(0.7))
+                .cornerRadius(10)
+            }
+            
+            Spacer()
+            
+            // Right side: Time and sound control
+            VStack(alignment: .trailing, spacing: 8) {
+                Text("TIME")
+                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                Text(elapsedTimeFormatted)
+                    .font(.system(size: 48, weight: .bold, design: .monospaced))
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+                    .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                
+                // Sound toggle
+                Button(action: toggleSoundAction) {
+                    Image(systemName: isSoundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.white.opacity(0.7))
+                        .frame(width: 44, height: 44)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(22)
+                }
+                .padding(.top, 8)
+            }
+            .padding(.trailing, 30)
+        }
+        .padding(.vertical, 20)
+    }
+}
+
 // MARK: - Preview
 struct WorkoutSessionView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
             WorkoutSessionView(exerciseType: .pushup)
         }
+        .previewInterfaceOrientation(.landscapeRight)
     }
 }
 

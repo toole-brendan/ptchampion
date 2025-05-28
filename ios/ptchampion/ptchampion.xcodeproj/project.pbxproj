@@ -18,7 +18,6 @@
 		BF37B0422DCACABE00EC4D58 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0402DCACABE00EC4D58 /* ActivityView.swift */; };
 		BF37B0442DCACAE200EC4D58 /* AnyExerciseGraderBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0432DCACAE200EC4D58 /* AnyExerciseGraderBox.swift */; };
 		BF37B0462DCADB4F00EC4D58 /* LeaderboardRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */; };
-		BF37B0522DCC232E00EC4D58 /* ExerciseHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0512DCC232E00EC4D58 /* ExerciseHUDView.swift */; };
 		BF37B0542DCC233F00EC4D58 /* WorkoutTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0532DCC233F00EC4D58 /* WorkoutTimer.swift */; };
 		BF37B0572DCC2CD600EC4D58 /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF37B0552DCC2CD600EC4D58 /* ProfileView.swift */; };
 		BF3DA8042DD7B8540052E268 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = BF3DA8032DD7B8540052E268 /* GoogleSignIn */; };
@@ -246,7 +245,6 @@
 		BF37B0402DCACABE00EC4D58 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		BF37B0432DCACAE200EC4D58 /* AnyExerciseGraderBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyExerciseGraderBox.swift; sourceTree = "<group>"; };
 		BF37B0452DCADB4F00EC4D58 /* LeaderboardRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LeaderboardRowView.swift; sourceTree = "<group>"; };
-		BF37B0512DCC232E00EC4D58 /* ExerciseHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHUDView.swift; sourceTree = "<group>"; };
 		BF37B0532DCC233F00EC4D58 /* WorkoutTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTimer.swift; sourceTree = "<group>"; };
 		BF37B0552DCC2CD600EC4D58 /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
 		BF3DA8072DD7C5D20052E268 /* Montserrat-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Montserrat-Bold.ttf"; sourceTree = "<group>"; };
@@ -855,7 +853,6 @@
 				BF59ACEE2DE0E9EA00242910 /* CalibrationOverlayViews.swift */,
 				BF59ACEF2DE0E9EA00242910 /* CalibrationView.swift */,
 				BF59ACF02DE0E9EA00242910 /* RealTimeFeedbackOverlay.swift */,
-				BF37B0512DCC232E00EC4D58 /* ExerciseHUDView.swift */,
 				BF37B03D2DCAC89500EC4D58 /* WorkoutCompleteView.swift */,
 				BF8F67922DC930C90065A2D7 /* WorkoutDetailView.swift */,
 				BF8F678C2DC920D80065A2D7 /* BodyPoseDetectionView.swift */,
@@ -1219,7 +1216,6 @@
 				BF199EBD2DCE226E00E23EFF /* UserProfileData.swift in Sources */,
 				BFADF9C72DC93E0A0016AF0B /* FeatureFlagService.swift in Sources */,
 				BFADF9C82DC93E0A0016AF0B /* UnifiedNetworkService.swift in Sources */,
-				BF37B0522DCC232E00EC4D58 /* ExerciseHUDView.swift in Sources */,
 				BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */,
 				BF59ACD32DDFD3FB00242910 /* CustomTabBar.swift in Sources */,
 				BF59ACEA2DE0E9C900242910 /* CalibrationManager.swift in Sources */,

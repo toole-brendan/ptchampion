@@ -11,15 +11,27 @@ struct PNGOverlayView: View {
         GeometryReader { geometry in
             ZStack {
                 if let image = exerciseImage {
+                    // Main overlay image
                     Image(uiImage: image)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .opacity(opacity)
-                        .frame(maxWidth: geometry.size.width * 0.8,
-                               maxHeight: geometry.size.height * 0.8)
+                        .frame(maxWidth: geometry.size.width * 0.9,  // Increased from 0.8
+                               maxHeight: geometry.size.height * 0.9) // Increased from 0.8
                         .position(x: geometry.size.width / 2,
                                   y: geometry.size.height / 2)
                         .allowsHitTesting(false)
+                        .overlay(
+                            // Add a subtle glow effect for better visibility
+                            Image(uiImage: image)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(maxWidth: geometry.size.width * 0.9,
+                                       maxHeight: geometry.size.height * 0.9)
+                                .blur(radius: 20)
+                                .opacity(opacity * 0.5)
+                                .allowsHitTesting(false)
+                        )
                         .background(
                             GeometryReader { imageGeometry in
                                 Color.clear
@@ -34,29 +46,30 @@ struct PNGOverlayView: View {
     }
     
     private var exerciseImage: UIImage? {
-        let imageName: String
+        // First try the position-specific image
+        let positionImageName = "\(exerciseType.rawValue)_position"
+        if let image = UIImage(named: positionImageName) {
+            return image
+        }
+        
+        // Fall back to the regular exercise image
+        if let image = UIImage(named: exerciseType.rawValue) {
+            return image
+        }
+        
+        // Try alternate names for specific exercises
         switch exerciseType {
         case .pushup:
-            imageName = "pushup_position"
+            return UIImage(named: "pushup") ?? UIImage(named: "pushup_position")
         case .situp:
-            imageName = "situp_position"
+            return UIImage(named: "situp") ?? UIImage(named: "situp_position")
         case .pullup:
-            imageName = "pullup_position"
-        case .run, .unknown:
-            imageName = "unknown_position"
+            return UIImage(named: "pullup") ?? UIImage(named: "pullup_position")
+        case .run:
+            return UIImage(named: "running") ?? UIImage(named: "run_position")
+        case .unknown:
+            return nil
         }
-        
-        // Try multiple variations of the image name
-        if let image = UIImage(named: imageName) {
-            return image
-        } else if let image = UIImage(named: "\(exerciseType.rawValue)_position") {
-            return image
-        } else if let image = UIImage(named: exerciseType.rawValue) {
-            return image
-        }
-        
-        print("WARNING: Could not find PNG overlay image for \(exerciseType.rawValue)")
-        return nil
     }
 }
 

@@ -67,7 +67,8 @@ struct AutoPositionTestView: View {
                         workoutState = .waitingForPosition
                         simulatePositionDetection()
                     },
-                    exerciseType: .pushup
+                    exerciseType: .pushup,
+                    isInLandscape: true
                 )
             }
         }

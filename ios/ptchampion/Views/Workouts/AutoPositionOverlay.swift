@@ -1,7 +1,7 @@
 import SwiftUI
 import PTDesignSystem
 
-/// Enhanced overlay that provides the "Just Press GO" experience with automatic position detection
+/// Enhanced overlay optimized for landscape with larger, clearer UI elements
 struct AutoPositionOverlay: View {
     // TODO: Re-enable AutoPositionDetector once module compilation issues are resolved
     // @ObservedObject var autoPositionDetector: AutoPositionDetector
@@ -12,12 +12,18 @@ struct AutoPositionOverlay: View {
     
     // Add exercise type to know which PNG to show
     let exerciseType: ExerciseType
+    let isInLandscape: Bool
     
     // Control PNG visibility based on state
     private var showPNGOverlay: Bool {
+        // Only show overlay if we're in landscape AND in the right state
+        guard isInLandscape else { return false }
+        
         switch workoutState {
         case .waitingForPosition, .positionDetected:
             return true
+        case .ready, .countdown, .counting, .paused, .finished, .requestingPermission, .permissionDenied, .error:
+            return false
         default:
             return false
         }
@@ -27,16 +33,17 @@ struct AutoPositionOverlay: View {
     private var pngOpacity: Double {
         switch workoutState {
         case .waitingForPosition:
-            return 0.4 // Semi-transparent while positioning
+            return 0.5 // More visible while positioning
         case .positionDetected:
-            return 0.2 // Fade out when detected
+            return 0.3 // Fade out when detected
         default:
             return 0.0
         }
     }
     
     // Temporary placeholder properties to replace AutoPositionDetector
-    @State private var primaryInstruction: String = "Get into starting position"
+    @State private var primaryInstruction: String = "Align with the overlay"
+    @State private var secondaryInstruction: String = "Keep your body straight and centered"
     @State private var positionQuality: Float = 0.0
     @State private var missingRequirements: [String] = []
     @State private var detectedExercise: ExerciseType? = nil
@@ -45,7 +52,7 @@ struct AutoPositionOverlay: View {
     
     var body: some View {
         ZStack {
-            // PNG Overlay (behind UI elements)
+            // PNG Overlay (behind UI elements) - now with enhanced effects
             if showPNGOverlay {
                 PNGOverlayView(
                     exerciseType: exerciseType,
@@ -55,32 +62,50 @@ struct AutoPositionOverlay: View {
                 .animation(.easeInOut(duration: 0.5), value: showPNGOverlay)
             }
             
-            // Semi-transparent background
-            Color.black.opacity(0.4)
-                .edgesIgnoringSafeArea(.all)
-            
-            VStack(spacing: 20) {
-                Spacer()
-                
-                // Main content based on state
-                Group {
-                    switch workoutState {
-                    case .ready:
-                        readyStateContent
-                    case .waitingForPosition:
-                        waitingForPositionContent
-                    case .positionDetected:
-                        positionDetectedContent
-                    case .countdown:
-                        countdownContent
-                    default:
-                        EmptyView()
+            // Main content optimized for landscape
+            VStack {
+                // Position the instruction box at the top
+                if workoutState == .waitingForPosition && isInLandscape {
+                    landscapeWaitingForPositionContent
+                        .padding(.top, 40)
+                    
+                    Spacer()
+                } else {
+                    // Center other content
+                    Spacer()
+                    
+                    HStack {
+                        Spacer()
+                        
+                        VStack(spacing: 30) {
+                            // Main content based on state
+                            Group {
+                                switch workoutState {
+                                case .ready:
+                                    landscapeReadyStateContent
+                                case .waitingForPosition:
+                                    if !isInLandscape {
+                                        portraitPromptContent
+                                    }
+                                    // Instruction box is shown above, not here
+                                case .positionDetected:
+                                    landscapePositionDetectedContent
+                                case .countdown:
+                                    landscapeCountdownContent
+                                default:
+                                    EmptyView()
+                                }
+                            }
+                        }
+                        .frame(maxWidth: 600) // Constrain width for readability
+                        
+                        Spacer()
                     }
+                    
+                    Spacer()
                 }
-                
-                Spacer()
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 60) // More padding for landscape
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 2.0).repeatForever(autoreverses: true)) {
@@ -89,37 +114,35 @@ struct AutoPositionOverlay: View {
         }
     }
     
-    // MARK: - Ready State (Initial "Just Press GO")
-    private var readyStateContent: some View {
+    // MARK: - Landscape Ready State
+    private var landscapeReadyStateContent: some View {
         VStack(spacing: 30) {
             // Exercise title
             Text(exerciseDisplayName.uppercased())
-                .font(.system(size: 48, weight: .heavy))
+                .font(.system(size: 42, weight: .heavy))
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
                 .tracking(2)
                 .foregroundColor(AppTheme.GeneratedColors.brassGold)
                 .multilineTextAlignment(.center)
             
-            // Subtitle
-            Text("Press GO to begin automatic setup")
-                .font(.title2)
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-            
-            // Large GO button
+            // Large GO button with shadow
             Button(action: onStartPressed) {
                 ZStack {
                     Circle()
                         .fill(AppTheme.GeneratedColors.brassGold)
-                        .frame(width: 120, height: 120)
-                        .scaleEffect(pulseAnimation ? 1.05 : 1.0)
+                        .frame(width: 160, height: 160)
+                        .scaleEffect(pulseAnimation ? 1.08 : 1.0)
+                        .shadow(color: AppTheme.GeneratedColors.brassGold.opacity(0.4), 
+                                radius: pulseAnimation ? 20 : 10)
                     
-                    VStack(spacing: 4) {
+                    VStack(spacing: 6) {
                         Text("GO")
-                            .font(.system(size: 32, weight: .bold))
+                            .font(.system(size: 48, weight: .black))
                             .foregroundColor(.black)
                         
                         Image(systemName: "play.fill")
-                            .font(.system(size: 20))
+                            .font(.system(size: 24))
                             .foregroundColor(.black)
                     }
                 }
@@ -127,89 +150,147 @@ struct AutoPositionOverlay: View {
             .buttonStyle(PlainButtonStyle())
             
             // Instructions
-            Text("The workout will start automatically when you're in the correct position")
-                .font(.body)
-                .foregroundColor(.white.opacity(0.8))
+            Text("Tap GO and position yourself to match the guide")
+                .font(.system(size: 20, weight: .medium))
+                .minimumScaleFactor(0.7)
+                .lineLimit(2)
+                .foregroundColor(.white)
                 .multilineTextAlignment(.center)
-                .italic()
         }
     }
     
-    // MARK: - Waiting for Position State
-    private var waitingForPositionContent: some View {
+    // MARK: - Landscape Waiting for Position
+    private var landscapeWaitingForPositionContent: some View {
         VStack(spacing: 25) {
-            // Position guidance
-            VStack(spacing: 15) {
+            // Position guidance header with background
+            HStack(spacing: 16) {
                 Image(systemName: positionIcon)
-                    .font(.system(size: 50))
+                    .font(.system(size: 48))
                     .foregroundColor(positionColor)
                     .scaleEffect(pulseAnimation ? 1.1 : 1.0)
                 
-                Text(primaryInstruction)
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                
-                // Position quality indicator
-                if positionQuality > 0 {
-                    PositionQualityBar(quality: positionQuality)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(primaryInstruction)
+                        .font(.system(size: 24, weight: .bold))
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(1)
+                        .foregroundColor(.white)
+                    
+                    Text(secondaryInstruction)
+                        .font(.system(size: 18))
+                        .minimumScaleFactor(0.7)
+                        .lineLimit(2)
+                        .foregroundColor(.white.opacity(0.8))
                 }
             }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.black.opacity(0.6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(positionColor.opacity(0.5), lineWidth: 2)
+                    )
+            )
             
-            // Hold progress indicator
-            if positionHoldProgress > 0 {
-                PositionHoldIndicator(progress: positionHoldProgress)
-                    .transition(.scale)
-            }
-            
-            // Missing requirements
-            if !missingRequirements.isEmpty {
-                RequirementsCard(requirements: missingRequirements)
-                    .transition(.move(edge: .bottom))
+            // Only show these additional elements if they have values
+            VStack(spacing: 20) {
+                // Position quality indicator - larger
+                if positionQuality > 0 {
+                    LargePositionQualityBar(quality: positionQuality)
+                }
+                
+                // Hold progress indicator - larger
+                if positionHoldProgress > 0 {
+                    LargePositionHoldIndicator(progress: positionHoldProgress)
+                        .transition(.scale)
+                }
+                
+                // Missing requirements - clearer
+                if !missingRequirements.isEmpty {
+                    LandscapeRequirementsCard(requirements: missingRequirements)
+                        .transition(.move(edge: .bottom))
+                }
             }
         }
     }
     
-    // MARK: - Position Detected State
-    private var positionDetectedContent: some View {
-        VStack(spacing: 20) {
+    // MARK: - Landscape Position Detected
+    private var landscapePositionDetectedContent: some View {
+        VStack(spacing: 24) {
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 80))
+                .font(.system(size: 90))
                 .foregroundColor(.green)
-                .scaleEffect(pulseAnimation ? 1.1 : 1.0)
+                .scaleEffect(pulseAnimation ? 1.15 : 1.0)
+                .shadow(color: .green.opacity(0.5), radius: 20)
             
             Text("Perfect Position!")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+                .font(.system(size: 36, weight: .bold))
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
                 .foregroundColor(.white)
             
-            Text("Starting workout...")
-                .font(.title2)
+            Text("Get ready to start...")
+                .font(.system(size: 22))
                 .foregroundColor(.white.opacity(0.8))
         }
     }
     
-    // MARK: - Countdown State
-    private var countdownContent: some View {
-        VStack(spacing: 20) {
+    // MARK: - Landscape Countdown
+    private var landscapeCountdownContent: some View {
+        VStack(spacing: 24) {
             if let countdown = countdownValue {
                 ZStack {
                     Circle()
-                        .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 8)
-                        .frame(width: 150, height: 150)
+                        .stroke(AppTheme.GeneratedColors.brassGold, lineWidth: 10)
+                        .frame(width: 180, height: 180)
                     
                     Text("\(countdown)")
-                        .font(.system(size: 80, weight: .bold))
+                        .font(.system(size: 90, weight: .black))
                         .foregroundColor(AppTheme.GeneratedColors.brassGold)
                 }
-                .scaleEffect(pulseAnimation ? 1.05 : 1.0)
+                .scaleEffect(pulseAnimation ? 1.08 : 1.0)
+                .shadow(color: AppTheme.GeneratedColors.brassGold.opacity(0.4), radius: 20)
             }
             
             Text("Get Ready!")
-                .font(.title)
-                .fontWeight(.bold)
+                .font(.system(size: 28, weight: .bold))
                 .foregroundColor(.white)
+        }
+    }
+    
+    // MARK: - Portrait Prompt
+    private var portraitPromptContent: some View {
+        VStack(spacing: 20) {
+            // Icon
+            Image(systemName: "rotate.right")
+                .font(.system(size: 60))
+                .foregroundColor(AppTheme.GeneratedColors.brassGold)
+                .rotationEffect(.degrees(-90))
+            
+            // Main message in a styled box like the "Align with the..." box
+            VStack(spacing: 10) {
+                Text("Please rotate to landscape")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                
+                Text("This workout requires landscape orientation for accurate pose detection")
+                    .font(.system(size: 18))
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.black.opacity(0.7))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(AppTheme.GeneratedColors.brassGold.opacity(0.5), lineWidth: 2)
+                    )
+            )
+            .frame(maxWidth: 400)
         }
     }
     
@@ -223,7 +304,7 @@ struct AutoPositionOverlay: View {
         if positionQuality > 0.8 {
             return "checkmark.circle.fill"
         } else if positionQuality > 0.5 {
-            return "exclamationmark.triangle.fill"
+            return "arrow.trianglehead.2.clockwise.rotate.90"
         } else {
             return "person.crop.circle.badge.questionmark"
         }
@@ -235,44 +316,48 @@ struct AutoPositionOverlay: View {
         } else if positionQuality > 0.5 {
             return .orange
         } else {
-            return .red
+            return AppTheme.GeneratedColors.brassGold
         }
     }
 }
 
-// MARK: - Supporting Components
+// MARK: - Enhanced Supporting Components
 
-struct PositionQualityBar: View {
+struct LargePositionQualityBar: View {
     let quality: Float
     
     var body: some View {
-        VStack(spacing: 8) {
-            Text("Position Quality")
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
+        VStack(spacing: 10) {
+            Text("Position Alignment")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white.opacity(0.9))
             
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.3))
-                        .frame(height: 8)
-                        .cornerRadius(4)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.white.opacity(0.2))
+                        .frame(height: 12)
                     
-                    Rectangle()
-                        .fill(qualityColor)
-                        .frame(width: geometry.size.width * CGFloat(quality), height: 8)
-                        .cornerRadius(4)
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [qualityColor.opacity(0.8), qualityColor]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: geometry.size.width * CGFloat(quality), height: 12)
                         .animation(.easeInOut(duration: 0.3), value: quality)
                 }
             }
-            .frame(height: 8)
+            .frame(height: 12)
             
             Text("\(Int(quality * 100))%")
-                .font(.caption)
-                .fontWeight(.semibold)
+                .font(.system(size: 20, weight: .bold))
                 .foregroundColor(qualityColor)
         }
-        .frame(maxWidth: 200)
+        .frame(maxWidth: 350)
+        .padding(.horizontal, 20)
     }
     
     private var qualityColor: Color {
@@ -286,20 +371,19 @@ struct PositionQualityBar: View {
     }
 }
 
-struct PositionHoldIndicator: View {
+struct LargePositionHoldIndicator: View {
     let progress: Float
     
     var body: some View {
         VStack(spacing: 12) {
             Text("Hold Position")
-                .font(.headline)
-                .fontWeight(.semibold)
+                .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.white)
             
             ZStack {
                 Circle()
-                    .stroke(Color.white.opacity(0.3), lineWidth: 6)
-                    .frame(width: 80, height: 80)
+                    .stroke(Color.white.opacity(0.3), lineWidth: 8)
+                    .frame(width: 100, height: 100)
                 
                 Circle()
                     .trim(from: 0, to: CGFloat(progress))
@@ -309,64 +393,67 @@ struct PositionHoldIndicator: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
-                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
+                        style: StrokeStyle(lineWidth: 8, lineCap: .round)
                     )
-                    .frame(width: 80, height: 80)
+                    .frame(width: 100, height: 100)
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut(duration: 0.2), value: progress)
                 
-                Text("\(Int(progress * 100))%")
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
+                VStack(spacing: 2) {
+                    Text("\(Int(progress * 100))%")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text("2 sec")
+                        .font(.system(size: 14))
+                        .foregroundColor(.white.opacity(0.7))
+                }
             }
-            
-            Text("Stay in position for 2 seconds")
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.7))
-                .multilineTextAlignment(.center)
         }
     }
 }
 
-struct RequirementsCard: View {
+struct LandscapeRequirementsCard: View {
     let requirements: [String]
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Image(systemName: "info.circle")
+                Image(systemName: "info.circle.fill")
+                    .font(.system(size: 20))
                     .foregroundColor(.orange)
-                Text("Adjustments Needed")
-                    .font(.headline)
+                Text("Adjust Your Position")
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.white)
                 Spacer()
             }
             
             ForEach(requirements, id: \.self) { requirement in
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     Circle()
                         .fill(.orange)
                         .frame(width: 6, height: 6)
                     
                     Text(requirement)
-                        .font(.body)
+                        .font(.system(size: 16))
+                        .minimumScaleFactor(0.8)
+                        .lineLimit(2)
                         .foregroundColor(.white.opacity(0.9))
                     
                     Spacer()
                 }
             }
         }
-        .padding()
+        .padding(20)
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 14)
                 .fill(Color.black.opacity(0.7))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.orange.opacity(0.5), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.orange.opacity(0.5), lineWidth: 2)
                 )
         )
-        .frame(maxWidth: 300)
+        .frame(maxWidth: 450)
     }
 }
 
@@ -380,19 +467,35 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
                 positionHoldProgress: 0.0,
                 countdownValue: nil,
                 onStartPressed: {},
-                exerciseType: .pushup
+                exerciseType: .pushup,
+                isInLandscape: true
             )
-            .previewDisplayName("Ready State")
+            .previewDisplayName("Ready State - Landscape")
+            .previewInterfaceOrientation(.landscapeRight)
             
-            // Waiting for position
+            // Waiting for position - Portrait
+            AutoPositionOverlay(
+                workoutState: .waitingForPosition,
+                positionHoldProgress: 0.0,
+                countdownValue: nil,
+                onStartPressed: {},
+                exerciseType: .pushup,
+                isInLandscape: false
+            )
+            .previewDisplayName("Waiting - Portrait Prompt")
+            .previewInterfaceOrientation(.portrait)
+            
+            // Waiting for position - Landscape
             AutoPositionOverlay(
                 workoutState: .waitingForPosition,
                 positionHoldProgress: 0.3,
                 countdownValue: nil,
                 onStartPressed: {},
-                exerciseType: .situp
+                exerciseType: .situp,
+                isInLandscape: true
             )
-            .previewDisplayName("Waiting for Position")
+            .previewDisplayName("Waiting - Landscape")
+            .previewInterfaceOrientation(.landscapeRight)
             
             // Countdown
             AutoPositionOverlay(
@@ -400,9 +503,11 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
                 positionHoldProgress: 1.0,
                 countdownValue: 2,
                 onStartPressed: {},
-                exerciseType: .pullup
+                exerciseType: .pullup,
+                isInLandscape: true
             )
-            .previewDisplayName("Countdown")
+            .previewDisplayName("Countdown - Landscape")
+            .previewInterfaceOrientation(.landscapeRight)
         }
         .background(Color.black)
     }
