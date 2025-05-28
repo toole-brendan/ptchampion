@@ -57,7 +57,7 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(AppTheme.GeneratedColors.secondary)
-                            .foregroundColor(AppTheme.GeneratedColors.textOnSecondary)
+                            .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                             .cornerRadius(AppTheme.GeneratedRadius.button)
                     }
                 }
