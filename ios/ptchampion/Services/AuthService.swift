@@ -168,7 +168,7 @@ class AuthService: ObservableObject, AuthServiceProtocol {
         print("AuthService: User location update successful.")
     }
 
-    func loginWithSocial(provider: String, token: String) async throws -> AuthResponse {
+    func loginWithSocial(provider: String, token: String, additionalData: [String: String]? = nil) async throws -> AuthResponse {
         print("AuthService: Attempting login with \(provider) provider...")
         
         if useMockAuth {
@@ -198,15 +198,63 @@ class AuthService: ObservableObject, AuthServiceProtocol {
         
         print("AuthService: Sending real \(provider) login request to: /auth/\(provider)...")
         
-        // Create the request body
-        let requestBody: [String: Any] = [
-            "token": token,
-            "provider": provider
-        ]
+        // Create the request body based on provider
+        var requestBody: [String: Any] = [:]
+        
+        if provider == "apple" {
+            // For Apple, the backend expects the identity token (JWT) in the token field
+            requestBody["provider"] = provider
+            
+            // The backend expects the identity token as the main token
+            requestBody["token"] = token  // This should be the identity token
+            
+            // Add additional data if provided
+            if let additionalData = additionalData {
+                // Add authorization code if available (some backends may use this)
+                if let authCode = additionalData["authorizationCode"] {
+                    requestBody["code"] = authCode
+                }
+                
+                // Add nonce if available
+                if let nonce = additionalData["nonce"] {
+                    requestBody["nonce"] = nonce
+                }
+                
+                // Add user info if this is first sign-in
+                if let email = additionalData["email"] {
+                    requestBody["email"] = email
+                }
+                
+                if let firstName = additionalData["firstName"] {
+                    requestBody["first_name"] = firstName
+                }
+                
+                if let lastName = additionalData["lastName"] {
+                    requestBody["last_name"] = lastName
+                }
+                
+                if let userId = additionalData["userId"] {
+                    requestBody["user_id"] = userId
+                }
+            }
+            
+            print("AuthService: Apple Sign In request body keys: \(requestBody.keys.joined(separator: ", "))")
+        } else {
+            // For other providers (Google), use the original format
+            requestBody = [
+                "token": token,
+                "provider": provider
+            ]
+        }
         
         do {
             // Convert request body to JSON data
             let jsonData = try JSONSerialization.data(withJSONObject: requestBody)
+            
+            // Debug: Print the JSON payload
+            if let jsonString = String(data: jsonData, encoding: .utf8) {
+                print("AuthService: \(provider) login request payload: \(jsonString)")
+            }
             
             let response: AuthResponse = try await networkClient.performRequest(
                 endpointPath: "/auth/\(provider)",

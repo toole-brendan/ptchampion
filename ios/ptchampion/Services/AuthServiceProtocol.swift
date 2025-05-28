@@ -8,7 +8,7 @@ protocol AuthServiceProtocol {
     func logout()
     func updateUserLocation(latitude: Double, longitude: Double) async throws -> Void // Added method
     // Authenticate with social provider (Google, Apple)
-    func loginWithSocial(provider: String, token: String) async throws -> AuthResponse
+    func loginWithSocial(provider: String, token: String, additionalData: [String: String]?) async throws -> AuthResponse
     // Add other auth-related methods if needed (e.g., forgotPassword, refreshToken)
 
     // Potentially add a method to fetch the current user profile

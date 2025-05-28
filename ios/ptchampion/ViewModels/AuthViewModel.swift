@@ -351,12 +351,13 @@ class AuthViewModel: ObservableObject {
     }
 
     // Login with Apple
-    func loginWithApple(identityToken: String) async {
+    func loginWithApple(authCode: String, identityToken: String, userInfo: [String: String]) async {
         self.isLoading = true
         self.errorMessage = nil
         
         do {
-            print("AuthViewModel: Processing Apple Sign In with token")
+            print("AuthViewModel: Processing Apple Sign In with auth code and token")
+            print("AuthViewModel: User info keys: \(userInfo.keys.joined(separator: ", "))")
             
             guard let authService = self.authService else {
                 self.errorMessage = "AuthService not initialized"
@@ -364,8 +365,9 @@ class AuthViewModel: ObservableObject {
                 return
             }
             
-            // Call the AuthService with Apple token
-            let response = try await authService.loginWithSocial(provider: "apple", token: identityToken)
+            // For Apple Sign In, the backend expects the identity token (JWT) in the token field
+            // The authorization code can be sent as additional data
+            let response = try await authService.loginWithSocial(provider: "apple", token: identityToken, additionalData: userInfo)
             
             // Update authentication state
             withAnimation {
@@ -375,10 +377,11 @@ class AuthViewModel: ObservableObject {
             // Save the token
             try KeychainService.shared.saveAccessToken(response.token)
             KeychainService.shared.saveUserID(response.user.id)
+            KeychainService.shared.saveRefreshToken(response.refreshToken)
             KeychainService.shared.saveUserName(firstName: response.user.firstName, lastName: response.user.lastName)
             
             // Notify of successful login
-            print("AuthViewModel: Apple Sign In successful")
+            print("AuthViewModel: Apple Sign In successful for user ID: \(response.user.id)")
             
         } catch let error as APIError {
             handleApiError(error)

@@ -361,30 +361,67 @@ struct LoginView: View {
                     return
                 }
                 
+                // Get the authorization code - this is what many backends need
+                guard let authCodeData = appleIDCredential.authorizationCode,
+                      let authCode = String(data: authCodeData, encoding: .utf8) else {
+                    print("Error: Unable to retrieve Apple authorization code")
+                    auth.errorMessage = "Unable to complete Apple sign-in. Please try again."
+                    return
+                }
+                
                 // Get the nonce we sent with the request
                 let nonce = UserDefaults.standard.string(forKey: "appleSignInNonce") ?? ""
-                
-                // Here you can verify the nonce in the identityToken if your backend requires it
-                // The identityToken is a JWT containing a 'nonce' claim that should match the SHA256 hash of our original nonce
-                // For extra security, you could send both the identityToken and original nonce to your backend
                 
                 // Extract user info (only available on first sign-in)
                 let userId = appleIDCredential.user
                 let fullName = appleIDCredential.fullName
                 let email = appleIDCredential.email
                 
+                // Create a user info dictionary with all available data
+                var userInfo: [String: String] = [
+                    "userId": userId,
+                    "identityToken": identityToken,
+                    "authorizationCode": authCode,
+                    "nonce": nonce
+                ]
+                
+                // Add optional user data if available (first sign-in)
+                if let email = email {
+                    userInfo["email"] = email
+                }
+                
+                if let givenName = fullName?.givenName {
+                    userInfo["firstName"] = givenName
+                }
+                
+                if let familyName = fullName?.familyName {
+                    userInfo["lastName"] = familyName
+                }
+                
                 print("Successfully signed in with Apple: \(userId)")
+                print("Auth code received: \(authCode.prefix(10))...")
+                print("Identity token received: \(identityToken.prefix(10))...")
+                if let email = email {
+                    print("Email: \(email)")
+                }
                 if let givenName = fullName?.givenName, let familyName = fullName?.familyName {
                     print("Name: \(givenName) \(familyName)")
                 }
-                print("Email: \(email ?? "Not provided")")
                 
                 // Call backend via AuthViewModel to complete sign-in
+                // Pass all the Apple Sign In data
                 Task {
-                    await auth.loginWithApple(identityToken: identityToken)
+                    await auth.loginWithApple(authCode: authCode, identityToken: identityToken, userInfo: userInfo)
                 }
             }
         case .failure(let error):
+            // Check if user cancelled
+            if let authError = error as? ASAuthorizationError, authError.code == .canceled {
+                print("User cancelled Apple Sign-In")
+                // Don't show error for user cancellation
+                return
+            }
+            
             print("Apple Sign-In failed: \(error.localizedDescription)")
             auth.errorMessage = "Apple Sign-In failed. Please try again."
         }
@@ -394,7 +431,7 @@ struct LoginView: View {
     private func signInWithGoogle() {
         print("Initiating Google Sign In")
         
-        guard let clientID = Bundle.main.object(forInfoDictionaryKey: "GOOGLE_IOS_CLIENT_ID") as? String ?? 
+        guard let clientID = Bundle.main.object(forInfoDictionaryKey: "GoogleClientID") as? String ?? 
               ProcessInfo.processInfo.environment["GOOGLE_IOS_CLIENT_ID"] else {
             print("Google ClientID not found")
             auth.errorMessage = "Google Sign-In configuration error"
