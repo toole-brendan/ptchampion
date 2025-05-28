@@ -61,10 +61,20 @@ struct LeaderboardFilterBarView: View {
             }
         }) {
             HStack(spacing: 8) {
-                // Exercise icon
-                Image(systemName: exerciseIcon(for: exercise))
-                    .font(.system(size: 16))
-                    .foregroundColor(isSelected ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.deepOps)
+                // Exercise icon using PNG assets
+                if exercise == .overall {
+                    // Keep system icon for "overall" since it's not an exercise
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(isSelected ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.deepOps)
+                } else {
+                    // Use PNG assets for specific exercises
+                    Image(imageNameForExerciseType(exercise))
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 16, height: 16)
+                        .foregroundColor(isSelected ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.deepOps)
+                }
                 
                 // Exercise name
                 Text(exercise.displayName.uppercased())
@@ -223,18 +233,18 @@ struct LeaderboardFilterBarView: View {
     
     // MARK: - Helper Functions
     
-    private func exerciseIcon(for exercise: LeaderboardExerciseType) -> String {
+    private func imageNameForExerciseType(_ exercise: LeaderboardExerciseType) -> String {
         switch exercise {
         case .overall:
-            return "star.fill"
+            return "star" // This won't be used but keeping for completeness
         case .pushup:
-            return "figure.strengthtraining.traditional"
+            return "pushup"
         case .situp:
-            return "figure.core.training"
+            return "situp"
         case .pullup:
-            return "figure.mixed.cardio"
+            return "pullup"
         case .running:
-            return "figure.run"
+            return "running"
         }
     }
 }
