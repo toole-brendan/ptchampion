@@ -64,29 +64,20 @@ struct WorkoutSessionView: View {
             
             // Simple Rep Feedback removed to prevent distraction
             
-            // Position Guide Overlay - Show SinglePositionOverlay when waiting for position
-            if viewModel.workoutState == .waitingForPosition {
-                SinglePositionOverlay(
-                    exercise: exerciseType,
-                    framingValidator: fullBodyFramingValidator,
-                    positionValidator: startingPositionValidator
-                )
-                .zIndex(1)
-            }
-            
-            // Auto Position Overlay for other states (ready, positionDetected, countdown)
-            else if [.ready, .positionDetected, .countdown].contains(viewModel.workoutState) {
-                AutoPositionOverlay(
-                    workoutState: viewModel.workoutState,
-                    positionHoldProgress: viewModel.positionHoldProgress,
-                    countdownValue: viewModel.countdownValue,
-                    onStartPressed: {
-                        print("DEBUG: [WorkoutSessionView] GO button pressed - starting position detection")
-                        viewModel.startPositionDetection()
-                    }
-                )
-                .zIndex(1)
-            }
+            // Enhanced overlay system with PNG guides
+            EnhancedExerciseOverlay(
+                exerciseType: exerciseType,
+                workoutState: viewModel.workoutState,
+                detectedBody: viewModel.detectedBody,
+                positionHoldProgress: viewModel.positionHoldProgress,
+                countdownValue: viewModel.countdownValue,
+                onStartPressed: {
+                    print("DEBUG: [WorkoutSessionView] GO button pressed")
+                    viewModel.startPositionDetection()
+                }
+            )
+            .edgesIgnoringSafeArea(.all)
+            .zIndex(1)
             
             // Camera Permission Request View
             if viewModel.workoutState == .requestingPermission {

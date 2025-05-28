@@ -213,6 +213,9 @@
 		BFF57A8F2DE77EA900B65EFF /* PositionInstructionBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A8B2DE77EA900B65EFF /* PositionInstructionBanner.swift */; };
 		BFF57A902DE77EA900B65EFF /* SinglePositionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A8C2DE77EA900B65EFF /* SinglePositionOverlay.swift */; };
 		BFF57A912DE77EA900B65EFF /* DevicePlacementTip.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A882DE77EA900B65EFF /* DevicePlacementTip.swift */; };
+		BFF57A952DE7837400B65EFF /* PositionAlignmentGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A942DE7837400B65EFF /* PositionAlignmentGuide.swift */; };
+		BFF57A962DE7837400B65EFF /* PNGOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A932DE7837400B65EFF /* PNGOverlayView.swift */; };
+		BFF57A972DE7837400B65EFF /* EnhancedExerciseOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A922DE7837400B65EFF /* EnhancedExerciseOverlay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -442,6 +445,9 @@
 		BFF57A8A2DE77EA900B65EFF /* PositionFeedbackBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionFeedbackBar.swift; sourceTree = "<group>"; };
 		BFF57A8B2DE77EA900B65EFF /* PositionInstructionBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionInstructionBanner.swift; sourceTree = "<group>"; };
 		BFF57A8C2DE77EA900B65EFF /* SinglePositionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SinglePositionOverlay.swift; sourceTree = "<group>"; };
+		BFF57A922DE7837400B65EFF /* EnhancedExerciseOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedExerciseOverlay.swift; sourceTree = "<group>"; };
+		BFF57A932DE7837400B65EFF /* PNGOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PNGOverlayView.swift; sourceTree = "<group>"; };
+		BFF57A942DE7837400B65EFF /* PositionAlignmentGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PositionAlignmentGuide.swift; sourceTree = "<group>"; };
 		C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.release.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.release.xcconfig"; sourceTree = "<group>"; };
 		D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ptchampion.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.debug.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.debug.xcconfig"; sourceTree = "<group>"; };
@@ -828,6 +834,9 @@
 		BF63E4482DB1EB980037CD02 /* Workouts */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A922DE7837400B65EFF /* EnhancedExerciseOverlay.swift */,
+				BFF57A932DE7837400B65EFF /* PNGOverlayView.swift */,
+				BFF57A942DE7837400B65EFF /* PositionAlignmentGuide.swift */,
 				BFF57A882DE77EA900B65EFF /* DevicePlacementTip.swift */,
 				BFF57A8A2DE77EA900B65EFF /* PositionFeedbackBar.swift */,
 				BFF57A8B2DE77EA900B65EFF /* PositionInstructionBanner.swift */,
@@ -1255,6 +1264,9 @@
 				BF59ACD82DDFDBB400242910 /* TabBarAware.swift in Sources */,
 				BF59ACD92DDFDBB400242910 /* ContentContainer.swift in Sources */,
 				BF63E4612DB1EBA40037CD02 /* LeaderboardViewModel.swift in Sources */,
+				BFF57A952DE7837400B65EFF /* PositionAlignmentGuide.swift in Sources */,
+				BFF57A962DE7837400B65EFF /* PNGOverlayView.swift in Sources */,
+				BFF57A972DE7837400B65EFF /* EnhancedExerciseOverlay.swift in Sources */,
 				BFF57A752DE74E9200B65EFF /* UnifiedWorkoutView.swift in Sources */,
 				BFF57A762DE74E9200B65EFF /* AutoPositionOverlay.swift in Sources */,
 				BFF57A772DE74E9200B65EFF /* ExerciseSelectionView.swift in Sources */,

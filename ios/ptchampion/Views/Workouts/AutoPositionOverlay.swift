@@ -10,6 +10,31 @@ struct AutoPositionOverlay: View {
     let countdownValue: Int?
     let onStartPressed: () -> Void
     
+    // Add exercise type to know which PNG to show
+    let exerciseType: ExerciseType
+    
+    // Control PNG visibility based on state
+    private var showPNGOverlay: Bool {
+        switch workoutState {
+        case .waitingForPosition, .positionDetected:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    // Animate PNG opacity
+    private var pngOpacity: Double {
+        switch workoutState {
+        case .waitingForPosition:
+            return 0.4 // Semi-transparent while positioning
+        case .positionDetected:
+            return 0.2 // Fade out when detected
+        default:
+            return 0.0
+        }
+    }
+    
     // Temporary placeholder properties to replace AutoPositionDetector
     @State private var primaryInstruction: String = "Get into starting position"
     @State private var positionQuality: Float = 0.0
@@ -20,6 +45,16 @@ struct AutoPositionOverlay: View {
     
     var body: some View {
         ZStack {
+            // PNG Overlay (behind UI elements)
+            if showPNGOverlay {
+                PNGOverlayView(
+                    exerciseType: exerciseType,
+                    opacity: pngOpacity
+                )
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.5), value: showPNGOverlay)
+            }
+            
             // Semi-transparent background
             Color.black.opacity(0.4)
                 .edgesIgnoringSafeArea(.all)
@@ -180,8 +215,8 @@ struct AutoPositionOverlay: View {
     
     // MARK: - Helper Properties
     private var exerciseDisplayName: String {
-        // Use placeholder since AutoPositionDetector is temporarily disabled
-        return detectedExercise?.displayName ?? "Exercise"
+        // Use the provided exerciseType instead of placeholder
+        return exerciseType.displayName
     }
     
     private var positionIcon: String {
@@ -344,7 +379,8 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
                 workoutState: .ready,
                 positionHoldProgress: 0.0,
                 countdownValue: nil,
-                onStartPressed: {}
+                onStartPressed: {},
+                exerciseType: .pushup
             )
             .previewDisplayName("Ready State")
             
@@ -353,7 +389,8 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
                 workoutState: .waitingForPosition,
                 positionHoldProgress: 0.3,
                 countdownValue: nil,
-                onStartPressed: {}
+                onStartPressed: {},
+                exerciseType: .situp
             )
             .previewDisplayName("Waiting for Position")
             
@@ -362,7 +399,8 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
                 workoutState: .countdown,
                 positionHoldProgress: 1.0,
                 countdownValue: 2,
-                onStartPressed: {}
+                onStartPressed: {},
+                exerciseType: .pullup
             )
             .previewDisplayName("Countdown")
         }
