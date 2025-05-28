@@ -4,47 +4,12 @@ import PTDesignSystem
 struct WorkoutSelectionView: View {
     @EnvironmentObject var tabBarVisibility: TabBarVisibilityManager
     
-    // TODO: Add ViewModel for workout logic
-
-    // Example list of exercises
-    struct Exercise: Identifiable {
-        let id = UUID()
-        let name: String // Display name
-        let rawValue: String // Raw value for enum/storage
-        let description: String
-        let iconName: String // System icon name for example
-        let color: Color // Add a unique color for each exercise
-    }
-
-    let exercises = [
-        Exercise(
-            name: "Push-ups",
-            rawValue: "pushup",
-            description: "Upper body strength training focusing on chest, shoulders, and triceps",
-            iconName: "pushup",
-            color: AppTheme.GeneratedColors.brassGold
-        ),
-        Exercise(
-            name: "Sit-ups",
-            rawValue: "situp",
-            description: "Core strength exercise targeting abdominal muscles",
-            iconName: "situp",
-            color: AppTheme.GeneratedColors.deepOps
-        ),
-        Exercise(
-            name: "Pull-ups",
-            rawValue: "pullup",
-            description: "Upper body exercise focusing on back, shoulders, and arms",
-            iconName: "pullup",
-            color: AppTheme.GeneratedColors.primary
-        ),
-        Exercise(
-            name: "Run",
-            rawValue: "run",
-            description: "Cardiovascular training for endurance and stamina",
-            iconName: "running",
-            color: AppTheme.GeneratedColors.success
-        )
+    // Use ExerciseType directly instead of custom Exercise struct
+    let exercises: [(exercise: ExerciseType, description: String, color: Color)] = [
+        (.pushup, "Upper body strength training focusing on chest, shoulders, and triceps", AppTheme.GeneratedColors.brassGold),
+        (.situp, "Core strength exercise targeting abdominal muscles", AppTheme.GeneratedColors.deepOps),
+        (.pullup, "Upper body exercise focusing on back, shoulders, and arms", AppTheme.GeneratedColors.primary),
+        (.run, "Cardiovascular training for endurance and stamina", AppTheme.GeneratedColors.success)
     ]
     
     // For staggered animations
@@ -104,26 +69,16 @@ struct WorkoutSelectionView: View {
     
     private var exerciseCards: some View {
         VStack(spacing: AppTheme.GeneratedSpacing.medium) {
-            ForEach(Array(exercises.enumerated()), id: \.element.id) { index, exercise in
+            ForEach(Array(exercises.enumerated()), id: \.offset) { index, exerciseData in
                 ExerciseCard(
-                    exercise: exercise,
+                    exercise: exerciseData.exercise,
+                    description: exerciseData.description,
+                    color: exerciseData.color,
                     destination: {
-                        if exercise.name == "Run" {
+                        if exerciseData.exercise == .run {
                             return AnyView(RunWorkoutView())
                         } else {
-                            // Convert from Exercise to ExerciseType based on rawValue
-                            let exerciseType: ExerciseType
-                            switch exercise.rawValue {
-                            case "pushup":
-                                exerciseType = .pushup
-                            case "situp":
-                                exerciseType = .situp
-                            case "pullup":
-                                exerciseType = .pullup
-                            default:
-                                exerciseType = .unknown
-                            }
-                            return AnyView(WorkoutSessionView(exerciseType: exerciseType))
+                            return AnyView(WorkoutSessionView(exerciseType: exerciseData.exercise))
                         }
                     }
                 )
@@ -157,7 +112,9 @@ struct WorkoutSelectionView: View {
 // MARK: - Exercise Card Component
 
 struct ExerciseCard: View {
-    let exercise: WorkoutSelectionView.Exercise
+    let exercise: ExerciseType
+    let description: String
+    let color: Color
     let destination: () -> AnyView
     
     @State private var isPressed = false
@@ -169,23 +126,21 @@ struct ExerciseCard: View {
                 // Icon circle
                 ZStack {
                     Circle()
-                        .fill(exercise.color.opacity(0.15))
+                        .fill(color.opacity(0.15))
                         .frame(width: 60, height: 60)
                     
-                    Image(exercise.iconName)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 36, height: 36)
-                        .foregroundColor(exercise.color)
+                    Image(systemName: exercise.icon)
+                        .font(.system(size: 24))
+                        .foregroundColor(color)
                 }
                 
                 // Exercise info
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(exercise.name)
+                    Text(exercise.displayName)
                         .font(.headline)
                         .foregroundColor(AppTheme.GeneratedColors.textPrimary)
                     
-                    Text(exercise.description)
+                    Text(description)
                         .font(.subheadline)
                         .foregroundColor(AppTheme.GeneratedColors.textSecondary)
                         .lineLimit(2)

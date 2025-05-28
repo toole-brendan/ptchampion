@@ -85,7 +85,7 @@ struct UnifiedWorkoutView: View {
         .fullScreenCover(isPresented: $viewModel.showWorkoutCompleteView) {
             if let result = viewModel.completedWorkoutResult {
                 WorkoutCompleteView(
-                    result: result,
+                    result: result.toWorkoutResult(),
                     exerciseGrader: AnyExerciseGraderBox(WorkoutSessionViewModel.createGrader(for: exerciseType))
                 )
                 .onDisappear {

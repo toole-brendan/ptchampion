@@ -206,6 +206,9 @@
 		BFF57A782DE74E9200B65EFF /* AutoPositionTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A722DE74E9200B65EFF /* AutoPositionTestView.swift */; };
 		BFF57A7B2DE74EAD00B65EFF /* ExerciseUIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A792DE74EAD00B65EFF /* ExerciseUIComponents.swift */; };
 		BFF57A7D2DE74ED300B65EFF /* WorkoutResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A7C2DE74ED300B65EFF /* WorkoutResult.swift */; };
+		BFF57A812DE752E000B65EFF /* AutoPositionDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A7E2DE752E000B65EFF /* AutoPositionDetector.swift */; };
+		BFF57A822DE752E000B65EFF /* FullBodyFramingValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A7F2DE752E000B65EFF /* FullBodyFramingValidator.swift */; };
+		BFF57A832DE752E000B65EFF /* QuickCalibrationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFF57A802DE752E000B65EFF /* QuickCalibrationManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -428,6 +431,9 @@
 		BFF57A742DE74E9200B65EFF /* UnifiedWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnifiedWorkoutView.swift; sourceTree = "<group>"; };
 		BFF57A792DE74EAD00B65EFF /* ExerciseUIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseUIComponents.swift; sourceTree = "<group>"; };
 		BFF57A7C2DE74ED300B65EFF /* WorkoutResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutResult.swift; sourceTree = "<group>"; };
+		BFF57A7E2DE752E000B65EFF /* AutoPositionDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPositionDetector.swift; sourceTree = "<group>"; };
+		BFF57A7F2DE752E000B65EFF /* FullBodyFramingValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullBodyFramingValidator.swift; sourceTree = "<group>"; };
+		BFF57A802DE752E000B65EFF /* QuickCalibrationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickCalibrationManager.swift; sourceTree = "<group>"; };
 		C3442720C1E00B8F632FD030 /* Pods-ptchampion.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.release.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.release.xcconfig"; sourceTree = "<group>"; };
 		D5253F8AF63AED2287D265F9 /* Pods_ptchampion.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ptchampion.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F60818A8021C737E1E6D393B /* Pods-ptchampion.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ptchampion.debug.xcconfig"; path = "Target Support Files/Pods-ptchampion/Pods-ptchampion.debug.xcconfig"; sourceTree = "<group>"; };
@@ -678,6 +684,9 @@
 		BF63E4212DB1EB830037CD02 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				BFF57A7E2DE752E000B65EFF /* AutoPositionDetector.swift */,
+				BFF57A7F2DE752E000B65EFF /* FullBodyFramingValidator.swift */,
+				BFF57A802DE752E000B65EFF /* QuickCalibrationManager.swift */,
 				BFF57A692DE5FD5800B65EFF /* AuthenticationFix.swift */,
 				BFF57A5B2DE52EB200B65EFF /* EnhancedFeedbackManager.swift */,
 				BFF57A5C2DE52EB200B65EFF /* StartingPositionValidator.swift */,
@@ -1316,6 +1325,9 @@
 				BFF57A7B2DE74EAD00B65EFF /* ExerciseUIComponents.swift in Sources */,
 				BF59ACE12DE0E99B00242910 /* CalibrationEntity+CoreDataClass.swift in Sources */,
 				BF59ACE22DE0E99B00242910 /* CalibrationModels.swift in Sources */,
+				BFF57A812DE752E000B65EFF /* AutoPositionDetector.swift in Sources */,
+				BFF57A822DE752E000B65EFF /* FullBodyFramingValidator.swift in Sources */,
+				BFF57A832DE752E000B65EFF /* QuickCalibrationManager.swift in Sources */,
 				BF59ACE32DE0E99B00242910 /* CalibrationEntity+CoreDataProperties.swift in Sources */,
 				BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */,
 				BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */,

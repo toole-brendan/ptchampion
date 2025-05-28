@@ -89,4 +89,32 @@ final class WorkoutResultSwiftData {
     var exercise: ExerciseType? {
         ExerciseType(rawValue: exerciseType)
     }
+}
+
+// MARK: - Conversion Extension
+extension WorkoutResultSwiftData {
+    /// Converts WorkoutResultSwiftData to WorkoutResult for UI display
+    func toWorkoutResult() -> WorkoutResult {
+        let exerciseTypeEnum = ExerciseType(rawValue: exerciseType) ?? .unknown
+        let duration = TimeInterval(durationSeconds)
+        let totalReps = repCount ?? 0
+        
+        // Create empty rep details since WorkoutResultSwiftData doesn't store individual rep data
+        // In a full implementation, you might want to fetch RepDetailSwiftData objects
+        let repDetails: [RepDetail] = []
+        
+        // Determine if this is a personal best (simplified logic)
+        // In a full implementation, you'd compare against historical data
+        let isPersonalBest = false
+        
+        return WorkoutResult(
+            id: id,
+            exerciseType: exerciseTypeEnum,
+            totalReps: totalReps,
+            duration: duration,
+            timestamp: endTime,
+            repDetails: repDetails,
+            isPersonalBest: isPersonalBest
+        )
+    }
 } 

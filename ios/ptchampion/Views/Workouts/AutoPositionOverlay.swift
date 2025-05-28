@@ -3,11 +3,18 @@ import PTDesignSystem
 
 /// Enhanced overlay that provides the "Just Press GO" experience with automatic position detection
 struct AutoPositionOverlay: View {
-    @ObservedObject var autoPositionDetector: AutoPositionDetector
+    // TODO: Re-enable AutoPositionDetector once module compilation issues are resolved
+    // @ObservedObject var autoPositionDetector: AutoPositionDetector
     let workoutState: WorkoutSessionState
     let positionHoldProgress: Float
     let countdownValue: Int?
     let onStartPressed: () -> Void
+    
+    // Temporary placeholder properties to replace AutoPositionDetector
+    @State private var primaryInstruction: String = "Get into starting position"
+    @State private var positionQuality: Float = 0.0
+    @State private var missingRequirements: [String] = []
+    @State private var detectedExercise: ExerciseType? = nil
     
     @State private var pulseAnimation = false
     
@@ -103,15 +110,15 @@ struct AutoPositionOverlay: View {
                     .foregroundColor(positionColor)
                     .scaleEffect(pulseAnimation ? 1.1 : 1.0)
                 
-                Text(autoPositionDetector.primaryInstruction)
+                Text(primaryInstruction)
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
                 
                 // Position quality indicator
-                if autoPositionDetector.positionQuality > 0 {
-                    PositionQualityBar(quality: autoPositionDetector.positionQuality)
+                if positionQuality > 0 {
+                    PositionQualityBar(quality: positionQuality)
                 }
             }
             
@@ -122,8 +129,8 @@ struct AutoPositionOverlay: View {
             }
             
             // Missing requirements
-            if !autoPositionDetector.missingRequirements.isEmpty {
-                RequirementsCard(requirements: autoPositionDetector.missingRequirements)
+            if !missingRequirements.isEmpty {
+                RequirementsCard(requirements: missingRequirements)
                     .transition(.move(edge: .bottom))
             }
         }
@@ -173,14 +180,14 @@ struct AutoPositionOverlay: View {
     
     // MARK: - Helper Properties
     private var exerciseDisplayName: String {
-        // Extract from detector or use default
-        return autoPositionDetector.detectedExercise?.displayName ?? "Exercise"
+        // Use placeholder since AutoPositionDetector is temporarily disabled
+        return detectedExercise?.displayName ?? "Exercise"
     }
     
     private var positionIcon: String {
-        if autoPositionDetector.positionQuality > 0.8 {
+        if positionQuality > 0.8 {
             return "checkmark.circle.fill"
-        } else if autoPositionDetector.positionQuality > 0.5 {
+        } else if positionQuality > 0.5 {
             return "exclamationmark.triangle.fill"
         } else {
             return "person.crop.circle.badge.questionmark"
@@ -188,9 +195,9 @@ struct AutoPositionOverlay: View {
     }
     
     private var positionColor: Color {
-        if autoPositionDetector.positionQuality > 0.8 {
+        if positionQuality > 0.8 {
             return .green
-        } else if autoPositionDetector.positionQuality > 0.5 {
+        } else if positionQuality > 0.5 {
             return .orange
         } else {
             return .red
@@ -334,7 +341,6 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
         Group {
             // Ready state
             AutoPositionOverlay(
-                autoPositionDetector: AutoPositionDetector(),
                 workoutState: .ready,
                 positionHoldProgress: 0.0,
                 countdownValue: nil,
@@ -344,12 +350,6 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
             
             // Waiting for position
             AutoPositionOverlay(
-                autoPositionDetector: {
-                    let detector = AutoPositionDetector()
-                    detector.primaryInstruction = "Move closer to camera"
-                    detector.positionQuality = 0.6
-                    return detector
-                }(),
                 workoutState: .waitingForPosition,
                 positionHoldProgress: 0.3,
                 countdownValue: nil,
@@ -359,7 +359,6 @@ struct AutoPositionOverlay_Previews: PreviewProvider {
             
             // Countdown
             AutoPositionOverlay(
-                autoPositionDetector: AutoPositionDetector(),
                 workoutState: .countdown,
                 positionHoldProgress: 1.0,
                 countdownValue: 2,

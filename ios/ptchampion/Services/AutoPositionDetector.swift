@@ -5,17 +5,17 @@ import MediaPipeTasksVision
 
 /// Automatic position detection service that leverages MediaPipe landmarks
 /// to detect when users are in correct starting positions without manual calibration
-public class AutoPositionDetector: ObservableObject {
+internal class AutoPositionDetector: ObservableObject {
     
     // MARK: - Published Properties
-    @Published public var detectedExercise: ExerciseType?
-    @Published public var isInPosition: Bool = false
-    @Published public var positionQuality: Float = 0.0 // 0-1 score
-    @Published public var primaryInstruction: String = "Get into starting position"
-    @Published public var missingRequirements: [String] = []
-    @Published public var confidenceScore: Float = 0.0
-    @Published public var currentDetection: PositionDetectionResult?
-    @Published public var isDetecting = false
+    @Published internal var detectedExercise: ExerciseType?
+    @Published internal var isInPosition: Bool = false
+    @Published internal var positionQuality: Float = 0.0 // 0-1 score
+    @Published internal var primaryInstruction: String = "Get into starting position"
+    @Published internal var missingRequirements: [String] = []
+    @Published internal var confidenceScore: Float = 0.0
+    @Published internal var currentDetection: PositionDetectionResult?
+    @Published internal var isDetecting = false
     
     // MARK: - Exercise-Specific Thresholds
     private let pushupThresholds = PushupThresholds()
@@ -34,7 +34,7 @@ public class AutoPositionDetector: ObservableObject {
     }
     
     // MARK: - Main Detection Method
-    public func detectPosition(body: DetectedBody, expectedExercise: ExerciseType? = nil) -> PositionDetectionResult {
+    internal func detectPosition(body: DetectedBody, expectedExercise: ExerciseType? = nil) -> PositionDetectionResult {
         // Convert DetectedBody to MediaPipe landmarks for analysis
         let landmarks = convertDetectedBodyToLandmarks(body)
         return detectExercisePosition(landmarks: landmarks, expectedExercise: expectedExercise)
