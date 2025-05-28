@@ -10,24 +10,18 @@ struct PNGOverlayView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack {
-                // Debug background to see the full overlay area
-                Rectangle()
-                    .fill(Color.red.opacity(0.1))  // Light red to see the full area
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                
                 if let image = exerciseImage {
-                    // Main overlay image - Fill entire screen without aspect ratio constraint
+                    // Main overlay image - Fill entire screen
                     Image(uiImage: image)
                         .resizable()
-                        .scaledToFill()  // Changed from aspectRatio(contentMode: .fit) to scaledToFill
+                        .scaledToFill()
                         .opacity(opacity)
-                        .frame(width: geometry.size.width,    // Full screen width
-                               height: geometry.size.height)   // Full screen height
+                        .frame(width: geometry.size.width,
+                               height: geometry.size.height)
                         .position(x: geometry.size.width / 2,
                                   y: geometry.size.height / 2)
                         .allowsHitTesting(false)
-                        .clipped()  // Important: clip the overflow
-                        .border(Color.green, width: 3)  // Debug border to see image bounds
+                        .clipped()
                         .overlay(
                             // Add a subtle glow effect for better visibility
                             Image(uiImage: image)
@@ -36,7 +30,7 @@ struct PNGOverlayView: View {
                                 .frame(width: geometry.size.width,
                                        height: geometry.size.height)
                                 .blur(radius: 25)
-                                .opacity(opacity * 0.2)  // Further reduced glow
+                                .opacity(opacity * 0.2)
                                 .allowsHitTesting(false)
                                 .clipped()
                         )
@@ -45,17 +39,9 @@ struct PNGOverlayView: View {
                                 Color.clear
                                     .onAppear {
                                         imageSize = imageGeometry.size
-                                        print("DEBUG: PNG Overlay size - width: \(geometry.size.width), height: \(geometry.size.height)")
-                                        print("DEBUG: Image being displayed: \(exerciseType.rawValue)")
                                     }
                             }
                         )
-                } else {
-                    // Debug text when no image is found
-                    Text("No PNG found for: \(exerciseType.rawValue)")
-                        .foregroundColor(.white)
-                        .font(.title)
-                        .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 }
             }
         }
