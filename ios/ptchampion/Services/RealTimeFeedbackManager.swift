@@ -108,25 +108,13 @@ class RealTimeFeedbackManager: ObservableObject {
     }
     
     func enableAudioFeedback(_ enabled: Bool) {
-        if !enabled {
-            speechSynthesizer.stopSpeaking(at: .immediate)
-        }
+        // Audio feedback completely disabled
+        speechSynthesizer.stopSpeaking(at: .immediate)
     }
     
     func triggerHapticFeedback(for type: HapticFeedbackType) {
-        switch type {
-        case .success:
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.success)
-        case .warning:
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.warning)
-        case .error:
-            let feedback = UINotificationFeedbackGenerator()
-            feedback.notificationOccurred(.error)
-        case .impact:
-            hapticFeedback.impactOccurred()
-        }
+        // Haptic feedback completely disabled - do nothing
+        return
     }
     
     // MARK: - Pose Processing
@@ -505,34 +493,13 @@ class RealTimeFeedbackManager: ObservableObject {
     }
     
     private func provideAudioFeedback(_ feedback: ExerciseFeedback, currentTime: TimeInterval) {
-        var message: String?
-        
-        // Prioritize critical errors
-        if let criticalError = feedback.errors.first(where: { $0.severity == .critical }) {
-            message = criticalError.message
-        }
-        // Then check for consistent poor form
-        else if consecutivePoorForm >= FeedbackConstants.consecutiveFramesForStable * 2 {
-            if let primaryCorrection = feedback.corrections.first {
-                message = primaryCorrection.message
-            }
-        }
-        // Provide encouragement for good form streaks
-        else if consecutiveGoodForm == FeedbackConstants.consecutiveFramesForStable * 3 {
-            message = "Great form! Keep it up!"
-        }
-        
-        if let message = message {
-            speakMessage(message)
-            lastAudioFeedback = currentTime
-        }
+        // Audio feedback completely disabled - do nothing
+        return
     }
     
     private func speakMessage(_ message: String) {
-        let utterance = AVSpeechUtterance(string: message)
-        utterance.rate = 0.5
-        utterance.volume = 0.8
-        speechSynthesizer.speak(utterance)
+        // Audio feedback completely disabled - do nothing
+        return
     }
     
     // MARK: - State Management

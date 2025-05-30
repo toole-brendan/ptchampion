@@ -57,14 +57,8 @@ struct EnhancedExerciseOverlay: View {
     }
     
     private var shouldShowPNGOverlay: Bool {
-        switch workoutState {
-        case .waitingForPosition, .positionDetected:
-            return true
-        case .ready, .countdown, .counting, .paused, .finished, .requestingPermission, .permissionDenied, .error:
-            return false
-        default:
-            return false
-        }
+        // No PNG overlays at all - using live skeleton only
+        return false
     }
     
     private var pngOpacity: Double {

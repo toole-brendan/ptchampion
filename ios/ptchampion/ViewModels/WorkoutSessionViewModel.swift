@@ -45,6 +45,15 @@ enum WorkoutSessionState: Equatable {
     }
 }
 
+// MARK: - Position Quality for Better UX
+enum PositionQuality: Equatable {
+    case notDetected
+    case poor(reason: String)      // Red - major issues
+    case fair(adjustment: String)  // Yellow - minor adjustments needed  
+    case good                      // Green - ready to start
+    case perfect                   // Green with checkmark
+}
+
 @MainActor
 class WorkoutSessionViewModel: ObservableObject {
     // MARK: - Published Properties for UI
@@ -91,6 +100,11 @@ class WorkoutSessionViewModel: ObservableObject {
     private var orientationChangeDebouncer: Timer?
     private var lastOrientation: UIInterfaceOrientation = .portrait
     private var lastProcessedOrientation: UIInterfaceOrientation?
+    
+    // MARK: - Enhanced Position Detection Properties
+    @Published var positionQuality: PositionQuality = .notDetected
+    @Published var simpleVisualFeedback: String = "GET READY"
+    @Published var backgroundColor: Color = .gray
     
     // MARK: - Auto Position Detection
     // TODO: Re-enable auto position detection once module compilation issues are resolved
@@ -148,7 +162,12 @@ class WorkoutSessionViewModel: ObservableObject {
     // Add properties for tracking position hold time
     @Published var isInCorrectStartingPosition: Bool = false
     private var correctPositionStartTime: Date?
-    private let requiredPositionHoldDuration: TimeInterval = 1.0 // 1 second hold
+    private let requiredPositionHoldDuration: TimeInterval = 0.5 // Reduced from 1.0 to 0.5 seconds for better UX
+    
+    // MARK: - Audio Feedback
+    private let speechSynthesizer = AVSpeechSynthesizer()
+    private var positionLostTime: Date?
+    private let positionGracePeriod: TimeInterval = 1.0 // 1 second grace period
     
     // MARK: - Initialization
     init(
@@ -478,6 +497,15 @@ class WorkoutSessionViewModel: ObservableObject {
             self.workoutState = .positionDetected
             self.feedbackMessage = "Perfect! Starting in..."
             
+            // Voice announcement
+            self.speakText("Get ready")
+            
+            // Short haptic feedback
+            #if os(iOS)
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+            #endif
+            
             // Start 3-second countdown
             self.startCountdown()
         }
@@ -491,6 +519,9 @@ class WorkoutSessionViewModel: ObservableObject {
         self.countdownValue = countdown
         self.workoutState = .countdown
         
+        // Announce first number immediately
+        self.speakText("\(countdown)")
+        
         Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { [weak self] timer in
             guard let self = self else {
                 timer.invalidate()
@@ -502,9 +533,11 @@ class WorkoutSessionViewModel: ObservableObject {
             if countdown > 0 {
                 self.countdownValue = countdown
                 self.feedbackMessage = "Starting in \(countdown)..."
+                self.speakText("\(countdown)")
             } else {
                 timer.invalidate()
                 self.countdownValue = nil
+                self.speakText("Begin")
                 self.beginExercise()
             }
         }
@@ -552,93 +585,211 @@ class WorkoutSessionViewModel: ObservableObject {
     private func handleAutoPositionDetection(body: DetectedBody) {
         guard workoutState == .waitingForPosition else { return }
         
-        // Use the exercise grader to check if user is in correct starting position
-        let gradingResult = exerciseGrader.gradePose(body: body)
+        // Update position quality and visual feedback
+        updatePositionQuality(for: body)
         
-        // For pushups, check if they're in the "up" position with arms extended
-        var isCorrectPosition = false
+        // Check if user is roughly in position (much more lenient than before)
+        let isRoughlyInPosition = checkBasicPushupPosition(body)
         
-        switch exerciseType {
-        case .pushup:
-            // Check if in starting position (arms extended, body straight)
-            if case .inProgress(let phase) = gradingResult,
-               let phase = phase,
-               phase.lowercased().contains("up") || phase.lowercased().contains("extend") {
-                // Additional check for good form - no major form issues
-                if exerciseGrader.lastFormIssue == nil || 
-                   (exerciseGrader.lastFormIssue?.lowercased().contains("lower") ?? false) {
-                    isCorrectPosition = true
-                    feedbackMessage = "Perfect! Hold this position..."
-                }
-            }
-            
-            // Check for form issues that prevent starting
-            if case .incorrectForm(let feedback) = gradingResult {
-                feedbackMessage = feedback
-                isCorrectPosition = false
-                correctPositionStartTime = nil
-                positionHoldProgress = 0.0
-            }
-            
-        case .situp:
-            // TODO: Implement situp starting position detection
-            // For now, use simple delay
-            isCorrectPosition = false
-            
-        case .pullup:
-            // TODO: Implement pullup starting position detection
-            // For now, use simple delay
-            isCorrectPosition = false
-            
-        default:
-            isCorrectPosition = false
-        }
-        
-        // Update position tracking
-        if isCorrectPosition {
+        if isRoughlyInPosition {
+            // Start timing if not already
             if correctPositionStartTime == nil {
                 correctPositionStartTime = Date()
-                feedbackMessage = "Hold this position..."
+                provideAudioFeedback(for: positionQuality)
             }
             
-            // Calculate how long position has been held
+            // Calculate hold progress
             let timeHeld = Date().timeIntervalSince(correctPositionStartTime ?? Date())
             positionHoldProgress = Float(min(timeHeld / requiredPositionHoldDuration, 1.0))
             
-            // If held long enough, trigger position detected
+            // Start workout if held long enough
             if timeHeld >= requiredPositionHoldDuration {
                 handlePositionDetected()
                 correctPositionStartTime = nil
                 positionHoldProgress = 0.0
+                positionLostTime = nil
             }
         } else {
-            // Reset if position is lost
-            correctPositionStartTime = nil
-            positionHoldProgress = 0.0
-            
-            // Provide helpful feedback based on phase
-            if !isCorrectPosition {
-                switch exerciseType {
-                case .pushup:
-                    // Use grader's feedback if available, otherwise generic
-                    if feedbackMessage.isEmpty || feedbackMessage == "Get into starting position" {
-                        feedbackMessage = "Get into push-up position with arms extended"
-                    }
-                    // If the grader says to lower body, they're in up position but not starting position
-                    if feedbackMessage.lowercased().contains("lower") {
-                        feedbackMessage = "Keep arms fully extended to start"
-                    }
-                case .situp:
-                    feedbackMessage = "Lie on your back with knees bent"
-                case .pullup:
-                    feedbackMessage = "Hang from the bar with arms extended"
-                default:
-                    feedbackMessage = "Get into starting position"
-                }
+            // Handle position loss with grace period
+            handlePositionLoss()
+        }
+        
+        // Always update the grader to keep form feedback current
+        let _ = exerciseGrader.gradePose(body: body)
+    }
+    
+    /// Updates position quality based on body detection
+    private func updatePositionQuality(for body: DetectedBody) {
+        // Level 1: Basic body detection
+        guard detectBasicHumanForm(body) else {
+            positionQuality = .notDetected
+            simpleVisualFeedback = "STEP INTO VIEW"
+            backgroundColor = .gray
+            feedbackMessage = "Step into camera view"
+            return
+        }
+        
+        // Level 2: Check if roughly in push-up position
+        let inPosition = checkBasicPushupPosition(body)
+        let adjustment = getPositionAdjustment(body)
+        
+        if !inPosition {
+            positionQuality = .poor(reason: adjustment)
+            simpleVisualFeedback = "GET DOWN"
+            backgroundColor = .red
+            feedbackMessage = adjustment
+        } else {
+            // Level 3: In position, check quality
+            let formIssues = checkBasicFormIssues(body)
+            if formIssues.isEmpty {
+                positionQuality = .good
+                simpleVisualFeedback = "HOLD STEADY"
+                backgroundColor = .green
+                feedbackMessage = "Hold steady..."
+            } else {
+                positionQuality = .fair(adjustment: formIssues.first ?? "Adjust position")
+                simpleVisualFeedback = "ALMOST THERE"
+                backgroundColor = .yellow
+                feedbackMessage = formIssues.first ?? "Almost there"
+            }
+        }
+    }
+    
+    /// Checks if basic human form is detected with required joints
+    private func detectBasicHumanForm(_ body: DetectedBody) -> Bool {
+        // Just need to see key joints
+        let requiredJoints: [VNHumanBodyPoseObservation.JointName] = [
+            .leftWrist, .rightWrist,
+            .leftShoulder, .rightShoulder,
+            .leftHip, .rightHip
+        ]
+        
+        for joint in requiredJoints {
+            guard let _ = body.point(joint) else {
+                return false
+            }
+        }
+        return true
+    }
+    
+    /// Very lenient check for basic push-up position
+    private func checkBasicPushupPosition(_ body: DetectedBody) -> Bool {
+        guard let leftWrist = body.point(.leftWrist),
+              let rightWrist = body.point(.rightWrist),
+              let leftShoulder = body.point(.leftShoulder),
+              let rightShoulder = body.point(.rightShoulder),
+              let leftHip = body.point(.leftHip),
+              let rightHip = body.point(.rightHip) else {
+            return false
+        }
+        
+        // Calculate average positions
+        let avgWristY = (leftWrist.location.y + rightWrist.location.y) / 2
+        let avgShoulderY = (leftShoulder.location.y + rightShoulder.location.y) / 2
+        let avgHipY = (leftHip.location.y + rightHip.location.y) / 2
+        
+        // Very lenient checks:
+        // 1. Wrists should be lower than shoulders (hands on ground)
+        // Note: In normalized coordinates, lower Y = higher on screen
+        let handsOnGround = avgWristY < avgShoulderY - 0.05
+        
+        // 2. Body should be roughly horizontal (not standing)
+        let bodyHorizontal = abs(avgShoulderY - avgHipY) < 0.3
+        
+        // 3. Not in a standing position (shoulders not too far above hips)
+        let notStanding = avgShoulderY > avgHipY - 0.2
+        
+        return handsOnGround && bodyHorizontal && notStanding
+    }
+    
+    /// Get specific adjustment needed for position
+    private func getPositionAdjustment(_ body: DetectedBody) -> String {
+        guard let leftWrist = body.point(.leftWrist),
+              let rightWrist = body.point(.rightWrist),
+              let leftShoulder = body.point(.leftShoulder),
+              let rightShoulder = body.point(.rightShoulder) else {
+            return "Get into push-up position"
+        }
+        
+        let avgWristY = (leftWrist.location.y + rightWrist.location.y) / 2
+        let avgShoulderY = (leftShoulder.location.y + rightShoulder.location.y) / 2
+        
+        // Check specific issues
+        if avgWristY > avgShoulderY {
+            return "Place hands on ground"
+        }
+        
+        guard let leftHip = body.point(.leftHip),
+              let rightHip = body.point(.rightHip) else {
+            return "Lower into push-up"
+        }
+        
+        let avgHipY = (leftHip.location.y + rightHip.location.y) / 2
+        
+        if avgShoulderY < avgHipY - 0.2 {
+            return "Lower into push-up"
+        }
+        
+        return "Get into push-up position"
+    }
+    
+    /// Check for basic form issues (but don't block starting)
+    private func checkBasicFormIssues(_ body: DetectedBody) -> [String] {
+        var issues: [String] = []
+        
+        // Use the grader's assessment but don't be too strict
+        let gradingResult = exerciseGrader.gradePose(body: body)
+        if case .incorrectForm(let feedback) = gradingResult {
+            // Only add non-critical feedback
+            if !feedback.lowercased().contains("lower") && 
+               !feedback.lowercased().contains("bend") {
+                issues.append(feedback)
             }
         }
         
-        isInCorrectStartingPosition = isCorrectPosition
+        return issues
+    }
+    
+    /// Handle position loss with grace period
+    private func handlePositionLoss() {
+        if positionLostTime == nil {
+            positionLostTime = Date()
+        }
+        
+        // Don't reset immediately - give user time to adjust
+        if let lostTime = positionLostTime,
+           Date().timeIntervalSince(lostTime) > positionGracePeriod {
+            correctPositionStartTime = nil
+            positionHoldProgress = 0.0
+            positionLostTime = nil
+        }
+    }
+    
+    /// Provide audio feedback based on position quality
+    private func provideAudioFeedback(for quality: PositionQuality) {
+        guard isSoundEnabled else { return }
+        
+        switch quality {
+        case .fair:
+            // Play encouraging beep
+            AudioServicesPlaySystemSound(1057)
+        case .good, .perfect:
+            // Play success sound and speak
+            AudioServicesPlaySystemSound(1025)
+            speakText("Hold steady")
+        default:
+            break
+        }
+    }
+    
+    /// Speak text using text-to-speech
+    private func speakText(_ text: String) {
+        guard isSoundEnabled else { return }
+        
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.rate = 0.5
+        utterance.volume = 1.0
+        speechSynthesizer.speak(utterance)
     }
     
     /// Process detected body and convert to landmarks for position analysis
@@ -889,9 +1040,7 @@ class WorkoutSessionViewModel: ObservableObject {
             showRepFeedback = true
             isRepSuccess = true
             
-            if isSoundEnabled {
-                AudioServicesPlaySystemSound(1104) // System beep sound
-            }
+            // All audio feedback completely removed - no beeps
             // Haptic feedback completely removed
             
             saveRepData(formQuality: formQuality)

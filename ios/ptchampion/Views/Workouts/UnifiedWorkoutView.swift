@@ -113,7 +113,8 @@ struct UnifiedWorkoutView: View {
                 exerciseType: exerciseType,
                 instruction: viewModel.currentInstruction.isEmpty ? viewModel.feedbackMessage : viewModel.currentInstruction,
                 confidence: viewModel.positioningConfidence,
-                missingRequirements: viewModel.missingRequirements
+                missingRequirements: viewModel.missingRequirements,
+                viewModel: viewModel
             )
             
         case .positionDetected:
@@ -228,57 +229,120 @@ struct PositionDetectionOverlay: View {
     let instruction: String
     let confidence: Double
     let missingRequirements: [String]
+    @ObservedObject var viewModel: WorkoutSessionViewModel
     
     var body: some View {
-        VStack {
-            // Exercise-specific visual guide
-            ExercisePositionGuide(exerciseType: exerciseType)
-                .padding(.top, 60)
+        ZStack {
+            // Full screen colored background
+            Rectangle()
+                .fill(backgroundGradient)
+                .ignoresSafeArea()
+                .animation(.easeInOut(duration: 0.3), value: viewModel.positionQuality)
             
-            Spacer()
-            
-            // Feedback section
-            VStack(spacing: 20) {
-                // Main instruction with icon
-                HStack {
-                    Image(systemName: confidence > 0.7 ? "checkmark.circle.fill" : "arrow.triangle.2.circlepath")
-                        .font(.title2)
-                        .foregroundColor(confidence > 0.7 ? .green : .yellow)
+            VStack(spacing: 40) {
+                Spacer()
+                
+                // Huge visual indicator
+                ZStack {
+                    // Background circle
+                    Circle()
+                        .fill(Color.white.opacity(0.2))
+                        .frame(width: 280, height: 280)
                     
-                    Text(instruction.isEmpty ? "Get into starting position" : instruction)
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                }
-                .padding(.horizontal, 25)
-                .padding(.vertical, 15)
-                .background(
-                    RoundedRectangle(cornerRadius: 15)
-                        .fill(Color.black.opacity(0.8))
-                )
-                
-                // Position quality indicator
-                PositionQualityIndicator(
-                    confidence: confidence,
-                    exerciseColor: exerciseType.color
-                )
-                .frame(width: 250, height: 10)
-                
-                // Specific requirements
-                if !missingRequirements.isEmpty {
-                    VStack(spacing: 10) {
-                        ForEach(missingRequirements, id: \.self) { requirement in
-                            RequirementRow(text: requirement)
-                        }
+                    // Icon or progress indicator
+                    if viewModel.positionHoldProgress > 0 && viewModel.positionHoldProgress < 1 {
+                        // Show progress ring when holding position
+                        Circle()
+                            .trim(from: 0, to: CGFloat(viewModel.positionHoldProgress))
+                            .stroke(Color.white, lineWidth: 20)
+                            .frame(width: 260, height: 260)
+                            .rotationEffect(Angle(degrees: -90))
+                            .animation(.linear(duration: 0.1), value: viewModel.positionHoldProgress)
                     }
-                    .padding(.horizontal, 20)
+                    
+                    // Center icon
+                    Image(systemName: positionIcon)
+                        .font(.system(size: 120))
+                        .foregroundColor(.white)
+                        .shadow(radius: 10)
                 }
                 
-                // Exercise-specific tips
-                ExercisePositionTips(exerciseType: exerciseType)
-                    .padding(.horizontal, 30)
+                // Large simple text
+                Text(viewModel.simpleVisualFeedback)
+                    .font(.system(size: 48, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .shadow(radius: 5)
+                    .padding(.horizontal, 40)
+                
+                // Smaller detail text (if needed)
+                if showDetailText {
+                    Text(detailText)
+                        .font(.system(size: 24, weight: .medium))
+                        .foregroundColor(.white.opacity(0.9))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 60)
+                }
+                
+                Spacer()
+                Spacer()
             }
-            .padding(.bottom, 50)
+        }
+    }
+    
+    var backgroundGradient: LinearGradient {
+        let colors: [Color] = {
+            switch viewModel.positionQuality {
+            case .notDetected:
+                return [Color.gray, Color.gray.opacity(0.7)]
+            case .poor:
+                return [Color.red, Color.red.opacity(0.7)]
+            case .fair:
+                return [Color.yellow.opacity(0.8), Color.orange.opacity(0.8)]
+            case .good, .perfect:
+                return [Color.green, Color.green.opacity(0.7)]
+            }
+        }()
+        
+        return LinearGradient(
+            gradient: Gradient(colors: colors),
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    var positionIcon: String {
+        switch viewModel.positionQuality {
+        case .notDetected:
+            return "person.fill.questionmark"
+        case .poor:
+            return "arrow.down.circle.fill"
+        case .fair:
+            return "arrow.triangle.2.circlepath"
+        case .good:
+            return "checkmark.circle"
+        case .perfect:
+            return "star.circle.fill"
+        }
+    }
+    
+    var showDetailText: Bool {
+        switch viewModel.positionQuality {
+        case .poor, .fair:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    var detailText: String {
+        switch viewModel.positionQuality {
+        case .poor(let reason):
+            return reason
+        case .fair(let adjustment):
+            return adjustment
+        default:
+            return ""
         }
     }
 }

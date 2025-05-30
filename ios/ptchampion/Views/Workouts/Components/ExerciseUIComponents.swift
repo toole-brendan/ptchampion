@@ -218,44 +218,66 @@ struct ExercisePositionTips: View {
 struct PositionConfirmedView: View {
     let exerciseType: ExerciseType
     @State private var checkmarkScale: CGFloat = 0.5
+    @State private var ringScale: CGFloat = 0.8
     
     var body: some View {
-        VStack(spacing: 30) {
-            Spacer()
+        ZStack {
+            // Full screen green gradient
+            LinearGradient(
+                gradient: Gradient(colors: [Color.green.opacity(0.8), Color.green.opacity(0.5)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
-            // Large checkmark animation
-            ZStack {
-                Circle()
-                    .fill(Color.green)
-                    .frame(width: 120, height: 120)
+            VStack(spacing: 40) {
+                Spacer()
                 
-                Image(systemName: "checkmark")
-                    .font(.system(size: 60, weight: .bold))
-                    .foregroundColor(.white)
-            }
-            .scaleEffect(checkmarkScale)
-            .onAppear {
-                withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
-                    checkmarkScale = 1.0
+                // Large animated checkmark
+                ZStack {
+                    // Outer animated ring
+                    Circle()
+                        .stroke(Color.white.opacity(0.3), lineWidth: 15)
+                        .frame(width: 250, height: 250)
+                        .scaleEffect(ringScale)
+                        .onAppear {
+                            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
+                                ringScale = 1.1
+                            }
+                        }
+                    
+                    // Main checkmark circle
+                    Circle()
+                        .fill(Color.white.opacity(0.2))
+                        .frame(width: 220, height: 220)
+                    
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 120, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(radius: 10)
                 }
-            }
-            
-            VStack(spacing: 15) {
-                Text("Perfect Position!")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
+                .scaleEffect(checkmarkScale)
+                .onAppear {
+                    withAnimation(.spring(response: 0.6, dampingFraction: 0.6)) {
+                        checkmarkScale = 1.0
+                    }
+                }
                 
-                Text("Get ready to start your \(exerciseType.displayName.lowercased())")
-                    .font(.title3)
-                    .foregroundColor(.white.opacity(0.8))
-                    .multilineTextAlignment(.center)
+                VStack(spacing: 20) {
+                    Text("PERFECT!")
+                        .font(.system(size: 48, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(radius: 5)
+                    
+                    Text("Starting soon...")
+                        .font(.system(size: 28, weight: .medium))
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                
+                Spacer()
+                Spacer()
             }
-            
-            Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.7))
     }
 }
 
@@ -265,48 +287,75 @@ struct CountdownView: View {
     let value: Int
     let exerciseType: ExerciseType
     @State private var scale: CGFloat = 0.5
+    @State private var opacity: Double = 0
     
     var body: some View {
-        VStack {
-            Spacer()
+        ZStack {
+            // Full screen gradient background
+            LinearGradient(
+                gradient: Gradient(colors: [exerciseType.color.opacity(0.8), exerciseType.color.opacity(0.4)]),
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
-            ZStack {
-                Circle()
-                    .stroke(exerciseType.color.opacity(0.3), lineWidth: 8)
-                    .frame(width: 200, height: 200)
+            VStack(spacing: 50) {
+                Spacer()
                 
-                Circle()
-                    .fill(exerciseType.color)
-                    .frame(width: 180, height: 180)
+                // Huge countdown number
+                ZStack {
+                    // Outer ring
+                    Circle()
+                        .stroke(Color.white.opacity(0.2), lineWidth: 20)
+                        .frame(width: 300, height: 300)
+                    
+                    // Inner filled circle
+                    Circle()
+                        .fill(Color.white.opacity(0.1))
+                        .frame(width: 280, height: 280)
+                    
+                    // The countdown number
+                    Text("\(value)")
+                        .font(.system(size: 180, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .shadow(radius: 20)
+                }
+                .scaleEffect(scale)
+                .opacity(opacity)
+                .onAppear {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                        scale = 1.0
+                        opacity = 1.0
+                    }
+                }
+                .onChange(of: value) { _, _ in
+                    // Pulse animation for each countdown change
+                    scale = 0.7
+                    opacity = 0.7
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.5)) {
+                        scale = 1.1
+                        opacity = 1.0
+                    }
+                    
+                    // Return to normal size
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                            scale = 1.0
+                        }
+                    }
+                }
                 
-                Text("\(value)")
-                    .font(.system(size: 80, weight: .bold, design: .rounded))
+                // Large "Get Ready!" text
+                Text(value == 1 ? "GET SET!" : "GET READY!")
+                    .font(.system(size: 40, weight: .bold))
                     .foregroundColor(.white)
+                    .textCase(.uppercase)
+                    .shadow(radius: 10)
+                
+                Spacer()
+                Spacer()
             }
-            .scaleEffect(scale)
-            .onAppear {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
-                    scale = 1.0
-                }
-            }
-            .onChange(of: value) { _, _ in
-                // Animate scale change for each countdown number
-                scale = 0.8
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                    scale = 1.0
-                }
-            }
-            
-            Text("Get Ready!")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.white)
-                .padding(.top, 30)
-            
-            Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black.opacity(0.8))
     }
 }
 

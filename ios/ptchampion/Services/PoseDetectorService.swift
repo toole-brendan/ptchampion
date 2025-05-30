@@ -26,6 +26,11 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
     // Orientation management
     private let orientationManager = OrientationManager.shared
     private var cancellables = Set<AnyCancellable>()
+    
+    // Smoothing support
+    private var poseHistory: [DetectedBody] = []
+    private let maxHistorySize = 3 // Average over last 3 frames
+    private let smoothingAlpha: Float = 0.7 // Weight for current frame (0.7 = 70% current, 30% history)
 
     var detectedBodyPublisher: AnyPublisher<DetectedBody?, Never> {
         detectedBodySubject.eraseToAnyPublisher()
@@ -127,6 +132,8 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
         guard let result = result, !result.landmarks.isEmpty else {
             // No pose detected in this frame – publish nil
             DispatchQueue.main.async { [weak self] in
+                // Clear pose history when no body detected to avoid ghosting
+                self?.poseHistory.removeAll()
                 self?.detectedBodySubject.send(nil)
             }
             return
@@ -222,15 +229,81 @@ class PoseDetectorService: NSObject, PoseDetectorServiceProtocol, ObservableObje
         let overallConf: Float = pointCount > 0 ? totalConfidence / Float(pointCount) : 0
         let detectedBody = DetectedBody(points: pointsDict, confidence: overallConf)
         
+        // Apply smoothing to reduce jumpiness
+        let smoothedBody = smoothPose(detectedBody)
+        
         // Publish the detected body on the main thread
         DispatchQueue.main.async { [weak self] in
-            self?.detectedBodySubject.send(detectedBody)
+            self?.detectedBodySubject.send(smoothedBody)
         }
+    }
+
+    // MARK: - Smoothing
+    private func smoothPose(_ currentBody: DetectedBody) -> DetectedBody {
+        // Add current pose to history
+        poseHistory.append(currentBody)
+        
+        // Maintain history size
+        if poseHistory.count > maxHistorySize {
+            poseHistory.removeFirst()
+        }
+        
+        // If not enough history, return current pose
+        if poseHistory.count < 2 {
+            return currentBody
+        }
+        
+        // Apply exponential moving average smoothing
+        var smoothedPoints: [VNHumanBodyPoseObservation.JointName: DetectedPoint] = [:]
+        
+        for (jointName, currentPoint) in currentBody.points {
+            // Get historical positions for this joint
+            var historicalX: CGFloat = 0
+            var historicalY: CGFloat = 0
+            var historicalConfidence: Float = 0
+            var validHistoryCount = 0
+            
+            // Calculate average of historical positions (excluding current)
+            for i in 0..<(poseHistory.count - 1) {
+                if let historicalPoint = poseHistory[i].points[jointName] {
+                    historicalX += historicalPoint.location.x
+                    historicalY += historicalPoint.location.y
+                    historicalConfidence += historicalPoint.confidence
+                    validHistoryCount += 1
+                }
+            }
+            
+            if validHistoryCount > 0 {
+                // Calculate historical average
+                historicalX /= CGFloat(validHistoryCount)
+                historicalY /= CGFloat(validHistoryCount)
+                historicalConfidence /= Float(validHistoryCount)
+                
+                // Apply exponential smoothing
+                let smoothedX = CGFloat(smoothingAlpha) * currentPoint.location.x + CGFloat(1 - smoothingAlpha) * historicalX
+                let smoothedY = CGFloat(smoothingAlpha) * currentPoint.location.y + CGFloat(1 - smoothingAlpha) * historicalY
+                let smoothedConfidence = smoothingAlpha * currentPoint.confidence + (1 - smoothingAlpha) * historicalConfidence
+                
+                smoothedPoints[jointName] = DetectedPoint(
+                    name: jointName,
+                    location: CGPoint(x: smoothedX, y: smoothedY),
+                    confidence: smoothedConfidence
+                )
+            } else {
+                // No history, use current point
+                smoothedPoints[jointName] = currentPoint
+            }
+        }
+        
+        return DetectedBody(points: smoothedPoints, confidence: currentBody.confidence)
     }
 
     deinit {
         // Clear poseLandmarker
         poseLandmarker = nil
+        
+        // Clear pose history
+        poseHistory.removeAll()
         
         // Clear references
         detectedBodySubject.send(nil)
