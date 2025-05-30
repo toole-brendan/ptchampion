@@ -12,88 +12,72 @@ struct PNGOverlayView: View {
         GeometryReader { geometry in
             ZStack {
                 if let image = exerciseImage {
-                    // Main overlay image - Fit with scale for larger size
+                    // Main overlay image - Centered properly for landscape
                     Image(uiImage: image)
                         .resizable()
-                        .aspectRatio(contentMode: .fit)  // Prevent cutoff
-                        .scaleEffect(exerciseScale)  // Scale up to make larger
+                        .aspectRatio(contentMode: .fit)
+                        .scaleEffect(exerciseScale)
                         .opacity(opacity)
-                        .padding(exercisePadding)  // Small padding
-                        .frame(width: geometry.size.width,
-                               height: geometry.size.height)
+                        .frame(width: geometry.size.width * frameWidthMultiplier,
+                               height: geometry.size.height * frameHeightMultiplier)
                         .position(x: geometry.size.width / 2,
-                                  y: geometry.size.height / 2 + verticalOffset(for: geometry.size.height))
+                                  y: geometry.size.height / 2) // Always centered, no offset
                         .scaleEffect(x: isFlipped ? -1 : 1, y: 1)
                         .allowsHitTesting(false)
-                        .clipped()
                         .overlay(
                             // Add a subtle glow effect for better visibility
                             Image(uiImage: image)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
-                                .scaleEffect(exerciseScale)  // Same scale for glow
-                                .padding(exercisePadding)
-                                .frame(width: geometry.size.width,
-                                       height: geometry.size.height)
+                                .scaleEffect(exerciseScale)
+                                .frame(width: geometry.size.width * frameWidthMultiplier,
+                                       height: geometry.size.height * frameHeightMultiplier)
                                 .blur(radius: 25)
-                                .opacity(opacity * 0.2)
+                                .opacity(opacity * 0.3) // Increased glow for better visibility
                                 .scaleEffect(x: isFlipped ? -1 : 1, y: 1)
                                 .allowsHitTesting(false)
-                                .clipped()
-                        )
-                        .position(x: geometry.size.width / 2,
-                                  y: geometry.size.height / 2 + verticalOffset(for: geometry.size.height))
-                        .background(
-                            GeometryReader { imageGeometry in
-                                Color.clear
-                                    .onAppear {
-                                        imageSize = imageGeometry.size
-                                    }
-                            }
                         )
                 }
             }
         }
     }
     
-    // Vertical offset to center certain exercises better
-    private func verticalOffset(for screenHeight: CGFloat) -> CGFloat {
+    // Frame multipliers for better landscape centering
+    private var frameWidthMultiplier: CGFloat {
         switch exerciseType {
-        case .pushup:
-            return -screenHeight * 0.20  // Move up by 20% of screen height (negative is up)
+        case .pushup, .situp:
+            return 0.7 // Use 70% of screen width for better visibility
+        case .pullup:
+            return 0.5 // Pullup is more vertical
         default:
-            return 0
+            return 0.6
         }
     }
     
-    // Scale factor to make images larger while still fitting
+    private var frameHeightMultiplier: CGFloat {
+        switch exerciseType {
+        case .pushup, .situp:
+            return 0.8 // Use 80% of screen height
+        case .pullup:
+            return 0.9 // Pullup uses more vertical space
+        default:
+            return 0.8
+        }
+    }
+    
+    // Scale factor adjusted for better visibility
     private var exerciseScale: CGFloat {
         switch exerciseType {
         case .pushup:
-            return 1.65  // Scale up 65% for pushup
-        case .pullup, .situp:
-            return 1.55  // Scale up 55% for pullup and situp (with their added padding)
+            return 1.0 // No additional scaling needed with new frame logic
+        case .situp:
+            return 1.0
+        case .pullup:
+            return 1.1 // Slightly larger for pullup
         case .run:
-            return 1.60
+            return 1.0
         case .unknown:
-            return 1.60
-        }
-    }
-    
-    // Add minimal padding
-    private var exercisePadding: EdgeInsets {
-        switch exerciseType {
-        case .pushup:
-            // Pushup already has visual padding in the image, so use very minimal padding
-            return EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)
-        case .pullup, .situp:
-            // Pullup and situp need a bit more padding to match pushup appearance
-            return EdgeInsets(top: 15, leading: 15, bottom: 15, trailing: 15)
-        case .run:
-            // Running uses moderate padding
-            return EdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
-        case .unknown:
-            return EdgeInsets(top: 10, leading: 10, bottom: 10, trailing: 10)
+            return 1.0
         }
     }
     

@@ -81,9 +81,13 @@ struct AutoPositionOverlay: View {
             VStack {
                 // Position the instruction box at the top
                 if workoutState == .waitingForPosition && (isInLandscape || !requiresLandscape) {
-                    // Place instruction at very top
-                    landscapeWaitingForPositionContent
-                        .padding(.top, 5) // Minimal padding from top edge
+                    // Place instruction at very top center
+                    HStack {
+                        Spacer()
+                        landscapeWaitingForPositionContent
+                            .padding(.top, 20) // Increased from 5 for better visibility
+                        Spacer()
+                    }
                     
                     Spacer()
                     
@@ -91,10 +95,10 @@ struct AutoPositionOverlay: View {
                     if (exerciseType == .pushup || exerciseType == .situp) {
                         HStack {
                             flipToggleButton
-                                .padding(.leading, 20)
+                                .padding(.leading, 40) // Increased from 20
                             Spacer()
                         }
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 40) // Increased from 20
                     }
                 } else {
                     // Center other content

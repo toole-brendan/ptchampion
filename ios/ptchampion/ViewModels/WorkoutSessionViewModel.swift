@@ -484,7 +484,7 @@ class WorkoutSessionViewModel: ObservableObject {
         self.countdownValue = countdown
         self.workoutState = .countdown
         
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+        Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { [weak self] timer in
             guard let self = self else {
                 timer.invalidate()
                 return
@@ -540,7 +540,7 @@ class WorkoutSessionViewModel: ObservableObject {
         // TODO: Re-enable auto position detection once module compilation issues are resolved
         // For now, automatically transition to position detected after a short delay
         if workoutState == .waitingForPosition {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
                 guard let self = self, self.workoutState == .waitingForPosition else { return }
                 self.handlePositionDetected()
             }

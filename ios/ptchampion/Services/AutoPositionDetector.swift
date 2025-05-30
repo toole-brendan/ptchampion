@@ -10,7 +10,7 @@ class AutoPositionDetector: ObservableObject {
     @Published var timeInCorrectPosition: TimeInterval = 0.0
     
     private var positionStartTime: Date?
-    private let requiredHoldDuration: TimeInterval = 2.0
+    private let requiredHoldDuration: TimeInterval = 1.5
     
     enum PositionStatus {
         case notDetected
@@ -45,133 +45,230 @@ class AutoPositionDetector: ObservableObject {
         updatePositionState(analysis)
     }
     
-    // MARK: - Push-up Position Analysis
+    // MARK: - Push-up Position Analysis (More Forgiving)
     private func analyzePushupPosition(_ body: DetectedBody) -> PositionAnalysis {
-        // Get required joints using 2D points, not 3D vectors
-        guard let leftShoulder = body.point(.leftShoulder),
-              let leftElbow = body.point(.leftElbow),
-              let leftWrist = body.point(.leftWrist),
-              let rightShoulder = body.point(.rightShoulder),
-              let rightElbow = body.point(.rightElbow),
-              let rightWrist = body.point(.rightWrist) else {
-            return PositionAnalysis(isCorrect: false, quality: 0.0, feedback: "Can't see your arms clearly")
+        // Check basic visibility first - more forgiving
+        let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
+            .leftShoulder, .rightShoulder,
+            .leftElbow, .rightElbow,
+            .leftWrist, .rightWrist
+        ]
+        
+        var visibleJoints = 0
+        for joint in keyJoints {
+            if let point = body.point(joint), point.confidence > 0.4 { // Lowered from implicit higher threshold
+                visibleJoints += 1
+            }
         }
         
-        // Calculate elbow angles using 2D coordinates
-        let leftElbowAngle = calculateAngle2D(
-            pointA: leftShoulder.location,
-            pointB: leftElbow.location,
-            pointC: leftWrist.location
-        )
-        
-        let rightElbowAngle = calculateAngle2D(
-            pointA: rightShoulder.location,
-            pointB: rightElbow.location,
-            pointC: rightWrist.location
-        )
-        
-        // Check if arms are extended (starting position)
-        let targetAngle: CGFloat = 160.0
-        let leftArmExtended = leftElbowAngle >= targetAngle
-        let rightArmExtended = rightElbowAngle >= targetAngle
-        
-        var quality: Float = 0.0
-        var feedback = ""
-        
-        if leftArmExtended && rightArmExtended {
-            quality = 1.0
-            feedback = "Perfect! Hold this position"
-        } else {
-            quality = Float(min(leftElbowAngle, rightElbowAngle) / targetAngle)
-            feedback = "Extend your arms fully"
+        // If we can't see enough joints, give helpful feedback
+        if visibleJoints < 4 { // Only need 4 out of 6 key joints
+            return PositionAnalysis(
+                isCorrect: false,
+                quality: Float(visibleJoints) / 6.0,
+                feedback: "Move into full view of camera"
+            )
         }
         
+        // Get available joints for angle calculation
+        let leftShoulder = body.point(.leftShoulder)
+        let leftElbow = body.point(.leftElbow)
+        let leftWrist = body.point(.leftWrist)
+        let rightShoulder = body.point(.rightShoulder)
+        let rightElbow = body.point(.rightElbow)
+        let rightWrist = body.point(.rightWrist)
+        
+        // Calculate angles if we have enough data (use available side)
+        var hasGoodPosition = false
+        var quality: Float = 0.5 // Start with base quality for being visible
+        var feedback = "Get into push-up position"
+        
+        // Check left side if available
+        if let ls = leftShoulder, let le = leftElbow, let lw = leftWrist {
+            let leftElbowAngle = calculateAngle2D(
+                pointA: ls.location,
+                pointB: le.location,
+                pointC: lw.location
+            )
+            
+            // Much more forgiving angle requirements
+            let targetAngle: CGFloat = 140.0 // Reduced from 160.0
+            let tolerance: CGFloat = 30.0 // Increased tolerance
+            
+            if leftElbowAngle >= targetAngle - tolerance {
+                hasGoodPosition = true
+                quality = Float(min(1.0, leftElbowAngle / targetAngle))
+                feedback = quality > 0.8 ? "Great! Hold position" : "Almost there!"
+            } else {
+                quality = Float(max(0.3, leftElbowAngle / targetAngle))
+                feedback = "Extend your arms a bit more"
+            }
+        }
+        
+        // Check right side if left wasn't good enough
+        if !hasGoodPosition, let rs = rightShoulder, let re = rightElbow, let rw = rightWrist {
+            let rightElbowAngle = calculateAngle2D(
+                pointA: rs.location,
+                pointB: re.location,
+                pointC: rw.location
+            )
+            
+            let targetAngle: CGFloat = 140.0
+            let tolerance: CGFloat = 30.0
+            
+            if rightElbowAngle >= targetAngle - tolerance {
+                hasGoodPosition = true
+                quality = Float(min(1.0, rightElbowAngle / targetAngle))
+                feedback = quality > 0.8 ? "Great! Hold position" : "Almost there!"
+            }
+        }
+        
+        // Accept position if quality is above 60%
         return PositionAnalysis(
-            isCorrect: leftArmExtended && rightArmExtended,
+            isCorrect: quality >= 0.6, // Reduced from implicit higher threshold
             quality: quality,
             feedback: feedback
         )
     }
     
-    // MARK: - Sit-up Position Analysis
+    // MARK: - Sit-up Position Analysis (More Forgiving)
     private func analyzeSitupPosition(_ body: DetectedBody) -> PositionAnalysis {
-        guard let leftShoulder = body.point(.leftShoulder),
-              let leftHip = body.point(.leftHip),
-              let leftKnee = body.point(.leftKnee),
-              let leftAnkle = body.point(.leftAnkle) else {
-            return PositionAnalysis(isCorrect: false, quality: 0.0, feedback: "Position your full body in frame")
+        // Basic visibility check
+        let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
+            .leftShoulder, .leftHip, .leftKnee
+        ]
+        
+        var visibleJoints = 0
+        for joint in keyJoints {
+            if let point = body.point(joint), point.confidence > 0.4 {
+                visibleJoints += 1
+            }
         }
         
-        // Check if lying down (shoulders below hips)
-        let isLyingDown = leftShoulder.location.y > leftHip.location.y
-        
-        // Check knee bend
-        let kneeAngle = calculateAngle2D(
-            pointA: leftHip.location,
-            pointB: leftKnee.location,
-            pointC: leftAnkle.location
-        )
-        
-        let kneesBent = kneeAngle >= 80 && kneeAngle <= 100
-        
-        var quality: Float = 0.0
-        var feedback = ""
-        
-        if isLyingDown && kneesBent {
-            quality = 1.0
-            feedback = "Perfect position! Hold steady"
-        } else if !isLyingDown {
-            quality = 0.3
-            feedback = "Lie down on your back"
-        } else if !kneesBent {
-            quality = 0.7
-            feedback = "Bend your knees to 90 degrees"
+        if visibleJoints < 2 { // Only need 2 out of 3
+            return PositionAnalysis(
+                isCorrect: false,
+                quality: Float(visibleJoints) / 3.0,
+                feedback: "Position your full body in frame"
+            )
         }
         
+        let leftShoulder = body.point(.leftShoulder)
+        let leftHip = body.point(.leftHip)
+        let leftKnee = body.point(.leftKnee)
+        let leftAnkle = body.point(.leftAnkle)
+        
+        var quality: Float = 0.5
+        var feedback = "Lie on your back with knees bent"
+        var isCorrect = false
+        
+        // Check if roughly lying down (shoulders should be somewhat below or level with hips)
+        if let shoulder = leftShoulder, let hip = leftHip {
+            let isLyingDown = shoulder.location.y >= hip.location.y - 0.1 // More forgiving
+            
+            if isLyingDown {
+                quality = 0.7
+                feedback = "Good position!"
+                isCorrect = true
+                
+                // Check knee bend if possible (optional enhancement)
+                if let knee = leftKnee, let ankle = leftAnkle {
+                    let kneeAngle = calculateAngle2D(
+                        pointA: hip.location,
+                        pointB: knee.location,
+                        pointC: ankle.location
+                    )
+                    
+                    // Very forgiving knee angle range
+                    if kneeAngle >= 60 && kneeAngle <= 120 {
+                        quality = 0.9
+                        feedback = "Perfect! Hold position"
+                    } else {
+                        quality = 0.75
+                        feedback = "Good! Adjust knees if comfortable"
+                    }
+                }
+            } else {
+                quality = 0.4
+                feedback = "Lie down on your back"
+                isCorrect = false
+            }
+        }
+        
+        // Accept position if quality is above 60%
         return PositionAnalysis(
-            isCorrect: isLyingDown && kneesBent,
+            isCorrect: quality >= 0.6,
             quality: quality,
             feedback: feedback
         )
     }
     
-    // MARK: - Pull-up Position Analysis
+    // MARK: - Pull-up Position Analysis (More Forgiving)
     private func analyzePullupPosition(_ body: DetectedBody) -> PositionAnalysis {
-        guard let leftShoulder = body.point(.leftShoulder),
-              let leftElbow = body.point(.leftElbow),
-              let leftWrist = body.point(.leftWrist),
-              let leftHip = body.point(.leftHip) else {
-            return PositionAnalysis(isCorrect: false, quality: 0.0, feedback: "Position yourself in frame")
+        // Basic visibility check for upper body
+        let keyJoints: [VNHumanBodyPoseObservation.JointName] = [
+            .leftShoulder, .leftElbow, .leftWrist
+        ]
+        
+        var visibleJoints = 0
+        for joint in keyJoints {
+            if let point = body.point(joint), point.confidence > 0.4 {
+                visibleJoints += 1
+            }
         }
         
-        // Check if hands are above shoulders (hanging position)
-        let handsAboveShoulders = leftWrist.location.y < leftShoulder.location.y
-        
-        // Check arm extension (dead hang)
-        let armAngle = calculateAngle2D(
-            pointA: leftShoulder.location,
-            pointB: leftElbow.location,
-            pointC: leftWrist.location
-        )
-        
-        let armsExtended = armAngle >= 160
-        
-        var quality: Float = 0.0
-        var feedback = ""
-        
-        if handsAboveShoulders && armsExtended {
-            quality = 1.0
-            feedback = "Perfect dead hang! Hold position"
-        } else if !handsAboveShoulders {
-            quality = 0.2
-            feedback = "Grab the bar and hang"
-        } else if !armsExtended {
-            quality = 0.7
-            feedback = "Extend your arms fully"
+        if visibleJoints < 2 {
+            return PositionAnalysis(
+                isCorrect: false,
+                quality: Float(visibleJoints) / 3.0,
+                feedback: "Position yourself in frame"
+            )
         }
         
+        let leftShoulder = body.point(.leftShoulder)
+        let leftElbow = body.point(.leftElbow)
+        let leftWrist = body.point(.leftWrist)
+        
+        var quality: Float = 0.5
+        var feedback = "Hang from the bar"
+        var isCorrect = false
+        
+        // Check if hands are roughly above shoulders (hanging position)
+        if let shoulder = leftShoulder, let wrist = leftWrist {
+            let handsAboveShoulders = wrist.location.y <= shoulder.location.y + 0.1 // More forgiving
+            
+            if handsAboveShoulders {
+                quality = 0.7
+                feedback = "Good hang position!"
+                isCorrect = true
+                
+                // Check arm extension if elbow is visible (optional)
+                if let elbow = leftElbow {
+                    let armAngle = calculateAngle2D(
+                        pointA: shoulder.location,
+                        pointB: elbow.location,
+                        pointC: wrist.location
+                    )
+                    
+                    // More forgiving arm extension
+                    if armAngle >= 140 { // Reduced from 160
+                        quality = 0.9
+                        feedback = "Perfect dead hang!"
+                    } else if armAngle >= 120 {
+                        quality = 0.75
+                        feedback = "Good! Extend arms if comfortable"
+                    }
+                }
+            } else {
+                quality = 0.3
+                feedback = "Grab the bar above you"
+                isCorrect = false
+            }
+        }
+        
+        // Accept position if quality is above 60%
         return PositionAnalysis(
-            isCorrect: handsAboveShoulders && armsExtended,
+            isCorrect: quality >= 0.6,
             quality: quality,
             feedback: feedback
         )
