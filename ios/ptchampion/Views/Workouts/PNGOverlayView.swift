@@ -46,22 +46,22 @@ struct PNGOverlayView: View {
     private var frameWidthMultiplier: CGFloat {
         switch exerciseType {
         case .pushup, .situp:
-            return 0.7 // Use 70% of screen width for better visibility
+            return 0.85 // Increased from 0.7 to use 85% of screen width
         case .pullup:
-            return 0.5 // Pullup is more vertical
+            return 0.65 // Increased from 0.5 for pullup
         default:
-            return 0.6
+            return 0.75 // Increased from 0.6
         }
     }
     
     private var frameHeightMultiplier: CGFloat {
         switch exerciseType {
         case .pushup, .situp:
-            return 0.8 // Use 80% of screen height
+            return 0.9 // Increased from 0.8 to use 90% of screen height
         case .pullup:
-            return 0.9 // Pullup uses more vertical space
+            return 0.95 // Increased from 0.9
         default:
-            return 0.8
+            return 0.9
         }
     }
     
@@ -69,15 +69,15 @@ struct PNGOverlayView: View {
     private var exerciseScale: CGFloat {
         switch exerciseType {
         case .pushup:
-            return 1.0 // No additional scaling needed with new frame logic
+            return 1.2 // Added 20% scale for better visibility
         case .situp:
-            return 1.0
+            return 1.2 // Added 20% scale
         case .pullup:
-            return 1.1 // Slightly larger for pullup
+            return 1.25 // Slightly more for pullup since it's vertical
         case .run:
-            return 1.0
+            return 1.15
         case .unknown:
-            return 1.0
+            return 1.15
         }
     }
     

@@ -145,6 +145,11 @@ class WorkoutSessionViewModel: ObservableObject {
     // Add a property to track if cleanup has already been performed
     private var hasPerformedCleanup: Bool = false
     
+    // Add properties for tracking position hold time
+    @Published var isInCorrectStartingPosition: Bool = false
+    private var correctPositionStartTime: Date?
+    private let requiredPositionHoldDuration: TimeInterval = 1.0 // 1 second hold
+    
     // MARK: - Initialization
     init(
         exerciseType: ExerciseType,
@@ -235,9 +240,11 @@ class WorkoutSessionViewModel: ObservableObject {
                       !isErrorState(self.workoutState),
                       self.workoutState != .finished else { return }
                 
-                // Process frames for pose detection in both ready and counting states
-                // This allows the skeleton to appear as soon as the camera starts
-                if self.workoutState == .ready || self.workoutState == .counting {
+                // Process frames for pose detection in ready, waitingForPosition, and counting states
+                // This allows the skeleton to appear immediately when waiting for position
+                if self.workoutState == .ready || 
+                   self.workoutState == .waitingForPosition || 
+                   self.workoutState == .counting {
                     self.poseDetectorService.processFrame(frame)
                 }
             }
@@ -514,8 +521,14 @@ class WorkoutSessionViewModel: ObservableObject {
                 self.currentWorkoutSessionID = UUID()
             }
             
+            // Reset the grader since we used it for position detection
             self.exerciseGrader.resetState()
             self.updateUIFromGraderState()
+            
+            // Reset position tracking
+            self.correctPositionStartTime = nil
+            self.positionHoldProgress = 0.0
+            self.isInCorrectStartingPosition = false
             
             // Start real-time feedback with calibration data
             print("DEBUG: [WorkoutSessionViewModel] Starting real-time feedback with calibration: \(self.calibrationData != nil)")
@@ -537,14 +550,95 @@ class WorkoutSessionViewModel: ObservableObject {
     
     /// Handles auto position detection during waitingForPosition state
     private func handleAutoPositionDetection(body: DetectedBody) {
-        // TODO: Re-enable auto position detection once module compilation issues are resolved
-        // For now, automatically transition to position detected after a short delay
-        if workoutState == .waitingForPosition {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
-                guard let self = self, self.workoutState == .waitingForPosition else { return }
-                self.handlePositionDetected()
+        guard workoutState == .waitingForPosition else { return }
+        
+        // Use the exercise grader to check if user is in correct starting position
+        let gradingResult = exerciseGrader.gradePose(body: body)
+        
+        // For pushups, check if they're in the "up" position with arms extended
+        var isCorrectPosition = false
+        
+        switch exerciseType {
+        case .pushup:
+            // Check if in starting position (arms extended, body straight)
+            if case .inProgress(let phase) = gradingResult,
+               let phase = phase,
+               phase.lowercased().contains("up") || phase.lowercased().contains("extend") {
+                // Additional check for good form - no major form issues
+                if exerciseGrader.lastFormIssue == nil || 
+                   (exerciseGrader.lastFormIssue?.lowercased().contains("lower") ?? false) {
+                    isCorrectPosition = true
+                    feedbackMessage = "Perfect! Hold this position..."
+                }
+            }
+            
+            // Check for form issues that prevent starting
+            if case .incorrectForm(let feedback) = gradingResult {
+                feedbackMessage = feedback
+                isCorrectPosition = false
+                correctPositionStartTime = nil
+                positionHoldProgress = 0.0
+            }
+            
+        case .situp:
+            // TODO: Implement situp starting position detection
+            // For now, use simple delay
+            isCorrectPosition = false
+            
+        case .pullup:
+            // TODO: Implement pullup starting position detection
+            // For now, use simple delay
+            isCorrectPosition = false
+            
+        default:
+            isCorrectPosition = false
+        }
+        
+        // Update position tracking
+        if isCorrectPosition {
+            if correctPositionStartTime == nil {
+                correctPositionStartTime = Date()
+                feedbackMessage = "Hold this position..."
+            }
+            
+            // Calculate how long position has been held
+            let timeHeld = Date().timeIntervalSince(correctPositionStartTime ?? Date())
+            positionHoldProgress = Float(min(timeHeld / requiredPositionHoldDuration, 1.0))
+            
+            // If held long enough, trigger position detected
+            if timeHeld >= requiredPositionHoldDuration {
+                handlePositionDetected()
+                correctPositionStartTime = nil
+                positionHoldProgress = 0.0
+            }
+        } else {
+            // Reset if position is lost
+            correctPositionStartTime = nil
+            positionHoldProgress = 0.0
+            
+            // Provide helpful feedback based on phase
+            if !isCorrectPosition {
+                switch exerciseType {
+                case .pushup:
+                    // Use grader's feedback if available, otherwise generic
+                    if feedbackMessage.isEmpty || feedbackMessage == "Get into starting position" {
+                        feedbackMessage = "Get into push-up position with arms extended"
+                    }
+                    // If the grader says to lower body, they're in up position but not starting position
+                    if feedbackMessage.lowercased().contains("lower") {
+                        feedbackMessage = "Keep arms fully extended to start"
+                    }
+                case .situp:
+                    feedbackMessage = "Lie on your back with knees bent"
+                case .pullup:
+                    feedbackMessage = "Hang from the bar with arms extended"
+                default:
+                    feedbackMessage = "Get into starting position"
+                }
             }
         }
+        
+        isInCorrectStartingPosition = isCorrectPosition
     }
     
     /// Process detected body and convert to landmarks for position analysis

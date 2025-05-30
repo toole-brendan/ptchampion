@@ -29,27 +29,17 @@ struct AutoPositionOverlay: View {
     
     // Control PNG visibility based on state
     private var showPNGOverlay: Bool {
-        // Only show overlay if we're in landscape AND in the right state
-        // For pull-ups, we can show it even in portrait
-        guard requiresLandscape ? isInLandscape : true else { return false }
-        
-        switch workoutState {
-        case .waitingForPosition, .positionDetected:
-            return true
-        case .ready, .countdown, .counting, .paused, .finished, .requestingPermission, .permissionDenied, .error:
-            return false
-        default:
-            return false
-        }
+        // Don't show PNG overlay anymore - we're using live skeleton instead
+        return false
     }
     
     // Animate PNG opacity
     private var pngOpacity: Double {
         switch workoutState {
         case .waitingForPosition:
-            return 0.8 // Increased from 0.5 to make it more visible
+            return 0.7 // Slightly reduced from 0.8 since overlays are now larger
         case .positionDetected:
-            return 0.5 // Increased from 0.3
+            return 0.4 // Slightly reduced from 0.5
         default:
             return 0.0
         }
@@ -91,15 +81,7 @@ struct AutoPositionOverlay: View {
                     
                     Spacer()
                     
-                    // Add flip toggle button at bottom for pushups and situps
-                    if (exerciseType == .pushup || exerciseType == .situp) {
-                        HStack {
-                            flipToggleButton
-                                .padding(.leading, 40) // Increased from 20
-                            Spacer()
-                        }
-                        .padding(.bottom, 40) // Increased from 20
-                    }
+                    // No flip toggle needed since we're using live skeleton
                 } else {
                     // Center other content
                     Spacer()
@@ -133,18 +115,6 @@ struct AutoPositionOverlay: View {
                     }
                     
                     Spacer()
-                    
-                    // Add flip toggle button at bottom for position detected state
-                    if workoutState == .positionDetected && 
-                       (exerciseType == .pushup || exerciseType == .situp) && 
-                       (isInLandscape || !requiresLandscape) {
-                        HStack {
-                            flipToggleButton
-                                .padding(.leading, 20)
-                            Spacer()
-                        }
-                        .padding(.bottom, 20)
-                    }
                 }
             }
             .padding(.horizontal, 60) // More padding for landscape
@@ -237,28 +207,70 @@ struct AutoPositionOverlay: View {
     
     // MARK: - Landscape Waiting for Position
     private var landscapeWaitingForPositionContent: some View {
-        VStack(spacing: 16) {
-            // Ultra-compact position guidance - just text
-            Text(primaryInstruction)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    Capsule()
-                        .fill(Color.black.opacity(0.7))
-                        .overlay(
-                            Capsule()
-                                .stroke(positionColor.opacity(0.5), lineWidth: 1)
-                        )
-                )
-            
-            // Only show progress indicators below if they have values  
-            // These will appear below the instruction and shouldn't overlap with pose
-            if positionHoldProgress > 0 {
-                LargePositionHoldIndicator(progress: positionHoldProgress)
-                    .transition(.scale)
+        VStack(spacing: 20) {
+            // Instruction box with exercise-specific guidance
+            VStack(spacing: 8) {
+                Text(getExerciseInstruction())
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                // Additional hint
+                Text(getPositionHint())
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
             }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.black.opacity(0.7))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(positionColor.opacity(0.5), lineWidth: 2)
+                    )
+            )
+            .frame(maxWidth: 500)
+            
+            // Show progress indicator when holding position
+            if positionHoldProgress > 0 {
+                VStack(spacing: 8) {
+                    Text("Hold steady!")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.green)
+                    
+                    LargePositionHoldIndicator(progress: positionHoldProgress)
+                }
+                .transition(.scale)
+            }
+        }
+    }
+    
+    // Helper methods for exercise-specific instructions
+    private func getExerciseInstruction() -> String {
+        switch exerciseType {
+        case .pushup:
+            return "Get into push-up position with arms fully extended"
+        case .situp:
+            return "Lie on your back with knees bent at 90°"
+        case .pullup:
+            return "Hang from the bar with arms fully extended"
+        default:
+            return primaryInstruction
+        }
+    }
+    
+    private func getPositionHint() -> String {
+        switch exerciseType {
+        case .pushup:
+            return "Keep your body straight from head to heels"
+        case .situp:
+            return "Cross your arms over your chest"
+        case .pullup:
+            return "Use a dead hang position"
+        default:
+            return "Position yourself for the exercise"
         }
     }
     
@@ -450,7 +462,7 @@ struct LargePositionHoldIndicator: View {
                         .font(.system(size: 24, weight: .bold))
                         .foregroundColor(.white)
                     
-                    Text("2 sec")
+                    Text("1 sec")
                         .font(.system(size: 14))
                         .foregroundColor(.white.opacity(0.7))
                 }
