@@ -125,7 +125,7 @@ jobs:
 
       - name: Extract metadata for Docker
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: ${{ env.ACR_NAME }}.azurecr.io/ptchampion-api
           tags: |
