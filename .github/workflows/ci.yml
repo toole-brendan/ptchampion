@@ -215,7 +215,7 @@ jobs:
       
       - name: Publish to Chromatic
         if: github.event_name == 'pull_request'
-        uses: chromaui/action@v1
+        uses: chromaui/action@v12
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           token: ${{ secrets.GITHUB_TOKEN }}
