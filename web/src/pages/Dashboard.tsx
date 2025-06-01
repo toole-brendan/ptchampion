@@ -101,14 +101,9 @@ const Dashboard: React.FC = () => {
   // Set username in context when it changes
   useEffect(() => {
     if (user && setUserName) {
-      let displayText = 'Hello';
-      
-      if (user.username) {
-        const usernameWithoutSpecialChars = user.username.replace(/[^a-zA-Z0-9]/g, ' ');
-        displayText = `Hello, ${usernameWithoutSpecialChars}`;
-      }
-      
-      setUserName(displayText);
+      // Use same logic as iOS: firstName → username → "User"
+      const displayName = user.first_name || user.username || 'User';
+      setUserName(displayName);
     }
   }, [user, setUserName]);
   
@@ -132,10 +127,10 @@ const Dashboard: React.FC = () => {
     );
   }
 
-  // Format display name properly
+  // Format display name properly - same logic as iOS: firstName → username → "User"
   const formatDisplayName = () => {
-    if (!user) return 'Soldier';
-    return user.username || 'Soldier';
+    if (!user) return 'User';
+    return user.first_name || user.username || 'User';
   };
   
   // Format the last workout date

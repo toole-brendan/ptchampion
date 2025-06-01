@@ -32,10 +32,8 @@ const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
 const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
   const location = useLocation();
   
-  // Extract the actual username if it has "Hello, " prefix
-  const actualUsername = username.startsWith('Hello, ') 
-    ? username.substring(7) // Remove "Hello, " prefix
-    : username;
+  // Username is now just the display name (no "Hello, " prefix)
+  const actualUsername = username;
   
   const userInitial = actualUsername ? actualUsername.charAt(0).toUpperCase() : '?';
   
