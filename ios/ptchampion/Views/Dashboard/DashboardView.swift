@@ -647,6 +647,8 @@ struct DashboardView: View {
             return "pushup"
         case "situp":
             return "situp"
+        case "plank":           // NEW: Add plank image mapping
+            return "plank"
         case "pullup":
             return "pullup"
         case "run", "running":
