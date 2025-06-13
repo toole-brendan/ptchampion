@@ -85,8 +85,9 @@ class RunWorkoutViewModel: ObservableObject {
     private var lastSampleTime: Date?
 
     // Constants
-    private let metersToMiles = 0.000621371
-    private let metersToKilometers = 0.001
+    private let milesPerMeter = 0.000621371
+    private let kilometersPerMeter = 0.001
+    private let goalDistanceMeters = 4828.03  // 3 miles in meters for USMC PFT
     
     // Sample collection settings
     private let sampleIntervalSeconds: TimeInterval = 5 // Collect detailed samples every 5 seconds
@@ -440,7 +441,7 @@ class RunWorkoutViewModel: ObservableObject {
          self.locationUpdates.append(newLocation)
          
                      // Check if 3 miles (4828.03 meters) has been reached and stop the run if so
-            let goalDistanceMeters = 3.0 / metersToMiles  // USMC PFT 3-mile run
+            // Check if 3 miles has been reached and stop the run if so
             if totalDistanceMeters >= goalDistanceMeters && runState == .running {
                 print("RunWorkoutViewModel: 3 miles reached, stopping run.")
              
@@ -501,10 +502,10 @@ class RunWorkoutViewModel: ObservableObject {
 
         switch distanceUnit {
         case .miles:
-            displayValue = totalDistanceMeters * metersToMiles
+            displayValue = totalDistanceMeters * milesPerMeter
             unitLabel = "mi"
         case .kilometers:
-            displayValue = totalDistanceMeters * metersToKilometers
+            displayValue = totalDistanceMeters * kilometersPerMeter
             unitLabel = "km"
         }
         distanceFormatted = String(format: "%.2f ", max(0, displayValue)) + unitLabel
@@ -518,7 +519,7 @@ class RunWorkoutViewModel: ObservableObject {
         }
 
         let averageSpeedMetersPerSec = totalDistanceMeters / elapsedSeconds
-        let distanceFactor = distanceUnit == .miles ? metersToMiles : metersToKilometers
+        let distanceFactor = distanceUnit == .miles ? milesPerMeter : kilometersPerMeter
 
         guard averageSpeedMetersPerSec > 0.1 else {
              averagePaceFormatted = "--:-- " + unitLabel
@@ -543,7 +544,7 @@ class RunWorkoutViewModel: ObservableObject {
               return
          }
 
-         let distanceFactor = distanceUnit == .miles ? metersToMiles : metersToKilometers
+         let distanceFactor = distanceUnit == .miles ? milesPerMeter : kilometersPerMeter
          let minutesPerUnitDistance = (1.0 / 60.0) / (speed * distanceFactor)
 
          if minutesPerUnitDistance.isFinite && minutesPerUnitDistance > 0 && minutesPerUnitDistance < 60 {
@@ -719,7 +720,7 @@ class RunWorkoutViewModel: ObservableObject {
          let metadataDict: [String: Any] = [
              "source": sourceName,
              "distance_unit": distanceUnit.rawValue,
-             "auto_stopped": totalDistanceMeters >= (3.0 / metersToMiles)  // USMC 3-mile run
+             "auto_stopped": totalDistanceMeters >= goalDistanceMeters  // USMC 3-mile run
          ]
          let metadataString = try? JSONSerialization.data(withJSONObject: metadataDict)
                                      .base64EncodedString()
@@ -803,10 +804,10 @@ class RunWorkoutViewModel: ObservableObject {
 
         switch distanceUnit {
         case .kilometers:
-            value = meters * metersToKilometers
+            value = meters * kilometersPerMeter
             unitString = "km"
         case .miles:
-            value = meters * metersToMiles
+            value = meters * milesPerMeter
             unitString = "mi"
         }
         return String(format: "%.2f \(unitString)", value)
@@ -833,12 +834,27 @@ class RunWorkoutViewModel: ObservableObject {
     
     /// Calculate USMC PFT 3-mile run score based on elapsed seconds, age, and gender
     private func calculateRunScore(seconds: Int) -> Int {
-        // Get user age and gender from profile or use defaults
-        // TODO: Replace with actual user profile data
-        let userAge = 25  // Default age
-        let userGender = "male"  // Default gender
+        // Get user age and gender from profile
+        // TODO: Add age and gender fields to user profile for accurate USMC PFT scoring
+        // For now, using reasonable defaults - these should be configurable in user settings
+        let userAge = getUserAge()
+        let userGender = getUserGender()
         
         return USMCPFTScoring.scoreRun(seconds: seconds, age: userAge, gender: userGender)
+    }
+    
+    /// Get user age from profile or reasonable default
+    private func getUserAge() -> Int {
+        // TODO: Implement actual age retrieval from user profile/settings
+        // This could be from UserDefaults, Core Data, or a profile service
+        return UserDefaults.standard.object(forKey: "userAge") as? Int ?? 25
+    }
+    
+    /// Get user gender from profile or reasonable default
+    private func getUserGender() -> String {
+        // TODO: Implement actual gender retrieval from user profile/settings
+        // This could be from UserDefaults, Core Data, or a profile service
+        return UserDefaults.standard.string(forKey: "userGender") ?? "male"
     }
 
     // MARK: - Deinit

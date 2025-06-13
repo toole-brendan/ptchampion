@@ -400,8 +400,8 @@ struct RunWorkoutView: View {
                     
                     Spacer()
                     
-                    // Two Mile Auto-Stop Indicator
-                    Text("Auto-Stop at 2 miles")
+                    // Three Mile Auto-Stop Indicator
+                    Text("Auto-Stop at 3 miles")
                         .font(.system(size: 12, weight: .medium))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -448,6 +448,12 @@ struct RunWorkoutView: View {
                         Text("DISTANCE")
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(AppTheme.GeneratedColors.deepOps)
+                        
+                        // Distance remaining indicator
+                        Text(distanceRemainingText)
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(AppTheme.GeneratedColors.warning)
+                            .opacity(0.8)
                     }
                     .frame(maxWidth: .infinity)
                     
@@ -777,6 +783,22 @@ struct RunWorkoutView: View {
     private var hasHeartRateData: Bool {
         return (fitnessDeviceManagerViewModel.isHealthKitAuthorized && fitnessDeviceManagerViewModel.heartRate > 0) ||
                (viewModel.currentHeartRate != nil)
+    }
+    
+    // Helper to compute distance remaining for 3-mile run
+    private var distanceRemainingText: String {
+        // Parse current distance from viewModel.distanceFormatted
+        let distanceString = viewModel.distanceFormatted.replacingOccurrences(of: " mi", with: "").replacingOccurrences(of: " km", with: "")
+        let currentDistance = Double(distanceString) ?? 0.0
+        
+        let targetDistance: Double = 3.0 // 3 miles for USMC PFT
+        let remaining = max(0, targetDistance - currentDistance)
+        
+        if remaining > 0 {
+            return String(format: "%.2f mi left", remaining)
+        } else {
+            return "Target reached!"
+        }
     }
 }
 

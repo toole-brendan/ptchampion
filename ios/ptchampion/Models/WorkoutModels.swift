@@ -24,7 +24,7 @@ enum ExerciseType: String, CaseIterable, Codable, Identifiable {
         case .pullup: return "Pull-ups"
         case .situp: return "Sit-ups"    // Keep temporarily
         case .plank: return "Plank"       // NEW: Add after .situp case
-        case .run: return "3-mile Run"    // Updated from 2-mile to 3-mile for USMC PFT
+        case .run: return "3-Mile Run"    // USMC PFT standard
         case .unknown: return "Unknown Exercise"
         }
     }
@@ -701,7 +701,7 @@ extension Workout {
             exerciseType: exerciseType,
             repetitions: repetitions,
             durationSeconds: exerciseType == .run ? 600 : nil,
-            distanceMeters: exerciseType == .run ? Decimal(3218.69) : nil, // 2 miles in meters
+            distanceMeters: exerciseType == .run ? Decimal(4828.03) : nil, // 3 miles in meters
             formScore: formScore, // Now always provided
             grade: grade,
             isPublic: false,

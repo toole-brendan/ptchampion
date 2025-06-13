@@ -143,13 +143,13 @@ struct WorkoutDetailView: View {
                     WorkoutDetailInfoRow(label: "Distance:", value: formatDistance(workoutResult.distanceMeters))
                     if isLongestRunPR { Text("🎉 Longest Run PR!").font(.caption).foregroundColor(.green).padding(.leading) }
                     
-                    // 2-mile Completion Badge
-                    let twoMilesInMeters: Double = 3218.68
-                    if let distance = workoutResult.distanceMeters, distance >= twoMilesInMeters * 0.98 && distance <= twoMilesInMeters * 1.02 {
+                    // 3-mile Completion Badge
+                    let threeMilesInMeters: Double = 4828.03
+                    if let distance = workoutResult.distanceMeters, distance >= threeMilesInMeters * 0.98 && distance <= threeMilesInMeters * 1.02 {
                         HStack {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
-                            Text("2-Mile Assessment Completed")
+                            Text("3-Mile USMC PFT Completed")
                                 .font(.callout)
                                 .foregroundColor(.green)
                         }
