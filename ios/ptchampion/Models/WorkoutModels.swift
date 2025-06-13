@@ -24,7 +24,7 @@ enum ExerciseType: String, CaseIterable, Codable, Identifiable {
         case .pullup: return "Pull-ups"
         case .situp: return "Sit-ups"    // Keep temporarily
         case .plank: return "Plank"       // NEW: Add after .situp case
-        case .run: return "2-mile Run"
+        case .run: return "3-mile Run"    // Updated from 2-mile to 3-mile for USMC PFT
         case .unknown: return "Unknown Exercise"
         }
     }

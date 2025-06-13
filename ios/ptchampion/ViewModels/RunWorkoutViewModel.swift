@@ -439,12 +439,12 @@ class RunWorkoutViewModel: ObservableObject {
          }
          self.locationUpdates.append(newLocation)
          
-         // Check if 2 miles (3218.68 meters) has been reached and stop the run if so
-         let goalDistanceMeters = 2.0 / metersToMiles
-         if totalDistanceMeters >= goalDistanceMeters && runState == .running {
-             print("RunWorkoutViewModel: 2 miles reached, stopping run.")
+                     // Check if 3 miles (4828.03 meters) has been reached and stop the run if so
+            let goalDistanceMeters = 3.0 / metersToMiles  // USMC PFT 3-mile run
+            if totalDistanceMeters >= goalDistanceMeters && runState == .running {
+                print("RunWorkoutViewModel: 3 miles reached, stopping run.")
              
-             // Trigger haptic feedback on 2-mile completion
+                             // Trigger haptic feedback on 3-mile completion
              #if os(iOS)
              let generator = UINotificationFeedbackGenerator()
              generator.notificationOccurred(.success)
@@ -719,12 +719,12 @@ class RunWorkoutViewModel: ObservableObject {
          let metadataDict: [String: Any] = [
              "source": sourceName,
              "distance_unit": distanceUnit.rawValue,
-             "auto_stopped": totalDistanceMeters >= (2.0 / metersToMiles)
+             "auto_stopped": totalDistanceMeters >= (3.0 / metersToMiles)  // USMC 3-mile run
          ]
          let metadataString = try? JSONSerialization.data(withJSONObject: metadataDict)
                                      .base64EncodedString()
          
-         // Calculate APFT run score for 17-21 male age group
+         // Calculate USMC PFT 3-mile run score
          let runScore = calculateRunScore(seconds: Int(max(0, elapsedTime)))
 
          let workoutData = InsertUserExerciseRequest(
@@ -831,9 +831,14 @@ class RunWorkoutViewModel: ObservableObject {
         return (formatter.string(from: secondsPerUnit) ?? "--:--") + " /" + unitStr
     }
     
-    /// Calculate APFT run score (0-100) for 17–21 male age group given elapsed seconds
+    /// Calculate USMC PFT 3-mile run score based on elapsed seconds, age, and gender
     private func calculateRunScore(seconds: Int) -> Int {
-        return ScoreRubrics.score(for: .run, time: seconds)
+        // Get user age and gender from profile or use defaults
+        // TODO: Replace with actual user profile data
+        let userAge = 25  // Default age
+        let userGender = "male"  // Default gender
+        
+        return USMCPFTScoring.scoreRun(seconds: seconds, age: userAge, gender: userGender)
     }
 
     // MARK: - Deinit

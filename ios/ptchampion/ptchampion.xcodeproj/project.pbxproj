@@ -135,6 +135,11 @@
 		BF7B49C52DD567C500B50FE6 /* ScreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7B49C32DD567C500B50FE6 /* ScreenLayout.swift */; };
 		BF7B49C72DD56EB600B50FE6 /* EmptyHistoryDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7B49C62DD56EB600B50FE6 /* EmptyHistoryDisplayView.swift */; };
 		BF81A5A82DFC80EB00AE96E9 /* PlankGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81A5A72DFC80EB00AE96E9 /* PlankGrader.swift */; };
+		BF81A5AA2DFC888800AE96E9 /* USMCScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81A5A92DFC888800AE96E9 /* USMCScoring.swift */; };
+		BF81A5AF2DFC889F00AE96E9 /* usmc_3mile_run_scoring.json in Resources */ = {isa = PBXBuildFile; fileRef = BF81A5AB2DFC889F00AE96E9 /* usmc_3mile_run_scoring.json */; };
+		BF81A5B02DFC889F00AE96E9 /* usmc_pullup_scoring.json in Resources */ = {isa = PBXBuildFile; fileRef = BF81A5AD2DFC889F00AE96E9 /* usmc_pullup_scoring.json */; };
+		BF81A5B12DFC889F00AE96E9 /* usmc_plank_scoring.json in Resources */ = {isa = PBXBuildFile; fileRef = BF81A5AC2DFC889F00AE96E9 /* usmc_plank_scoring.json */; };
+		BF81A5B22DFC889F00AE96E9 /* usmc_pushup_scoring.json in Resources */ = {isa = PBXBuildFile; fileRef = BF81A5AE2DFC889F00AE96E9 /* usmc_pushup_scoring.json */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -363,6 +368,11 @@
 		BF7B49C62DD56EB600B50FE6 /* EmptyHistoryDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyHistoryDisplayView.swift; sourceTree = "<group>"; };
 		BF7B49C82DD57FD200B50FE6 /* ptchampion-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "ptchampion-Info.plist"; sourceTree = "<group>"; };
 		BF81A5A72DFC80EB00AE96E9 /* PlankGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlankGrader.swift; sourceTree = "<group>"; };
+		BF81A5A92DFC888800AE96E9 /* USMCScoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USMCScoring.swift; sourceTree = "<group>"; };
+		BF81A5AB2DFC889F00AE96E9 /* usmc_3mile_run_scoring.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = usmc_3mile_run_scoring.json; sourceTree = "<group>"; };
+		BF81A5AC2DFC889F00AE96E9 /* usmc_plank_scoring.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = usmc_plank_scoring.json; sourceTree = "<group>"; };
+		BF81A5AD2DFC889F00AE96E9 /* usmc_pullup_scoring.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = usmc_pullup_scoring.json; sourceTree = "<group>"; };
+		BF81A5AE2DFC889F00AE96E9 /* usmc_pushup_scoring.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = usmc_pushup_scoring.json; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -539,6 +549,10 @@
 		BF3DA80D2DD7C5D20052E268 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				BF81A5AB2DFC889F00AE96E9 /* usmc_3mile_run_scoring.json */,
+				BF81A5AC2DFC889F00AE96E9 /* usmc_plank_scoring.json */,
+				BF81A5AD2DFC889F00AE96E9 /* usmc_pullup_scoring.json */,
+				BF81A5AE2DFC889F00AE96E9 /* usmc_pushup_scoring.json */,
 				BF3DA80C2DD7C5D20052E268 /* Fonts */,
 			);
 			path = Resources;
@@ -916,6 +930,7 @@
 		BF63E46A2DB1EBAF0037CD02 /* Grading */ = {
 			isa = PBXGroup;
 			children = (
+				BF81A5A92DFC888800AE96E9 /* USMCScoring.swift */,
 				BF81A5A72DFC80EB00AE96E9 /* PlankGrader.swift */,
 				BF59ACFA2DE1060B00242910 /* APFTRepValidator+LandscapeFix.swift */,
 				BF59ACFB2DE1060B00242910 /* APFTRepValidator+LandscapeOverride.swift */,
@@ -1102,6 +1117,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				BF4B8F7C2DDCCC5B003242E0 /* pose_landmarker_lite.task in Resources */,
+				BF81A5AF2DFC889F00AE96E9 /* usmc_3mile_run_scoring.json in Resources */,
+				BF81A5B02DFC889F00AE96E9 /* usmc_pullup_scoring.json in Resources */,
+				BF81A5B12DFC889F00AE96E9 /* usmc_plank_scoring.json in Resources */,
+				BF81A5B22DFC889F00AE96E9 /* usmc_pushup_scoring.json in Resources */,
 				BF4B8F7D2DDCCC5B003242E0 /* pose_landmarker_heavy.task in Resources */,
 				BF4B8F7E2DDCCC5B003242E0 /* pose_landmarker_full.task in Resources */,
 				BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */,
@@ -1218,6 +1237,7 @@
 				BFF57A552DE5217C00B65EFF /* PerformanceOptimizer.swift in Sources */,
 				BFF57A562DE5217C00B65EFF /* EnvironmentAnalyzer.swift in Sources */,
 				BF199EBD2DCE226E00E23EFF /* UserProfileData.swift in Sources */,
+				BF81A5AA2DFC888800AE96E9 /* USMCScoring.swift in Sources */,
 				BFADF9C72DC93E0A0016AF0B /* FeatureFlagService.swift in Sources */,
 				BFADF9C82DC93E0A0016AF0B /* UnifiedNetworkService.swift in Sources */,
 				BF8F678F2DC920D80065A2D7 /* PoseDetectionDemoView.swift in Sources */,

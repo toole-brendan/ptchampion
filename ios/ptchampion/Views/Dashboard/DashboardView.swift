@@ -31,7 +31,7 @@ struct DashboardView: View {
         ("Push-Ups", "pushup", "workout-pushups", false),
         ("Plank", "plank", "workout-plank", false),        // CHANGED: "Sit-Ups" -> "Plank", "situp" -> "plank", "workout-situps" -> "workout-plank"
         ("Pull-Ups", "pullup", "workout-pullups", false),
-        ("Two-Mile Run", "running", "workout-running", false)
+        ("Three-Mile Run", "running", "workout-running", false)  // UPDATED: "Two-Mile Run" -> "Three-Mile Run"
     ]
     
     // Rubric options for scoring criteria
@@ -39,7 +39,7 @@ struct DashboardView: View {
         ("Push-Ups", "pushup", .pushups, false),
         ("Plank", "plank", .plank, false),         // CHANGED: "Sit-Ups" -> "Plank", "situp" -> "plank", .situps -> .plank
         ("Pull-Ups", "pullup", .pullups, false),
-        ("Two-Mile Run", "running", .running, false)
+        ("Three-Mile Run", "running", .running, false)  // UPDATED: "Two-Mile Run" -> "Three-Mile Run"
     ]
     
     var body: some View {
@@ -123,7 +123,7 @@ struct DashboardView: View {
                 case .pushups:
                     PushUpsRubricView()
                 case .plank:                        // CHANGED: .situps -> .plank
-                    SitUpsRubricView()              // TEMPORARY: Reuse sit-up rubric for now, can be updated with PlankRubricView later
+                    PlankRubricView()               // UPDATED: Use PlankRubricView
                 case .pullups:
                     PullUpsRubricView()
                 case .running:
@@ -618,7 +618,7 @@ struct DashboardView: View {
         case "pullup":
             return "Pull-ups"
         case "run", "running":
-            return "Two-Mile Run"
+            return "Three-Mile Run"  // UPDATED: "Two-Mile Run" -> "Three-Mile Run"
         default:
             return type.capitalized
         }
