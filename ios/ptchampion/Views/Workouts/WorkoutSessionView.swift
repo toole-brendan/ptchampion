@@ -42,7 +42,7 @@ struct WorkoutSessionView: View {
     // MARK: - Computed Properties
     private var requiresLandscape: Bool {
         switch exerciseType {
-        case .pushup, .plank:              // CHANGED: Added .plank, removed .situp
+        case .pushup, .situp, .plank:              // All floor-based exercises require landscape
             return true
         case .pullup, .run, .unknown:
             return false

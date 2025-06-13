@@ -315,7 +315,7 @@ class WorkoutHistoryViewModel: ObservableObject {
                             if let distance = workout.distance, distance > 0 {
                                 value = distance / 1000
                             }
-                        case .pushup, .situp, .pullup:
+                        case .pushup, .situp, .pullup, .plank:
                             if let score = workout.score, score > 0 {
                                 value = score
                             } else if let reps = workout.reps, reps > 0 {
@@ -338,7 +338,7 @@ class WorkoutHistoryViewModel: ObservableObject {
                     switch self.filter {
                         case .all: newYAxisLabel = "N/A"
                         case .run: newYAxisLabel = "Distance (km)"
-                        case .pushup, .situp, .pullup:
+                        case .pushup, .situp, .pullup, .plank:
                             if newChartData.first?.value != nil {
                                  if newChartData.contains(where: { $0.value > 50 }) {
                                      newYAxisLabel = "Score"

@@ -151,7 +151,7 @@ final class PlankGrader: ObservableObject, ExerciseGraderProtocol {
         let avgAngle = (leftAngle + rightAngle) / 2
         
         // Check if both angles are within acceptable range (170-190°)
-        if avgAngle < Self.plankHipAngleMin {
+        if avgAngle < CGFloat(Self.plankHipAngleMin) {
             return (false, "Hips are dropping – raise your core", [.leftHip, .rightHip])
         }
         
@@ -170,7 +170,7 @@ final class PlankGrader: ObservableObject, ExerciseGraderProtocol {
             return (false, "Cannot detect leg position", [])
         }
         
-        if leftKneeAngle < Self.plankKneeAngleMin || rightKneeAngle < Self.plankKneeAngleMin {
+        if leftKneeAngle < CGFloat(Self.plankKneeAngleMin) || rightKneeAngle < CGFloat(Self.plankKneeAngleMin) {
             return (false, "Keep legs straight", [.leftKnee, .rightKnee])
         }
         
@@ -184,7 +184,7 @@ final class PlankGrader: ObservableObject, ExerciseGraderProtocol {
             return (false, "Cannot detect body symmetry", [])
         }
         
-        if abs(leftHipAngle - rightHipAngle) > Self.plankBodySymmetryTolerance {
+        if abs(leftHipAngle - rightHipAngle) > CGFloat(Self.plankBodySymmetryTolerance) {
             return (false, "Keep shoulders level", [.leftShoulder, .rightShoulder, .leftHip, .rightHip])
         }
         
@@ -203,7 +203,7 @@ final class PlankGrader: ObservableObject, ExerciseGraderProtocol {
         let leftOffset = abs(leftElbow.location.x - leftShoulder.location.x)
         let rightOffset = abs(rightElbow.location.x - rightShoulder.location.x)
         
-        if leftOffset > Self.plankElbowAlignmentTolerance || rightOffset > Self.plankElbowAlignmentTolerance {
+        if leftOffset > CGFloat(Self.plankElbowAlignmentTolerance) || rightOffset > CGFloat(Self.plankElbowAlignmentTolerance) {
             return (false, "Elbows under shoulders", [.leftElbow, .rightElbow, .leftShoulder, .rightShoulder])
         }
         

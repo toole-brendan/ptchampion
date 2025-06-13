@@ -66,6 +66,8 @@ struct ExercisePositionGuide: View {
             return "Hang from bar\nArms fully extended"
         case .run:
             return "Stand ready to run\nComfortable running position"
+        case .plank:
+            return "Hold plank position\nBody straight, core engaged"
         case .unknown:
             return "Position yourself for exercise"
         }
@@ -203,6 +205,12 @@ struct ExercisePositionTips: View {
                 "Maintain good posture",
                 "Keep steady pace",
                 "Stay hydrated"
+            ]
+        case .plank:
+            return [
+                "Keep your body in straight line",
+                "Engage your core muscles",
+                "Don't let hips sag or raise"
             ]
         case .unknown:
             return [

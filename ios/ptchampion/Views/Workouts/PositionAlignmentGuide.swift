@@ -45,6 +45,8 @@ struct PositionAlignmentGuide: View {
             return "Hang with arms fully extended"
         case .run:
             return "Stand upright in running position"
+        case .plank:
+            return "Keep your body straight in plank position"
         case .unknown:
             return "Follow the exercise instructions"
         }

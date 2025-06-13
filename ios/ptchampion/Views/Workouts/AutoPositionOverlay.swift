@@ -20,7 +20,7 @@ struct AutoPositionOverlay: View {
     // Add computed property to determine if landscape is required
     private var requiresLandscape: Bool {
         switch exerciseType {
-        case .pushup, .situp:
+        case .pushup, .situp, .plank:
             return true
         case .pullup, .run, .unknown:
             return false
@@ -256,6 +256,8 @@ struct AutoPositionOverlay: View {
             return "Lie on your back with knees bent at 90°"
         case .pullup:
             return "Hang from the bar with arms fully extended"
+        case .plank:
+            return "Get into plank position on your forearms"
         default:
             return primaryInstruction
         }
@@ -269,6 +271,8 @@ struct AutoPositionOverlay: View {
             return "Cross your arms over your chest"
         case .pullup:
             return "Use a dead hang position"
+        case .plank:
+            return "Keep your body straight, engage your core"
         default:
             return "Position yourself for the exercise"
         }

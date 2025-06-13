@@ -408,6 +408,28 @@ struct TargetFraming {
                 minBodyCoverage: 0.75               // Changed from 0.85
             )
             
+        case .plank:
+            return TargetFraming(
+                exercise: exercise,
+                bodyParts: [
+                    VNHumanBodyPoseObservation.JointName.leftShoulder, 
+                    VNHumanBodyPoseObservation.JointName.rightShoulder, 
+                    VNHumanBodyPoseObservation.JointName.leftElbow, 
+                    VNHumanBodyPoseObservation.JointName.rightElbow, 
+                    VNHumanBodyPoseObservation.JointName.leftWrist, 
+                    VNHumanBodyPoseObservation.JointName.rightWrist, 
+                    VNHumanBodyPoseObservation.JointName.leftHip, 
+                    VNHumanBodyPoseObservation.JointName.rightHip, 
+                    VNHumanBodyPoseObservation.JointName.leftAnkle, 
+                    VNHumanBodyPoseObservation.JointName.rightAnkle
+                ],
+                optimalDistance: 1.5,
+                acceptableDistanceRange: 1.2...2.0,
+                verticalCenterRange: 0.4...0.6,
+                horizontalCenterRange: 0.2...0.8,
+                minBodyCoverage: 0.7
+            )
+            
         case .run, .unknown:
             // Running doesn't use pose detection calibration
             return TargetFraming(

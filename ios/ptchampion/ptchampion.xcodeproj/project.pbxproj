@@ -134,6 +134,7 @@
 		BF7960F12DCFD96400B03835 /* AccountActionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7960E82DCFD96400B03835 /* AccountActionsView.swift */; };
 		BF7B49C52DD567C500B50FE6 /* ScreenLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7B49C32DD567C500B50FE6 /* ScreenLayout.swift */; };
 		BF7B49C72DD56EB600B50FE6 /* EmptyHistoryDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF7B49C62DD56EB600B50FE6 /* EmptyHistoryDisplayView.swift */; };
+		BF81A5A82DFC80EB00AE96E9 /* PlankGrader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81A5A72DFC80EB00AE96E9 /* PlankGrader.swift */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -361,6 +362,7 @@
 		BF7B49C32DD567C500B50FE6 /* ScreenLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenLayout.swift; sourceTree = "<group>"; };
 		BF7B49C62DD56EB600B50FE6 /* EmptyHistoryDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyHistoryDisplayView.swift; sourceTree = "<group>"; };
 		BF7B49C82DD57FD200B50FE6 /* ptchampion-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "ptchampion-Info.plist"; sourceTree = "<group>"; };
+		BF81A5A72DFC80EB00AE96E9 /* PlankGrader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlankGrader.swift; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -914,6 +916,7 @@
 		BF63E46A2DB1EBAF0037CD02 /* Grading */ = {
 			isa = PBXGroup;
 			children = (
+				BF81A5A72DFC80EB00AE96E9 /* PlankGrader.swift */,
 				BF59ACFA2DE1060B00242910 /* APFTRepValidator+LandscapeFix.swift */,
 				BF59ACFB2DE1060B00242910 /* APFTRepValidator+LandscapeOverride.swift */,
 				BF59ACF82DE1021900242910 /* APFTRepValidator+OrientationFix.swift */,
@@ -1179,6 +1182,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				BF63E4052DB1CF5A0037CD02 /* Enums.swift in Sources */,
+				BF81A5A82DFC80EB00AE96E9 /* PlankGrader.swift in Sources */,
 				BF63E4062DB1CF5A0037CD02 /* UserProfileModels.swift in Sources */,
 				BF59ACF12DE0E9EA00242910 /* CalibrationOverlayViews.swift in Sources */,
 				BF59ACF22DE0E9EA00242910 /* CalibrationView.swift in Sources */,

@@ -76,6 +76,8 @@ struct PNGOverlayView: View {
             return 1.25 // Slightly more for pullup since it's vertical
         case .run:
             return 1.15
+        case .plank:
+            return 1.2 // Same as pushup since similar position
         case .unknown:
             return 1.15
         }
@@ -103,6 +105,8 @@ struct PNGOverlayView: View {
             return UIImage(named: "pullup") ?? UIImage(named: "pullup_position")
         case .run:
             return UIImage(named: "running") ?? UIImage(named: "run_position")
+        case .plank:
+            return UIImage(named: "plank") ?? UIImage(named: "plank_position")
         case .unknown:
             return nil
         }

@@ -21,7 +21,7 @@ struct EnhancedExerciseOverlay: View {
         switch exerciseType {
         case .pushup, .plank:              // CHANGED: Added .plank, removed .situp
             return true
-        case .pullup, .run, .unknown:
+        case .situp, .pullup, .run, .unknown:
             return false
         }
     }
