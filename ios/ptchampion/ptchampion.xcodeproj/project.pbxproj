@@ -34,7 +34,6 @@
 		BF4B8F7E2DDCCC5B003242E0 /* pose_landmarker_full.task in Resources */ = {isa = PBXBuildFile; fileRef = BF4B8F7B2DDCCC5B003242E0 /* pose_landmarker_full.task */; };
 		BF50A2802DC58AAC00534542 /* Montserrat-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BF90A0022DBAF50000000002 /* Montserrat-Regular.ttf */; };
 		BF59ACB72DDD531C00242910 /* PoseValidationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACB62DDD531C00242910 /* PoseValidationHelper.swift */; };
-		BF59ACBD2DDE7A3F00242910 /* RunningRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACBA2DDE7A3F00242910 /* RunningRubricView.swift */; };
 		BF59ACBE2DDE7A3F00242910 /* PushUpsRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACB92DDE7A3F00242910 /* PushUpsRubricView.swift */; };
 		BF59ACBF2DDE7A3F00242910 /* SitUpsRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACBB2DDE7A3F00242910 /* SitUpsRubricView.swift */; };
 		BF59ACC02DDE7A3F00242910 /* PullUpsRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF59ACB82DDE7A3F00242910 /* PullUpsRubricView.swift */; };
@@ -140,6 +139,8 @@
 		BF81A5B02DFC889F00AE96E9 /* usmc_pullup_scoring.json in Resources */ = {isa = PBXBuildFile; fileRef = BF81A5AD2DFC889F00AE96E9 /* usmc_pullup_scoring.json */; };
 		BF81A5B12DFC889F00AE96E9 /* usmc_plank_scoring.json in Resources */ = {isa = PBXBuildFile; fileRef = BF81A5AC2DFC889F00AE96E9 /* usmc_plank_scoring.json */; };
 		BF81A5B22DFC889F00AE96E9 /* usmc_pushup_scoring.json in Resources */ = {isa = PBXBuildFile; fileRef = BF81A5AE2DFC889F00AE96E9 /* usmc_pushup_scoring.json */; };
+		BF81A5B72DFC8C4B00AE96E9 /* PlankRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81A5B52DFC8C4B00AE96E9 /* PlankRubricView.swift */; };
+		BF81A5B82DFC8C4B00AE96E9 /* RunningRubricView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF81A5B62DFC8C4B00AE96E9 /* RunningRubricView.swift */; };
 		BF89EB432DC98E5C003F8FE3 /* ComponentGalleryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */; };
 		BF89EB442DC98E5C003F8FE3 /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */; };
 		BF89EB472DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */; };
@@ -267,7 +268,6 @@
 		BF59ACB62DDD531C00242910 /* PoseValidationHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoseValidationHelper.swift; sourceTree = "<group>"; };
 		BF59ACB82DDE7A3F00242910 /* PullUpsRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PullUpsRubricView.swift; sourceTree = "<group>"; };
 		BF59ACB92DDE7A3F00242910 /* PushUpsRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushUpsRubricView.swift; sourceTree = "<group>"; };
-		BF59ACBA2DDE7A3F00242910 /* RunningRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningRubricView.swift; sourceTree = "<group>"; };
 		BF59ACBB2DDE7A3F00242910 /* SitUpsRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SitUpsRubricView.swift; sourceTree = "<group>"; };
 		BF59ACC12DDEAF6500242910 /* WarningBanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WarningBanner.swift; sourceTree = "<group>"; };
 		BF59ACC32DDEB9DF00242910 /* ScoreRubrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreRubrics.swift; sourceTree = "<group>"; };
@@ -373,6 +373,8 @@
 		BF81A5AC2DFC889F00AE96E9 /* usmc_plank_scoring.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = usmc_plank_scoring.json; sourceTree = "<group>"; };
 		BF81A5AD2DFC889F00AE96E9 /* usmc_pullup_scoring.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = usmc_pullup_scoring.json; sourceTree = "<group>"; };
 		BF81A5AE2DFC889F00AE96E9 /* usmc_pushup_scoring.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = usmc_pushup_scoring.json; sourceTree = "<group>"; };
+		BF81A5B52DFC8C4B00AE96E9 /* PlankRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlankRubricView.swift; sourceTree = "<group>"; };
+		BF81A5B62DFC8C4B00AE96E9 /* RunningRubricView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RunningRubricView.swift; sourceTree = "<group>"; };
 		BF89EB412DC98E5C003F8FE3 /* ComponentGalleryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComponentGalleryView.swift; sourceTree = "<group>"; };
 		BF89EB422DC98E5C003F8FE3 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 		BF89EB452DC98E6A003F8FE3 /* FeatureFlagViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeatureFlagViewExtensions.swift; sourceTree = "<group>"; };
@@ -561,9 +563,10 @@
 		BF59ACBC2DDE7A3F00242910 /* Scoring */ = {
 			isa = PBXGroup;
 			children = (
+				BF81A5B52DFC8C4B00AE96E9 /* PlankRubricView.swift */,
+				BF81A5B62DFC8C4B00AE96E9 /* RunningRubricView.swift */,
 				BF59ACB82DDE7A3F00242910 /* PullUpsRubricView.swift */,
 				BF59ACB92DDE7A3F00242910 /* PushUpsRubricView.swift */,
-				BF59ACBA2DDE7A3F00242910 /* RunningRubricView.swift */,
 				BF59ACBB2DDE7A3F00242910 /* SitUpsRubricView.swift */,
 			);
 			path = Scoring;
@@ -1301,6 +1304,8 @@
 				BFADF9B32DC93D890016AF0B /* StatCard.swift in Sources */,
 				BFADF9B52DC93D890016AF0B /* SettingsSheet.swift in Sources */,
 				BF59ACC62DDFC9EC00242910 /* APFTWorkoutViewModel.swift in Sources */,
+				BF81A5B72DFC8C4B00AE96E9 /* PlankRubricView.swift in Sources */,
+				BF81A5B82DFC8C4B00AE96E9 /* RunningRubricView.swift in Sources */,
 				BFADF9B62DC93D890016AF0B /* DashboardHeader.swift in Sources */,
 				BF59ACB72DDD531C00242910 /* PoseValidationHelper.swift in Sources */,
 				BFADF9B72DC93D890016AF0B /* Badge.swift in Sources */,
@@ -1335,7 +1340,6 @@
 				BF63E4642DB1EBA40037CD02 /* DeviceScanningViewModel.swift in Sources */,
 				BF8F67A32DC931750065A2D7 /* AppModels.swift in Sources */,
 				BF63E4652DB1EBA40037CD02 /* RunWorkoutViewModel.swift in Sources */,
-				BF59ACBD2DDE7A3F00242910 /* RunningRubricView.swift in Sources */,
 				BF59ACBE2DDE7A3F00242910 /* PushUpsRubricView.swift in Sources */,
 				BF59ACBF2DDE7A3F00242910 /* SitUpsRubricView.swift in Sources */,
 				BF59ACC02DDE7A3F00242910 /* PullUpsRubricView.swift in Sources */,
