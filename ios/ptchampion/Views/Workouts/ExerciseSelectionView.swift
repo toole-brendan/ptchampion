@@ -36,13 +36,13 @@ struct ExerciseSelectionView: View {
                         }
                         
                         ExerciseSelectionCard(
-                            exercise: .situp,
+                            exercise: .plank,                    // CHANGED: .situp -> .plank
                             icon: "figure.core.training",
-                            title: "Sit-ups",
-                            description: "Core strength",
-                            color: .green
+                            title: "Plank",                      // CHANGED: "Sit-ups" -> "Plank"
+                            description: "Core stability",       // CHANGED: "Core strength" -> "Core stability"
+                            color: .purple                       // CHANGED: .green -> .purple (matches WorkoutModels.swift)
                         ) {
-                            selectedExercise = .situp
+                            selectedExercise = .plank            // CHANGED: .situp -> .plank
                             showWorkoutView = true
                         }
                         

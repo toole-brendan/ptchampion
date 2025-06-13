@@ -20,7 +20,7 @@ struct DashboardView: View {
     
     // Enum for rubric modals (identifiable for sheet)
     private enum RubricType: String, Identifiable {
-        case pushups, situps, pullups, running
+        case pushups, plank, pullups, running    // CHANGED: situps -> plank
         var id: String { self.rawValue }
     }
     
@@ -29,7 +29,7 @@ struct DashboardView: View {
     // Quick links for navigation
     private let quickLinks: [(title: String, icon: String, destination: String, isSystemIcon: Bool)] = [
         ("Push-Ups", "pushup", "workout-pushups", false),
-        ("Sit-Ups", "situp", "workout-situps", false),
+        ("Plank", "plank", "workout-plank", false),        // CHANGED: "Sit-Ups" -> "Plank", "situp" -> "plank", "workout-situps" -> "workout-plank"
         ("Pull-Ups", "pullup", "workout-pullups", false),
         ("Two-Mile Run", "running", "workout-running", false)
     ]
@@ -37,7 +37,7 @@ struct DashboardView: View {
     // Rubric options for scoring criteria
     private let rubricOptions: [(title: String, icon: String, type: RubricType, isSystemIcon: Bool)] = [
         ("Push-Ups", "pushup", .pushups, false),
-        ("Sit-Ups", "situp", .situps, false),
+        ("Plank", "plank", .plank, false),         // CHANGED: "Sit-Ups" -> "Plank", "situp" -> "plank", .situps -> .plank
         ("Pull-Ups", "pullup", .pullups, false),
         ("Two-Mile Run", "running", .running, false)
     ]
@@ -122,8 +122,8 @@ struct DashboardView: View {
                 switch rubric {
                 case .pushups:
                     PushUpsRubricView()
-                case .situps:
-                    SitUpsRubricView()
+                case .plank:                        // CHANGED: .situps -> .plank
+                    SitUpsRubricView()              // TEMPORARY: Reuse sit-up rubric for now, can be updated with PlankRubricView later
                 case .pullups:
                     PullUpsRubricView()
                 case .running:
@@ -594,7 +594,9 @@ struct DashboardView: View {
         case "pushup":
             return .pushup
         case "situp":
-            return .situp
+            return .situp    // Keep for backward compatibility with historical data
+        case "plank":        // NEW: Add plank filter support
+            return .plank
         case "pullup":
             return .pullup
         case "run", "running":
@@ -610,7 +612,9 @@ struct DashboardView: View {
         case "pushup":
             return "Push-ups"
         case "situp":
-            return "Sit-ups"
+            return "Sit-ups"    // Keep for historical data display
+        case "plank":           // NEW: Add plank display name
+            return "Plank"
         case "pullup":
             return "Pull-ups"
         case "run", "running":

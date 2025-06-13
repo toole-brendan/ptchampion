@@ -6,17 +6,24 @@ import SwiftUI
 enum ExerciseType: String, CaseIterable, Codable, Identifiable {
     case pushup = "pushup"
     case pullup = "pullup"
-    case situp = "situp"
+    case situp = "situp"      // Keep temporarily for migration
+    case plank = "plank"      // NEW: Add plank
     case run = "run"
     case unknown = "unknown"
     
     var id: String { self.rawValue }
     
+    /// Filtered cases for UI display (excludes deprecated exercises)
+    static var visibleCases: [ExerciseType] {
+        return [.pushup, .pullup, .plank, .run]  // Excludes .situp
+    }
+    
     var displayName: String {
         switch self {
         case .pushup: return "Push-ups"
         case .pullup: return "Pull-ups"
-        case .situp: return "Sit-ups"
+        case .situp: return "Sit-ups"    // Keep temporarily
+        case .plank: return "Plank"       // NEW: Add after .situp case
         case .run: return "2-mile Run"
         case .unknown: return "Unknown Exercise"
         }
@@ -26,7 +33,8 @@ enum ExerciseType: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .pushup: return 1
         case .pullup: return 2
-        case .situp: return 3
+        case .situp: return 3             // Keep temporarily
+        case .plank: return 5             // NEW: Use ID 5 for plank
         case .run: return 4
         case .unknown: return 0
         }
@@ -36,7 +44,8 @@ enum ExerciseType: String, CaseIterable, Codable, Identifiable {
         switch self {
         case .pushup: return .blue
         case .pullup: return .green
-        case .situp: return .orange
+        case .situp: return .orange       // Keep temporarily
+        case .plank: return .purple       // NEW: Distinct color for plank
         case .run: return .red
         case .unknown: return .gray
         }
@@ -47,6 +56,7 @@ enum ExerciseType: String, CaseIterable, Codable, Identifiable {
         case .pushup: return "figure.strengthtraining.traditional"
         case .pullup: return "figure.climbing"
         case .situp: return "figure.core.training"
+        case .plank: return "figure.core.training"  // Same icon as situp
         case .run: return "figure.run"
         case .unknown: return "questionmark.circle"
         }
@@ -389,6 +399,8 @@ struct InsertUserExerciseRequest: Codable {
             self.exerciseType = "pullup"
         case 3:
             self.exerciseType = "situp"
+        case 5:                           // NEW
+            self.exerciseType = "plank"   // NEW: Map ID 5 to plank
         case 4:
             self.exerciseType = "run"
         case 0:
@@ -485,6 +497,7 @@ struct UserExerciseRecord: Codable, Identifiable {
         case 1: return "pushup"
         case 2: return "pullup"
         case 3: return "situp"
+        case 5: return "plank"    // NEW: Add plank mapping
         case 4: return "run"
         default: return "unknown"
         }
@@ -623,6 +636,10 @@ extension CreateWorkoutRequest {
             guard repetitions != nil else {
                 throw WorkoutValidationError.missingRepetitions
             }
+        case .plank:
+            guard durationSeconds != nil else {
+                throw WorkoutValidationError.missingDuration
+            }
         case .unknown:
             // No specific validation for unknown exercise types
             break
@@ -636,6 +653,7 @@ enum WorkoutValidationError: LocalizedError {
     case invalidGrade
     case missingRunMetrics
     case missingRepetitions
+    case missingDuration
     
     var errorDescription: String? {
         switch self {
@@ -647,6 +665,8 @@ enum WorkoutValidationError: LocalizedError {
             return "Running exercises require distance and duration"
         case .missingRepetitions:
             return "Strength exercises require repetition count"
+        case .missingDuration:
+            return "Plank exercises require duration"
         }
     }
 }

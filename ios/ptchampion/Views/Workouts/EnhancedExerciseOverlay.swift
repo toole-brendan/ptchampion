@@ -19,7 +19,7 @@ struct EnhancedExerciseOverlay: View {
     // Add computed property to determine if landscape is required
     private var requiresLandscape: Bool {
         switch exerciseType {
-        case .pushup, .situp:
+        case .pushup, .plank:              // CHANGED: Added .plank, removed .situp
             return true
         case .pullup, .run, .unknown:
             return false

@@ -95,6 +95,7 @@ final class EnhancedSitupGrader: ObservableObject, ExerciseGraderProtocol {
     }
     
     func gradePose(body: DetectedBody) -> GradingResult {
+        /* COMMENTED OUT - Sit-up replaced by plank
         // Clear previous problem joints
         _problemJoints = []
         
@@ -183,6 +184,12 @@ final class EnhancedSitupGrader: ObservableObject, ExerciseGraderProtocol {
         
         // Return current progress
         return .inProgress(phase: currentPhaseDescription)
+        */
+        
+        // Disabled sit-up logic - exercise replaced by plank
+        _lastFormIssue = "Sit-up exercise has been replaced by plank"
+        currentFeedback = "Please select plank instead of sit-ups"
+        return .invalidPose(reason: "Sit-up exercise replaced by plank.")
     }
     
     func calculateFinalScore() -> Double? {

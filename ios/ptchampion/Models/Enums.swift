@@ -28,7 +28,8 @@ enum AppTab {
 enum WorkoutFilter: String, CaseIterable, Identifiable {
     case all = "All"
     case pushup = "Push-Ups"
-    case situp = "Sit-Ups"
+    case situp = "Sit-Ups"        // Keep for backward compatibility with historical data
+    case plank = "Plank"          // NEW: Add plank filter
     case pullup = "Pull-Ups"
     case run = "Run"
     
@@ -39,6 +40,7 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
         case .all: return "figure.run.circle.fill"
         case .pushup: return "figure.strengthtraining.traditional"
         case .situp: return "figure.core.training"
+        case .plank: return "figure.core.training"   // NEW: Same icon as situp
         case .pullup: return "figure.strengthtraining.traditional"
         case .run: return "figure.run"
         }
@@ -49,6 +51,7 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
         switch self {
         case .pushup: return "pushup"
         case .situp: return "situp"
+        case .plank: return "plank"      // NEW: Add plank icon
         case .pullup: return "pullup"
         case .run: return "running"
         default: return nil
@@ -61,6 +64,7 @@ enum WorkoutFilter: String, CaseIterable, Identifiable {
         case .all: return nil
         case .pushup: return "pushup"
         case .situp: return "situp"
+        case .plank: return "plank"      // NEW: Add plank mapping
         case .pullup: return "pullup"
         case .run: return "run"
         }

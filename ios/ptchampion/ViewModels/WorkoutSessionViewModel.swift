@@ -1173,7 +1173,11 @@ class WorkoutSessionViewModel: ObservableObject {
         case .pushup:
             return EnhancedPushupGrader()
         case .situp:
-            return EnhancedSitupGrader()
+            // Sit-ups are deprecated, redirect to placeholder
+            print("Warning: Sit-ups are deprecated. Use plank instead.")
+            return WorkoutSessionPlaceholderGrader()
+        case .plank:                           // NEW: Add plank case
+            return PlankGrader()               // NEW: Use PlankGrader
         case .pullup:
             return EnhancedPullupGrader()
         default:

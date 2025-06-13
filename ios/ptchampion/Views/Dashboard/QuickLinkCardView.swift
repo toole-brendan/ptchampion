@@ -69,7 +69,9 @@ struct QuickLinkCardView: View {
         case "workout-pushups":
             WorkoutSessionView(exerciseType: .pushup)
         case "workout-situps":
-            WorkoutSessionView(exerciseType: .situp)
+            WorkoutSessionView(exerciseType: .situp)    // Keep for backward compatibility
+        case "workout-plank":                           // NEW: Handle plank workouts
+            WorkoutSessionView(exerciseType: .plank)
         case "workout-pullups":
             WorkoutSessionView(exerciseType: .pullup)
         case "workout-running":
