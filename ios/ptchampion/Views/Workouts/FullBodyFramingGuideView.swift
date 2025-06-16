@@ -105,7 +105,7 @@ struct FullBodyFramingGuideView: View {
         case .perfect:
             return .green
         case .needsAdjustment:
-            return .yellow
+            return .white
         case .notDetected:
             return .red
         }

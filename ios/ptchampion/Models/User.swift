@@ -8,6 +8,8 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
     public var firstName: String?
     public var lastName: String?
     public var profilePictureUrl: String?
+    public var gender: String? // 'male' or 'female'
+    public var dateOfBirth: Date? // For age calculation
     
     // Keys that correspond 1-to-1 with stored properties
     private enum CodingKeys: String, CodingKey {
@@ -15,6 +17,8 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
         case firstName = "first_name"
         case lastName = "last_name"
         case profilePictureUrl = "profile_picture_url"
+        case gender
+        case dateOfBirth = "date_of_birth"
     }
     
     // Extra keys the backend may send
@@ -55,6 +59,18 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
         }
         
         profilePictureUrl = try? c.decode(String.self, forKey: .profilePictureUrl)
+        
+        // Decode gender and dateOfBirth
+        gender = try? c.decode(String.self, forKey: .gender)
+        
+        // Handle date_of_birth as string in ISO format
+        if let dobString = try? c.decode(String.self, forKey: .dateOfBirth) {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withFullDate, .withDashSeparatorInDate]
+            dateOfBirth = formatter.date(from: dobString)
+        } else {
+            dateOfBirth = nil
+        }
     }
     
     // MARK: – Encodable
@@ -66,6 +82,15 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
         try c.encodeIfPresent(firstName,forKey: .firstName)
         try c.encodeIfPresent(lastName, forKey: .lastName)
         try c.encodeIfPresent(profilePictureUrl, forKey: .profilePictureUrl)
+        try c.encodeIfPresent(gender, forKey: .gender)
+        
+        // Encode dateOfBirth as string in ISO format
+        if let dob = dateOfBirth {
+            let formatter = ISO8601DateFormatter()
+            formatter.formatOptions = [.withFullDate, .withDashSeparatorInDate]
+            let dobString = formatter.string(from: dob)
+            try c.encode(dobString, forKey: .dateOfBirth)
+        }
         // We deliberately **don't** encode `displayName`
     }
     
@@ -75,13 +100,17 @@ public struct AuthUserModel: Identifiable, Codable, Equatable {
          username: String? = nil,
          firstName: String?,
          lastName: String?,
-         profilePictureUrl: String?) {
+         profilePictureUrl: String?,
+         gender: String? = nil,
+         dateOfBirth: Date? = nil) {
         self.id = id
         self.email = email
         self.username = username
         self.firstName = firstName
         self.lastName = lastName
         self.profilePictureUrl = profilePictureUrl
+        self.gender = gender
+        self.dateOfBirth = dateOfBirth
     }
     
     public var fullName: String {

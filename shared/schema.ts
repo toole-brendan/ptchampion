@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, decimal, timestamp, boolean, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, decimal, timestamp, boolean, json, date } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -14,6 +14,8 @@ export const users = pgTable("users", {
   location: text("location"),
   latitude: decimal("latitude", { precision: 10, scale: 7 }),
   longitude: decimal("longitude", { precision: 10, scale: 7 }),
+  gender: text("gender"), // 'male' or 'female' for USMC PFT scoring
+  dateOfBirth: date("date_of_birth"), // Date of birth for age calculation
   lastSyncedAt: timestamp("last_synced_at").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -82,6 +84,22 @@ export const updateProfileSchema = createInsertSchema(users).pick({
   displayName: true,
   profilePictureUrl: true,
   location: true,
+  gender: true,
+  dateOfBirth: true,
+}).extend({
+  // Add validation for gender to ensure it's one of the allowed values
+  gender: z.enum(["male", "female"]).optional(),
+  // Validate date of birth is not in the future and user is at least 17
+  dateOfBirth: z.string().optional().refine((val) => {
+    if (!val) return true; // Optional field
+    const dob = new Date(val);
+    const today = new Date();
+    const age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate()) ? age - 1 : age;
+    
+    return dob <= today && actualAge >= 17;
+  }, { message: "Date of birth must be in the past and user must be at least 17 years old" }),
 });
 
 // Schema for inserting a new exercise

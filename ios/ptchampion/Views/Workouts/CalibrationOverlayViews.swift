@@ -431,7 +431,7 @@ struct SuggestionCard: View {
         case .important:
             return .orange
         case .minor:
-            return .yellow
+            return .white
         }
     }
     
@@ -830,12 +830,12 @@ struct AdaptiveCalibrationGuide: View {
             )
             .edgesIgnoringSafeArea(.all)
         
-        // Acceptable zone - subtle yellow
+        // Acceptable zone - subtle white
         RoundedRectangle(cornerRadius: 40)
-            .stroke(Color.yellow.opacity(0.3), lineWidth: 2)
+            .stroke(Color.white.opacity(0.3), lineWidth: 2)
             .background(
                 RoundedRectangle(cornerRadius: 40)
-                    .fill(Color.yellow.opacity(0.05))
+                    .fill(Color.white.opacity(0.05))
             )
             .frame(
                 width: geometry.size.width * (isLandscape ? 0.8 : 0.9),
@@ -1005,7 +1005,7 @@ struct AdaptiveCalibrationGuide: View {
         case .optimal: return .green
         case .acceptable: return .blue
         case .tooClose, .tooFar: return .orange
-        case .tooLeft, .tooRight, .tooHigh, .tooLow: return .yellow
+        case .tooLeft, .tooRight, .tooHigh, .tooLow: return .white
         case .unknown: return .gray
         }
     }

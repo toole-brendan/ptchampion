@@ -13,12 +13,15 @@ type User struct {
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
 	// Added for social authentication
-	Provider          string    `json:"provider"`
-	ProviderId        string    `json:"provider_id"`
-	ProfilePictureURL string    `json:"profile_picture_url"`
-	EmailVerified     bool      `json:"email_verified"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	Provider          string `json:"provider"`
+	ProviderId        string `json:"provider_id"`
+	ProfilePictureURL string `json:"profile_picture_url"`
+	EmailVerified     bool   `json:"email_verified"`
+	// Added for USMC PFT scoring
+	Gender      string    `json:"gender"`        // 'male' or 'female'
+	DateOfBirth time.Time `json:"date_of_birth"` // For age calculation
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // UserStore interface is defined in store.go

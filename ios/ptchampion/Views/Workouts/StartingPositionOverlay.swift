@@ -12,7 +12,7 @@ struct StartingPositionOverlay: View {
         case .correct:
             return .green
         case .needsAdjustment:
-            return .yellow
+            return .white
         case .notDetected:
             return .red
         }
@@ -143,7 +143,8 @@ struct StartingPositionOverlay: View {
                 ForEach(feedback, id: \.self) { message in
                     HStack {
                         Image(systemName: "arrow.right.circle.fill")
-                            .foregroundColor(.yellow)
+                            .foregroundColor(.white)
+                            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
                         Text(message)
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.white)
@@ -244,7 +245,7 @@ struct AngleIndicator: View {
     }
     
     private var color: Color {
-        isInRange ? .green : .yellow
+        isInRange ? .green : .white
     }
     
     var body: some View {

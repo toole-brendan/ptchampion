@@ -131,11 +131,13 @@ func (h *AuthHandler) Login(c echo.Context) error {
 
 // RegisterRequest represents a user registration request
 type RegisterRequest struct {
-	Email     string `json:"email" validate:"required,email"`
-	Password  string `json:"password" validate:"required,min=8"`
-	FirstName string `json:"first_name" validate:"required"`
-	LastName  string `json:"last_name" validate:"required"`
-	Username  string `json:"username" validate:"required"`
+	Email       string  `json:"email" validate:"required,email"`
+	Password    string  `json:"password" validate:"required,min=8"`
+	FirstName   string  `json:"first_name" validate:"required"`
+	LastName    string  `json:"last_name" validate:"required"`
+	Username    string  `json:"username" validate:"required"`
+	Gender      *string `json:"gender,omitempty" validate:"omitempty,oneof=male female"`
+	DateOfBirth *string `json:"date_of_birth,omitempty" validate:"omitempty"` // Format: YYYY-MM-DD
 }
 
 // Register handles user registration
@@ -179,6 +181,32 @@ func (h *AuthHandler) Register(c echo.Context) error {
 
 	// Create the user
 	userModel := store.NewUser(req.Email, hashedPassword, req.FirstName, req.LastName, req.Username)
+
+	// Add optional gender and date of birth if provided
+	if req.Gender != nil {
+		userModel.Gender = *req.Gender
+	}
+	if req.DateOfBirth != nil {
+		// Parse and validate date of birth
+		dob, err := time.Parse("2006-01-02", *req.DateOfBirth)
+		if err != nil {
+			return NewAPIError(http.StatusBadRequest, ErrCodeValidation, "Invalid date of birth format: expected YYYY-MM-DD")
+		}
+		// Validate date is not in the future
+		if dob.After(time.Now()) {
+			return NewAPIError(http.StatusBadRequest, ErrCodeValidation, "Date of birth cannot be in the future")
+		}
+		// Validate user is at least 17 years old
+		age := time.Now().Year() - dob.Year()
+		if time.Now().YearDay() < dob.YearDay() {
+			age--
+		}
+		if age < 17 {
+			return NewAPIError(http.StatusBadRequest, ErrCodeValidation, "User must be at least 17 years old")
+		}
+		userModel.DateOfBirth = dob
+	}
+
 	createdUser, err := h.store.CreateUser(ctx, userModel)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {

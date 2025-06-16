@@ -203,9 +203,9 @@ struct ColorCodedZone: View {
                     )
                     .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
                 
-                // Acceptable zone (yellow)
+                // Acceptable zone (white)
                 RoundedRectangle(cornerRadius: 30)
-                    .fill(Color.yellow.opacity(0.15))
+                    .fill(Color.white.opacity(0.15))
                     .frame(
                         width: geometry.size.width * 0.7,
                         height: geometry.size.height * 0.8
@@ -659,7 +659,7 @@ struct EnvironmentStatusBadge: View {
         case .good:
             return .blue
         case .challenging:
-            return .yellow
+            return .white
         case .poor:
             return .orange
         case .unknown:
@@ -694,7 +694,7 @@ struct EnhancedSuggestionsCard: View {
             // Header with toggle
             HStack {
                 Image(systemName: "lightbulb.fill")
-                    .foregroundColor(.yellow)
+                    .foregroundColor(.white)
                     .font(.title3)
                 
                 Text("Quick Tips")
@@ -750,7 +750,7 @@ struct EnhancedSuggestionsCard: View {
                 .fill(Color.black.opacity(0.85))
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.yellow.opacity(0.5), lineWidth: 1)
+                        .stroke(Color.white.opacity(0.5), lineWidth: 1)
                 )
         )
         .padding(.horizontal)
@@ -765,7 +765,7 @@ struct EnhancedSuggestionsCard: View {
         case .important:
             return .orange
         case .minor:
-            return .yellow
+            return .white
         }
     }
 }

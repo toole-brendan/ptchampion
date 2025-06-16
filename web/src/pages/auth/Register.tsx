@@ -24,6 +24,8 @@ const RegisterPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordMismatch, setPasswordMismatch] = useState(false);
   const [passwordTooShort, setPasswordTooShort] = useState(false);
+  const [gender, setGender] = useState<string>('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
   
   const [successMessage, setSuccessMessage] = useState('');
   
@@ -93,6 +95,8 @@ const RegisterPage: React.FC = () => {
         password: password,
         firstName: firstName,
         lastName: lastName,
+        gender: gender || undefined,
+        dateOfBirth: dateOfBirth || undefined,
       });
       
       // If successful, show success message
@@ -199,6 +203,46 @@ const RegisterPage: React.FC = () => {
                 fullWidth
                 autoComplete="username"
                 placeholder=""
+                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+              />
+            </div>
+            
+            {/* Gender (Optional) */}
+            <div className="space-y-1">
+              <label 
+                htmlFor="gender" 
+                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+              >
+                Gender (Optional - For USMC PFT Scoring)
+              </label>
+              <select
+                id="gender"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="w-full px-3 py-2 rounded-md border border-tactical-gray/30 focus:border-brass-gold bg-white text-command-black text-sm focus:outline-none focus:ring-2 focus:ring-brass-gold/20"
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            
+            {/* Date of Birth (Optional) */}
+            <div className="space-y-1">
+              <label 
+                htmlFor="dateOfBirth" 
+                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+              >
+                Date of Birth (Optional - For Age-Based Scoring)
+              </label>
+              <TextField
+                id="dateOfBirth"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                fullWidth
+                placeholder=""
+                max={new Date().toISOString().split('T')[0]} // Prevent future dates
                 className="border-tactical-gray/30 focus:border-brass-gold bg-white"
               />
             </div>

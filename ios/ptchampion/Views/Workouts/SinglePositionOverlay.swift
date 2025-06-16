@@ -61,7 +61,7 @@ struct SinglePositionOverlay: View {
         case (.perfect, true):
             return .green
         case (.perfect, false):
-            return .yellow
+            return .white
         case (.needsAdjustment, _):
             return .orange
         default:

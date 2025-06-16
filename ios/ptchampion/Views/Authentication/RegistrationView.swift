@@ -16,6 +16,8 @@ struct RegistrationView: View {
     @State private var firstName = ""
     @State private var lastName = ""
     @State private var username = ""
+    @State private var gender = ""
+    @State private var dateOfBirth = Date()
     
     // UI state
     @State private var isLoading = false
@@ -85,6 +87,40 @@ struct RegistrationView: View {
                         label: "USERNAME",
                         icon: Image(systemName: "person.text.rectangle")
                     )
+                    
+                    // Gender selection
+                    VStack(alignment: .leading, spacing: 4) {
+                        PTLabel("GENDER (OPTIONAL - FOR USMC PFT SCORING)", style: .caption)
+                            .foregroundColor(AppTheme.GeneratedColors.commandBlack)
+                        
+                        HStack(spacing: 16) {
+                            ForEach(["male", "female"], id: \.self) { option in
+                                Button(action: {
+                                    gender = option
+                                }) {
+                                    HStack {
+                                        Image(systemName: gender == option ? "checkmark.circle.fill" : "circle")
+                                            .foregroundColor(gender == option ? AppTheme.GeneratedColors.brassGold : AppTheme.GeneratedColors.tacticalGray)
+                                        PTLabel(option.capitalized, style: .body)
+                                            .foregroundColor(AppTheme.GeneratedColors.commandBlack)
+                                    }
+                                }
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 8)
+                    }
+                    
+                    // Date of Birth
+                    VStack(alignment: .leading, spacing: 4) {
+                        PTLabel("DATE OF BIRTH (OPTIONAL - FOR AGE-BASED SCORING)", style: .caption)
+                            .foregroundColor(AppTheme.GeneratedColors.commandBlack)
+                        
+                        DatePicker("", selection: $dateOfBirth, in: ...Date(), displayedComponents: .date)
+                            .datePickerStyle(CompactDatePickerStyle())
+                            .labelsHidden()
+                            .accentColor(AppTheme.GeneratedColors.brassGold)
+                    }
                     
                     PTTextField(
                         "",

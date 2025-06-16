@@ -7,6 +7,8 @@ export interface RegisterUserRequest {
   firstName: string;
   lastName: string;
   username?: string;
+  gender?: string; // 'male' or 'female'
+  dateOfBirth?: string; // Format: YYYY-MM-DD
 }
 
 export interface LoginRequest {
@@ -27,6 +29,8 @@ export interface UserResponse {
   last_name?: string;
   email?: string;
   profile_picture_url?: string;
+  gender?: string; // 'male' or 'female'
+  date_of_birth?: string; // Format: YYYY-MM-DD
   last_synced_at?: string;
   created_at: string;
   updated_at: string;
@@ -39,6 +43,8 @@ export interface UpdateUserRequest {
   email?: string;
   password?: string;
   profile_picture_url?: string;
+  gender?: string; // 'male' or 'female'
+  date_of_birth?: string; // Format: YYYY-MM-DD
 }
 
 // Exercise types

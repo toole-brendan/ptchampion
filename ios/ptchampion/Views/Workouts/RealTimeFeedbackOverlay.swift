@@ -134,7 +134,7 @@ struct FeedbackHUD: View {
     private var formScoreColor: Color {
         switch formScore {
         case 0.8...1.0: return .green
-        case 0.6..<0.8: return .yellow
+        case 0.6..<0.8: return .white
         case 0.4..<0.6: return .orange
         default: return .red
         }
@@ -323,7 +323,7 @@ struct CorrectionRow: View {
     private var severityColor: Color {
         switch correction.severity {
         case .info: return .blue
-        case .medium: return .yellow
+        case .medium: return .white
         case .warning: return .orange
         case .high: return .orange
         case .critical: return .red
@@ -412,7 +412,7 @@ struct FormScoreBar: View {
     private var scoreColor: Color {
         switch score {
         case 0.8...1.0: return .green
-        case 0.6..<0.8: return .yellow
+        case 0.6..<0.8: return .white
         case 0.4..<0.6: return .orange
         default: return .red
         }

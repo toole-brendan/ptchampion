@@ -29,6 +29,8 @@ type User struct {
 	Latitude            sql.NullString `json:"latitude"`
 	Longitude           sql.NullString `json:"longitude"`
 	LastLocation        interface{}    `json:"last_location"`
+	Gender              sql.NullString `json:"gender"`
+	DateOfBirth         sql.NullTime   `json:"date_of_birth"`
 	TokensInvalidatedAt sql.NullTime   `json:"tokens_invalidated_at"`
 	LastSyncedAt        sql.NullTime   `json:"last_synced_at"`
 	CreatedAt           sql.NullTime   `json:"created_at"`

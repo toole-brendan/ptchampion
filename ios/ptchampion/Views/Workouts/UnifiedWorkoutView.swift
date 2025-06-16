@@ -298,7 +298,7 @@ struct PositionDetectionOverlay: View {
             case .poor:
                 return [Color.red, Color.red.opacity(0.7)]
             case .fair:
-                return [Color.yellow.opacity(0.8), Color.orange.opacity(0.8)]
+                return [Color.white.opacity(0.8), Color.orange.opacity(0.8)]
             case .good, .perfect:
                 return [Color.green, Color.green.opacity(0.7)]
             }

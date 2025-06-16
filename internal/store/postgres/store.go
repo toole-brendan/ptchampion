@@ -114,21 +114,27 @@ func (s *Store) ExecuteWithTimeout(fn func(context.Context, *Queries) error) err
 // Helper to convert db.User (from SQLC) to store.User (domain model)
 func toStoreUser(dbUser User) *store.User {
 	// Use first_name and last_name directly from the database
-	var firstName, lastName string
+	var firstName, lastName, gender string
 	if dbUser.FirstName.Valid {
 		firstName = dbUser.FirstName.String
 	}
 	if dbUser.LastName.Valid {
 		lastName = dbUser.LastName.String
 	}
+	if dbUser.Gender.Valid {
+		gender = dbUser.Gender.String
+	}
 
 	// Handle potential null times from DB
-	var createdAt, updatedAt time.Time
+	var createdAt, updatedAt, dateOfBirth time.Time
 	if dbUser.CreatedAt.Valid {
 		createdAt = dbUser.CreatedAt.Time
 	}
 	if dbUser.UpdatedAt.Valid {
 		updatedAt = dbUser.UpdatedAt.Time
+	}
+	if dbUser.DateOfBirth.Valid {
+		dateOfBirth = dbUser.DateOfBirth.Time
 	}
 
 	return &store.User{
@@ -138,6 +144,8 @@ func toStoreUser(dbUser User) *store.User {
 		PasswordHash: dbUser.PasswordHash,
 		FirstName:    firstName,
 		LastName:     lastName,
+		Gender:       gender,
+		DateOfBirth:  dateOfBirth,
 		CreatedAt:    createdAt,
 		UpdatedAt:    updatedAt,
 	}
@@ -225,14 +233,16 @@ func (s *Store) UpdateUser(ctx context.Context, user *store.User) (*store.User, 
 
 	// Create update parameters with current values as defaults
 	params := UpdateUserParams{
-		ID:        int32(userIDInt),
-		Username:  currentUserRecord.Username,
-		Email:     currentUserRecord.Email,
-		FirstName: currentUserRecord.FirstName,
-		LastName:  currentUserRecord.LastName,
-		Location:  currentUserRecord.Location,
-		Latitude:  currentUserRecord.Latitude,
-		Longitude: currentUserRecord.Longitude,
+		ID:          int32(userIDInt),
+		Username:    currentUserRecord.Username,
+		Email:       currentUserRecord.Email,
+		FirstName:   currentUserRecord.FirstName,
+		LastName:    currentUserRecord.LastName,
+		Location:    currentUserRecord.Location,
+		Latitude:    currentUserRecord.Latitude,
+		Longitude:   currentUserRecord.Longitude,
+		Gender:      currentUserRecord.Gender,
+		DateOfBirth: currentUserRecord.DateOfBirth,
 	}
 
 	// Override with values from the update request if provided
@@ -250,6 +260,14 @@ func (s *Store) UpdateUser(ctx context.Context, user *store.User) (*store.User, 
 
 	if user.LastName != "" {
 		params.LastName = sql.NullString{String: user.LastName, Valid: true}
+	}
+
+	if user.Gender != "" {
+		params.Gender = sql.NullString{String: user.Gender, Valid: true}
+	}
+
+	if !user.DateOfBirth.IsZero() {
+		params.DateOfBirth = sql.NullTime{Time: user.DateOfBirth, Valid: true}
 	}
 
 	// Perform the update

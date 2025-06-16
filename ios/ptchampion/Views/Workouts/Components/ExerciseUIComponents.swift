@@ -117,7 +117,7 @@ struct PositionQualityIndicator: View {
         if confidence >= 0.8 {
             return .green
         } else if confidence >= 0.6 {
-            return .yellow
+            return .white
         } else {
             return .red
         }
@@ -132,8 +132,9 @@ struct RequirementRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "exclamationmark.circle.fill")
-                .foregroundColor(.yellow)
+                .foregroundColor(.white)
                 .font(.system(size: 16))
+                .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
             
             Text(text)
                 .font(.subheadline)
@@ -405,7 +406,7 @@ struct FormScoreView: View {
         if score >= 0.8 {
             return .green
         } else if score >= 0.6 {
-            return .yellow
+            return .white
         } else {
             return .red
         }

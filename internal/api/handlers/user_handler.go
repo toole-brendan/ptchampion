@@ -16,21 +16,25 @@ import (
 // UserResponse defines the user data returned (excluding password)
 // Kept similar to before, mapping from store.User
 type UserResponse struct {
-	ID        string    `json:"id"`         // Changed to string to match store.User.ID
-	Email     string    `json:"email"`      // Changed from Username
-	Username  string    `json:"username"`   // Add username field
-	FirstName string    `json:"first_name"` // Added
-	LastName  string    `json:"last_name"`  // Added
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID          string    `json:"id"`            // Changed to string to match store.User.ID
+	Email       string    `json:"email"`         // Changed from Username
+	Username    string    `json:"username"`      // Add username field
+	FirstName   string    `json:"first_name"`    // Added
+	LastName    string    `json:"last_name"`     // Added
+	Gender      string    `json:"gender"`        // 'male' or 'female'
+	DateOfBirth time.Time `json:"date_of_birth"` // For age calculation
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // UpdateCurrentUserRequest defines the allowed fields for updating a user profile via the API
 // This remains the handler's input validation structure.
 type UpdateCurrentUserRequest struct {
-	Email     *string `json:"email,omitempty" validate:"omitempty,email"`
-	FirstName *string `json:"first_name,omitempty" validate:"omitempty,required"`
-	LastName  *string `json:"last_name,omitempty" validate:"omitempty,required"`
+	Email       *string `json:"email,omitempty" validate:"omitempty,email"`
+	FirstName   *string `json:"first_name,omitempty" validate:"omitempty,required"`
+	LastName    *string `json:"last_name,omitempty" validate:"omitempty,required"`
+	Gender      *string `json:"gender,omitempty" validate:"omitempty,oneof=male female"`
+	DateOfBirth *string `json:"date_of_birth,omitempty" validate:"omitempty"` // Format: YYYY-MM-DD
 	// Note: DisplayName is not directly settable via store.User, derived from First/Last Name
 	// Note: Password changes handled separately
 }
@@ -44,13 +48,15 @@ type UpdateLocationRequest struct {
 // mapStoreUserToUserResponse converts the service/store user model to the API response model.
 func mapStoreUserToUserResponse(user *store.User) UserResponse {
 	return UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Username:  user.Username,
-		FirstName: user.FirstName,
-		LastName:  user.LastName,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
+		ID:          user.ID,
+		Email:       user.Email,
+		Username:    user.Username,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Gender:      user.Gender,
+		DateOfBirth: user.DateOfBirth,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.UpdatedAt,
 	}
 }
 
@@ -138,9 +144,11 @@ func (h *UserHandler) UpdateCurrentUser(c echo.Context) error {
 
 	// 3. Map handler request to service request
 	serviceReq := &users.UpdateUserProfileRequest{
-		Email:     req.Email,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
+		Email:       req.Email,
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		Gender:      req.Gender,
+		DateOfBirth: req.DateOfBirth,
 	}
 
 	// 4. Call the user service to update the profile

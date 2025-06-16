@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp" // Added for email validation
+	"time"
 
 	"ptchampion/internal/logging"
 	"ptchampion/internal/store" // Using the store interface and model
@@ -16,9 +17,11 @@ import (
 // We define this here to decouple the service from the handler's request struct.
 type UpdateUserProfileRequest struct {
 	// Using pointers to distinguish between empty string and not provided
-	Email     *string
-	FirstName *string
-	LastName  *string
+	Email       *string
+	FirstName   *string
+	LastName    *string
+	Gender      *string // 'male' or 'female' for USMC PFT scoring
+	DateOfBirth *string // Format: YYYY-MM-DD
 	// Password updates should be handled by a separate dedicated method/service if needed
 }
 
@@ -110,6 +113,43 @@ func (s *service) UpdateUserProfile(ctx context.Context, userID string, req *Upd
 		updated = true
 		s.logger.Debug(ctx, "Updating user last name", "userID", userID)
 	}
+	if req.Gender != nil && *req.Gender != currentUser.Gender {
+		// Validate gender value
+		if *req.Gender != "male" && *req.Gender != "female" {
+			s.logger.Warn(ctx, "Invalid gender value provided for update", "userID", userID, "gender", *req.Gender)
+			return nil, fmt.Errorf("invalid gender value: must be 'male' or 'female'")
+		}
+		currentUser.Gender = *req.Gender
+		updated = true
+		s.logger.Debug(ctx, "Updating user gender", "userID", userID)
+	}
+	if req.DateOfBirth != nil {
+		// Parse and validate date of birth
+		dob, err := time.Parse("2006-01-02", *req.DateOfBirth)
+		if err != nil {
+			s.logger.Warn(ctx, "Invalid date of birth format provided for update", "userID", userID, "dob", *req.DateOfBirth)
+			return nil, fmt.Errorf("invalid date of birth format: expected YYYY-MM-DD")
+		}
+
+		// Validate date is not in the future
+		if dob.After(time.Now()) {
+			s.logger.Warn(ctx, "Date of birth is in the future", "userID", userID, "dob", *req.DateOfBirth)
+			return nil, fmt.Errorf("date of birth cannot be in the future")
+		}
+
+		// Validate user is at least 17 years old
+		age := calculateAge(dob)
+		if age < 17 {
+			s.logger.Warn(ctx, "User is too young", "userID", userID, "age", age)
+			return nil, fmt.Errorf("user must be at least 17 years old")
+		}
+
+		if !dob.Equal(currentUser.DateOfBirth) {
+			currentUser.DateOfBirth = dob
+			updated = true
+			s.logger.Debug(ctx, "Updating user date of birth", "userID", userID)
+		}
+	}
 
 	if !updated {
 		s.logger.Info(ctx, "No changes detected for user profile update", "userID", userID)
@@ -142,6 +182,19 @@ var emailRegex = regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`
 
 func isValidEmailFormat(email string) bool {
 	return emailRegex.MatchString(email)
+}
+
+// calculateAge calculates age from date of birth
+func calculateAge(dob time.Time) int {
+	now := time.Now()
+	age := now.Year() - dob.Year()
+
+	// Adjust if birthday hasn't occurred this year
+	if now.Month() < dob.Month() || (now.Month() == dob.Month() && now.Day() < dob.Day()) {
+		age--
+	}
+
+	return age
 }
 
 // UpdatePrivacySettings updates user privacy settings and invalidates leaderboard cache

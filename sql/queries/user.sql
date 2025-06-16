@@ -31,6 +31,8 @@ SET
   location = $6,
   latitude = $7,
   longitude = $8,
+  gender = $9,
+  date_of_birth = $10,
   updated_at = now()
 WHERE id = $1
 RETURNING *;

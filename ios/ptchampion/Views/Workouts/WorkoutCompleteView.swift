@@ -102,7 +102,7 @@ struct WorkoutCompleteView: View {
                             
                             Image(systemName: "trophy.fill")
                                 .font(.system(size: 60))
-                                .foregroundColor(.yellow)
+                                .foregroundColor(.white)
                         }
                         .onAppear {
                             withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true)) {
@@ -219,7 +219,7 @@ struct WorkoutCompleteView: View {
         if score >= 0.8 {
             return .green
         } else if score >= 0.6 {
-            return .yellow
+            return .white
         } else {
             return .red
         }
@@ -297,7 +297,7 @@ struct RepBreakdownChart: View {
                 
                 HStack(spacing: 15) {
                     LegendItem(color: .green, label: "Good")
-                    LegendItem(color: .yellow, label: "Fair")
+                    LegendItem(color: .white, label: "Fair")
                     LegendItem(color: .red, label: "Poor")
                 }
             }
@@ -326,7 +326,7 @@ struct RepBreakdownChart: View {
         if quality >= 0.8 {
             return .green
         } else if quality >= 0.6 {
-            return .yellow
+            return .white
         } else {
             return .red
         }
@@ -356,8 +356,9 @@ struct PersonalBestBanner: View {
     var body: some View {
         HStack {
             Image(systemName: "crown.fill")
-                .foregroundColor(.yellow)
+                .foregroundColor(.white)
                 .font(.title2)
+                .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
             
             VStack(alignment: .leading, spacing: 2) {
                 Text("Personal Best!")
@@ -373,8 +374,9 @@ struct PersonalBestBanner: View {
             Spacer()
             
             Image(systemName: "sparkles")
-                .foregroundColor(.yellow)
+                .foregroundColor(.white)
                 .font(.title2)
+                .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 1)
                 .scaleEffect(sparkleAnimation ? 1.2 : 1.0)
                 .onAppear {
                     withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
@@ -385,10 +387,10 @@ struct PersonalBestBanner: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 15)
-                .fill(Color.yellow.opacity(0.2))
+                .fill(Color.white.opacity(0.2))
                 .overlay(
                     RoundedRectangle(cornerRadius: 15)
-                        .stroke(Color.yellow.opacity(0.5), lineWidth: 2)
+                        .stroke(Color.white.opacity(0.5), lineWidth: 2)
                 )
         )
     }

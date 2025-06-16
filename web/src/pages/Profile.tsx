@@ -131,7 +131,9 @@ const Profile: React.FC = () => {
         username: user.username,
         first_name: user.first_name || '',
         last_name: user.last_name || '',
-        email: user.email || ''
+        email: user.email || '',
+        gender: user.gender || '',
+        date_of_birth: user.date_of_birth || ''
       });
     }
   }, [user]);
@@ -347,7 +349,9 @@ const Profile: React.FC = () => {
       formData.username !== user.username ||
       formData.first_name !== (user.first_name || '') ||
       formData.last_name !== (user.last_name || '') ||
-      formData.email !== (user.email || '')
+      formData.email !== (user.email || '') ||
+      formData.gender !== (user.gender || '') ||
+      formData.date_of_birth !== (user.date_of_birth || '')
     );
   };
   
@@ -370,6 +374,14 @@ const Profile: React.FC = () => {
     
     if (formData.email !== (user.email || '')) {
       changedFields.email = formData.email;
+    }
+    
+    if (formData.gender !== (user.gender || '')) {
+      changedFields.gender = formData.gender;
+    }
+    
+    if (formData.date_of_birth !== (user.date_of_birth || '')) {
+      changedFields.date_of_birth = formData.date_of_birth;
     }
     
     return changedFields;
@@ -490,6 +502,37 @@ const Profile: React.FC = () => {
                     placeholder="Your email address"
                     fullWidth
                     disabled={isSubmitting}
+                  />
+                  
+                  {/* Gender field */}
+                  <div className="space-y-1">
+                    <label className="block text-xs font-medium uppercase tracking-wider text-command-black">
+                      GENDER (FOR USMC PFT SCORING)
+                    </label>
+                    <select
+                      name="gender"
+                      value={formData.gender || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
+                      disabled={isSubmitting}
+                      className="w-full px-3 py-2 rounded-md border border-tactical-gray/30 focus:border-brass-gold bg-white text-command-black text-sm focus:outline-none focus:ring-2 focus:ring-brass-gold/20 disabled:opacity-50"
+                    >
+                      <option value="">Not specified</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+                  
+                  {/* Date of Birth field */}
+                  <TextField
+                    label="DATE OF BIRTH (FOR AGE-BASED SCORING)"
+                    name="date_of_birth"
+                    type="date"
+                    value={formData.date_of_birth || ''}
+                    onChange={handleChange}
+                    placeholder=""
+                    fullWidth
+                    disabled={isSubmitting}
+                    max={new Date().toISOString().split('T')[0]}
                   />
                 </div>
                 

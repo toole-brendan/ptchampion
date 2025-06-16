@@ -82,10 +82,10 @@ struct PoseOverlayView: View {
                     // Determine if this line connects to any bad joints
                     let isBadLine = badJointNames.contains(joint1Name) || badJointNames.contains(joint2Name)
                     
-                    // Use red for bad lines, yellow for good lines
+                    // Use red for bad lines, white for good lines
                     let lineColor = isBadLine ? 
                         Color.red.opacity(0.7) : 
-                        Color.yellow.opacity(0.8)
+                        Color.white.opacity(0.8)
                     
                     context.stroke(path, with: .color(lineColor), lineWidth: 5)
                 }

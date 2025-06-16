@@ -32,7 +32,7 @@ INSERT INTO users (
   last_name
 )
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at
+RETURNING id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, gender, date_of_birth, tokens_invalidated_at, last_synced_at, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -63,6 +63,8 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Latitude,
 		&i.Longitude,
 		&i.LastLocation,
+		&i.Gender,
+		&i.DateOfBirth,
 		&i.TokensInvalidatedAt,
 		&i.LastSyncedAt,
 		&i.CreatedAt,
@@ -72,7 +74,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
+SELECT id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, gender, date_of_birth, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
 WHERE id = $1 LIMIT 1
 `
 
@@ -90,6 +92,8 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 		&i.Latitude,
 		&i.Longitude,
 		&i.LastLocation,
+		&i.Gender,
+		&i.DateOfBirth,
 		&i.TokensInvalidatedAt,
 		&i.LastSyncedAt,
 		&i.CreatedAt,
@@ -99,7 +103,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
+SELECT id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, gender, date_of_birth, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
 WHERE email = $1 LIMIT 1
 `
 
@@ -117,6 +121,8 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 		&i.Latitude,
 		&i.Longitude,
 		&i.LastLocation,
+		&i.Gender,
+		&i.DateOfBirth,
 		&i.TokensInvalidatedAt,
 		&i.LastSyncedAt,
 		&i.CreatedAt,
@@ -126,7 +132,7 @@ func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error
 }
 
 const getUserByUsername = `-- name: GetUserByUsername :one
-SELECT id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
+SELECT id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, gender, date_of_birth, tokens_invalidated_at, last_synced_at, created_at, updated_at FROM users
 WHERE username = $1 LIMIT 1
 `
 
@@ -144,6 +150,8 @@ func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User,
 		&i.Latitude,
 		&i.Longitude,
 		&i.LastLocation,
+		&i.Gender,
+		&i.DateOfBirth,
 		&i.TokensInvalidatedAt,
 		&i.LastSyncedAt,
 		&i.CreatedAt,
@@ -162,20 +170,24 @@ SET
   location = $6,
   latitude = $7,
   longitude = $8,
+  gender = $9,
+  date_of_birth = $10,
   updated_at = now()
 WHERE id = $1
-RETURNING id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, tokens_invalidated_at, last_synced_at, created_at, updated_at
+RETURNING id, username, email, password_hash, first_name, last_name, location, latitude, longitude, last_location, gender, date_of_birth, tokens_invalidated_at, last_synced_at, created_at, updated_at
 `
 
 type UpdateUserParams struct {
-	ID        int32          `json:"id"`
-	Username  string         `json:"username"`
-	Email     string         `json:"email"`
-	FirstName sql.NullString `json:"first_name"`
-	LastName  sql.NullString `json:"last_name"`
-	Location  sql.NullString `json:"location"`
-	Latitude  sql.NullString `json:"latitude"`
-	Longitude sql.NullString `json:"longitude"`
+	ID          int32          `json:"id"`
+	Username    string         `json:"username"`
+	Email       string         `json:"email"`
+	FirstName   sql.NullString `json:"first_name"`
+	LastName    sql.NullString `json:"last_name"`
+	Location    sql.NullString `json:"location"`
+	Latitude    sql.NullString `json:"latitude"`
+	Longitude   sql.NullString `json:"longitude"`
+	Gender      sql.NullString `json:"gender"`
+	DateOfBirth sql.NullTime   `json:"date_of_birth"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
@@ -188,6 +200,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.Location,
 		arg.Latitude,
 		arg.Longitude,
+		arg.Gender,
+		arg.DateOfBirth,
 	)
 	var i User
 	err := row.Scan(
@@ -201,6 +215,8 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.Latitude,
 		&i.Longitude,
 		&i.LastLocation,
+		&i.Gender,
+		&i.DateOfBirth,
 		&i.TokensInvalidatedAt,
 		&i.LastSyncedAt,
 		&i.CreatedAt,
