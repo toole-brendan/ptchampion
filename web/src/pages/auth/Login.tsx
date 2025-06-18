@@ -75,7 +75,7 @@ const LoginPage: React.FC = () => {
         <div className="flex flex-col items-center space-y-6">
           {/* Logo */}
           <div className="pt-10">
-            <LogoIcon className="w-[200px] h-[200px] object-contain" />
+            <LogoIcon className="w-[400px] h-[400px] object-contain" />
           </div>
 
           {/* Welcome Text */}
@@ -123,7 +123,7 @@ const LoginPage: React.FC = () => {
                 </label>
                 <Link 
                   to="/forgot-password" 
-                  className="text-xs text-brass-gold hover:underline"
+                  className="text-xs text-tactical-gray hover:text-deep-ops hover:underline"
                 >
                   Forgot password?
                 </Link>
@@ -148,15 +148,15 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={!email || !password || isLoading}
-              className="w-full bg-deep-ops text-white font-semibold py-3 px-4 rounded-lg hover:bg-deep-ops/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
+              className="w-full bg-tactical-gray text-white font-semibold py-3 px-4 rounded-lg hover:bg-tactical-gray/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
             >
               {isLoading ? 'LOGGING IN...' : 'LOG IN'}
             </button>
 
             {/* Register Link */}
             <p className="text-center text-sm mt-6 text-tactical-gray">
-              Don't have an account? 
-              <Link to="/register" className="text-brass-gold hover:underline">Sign up</Link>
+              Don't have an account?{' '}
+              <Link to="/register" className="text-tactical-gray hover:text-deep-ops hover:underline">Sign up</Link>
             </p>
 
             {/* Error message */}
