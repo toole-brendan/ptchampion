@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
-import { ChevronLeftIcon } from '@radix-ui/react-icons';
 import logoImage from '../../assets/pt_champion_logo_2.png';
 
 // Real logo component
@@ -111,7 +110,7 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream">
+    <div className="min-h-screen flex items-center justify-center bg-cream-light">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center space-y-6">
           {/* Logo */}
@@ -120,9 +119,12 @@ const RegisterPage: React.FC = () => {
           </div>
 
           {/* Heading */}
-          <h1 className="font-heading text-heading1 uppercase text-brass-gold text-center mb-lg">
-            CREATE ACCOUNT
-          </h1>
+          <div className="flex flex-col items-center space-y-2 pb-4">
+            <h1 className="font-heading text-4xl text-command-black text-center">
+              Create Account
+            </h1>
+            <div className="w-16 h-0.5 bg-brass-gold"></div>
+          </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="w-full space-y-4 px-6">
@@ -130,7 +132,7 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="firstName" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
                 FIRST NAME
               </label>
@@ -140,7 +142,7 @@ const RegisterPage: React.FC = () => {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
+                className="w-full px-4 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
               />
             </div>
             
@@ -148,7 +150,7 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="lastName" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
                 LAST NAME
               </label>
@@ -158,7 +160,7 @@ const RegisterPage: React.FC = () => {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
+                className="w-full px-4 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
               />
             </div>
             
@@ -166,9 +168,9 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="email" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
-                EMAIL ADDRESS
+                EMAIL
               </label>
               <input
                 id="email"
@@ -177,7 +179,7 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
+                className="w-full px-4 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
               />
             </div>
             
@@ -185,7 +187,7 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="username" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
                 USERNAME
               </label>
@@ -196,7 +198,7 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 autoComplete="username"
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
+                className="w-full px-4 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
               />
             </div>
             
@@ -204,40 +206,29 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="gender" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
-                GENDER (OPTIONAL - FOR USMC PFT SCORING)
+                GENDER (OPTIONAL)
               </label>
-              <div className="flex items-center space-x-4 py-2">
-                {['male', 'female'].map((option) => (
-                  <button
-                    key={option}
-                    type="button"
-                    onClick={() => setGender(option)}
-                    className="flex items-center space-x-2"
-                  >
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      gender === option 
-                        ? 'border-brass-gold bg-brass-gold' 
-                        : 'border-tactical-gray'
-                    }`}>
-                      {gender === option && (
-                        <div className="w-2 h-2 rounded-full bg-cream"></div>
-                      )}
-                    </div>
-                    <span className="label text-command-black capitalize">{option}</span>
-                  </button>
-                ))}
-              </div>
+              <select
+                id="gender"
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
+              >
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
             </div>
             
             {/* Date of Birth (Optional) */}
             <div className="space-y-1">
               <label 
                 htmlFor="dateOfBirth" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
-                DATE OF BIRTH (OPTIONAL - FOR AGE-BASED SCORING)
+                DATE OF BIRTH (OPTIONAL)
               </label>
               <input
                 id="dateOfBirth"
@@ -245,7 +236,7 @@ const RegisterPage: React.FC = () => {
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
+                className="w-full px-4 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
               />
             </div>
             
@@ -253,7 +244,7 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="password" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
                 PASSWORD
               </label>
@@ -264,7 +255,7 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="new-password"
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
+                className="w-full px-4 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
               />
               {passwordTooShort && (
                 <p className="text-error text-sm mt-xs">
@@ -277,7 +268,7 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="confirmPassword" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
                 CONFIRM PASSWORD
               </label>
@@ -288,7 +279,7 @@ const RegisterPage: React.FC = () => {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 autoComplete="new-password"
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
+                className="w-full px-4 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
               />
               {passwordMismatch && (
                 <p className="text-error text-sm mt-xs">
@@ -306,7 +297,7 @@ const RegisterPage: React.FC = () => {
             
             {/* Success Message */}
             {successMessage && (
-              <div className="bg-success/10 text-success p-md rounded-card text-center font-semibold text-sm mt-xs">
+              <div className="bg-green-50 text-green-700 p-3 rounded-lg text-center font-semibold text-sm mt-2">
                 {successMessage}
               </div>
             )}
@@ -315,20 +306,16 @@ const RegisterPage: React.FC = () => {
             <button 
               type="submit" 
               disabled={!isFormValid || isLoading}
-              className="btn-primary w-full mt-md uppercase font-semibold"
+              className="w-full bg-deep-ops text-white font-semibold py-3 px-4 rounded-lg hover:bg-deep-ops/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
             >
               {isLoading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
             </button>
             
             {/* Back to Login Button */}
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              className="btn-secondary w-full mt-sm flex items-center justify-center gap-2"
-            >
-              <ChevronLeftIcon className="w-4 h-4" />
-              Back to Login
-            </button>
+            <p className="text-center text-sm mt-6 text-tactical-gray">
+              Already have an account? 
+              <Link to="/login" className="text-brass-gold hover:underline"> Log in</Link>
+            </p>
           </form>
         </div>
       </div>

@@ -70,7 +70,7 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-cream">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-cream-light">
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center space-y-6">
           {/* Logo */}
@@ -79,10 +79,11 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Welcome Text */}
-          <div className="flex flex-col items-center space-y-2 pb-2">
-            <h1 className="font-heading text-heading1 uppercase text-brass-gold text-center mb-lg">
-              SIGN IN
+          <div className="flex flex-col items-center space-y-2 pb-4">
+            <h1 className="font-heading text-4xl text-command-black text-center">
+              Welcome
             </h1>
+            <div className="w-16 h-0.5 bg-brass-gold"></div>
           </div>
 
           {/* Form */}
@@ -91,45 +92,55 @@ const LoginPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="email" 
-                className="label"
+                className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
-                EMAIL ADDRESS
+                EMAIL
               </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
-              />
+              <div className="relative">
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="w-full pl-4 pr-12 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
+                />
+                <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tactical-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
             </div>
 
             {/* Password Field */}
             <div className="space-y-1 mb-md">
-              <label 
-                htmlFor="password" 
-                className="label"
-              >
-                PASSWORD
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
-              />
-              <div className="w-full text-right mt-xs">
+              <div className="flex justify-between items-center">
+                <label 
+                  htmlFor="password" 
+                  className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
+                >
+                  PASSWORD
+                </label>
                 <Link 
                   to="/forgot-password" 
-                  className="text-sm text-olive-mist hover:text-brass-gold hover:underline"
+                  className="text-xs text-brass-gold hover:underline"
                 >
-                  Forgot Password?
+                  Forgot password?
                 </Link>
+              </div>
+              <div className="relative">
+                <input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  autoComplete="current-password"
+                  className="w-full pl-4 pr-12 py-3 rounded-lg bg-white text-deep-ops border border-gray-300 focus:outline-none focus:ring-2 focus:ring-brass-gold focus:border-transparent"
+                />
+                <svg className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-tactical-gray" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </div>
             </div>
 
@@ -137,15 +148,15 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={!email || !password || isLoading}
-              className="btn-primary w-full mt-md uppercase font-semibold"
+              className="w-full bg-deep-ops text-white font-semibold py-3 px-4 rounded-lg hover:bg-deep-ops/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
             >
-              {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+              {isLoading ? 'LOGGING IN...' : 'LOG IN'}
             </button>
 
             {/* Register Link */}
-            <p className="text-center text-sm mt-sm text-deep-ops">
+            <p className="text-center text-sm mt-6 text-tactical-gray">
               Don't have an account? 
-              <Link to="/register" className="text-brass-gold font-semibold hover:underline"> Sign Up</Link>
+              <Link to="/register" className="text-brass-gold hover:underline">Sign up</Link>
             </p>
 
             {/* Error message */}
