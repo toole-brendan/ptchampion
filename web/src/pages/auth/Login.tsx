@@ -148,7 +148,7 @@ const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={!email || !password || isLoading}
-              className="w-full bg-brass-gold text-white font-semibold py-3 px-4 rounded-lg hover:bg-brass-gold/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
+              className="w-full bg-brass-gold text-white font-semibold py-3 px-4 rounded-lg hover:bg-brass-gold/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:cursor-not-allowed transition-colors mt-6"
             >
               {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
             </button>
