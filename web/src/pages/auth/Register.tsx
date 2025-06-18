@@ -127,7 +127,7 @@ const RegisterPage: React.FC = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="w-full space-y-4 px-6">
+          <form onSubmit={handleSubmit} className="w-full space-y-4 px-6 pb-10">
             {/* First Name */}
             <div className="space-y-1">
               <label 
@@ -208,7 +208,7 @@ const RegisterPage: React.FC = () => {
                 htmlFor="gender" 
                 className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
-                GENDER (OPTIONAL)
+                GENDER
               </label>
               <select
                 id="gender"
@@ -228,7 +228,7 @@ const RegisterPage: React.FC = () => {
                 htmlFor="dateOfBirth" 
                 className="block text-xs font-medium uppercase tracking-wider text-tactical-gray"
               >
-                DATE OF BIRTH (OPTIONAL)
+                DATE OF BIRTH
               </label>
               <input
                 id="dateOfBirth"
@@ -312,9 +312,9 @@ const RegisterPage: React.FC = () => {
             </button>
             
             {/* Back to Login Button */}
-            <p className="text-center text-sm mt-6 text-tactical-gray">
+            <p className="text-center text-sm mt-6 text-deep-ops">
               Already have an account?{' '}
-              <Link to="/login" className="text-brass-gold hover:underline">Log in</Link>
+              <Link to="/login" className="text-brass-gold font-bold hover:underline">Log in</Link>
             </p>
           </form>
         </div>

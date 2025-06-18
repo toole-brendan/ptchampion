@@ -87,7 +87,7 @@ const LoginPage: React.FC = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="w-full space-y-4 px-6">
+          <form onSubmit={handleSubmit} className="w-full space-y-4 px-6 pb-10">
             {/* Email Field */}
             <div className="space-y-1">
               <label 
@@ -154,9 +154,9 @@ const LoginPage: React.FC = () => {
             </button>
 
             {/* Register Link */}
-            <p className="text-center text-sm mt-6 text-tactical-gray">
+            <p className="text-center text-sm mt-6 text-deep-ops">
               Don't have an account?{' '}
-              <Link to="/register" className="text-brass-gold hover:underline">Sign Up</Link>
+              <Link to="/register" className="text-brass-gold font-bold hover:underline">Sign Up</Link>
             </p>
 
             {/* Error message */}
