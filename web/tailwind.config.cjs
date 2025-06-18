@@ -10,11 +10,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Futura', 'Futura Fallback', ...defaultTheme.fontFamily.sans],
-        semibold: ['Futura', 'Futura Fallback', 'sans-serif'],
-        bold: ['Futura', 'Futura Fallback', 'sans-serif'],
-        heading: ['Futura', 'Futura Fallback', 'sans-serif'],
-        mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
+        'heading': ['"Bebas Neue"', '"Heading Font"', 'Arial Black', 'sans-serif'],
+        'sans': ['"Montserrat"', '"Body Font"', 'Helvetica Neue', 'sans-serif'],
+        'mono': ['"Courier New"', '"Mono Font"', 'monospace'],
+        semibold: ['"Montserrat"', '"Body Font"', 'Helvetica Neue', 'sans-serif'],
+        bold: ['"Montserrat"', '"Body Font"', 'Helvetica Neue', 'sans-serif'],
       },
       colors: {
         // Base PT Champion colors from CSS variables

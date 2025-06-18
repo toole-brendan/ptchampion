@@ -82,6 +82,10 @@ html {
   .label {
     @apply font-sans text-small font-semibold uppercase tracking-wide text-olive-mist;
   }
+
+  .text-error {
+    @apply text-red-600;
+  }
 }
 
 @layer components {

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
-import { Button } from '../../components/ui/button';
-import { TextField } from '../../components/ui/text-field';
-import { ChevronLeftIcon, PersonIcon, EnvelopeClosedIcon, LockClosedIcon, LockOpen2Icon, PersonIcon as Person2Icon, IdCardIcon } from '@radix-ui/react-icons';
+import { ChevronLeftIcon } from '@radix-ui/react-icons';
 import logoImage from '../../assets/pt_champion_logo_2.png';
 
 // Real logo component
@@ -113,37 +111,36 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 bg-cream">
-      <div className="w-full max-w-md">
-        <div className="space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-cream">
+      <div className="w-full max-w-sm">
+        <div className="flex flex-col items-center space-y-6">
           {/* Logo */}
-          <div className="flex justify-center pt-5">
-            <LogoIcon className="w-[300px] h-[300px] object-contain" />
+          <div className="pt-5">
+            <LogoIcon className="w-[150px] h-[150px] object-contain" />
           </div>
 
           {/* Heading */}
-          <h1 className="text-xl font-heading font-bold text-center text-command-black uppercase pb-2">
-            Create Account
+          <h1 className="font-heading text-heading1 uppercase text-brass-gold text-center mb-lg">
+            CREATE ACCOUNT
           </h1>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 px-4">
+          <form onSubmit={handleSubmit} className="w-full space-y-4 px-6">
             {/* First Name */}
             <div className="space-y-1">
               <label 
                 htmlFor="firstName" 
-                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+                className="label"
               >
-                First Name
+                FIRST NAME
               </label>
-              <TextField
+              <input
                 id="firstName"
+                type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
-                fullWidth
-                placeholder=""
-                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
               />
             </div>
             
@@ -151,18 +148,17 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="lastName" 
-                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+                className="label"
               >
-                Last Name
+                LAST NAME
               </label>
-              <TextField
+              <input
                 id="lastName"
+                type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
-                fullWidth
-                placeholder=""
-                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
               />
             </div>
             
@@ -170,20 +166,18 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="email" 
-                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+                className="label"
               >
-                Email
+                EMAIL ADDRESS
               </label>
-              <TextField
+              <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                fullWidth
                 autoComplete="email"
-                placeholder=""
-                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
               />
             </div>
             
@@ -191,19 +185,18 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="username" 
-                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+                className="label"
               >
-                Username
+                USERNAME
               </label>
-              <TextField
+              <input
                 id="username"
+                type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
-                fullWidth
                 autoComplete="username"
-                placeholder=""
-                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
               />
             </div>
             
@@ -211,39 +204,48 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="gender" 
-                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+                className="label"
               >
-                Gender (Optional - For USMC PFT Scoring)
+                GENDER (OPTIONAL - FOR USMC PFT SCORING)
               </label>
-              <select
-                id="gender"
-                value={gender}
-                onChange={(e) => setGender(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border border-tactical-gray/30 focus:border-brass-gold bg-white text-command-black text-sm focus:outline-none focus:ring-2 focus:ring-brass-gold/20"
-              >
-                <option value="">Select gender</option>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
+              <div className="flex items-center space-x-4 py-2">
+                {['male', 'female'].map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setGender(option)}
+                    className="flex items-center space-x-2"
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                      gender === option 
+                        ? 'border-brass-gold bg-brass-gold' 
+                        : 'border-tactical-gray'
+                    }`}>
+                      {gender === option && (
+                        <div className="w-2 h-2 rounded-full bg-cream"></div>
+                      )}
+                    </div>
+                    <span className="label text-command-black capitalize">{option}</span>
+                  </button>
+                ))}
+              </div>
             </div>
             
             {/* Date of Birth (Optional) */}
             <div className="space-y-1">
               <label 
                 htmlFor="dateOfBirth" 
-                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+                className="label"
               >
-                Date of Birth (Optional - For Age-Based Scoring)
+                DATE OF BIRTH (OPTIONAL - FOR AGE-BASED SCORING)
               </label>
-              <TextField
+              <input
                 id="dateOfBirth"
                 type="date"
                 value={dateOfBirth}
                 onChange={(e) => setDateOfBirth(e.target.value)}
-                fullWidth
-                placeholder=""
-                max={new Date().toISOString().split('T')[0]} // Prevent future dates
-                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+                max={new Date().toISOString().split('T')[0]}
+                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
               />
             </div>
             
@@ -251,23 +253,21 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="password" 
-                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+                className="label"
               >
-                Password
+                PASSWORD
               </label>
-              <TextField
+              <input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                fullWidth
                 autoComplete="new-password"
-                placeholder=""
-                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
               />
               {passwordTooShort && (
-                <p className="mt-1 text-xs text-error">
+                <p className="text-error text-sm mt-xs">
                   Password must be at least 8 characters.
                 </p>
               )}
@@ -277,23 +277,21 @@ const RegisterPage: React.FC = () => {
             <div className="space-y-1">
               <label 
                 htmlFor="confirmPassword" 
-                className="block text-xs font-medium uppercase tracking-wider text-command-black"
+                className="label"
               >
-                Confirm Password
+                CONFIRM PASSWORD
               </label>
-              <TextField
+              <input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                fullWidth
                 autoComplete="new-password"
-                placeholder=""
-                className="border-tactical-gray/30 focus:border-brass-gold bg-white"
+                className="w-full p-sm rounded-button bg-cream-dark text-deep-ops border border-deep-ops/50 focus:outline-none focus:ring-2 focus:ring-brass-gold"
               />
               {passwordMismatch && (
-                <p className="mt-1 text-xs text-error">
+                <p className="text-error text-sm mt-xs">
                   Passwords do not match.
                 </p>
               )}
@@ -301,46 +299,36 @@ const RegisterPage: React.FC = () => {
             
             {/* Error Message */}
             {error && (
-              <p className="text-sm text-error text-center pt-1">
+              <p className="text-error text-sm mt-xs text-center">
                 {error}
               </p>
             )}
             
             {/* Success Message */}
             {successMessage && (
-              <div className="bg-success/10 text-success p-3 rounded-lg text-center font-semibold text-sm">
+              <div className="bg-success/10 text-success p-md rounded-card text-center font-semibold text-sm mt-xs">
                 {successMessage}
               </div>
             )}
             
             {/* Register Button */}
-            <div className="pt-2">
-              <Button 
-                type="submit" 
-                variant="primary"
-                fullWidth
-                loading={isLoading}
-                disabled={!isFormValid || isLoading}
-                className="uppercase font-semibold"
-                aria-label="Create Account"
-              >
-                {isLoading ? 'Creating Account...' : 'CREATE ACCOUNT'}
-              </Button>
-            </div>
+            <button 
+              type="submit" 
+              disabled={!isFormValid || isLoading}
+              className="btn-primary w-full mt-md uppercase font-semibold"
+            >
+              {isLoading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
+            </button>
             
             {/* Back to Login Button */}
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => navigate('/login')}
-                className="relative inline-flex shrink-0 select-none items-center justify-center gap-2 whitespace-nowrap rounded-button font-semibold transition-all duration-base focus-visible:ring-2 focus-visible:ring-brass-gold focus-visible:ring-opacity-50 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 hit-target w-full h-10 px-4 py-3 text-sm uppercase tracking-wide font-medium bg-deep-ops hover:bg-deep-ops/90 text-brass-gold border border-deep-ops"
-              >
-                <span className="inline-flex items-center gap-2">
-                  <ChevronLeftIcon className="w-4 h-4" />
-                  Back to Login
-                </span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/login')}
+              className="btn-secondary w-full mt-sm flex items-center justify-center gap-2"
+            >
+              <ChevronLeftIcon className="w-4 h-4" />
+              Back to Login
+            </button>
           </form>
         </div>
       </div>
