@@ -78,14 +78,6 @@ const LoginPage: React.FC = () => {
             <LogoIcon className="w-[300px] h-[300px] object-contain" />
           </div>
 
-          {/* Welcome Text */}
-          <div className="flex flex-col items-center space-y-2 pb-4">
-            <h1 className="font-heading text-4xl text-command-black text-center">
-              Welcome
-            </h1>
-            <div className="w-16 h-0.5 bg-brass-gold"></div>
-          </div>
-
           {/* Form */}
           <form onSubmit={handleSubmit} className="w-full space-y-4 px-6 pb-10">
             {/* Email Field */}
@@ -121,12 +113,6 @@ const LoginPage: React.FC = () => {
                 >
                   PASSWORD
                 </label>
-                <Link 
-                  to="/forgot-password" 
-                  className="text-xs text-brass-gold hover:underline"
-                >
-                  Forgot password?
-                </Link>
               </div>
               <div className="relative">
                 <input
@@ -150,14 +136,8 @@ const LoginPage: React.FC = () => {
               disabled={!email || !password || isLoading}
               className="w-full bg-brass-gold text-white font-semibold py-3 px-4 rounded-lg hover:bg-brass-gold/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:cursor-not-allowed transition-colors mt-6"
             >
-              {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+              {isLoading ? 'SIGNING IN...' : 'DEV LOGIN'}
             </button>
-
-            {/* Register Link */}
-            <p className="text-center text-sm mt-6 text-deep-ops">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-brass-gold font-bold hover:underline">Sign Up</Link>
-            </p>
 
             {/* Error message */}
             {error && (
