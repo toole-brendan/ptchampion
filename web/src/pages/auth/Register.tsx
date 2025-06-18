@@ -306,7 +306,7 @@ const RegisterPage: React.FC = () => {
             <button 
               type="submit" 
               disabled={!isFormValid || isLoading}
-              className="w-full bg-tactical-gray text-white font-semibold py-3 px-4 rounded-lg hover:bg-tactical-gray/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
+              className="w-full bg-brass-gold text-white font-semibold py-3 px-4 rounded-lg hover:bg-brass-gold/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors mt-6"
             >
               {isLoading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT'}
             </button>
@@ -314,7 +314,7 @@ const RegisterPage: React.FC = () => {
             {/* Back to Login Button */}
             <p className="text-center text-sm mt-6 text-tactical-gray">
               Already have an account?{' '}
-              <Link to="/login" className="text-tactical-gray hover:text-deep-ops hover:underline">Log in</Link>
+              <Link to="/login" className="text-brass-gold hover:underline">Log in</Link>
             </p>
           </form>
         </div>
