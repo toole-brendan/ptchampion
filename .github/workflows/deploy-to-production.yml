@@ -159,24 +159,86 @@ jobs:
         run: |
           az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
           
-      # Add container diagnostics step
-      - name: Check container startup
+      # Add comprehensive container diagnostics
+      - name: Check container startup and wait for ready
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
         run: |
           echo "Checking container startup status..."
           
-          # Enable application logging temporarily
+          # Enable application logging
           az webapp log config --name ${{ env.BACKEND_APP_NAME }} \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --docker-container-logging filesystem || true
+            --docker-container-logging filesystem \
+            --level verbose || true
           
-          # Wait a bit for logs to accumulate
-          sleep 10
+          # Check deployment status
+          echo "Checking deployment status..."
+          DEPLOYMENT_STATUS=$(az webapp deployment list --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "[0].status" -o tsv || echo "unknown")
+          echo "Deployment status: $DEPLOYMENT_STATUS"
           
-          # Check recent logs
-          echo "Recent container logs:"
-          az webapp log show --name ${{ env.BACKEND_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || true
+          # Wait for container to be ready with proper health checks
+          echo "Waiting for container to be ready..."
+          MAX_ATTEMPTS=20
+          ATTEMPT=0
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Health check attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            
+            # Check any endpoint to see if container is responding
+            for endpoint in "/" "/api/v1/health" "/health" "/healthz"; do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 \
+                "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net$endpoint" || echo "000")
+              
+              if [ "$STATUS" != "000" ] && [ "$STATUS" != "503" ]; then
+                echo "Endpoint $endpoint returned status: $STATUS"
+                if [ "$STATUS" = "200" ] || [ "$STATUS" = "404" ] || [ "$STATUS" = "401" ]; then
+                  echo "Container is responding! (endpoint: $endpoint, status: $STATUS)"
+                  CONTAINER_READY=true
+                  break 2
+                fi
+              fi
+            done
+            
+            if [ $ATTEMPT -eq 5 ] || [ $ATTEMPT -eq 10 ] || [ $ATTEMPT -eq 15 ]; then
+              echo "Container still not ready. Checking logs..."
+              
+              # Download and check logs
+              az webapp log download --name ${{ env.BACKEND_APP_NAME }} \
+                --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+                --log-file ./container-startup-logs-attempt-$ATTEMPT.zip || true
+              
+              # Try to stream recent logs
+              echo "Recent log entries:"
+              timeout 5 az webapp log stream --name ${{ env.BACKEND_APP_NAME }} \
+                --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || true
+              
+              # Check if container is even running
+              CONTAINER_STATUS=$(az webapp show --name ${{ env.BACKEND_APP_NAME }} \
+                --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+                --query "state" -o tsv)
+              echo "Container state: $CONTAINER_STATUS"
+              
+              if [ "$CONTAINER_STATUS" != "Running" ]; then
+                echo "Container is not in Running state. Attempting restart..."
+                az webapp restart --name ${{ env.BACKEND_APP_NAME }} \
+                  --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+              fi
+            fi
+            
+            echo "Waiting 15 seconds before next attempt..."
+            sleep 15
+          done
+          
+          if [ "$CONTAINER_READY" != "true" ]; then
+            echo "ERROR: Container failed to become ready after $MAX_ATTEMPTS attempts (5 minutes)"
+            echo "Downloading final logs for debugging..."
+            az webapp log download --name ${{ env.BACKEND_APP_NAME }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --log-file ./container-startup-logs-final.zip || true
+          fi
           
       # Verify deployment status
       - name: Verify deployment
@@ -185,33 +247,7 @@ jobs:
           echo "Verifying deployment of image with tag: ${{ github.sha }}"
           az webapp config container show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
           
-          # Wait for app to start properly
-          echo "Waiting for app to initialize..."
-          
-          # Wait up to 2 minutes for the app to be ready
-          for i in {1..8}; do
-            echo "Checking app status (attempt $i/8)..."
-            APP_STATE=$(az webapp show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "state" -o tsv)
-            
-            if [ "$APP_STATE" = "Running" ]; then
-              # Check if the app is actually responding
-              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/" || echo "000")
-              
-              if [ "$HTTP_STATUS" != "000" ] && [ "$HTTP_STATUS" != "503" ]; then
-                echo "App is running and responding (status: $HTTP_STATUS)"
-                break
-              else
-                echo "App state is Running but not yet responding (HTTP: $HTTP_STATUS)"
-              fi
-            else
-              echo "App state: $APP_STATE"
-            fi
-            
-            if [ $i -lt 8 ]; then
-              echo "Waiting 15 seconds before next check..."
-              sleep 15
-            fi
-          done
+          # Container readiness is now checked in the previous step
 
       # Only check Front Door API route if backend was deployed
       - name: Check Front Door API route (if needed)
@@ -581,23 +617,56 @@ jobs:
             echo "WARNING: Backend is not healthy yet (status: $DIRECT_STATUS)"
             echo "Checking container logs for diagnostics..."
             
-            # Get recent container logs
-            echo "Recent container logs:"
-            az webapp log download --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --log-file ./startup-logs.zip || true
+            # Get container logs and status
+            echo "Getting container diagnostics..."
             
-            # Check container settings
-            echo "Container configuration:"
-            az webapp config container show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+            # Check if container is running
+            CONTAINER_STATE=$(az webapp show --name ${{ env.BACKEND_APP_NAME }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "state" -o tsv)
+            echo "Container state: $CONTAINER_STATE"
             
-            # Give it one more chance with longer wait
-            echo "Waiting 60 seconds for container to fully start..."
-            sleep 60
+            # Download logs
+            az webapp log download --name ${{ env.BACKEND_APP_NAME }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --log-file ./health-check-logs.zip || true
             
+            # Try streaming logs to see recent entries
+            echo "Attempting to stream recent logs:"
+            timeout 10 az webapp log stream --name ${{ env.BACKEND_APP_NAME }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || true
+            
+            # Check deployment slots
+            echo "Checking deployment slots:"
+            az webapp deployment slot list --name ${{ env.BACKEND_APP_NAME }} \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || true
+            
+            # Give container more time with periodic checks
+            echo "Waiting for container with periodic status checks..."
+            for wait_attempt in {1..4}; do
+              echo "Extended wait attempt $wait_attempt/4 (waiting 30s)..."
+              sleep 30
+              
+              DIRECT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "Authorization: Bearer empty" "$BACKEND_URL")
+              echo "Direct backend status: $DIRECT_STATUS"
+              
+              if [ "$DIRECT_STATUS" = "200" ]; then
+                echo "Backend is now healthy!"
+                break
+              fi
+              
+              # On attempt 3, try a restart
+              if [ $wait_attempt -eq 3 ] && [ "$DIRECT_STATUS" = "503" ]; then
+                echo "Attempting container restart..."
+                az webapp restart --name ${{ env.BACKEND_APP_NAME }} \
+                  --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+              fi
+            done
+            
+            # Final check
             DIRECT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "Authorization: Bearer empty" "$BACKEND_URL")
-            echo "Direct backend status after extended wait: $DIRECT_STATUS"
-            
             if [ "$DIRECT_STATUS" != "200" ]; then
-              echo "ERROR: Backend still not healthy after extended wait"
+              echo "ERROR: Backend still not healthy after extended wait and restart"
+              echo "Container may have issues starting up. Check the downloaded logs."
               exit 1
             fi
           fi
