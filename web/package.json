@@ -104,7 +104,7 @@
     "globals": "^15.15.0",
     "jscodeshift": "^17.3.0",
     "jsdom": "^26.1.0",
-    "lucide-react": "^0.501.0",
+    "lucide-react": "^0.522.0",
     "msw": "^2.8.2",
     "playwright": "^1.52.0",
     "postcss": "^8.5.3",
