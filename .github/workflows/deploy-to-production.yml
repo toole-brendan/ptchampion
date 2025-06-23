@@ -150,7 +150,7 @@ jobs:
               PORT=8080 \
               AZURE_KEY_VAULT_URL=https://ptchampion-kv.vault.azure.net/ &
           
-          # Wait for both container deployment and settings to complete
+          # Wait for settings to complete
           wait
 
       # Restart backend app after deployment
@@ -170,19 +170,27 @@ jobs:
           echo "Waiting 15 seconds for app to initialize..."
           sleep 15
 
-      # Purge Front Door cache
-      - name: Purge Front Door cache
+      # Only check Front Door API route if backend was deployed
+      - name: Check Front Door API route (if needed)
+        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
         run: |
-          az afd endpoint purge \
+          # Skip expensive Front Door operations if possible
+          echo "Checking if Front Door configuration is needed..."
+          
+          # Quick check if the API route already exists
+          API_ROUTE_CHECK=$(az afd route show \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
             --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
-            --content-paths "/*"
-
-      # Only check Front Door API route - don't update unless missing
-      - name: Check Front Door API route
-        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
-        run: |
+            --route-name "api-route" \
+            --query "name" -o tsv 2>/dev/null || echo "")
+          
+          if [ -n "$API_ROUTE_CHECK" ]; then
+            echo "API route already configured. Skipping Front Door configuration."
+            exit 0
+          fi
+          
+          echo "API route not found. Proceeding with configuration..."
           echo "Checking Front Door routing configuration..."
           
           # Get the origin group for the API
@@ -286,18 +294,41 @@ jobs:
             # Route already exists, no need to update every deployment
           fi
           
-          echo "Front Door configuration checked and fixed. Purging cache..."
+          echo "Front Door configuration updated."
+
+      # Single optimized cache purge at the end of deployment
+      - name: Purge Front Door cache (selective)
+        if: ${{ inputs.deploy_frontend || inputs.deploy_backend }}
+        run: |
+          echo "Purging Front Door cache for deployed components..."
           
-          # Purge the Front Door cache again to apply changes
-          az afd endpoint purge \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
-            --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
-            --content-paths "/api/*"
+          # Prepare paths to purge based on what was deployed
+          PURGE_PATHS=""
+          
+          if [ "${{ inputs.deploy_frontend }}" = "true" ]; then
+            PURGE_PATHS="/,/index.html,/assets/*"
+          fi
+          
+          if [ "${{ inputs.deploy_backend }}" = "true" ]; then
+            if [ -n "$PURGE_PATHS" ]; then
+              PURGE_PATHS="$PURGE_PATHS,/api/*"
+            else
+              PURGE_PATHS="/api/*"
+            fi
+          fi
+          
+          # Only purge if we have paths
+          if [ -n "$PURGE_PATHS" ]; then
+            echo "Purging paths: $PURGE_PATHS"
             
-          # Reduced wait time for changes to propagate
-          echo "Waiting 30 seconds for changes to propagate..."
-          sleep 30
+            # Use --no-wait to make it asynchronous
+            az afd endpoint purge \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+              --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+              --content-paths $PURGE_PATHS \
+              --no-wait || echo "Cache purge submitted in background"
+          fi
 
   health-check:
     name: Post-Deployment Health Checks
@@ -450,13 +481,17 @@ jobs:
       - name: Check API health with Detailed Output
         if: ${{ inputs.deploy_backend }}
         run: |
+          # Wait for app to be ready after deployment
+          echo "Waiting 30 seconds for app to stabilize after deployment..."
+          sleep 30
+          
           # First find which health endpoint actually works
           echo "Determining which health endpoint works..."
           
           WORKING_ENDPOINT="none"
           
           # Try /api/v1/health
-          API_V1_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health")
+          API_V1_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/api/v1/health")
           if [ "$API_V1_STATUS" = "200" ]; then
             WORKING_ENDPOINT="/api/v1/health"
             echo "Found working endpoint: /api/v1/health"
@@ -464,7 +499,7 @@ jobs:
           
           # Try /health if the first one failed
           if [ "$WORKING_ENDPOINT" = "none" ]; then
-            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/health")
+            HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/health")
             if [ "$HEALTH_STATUS" = "200" ]; then
               WORKING_ENDPOINT="/health"
               echo "Found working endpoint: /health"
@@ -473,7 +508,7 @@ jobs:
           
           # Try /healthz if still no working endpoint
           if [ "$WORKING_ENDPOINT" = "none" ]; then
-            HEALTHZ_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/healthz")
+            HEALTHZ_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "Authorization: Bearer empty" "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/healthz")
             if [ "$HEALTHZ_STATUS" = "200" ]; then
               WORKING_ENDPOINT="/healthz"
               echo "Found working endpoint: /healthz"
@@ -494,11 +529,20 @@ jobs:
           echo "Checking API using curl with verbose output..."
           curl -v -L -H "Authorization: Bearer empty" "$API_URL" || echo "Initial API curl verbose check failed"
           
-          # Try direct connection to backend bypassing Front Door
+          # Test direct backend connection first
           echo "Testing direct backend connection..."
           BACKEND_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net$WORKING_ENDPOINT"
           echo "Direct backend URL: $BACKEND_URL"
-          curl -v -L -H "Authorization: Bearer empty" -o "/tmp/health_check_logs/backend_direct.json" "$BACKEND_URL" || echo "Direct backend curl check failed"
+          
+          DIRECT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "Authorization: Bearer empty" "$BACKEND_URL")
+          echo "Direct backend status: $DIRECT_STATUS"
+          
+          # If backend is not ready, skip expensive Front Door operations
+          if [ "$DIRECT_STATUS" != "200" ]; then
+            echo "ERROR: Backend is not healthy (status: $DIRECT_STATUS)"
+            echo "Backend must be healthy before testing Front Door routing"
+            exit 1
+          fi
           
           mkdir -p /tmp/health_check_logs
           
@@ -550,8 +594,8 @@ jobs:
           for i in {1..6}; do
             echo "Attempt $i: Testing API $API_URL with detailed output..."
             
-            # Save complete request/response details with timeout and retry options
-            RESPONSE_CODE=$(curl -v -L --retry 3 --retry-delay 2 --max-time 30 -H "Authorization: Bearer empty" -o "/tmp/health_check_logs/api_response_$i.json" -w "%{http_code}\n%{time_total}\n%{size_download}\n%{speed_download}\n%{local_ip}\n%{local_port}\n%{remote_ip}\n%{remote_port}\n%{http_version}\n%{url_effective}" "$API_URL" 2>"/tmp/health_check_logs/api_request_$i.log")
+            # Save complete request/response details with reduced timeout and no retries
+            RESPONSE_CODE=$(curl -v -L --max-time 10 -H "Authorization: Bearer empty" -o "/tmp/health_check_logs/api_response_$i.json" -w "%{http_code}\n%{time_total}\n%{size_download}\n%{speed_download}\n%{local_ip}\n%{local_port}\n%{remote_ip}\n%{remote_port}\n%{http_version}\n%{url_effective}" "$API_URL" 2>"/tmp/health_check_logs/api_request_$i.log")
             
             # Parse response details
             HTTP_CODE=$(echo "$RESPONSE_CODE" | head -1)
@@ -614,7 +658,7 @@ jobs:
               
               # Check App Service logs as a last resort
               echo "Checking App Service logs..."
-              az webapp log tail --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --timeout 60 || echo "Could not retrieve App Service logs"
+              az webapp log download --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --log-file ./app-logs.zip || echo "Could not download App Service logs"
               
               exit 1
             fi
@@ -624,10 +668,8 @@ jobs:
         if: ${{ inputs.deploy_backend }}
         run: |
           echo "Retrieving container logs from App Service..."
-          az webapp log download --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} -o tsv --query "url"
-          
-          echo "Streaming recent container logs..."
-          az webapp log tail --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --timeout 30 || echo "Failed to stream logs, but continuing"
+          LOG_URL=$(az webapp log download --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --log-file ./container-logs.zip -o tsv 2>/dev/null)
+          echo "Log download initiated: $LOG_URL"
       
       - name: Upload Debug Logs
         if: always()
@@ -833,8 +875,8 @@ jobs:
       - name: Check logs while making request
         run: |
           echo "Watching logs while making request..."
-          # Start log tail in background
-          az webapp log tail --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} > /tmp/api_triage_logs/live_logs.log &
+          # Start log stream in background with timeout
+          timeout 15 az webapp log stream --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} > /tmp/api_triage_logs/live_logs.log 2>&1 &
           LOG_PID=$!
           
           # Give log tail time to connect
