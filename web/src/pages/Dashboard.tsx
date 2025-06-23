@@ -55,7 +55,7 @@ const Dashboard: React.FC = () => {
   
   // Calculate dashboard metrics from history data
   const dashboardMetrics = React.useMemo(() => {
-    if (!exerciseHistory) {
+    if (!exerciseHistory || !exerciseHistory.items) {
       return {
         totalWorkouts: 0,
         lastWorkoutDate: null,
