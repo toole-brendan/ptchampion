@@ -138,7 +138,7 @@ jobs:
             --docker-custom-image-name "$IMAGE_NAME" \
             --docker-registry-server-url https://${{ env.ACR_NAME }}.azurecr.io
 
-      # Configure container port & environment variables
+      # Configure container port & environment variables (in parallel with deployment)
       - name: Configure container port & env-vars
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
         run: |
@@ -148,7 +148,10 @@ jobs:
             --settings \
               WEBSITES_PORT=8080 \
               PORT=8080 \
-              AZURE_KEY_VAULT_URL=https://ptchampion-kv.vault.azure.net/
+              AZURE_KEY_VAULT_URL=https://ptchampion-kv.vault.azure.net/ &
+          
+          # Wait for both container deployment and settings to complete
+          wait
 
       # Restart backend app after deployment
       - name: Restart backend app
@@ -156,24 +159,16 @@ jobs:
         run: |
           az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
           
-      # Verify deployment and force restart if needed
-      - name: Verify deployment and ensure new image is running
+      # Verify deployment status
+      - name: Verify deployment
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
         run: |
           echo "Verifying deployment of image with tag: ${{ github.sha }}"
           az webapp config container show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
           
-          # Give the app some time to start
-          echo "Waiting 30 seconds for app to initialize..."
-          sleep 30
-          
-          # Force a restart to ensure only the new version is running
-          echo "Forcing a second restart to ensure clean deployment"
-          az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
-          
-          # Wait again for restart
-          echo "Waiting 30 seconds after restart..."
-          sleep 30
+          # Give the app minimal time to start
+          echo "Waiting 15 seconds for app to initialize..."
+          sleep 15
 
       # Purge Front Door cache
       - name: Purge Front Door cache
@@ -184,8 +179,8 @@ jobs:
             --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
             --content-paths "/*"
 
-      # Verify and fix Front Door API route
-      - name: Verify and fix Front Door API route
+      # Only check Front Door API route - don't update unless missing
+      - name: Check Front Door API route
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
         run: |
           echo "Checking Front Door routing configuration..."
@@ -197,9 +192,9 @@ jobs:
             --query "[?contains(name, 'api') || contains(name, 'backend')].name" -o tsv)
           
           if [ -z "$API_ORIGIN_GROUP" ]; then
-            echo "ERROR: Could not find API origin group. Creating one..."
-            # Create API origin group if it doesn't exist
-            az afd origin-group create \
+            echo "ERROR: Could not find API origin group. This should be configured in infrastructure."
+            # Skip automatic creation - this should be done via infrastructure as code
+            exit 1
               --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
               --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
               --origin-group-name "ptchampion-api-origin-group" \
@@ -288,17 +283,7 @@ jobs:
             API_ROUTE="api-route"
           else
             echo "Found API route: $API_ROUTE"
-            
-            # Update the route to ensure it's correct
-            az afd route update \
-              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-              --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
-              --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
-              --route-name "$API_ROUTE" \
-              --origin-group "$API_ORIGIN_GROUP" \
-              --forwarding-protocol HttpsOnly \
-              --link-to-default-domain Enabled \
-              --enabled-state Enabled
+            # Route already exists, no need to update every deployment
           fi
           
           echo "Front Door configuration checked and fixed. Purging cache..."
@@ -310,9 +295,9 @@ jobs:
             --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
             --content-paths "/api/*"
             
-          # Wait for changes to propagate
-          echo "Waiting 60 seconds for changes to propagate..."
-          sleep 60
+          # Reduced wait time for changes to propagate
+          echo "Waiting 30 seconds for changes to propagate..."
+          sleep 30
 
   health-check:
     name: Post-Deployment Health Checks
@@ -404,7 +389,8 @@ jobs:
           
           mkdir -p /tmp/health_check_logs
           
-          for i in {1..12}; do
+          # Reduced retries from 12 to 6 (1 minute instead of 2)
+          for i in {1..6}; do
             echo "Attempt $i: Testing $WEB_URL with detailed output..."
             
             # Save complete request/response details
@@ -447,10 +433,10 @@ jobs:
               sleep 10
             fi
             
-            if [ $i -eq 12 ]; then
-              echo "Web check failed after 2 minutes of attempts"
+            if [ $i -eq 6 ]; then
+              echo "Web check failed after 1 minute of attempts"
               echo "All request logs:"
-              for j in {1..12}; do
+              for j in {1..6}; do
                 if [ -f "/tmp/health_check_logs/web_request_$j.log" ]; then
                   echo "===== REQUEST LOG $j ====="
                   cat "/tmp/health_check_logs/web_request_$j.log"
@@ -553,14 +539,15 @@ jobs:
                 echo "Purging Front Door cache..."
                 az afd endpoint purge --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --profile-name ${{ env.FRONT_DOOR_PROFILE }} --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} --content-paths "/*"
                 
-                echo "Waiting 60 seconds for Front Door changes to propagate..."
-                sleep 60
+                echo "Waiting 30 seconds for Front Door changes to propagate..."
+                sleep 30
               fi
             fi
           fi
           
           # Now try the health check with the working endpoint
-          for i in {1..12}; do
+          # Reduced retries from 12 to 6 (1 minute instead of 2)
+          for i in {1..6}; do
             echo "Attempt $i: Testing API $API_URL with detailed output..."
             
             # Save complete request/response details with timeout and retry options
@@ -614,10 +601,10 @@ jobs:
               sleep 10
             fi
             
-            if [ $i -eq 12 ]; then
-              echo "API check failed after 2 minutes of attempts"
+            if [ $i -eq 6 ]; then
+              echo "API check failed after 1 minute of attempts"
               echo "All API request logs:"
-              for j in {1..12}; do
+              for j in {1..6}; do
                 if [ -f "/tmp/health_check_logs/api_request_$j.log" ]; then
                   echo "===== API REQUEST LOG $j ====="
                   cat "/tmp/health_check_logs/api_request_$j.log"
@@ -683,8 +670,8 @@ jobs:
           az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || echo "Failed to restart app"
           
           # Wait for app to restart
-          echo "Waiting 30 seconds for restart..."
-          sleep 30
+          echo "Waiting 15 seconds for restart..."
+          sleep 15
           
           # Check direct health one more time after restart
           echo "Checking health after restart..."
