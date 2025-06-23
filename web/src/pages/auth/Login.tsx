@@ -22,6 +22,7 @@ const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [logoClickCount, setLogoClickCount] = useState(0);
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,6 +52,28 @@ const LoginPage: React.FC = () => {
     };
   }, [clearError, isAuthenticated, location.pathname]);
 
+  // Handle logo click for secret login
+  const handleLogoClick = async () => {
+    const newCount = logoClickCount + 1;
+    setLogoClickCount(newCount);
+    
+    if (newCount === 5) {
+      console.log('Secret login activated!');
+      try {
+        // Login as mock user
+        await login({
+          email: 'mock@example.com',
+          password: 'mockpassword',
+        });
+        console.log('Mock user login completed');
+      } catch (err) {
+        console.error('Mock login failed:', err);
+      }
+      // Reset count after attempting login
+      setLogoClickCount(0);
+    }
+  };
+
   // Handle form submission for email/password login
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -74,7 +97,7 @@ const LoginPage: React.FC = () => {
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center space-y-6">
           {/* Logo */}
-          <div className="pt-10">
+          <div className="pt-10 cursor-pointer" onClick={handleLogoClick}>
             <LogoIcon className="w-[300px] h-[300px] object-contain" />
           </div>
 
