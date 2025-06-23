@@ -159,6 +159,25 @@ jobs:
         run: |
           az webapp restart --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
           
+      # Add container diagnostics step
+      - name: Check container startup
+        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
+        run: |
+          echo "Checking container startup status..."
+          
+          # Enable application logging temporarily
+          az webapp log config --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --docker-container-logging filesystem || true
+          
+          # Wait a bit for logs to accumulate
+          sleep 10
+          
+          # Check recent logs
+          echo "Recent container logs:"
+          az webapp log show --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || true
+          
       # Verify deployment status
       - name: Verify deployment
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
@@ -166,9 +185,33 @@ jobs:
           echo "Verifying deployment of image with tag: ${{ github.sha }}"
           az webapp config container show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
           
-          # Give the app minimal time to start
-          echo "Waiting 15 seconds for app to initialize..."
-          sleep 15
+          # Wait for app to start properly
+          echo "Waiting for app to initialize..."
+          
+          # Wait up to 2 minutes for the app to be ready
+          for i in {1..8}; do
+            echo "Checking app status (attempt $i/8)..."
+            APP_STATE=$(az webapp show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --query "state" -o tsv)
+            
+            if [ "$APP_STATE" = "Running" ]; then
+              # Check if the app is actually responding
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net/" || echo "000")
+              
+              if [ "$HTTP_STATUS" != "000" ] && [ "$HTTP_STATUS" != "503" ]; then
+                echo "App is running and responding (status: $HTTP_STATUS)"
+                break
+              else
+                echo "App state is Running but not yet responding (HTTP: $HTTP_STATUS)"
+              fi
+            else
+              echo "App state: $APP_STATE"
+            fi
+            
+            if [ $i -lt 8 ]; then
+              echo "Waiting 15 seconds before next check..."
+              sleep 15
+            fi
+          done
 
       # Only check Front Door API route if backend was deployed
       - name: Check Front Door API route (if needed)
@@ -481,10 +524,6 @@ jobs:
       - name: Check API health with Detailed Output
         if: ${{ inputs.deploy_backend }}
         run: |
-          # Wait for app to be ready after deployment
-          echo "Waiting 30 seconds for app to stabilize after deployment..."
-          sleep 30
-          
           # First find which health endpoint actually works
           echo "Determining which health endpoint works..."
           
@@ -539,9 +578,28 @@ jobs:
           
           # If backend is not ready, skip expensive Front Door operations
           if [ "$DIRECT_STATUS" != "200" ]; then
-            echo "ERROR: Backend is not healthy (status: $DIRECT_STATUS)"
-            echo "Backend must be healthy before testing Front Door routing"
-            exit 1
+            echo "WARNING: Backend is not healthy yet (status: $DIRECT_STATUS)"
+            echo "Checking container logs for diagnostics..."
+            
+            # Get recent container logs
+            echo "Recent container logs:"
+            az webapp log download --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --log-file ./startup-logs.zip || true
+            
+            # Check container settings
+            echo "Container configuration:"
+            az webapp config container show --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }}
+            
+            # Give it one more chance with longer wait
+            echo "Waiting 60 seconds for container to fully start..."
+            sleep 60
+            
+            DIRECT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 -H "Authorization: Bearer empty" "$BACKEND_URL")
+            echo "Direct backend status after extended wait: $DIRECT_STATUS"
+            
+            if [ "$DIRECT_STATUS" != "200" ]; then
+              echo "ERROR: Backend still not healthy after extended wait"
+              exit 1
+            fi
           fi
           
           mkdir -p /tmp/health_check_logs
@@ -889,8 +947,8 @@ jobs:
           # Give time for logs to show up
           sleep 10
           
-          # Kill log tail
-          kill $LOG_PID
+          # Kill log tail if it's still running
+          kill $LOG_PID 2>/dev/null || true
           
           # Check for authentication bypass message
           if grep -q "Skipping authentication for health check endpoint" /tmp/api_triage_logs/live_logs.log; then
