@@ -52,6 +52,14 @@ PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -v 
 echo "Adding display_name column if needed..."
 PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=0 -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='display_name') THEN ALTER TABLE users ADD COLUMN display_name TEXT; END IF; END \$\$;"
 
+# Add the gender column if it doesn't exist
+echo "Adding gender column if needed..."
+PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=0 -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='gender') THEN ALTER TABLE users ADD COLUMN gender TEXT; END IF; END \$\$;"
+
+# Add the date_of_birth column if it doesn't exist
+echo "Adding date_of_birth column if needed..."
+PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -p $DB_PORT -U $DB_USER -d $DB_NAME -v ON_ERROR_STOP=0 -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='date_of_birth') THEN ALTER TABLE users ADD COLUMN date_of_birth DATE; END IF; END \$\$;"
+
 echo "Database schema migration completed."
 
 # Start the main application
