@@ -243,10 +243,13 @@ const apiRequest = async <T>(
 
   const apiUrl = `${getApiBaseUrl()}${endpoint}`; // Construct full URL
   console.log(`Making ${method} request to ${apiUrl}`, { body, headers });
+  console.log('Request body stringified:', body ? JSON.stringify(body) : 'null');
+  console.log('Full request config:', requestConfig);
 
   try {
     const response = await fetch(apiUrl, requestConfig);
     console.log(`Response status: ${response.status}`);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
     // Check if the response is ok (status in the range 200-299)
     if (!response.ok) {
@@ -255,6 +258,13 @@ const apiRequest = async <T>(
         // Try to parse the error response body for a backend message
         const jsonError = await response.json();
         console.error('Error response:', jsonError);
+        console.error('Full error details:', {
+          status: response.status,
+          statusText: response.statusText,
+          url: response.url,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: jsonError
+        });
         // Use backend error message if available, otherwise keep default
         if (jsonError && jsonError.error) { // Match backend's likely error format
            errorData.message = jsonError.error;
@@ -299,6 +309,11 @@ export const registerUser = (data: RegisterUserRequest): Promise<UserResponse> =
 
 export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
   console.log('loginUser function called');
+  console.log('Login request data received:', {
+    email: data.email,
+    passwordLength: data.password ? data.password.length : 0,
+    passwordPreview: data.password ? data.password.substring(0, 3) + '...' : 'null'
+  });
   
   // Define type for backend response which might be different from frontend
   interface BackendLoginResponse {
@@ -306,11 +321,16 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
     user?: UserResponse;
   }
   
-  // Transform the login request to match backend field naming (capitalized fields)
+  // Use lowercase field names as expected by the backend
   const transformedData = {
-    Email: data.email,
-    Password: data.password
+    email: data.email,
+    password: data.password
   };
+  
+  console.log('Transformed data for backend:', {
+    email: transformedData.email,
+    passwordLength: transformedData.password ? transformedData.password.length : 0
+  });
   
   const response = await apiRequest<BackendLoginResponse>('/auth/login', 'POST', transformedData, false);
   
