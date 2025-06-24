@@ -93,26 +93,36 @@ type TokenResponse struct {
 func (h *AuthHandler) Login(c echo.Context) error {
 	req := new(LoginRequest)
 	if err := c.Bind(req); err != nil {
+		h.logger.Error(c.Request().Context(), "Failed to bind login request", "error", err)
 		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Invalid request body")
 	}
 
 	if err := c.Validate(req); err != nil {
+		h.logger.Error(c.Request().Context(), "Login validation failed", "error", err, "email", req.Email)
 		return NewAPIError(http.StatusBadRequest, ErrCodeValidation, err.Error())
 	}
 
 	ctx := c.Request().Context()
+	h.logger.Info(ctx, "Login attempt", "email", req.Email)
+	
 	user, err := h.store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			h.logger.Warn(ctx, "User not found", "email", req.Email)
 			return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Invalid credentials")
 		}
 		h.logger.Error(ctx, "Error getting user by email", "error", err, "email", req.Email)
 		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Invalid credentials")
 	}
 
+	h.logger.Info(ctx, "User found, verifying password", "email", req.Email, "userID", user.ID)
+	
 	if !auth.VerifyPassword(user.PasswordHash, req.Password) {
+		h.logger.Warn(ctx, "Password verification failed", "email", req.Email, "userID", user.ID)
 		return NewAPIError(http.StatusUnauthorized, ErrCodeUnauthorized, "Invalid credentials")
 	}
+	
+	h.logger.Info(ctx, "Password verified successfully", "email", req.Email, "userID", user.ID)
 
 	// Generate token pair
 	tokenPair, err := h.tokenService.GenerateTokenPair(ctx, user.ID)

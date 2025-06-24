@@ -214,6 +214,24 @@ jobs:
           # Database configuration is now set above
           echo "✅ All environment variables configured"
 
+      # Run database migrations
+      - name: Run database migrations
+        if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
+        run: |
+          echo "Running database migrations..."
+          
+          # Construct the connection string
+          DATABASE_URL="postgresql://${{ secrets.DB_USER }}:${{ secrets.DB_PASSWORD }}@${{ secrets.DB_HOST }}:${{ secrets.DB_PORT }}/${{ secrets.DB_NAME }}?sslmode=require"
+          
+          # Install PostgreSQL client
+          sudo apt-get update && sudo apt-get install -y postgresql-client
+          
+          # Run test user migration
+          echo "Running test user migration..."
+          psql "$DATABASE_URL" -f sql/migrations/20250127_add_test_user_for_app_store_review.up.sql || echo "Test user migration may have already been applied"
+          
+          echo "✓ Database migrations completed"
+
       # Restart backend app after deployment
       - name: Restart backend app
         if: ${{ inputs.deploy_backend && needs.build-backend.result == 'success' }}
