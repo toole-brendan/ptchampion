@@ -321,7 +321,7 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
     user?: UserResponse;
   }
   
-  // Use lowercase field names as expected by the backend
+  // Use lowercase field names as expected by the backend JSON tags
   const transformedData = {
     email: data.email,
     password: data.password

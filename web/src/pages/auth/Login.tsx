@@ -60,10 +60,10 @@ const LoginPage: React.FC = () => {
     if (newCount === 5) {
       console.log('Secret login activated!');
       try {
-        // Login as mock user
+        // Login as test user
         await login({
-          email: 'mock@example.com',
-          password: 'mockpassword',
+          email: 'testuser@ptchampion.ai',
+          password: 'TestUser123!',
         });
         console.log('Mock user login completed');
       } catch (err) {
