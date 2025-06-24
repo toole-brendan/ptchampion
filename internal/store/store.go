@@ -80,6 +80,7 @@ type WorkoutRecord struct {
 	DurationSeconds *int32 // Nullable
 	FormScore       *int32 // Nullable
 	Grade           int32
+	IsPublic        bool // For leaderboard visibility
 	CompletedAt     time.Time
 	CreatedAt       time.Time
 }

@@ -16,13 +16,15 @@ import (
 
 // LogWorkoutRequest defines the API request for logging a workout.
 // This is the primary request struct for creating a workout record.
+// Updated to accept client-calculated grades as per local grading implementation.
 type LogWorkoutRequest struct {
 	ExerciseID      int32     `json:"exercise_id" validate:"required,gt=0"`
 	Reps            *int32    `json:"reps,omitempty" validate:"omitempty,min=0"`
 	DurationSeconds *int32    `json:"duration_seconds,omitempty" validate:"omitempty,min=0"`
+	Grade           int32     `json:"grade" validate:"required,min=0,max=100"`
 	FormScore       *int32    `json:"form_score,omitempty" validate:"omitempty,min=0,max=100"`
 	CompletedAt     time.Time `json:"completed_at" validate:"required"`
-	// Grade removed - calculate server-side only
+	IsPublic        bool      `json:"is_public"`
 }
 
 // WorkoutResponse defines the API response for a single workout record.
@@ -37,6 +39,7 @@ type WorkoutResponse struct {
 	DurationSeconds *int32    `json:"duration_seconds,omitempty"`
 	FormScore       *int32    `json:"form_score,omitempty"`
 	Grade           int32     `json:"grade"`
+	IsPublic        bool      `json:"is_public"`
 	CompletedAt     time.Time `json:"completed_at"`
 	CreatedAt       time.Time `json:"created_at"`
 }
@@ -81,6 +84,7 @@ func mapStoreWorkoutRecordToResponse(record *store.WorkoutRecord) WorkoutRespons
 		DurationSeconds: record.DurationSeconds,
 		FormScore:       record.FormScore,
 		Grade:           record.Grade,
+		IsPublic:        record.IsPublic,
 		CompletedAt:     record.CompletedAt,
 		CreatedAt:       record.CreatedAt,
 	}
@@ -99,14 +103,15 @@ func (h *WorkoutHandler) LogWorkout(c echo.Context) error {
 
 	userID := c.Get("user_id").(int32)
 
-	// Server calculates grade - no client input accepted
+	// Client provides pre-calculated grade
 	serviceData := &workouts.LogWorkoutData{
 		ExerciseID:      req.ExerciseID,
 		Reps:            req.Reps,
 		DurationSeconds: req.DurationSeconds,
+		Grade:           req.Grade,
 		FormScore:       req.FormScore,
 		CompletedAt:     req.CompletedAt,
-		// Grade calculated in service layer
+		IsPublic:        req.IsPublic,
 	}
 
 	workout, err := h.service.LogWorkout(c.Request().Context(), userID, serviceData)

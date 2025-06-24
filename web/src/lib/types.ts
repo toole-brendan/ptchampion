@@ -90,6 +90,17 @@ export interface PaginatedExercisesResponse {
   page_size: number;
 }
 
+// Workout types (for new client-side grading)
+export interface WorkoutRequest {
+  exercise_type: 'pushup' | 'situp' | 'pullup' | 'run';
+  repetitions?: number;      // For rep-based exercises
+  duration_seconds?: number;  // For time-based exercises
+  grade: number;             // APFT score (0-100)
+  form_score?: number;       // Average form quality (0-100)
+  completed_at: string;      // ISO timestamp
+  is_public: boolean;        // For leaderboard
+}
+
 // Auth state management
 export interface AuthState {
   isAuthenticated: boolean;

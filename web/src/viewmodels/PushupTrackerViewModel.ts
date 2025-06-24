@@ -14,8 +14,8 @@ import { createGrader } from '../grading';
 import { createExerciseGrader } from '../grading/graders';
 import { BaseGrader } from '../grading/graders/BaseGrader';
 import { poseDetectorService } from '@/services/PoseDetectorService';
-import { logExerciseResult } from '../lib/apiClient';
-import { LogExerciseRequest, ExerciseResponse } from '../lib/types';
+import { workoutSyncService } from '../services/WorkoutSyncService';
+import { convertToWorkoutRequest } from '../services/workoutHelpers';
 import { BaseTrackerViewModel, ExerciseResult, SessionStatus, TrackerErrorType } from './TrackerViewModel';
 import { Subscription } from 'rxjs';
 import { ExerciseId } from '../constants/exercises';
@@ -336,36 +336,33 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     this.submitting = true;
 
     try {
-      // Prepare API request data
-      const exerciseData: LogExerciseRequest = {
-        exercise_id: ExerciseId.PUSHUP,
-        reps: this._result.repCount || 0,
-        duration: this._result.duration,
-        notes: `Form Score: ${this._result.formScore?.toFixed(0)}`
-      };
-
-      // Check if we're online
-      const isOnline = navigator.onLine;
+      // Convert exercise result to workout request format
+      const workoutRequest = convertToWorkoutRequest(this._result);
       
-      if (isOnline) {
-        try {
-          // Call the API with retry capability
-          const response: ExerciseResponse = await logExerciseResult(exerciseData);
-          
-          // Update result with grade and saved status
-          this._result.grade = response.grade;
-          this._result.saved = true;
-          
-          return true;
-        } catch (error) {
-          // If API call fails, fall back to offline queue
-          console.log("API call failed, falling back to offline queue", error);
-          return await this.saveOffline();
+      // Submit workout through sync service (handles online/offline automatically)
+      await workoutSyncService.submitWorkout(workoutRequest);
+      
+      // Update result to indicate it was saved
+      this._result.saved = true;
+      
+      // Show appropriate toast notification
+      if (typeof window !== 'undefined' && window.showToast) {
+        if (navigator.onLine) {
+          window.showToast({ 
+            title: 'Workout Saved', 
+            description: 'Your pushup workout has been saved successfully.', 
+            variant: 'success' 
+          });
+        } else {
+          window.showToast({
+            title: 'Workout Saved Offline',
+            description: 'Your workout has been saved and will sync when you\'re back online.',
+            variant: 'success'
+          });
         }
-      } else {
-        // We're offline, save to queue immediately
-        return await this.saveOffline();
       }
+      
+      return true;
     } catch (error) {
       console.error("Failed to save pushup results:", error);
       
@@ -391,42 +388,12 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   
   /**
    * Save results to offline queue for later sync
+   * @deprecated Use workoutSyncService.submitWorkout instead
    */
   private async saveOffline(): Promise<boolean> {
-    try {
-      // Import syncManager dynamically to avoid circular dependencies
-      const { syncManager } = await import('../lib/syncManager');
-      
-      // Queue the workout for background sync
-      const queued = await syncManager.queueWorkout(this._result!, ExerciseId.PUSHUP);
-      
-      if (queued) {
-        // Update local state to reflect that it's "saved" (but not yet synced to server)
-        this._result!.saved = true;
-        
-        // Show toast notification to user
-        if (typeof window !== 'undefined' && window.showToast) {
-          window.showToast({
-            title: 'Workout Saved Offline',
-            description: 'Your workout has been saved and will sync when you\'re back online.',
-            variant: 'success'
-          });
-        }
-        
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error("Failed to save pushup results offline:", error);
-      
-      // Log to error monitoring service if available
-      if (typeof window !== 'undefined' && window.captureException) {
-        window.captureException(error);
-      }
-      
-      return false;
-    }
+    // This method is now deprecated as workoutSyncService handles offline saving automatically
+    console.warn('saveOffline is deprecated, use workoutSyncService.submitWorkout instead');
+    return false;
   }
 
   /**

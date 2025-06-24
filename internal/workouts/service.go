@@ -6,22 +6,22 @@ import (
 	"fmt"
 	"time"
 
-	"ptchampion/internal/grading"
 	"ptchampion/internal/logging"
 	"ptchampion/internal/store"
 )
 
 // LogWorkoutData defines the data needed to log a workout at the service layer.
-// This is based on the fields available in db.CreateWorkoutParams and store.WorkoutRecord.
+// Updated to support client-side grading as per local grading implementation.
 type LogWorkoutData struct {
 	ExerciseID      int32
 	ExerciseType    string // This might be redundant if ExerciseName is fetched from ExerciseID
 	ExerciseName    string // Will be fetched if not provided, based on ExerciseID
 	Reps            *int32
 	DurationSeconds *int32
-	Grade           int32
+	Grade           int32     // Client-calculated APFT score (0-100)
 	CompletedAt     time.Time
-	FormScore       *int32 // Added FormScore
+	FormScore       *int32 // Form quality score (0-100)
+	IsPublic        bool   // Whether workout should appear on leaderboard
 }
 
 // Service defines the interface for workout-related business logic.
@@ -47,6 +47,7 @@ func NewService(workoutStore store.WorkoutStore, exerciseStore store.ExerciseSto
 }
 
 // LogWorkout handles the business logic for logging a new workout record.
+// Updated to accept client-calculated grades as per local grading implementation.
 func (s *service) LogWorkout(ctx context.Context, userID int32, data *LogWorkoutData) (*store.WorkoutRecord, error) {
 	// Validate exercise exists
 	exercise, err := s.exerciseStore.GetExerciseDefinition(ctx, data.ExerciseID)
@@ -54,42 +55,37 @@ func (s *service) LogWorkout(ctx context.Context, userID int32, data *LogWorkout
 		return nil, fmt.Errorf("failed to get exercise: %w", err)
 	}
 
-	// Calculate grade server-side based ONLY on performance
-	var grade int
+	// Validate required fields based on exercise type
 	switch exercise.Type {
 	case "pushup", "situp", "pullup":
 		if data.Reps == nil {
 			return nil, errors.New("reps required for this exercise type")
 		}
-		var calcErr error
-		grade, calcErr = grading.CalculateScore(exercise.Type, float64(*data.Reps))
-		if calcErr != nil {
-			return nil, fmt.Errorf("failed to calculate score: %w", calcErr)
-		}
 	case "run":
 		if data.DurationSeconds == nil {
 			return nil, errors.New("duration required for running")
 		}
-		grade = grading.CalculateRunScoreSeconds(int(*data.DurationSeconds))
 	default:
 		return nil, fmt.Errorf("unsupported exercise type: %s", exercise.Type)
 	}
 
-	// Override any client-provided grade
-	data.Grade = int32(grade)
+	// Validate grade is within acceptable range (0-100)
+	if data.Grade < 0 || data.Grade > 100 {
+		return nil, fmt.Errorf("grade must be between 0 and 100, got %d", data.Grade)
+	}
 
-	// Form score is stored separately for analytics only
-	// It does NOT affect the grade/score
+	// Use client-provided grade directly
 	recordToStore := &store.WorkoutRecord{
 		UserID:          userID,
 		ExerciseID:      data.ExerciseID,
-		ExerciseName:    exercise.Name, // Use name from definition
-		ExerciseType:    exercise.Type, // Use type from definition
+		ExerciseName:    exercise.Name,      // Use name from definition
+		ExerciseType:    exercise.Type,      // Use type from definition
 		Reps:            data.Reps,
 		DurationSeconds: data.DurationSeconds,
-		Grade:           int32(grade),   // Based ONLY on reps/time
-		FormScore:       data.FormScore, // Stored for analytics
+		Grade:           data.Grade,         // Client-calculated APFT score
+		FormScore:       data.FormScore,     // Client-calculated form score
 		CompletedAt:     data.CompletedAt,
+		IsPublic:        data.IsPublic,      // For leaderboard visibility
 		// CreatedAt will be set by the database
 	}
 
