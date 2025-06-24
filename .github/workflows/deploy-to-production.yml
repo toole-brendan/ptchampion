@@ -42,7 +42,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./web
-        run: npm ci
+        run: CYPRESS_INSTALL_BINARY=0 npm ci
 
       - name: Build for production
         working-directory: ./web
