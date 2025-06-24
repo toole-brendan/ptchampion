@@ -5,16 +5,9 @@ import './styles/fonts.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
-import { unregisterServiceWorker, registerServiceWorker } from './serviceWorkerRegistration';
 import { QueryClient } from '@tanstack/react-query';
 import config from './lib/config';
 import { syncManager } from './lib/syncManager';
-
-// For now, we'll unregister any existing service workers to avoid caching issues
-// This will help ensure users get the latest version of the app
-unregisterServiceWorker().catch(error => 
-  console.error('Service worker unregistration failed:', error)
-);
 
 // Clear stale tokens at startup
 const clearStaleTokens = () => {
@@ -98,14 +91,6 @@ const queryClient = new QueryClient({
     },
   },
 })
-
-// We'll enable service worker registration
-if (import.meta.env.PROD) {
-  // Only register in production to avoid development issues
-  registerServiceWorker().catch(error => 
-    console.error('Service worker registration failed:', error)
-  );
-}
 
 // Ensure body has background color
 document.body.classList.add('bg-cream', 'text-command-black');

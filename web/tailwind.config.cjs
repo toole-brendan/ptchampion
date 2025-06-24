@@ -10,11 +10,11 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'heading': ['"Bebas Neue"', '"Heading Font"', 'Arial Black', 'sans-serif'],
-        'sans': ['"Montserrat"', '"Body Font"', 'Helvetica Neue', 'sans-serif'],
-        'mono': ['"Courier New"', '"Mono Font"', 'monospace'],
-        semibold: ['"Montserrat"', '"Body Font"', 'Helvetica Neue', 'sans-serif'],
-        bold: ['"Montserrat"', '"Body Font"', 'Helvetica Neue', 'sans-serif'],
+        'heading': ['Arial Black', 'Impact', 'sans-serif'],
+        'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        'mono': ['SF Mono', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+        'semibold': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
+        'bold': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
       colors: {
         // Base PT Champion colors from CSS variables
