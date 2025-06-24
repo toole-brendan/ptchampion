@@ -75,7 +75,7 @@ jobs:
         uses: docker/setup-buildx-action@v3.1.0
 
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
@@ -98,7 +98,7 @@ jobs:
     if: always() && ((!inputs.deploy_backend && inputs.deploy_frontend && needs.build-frontend.result == 'success') || (inputs.deploy_backend && needs.build-backend.result == 'success') || (inputs.deploy_frontend && inputs.deploy_backend && needs.build-frontend.result == 'success' && needs.build-backend.result == 'success'))
     steps:
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
@@ -473,11 +473,11 @@ jobs:
   container-diagnostics:
     name: Container Diagnostics
     needs: deploy
-    if: ${{ inputs.deploy_backend }}
+    if: ${{ always() && inputs.deploy_backend && needs.deploy.result != 'cancelled' }}
     runs-on: ubuntu-latest
     steps:
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       
@@ -574,11 +574,12 @@ jobs:
 
   health-check:
     name: Post-Deployment Health Checks
-    needs: [deploy, container-diagnostics]
+    needs: container-diagnostics
+    if: ${{ always() && needs.container-diagnostics.result != 'cancelled' }}
     runs-on: ubuntu-latest
     steps:
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           
@@ -1204,7 +1205,7 @@ jobs:
     if: ${{ inputs.deploy_backend }}
     steps:
       - name: Azure Login
-        uses: azure/login@v1
+        uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
       
