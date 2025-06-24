@@ -106,3 +106,7 @@ terraform/**/.terraform/providers/
 
 # iOS Configuration Files
 ios/ptchampion/Config.swift
+
+# Secret setup scripts
+set-github-secrets.sh
+test-db-connection.sh

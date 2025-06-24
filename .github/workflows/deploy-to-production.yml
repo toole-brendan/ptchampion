@@ -162,17 +162,48 @@ jobs:
         run: |
           echo "Configuring app settings..."
           
-          # Set critical container configuration
+          # Set critical container configuration and production environment
           az webapp config appsettings set \
             --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
             --name ${{ env.BACKEND_APP_NAME }} \
             --settings \
+              NODE_ENV=production \
               WEBSITES_PORT=8080 \
               PORT=8080 \
+              APP_PORT_CONTAINER=3000 \
               AZURE_KEY_VAULT_URL=https://ptchampion-kv.vault.azure.net/ \
               WEBSITES_CONTAINER_START_TIME_LIMIT=600 \
               DOCKER_ENABLE_CI=true \
-              DB_SSL_MODE=require
+              DB_HOST="${{ secrets.DB_HOST }}" \
+              DB_PORT="${{ secrets.DB_PORT }}" \
+              DB_USER="${{ secrets.DB_USER }}" \
+              DB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              DB_NAME="${{ secrets.DB_NAME }}" \
+              DB_SSL_MODE=require \
+              DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              REFRESH_TOKEN_SECRET="${{ secrets.REFRESH_TOKEN_SECRET }}" \
+              JWT_EXPIRES_IN=24h \
+              REFRESH_TOKEN_EXPIRY=7d \
+              APP_ENV=production \
+              LOG_LEVEL=info \
+              LOG_FORMAT=json \
+              ALLOWED_ORIGINS=https://ptchampion.ai \
+              CLIENT_ORIGIN=https://ptchampion.ai \
+              API_BASE_URL=https://ptchampion.ai/api/v1 \
+              GOOGLE_WEB_CLIENT_ID="${{ secrets.GOOGLE_WEB_CLIENT_ID }}" \
+              GOOGLE_WEB_CLIENT_SECRET="${{ secrets.GOOGLE_WEB_CLIENT_SECRET }}" \
+              GOOGLE_IOS_CLIENT_ID="${{ secrets.GOOGLE_IOS_CLIENT_ID }}" \
+              GOOGLE_REDIRECT_URL=https://ptchampion.ai/auth/callback \
+              APPLE_SERVICE_ID=com.toole.ptchampion.service \
+              APPLE_APP_BUNDLE_ID=com.toole.ptchampion \
+              APPLE_TEAM_ID="${{ secrets.APPLE_TEAM_ID }}" \
+              APPLE_KEY_ID="${{ secrets.APPLE_KEY_ID }}" \
+              APPLE_REDIRECT_URL=https://ptchampion.ai/auth/callback \
+              FEATURE_BLUETOOTH_ENABLED=true \
+              FEATURE_LEADERBOARDS_ENABLED=true \
+              FEATURE_POSE_DETECTION_ENABLED=true \
+              FEATURE_SOCIAL_AUTH_ENABLED=true
           
           # Ensure always on is enabled for production
           az webapp config set \
@@ -180,29 +211,8 @@ jobs:
             --name ${{ env.BACKEND_APP_NAME }} \
             --always-on true
           
-          # Check database configuration
-          echo "Checking database configuration..."
-          DB_CONFIG=$(az webapp config appsettings list \
-            --name ${{ env.BACKEND_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --query "[?name=='DB_HOST' || name=='DB_PORT' || name=='DB_USER' || name=='DB_NAME' || name=='DB_SSL_MODE' || name=='DATABASE_URL'].{name:name,value:value}" -o json)
-          
-          echo "Database configuration:"
-          echo "$DB_CONFIG" | jq -r '.[] | "\(.name): [REDACTED]"'
-          
-          # Check for missing critical settings
-          MISSING_DB_CONFIG=false
-          for var in DB_HOST DB_NAME DB_USER; do
-            if ! echo "$DB_CONFIG" | jq -e ".[] | select(.name==\"$var\")" > /dev/null; then
-              echo "WARNING: Missing database configuration: $var"
-              MISSING_DB_CONFIG=true
-            fi
-          done
-          
-          if [ "$MISSING_DB_CONFIG" = "true" ]; then
-            echo "WARNING: Database configuration is incomplete. Container may fail to start."
-            echo "Consider enabling troubleshooting mode temporarily."
-          fi
+          # Database configuration is now set above
+          echo "✅ All environment variables configured"
 
       # Restart backend app after deployment
       - name: Restart backend app
