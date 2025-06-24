@@ -160,7 +160,4 @@ export abstract class BaseExerciseGrader implements ExerciseGrader {
  * Factory function to create the appropriate grader for an exercise type
  * This is useful for runtime determination of which grader to use
  */
-export function createGrader(exerciseType: string): ExerciseGrader {
-  // This will be implemented in the index.ts file after all graders are defined
-  throw new Error(`Grader for ${exerciseType} not implemented in factory yet`);
-} 
+export { createExerciseGrader as createGrader } from './graders'; 

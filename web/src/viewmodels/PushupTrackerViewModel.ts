@@ -10,6 +10,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { PoseLandmarkerResult } from '@mediapipe/tasks-vision';
 import { ExerciseType } from '../grading';
 import { PushupAnalyzer, PushupFormAnalysis } from '../grading/PushupAnalyzer';
+import { createGrader } from '../grading';
+import { createExerciseGrader } from '../grading/graders';
+import { BaseGrader } from '../grading/graders/BaseGrader';
 import { poseDetectorService } from '@/services/PoseDetectorService';
 import { logExerciseResult } from '../lib/apiClient';
 import { LogExerciseRequest, ExerciseResponse } from '../lib/types';
@@ -27,6 +30,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   private videoRef: React.RefObject<HTMLVideoElement> | null = null;
   private canvasRef: React.RefObject<HTMLCanvasElement> | null = null;
   private analyzer: PushupAnalyzer;
+  private grader: BaseGrader;
   private submitting: boolean = false;
   private poseSubscription: Subscription | null = null;
   
@@ -39,6 +43,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   constructor(useNewPoseDetector = false) {
     super(ExerciseType.PUSHUP);
     this.analyzer = new PushupAnalyzer();
+    this.grader = createExerciseGrader(ExerciseType.PUSHUP) as BaseGrader;
     this.useNewPoseDetector = useNewPoseDetector;
   }
 
@@ -151,7 +156,8 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
         PoseDetector.draw(
           this.canvasRef.current,
           this.videoRef.current,
-          result.landmarks
+          result.landmarks,
+          this._problemJoints
         );
       }
     }
@@ -163,43 +169,24 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
    * Common processing of pose data from either source
    */
   private processPoseData(landmarks: NormalizedLandmark[], timestamp: number): void {
-    // Process the landmarks through the analyzer
-    const analysis = this.analyzer.analyzePushupForm(landmarks, timestamp);
-
-    // Check if this is a completed rep
-    if (this.lastAnalysis && !this.lastAnalysis.isUpPosition && analysis.isUpPosition) {
-      // A rep is completed when transitioning from down to up position
-      if (analysis.isValidRep) {
-        this._repCount += 1;
-      }
+    // Process the landmarks through the grader
+    const gradingResult = this.grader.processPose(landmarks);
+    
+    // Update state based on grading result
+    if (gradingResult.repIncrement > 0) {
+      this._repCount += gradingResult.repIncrement;
     }
-
-    // Update form feedback if there are issues
-    if (analysis.isBodySagging) {
-      this._formFeedback = "Body sagging";
-    } else if (analysis.isBodyPiking) {
-      this._formFeedback = "Body piking";
-    } else if (analysis.isWorming) {
-      this._formFeedback = "Worming detected";
-    } else if (analysis.handsLiftedOff) {
-      this._formFeedback = "Hands lifted off ground";
-    } else if (analysis.feetLiftedOff) {
-      this._formFeedback = "Feet lifted off ground";
-    } else if (analysis.kneesTouchingGround) {
-      this._formFeedback = "Knees touching ground";
-    } else if (analysis.bodyTouchingGround) {
-      this._formFeedback = "Body touching ground";
-    } else if (analysis.isPaused) {
-      this._formFeedback = "Paused too long";
-    } else {
-      this._formFeedback = null;
+    
+    // Update form feedback
+    this._formFeedback = gradingResult.formFault || null;
+    
+    // Update form score
+    if (gradingResult.formScore !== undefined) {
+      this._formScore = gradingResult.formScore;
     }
-
-    const formScore = analysis.isValidRep ? 100 : 70;
-    this._formScore = formScore;
-
-    // Store the last analysis for next comparison
-    this.lastAnalysis = analysis;
+    
+    // Update problem joints
+    this._problemJoints = this.grader.getProblemJoints();
   }
 
   // Store the last analysis for rep counting
@@ -218,8 +205,9 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
       return;
     }
 
-    // Reset the analyzer to ensure clean state
+    // Reset the analyzer and grader to ensure clean state
     this.analyzer.reset();
+    this.grader.reset();
     this.lastAnalysis = null;
 
     if (this.useNewPoseDetector) {
@@ -454,6 +442,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   resetSession(): void {
     super.resetSession();
     this.analyzer.reset();
+    this.grader.reset();
   }
 
   /**
@@ -520,6 +509,7 @@ export function usePushupTrackerViewModel(useNewPoseDetector = true) {
   const statusRef = useRef(viewModel.status);
   const formScoreRef = useRef(viewModel.formScore);
   const formFeedbackRef = useRef(viewModel.formFeedback);
+  const problemJointsRef = useRef(viewModel.problemJoints);
   const errorRef = useRef(viewModel.error);
   const resultRef = useRef(viewModel.result);
   
@@ -529,6 +519,7 @@ export function usePushupTrackerViewModel(useNewPoseDetector = true) {
   const [status, setStatus] = useState(viewModel.status);
   const [formScore, setFormScore] = useState(viewModel.formScore);
   const [formFeedback, setFormFeedback] = useState(viewModel.formFeedback);
+  const [problemJoints, setProblemJoints] = useState(viewModel.problemJoints);
   const [error, setError] = useState(viewModel.error);
   const [result, setResult] = useState(viewModel.result);
   
@@ -559,6 +550,11 @@ export function usePushupTrackerViewModel(useNewPoseDetector = true) {
       if (viewModel.formFeedback !== formFeedbackRef.current) {
         formFeedbackRef.current = viewModel.formFeedback;
         setFormFeedback(viewModel.formFeedback);
+      }
+      
+      if (JSON.stringify(viewModel.problemJoints) !== JSON.stringify(problemJointsRef.current)) {
+        problemJointsRef.current = viewModel.problemJoints;
+        setProblemJoints(viewModel.problemJoints);
       }
       
       if (viewModel.error !== errorRef.current) {
@@ -620,6 +616,7 @@ export function usePushupTrackerViewModel(useNewPoseDetector = true) {
     status,
     formScore,
     formFeedback,
+    problemJoints,
     error,
     result,
     

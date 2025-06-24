@@ -103,6 +103,9 @@ export class RunningTrackerViewModel extends BaseTrackerViewModel {
       return; // Already active
     }
 
+    // Start the grader's run tracking
+    this.grader.startRun();
+
     // Start geolocation tracking
     this.startGeolocationTracking();
 
@@ -144,38 +147,28 @@ export class RunningTrackerViewModel extends BaseTrackerViewModel {
     // Add to path
     this._coordinates.push(newCoord);
     
-    // Calculate distance from previous point
-    if (this._coordinates.length > 1) {
-      const prevCoord = this._coordinates[this._coordinates.length - 2];
-      const addedDistance = this.calculateDistance(
-        prevCoord.lat, prevCoord.lng,
-        newCoord.lat, newCoord.lng
-      );
-      
-      // Update distance (meters)
-      this._distance += addedDistance;
-      
-      // Update the grader with new data using RunningData interface
-      const runningData: RunningData = {
-        distance: this._distance,
-        duration: this._timer,
-        coordinates: this._coordinates
-      };
-      
-      // Use the grader to update running data and get a grading result
-      const gradingResult = this.grader.updateRunningData(runningData);
-      
-      // Update the pace from the grader
-      this._pace = this.grader.getPace();
-      
-      // Update any form scores or feedback from the grading result
-      if (gradingResult.formScore !== undefined) {
-        this._formScore = gradingResult.formScore;
-      }
-      
-      if (gradingResult.formFault) {
-        this._formFeedback = gradingResult.formFault;
-      }
+    // Update the grader with GPS position
+    this.grader.updateGPSPosition({
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+      timestamp: position.timestamp,
+      accuracy: position.coords.accuracy
+    });
+    
+    // Get updated metrics from grader
+    this._distance = this.grader.getDistance();
+    this._pace = this.grader.getPacePerMile();
+    
+    // Use processPose to get the grading result (though running doesn't really use pose)
+    const gradingResult = this.grader.processPose([]);
+    
+    // Update any form scores or feedback from the grading result
+    if (gradingResult.formScore !== undefined) {
+      this._formScore = gradingResult.formScore;
+    }
+    
+    if (gradingResult.formFault) {
+      this._formFeedback = gradingResult.formFault;
     }
   };
 
@@ -268,21 +261,19 @@ export class RunningTrackerViewModel extends BaseTrackerViewModel {
       this.stopTimer();
     }
 
-    // Complete the run in the grader
-    const gradingResult = this.grader.completeRun();
+    // Stop the run in the grader
+    this.grader.stopRun();
     
-    // Update form score from the grading result
-    if (gradingResult.formScore !== undefined) {
-      this._formScore = gradingResult.formScore;
-    }
+    // Get the final form score
+    this._formScore = this.grader.getFormScore();
 
     // Create the result object
     const result: ExerciseResult = {
       exerciseType: this._exerciseType,
-      distance: this._distance,
-      duration: this._timer,
-      pace: this._pace,
-      formScore: this.grader.getScore(),
+      distance: this.grader.getDistance(),
+      duration: this.grader.getDuration(),
+      pace: this.grader.getPacePerMile(),
+      formScore: this.grader.getFormScore(),
       date: new Date(),
       saved: false
     };

@@ -68,6 +68,7 @@ export interface TrackerViewModel {
   readonly timer: number;
   readonly formScore: number;
   readonly formFeedback: string | null;
+  readonly problemJoints: number[];
   readonly error: TrackerError | null;
   readonly result: ExerciseResult | null;
 
@@ -118,6 +119,7 @@ export abstract class BaseTrackerViewModel implements TrackerViewModel {
   protected _timer: number = 0;
   protected _formScore: number = 100;
   protected _formFeedback: string | null = null;
+  protected _problemJoints: number[] = [];
   protected _error: TrackerError | null = null;
   protected _result: ExerciseResult | null = null;
   protected timerInterval: NodeJS.Timeout | null = null;
@@ -132,6 +134,7 @@ export abstract class BaseTrackerViewModel implements TrackerViewModel {
   get timer(): number { return this._timer; }
   get formScore(): number { return this._formScore; }
   get formFeedback(): string | null { return this._formFeedback; }
+  get problemJoints(): number[] { return this._problemJoints; }
   get error(): TrackerError | null { return this._error; }
   get result(): ExerciseResult | null { return this._result; }
 
@@ -150,6 +153,7 @@ export abstract class BaseTrackerViewModel implements TrackerViewModel {
     this._timer = 0;
     this._formScore = 100;
     this._formFeedback = null;
+    this._problemJoints = [];
     this._error = null;
     this._result = null;
     this._status = SessionStatus.READY;

@@ -80,15 +80,42 @@ export class PoseDetector {
   static draw(
     canvas: HTMLCanvasElement,
     video: HTMLVideoElement,
-    landmarks: NormalizedLandmark[]
+    landmarks: NormalizedLandmark[],
+    problemJoints?: number[]
   ) {
     const ctx = canvas.getContext("2d")!;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const utils = new DrawingUtils(ctx);
-    utils.drawLandmarks(landmarks);
+    
+    // Draw connections first
     utils.drawConnectors(
       landmarks,
       PoseLandmarker.POSE_CONNECTIONS /*  skeleton lines */
     );
+    
+    // Draw landmarks with custom styling for problem joints
+    if (problemJoints && problemJoints.length > 0) {
+      landmarks.forEach((landmark, index) => {
+        if (!landmark || (landmark.visibility && landmark.visibility < 0.5)) {
+          return;
+        }
+        
+        const isProblem = problemJoints.includes(index);
+        const x = landmark.x * canvas.width;
+        const y = landmark.y * canvas.height;
+        const radius = isProblem ? 8 : 5;
+        
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, 2 * Math.PI);
+        ctx.fillStyle = isProblem ? 'rgba(255, 50, 50, 0.9)' : 'rgba(0, 255, 0, 0.8)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+    } else {
+      // Default landmark drawing
+      utils.drawLandmarks(landmarks);
+    }
   }
 } 
