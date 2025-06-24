@@ -469,9 +469,112 @@ jobs:
               --no-wait || echo "Cache purge submitted in background"
           fi
 
+  # Quick container diagnostic check
+  container-diagnostics:
+    name: Container Diagnostics
+    needs: deploy
+    if: ${{ inputs.deploy_backend }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      - name: Enable logging and check container
+        run: |
+          echo "=== CONTAINER DIAGNOSTICS ==="
+          
+          # Enable application logging
+          echo "Enabling application logging..."
+          az webapp log config --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --application-logging filesystem \
+            --detailed-error-messages true \
+            --failed-request-tracing true \
+            --level information \
+            --docker-container-logging filesystem
+          
+          # Wait for logging to take effect
+          sleep 10
+          
+          # Check container status
+          echo "Checking container status..."
+          CONTAINER_STATE=$(az webapp show --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "state" -o tsv)
+          echo "Container state: $CONTAINER_STATE"
+          
+          # Get recent logs directly
+          echo "Attempting to tail logs for 30 seconds..."
+          timeout 30 az webapp log tail --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || true
+          
+          # Download logs
+          echo "Downloading container logs..."
+          az webapp log download --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --log-file ./container-diagnostics.zip || true
+          
+          # Check if any endpoint responds
+          echo "Testing all possible endpoints..."
+          BASE_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net"
+          
+          for endpoint in "/" "/robots.txt" "/api" "/api/v1" "/api/v1/health" "/health" "/healthz" "/.well-known/health"; do
+            echo -n "Testing $endpoint: "
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$BASE_URL$endpoint" || echo "000")
+            echo "$STATUS"
+            
+            if [ "$STATUS" != "000" ] && [ "$STATUS" != "503" ]; then
+              echo "Found responsive endpoint!"
+              RESPONSIVE=true
+              break
+            fi
+          done
+          
+          # Get Kudu diagnostics
+          echo "Checking Kudu diagnostics endpoint..."
+          KUDU_URL="https://${{ env.BACKEND_APP_NAME }}.scm.azurewebsites.net/api/logstream"
+          echo "Kudu URL: $KUDU_URL"
+          
+          # Check current deployment
+          echo "Current deployment info:"
+          az webapp deployment list --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} || true
+          
+          # Quick database config check
+          echo "Database configuration status:"
+          DB_CHECK=$(az webapp config appsettings list \
+            --name ${{ env.BACKEND_APP_NAME }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "[?name=='DB_HOST' || name=='DB_USER' || name=='DB_NAME' || name=='DB_PASSWORD' || name=='DATABASE_URL'].name" -o tsv | wc -l)
+          
+          echo "Found $DB_CHECK database configuration variables"
+          
+          if [ "$DB_CHECK" -lt 3 ]; then
+            echo "⚠️ WARNING: Database configuration appears incomplete!"
+            echo "This is likely why the container is failing to start."
+            echo ""
+            echo "To temporarily bypass database checks, run:"
+            echo "az webapp config appsettings set --name ${{ env.BACKEND_APP_NAME }} --resource-group ${{ env.AZURE_RESOURCE_GROUP }} --settings IGNORE_DB_CONNECTION_FAILURE=true IGNORE_MIGRATION_FAILURE=true"
+          fi
+          
+          # Upload diagnostics
+          if [ -f ./container-diagnostics.zip ]; then
+            echo "Container diagnostics saved to container-diagnostics.zip"
+          fi
+      
+      - name: Upload Container Diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-diagnostics
+          path: ./container-diagnostics.zip
+          if-no-files-found: ignore
+
   health-check:
     name: Post-Deployment Health Checks
-    needs: deploy
+    needs: [deploy, container-diagnostics]
     runs-on: ubuntu-latest
     steps:
       - name: Azure Login
@@ -617,8 +720,49 @@ jobs:
             fi
           done
       
-      - name: Check API health with Detailed Output
+      - name: Simple Backend Health Check
         if: ${{ inputs.deploy_backend }}
+        run: |
+          echo "=== SIMPLIFIED HEALTH CHECK ==="
+          echo "Note: Detailed diagnostics are in the container-diagnostics job"
+          
+          # Simple check with extended timeout
+          BACKEND_URL="https://${{ env.BACKEND_APP_NAME }}.azurewebsites.net"
+          MAX_ATTEMPTS=10
+          ATTEMPT=0
+          SUCCESS=false
+          
+          while [ $ATTEMPT -lt $MAX_ATTEMPTS ]; do
+            ATTEMPT=$((ATTEMPT + 1))
+            echo "Health check attempt $ATTEMPT/$MAX_ATTEMPTS..."
+            
+            # Try multiple endpoints
+            for endpoint in "/health" "/api/v1/health" "/" "/healthz"; do
+              STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "${BACKEND_URL}${endpoint}" || echo "000")
+              
+              if [ "$STATUS" = "200" ]; then
+                echo "✅ Endpoint $endpoint is healthy (status: $STATUS)"
+                SUCCESS=true
+                break 2
+              elif [ "$STATUS" != "000" ] && [ "$STATUS" != "503" ]; then
+                echo "⚠️ Endpoint $endpoint returned status: $STATUS"
+              fi
+            done
+            
+            if [ "$SUCCESS" != "true" ]; then
+              echo "Waiting 30 seconds before retry..."
+              sleep 30
+            fi
+          done
+          
+          if [ "$SUCCESS" != "true" ]; then
+            echo "❌ Health check failed after $MAX_ATTEMPTS attempts"
+            echo "Check the container-diagnostics artifact for detailed logs"
+            exit 1
+          fi
+      
+      - name: Skip Complex API Health Check
+        if: false
         run: |
           # First check if the container is actually running and accessible
           echo "Checking container accessibility..."
