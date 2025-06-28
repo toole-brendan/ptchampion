@@ -78,8 +78,13 @@ design-tokens/build/
 design-tokens/node_modules/.build/plugins/cache/DesignTokenGenPlugin-state.json
 .build/plugins/cache/DesignTokenGenPlugin-state.json
 
-# Private keys
+# Private keys and certificates
 internal/config/AuthKey_*.p8
+*.pem
+*.key
+*.p12
+*.crt
+*.cer
 
 # CocoaPods
 Pods/
