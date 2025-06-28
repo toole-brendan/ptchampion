@@ -1,1 +1,0 @@
-{"properties":{"healthProbeSettings":{"probePath":"/api/v1/health","probeRequestType":"GET","probeProtocol":"Https","probeIntervalInSeconds":30}}}

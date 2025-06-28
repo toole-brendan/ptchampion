@@ -1,5 +1,0 @@
-<step title="Incoming Request" date="2025-04-21T20:20:11.756" instance="33053f" url="/logstream" method="GET" type="request" pid="768,1,28" Host="ptchampion-api-westus.scm.azurewebsites.net" User-Agent="AZURECLI/2.71.0 (HOMEBREW)" Accept-Encoding="identity" Authorization="Bas..." x-ms-client-request-id="030a2826-1eee-11f0-8d76-0a007e41dc62" X-ARR-LOG-ID="030a2826-1eee-11f0-8d76-0a007e41dc62" CLIENT-IP="100.8.71.115:54207" X-SITE-DEPLOYMENT-ID="ptchampion-api-westus" WAS-DEFAULT-HOSTNAME="ptchampion-api-westus.scm.azurewebsites.net" X-Forwarded-Proto="https" X-AppService-Proto="https" X-Forwarded-TlsVersion="1.3" X-WAWS-Unencoded-URL="/logstream" X-Client-IP="100.8.71.115" X-Client-Port="54207" >
-  <step title="LogStreamHandlerMiddleware.Invoke" date="2025-04-21T20:20:11.768" /><!-- duration: 111ms -->
-  <step title="Error occurred" date="2025-04-21T20:23:11.879" type="error" text="LogStreamManager: ProcessRequest end" /><!-- duration: 7ms -->
-  <step title="Outgoing response" date="2025-04-21T20:23:11.893" type="response" statusCode="200" statusText="OK" /><!-- duration: 3ms -->
-</step><!-- duration: 180141ms -->
