@@ -1,7 +1,7 @@
 import { NormalizedLandmark } from '@mediapipe/tasks-vision';
 import { GradingResult } from '../ExerciseGrader';
 import { BaseGrader, FormIssue, GraderConfig } from './BaseGrader';
-import { getAPFTScore } from '../APFTScoring';
+import { calculateRunningScore } from '../APFTScoring';
 
 interface RunningConfig extends GraderConfig {
   targetDistanceMeters?: number;
@@ -204,7 +204,7 @@ export class RunningGrader extends BaseGrader {
     const timeSeconds = Math.round(this.elapsedTimeSeconds % 60);
     const totalSeconds = Math.round(this.elapsedTimeSeconds);
     
-    return getAPFTScore('run', totalSeconds, age, gender);
+    return calculateRunningScore(totalSeconds);
   }
 
   getDistance(): number {

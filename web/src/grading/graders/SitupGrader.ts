@@ -2,7 +2,7 @@ import { NormalizedLandmark } from '@mediapipe/tasks-vision';
 import { GradingResult } from '../ExerciseGrader';
 import { SitupAnalyzer, SitupFormAnalysis } from '../SitupAnalyzer';
 import { BaseGrader, FormIssue, GraderConfig, POSE_LANDMARKS } from './BaseGrader';
-import { getAPFTScore } from '../APFTScoring';
+import { calculateSitupScore } from '../APFTScoring';
 
 enum SitupPhase {
   DOWN = 'down',
@@ -275,6 +275,6 @@ export class SitupGrader extends BaseGrader {
   }
 
   getAPFTScore(age: number, gender: 'male' | 'female'): number {
-    return getAPFTScore('situp', this.repCount, age, gender);
+    return calculateSitupScore(this.repCount);
   }
 }

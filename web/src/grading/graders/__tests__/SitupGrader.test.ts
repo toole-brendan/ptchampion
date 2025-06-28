@@ -271,7 +271,7 @@ describe('SitupGrader', () => {
         grader.processPose(downPosition);
       }
 
-      const score = grader.getAPFTScore();
+      const score = grader.getAPFTScore(25, 'male');
       expect(score).toBeGreaterThan(85); // 60 situps should be > 85 points
     });
 
@@ -305,7 +305,7 @@ describe('SitupGrader', () => {
         grader.processPose(downPosition);
       }
 
-      const score = grader.getAPFTScore();
+      const score = grader.getAPFTScore(25, 'male');
       expect(score).toBeGreaterThan(80); // 50 situps for female should be > 80 points
     });
   });
@@ -353,7 +353,7 @@ describe('SitupGrader', () => {
 
       expect(grader.getRepCount()).toBe(0);
       expect(grader.getFormScore()).toBe(100);
-      expect(grader.getAPFTScore()).toBe(0);
+      expect(grader.getAPFTScore(25, 'male')).toBe(0);
     });
   });
 });

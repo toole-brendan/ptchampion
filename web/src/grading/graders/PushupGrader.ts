@@ -2,7 +2,7 @@ import { NormalizedLandmark } from '@mediapipe/tasks-vision';
 import { GradingResult } from '../ExerciseGrader';
 import { PushupAnalyzer, PushupFormAnalysis } from '../PushupAnalyzer';
 import { BaseGrader, FormIssue, GraderConfig, POSE_LANDMARKS } from './BaseGrader';
-import { getAPFTScore } from '../APFTScoring';
+import { calculatePushupScore } from '../APFTScoring';
 
 enum PushupPhase {
   UP = 'up',
@@ -274,6 +274,6 @@ export class PushupGrader extends BaseGrader {
   }
 
   getAPFTScore(age: number, gender: 'male' | 'female'): number {
-    return getAPFTScore('pushup', this.repCount, age, gender);
+    return calculatePushupScore(this.repCount);
   }
 }

@@ -2,7 +2,7 @@ import { NormalizedLandmark } from '@mediapipe/tasks-vision';
 import { GradingResult } from '../ExerciseGrader';
 import { PullupAnalyzer, PullupFormAnalysis } from '../PullupAnalyzer';
 import { BaseGrader, FormIssue, GraderConfig, POSE_LANDMARKS } from './BaseGrader';
-import { getAPFTScore } from '../APFTScoring';
+import { calculatePullupScore } from '../APFTScoring';
 
 enum PullupPhase {
   DOWN = 'down',
@@ -277,6 +277,6 @@ export class PullupGrader extends BaseGrader {
   }
 
   getAPFTScore(age: number, gender: 'male' | 'female'): number {
-    return getAPFTScore('pullup', this.repCount, age, gender);
+    return calculatePullupScore(this.repCount);
   }
 }

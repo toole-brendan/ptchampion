@@ -240,7 +240,7 @@ describe('PushupGrader', () => {
         grader.processPose(upPosition);
       }
 
-      const score = grader.getAPFTScore();
+      const score = grader.getAPFTScore(25, 'male');
       expect(score).toBeGreaterThan(80); // 50 pushups should be > 80 points
     });
 
@@ -274,7 +274,7 @@ describe('PushupGrader', () => {
         grader.processPose(upPosition);
       }
 
-      const score = grader.getAPFTScore();
+      const score = grader.getAPFTScore(25, 'male');
       expect(score).toBeGreaterThan(85); // 30 pushups for female should be > 85 points
     });
   });
@@ -322,7 +322,7 @@ describe('PushupGrader', () => {
 
       expect(grader.getRepCount()).toBe(0);
       expect(grader.getFormScore()).toBe(100);
-      expect(grader.getAPFTScore()).toBe(0);
+      expect(grader.getAPFTScore(25, 'male')).toBe(0);
     });
   });
 });
