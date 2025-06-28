@@ -107,6 +107,132 @@ terraform/**/.terraform/providers/
 # iOS Configuration Files
 ios/ptchampion/Config.swift
 
-# Secret setup scripts
+# Root-level shell scripts (one-time fixes and setup scripts)
+/*.sh
+
+# Specific development/fix shell scripts that were cleaned up
+fix_*.sh
+deploy_*.sh
+deploy-*.sh
+test_*.sh
+test-*.sh
+verify_*.sh
+verify-*.sh
+apply_*.sh
+troubleshoot-*.sh
+update-*.sh
+check-*.sh
+clean_*.sh
+
+# Archive and backup files
+*.zip
+*.tar.gz
+*.backup
+*.bak
+*backup*
+
+# Additional build artifacts
+server
+server_binary
+/main
+cmd/server/server
+/ptchampion
+
+# Additional build directories 
+build/
+dist/
+web/dist/
+web/build/
+android/build/
+android/*/build/
+design-tokens/build/
+
+# Package manager lock files (optional - remove if you want to track them)
+# package-lock.json
+# web/package-lock.json
+# web/pnpm-lock.yaml
+# design-tokens/package-lock.json
+
+# Web specific artifacts
+web/coverage/
+web/.nyc_output/
+coverage/
+.nyc_output/
+
+# Temporary files
+temp_*
+*tmp*
+*.tmp
+
+# Go binaries in any location
+**/server
+**/main
+**/*.exe
+
+# Additional Android artifacts
+android/local.properties
+android/keystore/
+*.jks
+*.keystore
+
+# Additional iOS artifacts  
+ios/build/
+ios/*/build/
+ios/**/*.xcuserstate
+ios/**/UserInterfaceState.xcuserstate
+ios/DerivedData/
+ios/*/DerivedData/
+
+# Swift Package Manager
+Package.resolved
+.swiftpm/
+**/Package.resolved
+**/.swiftpm/
+
+# Xcode project files
+*.pbxproj.backup*
+*.pbxproj.bak*
+*.pbxproj.*backup*
+
+# macOS system files
+.DS_Store
+**/.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Downloaded dependencies and fonts
+downloaded_*/
+fonts_temp/
+
+# Java heap dumps
+*.hprof
+
+# Test artifacts and coverage
+*.test
+*.out
+test-results/
+test-output/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Editor and IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Debug and profiling files
+*.prof
+*.trace
+
+# Secret setup scripts (if any remain)
 set-github-secrets.sh
 test-db-connection.sh
+*secret*
+*password*
+*key*.sh

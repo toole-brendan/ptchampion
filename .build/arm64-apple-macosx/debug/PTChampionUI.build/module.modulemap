@@ -1,4 +1,0 @@
-module PTChampionUI {
-    header "/Users/brendantoole/projects/ptchampion/.build/arm64-apple-macosx/debug/PTChampionUI.build/PTChampionUI-Swift.h"
-    requires objc
-}
