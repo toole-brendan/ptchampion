@@ -1,9 +1,9 @@
 "use strict";
 (() => {
   // src/serviceWorker.ts
-  var STATIC_CACHE_NAME = "pt-champion-static-v6-FORCE-UPDATE";
-  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v6-FORCE-UPDATE";
-  var API_CACHE_NAME = "pt-champion-api-v6-FORCE-UPDATE";
+  var STATIC_CACHE_NAME = "pt-champion-static-v7-DASHBOARD-FIX";
+  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v7-DASHBOARD-FIX";
+  var API_CACHE_NAME = "pt-champion-api-v7-DASHBOARD-FIX";
   var APP_SHELL_ASSETS = [
     "/",
     "/manifest.json",

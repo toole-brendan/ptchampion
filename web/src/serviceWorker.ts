@@ -19,9 +19,9 @@ declare global {
 }
 
 // Cache names with versioning to allow for controlled updates
-const STATIC_CACHE_NAME = 'pt-champion-static-v6-FORCE-UPDATE';
-const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v6-FORCE-UPDATE';
-const API_CACHE_NAME = 'pt-champion-api-v6-FORCE-UPDATE';
+const STATIC_CACHE_NAME = 'pt-champion-static-v7-DASHBOARD-FIX';
+const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v7-DASHBOARD-FIX';
+const API_CACHE_NAME = 'pt-champion-api-v7-DASHBOARD-FIX';
 
 // Assets to cache on install (app shell)
 const APP_SHELL_ASSETS = [
