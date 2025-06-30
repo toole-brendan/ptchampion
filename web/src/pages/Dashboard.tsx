@@ -259,13 +259,13 @@ const Dashboard: React.FC = () => {
                       <div className="flex items-center">
                         <div className="mr-4 flex w-10 h-10 items-center justify-center rounded-full bg-brass-gold bg-opacity-10">
                           {workout.exercise_type === 'pushup' ? 
-                            <img src={pushupImage} alt="Push-ups" className="w-5 h-5" /> :
+                            <img src={pushupImage} alt="Push-ups" className="w-6 h-6 object-contain" /> :
                           workout.exercise_type === 'pullup' ? 
-                            <img src={pullupImage} alt="Pull-ups" className="w-5 h-5" /> :
+                            <img src={pullupImage} alt="Pull-ups" className="w-6 h-6 object-contain" /> :
                           workout.exercise_type === 'situp' ? 
-                            <img src={situpImage} alt="Sit-ups" className="w-5 h-5" /> :
+                            <img src={situpImage} alt="Sit-ups" className="w-6 h-6 object-contain" /> :
                           workout.exercise_type === 'run' ? 
-                            <img src={runningImage} alt="Running" className="w-5 h-5" /> :
+                            <img src={runningImage} alt="Running" className="w-6 h-6 object-contain" /> :
                             <Dumbbell className="w-5 h-5 text-brass-gold" />
                           }
                         </div>
@@ -286,8 +286,10 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="font-heading text-lg font-bold text-brass-gold">
-                        {workout.exercise_type === 'run' && workout.time_in_seconds
-                          ? `${Math.floor(workout.time_in_seconds / 60)}:${String(workout.time_in_seconds % 60).padStart(2, '0')}` 
+                        {workout.exercise_type === 'run' 
+                          ? (workout.time_in_seconds 
+                              ? `${Math.floor(workout.time_in_seconds / 60)}:${String(workout.time_in_seconds % 60).padStart(2, '0')}`
+                              : 'No time')
                           : `${workout.reps || 0} reps`}
                       </div>
                     </button>

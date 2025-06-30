@@ -456,7 +456,14 @@ const History: React.FC = () => {
               {exerciseTypes.map(type => (
                 <FilterButton
                   key={type}
-                  label={type === 'All' ? 'All Exercises' : type}
+                  label={
+                    type === 'All' ? 'All Exercises' :
+                    type === 'pushup' ? 'PUSH-UPS' :
+                    type === 'pullup' ? 'PULL-UPS' :
+                    type === 'situp' ? 'SIT-UPS' :
+                    type === 'run' ? 'TWO-MILE RUN' :
+                    type.toUpperCase()
+                  }
                   icon={type === 'All' ? Dumbbell : undefined}
                   active={exerciseFilter === type}
                   onClick={() => setExerciseFilter(type)}
@@ -723,33 +730,45 @@ const History: React.FC = () => {
                 >
                   <div className="flex items-center">
                     <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-                      {session.exercise_type && (
-                        session.exercise_type.toUpperCase().includes('PUSH') ? 
-                          <img src={pushupImage} alt="Push-ups" className="size-6" /> :
-                        session.exercise_type.toUpperCase().includes('PULL') ? 
-                          <img src={pullupImage} alt="Pull-ups" className="size-6" /> :
-                        session.exercise_type.toUpperCase().includes('SIT') ? 
-                          <img src={situpImage} alt="Sit-ups" className="size-6" /> :
-                        session.exercise_type.toUpperCase().includes('RUN') ? 
-                          <img src={runningImage} alt="Two-Mile Run" className="size-6" /> :
-                          <Dumbbell className="size-5 text-brass-gold" />
-                      )}
+                      {session.exercise_type === 'pushup' ? 
+                        <img src={pushupImage} alt="Push-ups" className="size-6" /> :
+                      session.exercise_type === 'pullup' ? 
+                        <img src={pullupImage} alt="Pull-ups" className="size-6" /> :
+                      session.exercise_type === 'situp' ? 
+                        <img src={situpImage} alt="Sit-ups" className="size-6" /> :
+                      session.exercise_type === 'run' ? 
+                        <img src={runningImage} alt="Two-Mile Run" className="size-6" /> :
+                        <Dumbbell className="size-5 text-brass-gold" />
+                      }
                     </div>
                     <div>
-                      <h3 className="font-heading text-sm uppercase text-command-black">
-                        {session.exercise_type}
+                      <h3 className="font-sans text-base font-medium uppercase text-command-black">
+                        {session.exercise_type === 'pushup' ? 'PUSH-UPS' :
+                         session.exercise_type === 'pullup' ? 'PULL-UPS' :
+                         session.exercise_type === 'situp' ? 'SIT-UPS' :
+                         session.exercise_type === 'run' ? 'TWO-MILE RUN' :
+                         session.exercise_type.toUpperCase()}
                       </h3>
                       <p className="text-xs text-tactical-gray">
-                        {format(new Date(session.created_at), "PP p")}
-                        {session.time_in_seconds ? ` · ${formatTime(session.time_in_seconds)}` : ''}
+                        {(() => {
+                          const date = new Date(session.created_at);
+                          const day = date.getDate();
+                          const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                          const year = date.getFullYear();
+                          const hours = date.getHours();
+                          const minutes = date.getMinutes();
+                          const militaryTime = `${hours.toString().padStart(2, '0')}${minutes.toString().padStart(2, '0')}`;
+                          return `${day}${month}${year} · ${militaryTime}`;
+                        })()}
+                        {session.exercise_type === 'run' && session.time_in_seconds ? ` · ${formatTime(session.time_in_seconds)}` : ''}
                       </p>
                     </div>
                   </div>
                   <div className="font-heading text-xl text-brass-gold">
-                    {session.reps !== undefined && session.reps !== null
-                      ? `${session.reps} reps`
-                      : session.distance !== undefined && session.distance !== null
-                        ? formatDistance(session.distance)
+                    {session.exercise_type === 'run' && session.time_in_seconds
+                      ? `${Math.floor(session.time_in_seconds / 60)}:${(session.time_in_seconds % 60).toString().padStart(2, '0')}`
+                      : session.reps !== undefined && session.reps !== null
+                        ? `${session.reps} reps`
                         : '-'}
                   </div>
                 </div>
