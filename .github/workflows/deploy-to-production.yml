@@ -119,37 +119,55 @@ jobs:
             --static-website \
             --index-document index.html
 
-          # Upload all files first with batch upload for speed
-          echo "Uploading all files to Azure Storage..."
+          # Fast deployment with proper cache headers
+          echo "Starting optimized deployment..."
+          START_TIME=$(date +%s)
+          
+          # Get storage account key once
+          echo "Getting storage account key..."
+          STORAGE_KEY=$(az storage account keys list \
+            --account-name ${{ env.STORAGE_ACCOUNT }} \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "[0].value" -o tsv)
+          
+          # Upload ALL files quickly with batch upload first
+          echo "Uploading all files with batch upload..."
+          UPLOAD_START=$(date +%s)
           az storage blob upload-batch \
             -s web-build \
             -d '$web' \
             --account-name ${{ env.STORAGE_ACCOUNT }} \
-            --overwrite
+            --account-key "$STORAGE_KEY" \
+            --overwrite --only-show-errors
+          UPLOAD_END=$(date +%s)
+          echo "Batch upload completed in $((UPLOAD_END - UPLOAD_START)) seconds"
           
-          # Then set cache headers in bulk using parallel processing
-          echo "Setting cache headers for HTML files..."
+          # Update only critical files' cache headers (HTML files)
+          echo "Setting no-cache headers for HTML files..."
+          CACHE_START=$(date +%s)
+          
+          # Use a single az command with JMESPath to update multiple files
           az storage blob list \
             --account-name ${{ env.STORAGE_ACCOUNT }} \
+            --account-key "$STORAGE_KEY" \
             --container-name '$web' \
             --query "[?ends_with(name, '.html')].name" -o tsv | \
-          xargs -I {} -P 10 az storage blob update \
-            --account-name ${{ env.STORAGE_ACCOUNT }} \
-            --container-name '$web' \
-            --name {} \
-            --content-cache-control "no-cache, no-store, must-revalidate"
+          while read -r blob_name; do
+            az storage blob update \
+              --account-name ${{ env.STORAGE_ACCOUNT }} \
+              --account-key "$STORAGE_KEY" \
+              --container-name '$web' \
+              --name "$blob_name" \
+              --content-cache-control "no-cache, no-store, must-revalidate" \
+              --only-show-errors &
+          done
+          wait
           
-          echo "Setting cache headers for static assets..."
-          az storage blob list \
-            --account-name ${{ env.STORAGE_ACCOUNT }} \
-            --container-name '$web' \
-            --prefix "assets/" \
-            --query "[].name" -o tsv | \
-          xargs -I {} -P 10 az storage blob update \
-            --account-name ${{ env.STORAGE_ACCOUNT }} \
-            --container-name '$web' \
-            --name {} \
-            --content-cache-control "public, max-age=31536000, immutable"
+          CACHE_END=$(date +%s)
+          echo "Cache headers updated in $((CACHE_END - CACHE_START)) seconds"
+          
+          END_TIME=$(date +%s)
+          echo "Total deployment time: $((END_TIME - START_TIME)) seconds"
 
       # Deploy backend if it was built
       - name: Deploy API to App Service
