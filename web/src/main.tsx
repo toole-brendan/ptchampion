@@ -26,6 +26,10 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+// VERSION CHECK - THIS SHOULD CHANGE WITH EACH DEPLOY
+console.log('🚨🚨🚨 PT CHAMPION VERSION: 2024-06-30-v6-FORCE-UPDATE 🚨🚨🚨');
+console.log('If you see an old version, the cache is STILL serving old files!');
+
 // Clear stale tokens at startup
 const clearStaleTokens = () => {
   console.log('Checking for stale tokens...');

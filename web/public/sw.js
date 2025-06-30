@@ -1,9 +1,9 @@
 "use strict";
 (() => {
   // src/serviceWorker.ts
-  var STATIC_CACHE_NAME = "pt-champion-static-v5";
-  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v5";
-  var API_CACHE_NAME = "pt-champion-api-v5";
+  var STATIC_CACHE_NAME = "pt-champion-static-v6-FORCE-UPDATE";
+  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v6-FORCE-UPDATE";
+  var API_CACHE_NAME = "pt-champion-api-v6-FORCE-UPDATE";
   var APP_SHELL_ASSETS = [
     "/",
     "/manifest.json",
@@ -42,7 +42,12 @@
   self.addEventListener("fetch", (event) => {
     const request = event.request;
     const url = new URL(request.url);
+    console.log(`[Service Worker] Fetch intercepted for: ${url.pathname}`);
+    console.log(`[Service Worker] Full URL: ${url.href}`);
+    console.log(`[Service Worker] Request mode: ${request.mode}`);
+    console.log(`[Service Worker] Request headers:`, request.headers.get("accept"));
     if (request.method !== "GET" || url.origin.includes("chrome-extension")) {
+      console.log(`[Service Worker] Skipping non-GET or extension request`);
       return;
     }
     if (url.pathname.includes("/api/")) {
@@ -75,6 +80,8 @@
       return;
     }
     if (url.pathname.includes("/assets/") && (url.pathname.endsWith(".js") || url.pathname.endsWith(".css"))) {
+      console.log(`[Service Worker] CRITICAL: Intercepting JS/CSS file: ${url.pathname}`);
+      console.log(`[Service Worker] FORCING fresh fetch with no-cache headers`);
       event.respondWith(
         fetch(request, {
           cache: "no-store",
@@ -82,7 +89,13 @@
             "Cache-Control": "no-cache, no-store, must-revalidate",
             "Pragma": "no-cache"
           }
-        }).catch(() => {
+        }).then((response) => {
+          console.log(`[Service Worker] Fresh fetch successful for: ${url.pathname}`);
+          console.log(`[Service Worker] Response status: ${response.status}`);
+          console.log(`[Service Worker] Response headers:`, response.headers.get("content-type"));
+          return response;
+        }).catch((error) => {
+          console.error(`[Service Worker] Fresh fetch FAILED for: ${url.pathname}`, error);
           return caches.match(request) || new Response("Resource not available", { status: 404 });
         })
       );
