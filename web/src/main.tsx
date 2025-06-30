@@ -39,6 +39,20 @@ const clearStaleTokens = () => {
 // Run token cleanup
 clearStaleTokens();
 
+// Force service worker to update and activate immediately
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => {
+      registration.update();
+    });
+  });
+  
+  // Listen for new service worker and immediately activate it
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
+}
+
 /**
  * Bootstrap sync process for browsers without SyncManager support
  * This will flush any pending workouts when the app starts and we're online

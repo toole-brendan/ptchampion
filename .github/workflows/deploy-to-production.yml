@@ -119,42 +119,37 @@ jobs:
             --static-website \
             --index-document index.html
 
-          # Upload the web files with proper cache headers
-          # Set no-cache for HTML files to prevent stale content
-          echo "Uploading HTML files with no-cache headers..."
-          find web-build -name "*.html" -type f | while read -r file; do
-            blob_name="${file#web-build/}"
-            az storage blob upload \
-              --account-name ${{ env.STORAGE_ACCOUNT }} \
-              --container-name '$web' \
-              --name "$blob_name" \
-              --file "$file" \
-              --content-cache-control "no-cache, no-store, must-revalidate" \
-              --overwrite
-          done
-          
-          # Set long cache for assets with hashes in their names
-          echo "Uploading static assets with long cache headers..."
-          find web-build/assets -type f | while read -r file; do
-            blob_name="${file#web-build/}"
-            az storage blob upload \
-              --account-name ${{ env.STORAGE_ACCOUNT }} \
-              --container-name '$web' \
-              --name "$blob_name" \
-              --file "$file" \
-              --content-cache-control "public, max-age=31536000, immutable" \
-              --overwrite
-          done
-          
-          # Upload remaining files with standard cache
-          echo "Uploading remaining files..."
+          # Upload all files first with batch upload for speed
+          echo "Uploading all files to Azure Storage..."
           az storage blob upload-batch \
             -s web-build \
             -d '$web' \
             --account-name ${{ env.STORAGE_ACCOUNT }} \
-            --pattern "*" \
-            --content-cache-control "public, max-age=3600" \
             --overwrite
+          
+          # Then set cache headers in bulk using parallel processing
+          echo "Setting cache headers for HTML files..."
+          az storage blob list \
+            --account-name ${{ env.STORAGE_ACCOUNT }} \
+            --container-name '$web' \
+            --query "[?ends_with(name, '.html')].name" -o tsv | \
+          xargs -I {} -P 10 az storage blob update \
+            --account-name ${{ env.STORAGE_ACCOUNT }} \
+            --container-name '$web' \
+            --name {} \
+            --content-cache-control "no-cache, no-store, must-revalidate"
+          
+          echo "Setting cache headers for static assets..."
+          az storage blob list \
+            --account-name ${{ env.STORAGE_ACCOUNT }} \
+            --container-name '$web' \
+            --prefix "assets/" \
+            --query "[].name" -o tsv | \
+          xargs -I {} -P 10 az storage blob update \
+            --account-name ${{ env.STORAGE_ACCOUNT }} \
+            --container-name '$web' \
+            --name {} \
+            --content-cache-control "public, max-age=31536000, immutable"
 
       # Deploy backend if it was built
       - name: Deploy API to App Service
