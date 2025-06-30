@@ -77,7 +77,8 @@ const Dashboard: React.FC = () => {
     let runCount = 0;
     
     items.forEach(workout => {
-      if (workout.exercise_type === 'run') {
+      const exerciseType = workout.exercise_type?.toLowerCase() || '';
+      if (exerciseType === 'run' || exerciseType === 'running') {
         // Accumulate run times to calculate average
         totalRunTime += workout.time_in_seconds || 0;
         runCount++;
@@ -94,9 +95,12 @@ const Dashboard: React.FC = () => {
       lastWorkoutDate: lastWorkout ? new Date(lastWorkout.created_at) : null,
       lastWorkoutType: lastWorkout ? lastWorkout.exercise_type : null,
       lastWorkoutMetric: lastWorkout ? 
-        (lastWorkout.exercise_type === 'run' ? 
-          `${Math.floor((lastWorkout.time_in_seconds || 0) / 60)}:${String((lastWorkout.time_in_seconds || 0) % 60).padStart(2, '0')}` : 
-          `${lastWorkout.reps || 0} reps`) 
+        (() => {
+          const type = lastWorkout.exercise_type?.toLowerCase() || '';
+          return (type === 'run' || type === 'running') ? 
+            `${Math.floor((lastWorkout.time_in_seconds || 0) / 60)}:${String((lastWorkout.time_in_seconds || 0) % 60).padStart(2, '0')}` : 
+            `${lastWorkout.reps || 0} reps`;
+        })()
         : null,
       totalReps,
       averageRunTime,
@@ -170,13 +174,22 @@ const Dashboard: React.FC = () => {
     {
       title: "LAST ACTIVITY",
       value: dashboardMetrics.lastWorkoutType ? 
-        (dashboardMetrics.lastWorkoutType === 'run' ? 'Two-Mile Run' : 
-         dashboardMetrics.lastWorkoutType === 'pushup' ? 'Push-ups' :
-         dashboardMetrics.lastWorkoutType === 'situp' ? 'Sit-ups' :
-         dashboardMetrics.lastWorkoutType === 'pullup' ? 'Pull-ups' :
-         'Exercise') : 'None',
+        (() => {
+          const type = dashboardMetrics.lastWorkoutType.toLowerCase();
+          return type === 'run' || type === 'running' ? 'Two-Mile Run' : 
+                 type === 'pushup' ? 'Push-ups' :
+                 type === 'situp' ? 'Sit-ups' :
+                 type === 'pullup' ? 'Pull-ups' :
+                 'Exercise';
+        })() : 'None',
       subtitle: dashboardMetrics.lastWorkoutDate ? 
-        `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
+        (() => {
+          const date = dashboardMetrics.lastWorkoutDate;
+          const day = date.getDate();
+          const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+          const year = date.getFullYear();
+          return `${day}${month}${year} - ${dashboardMetrics.lastWorkoutMetric}`;
+        })() : 
         'No workouts yet',
       icon: <CalendarClock className="w-6 h-6" />,
       onPress: () => dashboardMetrics.lastWorkoutDate && navigate('/history')
@@ -250,7 +263,11 @@ const Dashboard: React.FC = () => {
           >
             {dashboardMetrics.recentWorkouts.length > 0 ? (
               <div className="space-y-0">
-                {dashboardMetrics.recentWorkouts.map((workout, index) => (
+                {dashboardMetrics.recentWorkouts.map((workout, index) => {
+                  // Normalize exercise type to lowercase for comparison
+                  const exerciseType = workout.exercise_type?.toLowerCase() || '';
+                  
+                  return (
                   <div key={workout.id || index}>
                     <button
                       className="flex items-center justify-between w-full py-3 px-4 hover:bg-black hover:bg-opacity-5 transition-colors duration-150 bg-white"
@@ -261,17 +278,17 @@ const Dashboard: React.FC = () => {
                         <div className="flex-shrink-0">
                           <img 
                             src={
-                              workout.exercise_type === 'pushup' ? pushupImage :
-                              workout.exercise_type === 'pullup' ? pullupImage :
-                              workout.exercise_type === 'situp' ? situpImage :
-                              workout.exercise_type === 'run' ? runningImage :
+                              exerciseType === 'pushup' ? pushupImage :
+                              exerciseType === 'pullup' ? pullupImage :
+                              exerciseType === 'situp' ? situpImage :
+                              exerciseType === 'run' || exerciseType === 'running' ? runningImage :
                               pushupImage
                             }
                             alt={
-                              workout.exercise_type === 'pushup' ? 'Push-ups' :
-                              workout.exercise_type === 'pullup' ? 'Pull-ups' :
-                              workout.exercise_type === 'situp' ? 'Sit-ups' :
-                              workout.exercise_type === 'run' ? 'Two-Mile Run' :
+                              exerciseType === 'pushup' ? 'Push-ups' :
+                              exerciseType === 'pullup' ? 'Pull-ups' :
+                              exerciseType === 'situp' ? 'Sit-ups' :
+                              exerciseType === 'run' || exerciseType === 'running' ? 'Two-Mile Run' :
                               'Exercise'
                             }
                             className="w-11 h-11 object-contain"
@@ -279,32 +296,33 @@ const Dashboard: React.FC = () => {
                         </div>
                         <div className="flex-1 text-left">
                           <h3 className="text-base font-semibold text-command-black">
-                            {workout.exercise_type === 'pushup' ? 'Push-ups' : 
-                             workout.exercise_type === 'pullup' ? 'Pull-ups' :
-                             workout.exercise_type === 'situp' ? 'Sit-ups' :
-                             workout.exercise_type === 'run' ? 'Two-Mile Run' : 
+                            {exerciseType === 'pushup' ? 'Push-ups' : 
+                             exerciseType === 'pullup' ? 'Pull-ups' :
+                             exerciseType === 'situp' ? 'Sit-ups' :
+                             exerciseType === 'run' || exerciseType === 'running' ? 'Two-Mile Run' : 
                              workout.exercise_name || 'Unknown Exercise'}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            {new Date(workout.created_at).toLocaleDateString(undefined, {
-                              month: 'short', 
-                              day: 'numeric',
-                              hour: 'numeric',
-                              minute: '2-digit'
-                            })}
+                            {(() => {
+                              const date = new Date(workout.created_at);
+                              const day = date.getDate();
+                              const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+                              const year = date.getFullYear();
+                              return `${day}${month}${year}`;
+                            })()}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-baseline space-x-1">
                         <span className="text-xl font-bold text-command-black font-mono">
-                          {workout.exercise_type === 'run' 
+                          {exerciseType === 'run' || exerciseType === 'running'
                             ? (workout.time_in_seconds 
                                 ? `${Math.floor(workout.time_in_seconds / 60)}:${String(workout.time_in_seconds % 60).padStart(2, '0')}`
                                 : '--')
                             : workout.reps || '--'}
                         </span>
                         <span className="text-sm text-gray-600">
-                          {workout.exercise_type === 'run' ? '' : 'reps'}
+                          {exerciseType === 'run' || exerciseType === 'running' ? '' : 'reps'}
                         </span>
                       </div>
                     </button>
@@ -312,7 +330,8 @@ const Dashboard: React.FC = () => {
                       <div className="h-px bg-gray-200 mx-4"></div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
                 
                 {/* View All button */}
                 <button
