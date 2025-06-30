@@ -1,9 +1,9 @@
 "use strict";
 (() => {
   // src/serviceWorker.ts
-  var STATIC_CACHE_NAME = "pt-champion-static-v4";
-  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v4";
-  var API_CACHE_NAME = "pt-champion-api-v4";
+  var STATIC_CACHE_NAME = "pt-champion-static-v5";
+  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v5";
+  var API_CACHE_NAME = "pt-champion-api-v5";
   var APP_SHELL_ASSETS = [
     "/",
     "/manifest.json",
@@ -25,14 +25,18 @@
       caches.keys().then((keyList) => {
         return Promise.all(
           keyList.map((key) => {
-            if (key !== STATIC_CACHE_NAME && key !== DYNAMIC_CACHE_NAME && key !== API_CACHE_NAME) {
-              console.log("[Service Worker] Removing old cache", key);
-              return caches.delete(key);
-            }
-            return Promise.resolve();
+            console.log("[Service Worker] Removing cache", key);
+            return caches.delete(key);
           })
         );
-      }).then(() => self.clients.claim())
+      }).then(() => self.clients.claim()).then(() => {
+        return self.clients.matchAll({ type: "window" }).then((clients) => {
+          clients.forEach((client) => {
+            console.log("[Service Worker] Reloading client", client.url);
+            client.navigate(client.url);
+          });
+        });
+      })
     );
   });
   self.addEventListener("fetch", (event) => {
@@ -51,8 +55,14 @@
     }
     if (request.mode === "navigate" || request.headers.get("accept")?.includes("text/html")) {
       event.respondWith(
-        // FIX: Ensure we always return a Response by handling undefined case
-        fetch(request).catch(() => {
+        // Always fetch fresh HTML with cache busting
+        fetch(request, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache"
+          }
+        }).catch(() => {
           console.log("[Service Worker] Serving offline page for navigation");
           return caches.match("/offline.html").then((response) => {
             return response || new Response("Offline page not found", {
@@ -60,6 +70,20 @@
               headers: { "Content-Type": "text/plain" }
             });
           });
+        })
+      );
+      return;
+    }
+    if (url.pathname.includes("/assets/") && (url.pathname.endsWith(".js") || url.pathname.endsWith(".css"))) {
+      event.respondWith(
+        fetch(request, {
+          cache: "no-store",
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache"
+          }
+        }).catch(() => {
+          return caches.match(request) || new Response("Resource not available", { status: 404 });
         })
       );
       return;

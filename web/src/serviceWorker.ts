@@ -19,9 +19,9 @@ declare global {
 }
 
 // Cache names with versioning to allow for controlled updates
-const STATIC_CACHE_NAME = 'pt-champion-static-v4';
-const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v4';
-const API_CACHE_NAME = 'pt-champion-api-v4';
+const STATIC_CACHE_NAME = 'pt-champion-static-v5';
+const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v5';
+const API_CACHE_NAME = 'pt-champion-api-v5';
 
 // Assets to cache on install (app shell)
 const APP_SHELL_ASSETS = [
@@ -55,21 +55,23 @@ self.addEventListener('activate', (event) => {
       .then(keyList => {
         return Promise.all(
           keyList.map(key => {
-            // Delete old versions of our caches
-            if (
-              key !== STATIC_CACHE_NAME && 
-              key !== DYNAMIC_CACHE_NAME && 
-              key !== API_CACHE_NAME
-            ) {
-              console.log('[Service Worker] Removing old cache', key);
-              return caches.delete(key);
-            }
-            return Promise.resolve();
+            // Delete ALL caches to force fresh content
+            console.log('[Service Worker] Removing cache', key);
+            return caches.delete(key);
           })
         );
       })
-      // Claim control immediately
+      // Claim control immediately and reload all clients
       .then(() => self.clients.claim())
+      .then(() => {
+        // Force reload all tabs/windows
+        return self.clients.matchAll({ type: 'window' }).then(clients => {
+          clients.forEach(client => {
+            console.log('[Service Worker] Reloading client', client.url);
+            client.navigate(client.url);
+          });
+        });
+      })
   );
 });
 
@@ -101,8 +103,14 @@ self.addEventListener('fetch', (event) => {
   // For HTML navigation requests - use a Network First strategy with offline fallback
   if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
-      // FIX: Ensure we always return a Response by handling undefined case
-      fetch(request).catch(() => {
+      // Always fetch fresh HTML with cache busting
+      fetch(request, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      }).catch(() => {
         console.log('[Service Worker] Serving offline page for navigation');
         // Return offline.html from the cache or a fallback response if not found
         return caches.match('/offline.html').then(response => {
@@ -111,6 +119,23 @@ self.addEventListener('fetch', (event) => {
             headers: { 'Content-Type': 'text/plain' }
           });
         });
+      })
+    );
+    return;
+  }
+  
+  // For JS/CSS files, always fetch fresh in production
+  if (url.pathname.includes('/assets/') && (url.pathname.endsWith('.js') || url.pathname.endsWith('.css'))) {
+    event.respondWith(
+      fetch(request, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      }).catch(() => {
+        // Fallback to cache if offline
+        return caches.match(request) || new Response('Resource not available', { status: 404 });
       })
     );
     return;
