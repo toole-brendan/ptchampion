@@ -8,33 +8,17 @@ import App from './App';
 import { QueryClient } from '@tanstack/react-query';
 import config from './lib/config';
 import { syncManager } from './lib/syncManager';
-// Register the service worker manually since we're using injectManifest
+// Register the service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/serviceWorker.js')
+    navigator.serviceWorker.register('/sw.js')
       .then(registration => {
         console.log('Service Worker registered:', registration);
         
-        // Check for updates periodically
+        // Check for updates every 60 seconds
         setInterval(() => {
           registration.update();
-        }, 60 * 1000); // Check every minute
-        
-        // Handle updates
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New service worker is ready
-                if (confirm('A new version is available. Do you want to reload?')) {
-                  newWorker.postMessage({ type: 'SKIP_WAITING' });
-                  window.location.reload();
-                }
-              }
-            });
-          }
-        });
+        }, 60 * 1000);
       })
       .catch(error => {
         console.error('Service Worker registration failed:', error);

@@ -11,15 +11,37 @@ export default defineConfig({
     compression({ algorithm: 'brotliCompress', ext: '.br' }), // brotli compression
     VitePWA({
       registerType: 'autoUpdate',
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'serviceWorker.ts',
       devOptions: {
         enabled: true,
-        type: 'module',
       },
-      injectManifest: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2,json}'],
+      workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/ptchampion-api-westus\.azurewebsites\.net\/api\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 5 * 60, // 5 minutes
+              },
+            },
+          },
+          {
+            urlPattern: /\.(js|css|png|jpg|jpeg|svg|woff|woff2)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-assets',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'PT Champion',
