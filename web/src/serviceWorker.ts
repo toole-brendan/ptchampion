@@ -19,13 +19,12 @@ declare global {
 }
 
 // Cache names with versioning to allow for controlled updates
-const STATIC_CACHE_NAME = 'pt-champion-static-v7-DASHBOARD-FIX';
-const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v7-DASHBOARD-FIX';
-const API_CACHE_NAME = 'pt-champion-api-v7-DASHBOARD-FIX';
+const STATIC_CACHE_NAME = 'pt-champion-static-v8-CACHE-FIX';
+const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v8-CACHE-FIX';
+const API_CACHE_NAME = 'pt-champion-api-v8-CACHE-FIX';
 
 // Assets to cache on install (app shell)
 const APP_SHELL_ASSETS = [
-  '/',
   '/manifest.json',
   '/offline.html'
 ];
@@ -97,15 +96,6 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // For static assets - use a Cache First strategy
-  if (
-    APP_SHELL_ASSETS.includes(url.pathname) || 
-    url.pathname.includes('/assets/')
-  ) {
-    event.respondWith(cacheFirstStrategy(request));
-    return;
-  }
-  
   // For HTML navigation requests - use a Network First strategy with offline fallback
   if (request.mode === 'navigate' || request.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
@@ -153,6 +143,15 @@ self.addEventListener('fetch', (event) => {
         return caches.match(request) || new Response('Resource not available', { status: 404 });
       })
     );
+    return;
+  }
+  
+  // For static assets - use a Cache First strategy
+  if (
+    APP_SHELL_ASSETS.includes(url.pathname) || 
+    url.pathname.includes('/assets/')
+  ) {
+    event.respondWith(cacheFirstStrategy(request));
     return;
   }
   

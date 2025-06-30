@@ -27,7 +27,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // VERSION CHECK - THIS SHOULD CHANGE WITH EACH DEPLOY
-console.log('🚨🚨🚨 PT CHAMPION VERSION: 2024-06-30-v7-DASHBOARD-FIX 🚨🚨🚨');
+console.log('🚨🚨🚨 PT CHAMPION VERSION: 2024-06-30-v8-CACHE-FIX 🚨🚨🚨');
 console.log('If you see an old version, the cache is STILL serving old files!');
 console.log('Dashboard fixes: Exercise icons, date format DDMMMYYYY, run times, last activity');
 

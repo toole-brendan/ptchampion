@@ -1,11 +1,10 @@
 "use strict";
 (() => {
   // src/serviceWorker.ts
-  var STATIC_CACHE_NAME = "pt-champion-static-v7-DASHBOARD-FIX";
-  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v7-DASHBOARD-FIX";
-  var API_CACHE_NAME = "pt-champion-api-v7-DASHBOARD-FIX";
+  var STATIC_CACHE_NAME = "pt-champion-static-v8-CACHE-FIX";
+  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v8-CACHE-FIX";
+  var API_CACHE_NAME = "pt-champion-api-v8-CACHE-FIX";
   var APP_SHELL_ASSETS = [
-    "/",
     "/manifest.json",
     "/offline.html"
   ];
@@ -54,10 +53,6 @@
       event.respondWith(networkFirstStrategy(request));
       return;
     }
-    if (APP_SHELL_ASSETS.includes(url.pathname) || url.pathname.includes("/assets/")) {
-      event.respondWith(cacheFirstStrategy(request));
-      return;
-    }
     if (request.mode === "navigate" || request.headers.get("accept")?.includes("text/html")) {
       event.respondWith(
         // Always fetch fresh HTML with cache busting
@@ -99,6 +94,10 @@
           return caches.match(request) || new Response("Resource not available", { status: 404 });
         })
       );
+      return;
+    }
+    if (APP_SHELL_ASSETS.includes(url.pathname) || url.pathname.includes("/assets/")) {
+      event.respondWith(cacheFirstStrategy(request));
       return;
     }
     event.respondWith(staleWhileRevalidateStrategy(request));
