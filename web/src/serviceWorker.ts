@@ -19,24 +19,14 @@ declare global {
 }
 
 // Cache names with versioning to allow for controlled updates
-const STATIC_CACHE_NAME = 'pt-champion-static-v3';
-const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v3';
-const API_CACHE_NAME = 'pt-champion-api-v3';
+const STATIC_CACHE_NAME = 'pt-champion-static-v4';
+const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v4';
+const API_CACHE_NAME = 'pt-champion-api-v4';
 
 // Assets to cache on install (app shell)
 const APP_SHELL_ASSETS = [
+  '/',
   '/manifest.json',
-  '/assets/index.css',
-  '/assets/index.js',
-  '/assets/fonts/BebasNeue-Regular.woff2',
-  '/assets/fonts/Montserrat-Regular.woff2',
-  '/assets/fonts/Montserrat-Medium.woff2',
-  '/assets/fonts/Montserrat-Bold.woff2',
-  '/assets/fonts/RobotoMono-Regular.woff2',
-  '/assets/icons/logo.svg',
-  '/assets/icons/icon-192x192.png',
-  '/assets/icons/icon-512x512.png',
-  '/assets/images/empty-state.json', // Lottie animation
   '/offline.html'
 ];
 

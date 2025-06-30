@@ -1,23 +1,12 @@
 "use strict";
 (() => {
   // src/serviceWorker.ts
-  var STATIC_CACHE_NAME = "pt-champion-static-v3";
-  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v3";
-  var API_CACHE_NAME = "pt-champion-api-v3";
+  var STATIC_CACHE_NAME = "pt-champion-static-v4";
+  var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v4";
+  var API_CACHE_NAME = "pt-champion-api-v4";
   var APP_SHELL_ASSETS = [
+    "/",
     "/manifest.json",
-    "/assets/index.css",
-    "/assets/index.js",
-    "/assets/fonts/BebasNeue-Regular.woff2",
-    "/assets/fonts/Montserrat-Regular.woff2",
-    "/assets/fonts/Montserrat-Medium.woff2",
-    "/assets/fonts/Montserrat-Bold.woff2",
-    "/assets/fonts/RobotoMono-Regular.woff2",
-    "/assets/icons/logo.svg",
-    "/assets/icons/icon-192x192.png",
-    "/assets/icons/icon-512x512.png",
-    "/assets/images/empty-state.json",
-    // Lottie animation
     "/offline.html"
   ];
   self.addEventListener("install", (event) => {
