@@ -19,14 +19,12 @@ declare global {
 }
 
 // Cache names with versioning to allow for controlled updates
-const STATIC_CACHE_NAME = 'pt-champion-static-v1';
-const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v1';
-const API_CACHE_NAME = 'pt-champion-api-v1';
+const STATIC_CACHE_NAME = 'pt-champion-static-v3';
+const DYNAMIC_CACHE_NAME = 'pt-champion-dynamic-v3';
+const API_CACHE_NAME = 'pt-champion-api-v3';
 
 // Assets to cache on install (app shell)
 const APP_SHELL_ASSETS = [
-  '/',
-  '/index.html',
   '/manifest.json',
   '/assets/index.css',
   '/assets/index.js',
@@ -272,6 +270,11 @@ self.addEventListener('message',
       type: 'SYNC_STATUS', 
       status: event.data.status 
     });
+  }
+  
+  // Handle skip waiting message for updates
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
   }
 });
 

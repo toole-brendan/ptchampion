@@ -8,6 +8,39 @@ import App from './App';
 import { QueryClient } from '@tanstack/react-query';
 import config from './lib/config';
 import { syncManager } from './lib/syncManager';
+// Register the service worker manually since we're using injectManifest
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/serviceWorker.js')
+      .then(registration => {
+        console.log('Service Worker registered:', registration);
+        
+        // Check for updates periodically
+        setInterval(() => {
+          registration.update();
+        }, 60 * 1000); // Check every minute
+        
+        // Handle updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New service worker is ready
+                if (confirm('A new version is available. Do you want to reload?')) {
+                  newWorker.postMessage({ type: 'SKIP_WAITING' });
+                  window.location.reload();
+                }
+              }
+            });
+          }
+        });
+      })
+      .catch(error => {
+        console.error('Service Worker registration failed:', error);
+      });
+  });
+}
 
 // Clear stale tokens at startup
 const clearStaleTokens = () => {
@@ -38,20 +71,6 @@ const clearStaleTokens = () => {
 
 // Run token cleanup
 clearStaleTokens();
-
-// Force service worker to update and activate immediately
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(registrations => {
-    registrations.forEach(registration => {
-      registration.update();
-    });
-  });
-  
-  // Listen for new service worker and immediately activate it
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload();
-  });
-}
 
 /**
  * Bootstrap sync process for browsers without SyncManager support
