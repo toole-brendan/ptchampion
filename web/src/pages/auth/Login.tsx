@@ -23,6 +23,7 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [logoClickCount, setLogoClickCount] = useState(0);
+  const [demoLoading, setDemoLoading] = useState(false);
   const { login, isAuthenticated, isLoading, error, clearError } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -92,6 +93,32 @@ const LoginPage: React.FC = () => {
     }
   };
 
+  // Handle demo login
+  const handleDemoLogin = async () => {
+    console.log('Demo login initiated');
+    setDemoLoading(true);
+    
+    // Set demo credentials
+    const demoEmail = 'john.smith@example.com';
+    const demoPassword = 'DemoUser123!';
+    
+    setEmail(demoEmail);
+    setPassword(demoPassword);
+    
+    try {
+      console.log('Calling login with demo credentials');
+      await login({
+        email: demoEmail,
+        password: demoPassword,
+      });
+      console.log('Demo login completed');
+    } catch (err) {
+      console.error('Demo login failed:', err);
+    } finally {
+      setDemoLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-cream-light">
       <div className="w-full max-w-sm">
@@ -153,18 +180,31 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Login Button */}
-            <button
-              type="submit"
-              disabled={!email || !password || isLoading}
-              className="w-full bg-brass-gold text-white font-semibold py-3 px-4 rounded-lg hover:bg-brass-gold/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:cursor-not-allowed transition-colors mt-6"
-            >
-              {isLoading ? 'SIGNING IN...' : 'DEV LOGIN'}
-            </button>
+            {/* Buttons Container */}
+            <div className="space-y-3 mt-6">
+              {/* Sign In Button */}
+              <button
+                type="submit"
+                disabled={!email || !password || isLoading || demoLoading}
+                className="w-full bg-brass-gold text-white font-semibold py-3 px-4 rounded-lg hover:bg-brass-gold/90 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {isLoading ? 'SIGNING IN...' : 'SIGN IN'}
+              </button>
+
+              {/* Demo Button */}
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={isLoading || demoLoading}
+                className="w-full border-2 border-brass-gold text-brass-gold font-semibold py-3 px-4 rounded-lg hover:bg-brass-gold/10 focus:outline-none focus:ring-2 focus:ring-brass-gold disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                {demoLoading ? 'LOADING DEMO...' : 'DEMO'}
+              </button>
+            </div>
 
             {/* Error message */}
             {error && (
-              <p className="text-error text-sm mt-xs text-center">{error}</p>
+              <p className="text-error text-sm mt-2 text-center">{error}</p>
             )}
           </form>
         </div>
