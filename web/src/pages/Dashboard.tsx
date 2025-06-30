@@ -256,41 +256,56 @@ const Dashboard: React.FC = () => {
                       className="flex items-center justify-between w-full py-3 px-4 hover:bg-black hover:bg-opacity-5 transition-colors duration-150 bg-white"
                       onClick={() => navigate(`/history/${workout.id}`)}
                     >
-                      <div className="flex items-center">
-                        <div className="mr-4 flex w-10 h-10 items-center justify-center rounded-full bg-brass-gold bg-opacity-10">
-                          {workout.exercise_type === 'pushup' ? 
-                            <img src={pushupImage} alt="Push-ups" className="w-6 h-6 object-contain" /> :
-                          workout.exercise_type === 'pullup' ? 
-                            <img src={pullupImage} alt="Pull-ups" className="w-6 h-6 object-contain" /> :
-                          workout.exercise_type === 'situp' ? 
-                            <img src={situpImage} alt="Sit-ups" className="w-6 h-6 object-contain" /> :
-                          workout.exercise_type === 'run' ? 
-                            <img src={runningImage} alt="Running" className="w-6 h-6 object-contain" /> :
-                            <Dumbbell className="w-5 h-5 text-brass-gold" />
-                          }
+                      <div className="flex items-center space-x-4">
+                        {/* Exercise icon without background circle to match style */}
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={
+                              workout.exercise_type === 'pushup' ? pushupImage :
+                              workout.exercise_type === 'pullup' ? pullupImage :
+                              workout.exercise_type === 'situp' ? situpImage :
+                              workout.exercise_type === 'run' ? runningImage :
+                              pushupImage
+                            }
+                            alt={
+                              workout.exercise_type === 'pushup' ? 'Push-ups' :
+                              workout.exercise_type === 'pullup' ? 'Pull-ups' :
+                              workout.exercise_type === 'situp' ? 'Sit-ups' :
+                              workout.exercise_type === 'run' ? 'Two-Mile Run' :
+                              'Exercise'
+                            }
+                            className="w-11 h-11 object-contain"
+                          />
                         </div>
-                        <div className="text-left">
-                          <h3 className="font-mono text-base font-medium uppercase text-deep-ops">
-                            {workout.exercise_type === 'pushup' ? 'PUSH-UPS' : 
-                             workout.exercise_type === 'pullup' ? 'PULL-UPS' :
-                             workout.exercise_type === 'situp' ? 'SIT-UPS' :
-                             workout.exercise_type === 'run' ? 'TWO-MILE RUN' : 
-                             workout.exercise_name || 'UNKNOWN EXERCISE'}
+                        <div className="flex-1 text-left">
+                          <h3 className="text-base font-semibold text-command-black">
+                            {workout.exercise_type === 'pushup' ? 'Push-ups' : 
+                             workout.exercise_type === 'pullup' ? 'Pull-ups' :
+                             workout.exercise_type === 'situp' ? 'Sit-ups' :
+                             workout.exercise_type === 'run' ? 'Two-Mile Run' : 
+                             workout.exercise_name || 'Unknown Exercise'}
                           </h3>
-                          <p className="text-sm text-tactical-gray">
+                          <p className="text-sm text-gray-600">
                             {new Date(workout.created_at).toLocaleDateString(undefined, {
                               month: 'short', 
-                              day: 'numeric'
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit'
                             })}
                           </p>
                         </div>
                       </div>
-                      <div className="font-heading text-lg font-bold text-brass-gold">
-                        {workout.exercise_type === 'run' 
-                          ? (workout.time_in_seconds 
-                              ? `${Math.floor(workout.time_in_seconds / 60)}:${String(workout.time_in_seconds % 60).padStart(2, '0')}`
-                              : 'No time')
-                          : `${workout.reps || 0} reps`}
+                      <div className="flex items-baseline space-x-1">
+                        <span className="text-xl font-bold text-command-black font-mono">
+                          {workout.exercise_type === 'run' 
+                            ? (workout.time_in_seconds 
+                                ? `${Math.floor(workout.time_in_seconds / 60)}:${String(workout.time_in_seconds % 60).padStart(2, '0')}`
+                                : '--')
+                            : workout.reps || '--'}
+                        </span>
+                        <span className="text-sm text-gray-600">
+                          {workout.exercise_type === 'run' ? '' : 'reps'}
+                        </span>
                       </div>
                     </button>
                     {index < dashboardMetrics.recentWorkouts.length - 1 && (
