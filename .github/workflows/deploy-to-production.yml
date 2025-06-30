@@ -540,6 +540,14 @@ jobs:
               --content-paths $PURGE_PATHS || echo "Cache purge failed"
             
             echo "Cache purge completed successfully"
+            
+            # Also purge specific asset files to force refresh
+            echo "Purging specific asset files..."
+            az afd endpoint purge \
+              --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+              --profile-name ${{ env.FRONT_DOOR_PROFILE }} \
+              --endpoint-name ${{ env.FRONT_DOOR_ENDPOINT }} \
+              --content-paths "/assets/index-*.js" "/assets/index-*.css" || echo "Asset purge failed"
           fi
 
   # Quick container diagnostic check
