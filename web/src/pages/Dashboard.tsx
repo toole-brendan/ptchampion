@@ -62,7 +62,7 @@ const Dashboard: React.FC = () => {
         lastWorkoutType: null,
         lastWorkoutMetric: null,
         totalReps: 0,
-        totalDistance: 0,
+        averageRunTime: 0,
         recentWorkouts: []
       };
     }
@@ -73,27 +73,33 @@ const Dashboard: React.FC = () => {
     
     // Calculate totals
     let totalReps = 0;
-    let totalDistance = 0;
+    let totalRunTime = 0;
+    let runCount = 0;
     
     items.forEach(workout => {
-      if (workout.exercise_type === 'RUNNING') {
-        totalDistance += workout.distance || 0;
+      if (workout.exercise_type === 'run') {
+        // Accumulate run times to calculate average
+        totalRunTime += workout.time_in_seconds || 0;
+        runCount++;
       } else {
         totalReps += workout.reps || 0;
       }
     });
+    
+    // Calculate average run time
+    const averageRunTime = runCount > 0 ? totalRunTime / runCount : 0;
     
     return {
       totalWorkouts,
       lastWorkoutDate: lastWorkout ? new Date(lastWorkout.created_at) : null,
       lastWorkoutType: lastWorkout ? lastWorkout.exercise_type : null,
       lastWorkoutMetric: lastWorkout ? 
-        (lastWorkout.exercise_type === 'RUNNING' ? 
-          `${((lastWorkout.distance || 0) / 1000).toFixed(2)} km` : 
+        (lastWorkout.exercise_type === 'run' ? 
+          `${Math.floor((lastWorkout.time_in_seconds || 0) / 60)}:${String((lastWorkout.time_in_seconds || 0) % 60).padStart(2, '0')}` : 
           `${lastWorkout.reps || 0} reps`) 
         : null,
       totalReps,
-      totalDistance,
+      averageRunTime,
       recentWorkouts: items.slice(0, 5)
     };
   }, [exerciseHistory, user]);
@@ -164,11 +170,11 @@ const Dashboard: React.FC = () => {
     {
       title: "LAST ACTIVITY",
       value: dashboardMetrics.lastWorkoutType ? 
-        (dashboardMetrics.lastWorkoutType === 'RUNNING' ? 'Two-Mile Run' : 
-         dashboardMetrics.lastWorkoutType === 'PUSHUP' ? 'Push-ups' :
-         dashboardMetrics.lastWorkoutType === 'SITUP' ? 'Sit-ups' :
-         dashboardMetrics.lastWorkoutType === 'PULLUP' ? 'Pull-ups' :
-         dashboardMetrics.lastWorkoutType) : 'None',
+        (dashboardMetrics.lastWorkoutType === 'run' ? 'Two-Mile Run' : 
+         dashboardMetrics.lastWorkoutType === 'pushup' ? 'Push-ups' :
+         dashboardMetrics.lastWorkoutType === 'situp' ? 'Sit-ups' :
+         dashboardMetrics.lastWorkoutType === 'pullup' ? 'Pull-ups' :
+         'Exercise') : 'None',
       subtitle: dashboardMetrics.lastWorkoutDate ? 
         `${formattedLastWorkoutDate} - ${dashboardMetrics.lastWorkoutMetric}` : 
         'No workouts yet',
@@ -182,8 +188,10 @@ const Dashboard: React.FC = () => {
       onPress: () => navigate('/history')
     },
     {
-      title: "TOTAL DISTANCE",
-      value: `${(dashboardMetrics.totalDistance / 1000).toFixed(1)} km`,
+      title: "AVERAGE RUN TIME",
+      value: dashboardMetrics.averageRunTime > 0 ? 
+        `${Math.floor(dashboardMetrics.averageRunTime / 60)}:${String(Math.round(dashboardMetrics.averageRunTime % 60)).padStart(2, '0')}` : 
+        'No runs',
       icon: <Route className="w-6 h-6" />,
       onPress: () => navigate('/history')
     }
@@ -250,27 +258,24 @@ const Dashboard: React.FC = () => {
                     >
                       <div className="flex items-center">
                         <div className="mr-4 flex w-10 h-10 items-center justify-center rounded-full bg-brass-gold bg-opacity-10">
-                          {workout.exercise_type && (
-                            workout.exercise_type.toUpperCase().includes('PUSH') ? 
-                              <img src={pushupImage} alt="Push-ups" className="w-5 h-5" /> :
-                            workout.exercise_type.toUpperCase().includes('PULL') ? 
-                              <img src={pullupImage} alt="Pull-ups" className="w-5 h-5" /> :
-                            workout.exercise_type.toUpperCase().includes('SIT') ? 
-                              <img src={situpImage} alt="Sit-ups" className="w-5 h-5" /> :
-                            workout.exercise_type.toUpperCase().includes('RUN') ? 
-                              <img src={runningImage} alt="Running" className="w-5 h-5" /> :
-                              <Dumbbell className="w-5 h-5 text-brass-gold" />
-                          )}
+                          {workout.exercise_type === 'pushup' ? 
+                            <img src={pushupImage} alt="Push-ups" className="w-5 h-5" /> :
+                          workout.exercise_type === 'pullup' ? 
+                            <img src={pullupImage} alt="Pull-ups" className="w-5 h-5" /> :
+                          workout.exercise_type === 'situp' ? 
+                            <img src={situpImage} alt="Sit-ups" className="w-5 h-5" /> :
+                          workout.exercise_type === 'run' ? 
+                            <img src={runningImage} alt="Running" className="w-5 h-5" /> :
+                            <Dumbbell className="w-5 h-5 text-brass-gold" />
+                          }
                         </div>
                         <div className="text-left">
-                          <h3 className="font-medium text-base text-deep-ops">
-                            {workout.exercise_type ? (
-                              workout.exercise_type.toUpperCase().includes('PUSH') ? 'Push-ups' : 
-                              workout.exercise_type.toUpperCase().includes('PULL') ? 'Pull-ups' :
-                              workout.exercise_type.toUpperCase().includes('SIT') ? 'Sit-ups' :
-                              workout.exercise_type.toUpperCase().includes('RUN') ? 'Two-Mile Run' : 
-                              workout.exercise_type
-                            ) : 'Unknown Exercise'}
+                          <h3 className="font-mono text-base font-medium uppercase text-deep-ops">
+                            {workout.exercise_type === 'pushup' ? 'PUSH-UPS' : 
+                             workout.exercise_type === 'pullup' ? 'PULL-UPS' :
+                             workout.exercise_type === 'situp' ? 'SIT-UPS' :
+                             workout.exercise_type === 'run' ? 'TWO-MILE RUN' : 
+                             workout.exercise_name || 'UNKNOWN EXERCISE'}
                           </h3>
                           <p className="text-sm text-tactical-gray">
                             {new Date(workout.created_at).toLocaleDateString(undefined, {
@@ -281,8 +286,8 @@ const Dashboard: React.FC = () => {
                         </div>
                       </div>
                       <div className="font-heading text-lg font-bold text-brass-gold">
-                        {workout.exercise_type && workout.exercise_type.toUpperCase().includes('RUN') 
-                          ? `${((workout.distance || 0) / 1000).toFixed(1)} km` 
+                        {workout.exercise_type === 'run' && workout.time_in_seconds
+                          ? `${Math.floor(workout.time_in_seconds / 60)}:${String(workout.time_in_seconds % 60).padStart(2, '0')}` 
                           : `${workout.reps || 0} reps`}
                       </div>
                     </button>
