@@ -7,6 +7,12 @@ import pullupImage from '../../assets/pullup.png';
 import situpImage from '../../assets/situp.png';
 import runningImage from '../../assets/running.png';
 
+// Import white variants for selected state
+import pushupWhiteImage from '../../../assets/pushup_white.png';
+import pullupWhiteImage from '../../../assets/pullup_white.png';
+import situpWhiteImage from '../../../assets/situp_white.png';
+import runWhiteImage from '../../../assets/run_white.png';
+
 interface ExerciseFilterBarProps {
   filter: string;
   onFilterChange: (filter: string) => void;
@@ -17,6 +23,7 @@ interface FilterOption {
   label: string;
   value: string;
   icon?: string;
+  iconWhite?: string;
   systemIcon?: string;
 }
 
@@ -30,25 +37,29 @@ const filterOptions: FilterOption[] = [
     id: 'pushup',
     label: 'Push-ups',
     value: 'pushup',
-    icon: pushupImage
+    icon: pushupImage,
+    iconWhite: pushupWhiteImage
   },
   {
     id: 'situp',
     label: 'Sit-ups', 
     value: 'situp',
-    icon: situpImage
+    icon: situpImage,
+    iconWhite: situpWhiteImage
   },
   {
     id: 'pullup',
     label: 'Pull-ups',
     value: 'pullup',
-    icon: pullupImage
+    icon: pullupImage,
+    iconWhite: pullupWhiteImage
   },
   {
     id: 'run',
     label: 'Two-Mile Run',
     value: 'run',
-    icon: runningImage
+    icon: runningImage,
+    iconWhite: runWhiteImage
   }
 ];
 
@@ -79,7 +90,7 @@ export const ExerciseFilterBar: React.FC<ExerciseFilterBarProps> = ({
             >
               {option.icon && (
                 <img 
-                  src={option.icon} 
+                  src={isActive && option.iconWhite ? option.iconWhite : option.icon} 
                   alt={option.label}
                   className="w-4 h-4 transition-opacity"
                 />

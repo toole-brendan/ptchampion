@@ -8,6 +8,12 @@ import pullupImage from '../../assets/pullup.png';
 import situpImage from '../../assets/situp.png';
 import runningImage from '../../assets/running.png';
 
+// Import white variants for selected state
+import pushupWhiteImage from '../../../assets/pushup_white.png';
+import pullupWhiteImage from '../../../assets/pullup_white.png';
+import situpWhiteImage from '../../../assets/situp_white.png';
+import runWhiteImage from '../../../assets/run_white.png';
+
 interface ExerciseButtonProps {
   exercise: {
     id: string;
@@ -19,11 +25,11 @@ interface ExerciseButtonProps {
 }
 
 const exerciseAssets = {
-  overall: null, // Will use Trophy icon for overall
-  pushup: pushupImage,
-  situp: situpImage,
-  pullup: pullupImage,
-  running: runningImage,
+  overall: { normal: null, white: null }, // Will use Trophy icon for overall
+  pushup: { normal: pushupImage, white: pushupWhiteImage },
+  situp: { normal: situpImage, white: situpWhiteImage },
+  pullup: { normal: pullupImage, white: pullupWhiteImage },
+  running: { normal: runningImage, white: runWhiteImage },
 } as const;
 
 const ExerciseButton: React.FC<ExerciseButtonProps> = ({
@@ -31,7 +37,8 @@ const ExerciseButton: React.FC<ExerciseButtonProps> = ({
   isSelected,
   onClick
 }) => {
-  const assetImage = exerciseAssets[exercise.id as keyof typeof exerciseAssets];
+  const assetImages = exerciseAssets[exercise.id as keyof typeof exerciseAssets];
+  const currentImage = isSelected && assetImages?.white ? assetImages.white : assetImages?.normal;
 
   return (
     <button
@@ -47,9 +54,9 @@ const ExerciseButton: React.FC<ExerciseButtonProps> = ({
       aria-pressed={isSelected}
       aria-label={`Filter by ${exercise.displayName}`}
     >
-      {assetImage ? (
+      {currentImage ? (
         <img 
-          src={assetImage} 
+          src={currentImage} 
           alt={exercise.displayName}
           className="w-4 h-4 transition-opacity"
         />
