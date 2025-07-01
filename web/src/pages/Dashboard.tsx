@@ -68,7 +68,7 @@ const Dashboard: React.FC = () => {
         if (page === 1) {
           console.log('First page items:', response.items.map(item => ({
             name: item.exercise_name,
-            duration: item.duration_seconds
+            duration: item.time_in_seconds
           })));
         }
         
@@ -132,7 +132,7 @@ const Dashboard: React.FC = () => {
     let averageRunTime = 0;
     if (runHistory && runHistory.length > 0) {
       const totalRunTime = runHistory.reduce((sum, run) => {
-        return sum + (run.duration_seconds || 0);
+        return sum + (run.time_in_seconds || 0);
       }, 0);
       averageRunTime = totalRunTime / runHistory.length;
       console.log('Average run time calculation:', {
@@ -151,7 +151,7 @@ const Dashboard: React.FC = () => {
           const name = lastWorkout.exercise_name?.toLowerCase() || '';
           // Check for various running exercise names (case-insensitive)
           return (name.includes('run') || name === 'running' || name.includes('mile')) ? 
-            `${Math.floor((lastWorkout.duration_seconds || 0) / 60)}:${String((lastWorkout.duration_seconds || 0) % 60).padStart(2, '0')}` : 
+            `${Math.floor((lastWorkout.time_in_seconds || 0) / 60)}:${String((lastWorkout.time_in_seconds || 0) % 60).padStart(2, '0')}` : 
             `${lastWorkout.reps || 0} reps`;
         })()
         : null,
@@ -359,8 +359,8 @@ const Dashboard: React.FC = () => {
                       <div className="flex items-baseline space-x-1">
                         <span className="text-xl font-bold text-command-black font-mono">
                           {exerciseName === 'run'
-                            ? (workout.duration_seconds 
-                                ? `${Math.floor(workout.duration_seconds / 60)}:${String(workout.duration_seconds % 60).padStart(2, '0')}`
+                            ? (workout.time_in_seconds 
+                                ? `${Math.floor(workout.time_in_seconds / 60)}:${String(workout.time_in_seconds % 60).padStart(2, '0')}`
                                 : '--')
                             : workout.reps || '--'}
                         </span>
