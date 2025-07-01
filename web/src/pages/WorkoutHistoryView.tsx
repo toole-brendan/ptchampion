@@ -61,12 +61,59 @@ const WorkoutHistoryView: React.FC = () => {
     return Math.max(streakCount, 5); // Mock calculation
   }, [streakCount]);
 
-  // Mock chart data (would come from backend based on filter)
+  // Generate chart data from filtered history
   const chartData = useMemo(() => {
-    if (exerciseFilter === 'All') return [];
-    // Mock data for demonstration
-    return [];
-  }, [exerciseFilter]);
+    if (exerciseFilter === 'All' || historyItems.length === 0) return [];
+    
+    // Group workouts by date and calculate daily maximums/averages
+    const dailyData = new Map<string, { date: Date; maxReps?: number; totalTime?: number; count: number }>();
+    
+    historyItems.forEach(workout => {
+      const date = new Date(workout.created_at);
+      const dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      
+      if (!dailyData.has(dateKey)) {
+        dailyData.set(dateKey, { date, count: 0 });
+      }
+      
+      const dayData = dailyData.get(dateKey)!;
+      dayData.count++;
+      
+      // For rep-based exercises, track max reps
+      if (workout.reps) {
+        dayData.maxReps = Math.max(dayData.maxReps || 0, workout.reps);
+      }
+      
+      // For time-based exercises (running), track total time
+      const duration = workout.duration_seconds || workout.time_in_seconds || 0;
+      if (duration > 0) {
+        dayData.totalTime = (dayData.totalTime || 0) + duration;
+      }
+    });
+    
+    // Convert to chart data format
+    const sortedData = Array.from(dailyData.values())
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .map(dayData => {
+        // Determine the value based on exercise type
+        let value = 0;
+        if (exerciseFilter === 'run') {
+          // For running, use average time per workout that day
+          value = dayData.totalTime ? Math.round(dayData.totalTime / dayData.count) : 0;
+        } else {
+          // For other exercises, use max reps
+          value = dayData.maxReps || 0;
+        }
+        
+        return {
+          date: dayData.date,
+          value
+        };
+      })
+      .filter(point => point.value > 0); // Only include days with valid data
+    
+    return sortedData;
+  }, [exerciseFilter, historyItems]);
 
   // Restore scroll position when returning from detail view
   useEffect(() => {
@@ -195,7 +242,7 @@ const WorkoutHistoryView: React.FC = () => {
         <WorkoutChartSection 
           filter={exerciseFilter}
           chartData={chartData}
-          yAxisLabel="Value"
+          yAxisLabel={exerciseFilter === 'run' ? 'Time (seconds)' : 'Repetitions'}
         />
 
         {/* Workout history section */}
