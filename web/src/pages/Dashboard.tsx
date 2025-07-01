@@ -74,7 +74,8 @@ const Dashboard: React.FC = () => {
         
         const runs = response.items.filter(item => {
           const name = item.exercise_name?.toLowerCase() || '';
-          return name.includes('run') || name === 'running';
+          // Check for various running exercise names (case-insensitive)
+          return name.includes('run') || name === 'running' || name.includes('mile');
         });
         allRuns.push(...runs);
         
@@ -121,7 +122,8 @@ const Dashboard: React.FC = () => {
     items.forEach(workout => {
       // Use exercise_name since exercise_type is empty in the API response
       const exerciseName = workout.exercise_name?.toLowerCase() || '';
-      if (!exerciseName.includes('run') && exerciseName !== 'running') {
+      // Check for various running exercise names (case-insensitive)
+      if (!exerciseName.includes('run') && exerciseName !== 'running' && !exerciseName.includes('mile')) {
         totalReps += workout.reps || 0;
       }
     });
@@ -147,7 +149,8 @@ const Dashboard: React.FC = () => {
       lastWorkoutMetric: lastWorkout ? 
         (() => {
           const name = lastWorkout.exercise_name?.toLowerCase() || '';
-          return (name.includes('run') || name === 'running') ? 
+          // Check for various running exercise names (case-insensitive)
+          return (name.includes('run') || name === 'running' || name.includes('mile')) ? 
             `${Math.floor((lastWorkout.duration_seconds || 0) / 60)}:${String((lastWorkout.duration_seconds || 0) % 60).padStart(2, '0')}` : 
             `${lastWorkout.reps || 0} reps`;
         })()
