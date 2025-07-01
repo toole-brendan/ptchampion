@@ -77,10 +77,11 @@ const Dashboard: React.FC = () => {
     let runCount = 0;
     
     items.forEach(workout => {
-      const exerciseType = workout.exercise_type?.toLowerCase() || '';
-      if (exerciseType === 'run' || exerciseType === 'running') {
-        // Accumulate run times to calculate average
-        totalRunTime += workout.time_in_seconds || 0;
+      // Use exercise_name since exercise_type is empty in the API response
+      const exerciseName = workout.exercise_name?.toLowerCase() || '';
+      if (exerciseName === 'run' || exerciseName === 'running') {
+        // Use duration_seconds instead of time_in_seconds
+        totalRunTime += workout.duration_seconds || 0;
         runCount++;
       } else {
         totalReps += workout.reps || 0;
@@ -93,12 +94,12 @@ const Dashboard: React.FC = () => {
     return {
       totalWorkouts,
       lastWorkoutDate: lastWorkout ? new Date(lastWorkout.created_at) : null,
-      lastWorkoutType: lastWorkout ? lastWorkout.exercise_type : null,
+      lastWorkoutType: lastWorkout ? lastWorkout.exercise_name : null,
       lastWorkoutMetric: lastWorkout ? 
         (() => {
-          const type = lastWorkout.exercise_type?.toLowerCase() || '';
-          return (type === 'run' || type === 'running') ? 
-            `${Math.floor((lastWorkout.time_in_seconds || 0) / 60)}:${String((lastWorkout.time_in_seconds || 0) % 60).padStart(2, '0')}` : 
+          const name = lastWorkout.exercise_name?.toLowerCase() || '';
+          return (name === 'run' || name === 'running') ? 
+            `${Math.floor((lastWorkout.duration_seconds || 0) / 60)}:${String((lastWorkout.duration_seconds || 0) % 60).padStart(2, '0')}` : 
             `${lastWorkout.reps || 0} reps`;
         })()
         : null,
@@ -175,12 +176,12 @@ const Dashboard: React.FC = () => {
       title: "LAST ACTIVITY",
       value: dashboardMetrics.lastWorkoutType ? 
         (() => {
-          const type = dashboardMetrics.lastWorkoutType.toLowerCase();
-          return type === 'run' || type === 'running' ? 'Two-Mile Run' : 
-                 type === 'pushup' ? 'Push-ups' :
-                 type === 'situp' ? 'Sit-ups' :
-                 type === 'pullup' ? 'Pull-ups' :
-                 'Exercise';
+          const name = dashboardMetrics.lastWorkoutType.toLowerCase();
+          return name === 'run' ? 'Two-Mile Run' : 
+                 name === 'push-up' ? 'Push-ups' :
+                 name === 'sit-up' ? 'Sit-ups' :
+                 name === 'pull-up' ? 'Pull-ups' :
+                 dashboardMetrics.lastWorkoutType;
         })() : 'None',
       subtitle: dashboardMetrics.lastWorkoutDate ? 
         (() => {
@@ -264,8 +265,8 @@ const Dashboard: React.FC = () => {
             {dashboardMetrics.recentWorkouts.length > 0 ? (
               <div className="space-y-0">
                 {dashboardMetrics.recentWorkouts.map((workout, index) => {
-                  // Normalize exercise type to lowercase for comparison
-                  const exerciseType = workout.exercise_type?.toLowerCase() || '';
+                  // Use exercise_name since exercise_type is empty in API
+                  const exerciseName = workout.exercise_name?.toLowerCase() || '';
                   
                   return (
                   <div key={workout.id || index}>
@@ -278,29 +279,19 @@ const Dashboard: React.FC = () => {
                         <div className="flex-shrink-0">
                           <img 
                             src={
-                              exerciseType === 'pushup' ? pushupImage :
-                              exerciseType === 'pullup' ? pullupImage :
-                              exerciseType === 'situp' ? situpImage :
-                              exerciseType === 'run' || exerciseType === 'running' ? runningImage :
+                              exerciseName === 'push-up' ? pushupImage :
+                              exerciseName === 'pull-up' ? pullupImage :
+                              exerciseName === 'sit-up' ? situpImage :
+                              exerciseName === 'run' ? runningImage :
                               pushupImage
                             }
-                            alt={
-                              exerciseType === 'pushup' ? 'Push-ups' :
-                              exerciseType === 'pullup' ? 'Pull-ups' :
-                              exerciseType === 'situp' ? 'Sit-ups' :
-                              exerciseType === 'run' || exerciseType === 'running' ? 'Two-Mile Run' :
-                              'Exercise'
-                            }
+                            alt={workout.exercise_name || 'Exercise'}
                             className="w-11 h-11 object-contain"
                           />
                         </div>
                         <div className="flex-1 text-left">
                           <h3 className="text-base font-semibold text-command-black">
-                            {exerciseType === 'pushup' ? 'Push-ups' : 
-                             exerciseType === 'pullup' ? 'Pull-ups' :
-                             exerciseType === 'situp' ? 'Sit-ups' :
-                             exerciseType === 'run' || exerciseType === 'running' ? 'Two-Mile Run' : 
-                             workout.exercise_name || 'Unknown Exercise'}
+                            {workout.exercise_name || 'Unknown Exercise'}
                           </h3>
                           <p className="text-sm text-gray-600">
                             {(() => {
@@ -315,14 +306,14 @@ const Dashboard: React.FC = () => {
                       </div>
                       <div className="flex items-baseline space-x-1">
                         <span className="text-xl font-bold text-command-black font-mono">
-                          {exerciseType === 'run' || exerciseType === 'running'
-                            ? (workout.time_in_seconds 
-                                ? `${Math.floor(workout.time_in_seconds / 60)}:${String(workout.time_in_seconds % 60).padStart(2, '0')}`
+                          {exerciseName === 'run'
+                            ? (workout.duration_seconds 
+                                ? `${Math.floor(workout.duration_seconds / 60)}:${String(workout.duration_seconds % 60).padStart(2, '0')}`
                                 : '--')
                             : workout.reps || '--'}
                         </span>
                         <span className="text-sm text-gray-600">
-                          {exerciseType === 'run' || exerciseType === 'running' ? '' : 'reps'}
+                          {exerciseName === 'run' ? '' : 'reps'}
                         </span>
                       </div>
                     </button>
