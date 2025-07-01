@@ -49,8 +49,42 @@ const Dashboard: React.FC = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
+  // Fetch ALL run workouts to calculate accurate average
+  const { 
+    data: runHistory,
+    isLoading: isRunHistoryLoading
+  } = useQuery({
+    queryKey: ['runHistory', user?.id],
+    queryFn: async () => {
+      // Fetch all pages to get complete run history
+      const allRuns: any[] = [];
+      let page = 1;
+      let hasMore = true;
+      
+      while (hasMore) {
+        const response = await api.exercises.getUserExercises(page, 50);
+        const runs = response.items.filter(item => {
+          const name = item.exercise_name?.toLowerCase() || '';
+          return name === 'run' || name === 'running';
+        });
+        allRuns.push(...runs);
+        
+        // Check if we have more pages
+        hasMore = page * response.page_size < response.total_count;
+        page++;
+        
+        // Safety limit to prevent infinite loops
+        if (page > 20) break;
+      }
+      
+      return allRuns;
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
+  
   // Base loading state only on auth and history
-  const isLoading = isAuthLoading || isHistoryLoading;
+  const isLoading = isAuthLoading || isHistoryLoading || isRunHistoryLoading;
   const error = authError || historyError;
   
   // Calculate dashboard metrics from history data
@@ -71,25 +105,25 @@ const Dashboard: React.FC = () => {
     const totalWorkouts = exerciseHistory.total_count || 0;
     const lastWorkout = items[0]; // Most recent workout
     
-    // Calculate totals
+    // Calculate totals from recent workouts (for display)
     let totalReps = 0;
-    let totalRunTime = 0;
-    let runCount = 0;
     
     items.forEach(workout => {
       // Use exercise_name since exercise_type is empty in the API response
       const exerciseName = workout.exercise_name?.toLowerCase() || '';
-      if (exerciseName === 'run' || exerciseName === 'running') {
-        // Use duration_seconds instead of time_in_seconds
-        totalRunTime += workout.duration_seconds || 0;
-        runCount++;
-      } else {
+      if (exerciseName !== 'run' && exerciseName !== 'running') {
         totalReps += workout.reps || 0;
       }
     });
     
-    // Calculate average run time
-    const averageRunTime = runCount > 0 ? totalRunTime / runCount : 0;
+    // Calculate average run time from ALL runs (using runHistory)
+    let averageRunTime = 0;
+    if (runHistory && runHistory.length > 0) {
+      const totalRunTime = runHistory.reduce((sum, run) => {
+        return sum + (run.duration_seconds || 0);
+      }, 0);
+      averageRunTime = totalRunTime / runHistory.length;
+    }
     
     return {
       totalWorkouts,
@@ -107,7 +141,7 @@ const Dashboard: React.FC = () => {
       averageRunTime,
       recentWorkouts: items.slice(0, 5)
     };
-  }, [exerciseHistory, user]);
+  }, [exerciseHistory, runHistory, user]);
   
   // Set username in context when it changes
   useEffect(() => {

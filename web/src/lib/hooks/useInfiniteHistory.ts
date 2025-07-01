@@ -49,7 +49,22 @@ export const useInfiniteHistory = ({
     if (exerciseFilter === 'All') {
       return historyItems;
     }
-    return historyItems.filter(item => item.exercise_type === exerciseFilter);
+    
+    // Map filter values to exercise names as they appear in the API
+    const filterMap: Record<string, string[]> = {
+      'pushup': ['push-up', 'push up', 'pushup'],
+      'situp': ['sit-up', 'sit up', 'situp'],
+      'pullup': ['pull-up', 'pull up', 'pullup'],
+      'run': ['run', 'running', 'two-mile run', '2-mile run']
+    };
+    
+    const acceptableNames = filterMap[exerciseFilter] || [exerciseFilter];
+    
+    return historyItems.filter(item => {
+      // Use exercise_name since exercise_type is empty in API response
+      const exerciseName = item.exercise_name?.toLowerCase() || '';
+      return acceptableNames.some(name => exerciseName.includes(name));
+    });
   }, [historyItems, exerciseFilter]);
 
   // Apply date range filter (client-side)
@@ -147,20 +162,21 @@ export const useInfiniteHistory = ({
     const bests: Record<string, ExerciseResponse> = {};
     
     dateFilteredItems.forEach((workout) => {
-      const exerciseType = workout.exercise_type;
-      const exerciseLower = exerciseType.toLowerCase();
+      // Use exercise_name since exercise_type is empty in API response
+      const exerciseName = workout.exercise_name || workout.exercise_type || '';
+      const exerciseLower = exerciseName.toLowerCase();
       const isRunning = exerciseLower.includes('run');
       
       // For running, compare distance (higher is better)
       if (isRunning && workout.distance) {
-        if (!bests[exerciseType] || (bests[exerciseType].distance || 0) < workout.distance) {
-          bests[exerciseType] = workout;
+        if (!bests[exerciseName] || (bests[exerciseName].distance || 0) < workout.distance) {
+          bests[exerciseName] = workout;
         }
       } 
       // For everything else, compare reps (higher is better)
       else if (workout.reps) {
-        if (!bests[exerciseType] || (bests[exerciseType].reps || 0) < workout.reps) {
-          bests[exerciseType] = workout;
+        if (!bests[exerciseName] || (bests[exerciseName].reps || 0) < workout.reps) {
+          bests[exerciseName] = workout;
         }
       }
     });
