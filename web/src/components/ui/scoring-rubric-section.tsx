@@ -22,15 +22,15 @@ const ScoringRubricSection: React.FC<ScoringRubricSectionProps> = ({
       title="Scoring Rubric"
       description="View scoring criteria for each exercise"
       className={className}
-      contentClassName="p-0 bg-white"
+      contentClassName="bg-cream-dark"
     >
-      <div className="divide-y divide-tactical-gray divide-opacity-20">
+      <div className="space-y-2">
         {rubricOptions.map((option, index) => (
           <button
             key={option.title}
             onClick={option.onClick}
             className={cn(
-              "flex items-center justify-between w-full py-4 px-5",
+              "flex items-center justify-between w-full py-4 px-5 bg-white rounded-md",
               "hover:bg-brass-gold hover:bg-opacity-5 transition-colors duration-150",
               "focus:outline-none focus:bg-brass-gold focus:bg-opacity-10"
             )}

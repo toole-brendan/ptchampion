@@ -43,15 +43,17 @@ const LoginPage: React.FC = () => {
 
   // Clear error on unmount and check for stale tokens on mount
   useEffect(() => {
-    if (location.pathname === '/login' && localStorage.getItem(TOKEN_STORAGE_KEY) && !isAuthenticated) {
-      console.log('Found potential stale token on login page (active path), clearing all tokens');
+    // Only clear tokens if we're not loading and still not authenticated
+    // This prevents clearing valid tokens while the user data is being fetched
+    if (location.pathname === '/login' && localStorage.getItem(TOKEN_STORAGE_KEY) && !isAuthenticated && !isLoading) {
+      console.log('Found potential stale token on login page (not loading), clearing all tokens');
       cleanAuthStorage();
     }
     
     return () => {
       clearError();
     };
-  }, [clearError, isAuthenticated, location.pathname]);
+  }, [clearError, isAuthenticated, isLoading, location.pathname]);
 
   // Handle logo click for secret login
   const handleLogoClick = async () => {

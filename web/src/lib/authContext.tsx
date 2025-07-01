@@ -305,7 +305,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Create the context value object
   const contextValue: AuthContextType = {
-    isAuthenticated: isDevToken ? true : (!!token && !!user), // Dev tokens are always authenticated
+    // Consider authenticated if we have a token, even if user data is still loading
+    // This prevents redirect to login while user data is being fetched after page refresh
+    isAuthenticated: isDevToken ? true : !!token,
     user: effectiveUser ?? null, // Use mock user for dev tokens
     token: token,
     isLoading: isLoading,
