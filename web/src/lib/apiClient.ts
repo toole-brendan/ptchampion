@@ -486,7 +486,7 @@ export const getExerciseById = (id: string): Promise<ExerciseResponse> => {
 
 export const getLeaderboard = async (exerciseType: string): Promise<LeaderboardEntry[]> => {
   try {
-    return await apiRequest<LeaderboardEntry[]>(`/leaderboard/${exerciseType}`, 'GET', null, true);
+    return await apiRequest<LeaderboardEntry[]>(`/leaderboards/global/exercise/${exerciseType}`, 'GET', null, true);
   } catch (error) {
     console.error(`Failed to fetch leaderboard for ${exerciseType}:`, error);
     // Return empty array instead of throwing to prevent UI breakage
@@ -549,7 +549,7 @@ export const useApi = () => {
       getLeaderboard,
       getLocalLeaderboard: (exerciseType: string, lat: number, lng: number, radius: number = 5): Promise<LeaderboardEntry[]> => {
         return apiRequest<LeaderboardEntry[]>(
-          `/leaderboard/${exerciseType}?lat=${lat}&lng=${lng}&radius=${radius}`, 
+          `/leaderboards/local/exercise/${exerciseType}?lat=${lat}&lng=${lng}&radius=${radius}`, 
           'GET', 
           null, 
           true
