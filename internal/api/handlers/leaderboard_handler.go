@@ -58,6 +58,14 @@ type LeaderboardAPIEntry struct {
 	Score     int32   `json:"score"`
 }
 
+// LeaderboardFrontendEntry matches what the frontend expects
+type LeaderboardFrontendEntry struct {
+	UserID      int32  `json:"user_id"`
+	Username    string `json:"username"`
+	DisplayName string `json:"display_name"`
+	MaxGrade    int32  `json:"max_grade"` // Frontend expects this field name
+}
+
 // LeaderboardHandler handles leaderboard-related API requests.
 type LeaderboardHandler struct {
 	service leaderboards.Service
@@ -577,6 +585,11 @@ func (h *LeaderboardHandler) GetGlobalExerciseLeaderboard(c echo.Context) error 
 		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Exercise type parameter is required")
 	}
 
+	// Handle "overall" as a special case - redirect to aggregate leaderboard
+	if exerciseType == "overall" {
+		return h.GetGlobalAggregateLeaderboard(c)
+	}
+
 	limitStr := c.QueryParam("limit")
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
@@ -636,6 +649,36 @@ func (h *LeaderboardHandler) GetGlobalAggregateLeaderboard(c echo.Context) error
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve global aggregate leaderboard")
 	}
 
+	// Check if this is being called via the "overall" route from the frontend
+	// The frontend expects a different response format with max_grade field
+	exerciseType := c.Param("exerciseType")
+	if exerciseType == "overall" {
+		// Return frontend-expected format
+		frontendEntries := make([]LeaderboardFrontendEntry, len(storeEntries))
+		for i, entry := range storeEntries {
+			displayName := entry.Username
+			if entry.FirstName != nil && entry.LastName != nil {
+				displayName = *entry.FirstName + " " + *entry.LastName
+			}
+			
+			// Parse user ID to int32
+			var userID int32
+			if _, err := fmt.Sscanf(entry.UserID, "%d", &userID); err != nil {
+				h.logger.Warn(ctx, "Failed to parse user ID", "userID", entry.UserID, "error", err)
+				userID = 0
+			}
+			
+			frontendEntries[i] = LeaderboardFrontendEntry{
+				UserID:      userID,
+				Username:    entry.Username,
+				DisplayName: displayName,
+				MaxGrade:    entry.Score,
+			}
+		}
+		return c.JSON(http.StatusOK, frontendEntries)
+	}
+
+	// Default response format for other routes
 	apiEntries := make([]LeaderboardAPIEntry, len(storeEntries))
 	for i, entry := range storeEntries {
 		apiEntries[i] = mapStoreLeaderboardEntryToAPIEntry(entry)
@@ -650,6 +693,11 @@ func (h *LeaderboardHandler) GetLocalExerciseLeaderboard(c echo.Context) error {
 	if exerciseType == "" {
 		h.logger.Warn(ctx, "GetLocalExerciseLeaderboard: missing exerciseType param")
 		return NewAPIError(http.StatusBadRequest, ErrCodeBadRequest, "Exercise type parameter is required")
+	}
+
+	// Handle "overall" as a special case - redirect to aggregate leaderboard
+	if exerciseType == "overall" {
+		return h.GetLocalAggregateLeaderboard(c)
 	}
 
 	latStr := c.QueryParam("latitude")
@@ -750,6 +798,36 @@ func (h *LeaderboardHandler) GetLocalAggregateLeaderboard(c echo.Context) error 
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve local aggregate leaderboard")
 	}
 
+	// Check if this is being called via the "overall" route from the frontend
+	// The frontend expects a different response format with max_grade field
+	exerciseType := c.Param("exerciseType")
+	if exerciseType == "overall" {
+		// Return frontend-expected format
+		frontendEntries := make([]LeaderboardFrontendEntry, len(storeEntries))
+		for i, entry := range storeEntries {
+			displayName := entry.Username
+			if entry.FirstName != nil && entry.LastName != nil {
+				displayName = *entry.FirstName + " " + *entry.LastName
+			}
+			
+			// Parse user ID to int32
+			var userID int32
+			if _, err := fmt.Sscanf(entry.UserID, "%d", &userID); err != nil {
+				h.logger.Warn(ctx, "Failed to parse user ID", "userID", entry.UserID, "error", err)
+				userID = 0
+			}
+			
+			frontendEntries[i] = LeaderboardFrontendEntry{
+				UserID:      userID,
+				Username:    entry.Username,
+				DisplayName: displayName,
+				MaxGrade:    entry.Score,
+			}
+		}
+		return c.JSON(http.StatusOK, frontendEntries)
+	}
+
+	// Default response format for other routes
 	apiEntries := make([]LeaderboardAPIEntry, len(storeEntries))
 	for i, entry := range storeEntries {
 		apiEntries[i] = mapStoreLeaderboardEntryToAPIEntry(entry)
