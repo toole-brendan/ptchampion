@@ -36,10 +36,13 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
     const lowerType = type.toLowerCase();
     switch (lowerType) {
       case 'pushup':
+      case 'push-up':
         return pushupImage;
       case 'situp':
+      case 'sit-up':
         return situpImage;
       case 'pullup':
+      case 'pull-up':
         return pullupImage;
       case 'run':
       case 'running':
@@ -53,21 +56,37 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
     const lowerType = type.toLowerCase();
     switch (lowerType) {
       case 'pushup':
+      case 'push-up':
         return 'Push-ups';
       case 'situp':
+      case 'sit-up':
         return 'Sit-ups';
       case 'pullup':
+      case 'pull-up':
         return 'Pull-ups';
       case 'run':
       case 'running':
         return 'Two-Mile Run';
       default:
-        return type.charAt(0).toUpperCase() + type.slice(1);
+        return type;
     }
   };
 
   // Get performance metric
   const getPerformanceMetric = () => {
+    const lowerType = exerciseType.toLowerCase();
+    
+    // For runs, show duration instead of reps
+    if (lowerType === 'run' || lowerType === 'running') {
+      if (duration > 0) {
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        return { value: `${minutes}:${String(seconds).padStart(2, '0')}`, label: '' };
+      }
+      return { value: '--', label: '' };
+    }
+    
+    // For other exercises, show reps
     if (count !== undefined && count > 0) {
       return { value: count.toString(), label: 'reps' };
     } else if (distance !== undefined && distance > 0) {
@@ -84,8 +103,11 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
   const exerciseName = getExerciseName(exerciseType);
   const performanceMetric = getPerformanceMetric();
   
-  // Format date
-  const formattedDate = format(date, 'MMM d, h:mm a');
+  // Format date as DDMONYYYY to match Dashboard
+  const day = date.getDate();
+  const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+  const year = date.getFullYear();
+  const formattedDate = `${day}${month}${year}`;
 
   return (
     <div>
@@ -131,8 +153,8 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
           )}
         </div>
 
-        {/* Duration badge */}
-        <div className="flex-shrink-0">
+        {/* Duration badge - commented out as run times are shown in main metric */}
+        {/* <div className="flex-shrink-0">
           <div className="text-center">
             <div className="text-xs text-gray-500 mb-1">
               Duration
@@ -143,7 +165,7 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
               </span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
       
       {/* Divider */}

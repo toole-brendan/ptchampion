@@ -209,10 +209,10 @@ const WorkoutHistoryView: React.FC = () => {
                 <WorkoutHistoryRow
                   key={workout.id}
                   id={`${workout.id}`}
-                  exerciseType={workout.exercise_type}
+                  exerciseType={workout.exercise_name || workout.exercise_type}
                   count={workout.reps}
                   distance={workout.distance}
-                  duration={workout.time_in_seconds ?? 0}
+                  duration={workout.duration_seconds || workout.time_in_seconds || 0}
                   date={new Date(workout.created_at)}
                   score={workout.grade}
                   onClick={(id: string) => handleCardClick(Number(id))}
