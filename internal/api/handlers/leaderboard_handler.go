@@ -617,9 +617,21 @@ func (h *LeaderboardHandler) GetGlobalExerciseLeaderboard(c echo.Context) error 
 	// Return frontend-expected format for consistency
 	frontendEntries := make([]LeaderboardFrontendEntry, len(storeEntries))
 	for i, entry := range storeEntries {
-		displayName := entry.Username
-		if entry.FirstName != nil && entry.LastName != nil {
-			displayName = *entry.FirstName + " " + *entry.LastName
+		// Build display name from first and last names if available
+		displayName := ""
+		if entry.FirstName != nil && *entry.FirstName != "" {
+			displayName = *entry.FirstName
+		}
+		if entry.LastName != nil && *entry.LastName != "" {
+			if displayName != "" {
+				displayName = displayName + " " + *entry.LastName
+			} else {
+				displayName = *entry.LastName
+			}
+		}
+		// Fall back to username if no name is available
+		if displayName == "" {
+			displayName = entry.Username
 		}
 		
 		// Parse user ID to int32
@@ -784,9 +796,21 @@ func (h *LeaderboardHandler) GetLocalExerciseLeaderboard(c echo.Context) error {
 	// Return frontend-expected format for consistency
 	frontendEntries := make([]LeaderboardFrontendEntry, len(storeEntries))
 	for i, entry := range storeEntries {
-		displayName := entry.Username
-		if entry.FirstName != nil && entry.LastName != nil {
-			displayName = *entry.FirstName + " " + *entry.LastName
+		// Build display name from first and last names if available
+		displayName := ""
+		if entry.FirstName != nil && *entry.FirstName != "" {
+			displayName = *entry.FirstName
+		}
+		if entry.LastName != nil && *entry.LastName != "" {
+			if displayName != "" {
+				displayName = displayName + " " + *entry.LastName
+			} else {
+				displayName = *entry.LastName
+			}
+		}
+		// Fall back to username if no name is available
+		if displayName == "" {
+			displayName = entry.Username
 		}
 		
 		// Parse user ID to int32
