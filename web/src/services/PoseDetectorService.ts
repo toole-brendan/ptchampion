@@ -21,6 +21,7 @@ import {
 import { Subject } from 'rxjs';
 import { InitError, PoseDetectorError, RuntimeError } from '@/services/PoseDetectorError';
 import cameraManager, { CameraOptions } from '@/services/CameraManager';
+import { logger } from '@/lib/logger';
 
 // Re-export landmark types for convenience
 export type { NormalizedLandmark, PoseLandmarkerResult };
@@ -121,7 +122,7 @@ class PoseDetectorService {
   public async initialize(options: PoseDetectorOptions = {}): Promise<void> {
     // If already initialized, resolve immediately
     if (this.isInitialized()) {
-      console.log("PoseDetectorService: Model already initialized");
+      logger.info("PoseDetectorService: Model already initialized");
       return Promise.resolve();
     }
     
@@ -141,7 +142,7 @@ class PoseDetectorService {
     // Create a new initialization promise
     this.initPromise = (async () => {
       try {
-        console.log(`PoseDetectorService: Initializing model from ${modelPath}`);
+        logger.info(`PoseDetectorService: Initializing model from ${modelPath}`);
         const vision = await FilesetResolver.forVisionTasks(this.defaultWasmPath);
         
         this.poseLandmarker = await PoseLandmarker.createFromOptions(vision, {
@@ -157,10 +158,10 @@ class PoseDetectorService {
         });
         
         this.initialized = true;
-        console.log("PoseDetectorService: Model initialized successfully");
+        logger.info("PoseDetectorService: Model initialized successfully");
       } catch (err) {
         this.modelError = err instanceof Error ? err.message : String(err);
-        console.error("PoseDetectorService: Failed to initialize model:", this.modelError);
+        logger.error("PoseDetectorService: Failed to initialize model:", this.modelError);
         const error = new PoseDetectorError(InitError.MODEL_LOAD, this.modelError);
         throw error;
       } finally {
@@ -201,7 +202,7 @@ class PoseDetectorService {
       
       return success;
     } catch (err) {
-      console.error("PoseDetectorService: Error starting camera:", err);
+      logger.error("PoseDetectorService: Error starting camera:", err);
       this.modelError = err instanceof Error ? err.message : String(err);
       return false;
     }
@@ -228,12 +229,12 @@ class PoseDetectorService {
     callback?: PoseResultsCallback
   ): boolean {
     if (!this.isInitialized()) {
-      console.error("PoseDetectorService: Cannot start detection, model not initialized");
+      logger.error("PoseDetectorService: Cannot start detection, model not initialized");
       return false;
     }
     
     if (!videoElement.srcObject) {
-      console.error("PoseDetectorService: Cannot start detection, no video stream");
+      logger.error("PoseDetectorService: Cannot start detection, no video stream");
       return false;
     }
     
@@ -245,7 +246,7 @@ class PoseDetectorService {
     
     this.predictFrame();
     this.registerConsumer();
-    console.log("PoseDetectorService: Pose detection started");
+    logger.info("PoseDetectorService: Pose detection started");
     return true;
   }
   
@@ -258,7 +259,7 @@ class PoseDetectorService {
       cancelAnimationFrame(this.requestAnimationId);
       this.requestAnimationId = null;
     }
-    console.log("PoseDetectorService: Pose detection stopped");
+    logger.info("PoseDetectorService: Pose detection stopped");
   }
   
   /**
@@ -269,7 +270,7 @@ class PoseDetectorService {
     cameraManager.removeConsumer();
     this.videoElement = null;
     
-    console.log("PoseDetectorService: Camera stopped");
+    logger.info("PoseDetectorService: Camera stopped");
   }
   
   /**
@@ -289,7 +290,7 @@ class PoseDetectorService {
     this.resultsCallback = null;
     this.initialized = false;
     this.activeConsumers = 0;
-    console.log("PoseDetectorService: Resources destroyed");
+    logger.info("PoseDetectorService: Resources destroyed");
   }
   
   /**

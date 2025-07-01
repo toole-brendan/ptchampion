@@ -5,6 +5,7 @@ import {
   NormalizedLandmark,
   PoseLandmarkerResult
 } from "@mediapipe/tasks-vision";
+import { logger } from '@/lib/logger';
 
 export interface PoseDetectorResult {
   landmarks: NormalizedLandmark[];
@@ -57,7 +58,7 @@ export class PoseDetector {
       // Rate-limit error logging to avoid flooding the console
       const currentTime = Date.now();
       if (currentTime - this.lastErrorLogged > 5000) { // Log at most once per 5 seconds
-        console.error('MediaPipe detection error:', error);
+        logger.error('MediaPipe detection error:', error);
         this.lastErrorLogged = currentTime;
       }
       return null; // Return null on error

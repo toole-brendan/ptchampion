@@ -1,6 +1,9 @@
 "use strict";
 (() => {
   // src/serviceWorker.ts
+  // Only enable debug logging in development
+  const isDebug = false; // Set to true only during development
+  
   var STATIC_CACHE_NAME = "pt-champion-static-v8-CACHE-FIX";
   var DYNAMIC_CACHE_NAME = "pt-champion-dynamic-v8-CACHE-FIX";
   var API_CACHE_NAME = "pt-champion-api-v8-CACHE-FIX";
@@ -13,7 +16,7 @@
     self.skipWaiting();
     event.waitUntil(
       caches.open(STATIC_CACHE_NAME).then((cache) => {
-        console.log("[Service Worker] Caching app shell");
+        if (isDebug) console.log("[Service Worker] Caching app shell");
         return cache.addAll(APP_SHELL_ASSETS);
       })
     );
@@ -24,14 +27,14 @@
       caches.keys().then((keyList) => {
         return Promise.all(
           keyList.map((key) => {
-            console.log("[Service Worker] Removing cache", key);
+            if (isDebug) console.log("[Service Worker] Removing cache", key);
             return caches.delete(key);
           })
         );
       }).then(() => self.clients.claim()).then(() => {
         return self.clients.matchAll({ type: "window" }).then((clients) => {
           clients.forEach((client) => {
-            console.log("[Service Worker] Reloading client", client.url);
+            if (isDebug) console.log("[Service Worker] Reloading client", client.url);
             client.navigate(client.url);
           });
         });
@@ -41,12 +44,14 @@
   self.addEventListener("fetch", (event) => {
     const request = event.request;
     const url = new URL(request.url);
-    console.log(`[Service Worker] Fetch intercepted for: ${url.pathname}`);
-    console.log(`[Service Worker] Full URL: ${url.href}`);
-    console.log(`[Service Worker] Request mode: ${request.mode}`);
-    console.log(`[Service Worker] Request headers:`, request.headers.get("accept"));
+    if (isDebug) {
+      console.log(`[Service Worker] Fetch intercepted for: ${url.pathname}`);
+      console.log(`[Service Worker] Full URL: ${url.href}`);
+      console.log(`[Service Worker] Request mode: ${request.mode}`);
+      console.log(`[Service Worker] Request headers:`, request.headers.get("accept"));
+    }
     if (request.method !== "GET" || url.origin.includes("chrome-extension")) {
-      console.log(`[Service Worker] Skipping non-GET or extension request`);
+      if (isDebug) console.log(`[Service Worker] Skipping non-GET or extension request`);
       return;
     }
     if (url.pathname.includes("/api/")) {
@@ -63,7 +68,7 @@
             "Pragma": "no-cache"
           }
         }).catch(() => {
-          console.log("[Service Worker] Serving offline page for navigation");
+          if (isDebug) console.log("[Service Worker] Serving offline page for navigation");
           return caches.match("/offline.html").then((response) => {
             return response || new Response("Offline page not found", {
               status: 503,
@@ -75,8 +80,10 @@
       return;
     }
     if (url.pathname.includes("/assets/") && (url.pathname.endsWith(".js") || url.pathname.endsWith(".css"))) {
-      console.log(`[Service Worker] CRITICAL: Intercepting JS/CSS file: ${url.pathname}`);
-      console.log(`[Service Worker] FORCING fresh fetch with no-cache headers`);
+      if (isDebug) {
+        console.log(`[Service Worker] CRITICAL: Intercepting JS/CSS file: ${url.pathname}`);
+        console.log(`[Service Worker] FORCING fresh fetch with no-cache headers`);
+      }
       event.respondWith(
         fetch(request, {
           cache: "no-store",
@@ -85,12 +92,14 @@
             "Pragma": "no-cache"
           }
         }).then((response) => {
-          console.log(`[Service Worker] Fresh fetch successful for: ${url.pathname}`);
-          console.log(`[Service Worker] Response status: ${response.status}`);
-          console.log(`[Service Worker] Response headers:`, response.headers.get("content-type"));
+          if (isDebug) {
+            console.log(`[Service Worker] Fresh fetch successful for: ${url.pathname}`);
+            console.log(`[Service Worker] Response status: ${response.status}`);
+            console.log(`[Service Worker] Response headers:`, response.headers.get("content-type"));
+          }
           return response;
         }).catch((error) => {
-          console.error(`[Service Worker] Fresh fetch FAILED for: ${url.pathname}`, error);
+          console.error(`[Service Worker] Failed to fetch: ${url.pathname}`, error);
           return caches.match(request) || new Response("Resource not available", { status: 404 });
         })
       );
@@ -109,7 +118,7 @@
       cache.put(request, networkResponse.clone());
       return networkResponse;
     } catch (_error) {
-      console.log("[Service Worker] Network request failed, trying cache", request.url);
+      if (isDebug) console.log("[Service Worker] Network request failed, trying cache", request.url);
       const cachedResponse = await caches.match(request);
       if (cachedResponse) {
         return cachedResponse;
@@ -133,7 +142,7 @@
       cache.put(request, networkResponse.clone());
       return networkResponse;
     } catch (_error) {
-      console.log("[Service Worker] Both cache and network failed", request.url);
+      if (isDebug) console.log("[Service Worker] Both cache and network failed", request.url);
       if (request.url.includes(".png") || request.url.includes(".jpg") || request.url.includes(".svg")) {
         return new Response("", { status: 404 });
       }
@@ -148,9 +157,9 @@
           cache.put(request, networkResponse);
         }).catch(
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          (_error) => console.log("[Service Worker] Failed to update cache")
+          (_error) => { if (isDebug) console.log("[Service Worker] Failed to update cache"); }
         );
-      }).catch(() => console.log("[Service Worker] Background refresh failed"));
+      }).catch(() => { if (isDebug) console.log("[Service Worker] Background refresh failed"); });
       return cachedResponse;
     }
     try {
@@ -159,7 +168,7 @@
       cache.put(request, networkResponse.clone());
       return networkResponse;
     } catch (_error) {
-      console.log("[Service Worker] Network request failed with no cache entry", request.url);
+      if (isDebug) console.log("[Service Worker] Network request failed with no cache entry", request.url);
       return new Response("Not available offline", { status: 404 });
     }
   }
@@ -204,15 +213,15 @@
   );
   async function syncWorkouts() {
     try {
-      console.log("[Service Worker] Syncing pending workouts");
+      if (isDebug) console.log("[Service Worker] Syncing pending workouts");
       const db = await openDatabase();
       if (!db) {
-        console.error("[Service Worker] Failed to open database");
+        console.error("[Service Worker] Database error");
         return 0;
       }
       const pendingExercises = await getAllPendingExercises(db);
       if (pendingExercises.length === 0) {
-        console.log("[Service Worker] No pending workouts to sync");
+        if (isDebug) console.log("[Service Worker] No pending workouts to sync");
         return 0;
       }
       let syncedCount = 0;
@@ -220,7 +229,7 @@
         try {
           await incrementSyncAttempt(db, exercise.id);
           if (exercise.syncAttempts > 5) {
-            console.warn(`[Service Worker] Skipping exercise ${exercise.id} after ${exercise.syncAttempts} failed attempts`);
+            if (isDebug) console.warn(`[Service Worker] Skipping exercise ${exercise.id} after ${exercise.syncAttempts} failed attempts`);
             continue;
           }
           const requestData = {
@@ -244,10 +253,10 @@
           await deletePendingExercise(db, exercise.id);
           syncedCount++;
         } catch (error) {
-          console.error(`[Service Worker] Failed to sync exercise ${exercise.id}:`, error);
+          if (isDebug) console.error(`[Service Worker] Failed to sync exercise ${exercise.id}:`, error);
         }
       }
-      console.log(`[Service Worker] Successfully synced ${syncedCount} workouts`);
+      if (isDebug) console.log(`[Service Worker] Successfully synced ${syncedCount} workouts`);
       return syncedCount;
     } catch (error) {
       console.error("[Service Worker] Workout sync failed:", error);
@@ -272,7 +281,7 @@
     return new Promise((resolve, reject) => {
       const request = indexedDB.open("pt-champion-db", 2);
       request.onerror = () => {
-        console.error("[Service Worker] IndexedDB error");
+        console.error("[Service Worker] Database error");
         reject(request.error);
       };
       request.onsuccess = () => {

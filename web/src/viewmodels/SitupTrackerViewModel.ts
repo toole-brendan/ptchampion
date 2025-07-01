@@ -18,6 +18,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { createGrader } from '../grading';
 import { ExerciseId } from '../constants/exercises';
 import { PoseDetector } from '../services/poseDetector';
+import { logger } from '@/lib/logger';
 import cameraManager from '@/services/CameraManager';
 
 /**
@@ -86,7 +87,7 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
         this._error = null;
       }
     } catch (error) {
-      console.error("Failed to initialize pose detector:", error);
+      logger.error("Failed to initialize pose detector:", error);
       this.setError(
         TrackerErrorType.MODEL_LOAD_FAILED,
         error instanceof Error ? error.message : "Unknown error initializing pose detector"
@@ -323,7 +324,7 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
           return true;
         } catch (error) {
           // If API call fails, fall back to offline queue
-          console.log("API call failed, falling back to offline queue", error);
+          logger.info("API call failed, falling back to offline queue", error);
           return await this.saveOffline();
         }
       } else {
@@ -331,7 +332,7 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
         return await this.saveOffline();
       }
     } catch (error) {
-      console.error("Failed to save situp results:", error);
+      logger.error("Failed to save situp results:", error);
       
       // Show toast notification to user 
       if (typeof window !== 'undefined' && window.showToast) {
@@ -382,7 +383,7 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
       
       return false;
     } catch (error) {
-      console.error("Failed to save situp results offline:", error);
+      logger.error("Failed to save situp results offline:", error);
       
       // Log to error monitoring service if available
       if (typeof window !== 'undefined' && window.captureException) {

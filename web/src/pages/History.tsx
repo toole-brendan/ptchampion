@@ -26,6 +26,7 @@ import { getUserExercises } from '../lib/apiClient';
 import { ExerciseResponse } from '../lib/types';
 import { useAuth } from '../lib/authContext';
 import { formatTime, formatDistance } from '../lib/utils';
+import { logger } from '@/lib/logger';
 
 // Import the exercise PNG images 
 import pushupImage from '../assets/pushup.png';
@@ -148,7 +149,7 @@ const History: React.FC = () => {
         }
         return true;
       } catch (e) {
-        console.error("Error parsing date:", session.created_at, e);
+        logger.error("Error parsing date:", session.created_at, e);
         return false;
       }
     });

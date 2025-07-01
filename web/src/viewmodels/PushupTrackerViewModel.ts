@@ -22,6 +22,7 @@ import { ExerciseId } from '../constants/exercises';
 import { PoseDetector } from '../services/poseDetector';
 import { NormalizedLandmark } from '@mediapipe/tasks-vision';
 import cameraManager, { CameraOptions } from '@/services/CameraManager';
+import { logger } from '@/lib/logger';
 
 /**
  * Class implementation of PushupTrackerViewModel
@@ -111,7 +112,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
       this._isInitialized = true;
 
     } catch (error) {
-      console.error("Error initializing pushup tracker:", error);
+      logger.error("Error initializing pushup tracker:", error);
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       this.setError(TrackerErrorType.MODEL_LOAD_FAILED, errorMessage);
     }
@@ -364,7 +365,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
       
       return true;
     } catch (error) {
-      console.error("Failed to save pushup results:", error);
+      logger.error("Failed to save pushup results:", error);
       
       // Show toast notification to user 
       if (typeof window !== 'undefined' && window.showToast) {
@@ -392,7 +393,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
    */
   private async saveOffline(): Promise<boolean> {
     // This method is now deprecated as workoutSyncService handles offline saving automatically
-    console.warn('saveOffline is deprecated, use workoutSyncService.submitWorkout instead');
+    logger.warn('saveOffline is deprecated, use workoutSyncService.submitWorkout instead');
     return false;
   }
 
@@ -456,7 +457,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
         this.facingMode = cameraManager.getFacingMode();
       }
     } catch (err) {
-      console.error('Failed to switch camera', err);
+      logger.error('Failed to switch camera', err);
       const msg = err instanceof Error ? err.message : 'Unknown error';
       this.setError(TrackerErrorType.CAMERA_PERMISSION, msg);
     }

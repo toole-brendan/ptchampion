@@ -14,6 +14,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 // Import createGrader for consistency with other ViewModels
 import { createGrader } from '../grading';
 import { ExerciseId } from '../constants/exercises';
+import { logger } from '@/lib/logger';
 
 // Type for coordinates data
 export interface Coordinates {
@@ -67,7 +68,7 @@ export class RunningTrackerViewModel extends BaseTrackerViewModel {
       this._status = SessionStatus.READY;
       this._error = null;
     } catch (error) {
-      console.error("Failed to initialize geolocation:", error);
+      logger.error("Failed to initialize geolocation:", error);
       
       if (error instanceof GeolocationPositionError) {
         if (error.code === 1) { // PERMISSION_DENIED
@@ -176,7 +177,7 @@ export class RunningTrackerViewModel extends BaseTrackerViewModel {
    * Handle geolocation errors
    */
   private handlePositionError = (error: GeolocationPositionError): void => {
-    console.error("Geolocation error:", error);
+    logger.error("Geolocation error:", error);
     
     let errorMessage = "An unknown error occurred while tracking location.";
     if (error.code === 1) {
@@ -322,7 +323,7 @@ export class RunningTrackerViewModel extends BaseTrackerViewModel {
           return true;
         } catch (error) {
           // If API call fails, fall back to offline queue
-          console.log("API call failed, falling back to offline queue", error);
+          logger.info("API call failed, falling back to offline queue", error);
           return await this.saveOffline();
         }
       } else {
@@ -330,7 +331,7 @@ export class RunningTrackerViewModel extends BaseTrackerViewModel {
         return await this.saveOffline();
       }
     } catch (error) {
-      console.error("Failed to save running results:", error);
+      logger.error("Failed to save running results:", error);
       
       // Show toast notification to user 
       if (typeof window !== 'undefined' && window.showToast) {
@@ -381,7 +382,7 @@ export class RunningTrackerViewModel extends BaseTrackerViewModel {
       
       return false;
     } catch (error) {
-      console.error("Failed to save running results offline:", error);
+      logger.error("Failed to save running results offline:", error);
       
       // Log to error monitoring service if available
       if (typeof window !== 'undefined' && window.captureException) {

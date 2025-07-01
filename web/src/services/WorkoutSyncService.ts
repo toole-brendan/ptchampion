@@ -1,6 +1,7 @@
 import { offlineQueue, QueuedWorkout } from './OfflineQueue';
 import { api } from './api';
 import { WorkoutRequest } from '../types/api';
+import { logger } from '@/lib/logger';
 
 interface SyncResult {
   successful: string[];
@@ -39,34 +40,34 @@ class WorkoutSyncService {
 
   private handleOnline = () => {
     this.isOnline = true;
-    console.log('Connection restored, syncing pending workouts...');
+    logger.info('Connection restored, syncing pending workouts...');
     this.syncPendingWorkouts();
   };
 
   private handleOffline = () => {
     this.isOnline = false;
-    console.log('Connection lost, workouts will be queued');
+    logger.info('Connection lost, workouts will be queued');
   };
 
   async submitWorkout(workout: WorkoutRequest): Promise<void> {
     if (!this.isOnline) {
       // Queue for later submission
       await offlineQueue.enqueue(workout);
-      console.log('Workout queued for offline sync');
+      logger.info('Workout queued for offline sync');
       return;
     }
 
     try {
       // Try to submit immediately
       await api.workouts.create(workout);
-      console.log('Workout submitted successfully');
+      logger.info('Workout submitted successfully');
       
       // Also try to sync any pending workouts
       this.syncPendingWorkouts();
     } catch (error) {
       // Queue on failure
       await offlineQueue.enqueue(workout);
-      console.error('Failed to submit workout, queued for retry:', error);
+      logger.error('Failed to submit workout, queued for retry:', error);
       
       // If it's a network error, mark as offline
       if (this.isNetworkError(error)) {
@@ -90,19 +91,19 @@ class WorkoutSyncService {
 
     try {
       const pendingWorkouts = await offlineQueue.getAllPending();
-      console.log(`Syncing ${pendingWorkouts.length} pending workouts`);
+      logger.info(`Syncing ${pendingWorkouts.length} pending workouts`);
 
       for (const queuedWorkout of pendingWorkouts) {
         // Skip if max retries exceeded
         if (queuedWorkout.retryCount >= this.MAX_RETRIES) {
-          console.warn(`Workout ${queuedWorkout.id} exceeded max retries, skipping`);
+          logger.warn(`Workout ${queuedWorkout.id} exceeded max retries, skipping`);
           continue;
         }
 
         try {
           // Check for duplicates before submitting
           if (await this.isDuplicateSubmission(queuedWorkout.workout)) {
-            console.log(`Workout ${queuedWorkout.id} is a duplicate, removing from queue`);
+            logger.info(`Workout ${queuedWorkout.id} is a duplicate, removing from queue`);
             await offlineQueue.dequeue(queuedWorkout.id);
             result.successful.push(queuedWorkout.id);
             continue;
@@ -115,7 +116,7 @@ class WorkoutSyncService {
           await offlineQueue.dequeue(queuedWorkout.id);
           result.successful.push(queuedWorkout.id);
           
-          console.log(`Successfully synced workout ${queuedWorkout.id}`);
+          logger.info(`Successfully synced workout ${queuedWorkout.id}`);
         } catch (error) {
           const errorMessage = this.getErrorMessage(error);
           result.failed.push({ id: queuedWorkout.id, error: errorMessage });
@@ -126,7 +127,7 @@ class WorkoutSyncService {
           // Schedule retry with exponential backoff
           this.scheduleRetry(queuedWorkout);
           
-          console.error(`Failed to sync workout ${queuedWorkout.id}:`, error);
+          logger.error(`Failed to sync workout ${queuedWorkout.id}:`, error);
 
           // If it's a network error, stop syncing
           if (this.isNetworkError(error)) {
@@ -147,7 +148,7 @@ class WorkoutSyncService {
       }
 
     } catch (error) {
-      console.error('Error during sync process:', error);
+      logger.error('Error during sync process:', error);
       offlineQueue.updateLastSyncError(this.getErrorMessage(error));
     } finally {
       this.syncInProgress = false;
@@ -167,7 +168,7 @@ class WorkoutSyncService {
     // Calculate delay with exponential backoff
     const delay = this.INITIAL_RETRY_DELAY * Math.pow(2, queuedWorkout.retryCount);
     
-    console.log(`Scheduling retry for workout ${queuedWorkout.id} in ${delay}ms`);
+    logger.info(`Scheduling retry for workout ${queuedWorkout.id} in ${delay}ms`);
 
     const timeout = setTimeout(async () => {
       this.retryTimeouts.delete(queuedWorkout.id);
@@ -176,9 +177,9 @@ class WorkoutSyncService {
         try {
           await api.workouts.create(queuedWorkout.workout);
           await offlineQueue.dequeue(queuedWorkout.id);
-          console.log(`Retry successful for workout ${queuedWorkout.id}`);
+          logger.info(`Retry successful for workout ${queuedWorkout.id}`);
         } catch (error) {
-          console.error(`Retry failed for workout ${queuedWorkout.id}:`, error);
+          logger.error(`Retry failed for workout ${queuedWorkout.id}:`, error);
           await offlineQueue.updateRetryInfo(
             queuedWorkout.id,
             this.getErrorMessage(error)
@@ -207,7 +208,7 @@ class WorkoutSyncService {
       );
     } catch (error) {
       // If we can't check for duplicates, assume it's not a duplicate
-      console.warn('Failed to check for duplicate submissions:', error);
+      logger.warn('Failed to check for duplicate submissions:', error);
       return false;
     }
   }

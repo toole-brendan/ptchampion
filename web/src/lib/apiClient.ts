@@ -12,6 +12,7 @@ import config from './config';
 import { secureGet, secureSet, secureRemove } from './secureStorage';
 // Import the dev mock token constant
 import { DEV_MOCK_TOKEN } from '../components/ui/DeveloperMenu';
+import { logger } from './logger';
 
 // Get the configured API base URL
 const getApiBaseUrl = (): string => config.api.baseUrl; // Example: "http://localhost:8080/api/v1"
@@ -27,25 +28,25 @@ const getToken = async (): Promise<string | null> => {
     // First try to get token from secureGet
     const token = await secureGet(TOKEN_STORAGE_KEY);
     if (token) {
-      console.log('getToken (async) called, token exists from secureGet');
+      logger.debug('getToken (async) called, token exists from secureGet');
       return token;
     }
     
     // Fall back to regular localStorage if secure get failed
     const plainToken = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (plainToken) {
-      console.log('getToken (async) called, token exists from localStorage');
+      logger.debug('getToken (async) called, token exists from localStorage');
       return plainToken;
     }
     
-    console.log('getToken (async) called, no token found');
+    logger.debug('getToken (async) called, no token found');
     return null;
   } catch (error) {
     // If secure decryption fails, try regular localStorage
-    console.error('Error in secure token retrieval:', error);
+    logger.error('Error in secure token retrieval:', error);
     const plainToken = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (plainToken) {
-      console.log('getToken (async) falling back to localStorage token');
+      logger.debug('getToken (async) falling back to localStorage token');
       return plainToken;
     }
     return null;
@@ -62,7 +63,7 @@ export interface PaginatedExercisesResponse {
 
 // Add this function near the top of your file, before any API calls
 const handleApiError = (error: unknown) => {
-  console.error('API Error:', error);
+  logger.error('API Error:', error);
   
   if (error instanceof Error) {
     return error;
@@ -102,7 +103,7 @@ const apiRequest = async <T>(
     
     // Special handling for dev mock token
     if (token === DEV_MOCK_TOKEN) {
-      console.log('Using dev mock token, bypassing actual API call');
+      logger.debug('Using dev mock token, bypassing actual API call');
       
       // Handle specific endpoints with mock data
       if (endpoint === '/users/me') {
@@ -111,11 +112,11 @@ const apiRequest = async <T>(
           const mockUserStr = localStorage.getItem(USER_STORAGE_KEY);
           if (mockUserStr) {
             const mockUser = JSON.parse(mockUserStr);
-            console.log('Returning mock user:', mockUser);
+            logger.debug('Returning mock user:', { id: mockUser.id, username: mockUser.username });
             return mockUser as T;
           }
         } catch (e) {
-          console.error('Error parsing mock user:', e);
+          logger.error('Error parsing mock user:', e);
         }
         
         // Fallback mock user if none in localStorage
@@ -146,7 +147,7 @@ const apiRequest = async <T>(
             created_at: new Date().toISOString(),
             grade: 90,
           };
-          console.log('Returning mock exercise:', mockExercise);
+          logger.debug('Returning mock exercise:', { id: mockExercise.id, exercise_name: mockExercise.exercise_name });
           return mockExercise as T;
         } else if (method === 'GET') {
           // Return mock exercise list
@@ -181,7 +182,7 @@ const apiRequest = async <T>(
             page: 1,
             page_size: 10
           };
-          console.log('Returning mock exercises:', mockExercises);
+          logger.debug('Returning mock exercises:', { count: mockExercises.items.length });
           return mockExercises as T;
         }
       }
@@ -214,12 +215,12 @@ const apiRequest = async <T>(
             last_attempt_date: new Date().toISOString(),
           }
         ];
-        console.log('Returning mock leaderboard:', mockLeaderboard);
+        logger.debug('Returning mock leaderboard:', { count: mockLeaderboard.length });
         return mockLeaderboard as T;
       }
       
       // Default mock response for any other endpoint
-      console.log('No specific mock data for endpoint, returning generic response');
+      logger.debug('No specific mock data for endpoint, returning generic response');
       return {} as T;
     }
     
@@ -242,14 +243,14 @@ const apiRequest = async <T>(
   }
 
   const apiUrl = `${getApiBaseUrl()}${endpoint}`; // Construct full URL
-  console.log(`Making ${method} request to ${apiUrl}`, { body, headers });
-  console.log('Request body stringified:', body ? JSON.stringify(body) : 'null');
-  console.log('Full request config:', requestConfig);
+  logger.info(`Making ${method} request to ${apiUrl}`);
+  logger.debug('Request body:', body ? '(body present)' : 'null');
+  logger.debug('Request method:', method);
 
   try {
     const response = await fetch(apiUrl, requestConfig);
-    console.log(`Response status: ${response.status}`);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+    logger.debug(`Response status: ${response.status}`);
+    logger.debug('Response content-type:', response.headers.get('content-type'));
 
     // Check if the response is ok (status in the range 200-299)
     if (!response.ok) {
@@ -257,13 +258,11 @@ const apiRequest = async <T>(
       try {
         // Try to parse the error response body for a backend message
         const jsonError = await response.json();
-        console.error('Error response:', jsonError);
-        console.error('Full error details:', {
+        logger.error('Error response:', { status: response.status, error: jsonError.error || jsonError.message });
+        logger.debug('Error details:', {
           status: response.status,
           statusText: response.statusText,
-          url: response.url,
-          headers: Object.fromEntries(response.headers.entries()),
-          body: jsonError
+          url: response.url
         });
         // Use backend error message if available, otherwise keep default
         if (jsonError && jsonError.error) { // Match backend's likely error format
@@ -271,7 +270,7 @@ const apiRequest = async <T>(
         }
       } catch (e) {
         // Ignore JSON parsing error, use default message
-        console.warn('Could not parse error response JSON:', e);
+        logger.warn('Could not parse error response JSON:', e);
       }
       // Throw an error with a message
       throw new Error(errorData.message);
@@ -290,7 +289,7 @@ const apiRequest = async <T>(
     }
 
     // Handle unexpected non-JSON responses if necessary, or return null/throw error
-    console.warn(`Received non-JSON response for ${method} ${endpoint}`);
+    logger.warn(`Received non-JSON response for ${method} ${endpoint}`);
     return null as T;
 
   } catch (error) {
@@ -302,17 +301,16 @@ const apiRequest = async <T>(
 // --- Auth Endpoints ---
 
 export const registerUser = (data: RegisterUserRequest): Promise<UserResponse> => {
-  console.log('Registration request data:', data);
+  logger.debug('Registration request:', { email: data.email });
   // Changed from '/users/register' to '/auth/register' to match backend endpoint
   return apiRequest<UserResponse>('/auth/register', 'POST', data, false);
 };
 
 export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
-  console.log('loginUser function called');
-  console.log('Login request data received:', {
+  logger.debug('loginUser function called');
+  logger.debug('Login request data received:', {
     email: data.email,
-    passwordLength: data.password ? data.password.length : 0,
-    passwordPreview: data.password ? data.password.substring(0, 3) + '...' : 'null'
+    hasPassword: !!data.password
   });
   
   // Define type for backend response which might be different from frontend
@@ -327,18 +325,11 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
     password: data.password
   };
   
-  console.log('Transformed data for backend:', {
-    email: transformedData.email,
-    passwordLength: transformedData.password ? transformedData.password.length : 0
-  });
+  logger.debug('Sending login request for email:', transformedData.email);
   
   const response = await apiRequest<BackendLoginResponse>('/auth/login', 'POST', transformedData, false);
   
-  // Log the full response object
-  console.log('LOGIN RESPONSE FULL DETAILS:', response);
-  console.log('response.access_token exists?', response && response.access_token ? true : false);
-  console.log('response type:', typeof response);
-  console.log('response keys:', response ? Object.keys(response) : 'null');
+  logger.debug('Login response received:', { hasToken: !!response?.access_token, hasUser: !!response?.user });
   
   // Convert backend response format to frontend expected format
   const normalizedResponse: LoginResponse = {
@@ -348,27 +339,27 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
   
   // Store the token securely upon successful login
   if (normalizedResponse.token) {
-    console.log('Token received from API (access_token), about to store');
+    logger.debug('Token received from API, storing');
     
     try {
       // First store in regular localStorage for immediate access
       localStorage.setItem(TOKEN_STORAGE_KEY, normalizedResponse.token);
-      console.log('Token stored in localStorage successfully');
+      logger.debug('Token stored in localStorage successfully');
       
       // Then try to store securely as well (as a backup)
       await secureSet(TOKEN_STORAGE_KEY, normalizedResponse.token).catch(err => {
-        console.warn('Secure token storage failed, using regular localStorage only:', err);
+        logger.warn('Secure token storage failed, using regular localStorage only:', err);
       });
       
       // Log success for debugging
-      console.log('Login successful, token stored');
+      logger.info('Login successful, token stored');
     } catch (error) {
-      console.error('Error storing token:', error);
+      logger.error('Error storing token:', error);
       // Make sure at least the plain storage is attempted
       localStorage.setItem(TOKEN_STORAGE_KEY, normalizedResponse.token);
     }
   } else {
-    console.warn('No token received in login response');
+    logger.warn('No token received in login response');
   }
   return normalizedResponse;
 };
@@ -403,7 +394,7 @@ export const withRetry = async <T>(fn: () => Promise<T>, attempts: number = 3): 
     // Only retry for server errors (5xx)
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (attempts > 1 && errorMessage.includes('HTTP error 5')) {
-      console.log(`Retrying API call, ${attempts - 1} attempts remaining`);
+      logger.debug(`Retrying API call, ${attempts - 1} attempts remaining`);
       // Wait with exponential backoff before retrying
       await new Promise(resolve => setTimeout(resolve, 1000 * (4 - attempts)));
       return withRetry(fn, attempts - 1);
@@ -488,7 +479,7 @@ export const getLeaderboard = async (exerciseType: string): Promise<LeaderboardE
   try {
     return await apiRequest<LeaderboardEntry[]>(`/leaderboards/global/exercise/${exerciseType}`, 'GET', null, true);
   } catch (error) {
-    console.error(`Failed to fetch leaderboard for ${exerciseType}:`, error);
+    logger.error(`Failed to fetch leaderboard for ${exerciseType}:`, error);
     // Return empty array instead of throwing to prevent UI breakage
     return [];
   }
@@ -503,7 +494,7 @@ export const getLeaderboard = async (exerciseType: string): Promise<LeaderboardE
 
 // Clear the token
 export const clearToken = (): void => {
-  console.log('Clearing token from storage');
+  logger.debug('Clearing token from storage');
   // Remove from secure storage
   secureRemove(TOKEN_STORAGE_KEY);
   // Also remove from regular localStorage to ensure all remnants are gone
@@ -516,18 +507,18 @@ export const getSyncToken = (): string | null => {
     // First check if there's any token in localStorage
     const tokenValue = localStorage.getItem(TOKEN_STORAGE_KEY);
     
-    console.log('getSyncToken called, raw value exists:', !!tokenValue);
+    logger.debug('getSyncToken called, token exists:', !!tokenValue);
     
     if (!tokenValue) {
-      console.log('getSyncToken: No token found in localStorage');
+      logger.debug('getSyncToken: No token found');
       return null;
     }
     
     // Return the token value if it exists
-    console.log('getSyncToken: Token found in localStorage, returning it');
+    logger.debug('getSyncToken: Token found');
     return tokenValue;
   } catch (error) {
-    console.error('Error in getSyncToken:', error);
+    logger.error('Error in getSyncToken:', error);
     return null;
   }
 };
@@ -579,7 +570,7 @@ export const checkServerHealth = async (): Promise<{ status: string, responseTim
     };
   } catch (error) {
     const endTime = performance.now();
-    console.error('Server health check failed:', error);
+    logger.error('Server health check failed:', error);
     return { 
       status: 'error', 
       responseTime: Math.round(endTime - startTime) 
@@ -608,7 +599,7 @@ export const deleteExercise = async (id: string): Promise<boolean> => {
 
     return true;
   } catch (error) {
-    console.error('Error deleting exercise:', error);
+    logger.error('Error deleting exercise:', error);
     throw error;
   }
 };
@@ -618,7 +609,7 @@ export const deleteExercise = async (id: string): Promise<boolean> => {
  * @param data Social login data (provider and token)
  */
 export const loginWithSocialProvider = async (data: import('./types').SocialSignInRequest): Promise<import('./types').LoginResponse> => {
-  console.log(`Logging in with ${data.provider} provider...`);
+  logger.debug(`Logging in with ${data.provider} provider`);
   
   try {
     const response = await fetch(`${getApiBaseUrl()}/auth/${data.provider}`, {
@@ -643,7 +634,7 @@ export const loginWithSocialProvider = async (data: import('./types').SocialSign
     
     return responseData;
   } catch (error) {
-    console.error('Social login error:', error);
+    logger.error('Social login error:', error);
     throw error;
   }
 };

@@ -18,6 +18,7 @@ import {
 } from './types';
 // Import the dev mock token constant
 import { DEV_MOCK_TOKEN } from '../components/ui/DeveloperMenu';
+import { logger } from './logger';
 import config from './config';
 
 // Define the shape of the authentication context
@@ -44,11 +45,11 @@ const DEV_AUTH_USER = import.meta.env.VITE_DEV_AUTH_USER
   : null;
 
 // Debug environment variables
-console.log('Environment Variable Debug:', {
+logger.debug('Environment Variable Debug:', {
   'import.meta.env.DEV': import.meta.env.DEV,
   'import.meta.env.VITE_DEV_AUTH_BYPASS': import.meta.env.VITE_DEV_AUTH_BYPASS,
   'DEV_AUTH_BYPASS': DEV_AUTH_BYPASS,
-  'DEV_AUTH_USER': DEV_AUTH_USER
+  'DEV_AUTH_USER': DEV_AUTH_USER ? 'Present' : 'Not set' // Sanitize user data
 });
 
 // Create the context with undefined default value
@@ -62,7 +63,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // If DEV_AUTH_BYPASS is true, set the token to DEV_MOCK_TOKEN automatically
     if (DEV_AUTH_BYPASS) {
       localStorage.setItem(config.auth.storageKeys.token, DEV_MOCK_TOKEN);
-      console.log('Using dev auth bypass from environment variables');
+      logger.debug('Using dev auth bypass from environment variables');
       return DEV_MOCK_TOKEN;
     }
     return getSyncToken();
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         // First try to use the environment variable mock user if available
         if (DEV_AUTH_BYPASS && DEV_AUTH_USER) {
-          console.log('Using mock user from environment variables');
+          logger.debug('Using mock user from environment variables');
           // Also update localStorage for consistency
           localStorage.setItem(config.auth.storageKeys.user, JSON.stringify(DEV_AUTH_USER));
           return DEV_AUTH_USER;
@@ -90,7 +91,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           return JSON.parse(storedUser);
         }
       } catch (e) {
-        console.error('Failed to parse mock user:', e);
+        logger.error('Failed to parse mock user:', e);
       }
     }
     return null;
@@ -111,7 +112,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Effect to update isAuthenticated state when token changes
   useEffect(() => {
-    console.log('Auth context token effect triggered:', { 
+    logger.debug('Auth context token effect triggered:', { 
       hasToken: !!token, 
       hasUser: !!user, 
       isDevToken,
@@ -120,7 +121,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     // If we have a dev token, we can skip the API call and just use the mock user
     if (isDevToken) {
-      console.log('Using dev mock token with mock user:', mockUser);
+      logger.debug('Using dev mock token with mock user:', mockUser ? { id: mockUser.id, email: mockUser.email } : null);
       return;
     }
     
@@ -128,19 +129,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     async function validateTokenAndUser() {
       try {
         if (token) {
-          console.log('Token exists, checking user data');
+          logger.debug('Token exists, checking user data');
           // If we have a token state, attempt to fetch user data if not already fetched
           if (!user) {
-            console.log('No user data, prefetching');
+            logger.debug('No user data, prefetching');
             try {
               await queryClient.prefetchQuery({
                 queryKey: userQueryKey,
                 queryFn: getCurrentUser,
                 retry: 1,
               });
-              console.log('User data prefetch complete');
+              logger.debug('User data prefetch complete');
             } catch (error) {
-              console.error('Failed to fetch user data, clearing token:', error);
+              logger.error('Failed to fetch user data, clearing token:', error);
               // If the token is invalid (401, 403, 404), clear it
               clearToken();
               setToken(null);
@@ -149,11 +150,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
               throw error;
             }
           } else {
-            console.log('User data already exists');
+            logger.debug('User data already exists');
           }
         }
       } catch (error) {
-        console.error('Token validation error:', error);
+        logger.error('Token validation error:', error);
         // Clear token if validation fails
         clearToken();
         setToken(null);
@@ -176,16 +177,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   >({
     mutationFn: loginUser, // mutationFn inside options
     onSuccess: (data: LoginResponse) => { // Explicitly type data
-      console.log('Login mutation success', { token: !!data.token, user: !!data.user });
+      logger.debug('Login mutation success', { hasToken: !!data.token, hasUser: !!data.user });
       // Make sure we log if a token actually exists
       if (!data.token) {
-        console.error('Token missing in login response after normalization');
+        logger.error('Token missing in login response after normalization');
       }
       setToken(data.token); // Update token state to trigger UI updates
       // Set user data directly in the cache for immediate UI update
       queryClient.setQueryData(userQueryKey, data.user);
       setMutationError(null);
-      console.log('Auth state after login success:', { token: !!data.token, user: !!data.user });
+      logger.debug('Auth state after login success:', { hasToken: !!data.token, hasUser: !!data.user });
     },
     onError: (error: Error) => { // Explicitly type error
       clearToken(); // Ensure token is cleared on login failure
@@ -222,14 +223,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   >({
     mutationFn: loginWithSocialProvider,
     onSuccess: (data: LoginResponse) => {
-      console.log('Social login mutation success', { token: !!data.token, user: !!data.user });
+      logger.debug('Social login mutation success', { hasToken: !!data.token, hasUser: !!data.user });
       if (!data.token) {
-        console.error('Token missing in social login response after normalization');
+        logger.error('Token missing in social login response after normalization');
       }
       setToken(data.token);
       queryClient.setQueryData(userQueryKey, data.user);
       setMutationError(null);
-      console.log('Auth state after social login success:', { token: !!data.token, user: !!data.user });
+      logger.debug('Auth state after social login success:', { hasToken: !!data.token, hasUser: !!data.user });
     },
     onError: (error: Error) => {
       clearToken();
@@ -249,7 +250,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Success is handled by mutation's onSuccess
     } catch (error) {
       // Error is now set by mutation's onError
-      console.error('Login mutation failed:', error);
+      logger.error('Login mutation failed:', error);
     }
   }, [performLogin]);
 
@@ -261,7 +262,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Success includes auto-login handled by mutation's onSuccess
     } catch (error) {
       // Error is now set by mutation's onError
-      console.error('Register mutation failed:', error);
+      logger.error('Register mutation failed:', error);
     }
   }, [performRegister]);
 
@@ -272,7 +273,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       await performSocialLogin(data);
       // Success is handled by mutation's onSuccess
     } catch (error) {
-      console.error('Social login mutation failed:', error);
+      logger.error('Social login mutation failed:', error);
     }
   }, [performSocialLogin]);
 
@@ -319,7 +320,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     clearError,
   };
 
-  console.log('Auth context state:', { 
+  logger.debug('Auth context state:', { 
     isAuthenticated: contextValue.isAuthenticated,
     hasToken: !!token,
     isDevToken,

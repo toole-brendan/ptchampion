@@ -4,6 +4,7 @@ import { useAuth } from '../../lib/authContext';
 import logoImage from '../../assets/pt_champion_logo_2.png';
 import config from '../../lib/config';
 import { cleanAuthStorage } from '../../lib/secureStorage';
+import { logger } from '../../lib/logger';
 
 // Get token storage key from config to ensure consistency
 const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
@@ -34,9 +35,9 @@ const LoginPage: React.FC = () => {
 
   // Redirect if already authenticated
   useEffect(() => {
-    console.log('Login page redirect effect triggered', { isAuthenticated, returnUrl });
+    logger.debug('Login page redirect effect triggered', { isAuthenticated, returnUrl });
     if (isAuthenticated) {
-      console.log('User is authenticated, navigating to:', returnUrl);
+      logger.debug('User is authenticated, navigating to:', returnUrl);
       navigate(returnUrl, { replace: true });
     }
   }, [isAuthenticated, navigate, returnUrl]);
@@ -46,7 +47,7 @@ const LoginPage: React.FC = () => {
     // Only clear tokens if we're not loading and still not authenticated
     // This prevents clearing valid tokens while the user data is being fetched
     if (location.pathname === '/login' && localStorage.getItem(TOKEN_STORAGE_KEY) && !isAuthenticated && !isLoading) {
-      console.log('Found potential stale token on login page (not loading), clearing all tokens');
+      logger.debug('Found potential stale token on login page (not loading), clearing all tokens');
       cleanAuthStorage();
     }
     
@@ -61,16 +62,16 @@ const LoginPage: React.FC = () => {
     setLogoClickCount(newCount);
     
     if (newCount === 5) {
-      console.log('Secret login activated!');
+      logger.debug('Secret login activated!');
       try {
         // Login as test user
         await login({
           email: 'testuser@ptchampion.ai',
           password: 'TestUser123!',
         });
-        console.log('Mock user login completed');
+        logger.debug('Mock user login completed');
       } catch (err) {
-        console.error('Mock login failed:', err);
+        logger.error('Mock login failed:', err);
       }
       // Reset count after attempting login
       setLogoClickCount(0);
@@ -81,23 +82,23 @@ const LoginPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    console.log('Login form submitted', { email });
+    logger.debug('Login form submitted', { email });
     
     try {
-      console.log('Calling login function');
+      logger.debug('Calling login function');
       await login({
         email: email,
         password,
       });
-      console.log('Login function completed');
+      logger.debug('Login function completed');
     } catch (err) {
-      console.error('Login failed:', err);
+      logger.error('Login failed:', err);
     }
   };
 
   // Handle demo login
   const handleDemoLogin = async () => {
-    console.log('Demo login initiated');
+    logger.debug('Demo login initiated');
     setDemoLoading(true);
     
     // Set demo credentials
@@ -108,14 +109,14 @@ const LoginPage: React.FC = () => {
     setPassword(demoPassword);
     
     try {
-      console.log('Calling login with demo credentials');
+      logger.debug('Calling login with demo credentials');
       await login({
         email: demoEmail,
         password: demoPassword,
       });
-      console.log('Demo login completed');
+      logger.debug('Demo login completed');
     } catch (err) {
-      console.error('Demo login failed:', err);
+      logger.error('Demo login failed:', err);
     } finally {
       setDemoLoading(false);
     }

@@ -17,6 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useApi } from '@/lib/apiClient';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 
 // Import new iOS-style components
 import { PTChampionHeader } from '@/components/ui/pt-champion-header';
@@ -66,7 +67,7 @@ const Dashboard: React.FC = () => {
         
         // Debug logging
         if (page === 1) {
-          console.log('First page items:', response.items.map(item => ({
+          logger.debug('First page items:', response.items.map(item => ({
             name: item.exercise_name,
             duration: item.time_in_seconds
           })));
@@ -87,7 +88,7 @@ const Dashboard: React.FC = () => {
         if (page > 20) break;
       }
       
-      console.log('Total runs found:', allRuns.length);
+      logger.debug('Total runs found:', allRuns.length);
       return allRuns;
     },
     enabled: !!user,
@@ -135,7 +136,7 @@ const Dashboard: React.FC = () => {
         return sum + (run.time_in_seconds || 0);
       }, 0);
       averageRunTime = totalRunTime / runHistory.length;
-      console.log('Average run time calculation:', {
+      logger.debug('Average run time calculation:', {
         runCount: runHistory.length,
         totalTime: totalRunTime,
         average: averageRunTime

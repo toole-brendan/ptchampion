@@ -2,6 +2,7 @@ import React from 'react';
 import { TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
+import { logger } from '@/lib/logger';
 
 interface ChartDataPoint {
   date: Date;
@@ -20,7 +21,7 @@ export const WorkoutChartSection: React.FC<WorkoutChartSectionProps> = ({
   yAxisLabel
 }) => {
   // Debug logging
-  console.log('[WorkoutChartSection] Rendering with:', {
+  logger.debug('[WorkoutChartSection] Rendering with:', {
     filter,
     chartDataLength: chartData?.length || 0,
     yAxisLabel,

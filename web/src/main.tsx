@@ -8,12 +8,13 @@ import App from './App';
 import { QueryClient } from '@tanstack/react-query';
 import config from './lib/config';
 import { syncManager } from './lib/syncManager';
+import { logger } from './lib/logger';
 // Register the service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {
-        console.log('Service Worker registered:', registration);
+        logger.info('Service Worker registered successfully');
         
         // Check for updates every 60 seconds
         setInterval(() => {
@@ -21,24 +22,26 @@ if ('serviceWorker' in navigator) {
         }, 60 * 1000);
       })
       .catch(error => {
-        console.error('Service Worker registration failed:', error);
+        logger.error('Service Worker registration failed', error);
       });
   });
 }
 
 // VERSION CHECK - THIS SHOULD CHANGE WITH EACH DEPLOY
-console.log('🚨🚨🚨 PT CHAMPION VERSION: 2025-07-01-v9-HISTORY-FIXES 🚨🚨🚨');
-console.log('Build timestamp:', new Date().toISOString());
-console.log('Changes in this build:');
-console.log('- History filter chips fixed to use exercise_name');
-console.log('- Progress chart shows real data');
-console.log('- Average run time calculation fixed');
-console.log('- Filter chip borders fixed');
-console.log('- Progress chart styled like Training Record');
+const APP_VERSION = '2025-07-01-v9-HISTORY-FIXES';
+const BUILD_TIME = new Date().toISOString();
+logger.appVersion(APP_VERSION, BUILD_TIME);
+logger.debug('Changes in this build:', [
+  'History filter chips fixed to use exercise_name',
+  'Progress chart shows real data',
+  'Average run time calculation fixed',
+  'Filter chip borders fixed',
+  'Progress chart styled like Training Record'
+].join(', '));
 
 // Clear stale tokens at startup
 const clearStaleTokens = () => {
-  console.log('Checking for stale tokens...');
+  logger.debug('Checking for stale tokens...');
   const TOKEN_STORAGE_KEY = config.auth.storageKeys.token;
   
   try {
@@ -51,7 +54,7 @@ const clearStaleTokens = () => {
       
       // If no session exists or it's older than 24 hours, clear the token
       if (!lastSession || (currentTime - parseInt(lastSession)) > 24 * 60 * 60 * 1000) {
-        console.log('Clearing stale token from previous session');
+        logger.debug('Clearing stale token from previous session');
         localStorage.removeItem(TOKEN_STORAGE_KEY);
       }
       
@@ -59,7 +62,7 @@ const clearStaleTokens = () => {
       sessionStorage.setItem(sessionKey, currentTime.toString());
     }
   } catch (error) {
-    console.error('Error checking for stale tokens:', error);
+    logger.error('Error checking for stale tokens', error);
   }
 };
 
@@ -76,28 +79,28 @@ const appSyncBootstrap = async () => {
   
   // If no sync manager but we're online, try to flush pending workouts
   if (!hasSyncManager && navigator.onLine) {
-    console.log('No SyncManager support detected. Attempting to flush pending workouts.');
+    logger.debug('No SyncManager support detected. Attempting to flush pending workouts.');
     try {
       // Wait a moment for auth to complete
       setTimeout(async () => {
         const syncedCount = await syncManager.flushPendingWorkouts(true);
         if (syncedCount > 0) {
-          console.log(`Bootstrap sync completed: ${syncedCount} workouts synced.`);
+          logger.info(`Bootstrap sync completed: ${syncedCount} workouts synced`);
         }
       }, 5000); // 5 second delay to allow auth to complete
     } catch (error) {
-      console.error('Failed to flush pending workouts during bootstrap:', error);
+      logger.error('Failed to flush pending workouts during bootstrap', error);
     }
   }
   
   // Set up online listener for browsers without SyncManager
   if (!hasSyncManager) {
     window.addEventListener('online', async () => {
-      console.log('Device came online. Attempting to sync pending workouts.');
+      logger.debug('Device came online. Attempting to sync pending workouts.');
       try {
         await syncManager.flushPendingWorkouts();
       } catch (error) {
-        console.error('Failed to flush pending workouts on online event:', error);
+        logger.error('Failed to flush pending workouts on online event', error);
       }
     });
   }

@@ -6,6 +6,7 @@
  */
 
 import { InitError, PoseDetectorError } from './PoseDetectorError';
+import { logger } from '@/lib/logger';
 
 export interface CameraOptions {
   facingMode?: 'user' | 'environment';
@@ -63,7 +64,7 @@ export class CameraManager {
         audio: false
       };
       
-      console.log('CameraManager: Requesting camera access');
+      logger.info('CameraManager: Requesting camera access');
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       this.stream = stream;
       this.lastError = null;
@@ -75,13 +76,13 @@ export class CameraManager {
         await this.attachStreamToVideo();
         this.needsUserGestureForResume = false;
       } catch (playError) {
-        console.warn('CameraManager: Autoplay prevented, may need user gesture', playError);
+        logger.warn('CameraManager: Autoplay prevented, may need user gesture', playError);
         this.needsUserGestureForResume = true;
       }
       
       return true;
     } catch (err) {
-      console.error('CameraManager: Error accessing camera', err);
+      logger.error('CameraManager: Error accessing camera', err);
       this.lastError = err instanceof Error 
         ? err 
         : new PoseDetectorError(InitError.CAMERA_PERMISSION, String(err));
@@ -115,7 +116,7 @@ export class CameraManager {
       this.needsUserGestureForResume = false;
       return true;
     } catch (err) {
-      console.error('CameraManager: Error resuming camera', err);
+      logger.error('CameraManager: Error resuming camera', err);
       this.needsUserGestureForResume = true;
       return false;
     }
@@ -209,7 +210,7 @@ export class CameraManager {
     
     this.activeConsumers = 0;
     this.paused = false;
-    console.log('CameraManager: Camera stopped');
+    logger.info('CameraManager: Camera stopped');
   }
   
   /**
@@ -232,7 +233,7 @@ export class CameraManager {
    */
   public async switchFacing(): Promise<boolean> {
     if (!this.videoElement) {
-      console.warn('CameraManager: No video element to switch camera');
+      logger.warn('CameraManager: No video element to switch camera');
       return false;
     }
 
