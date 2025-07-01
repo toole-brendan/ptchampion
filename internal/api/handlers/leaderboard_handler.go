@@ -614,11 +614,38 @@ func (h *LeaderboardHandler) GetGlobalExerciseLeaderboard(c echo.Context) error 
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve global exercise leaderboard")
 	}
 
-	apiEntries := make([]LeaderboardAPIEntry, len(storeEntries))
+	// Return frontend-expected format for consistency
+	frontendEntries := make([]LeaderboardFrontendEntry, len(storeEntries))
 	for i, entry := range storeEntries {
-		apiEntries[i] = mapStoreLeaderboardEntryToAPIEntry(entry)
+		displayName := entry.Username
+		if entry.FirstName != nil && entry.LastName != nil {
+			displayName = *entry.FirstName + " " + *entry.LastName
+		}
+		
+		// Parse user ID to int32
+		var userID int32
+		if _, err := fmt.Sscanf(entry.UserID, "%d", &userID); err != nil {
+			h.logger.Warn(ctx, "Failed to parse user ID", "userID", entry.UserID, "error", err)
+			userID = 0
+		}
+		
+		frontendEntries[i] = LeaderboardFrontendEntry{
+			UserID:      userID,
+			Username:    entry.Username,
+			DisplayName: displayName,
+			MaxGrade:    entry.Score,
+		}
+		
+		if i == 0 && len(storeEntries) > 0 {
+			h.logger.Debug(ctx, "GetGlobalExerciseLeaderboard: First entry", 
+				"username", entry.Username, 
+				"score", entry.Score,
+				"maxGrade", frontendEntries[i].MaxGrade)
+		}
 	}
-	return c.JSON(http.StatusOK, apiEntries)
+	h.logger.Info(ctx, "GetGlobalExerciseLeaderboard: Returning entries", 
+		"exerciseType", exerciseType, "count", len(frontendEntries))
+	return c.JSON(http.StatusOK, frontendEntries)
 }
 
 // GetGlobalAggregateLeaderboard handles GET /leaderboards/global/aggregate
@@ -754,11 +781,31 @@ func (h *LeaderboardHandler) GetLocalExerciseLeaderboard(c echo.Context) error {
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve local exercise leaderboard")
 	}
 
-	apiEntries := make([]LeaderboardAPIEntry, len(storeEntries))
+	// Return frontend-expected format for consistency
+	frontendEntries := make([]LeaderboardFrontendEntry, len(storeEntries))
 	for i, entry := range storeEntries {
-		apiEntries[i] = mapStoreLeaderboardEntryToAPIEntry(entry)
+		displayName := entry.Username
+		if entry.FirstName != nil && entry.LastName != nil {
+			displayName = *entry.FirstName + " " + *entry.LastName
+		}
+		
+		// Parse user ID to int32
+		var userID int32
+		if _, err := fmt.Sscanf(entry.UserID, "%d", &userID); err != nil {
+			h.logger.Warn(ctx, "Failed to parse user ID", "userID", entry.UserID, "error", err)
+			userID = 0
+		}
+		
+		frontendEntries[i] = LeaderboardFrontendEntry{
+			UserID:      userID,
+			Username:    entry.Username,
+			DisplayName: displayName,
+			MaxGrade:    entry.Score,
+		}
 	}
-	return c.JSON(http.StatusOK, apiEntries)
+	h.logger.Info(ctx, "GetLocalExerciseLeaderboard: Returning entries", 
+		"exerciseType", exerciseType, "count", len(frontendEntries))
+	return c.JSON(http.StatusOK, frontendEntries)
 }
 
 // GetLocalAggregateLeaderboard handles GET /leaderboards/local/aggregate
