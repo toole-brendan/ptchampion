@@ -113,6 +113,14 @@ func (s *service) GetGlobalAggregateLeaderboard(ctx context.Context, limit int, 
 	}
 	assignRanks(entries)
 	s.logger.Info(ctx, "Global overall leaderboard retrieved", "count", len(entries))
+	
+	// Log sample entry for debugging
+	if len(entries) > 0 {
+		s.logger.Debug(ctx, "Sample aggregate leaderboard entry", 
+			"username", entries[0].Username, 
+			"score", entries[0].Score,
+			"userID", entries[0].UserID)
+	}
 	return entries, nil
 }
 

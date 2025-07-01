@@ -587,6 +587,7 @@ func (h *LeaderboardHandler) GetGlobalExerciseLeaderboard(c echo.Context) error 
 
 	// Handle "overall" as a special case - redirect to aggregate leaderboard
 	if exerciseType == "overall" {
+		h.logger.Info(ctx, "GetGlobalExerciseLeaderboard: Redirecting 'overall' to aggregate leaderboard")
 		return h.GetGlobalAggregateLeaderboard(c)
 	}
 
@@ -649,10 +650,15 @@ func (h *LeaderboardHandler) GetGlobalAggregateLeaderboard(c echo.Context) error
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve global aggregate leaderboard")
 	}
 
+	h.logger.Debug(ctx, "GetGlobalAggregateLeaderboard: Retrieved entries from service", 
+		"count", len(storeEntries), "timeFrame", timeFrame)
+
 	// Check if this is being called via the "overall" route from the frontend
 	// The frontend expects a different response format with max_grade field
 	exerciseType := c.Param("exerciseType")
 	if exerciseType == "overall" {
+		h.logger.Info(ctx, "GetGlobalAggregateLeaderboard: Formatting response for frontend 'overall' route", 
+			"entryCount", len(storeEntries))
 		// Return frontend-expected format
 		frontendEntries := make([]LeaderboardFrontendEntry, len(storeEntries))
 		for i, entry := range storeEntries {
@@ -674,6 +680,11 @@ func (h *LeaderboardHandler) GetGlobalAggregateLeaderboard(c echo.Context) error
 				DisplayName: displayName,
 				MaxGrade:    entry.Score,
 			}
+		}
+		if len(frontendEntries) > 0 {
+			h.logger.Debug(ctx, "GetGlobalAggregateLeaderboard: Sample frontend entry", 
+				"username", frontendEntries[0].Username, 
+				"maxGrade", frontendEntries[0].MaxGrade)
 		}
 		return c.JSON(http.StatusOK, frontendEntries)
 	}
@@ -697,6 +708,7 @@ func (h *LeaderboardHandler) GetLocalExerciseLeaderboard(c echo.Context) error {
 
 	// Handle "overall" as a special case - redirect to aggregate leaderboard
 	if exerciseType == "overall" {
+		h.logger.Info(ctx, "GetLocalExerciseLeaderboard: Redirecting 'overall' to aggregate leaderboard")
 		return h.GetLocalAggregateLeaderboard(c)
 	}
 
@@ -798,10 +810,15 @@ func (h *LeaderboardHandler) GetLocalAggregateLeaderboard(c echo.Context) error 
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve local aggregate leaderboard")
 	}
 
+	h.logger.Debug(ctx, "GetLocalAggregateLeaderboard: Retrieved entries from service", 
+		"count", len(storeEntries), "lat", latitude, "lon", longitude, "radius", radiusMeters)
+
 	// Check if this is being called via the "overall" route from the frontend
 	// The frontend expects a different response format with max_grade field
 	exerciseType := c.Param("exerciseType")
 	if exerciseType == "overall" {
+		h.logger.Info(ctx, "GetLocalAggregateLeaderboard: Formatting response for frontend 'overall' route", 
+			"entryCount", len(storeEntries))
 		// Return frontend-expected format
 		frontendEntries := make([]LeaderboardFrontendEntry, len(storeEntries))
 		for i, entry := range storeEntries {
@@ -823,6 +840,11 @@ func (h *LeaderboardHandler) GetLocalAggregateLeaderboard(c echo.Context) error 
 				DisplayName: displayName,
 				MaxGrade:    entry.Score,
 			}
+		}
+		if len(frontendEntries) > 0 {
+			h.logger.Debug(ctx, "GetGlobalAggregateLeaderboard: Sample frontend entry", 
+				"username", frontendEntries[0].Username, 
+				"maxGrade", frontendEntries[0].MaxGrade)
 		}
 		return c.JSON(http.StatusOK, frontendEntries)
 	}

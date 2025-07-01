@@ -617,16 +617,28 @@ func (s *Store) GetGlobalAggregateLeaderboard(ctx context.Context, limit int, st
 	dbRows, err := s.Queries.GetGlobalAggregateLeaderboard(ctx, params)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			s.logger.Info(ctx, "Store: No rows found for global aggregate leaderboard")
 			return []*store.LeaderboardEntry{}, nil
 		}
 		s.logger.Error(ctx, "Failed to get global aggregate leaderboard from DB", "error", err)
 		return nil, fmt.Errorf("failed to get global aggregate leaderboard from DB: %w", err)
 	}
 
+	s.logger.Debug(ctx, "Store: GetGlobalAggregateLeaderboard query returned", "rowCount", len(dbRows))
+
 	entries := make([]*store.LeaderboardEntry, len(dbRows))
 	for i, row := range dbRows {
 		entries[i] = mapSqlcRowToLeaderboardEntry(row.UserID, row.Username, row.DisplayName, int32(row.Score))
+		if i == 0 {
+			s.logger.Debug(ctx, "Store: First aggregate row data", 
+				"userID", row.UserID,
+				"username", row.Username,
+				"score", row.Score,
+				"displayName", row.DisplayName)
+		}
 	}
+	
+	s.logger.Info(ctx, "Store: GetGlobalAggregateLeaderboard returning entries", "count", len(entries))
 	return entries, nil
 }
 
