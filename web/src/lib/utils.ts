@@ -186,19 +186,10 @@ export function formatDistance(meters: number, unit: 'km' | 'mi' = 'km'): string
  */
 export const formatLeaderboardScore = (
   exercise: string,
-  score: number
+  score: number,
+  boardType?: 'Global' | 'Local'
 ): string => {
-  if (exercise === "running") {
-    // Convert seconds to minutes:seconds format
-    const minutes = Math.floor(score / 60);
-    const seconds = Math.round(score % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
-  
-  if (exercise === "overall") {
-    return `${score} pts`;
-  }
-  
-  // pushup, situp, pullup
-  return `${score} reps`;
+  // The backend always returns grades/points (0-100) for leaderboard entries
+  // regardless of exercise type or board type
+  return `${score} pts`;
 };

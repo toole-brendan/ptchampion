@@ -161,7 +161,7 @@ const Leaderboard: React.FC = () => {
       username: entry.username,
       userId: String(entry.user_id), // Convert to string to match interface
       score: entry.max_grade !== undefined ? entry.max_grade : 0,
-      formattedScore: formatLeaderboardScore(selectedExercise, entry.max_grade || 0),
+      formattedScore: formatLeaderboardScore(selectedExercise, entry.max_grade || 0, selectedBoard),
       avatar: entry.profile_picture_url || null,
       unit: entry.unit || undefined,
       location: entry.location || undefined,
