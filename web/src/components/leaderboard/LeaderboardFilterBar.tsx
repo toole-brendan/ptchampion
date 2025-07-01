@@ -48,8 +48,8 @@ const LeaderboardFilterBar: React.FC<LeaderboardFilterBarProps> = ({
   return (
     <div className={cn("space-y-4", className)}>
       {/* Horizontal scrolling exercise buttons */}
-      <div className="overflow-x-auto">
-        <div className="flex space-x-2 pb-2 min-w-max">
+      <div className="overflow-x-auto pt-3 pb-4 -mx-1 px-1">
+        <div className="flex space-x-2 min-w-max px-4 py-2">
           {exercises.map((exercise) => (
             <ExerciseButton
               key={exercise.id}

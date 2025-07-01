@@ -172,7 +172,84 @@ func (h *Handler) GetLeaderboard(c echo.Context) error {
 		// Cache miss, continue with DB query
 	}
 
-	// Prepare params for DB query
+	// Handle "overall" as a special case for aggregate leaderboard
+	if exerciseType == "overall" {
+		// Use aggregate query for overall leaderboard
+		aggregateParams := db.GetGlobalAggregateLeaderboardParams{
+			Limit: int32(limit),
+		}
+		
+		// Set time frame parameters based on timeFrame
+		if timeFrame != "all_time" {
+			now := time.Now()
+			var startDate time.Time
+			
+			switch timeFrame {
+			case "weekly":
+				startDate = now.AddDate(0, 0, -7)
+			case "monthly":
+				startDate = now.AddDate(0, -1, 0)
+			case "yearly":
+				startDate = now.AddDate(-1, 0, 0)
+			default:
+				// For all_time or unknown values, don't set dates
+			}
+			
+			if !startDate.IsZero() {
+				aggregateParams.StartDate = sql.NullTime{Time: startDate, Valid: true}
+				aggregateParams.EndDate = sql.NullTime{Time: now, Valid: true}
+			}
+		}
+		
+		// Fetch aggregate leaderboard data from database
+		dbAggregateEntries, err := h.Queries.GetGlobalAggregateLeaderboard(c.Request().Context(), aggregateParams)
+		if err != nil {
+			log.Printf("ERROR: Failed to get overall leaderboard: %v", err)
+			return echo.NewHTTPError(http.StatusInternalServerError, "Failed to retrieve overall leaderboard")
+		}
+		
+		// Map DB results to response struct
+		respEntries := make([]LeaderboardEntry, len(dbAggregateEntries))
+		for i, dbEntry := range dbAggregateEntries {
+			score := int32(dbEntry.Score)
+			
+			// Split display_name into first_name and last_name
+			firstName := ""
+			lastName := ""
+			displayName := GetStringFromInterface(dbEntry.DisplayName)
+			if displayName != "" {
+				parts := strings.SplitN(displayName, " ", 2)
+				firstName = parts[0]
+				if len(parts) > 1 {
+					lastName = parts[1]
+				}
+			}
+			
+			respEntries[i] = LeaderboardEntry{
+				Username:  dbEntry.Username,
+				FirstName: firstName,
+				LastName:  lastName,
+				BestGrade: score, // Using BestGrade field to store the aggregate score
+			}
+		}
+		
+		// Cache the result if Redis is available
+		if redisClient != nil && len(respEntries) > 0 {
+			cache := redis.NewLeaderboardCache(redisClient).WithTTL(leaderboardCacheTTL)
+			cacheKey := redis.GlobalLeaderboardKey(exerciseType, limit, timeFrame)
+			
+			ctx := c.Request().Context()
+			if err := cache.Set(ctx, cacheKey, respEntries); err != nil {
+				// Just log the error, don't fail the request
+				log.Printf("Error caching overall leaderboard: %v", err)
+			}
+		}
+		
+		// Send response
+		return c.JSON(http.StatusOK, respEntries)
+	}
+	
+	// Regular exercise type handling
 	params := db.GetLeaderboardByExerciseTypeParams{
 		Type:  exerciseType,
 		Limit: int32(limit),

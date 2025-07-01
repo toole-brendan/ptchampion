@@ -37,11 +37,11 @@ const ExerciseButton: React.FC<ExerciseButtonProps> = ({
     <button
       className={cn(
         "flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-300 ease-spring",
-        "border whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-brass-gold focus:ring-offset-2",
+        "whitespace-nowrap focus:outline-none",
         "active:scale-95 transform",
         isSelected
-          ? "bg-deep-ops text-brass-gold border-deep-ops shadow-md"
-          : "bg-white text-deep-ops border-deep-ops/30 hover:bg-gray-50 hover:border-deep-ops/50"
+          ? "bg-deep-ops text-brass-gold shadow-md ring-2 ring-brass-gold ring-offset-2"
+          : "bg-white text-deep-ops border border-deep-ops/30 hover:bg-gray-50 hover:border-deep-ops/50"
       )}
       onClick={onClick}
       aria-pressed={isSelected}
