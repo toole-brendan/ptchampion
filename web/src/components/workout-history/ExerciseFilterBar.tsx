@@ -8,10 +8,10 @@ import situpImage from '../../assets/situp.png';
 import runningImage from '../../assets/running.png';
 
 // Import white variants for selected state
-import pushupWhiteImage from '../../../assets/pushup_white.png';
-import pullupWhiteImage from '../../../assets/pullup_white.png';
-import situpWhiteImage from '../../../assets/situp_white.png';
-import runWhiteImage from '../../../assets/run_white.png';
+import pushupWhiteImage from '../../assets/pushup_white.png';
+import pullupWhiteImage from '../../assets/pullup_white.png';
+import situpWhiteImage from '../../assets/situp_white.png';
+import runWhiteImage from '../../assets/run_white.png';
 
 interface ExerciseFilterBarProps {
   filter: string;
