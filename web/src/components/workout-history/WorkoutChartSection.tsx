@@ -27,12 +27,19 @@ export const WorkoutChartSection: React.FC<WorkoutChartSectionProps> = ({
   const hasData = chartData && chartData.length > 0;
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-base font-normal tracking-wider text-deep-ops uppercase">
-        Progress Chart
-      </h2>
+    <div className="shadow-md rounded-lg overflow-hidden">
+      {/* Dark header with brass gold title */}
+      <div className="bg-deep-ops px-4 py-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold text-brass-gold">
+            PROGRESS CHART
+          </h2>
+          <div className="h-px bg-brass-gold/30"></div>
+        </div>
+      </div>
       
-      <div className="bg-white rounded-lg shadow-md overflow-hidden">
+      {/* White content area */}
+      <div className="bg-white">
         {hasData ? (
           // Chart with data
           <div className="p-4">
@@ -105,14 +112,16 @@ export const WorkoutChartSection: React.FC<WorkoutChartSectionProps> = ({
           </div>
         ) : (
           // Empty state
-          <div className="p-6">
-            <div className="flex flex-col items-center justify-center space-y-4 min-h-[180px]">
-              <TrendingUp className="w-9 h-9 text-gray-400" />
+          <div className="py-10 px-4">
+            <div className="flex flex-col items-center justify-center space-y-5">
+              <div className="w-20 h-20 rounded-full bg-brass-gold/10 flex items-center justify-center">
+                <TrendingUp className="w-9 h-9 text-brass-gold" />
+              </div>
               
               <div className="text-center space-y-2">
-                <h4 className="font-mono text-sm font-medium text-gray-600 uppercase tracking-wider">
+                <h3 className="font-mono text-sm font-medium text-gray-600 uppercase tracking-wider">
                   Not Enough Data to Display Chart
-                </h4>
+                </h3>
                 <p className="font-mono text-xs text-gray-500 max-w-xs">
                   Complete more {
                     filter === 'pushup' ? 'PUSH-UP' :

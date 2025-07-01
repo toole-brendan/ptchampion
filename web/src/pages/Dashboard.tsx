@@ -63,9 +63,18 @@ const Dashboard: React.FC = () => {
       
       while (hasMore) {
         const response = await api.exercises.getUserExercises(page, 50);
+        
+        // Debug logging
+        if (page === 1) {
+          console.log('First page items:', response.items.map(item => ({
+            name: item.exercise_name,
+            duration: item.duration_seconds
+          })));
+        }
+        
         const runs = response.items.filter(item => {
           const name = item.exercise_name?.toLowerCase() || '';
-          return name === 'run' || name === 'running';
+          return name.includes('run') || name === 'running';
         });
         allRuns.push(...runs);
         
@@ -77,6 +86,7 @@ const Dashboard: React.FC = () => {
         if (page > 20) break;
       }
       
+      console.log('Total runs found:', allRuns.length);
       return allRuns;
     },
     enabled: !!user,
@@ -111,7 +121,7 @@ const Dashboard: React.FC = () => {
     items.forEach(workout => {
       // Use exercise_name since exercise_type is empty in the API response
       const exerciseName = workout.exercise_name?.toLowerCase() || '';
-      if (exerciseName !== 'run' && exerciseName !== 'running') {
+      if (!exerciseName.includes('run') && exerciseName !== 'running') {
         totalReps += workout.reps || 0;
       }
     });
@@ -123,6 +133,11 @@ const Dashboard: React.FC = () => {
         return sum + (run.duration_seconds || 0);
       }, 0);
       averageRunTime = totalRunTime / runHistory.length;
+      console.log('Average run time calculation:', {
+        runCount: runHistory.length,
+        totalTime: totalRunTime,
+        average: averageRunTime
+      });
     }
     
     return {
@@ -132,7 +147,7 @@ const Dashboard: React.FC = () => {
       lastWorkoutMetric: lastWorkout ? 
         (() => {
           const name = lastWorkout.exercise_name?.toLowerCase() || '';
-          return (name === 'run' || name === 'running') ? 
+          return (name.includes('run') || name === 'running') ? 
             `${Math.floor((lastWorkout.duration_seconds || 0) / 60)}:${String((lastWorkout.duration_seconds || 0) % 60).padStart(2, '0')}` : 
             `${lastWorkout.reps || 0} reps`;
         })()

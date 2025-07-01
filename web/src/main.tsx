@@ -27,9 +27,14 @@ if ('serviceWorker' in navigator) {
 }
 
 // VERSION CHECK - THIS SHOULD CHANGE WITH EACH DEPLOY
-console.log('🚨🚨🚨 PT CHAMPION VERSION: 2024-06-30-v8-CACHE-FIX 🚨🚨🚨');
-console.log('If you see an old version, the cache is STILL serving old files!');
-console.log('Dashboard fixes: Exercise icons, date format DDMMMYYYY, run times, last activity');
+console.log('🚨🚨🚨 PT CHAMPION VERSION: 2025-07-01-v9-HISTORY-FIXES 🚨🚨🚨');
+console.log('Build timestamp:', new Date().toISOString());
+console.log('Changes in this build:');
+console.log('- History filter chips fixed to use exercise_name');
+console.log('- Progress chart shows real data');
+console.log('- Average run time calculation fixed');
+console.log('- Filter chip borders fixed');
+console.log('- Progress chart styled like Training Record');
 
 // Clear stale tokens at startup
 const clearStaleTokens = () => {

@@ -57,8 +57,8 @@ export const ExerciseFilterBar: React.FC<ExerciseFilterBarProps> = ({
   onFilterChange
 }) => {
   return (
-    <div className="overflow-x-auto pb-4 -mx-1 px-1">
-      <div className="flex items-center space-x-2 min-w-max px-4">
+    <div className="overflow-x-auto pb-4 pt-3 -mx-1 px-1">
+      <div className="flex items-center space-x-2 min-w-max px-4 py-2">
         {filterOptions.map((option) => {
           const isActive = filter === option.value;
           
@@ -68,11 +68,11 @@ export const ExerciseFilterBar: React.FC<ExerciseFilterBarProps> = ({
               onClick={() => onFilterChange(option.value)}
               className={cn(
                 "flex items-center space-x-2 px-4 py-2.5 rounded-lg transition-all duration-300 ease-spring",
-                "border whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-brass-gold focus:ring-offset-2",
+                "whitespace-nowrap focus:outline-none",
                 "active:scale-95 transform",
                 isActive
-                  ? "bg-deep-ops text-brass-gold border-deep-ops shadow-md"
-                  : "bg-white text-deep-ops border-deep-ops/30 hover:bg-gray-50 hover:border-deep-ops/50"
+                  ? "bg-deep-ops text-brass-gold shadow-md ring-2 ring-brass-gold ring-offset-2"
+                  : "bg-white text-deep-ops border border-deep-ops/30 hover:bg-gray-50 hover:border-deep-ops/50"
               )}
               aria-pressed={isActive}
               aria-label={`Filter by ${option.label}`}
