@@ -46,6 +46,12 @@ export const useInfiniteHistory = ({
 
   // Apply exercise type filter (client-side)
   const filteredItems = useMemo(() => {
+    console.log('[useInfiniteHistory] Filtering with:', {
+      exerciseFilter,
+      totalItems: historyItems.length,
+      version: 'v9-HISTORY-FIXES'
+    });
+
     if (exerciseFilter === 'All') {
       return historyItems;
     }
@@ -60,11 +66,23 @@ export const useInfiniteHistory = ({
     
     const acceptableNames = filterMap[exerciseFilter] || [exerciseFilter];
     
-    return historyItems.filter(item => {
+    const filtered = historyItems.filter(item => {
       // Use exercise_name since exercise_type is empty in API response
       const exerciseName = item.exercise_name?.toLowerCase() || '';
       return acceptableNames.some(name => exerciseName.includes(name));
     });
+
+    console.log('[useInfiniteHistory] Filter results:', {
+      exerciseFilter,
+      acceptableNames,
+      filteredCount: filtered.length,
+      sampleItem: historyItems[0] ? {
+        exercise_name: historyItems[0].exercise_name,
+        exercise_type: historyItems[0].exercise_type
+      } : 'no items'
+    });
+
+    return filtered;
   }, [historyItems, exerciseFilter]);
 
   // Apply date range filter (client-side)

@@ -19,6 +19,14 @@ export const WorkoutChartSection: React.FC<WorkoutChartSectionProps> = ({
   chartData,
   yAxisLabel
 }) => {
+  // Debug logging
+  console.log('[WorkoutChartSection] Rendering with:', {
+    filter,
+    chartDataLength: chartData?.length || 0,
+    yAxisLabel,
+    version: 'v9-HISTORY-FIXES'
+  });
+
   // Only show chart when filter is not "All"
   if (filter === 'All') {
     return null;
