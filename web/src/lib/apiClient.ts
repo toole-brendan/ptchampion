@@ -346,22 +346,16 @@ export const loginUser = async (data: LoginRequest): Promise<LoginResponse> => {
       localStorage.setItem(TOKEN_STORAGE_KEY, normalizedResponse.token);
       logger.debug('Token stored in localStorage successfully');
       
-      // Verify storage on mobile devices
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile) {
-        // Force a synchronous read to ensure it's stored
-        const verifyToken = localStorage.getItem(TOKEN_STORAGE_KEY);
-        if (!verifyToken) {
-          logger.error('Token verification failed on mobile');
-          throw new Error('Token storage verification failed');
-        }
-        logger.debug('Mobile token storage verified');
-      }
-      
       // Then try to store securely as well (as a backup)
-      await secureSet(TOKEN_STORAGE_KEY, normalizedResponse.token).catch(err => {
-        logger.warn('Secure token storage failed, using regular localStorage only:', err);
-      });
+      // On mobile, skip secure storage to avoid delays
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (!isMobile) {
+        await secureSet(TOKEN_STORAGE_KEY, normalizedResponse.token).catch(err => {
+          logger.warn('Secure token storage failed, using regular localStorage only:', err);
+        });
+      } else {
+        logger.debug('Mobile device detected, using localStorage only');
+      }
       
       // Log success for debugging
       logger.info('Login successful, token stored');

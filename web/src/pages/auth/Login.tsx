@@ -54,7 +54,13 @@ const LoginPage: React.FC = () => {
   useEffect(() => {
     // Only clear tokens if we're not loading and still not authenticated
     // This prevents clearing valid tokens while the user data is being fetched
-    if (location.pathname === '/login' && localStorage.getItem(TOKEN_STORAGE_KEY) && !isAuthenticated && !isLoading) {
+    // Also prevent clearing during active login attempts
+    if (location.pathname === '/login' && 
+        localStorage.getItem(TOKEN_STORAGE_KEY) && 
+        !isAuthenticated && 
+        !isLoading && 
+        !loginMutation.isPending && 
+        !socialLoginMutation.isPending) {
       logger.debug('Found potential stale token on login page (not loading), clearing all tokens');
       cleanAuthStorage();
     }
@@ -62,7 +68,7 @@ const LoginPage: React.FC = () => {
     return () => {
       clearError();
     };
-  }, [clearError, isAuthenticated, isLoading, location.pathname]);
+  }, [clearError, isAuthenticated, isLoading, location.pathname, loginMutation.isPending, socialLoginMutation.isPending]);
 
   // Handle logo click for secret login
   const handleLogoClick = async () => {

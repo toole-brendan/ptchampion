@@ -176,31 +176,30 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     LoginRequest
   >({
     mutationFn: loginUser, // mutationFn inside options
-    onSuccess: (data: LoginResponse) => { // Explicitly type data
+    onSuccess: async (data: LoginResponse) => { // Explicitly type data
       logger.debug('Login mutation success', { hasToken: !!data.token, hasUser: !!data.user });
       // Make sure we log if a token actually exists
       if (!data.token) {
         logger.error('Token missing in login response after normalization');
+        return;
       }
       
-      // On mobile, add extra verification before updating state
+      // On mobile, ensure token persistence before updating state
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-      if (isMobile && data.token) {
-        // Double-check token is in localStorage before proceeding
-        const storedToken = localStorage.getItem('pt_champion_token');
+      if (isMobile) {
+        // Add a small delay to ensure token storage completes
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // Verify token is actually stored
+        const storedToken = localStorage.getItem(config.auth.storageKeys.token);
         if (!storedToken) {
-          logger.error('Mobile: Token not found in localStorage after login');
-          // Wait a bit and try again
-          setTimeout(() => {
-            const retryToken = localStorage.getItem('pt_champion_token');
-            if (retryToken) {
-              logger.debug('Mobile: Token found on retry');
-              setToken(data.token);
-              queryClient.setQueryData(userQueryKey, data.user);
-            }
-          }, 100);
-          return;
+          logger.error('Mobile: Token still not found after delay, retrying...');
+          // Force set it again
+          localStorage.setItem(config.auth.storageKeys.token, data.token);
+          // Wait a bit more
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
+        logger.debug('Mobile: Token storage confirmed');
       }
       
       setToken(data.token); // Update token state to trigger UI updates
