@@ -182,6 +182,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (!data.token) {
         logger.error('Token missing in login response after normalization');
       }
+      
+      // On mobile, add extra verification before updating state
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile && data.token) {
+        // Double-check token is in localStorage before proceeding
+        const storedToken = localStorage.getItem('pt_champion_token');
+        if (!storedToken) {
+          logger.error('Mobile: Token not found in localStorage after login');
+          // Wait a bit and try again
+          setTimeout(() => {
+            const retryToken = localStorage.getItem('pt_champion_token');
+            if (retryToken) {
+              logger.debug('Mobile: Token found on retry');
+              setToken(data.token);
+              queryClient.setQueryData(userQueryKey, data.user);
+            }
+          }, 100);
+          return;
+        }
+      }
+      
       setToken(data.token); // Update token state to trigger UI updates
       // Set user data directly in the cache for immediate UI update
       queryClient.setQueryData(userQueryKey, data.user);

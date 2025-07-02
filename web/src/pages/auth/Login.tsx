@@ -38,7 +38,15 @@ const LoginPage: React.FC = () => {
     logger.debug('Login page redirect effect triggered', { isAuthenticated, returnUrl });
     if (isAuthenticated) {
       logger.debug('User is authenticated, navigating to:', returnUrl);
-      navigate(returnUrl, { replace: true });
+      // Add a small delay for mobile browsers to ensure token is fully stored
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        setTimeout(() => {
+          navigate(returnUrl, { replace: true });
+        }, 150); // 150ms delay for mobile
+      } else {
+        navigate(returnUrl, { replace: true });
+      }
     }
   }, [isAuthenticated, navigate, returnUrl]);
 
