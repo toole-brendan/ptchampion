@@ -603,7 +603,8 @@ export const useApi = () => {
     },
     system: {
       checkHealth: checkServerHealth
-    }
+    },
+    getDashboardStats
   };
 };
 
