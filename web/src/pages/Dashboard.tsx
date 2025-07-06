@@ -113,6 +113,22 @@ const Dashboard: React.FC = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
+  // Define exercise links for quick start - memoized since they don't change
+  const exerciseLinks = React.useMemo(() => [
+    { name: "PUSH-UPS", imagePng: pushupImagePng, imageWebp: pushupImageWebp, path: '/exercises/pushups' },
+    { name: "PULL-UPS", imagePng: pullupImagePng, imageWebp: pullupImageWebp, path: '/exercises/pullups' },
+    { name: "SIT-UPS", imagePng: situpImagePng, imageWebp: situpImageWebp, path: '/exercises/situps' },
+    { name: "TWO-MILE RUN", imagePng: runningImagePng, imageWebp: runningImageWebp, path: '/exercises/running' },
+  ], []);
+
+  // Define rubric options - memoized since they don't change frequently
+  const rubricOptions = React.useMemo(() => [
+    { title: "Push-Ups", onClick: () => navigate('/rubrics/pushups') },
+    { title: "Sit-Ups", onClick: () => navigate('/rubrics/situps') },
+    { title: "Pull-Ups", onClick: () => navigate('/rubrics/pullups') },
+    { title: "Two-Mile Run", onClick: () => navigate('/rubrics/running') },
+  ], [navigate]);
+  
   // Base loading state only on auth and history
   const isLoading = isAuthLoading || isHistoryLoading || isRunHistoryLoading;
   const error = authError || historyError;
@@ -227,22 +243,6 @@ const Dashboard: React.FC = () => {
   // Format the last workout date
   const formattedLastWorkoutDate = dashboardMetrics.lastWorkoutDate ? 
     dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
-
-  // Define exercise links for quick start - memoized since they don't change
-  const exerciseLinks = React.useMemo(() => [
-    { name: "PUSH-UPS", imagePng: pushupImagePng, imageWebp: pushupImageWebp, path: '/exercises/pushups' },
-    { name: "PULL-UPS", imagePng: pullupImagePng, imageWebp: pullupImageWebp, path: '/exercises/pullups' },
-    { name: "SIT-UPS", imagePng: situpImagePng, imageWebp: situpImageWebp, path: '/exercises/situps' },
-    { name: "TWO-MILE RUN", imagePng: runningImagePng, imageWebp: runningImageWebp, path: '/exercises/running' },
-  ], []);
-
-  // Define rubric options - memoized since they don't change frequently
-  const rubricOptions = React.useMemo(() => [
-    { title: "Push-Ups", onClick: () => navigate('/rubrics/pushups') },
-    { title: "Sit-Ups", onClick: () => navigate('/rubrics/situps') },
-    { title: "Pull-Ups", onClick: () => navigate('/rubrics/pullups') },
-    { title: "Two-Mile Run", onClick: () => navigate('/rubrics/running') },
-  ], [navigate]);
 
   // Define stats for user profile section
   const userStats = [
