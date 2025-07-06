@@ -215,6 +215,15 @@ const Dashboard: React.FC = () => {
     return user.first_name || user.username || 'User';
   };
   
+  // Helper function to format workout date
+  const formatWorkoutDate = (createdAt: string) => {
+    const date = new Date(createdAt);
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+    const year = date.getFullYear();
+    return `${day}${month}${year}`;
+  };
+  
   // Format the last workout date
   const formattedLastWorkoutDate = dashboardMetrics.lastWorkoutDate ? 
     dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
@@ -383,13 +392,7 @@ const Dashboard: React.FC = () => {
                             {workout.exercise_name || 'Unknown Exercise'}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            {React.useMemo(() => {
-                              const date = new Date(workout.created_at);
-                              const day = date.getDate();
-                              const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
-                              const year = date.getFullYear();
-                              return `${day}${month}${year}`;
-                            }, [workout.created_at])}
+                            {formatWorkoutDate(workout.created_at)}
                           </p>
                         </div>
                       </div>
