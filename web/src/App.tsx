@@ -15,6 +15,7 @@ import { ToastProvider } from './components/ui/toast-provider';
 import { ErrorReporter } from './components/ErrorReporter';
 import { Login, Register, RegisterDebug } from './pages/auth';
 import OAuthCallback from './pages/auth/OAuthCallback';
+import { logger } from './lib/logger';
 
 // Lazy load pages for code-splitting
 const Dashboard = lazy(() => import('./pages/Dashboard'));
@@ -87,7 +88,7 @@ function App({ queryClient }: AppProps) {
     // Pre-initialize the pose detector service
     poseDetectorService.initialize().catch(err => {
       // Log to Sentry or console
-      console.error('Failed to initialize pose detector:', err);
+      logger.error('Failed to initialize pose detector:', err);
       // If we had Sentry: Sentry.captureException(err);
     });
 

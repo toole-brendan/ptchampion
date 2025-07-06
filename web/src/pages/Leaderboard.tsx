@@ -10,6 +10,7 @@ import { useApi } from "@/lib/apiClient";
 import { useQuery } from '@tanstack/react-query';
 import { AlertCircle, MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { logger } from '@/lib/logger';
 
 // Import new leaderboard components
 import LeaderboardSegmentedControl from '@/components/leaderboard/LeaderboardSegmentedControl';
@@ -330,7 +331,7 @@ const Leaderboard: React.FC = () => {
                         isCurrentUser={false} // TODO: Add current user detection
                         onClick={() => {
                           // TODO: Add navigation to user profile
-                          console.log('Navigate to user:', entry.userId);
+                          logger.debug('Navigate to user:', entry.userId);
                         }}
                       />
                     </div>

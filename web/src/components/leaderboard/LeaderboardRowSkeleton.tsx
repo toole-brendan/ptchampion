@@ -5,7 +5,7 @@ interface LeaderboardRowSkeletonProps {
   className?: string;
 }
 
-const LeaderboardRowSkeleton: React.FC<LeaderboardRowSkeletonProps> = ({ className }) => {
+const LeaderboardRowSkeleton: React.FC<LeaderboardRowSkeletonProps> = React.memo(({ className }) => {
   return (
     <div className={cn(
       "flex items-center space-x-4 p-4 animate-pulse",
@@ -27,6 +27,8 @@ const LeaderboardRowSkeleton: React.FC<LeaderboardRowSkeletonProps> = ({ classNa
       </div>
     </div>
   );
-};
+});
+
+LeaderboardRowSkeleton.displayName = 'LeaderboardRowSkeleton';
 
 export default LeaderboardRowSkeleton; 

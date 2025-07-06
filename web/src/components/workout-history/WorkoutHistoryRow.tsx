@@ -1,12 +1,17 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { cn, formatTime } from '@/lib/utils';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 
-// Import exercise PNG images 
-import pushupImage from '../../assets/pushup.png';
-import pullupImage from '../../assets/pullup.png';
-import situpImage from '../../assets/situp.png';
-import runningImage from '../../assets/running.png';
+// Import exercise images (PNG and WebP) 
+import pushupImagePng from '../../assets/pushup.png';
+import pushupImageWebp from '../../assets/pushup.webp';
+import pullupImagePng from '../../assets/pullup.png';
+import pullupImageWebp from '../../assets/pullup.webp';
+import situpImagePng from '../../assets/situp.png';
+import situpImageWebp from '../../assets/situp.webp';
+import runningImagePng from '../../assets/running.png';
+import runningImageWebp from '../../assets/running.webp';
 
 interface WorkoutHistoryRowProps {
   id: string;
@@ -20,7 +25,7 @@ interface WorkoutHistoryRowProps {
   showDivider?: boolean;
 }
 
-export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
+export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = React.memo(({
   id,
   exerciseType,
   count,
@@ -37,18 +42,18 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
     switch (lowerType) {
       case 'pushup':
       case 'push-up':
-        return pushupImage;
+        return { png: pushupImagePng, webp: pushupImageWebp };
       case 'situp':
       case 'sit-up':
-        return situpImage;
+        return { png: situpImagePng, webp: situpImageWebp };
       case 'pullup':
       case 'pull-up':
-        return pullupImage;
+        return { png: pullupImagePng, webp: pullupImageWebp };
       case 'run':
       case 'running':
-        return runningImage;
+        return { png: runningImagePng, webp: runningImageWebp };
       default:
-        return pushupImage;
+        return { png: pushupImagePng, webp: pushupImageWebp };
     }
   };
 
@@ -121,10 +126,13 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
         {/* Exercise icon in circular background */}
         <div className="flex-shrink-0">
           <div className="w-11 h-11 rounded-full bg-brass-gold/10 flex items-center justify-center">
-            <img 
-              src={exerciseIcon} 
+            <OptimizedImage 
+              src={exerciseIcon.png}
+              webpSrc={exerciseIcon.webp}
+              fallbackSrc={exerciseIcon.png}
               alt={exerciseName}
               className="w-6 h-6"
+              loading="lazy"
             />
           </div>
         </div>
@@ -174,6 +182,8 @@ export const WorkoutHistoryRow: React.FC<WorkoutHistoryRowProps> = ({
       )}
     </div>
   );
-};
+});
+
+WorkoutHistoryRow.displayName = 'WorkoutHistoryRow';
 
 export default WorkoutHistoryRow; 

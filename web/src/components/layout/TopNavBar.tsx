@@ -5,7 +5,9 @@ import { NAV_ITEMS } from '../../constants/navigation';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from '@/lib/utils';
 import SyncIndicator from '@/components/SyncIndicator';
-import ptChampionLogo from '@/assets/pt_champion_logo.png';
+import ptChampionLogoPng from '@/assets/pt_champion_logo.png';
+import ptChampionLogoWebp from '@/assets/pt_champion_logo.webp';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 
 // Define a type for navigation items
 type NavItem = {
@@ -21,8 +23,10 @@ interface TopNavBarProps {
 
 // Logo component using the actual logo image
 const LogoIcon: React.FC<{ className?: string }> = ({ className }) => (
-  <img 
-    src={ptChampionLogo} 
+  <OptimizedImage 
+    src={ptChampionLogoPng}
+    webpSrc={ptChampionLogoWebp}
+    fallbackSrc={ptChampionLogoPng}
     alt="PT Champion" 
     className={`${className} object-contain`} 
     style={{ filter: 'brightness(0) saturate(100%) invert(67%) sepia(30%) saturate(659%) hue-rotate(18deg) brightness(89%) contrast(88%)' }}

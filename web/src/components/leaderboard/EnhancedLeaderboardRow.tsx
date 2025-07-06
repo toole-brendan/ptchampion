@@ -38,7 +38,7 @@ const getInitials = (name: string) => {
     .toUpperCase();
 };
 
-const EnhancedLeaderboardRow: React.FC<EnhancedLeaderboardRowProps> = ({
+const EnhancedLeaderboardRow: React.FC<EnhancedLeaderboardRowProps> = React.memo(({
   entry,
   isCurrentUser,
   onClick,
@@ -170,6 +170,8 @@ const EnhancedLeaderboardRow: React.FC<EnhancedLeaderboardRowProps> = ({
       </div>
     </div>
   );
-};
+});
+
+EnhancedLeaderboardRow.displayName = 'EnhancedLeaderboardRow';
 
 export default EnhancedLeaderboardRow; 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { 
   CalendarClock, 
   Flame,
@@ -26,17 +26,35 @@ import { IOSQuickLinkCard } from '@/components/ui/ios-quick-link-card';
 import { ScoringRubricSection } from '@/components/ui/scoring-rubric-section';
 import { UserProfileSection } from '@/components/ui/user-profile-section';
 
-// Import the exercise PNG images with explicit paths to ensure they're found
-import pushupImage from '../assets/pushup.png';
-import pullupImage from '../assets/pullup.png';
-import situpImage from '../assets/situp.png';
-import runningImage from '../assets/running.png';
+// Import the exercise images (PNG and WebP) with explicit paths to ensure they're found
+import pushupImagePng from '../assets/pushup.png';
+import pushupImageWebp from '../assets/pushup.webp';
+import pullupImagePng from '../assets/pullup.png';
+import pullupImageWebp from '../assets/pullup.webp';
+import situpImagePng from '../assets/situp.png';
+import situpImageWebp from '../assets/situp.webp';
+import runningImagePng from '../assets/running.png';
+import runningImageWebp from '../assets/running.webp';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, isLoading: isAuthLoading, error: authError } = useAuth();
   const api = useApi();
   const { setUserName } = useHeaderContext();
+  
+  // Memoized navigation callbacks
+  const handleWorkoutClick = useCallback((workoutId: string) => {
+    navigate(`/history/${workoutId}`);
+  }, [navigate]);
+  
+  const handleExerciseClick = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
+  
+  const handleViewAllClick = useCallback(() => {
+    navigate('/history');
+  }, [navigate]);
   
   // Get user exercise history for dashboard stats
   const { 
@@ -201,21 +219,21 @@ const Dashboard: React.FC = () => {
   const formattedLastWorkoutDate = dashboardMetrics.lastWorkoutDate ? 
     dashboardMetrics.lastWorkoutDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Never';
 
-  // Define exercise links for quick start
-  const exerciseLinks = [
-    { name: "PUSH-UPS", image: pushupImage, path: '/exercises/pushups' },
-    { name: "PULL-UPS", image: pullupImage, path: '/exercises/pullups' },
-    { name: "SIT-UPS", image: situpImage, path: '/exercises/situps' },
-    { name: "TWO-MILE RUN", image: runningImage, path: '/exercises/running' },
-  ];
+  // Define exercise links for quick start - memoized since they don't change
+  const exerciseLinks = React.useMemo(() => [
+    { name: "PUSH-UPS", imagePng: pushupImagePng, imageWebp: pushupImageWebp, path: '/exercises/pushups' },
+    { name: "PULL-UPS", imagePng: pullupImagePng, imageWebp: pullupImageWebp, path: '/exercises/pullups' },
+    { name: "SIT-UPS", imagePng: situpImagePng, imageWebp: situpImageWebp, path: '/exercises/situps' },
+    { name: "TWO-MILE RUN", imagePng: runningImagePng, imageWebp: runningImageWebp, path: '/exercises/running' },
+  ], []);
 
-  // Define rubric options
-  const rubricOptions = [
+  // Define rubric options - memoized since they don't change frequently
+  const rubricOptions = React.useMemo(() => [
     { title: "Push-Ups", onClick: () => navigate('/rubrics/pushups') },
     { title: "Sit-Ups", onClick: () => navigate('/rubrics/situps') },
     { title: "Pull-Ups", onClick: () => navigate('/rubrics/pullups') },
     { title: "Two-Mile Run", onClick: () => navigate('/rubrics/running') },
-  ];
+  ], [navigate]);
 
   // Define stats for user profile section
   const userStats = [
@@ -287,12 +305,15 @@ const Dashboard: React.FC = () => {
                 <IOSQuickLinkCard
                   key={exercise.name}
                   title={exercise.name}
-                  icon={<img 
-                    src={exercise.image} 
+                  icon={<OptimizedImage 
+                    src={exercise.imagePng}
+                    webpSrc={exercise.imageWebp}
+                    fallbackSrc={exercise.imagePng}
                     alt={exercise.name} 
-                    className="h-10 w-auto object-contain" 
+                    className="h-10 w-auto object-contain"
+                    loading="lazy"
                   />}
-                  onPress={() => navigate(exercise.path)}
+                  onPress={() => handleExerciseClick(exercise.path)}
                 />
               ))}
             </div>
@@ -325,21 +346,36 @@ const Dashboard: React.FC = () => {
                   <div key={workout.id || index}>
                     <button
                       className="flex items-center justify-between w-full py-3 px-4 hover:bg-black hover:bg-opacity-5 transition-colors duration-150 bg-white"
-                      onClick={() => navigate(`/history/${workout.id}`)}
+                      onClick={() => handleWorkoutClick(workout.id)}
                     >
                       <div className="flex items-center space-x-4">
                         {/* Exercise icon without background circle to match style */}
                         <div className="flex-shrink-0">
-                          <img 
+                          <OptimizedImage 
                             src={
-                              exerciseName === 'push-up' ? pushupImage :
-                              exerciseName === 'pull-up' ? pullupImage :
-                              exerciseName === 'sit-up' ? situpImage :
-                              exerciseName === 'run' ? runningImage :
-                              pushupImage
+                              exerciseName === 'push-up' ? pushupImagePng :
+                              exerciseName === 'pull-up' ? pullupImagePng :
+                              exerciseName === 'sit-up' ? situpImagePng :
+                              exerciseName === 'run' ? runningImagePng :
+                              pushupImagePng
+                            }
+                            webpSrc={
+                              exerciseName === 'push-up' ? pushupImageWebp :
+                              exerciseName === 'pull-up' ? pullupImageWebp :
+                              exerciseName === 'sit-up' ? situpImageWebp :
+                              exerciseName === 'run' ? runningImageWebp :
+                              pushupImageWebp
+                            }
+                            fallbackSrc={
+                              exerciseName === 'push-up' ? pushupImagePng :
+                              exerciseName === 'pull-up' ? pullupImagePng :
+                              exerciseName === 'sit-up' ? situpImagePng :
+                              exerciseName === 'run' ? runningImagePng :
+                              pushupImagePng
                             }
                             alt={workout.exercise_name || 'Exercise'}
                             className="w-11 h-11 object-contain"
+                            loading="lazy"
                           />
                         </div>
                         <div className="flex-1 text-left">
@@ -347,13 +383,13 @@ const Dashboard: React.FC = () => {
                             {workout.exercise_name || 'Unknown Exercise'}
                           </h3>
                           <p className="text-sm text-gray-600">
-                            {(() => {
+                            {React.useMemo(() => {
                               const date = new Date(workout.created_at);
                               const day = date.getDate();
                               const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
                               const year = date.getFullYear();
                               return `${day}${month}${year}`;
-                            })()}
+                            }, [workout.created_at])}
                           </p>
                         </div>
                       </div>
@@ -380,7 +416,7 @@ const Dashboard: React.FC = () => {
                 {/* View All button */}
                 <button
                   className="flex items-center justify-center w-full py-3 bg-brass-gold bg-opacity-10 hover:bg-opacity-15 transition-colors duration-150"
-                  onClick={() => navigate('/history')}
+                  onClick={handleViewAllClick}
                 >
                   <span className="font-semibold text-sm text-deep-ops mr-2">
                     VIEW DETAILED HISTORY

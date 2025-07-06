@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import { calculatePushupScore } from '../../grading/APFTScoring';
 import { useDeviceCapabilities } from '@/lib/hooks/useDeviceCapabilities';
+import { logger } from '@/lib/logger';
 
 // Import our ViewModel hook
 import { usePushupTrackerViewModel } from '../../viewmodels/PushupTrackerViewModel';
@@ -105,7 +106,7 @@ const PushupTracker: React.FC = () => {
         videoContainer.requestFullscreen().then(() => {
           setIsFullscreen(true);
         }).catch(err => {
-          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+          logger.error(`Error attempting to enable fullscreen: ${err.message}`);
         });
       }
     } else {
@@ -113,7 +114,7 @@ const PushupTracker: React.FC = () => {
       document.exitFullscreen().then(() => {
         setIsFullscreen(false);
       }).catch(err => {
-        console.error(`Error attempting to exit fullscreen: ${err.message}`);
+        logger.error(`Error attempting to exit fullscreen: ${err.message}`);
       });
     }
   };
@@ -171,7 +172,7 @@ const PushupTracker: React.FC = () => {
     const finalScore = calculatePushupScore(repCount);
     setPushupScore(finalScore);
     
-    console.log(`Workout finished! Reps: ${repCount}, Time: ${formattedTime}, APFT Score: ${finalScore}`);
+    logger.debug(`Workout finished! Reps: ${repCount}, Time: ${formattedTime}, APFT Score: ${finalScore}`);
 
     // Create the workout summary object
     const workoutSummary = {
@@ -215,7 +216,7 @@ const PushupTracker: React.FC = () => {
           throw new Error("Failed to save results");
         }
       } catch (err) {
-        console.error("Failed to log exercise:", err);
+        logger.error("Failed to log exercise:", err);
         setApiError(err instanceof Error ? err.message : 'Failed to save workout session');
         setSuccess(false);
         setLoggedGrade(null);
@@ -223,11 +224,11 @@ const PushupTracker: React.FC = () => {
         setIsSubmitting(false);
       }
     } else if (repCount === 0 && isFinished) {
-      console.log("No reps counted, session not saved.");
+      logger.debug("No reps counted, session not saved.");
       handleReset();
     } else if (!user) {
       setApiError("You must be logged in to save results.");
-      console.warn("Attempted to save workout while not logged in.");
+      logger.warn("Attempted to save workout while not logged in.");
     }
   };
 
@@ -261,7 +262,7 @@ const PushupTracker: React.FC = () => {
               playsInline 
               className="size-full object-cover"
               muted
-              onLoadedMetadata={() => console.log("Video metadata loaded.")}
+              onLoadedMetadata={() => logger.debug("Video metadata loaded.")}
             />
             <canvas
               ref={canvasRef}

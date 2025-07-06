@@ -2,12 +2,17 @@ import React from 'react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { formatTime, formatDistance } from '@/lib/utils';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 
-// Import exercise icons (assuming these are the same ones used in the Dashboard)
-import pushupImage from '../../assets/pushup.png';
-import pullupImage from '../../assets/pullup.png';
-import situpImage from '../../assets/situp.png';
-import runningImage from '../../assets/running.png';
+// Import exercise images (PNG and WebP)
+import pushupImagePng from '../../assets/pushup.png';
+import pushupImageWebp from '../../assets/pushup.webp';
+import pullupImagePng from '../../assets/pullup.png';
+import pullupImageWebp from '../../assets/pullup.webp';
+import situpImagePng from '../../assets/situp.png';
+import situpImageWebp from '../../assets/situp.webp';
+import runningImagePng from '../../assets/running.png';
+import runningImageWebp from '../../assets/running.webp';
 
 interface WorkoutCardProps {
   id: string;
@@ -20,7 +25,7 @@ interface WorkoutCardProps {
   onClick: (id: string) => void;
 }
 
-export function WorkoutCard({
+export const WorkoutCard = React.memo(function WorkoutCard({
   id,
   exerciseType,
   count,
@@ -37,25 +42,25 @@ export function WorkoutCard({
     if (type.includes('PUSH')) {
       return { 
         name: 'Push-ups',
-        icon: pushupImage,
+        icon: { png: pushupImagePng, webp: pushupImageWebp },
         metric: count ? `${count} reps` : '-'
       };
     } else if (type.includes('PULL')) {
       return { 
         name: 'Pull-ups',
-        icon: pullupImage,
+        icon: { png: pullupImagePng, webp: pullupImageWebp },
         metric: count ? `${count} reps` : '-'
       };
     } else if (type.includes('SIT')) {
       return { 
         name: 'Sit-ups',
-        icon: situpImage,
+        icon: { png: situpImagePng, webp: situpImageWebp },
         metric: count ? `${count} reps` : '-'
       };
     } else if (type.includes('RUN')) {
       return { 
         name: 'Two-Mile Run',
-        icon: runningImage,
+        icon: { png: runningImagePng, webp: runningImageWebp },
         metric: distance ? formatDistance(distance) : '-'
       };
     } else {
@@ -81,7 +86,16 @@ export function WorkoutCard({
     >
       <div className="flex items-center">
         <div className="mr-4 flex size-10 items-center justify-center rounded-full border border-brass-gold border-opacity-30 bg-brass-gold bg-opacity-10">
-          {icon && <img src={icon} alt={name} className="size-6" />}
+          {icon && (
+            <OptimizedImage 
+              src={icon.png}
+              webpSrc={icon.webp}
+              fallbackSrc={icon.png}
+              alt={name}
+              className="size-6"
+              loading="lazy"
+            />
+          )}
         </div>
         <div>
           <h3 className="mb-0.5 font-heading text-sm uppercase text-command-black">
@@ -114,7 +128,9 @@ export function WorkoutCard({
       </div>
     </div>
   );
-}
+});
+
+WorkoutCard.displayName = 'WorkoutCard';
 
 // Export as default to maintain backward compatibility
 export default WorkoutCard; 
