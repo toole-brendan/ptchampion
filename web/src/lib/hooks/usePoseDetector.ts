@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import poseDetectorService from '@/services/PoseDetectorService';
 import { PoseLandmarkerResult } from '@mediapipe/tasks-vision';
 import { PoseLandmarkIndex as ImportedPoseLandmarkIndex } from '@/services/PoseLandmarkIndex';
 
@@ -60,6 +59,9 @@ export function usePoseDetector(
   const [isDetectorReady, setIsDetectorReady] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   
+  // Lazy-loaded pose detector service
+  const poseDetectorServiceRef = useRef<typeof import('@/services/PoseDetectorService').default | null>(null);
+  
   // Subscription reference for cleanup
   const subscriptionRef = useRef<{ unsubscribe: () => void } | null>(null);
   
@@ -68,6 +70,12 @@ export function usePoseDetector(
     async function initializeDetector() {
       try {
         setResult(prev => ({ ...prev, isLoading: true, error: null }));
+        
+        // Lazy load the pose detector service
+        if (!poseDetectorServiceRef.current) {
+          const { default: poseDetectorService } = await import('@/services/PoseDetectorService');
+          poseDetectorServiceRef.current = poseDetectorService;
+        }
         
         // Convert from old options format to new format
         const detectorOptions = {
@@ -80,7 +88,7 @@ export function usePoseDetector(
             undefined
         };
         
-        await poseDetectorService.initialize(detectorOptions);
+        await poseDetectorServiceRef.current.initialize(detectorOptions);
         setIsDetectorReady(true);
         setResult(prev => ({ ...prev, isLoading: false }));
         
@@ -102,21 +110,23 @@ export function usePoseDetector(
         subscriptionRef.current.unsubscribe();
       }
       
-      if (isRunning) {
-        poseDetectorService.stop();
+      if (isRunning && poseDetectorServiceRef.current) {
+        poseDetectorServiceRef.current.stop();
         setIsRunning(false);
       }
       
       // Don't destroy the service as it may be used by other components
-      poseDetectorService.releaseConsumer();
+      if (poseDetectorServiceRef.current) {
+        poseDetectorServiceRef.current.releaseConsumer();
+      }
     };
   }, [options, isRunning]);
   
   // Subscribe to pose events
   useEffect(() => {
-    if (isDetectorReady) {
+    if (isDetectorReady && poseDetectorServiceRef.current) {
       // Subscribe to pose events
-      subscriptionRef.current = poseDetectorService.pose$.subscribe(
+      subscriptionRef.current = poseDetectorServiceRef.current.pose$.subscribe(
         (poseResult: PoseLandmarkerResult) => {
           setResult(prev => ({
             ...prev,
@@ -137,8 +147,8 @@ export function usePoseDetector(
   
   // Function to start pose detection
   const startDetection = useCallback(() => {
-    if (isDetectorReady && !isRunning && videoRef.current) {
-      const started = poseDetectorService.start(
+    if (isDetectorReady && !isRunning && videoRef.current && poseDetectorServiceRef.current) {
+      const started = poseDetectorServiceRef.current.start(
         videoRef.current,
         canvasRef?.current || null
       );
@@ -151,8 +161,8 @@ export function usePoseDetector(
   
   // Function to stop pose detection
   const stopDetection = useCallback(() => {
-    if (isRunning) {
-      poseDetectorService.stop();
+    if (isRunning && poseDetectorServiceRef.current) {
+      poseDetectorServiceRef.current.stop();
       setIsRunning(false);
     }
   }, [isRunning]);

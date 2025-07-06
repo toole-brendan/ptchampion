@@ -9,7 +9,8 @@
 import { PoseLandmarkerResult } from '@mediapipe/tasks-vision';
 import { ExerciseType } from '../grading';
 import { SitupAnalyzer, SitupFormAnalysis } from '../grading/SitupAnalyzer';
-import { poseDetectorService } from '@/services/PoseDetectorService';
+// Remove eager import - will load lazily
+// import { poseDetectorService } from '@/services/PoseDetectorService';
 import { logExerciseResult } from '../lib/apiClient';
 import { LogExerciseRequest, ExerciseResponse } from '../lib/types';
 import { BaseTrackerViewModel, ExerciseResult, SessionStatus, TrackerErrorType } from './TrackerViewModel';
@@ -36,12 +37,20 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
   private poseDetector: PoseDetector | null = null;
   private animationFrameId: number | null = null;
   private facingMode: 'user' | 'environment' = 'environment';
+  
+  // Lazy-loaded pose detector service
+  private poseDetectorService: typeof import('@/services/PoseDetectorService').default | null = null;
 
   constructor(useNewPoseDetector = false) {
     super(ExerciseType.SITUP);
     this.analyzer = new SitupAnalyzer();
     this.grader = createGrader(ExerciseType.SITUP);
     this.useNewPoseDetector = useNewPoseDetector;
+    
+    // Enable countdown timer for situps
+    this._useCountdown = true;
+    this._countdownDuration = 120; // 2 minutes
+    this._timer = this._countdownDuration; // Initialize timer to countdown value
   }
 
   /**
@@ -82,7 +91,11 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
         this._error = null;
       } else {
         // Initialize pose detector with the provided video element
-        await poseDetectorService.initialize();
+        if (!this.poseDetectorService) {
+          const { default: poseDetectorService } = await import("@/services/PoseDetectorService");
+          this.poseDetectorService = poseDetectorService;
+        }
+        await this.poseDetectorService.initialize();
         this._status = SessionStatus.READY;
         this._error = null;
       }
@@ -120,7 +133,8 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
       this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
     } else {
       // Start pose detection with callback to handle results
-      poseDetectorService.start(
+      if (!this.poseDetectorService) return;
+      this.poseDetectorService.start(
         this.videoRef.current,
         this.canvasRef?.current || undefined,
         this.handlePoseResults
@@ -217,8 +231,8 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
       }
       cameraManager.removeConsumer();
     } else {
-      poseDetectorService.stop();
-      poseDetectorService.releaseConsumer();
+      if (this.poseDetectorService) this.poseDetectorService.stop();
+      if (this.poseDetectorService) this.poseDetectorService.releaseConsumer();
     }
     this.stopTimer();
   }
@@ -239,7 +253,7 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
       }
     } else {
       // Stop pose detection
-      poseDetectorService.stop();
+      if (this.poseDetectorService) this.poseDetectorService.stop();
     }
 
     // Pause timer
@@ -265,7 +279,7 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
           this.animationFrameId = null;
         }
       } else {
-        poseDetectorService.stop();
+        if (this.poseDetectorService) this.poseDetectorService.stop();
       }
       this.stopTimer();
     }
@@ -274,7 +288,7 @@ export class SitupTrackerViewModel extends BaseTrackerViewModel {
     const result: ExerciseResult = {
       exerciseType: this._exerciseType,
       repCount: this._repCount,
-      duration: this._timer,
+      duration: this.getElapsedDuration(), // Use actual elapsed time
       formScore: this._formScore,
       date: new Date(),
       saved: false
@@ -525,6 +539,10 @@ export function useSitupTrackerViewModel(useNewPoseDetector = true) {
     await viewModel.flipCamera();
   }, [viewModel]);
   
+  const setTimerExpiredCallback = useCallback((callback: () => void) => {
+    viewModel.setTimerExpiredCallback(callback);
+  }, [viewModel]);
+  
   // Return the state and methods
   return {
     // State
@@ -546,7 +564,8 @@ export function useSitupTrackerViewModel(useNewPoseDetector = true) {
     finishSession,
     resetSession,
     saveResults,
-    flipCamera
+    flipCamera,
+    setTimerExpiredCallback
   };
 }
 

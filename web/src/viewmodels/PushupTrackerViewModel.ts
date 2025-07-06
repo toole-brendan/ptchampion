@@ -13,7 +13,8 @@ import { PushupAnalyzer, PushupFormAnalysis } from '../grading/PushupAnalyzer';
 import { createGrader } from '../grading';
 import { createExerciseGrader } from '../grading/graders';
 import { BaseGrader } from '../grading/graders/BaseGrader';
-import { poseDetectorService } from '@/services/PoseDetectorService';
+// Remove eager import - will load lazily
+// import { poseDetectorService } from '@/services/PoseDetectorService';
 import { workoutSyncService } from '../services/WorkoutSyncService';
 import { convertToWorkoutRequest } from '../services/workoutHelpers';
 import { BaseTrackerViewModel, ExerciseResult, SessionStatus, TrackerErrorType } from './TrackerViewModel';
@@ -40,12 +41,20 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
   private poseDetector: PoseDetector | null = null;
   private animationFrameId: number | null = null;
   private facingMode: 'user' | 'environment' = 'environment';
+  
+  // Lazy-loaded pose detector service
+  private poseDetectorService: typeof import('@/services/PoseDetectorService').default | null = null;
 
   constructor(useNewPoseDetector = false) {
     super(ExerciseType.PUSHUP);
     this.analyzer = new PushupAnalyzer();
     this.grader = createExerciseGrader(ExerciseType.PUSHUP) as BaseGrader;
     this.useNewPoseDetector = useNewPoseDetector;
+    
+    // Enable countdown timer for pushups
+    this._useCountdown = true;
+    this._countdownDuration = 120; // 2 minutes
+    this._timer = this._countdownDuration; // Initialize timer to countdown value
   }
 
   /**
@@ -87,18 +96,23 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
           return;
         }
       } else {
-        // Legacy initialization - Use MediaPipe pose detection
-        await poseDetectorService.initialize({
+        // Legacy initialization - Lazy load and use MediaPipe pose detection
+        if (!this.poseDetectorService) {
+          const { default: poseDetectorService } = await import('@/services/PoseDetectorService');
+          this.poseDetectorService = poseDetectorService;
+        }
+        
+        await this.poseDetectorService.initialize({
           minPoseDetectionConfidence: 0.7,
           minPosePresenceConfidence: 0.7
         });
 
         // Start camera
         if (this.videoRef?.current) {
-          const cameraStarted = await poseDetectorService.startCamera(this.videoRef.current);
+          const cameraStarted = await this.poseDetectorService.startCamera(this.videoRef.current);
           
           if (!cameraStarted) {
-            const errorMessage = poseDetectorService.getModelError() || "Failed to start camera";
+            const errorMessage = this.poseDetectorService.getModelError() || "Failed to start camera";
             this.setError(TrackerErrorType.CAMERA_PERMISSION, errorMessage);
             return;
           }
@@ -221,11 +235,17 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
       // Start the animation frame loop for the new detector
       this.animationFrameId = requestAnimationFrame(this.processPoseFrame);
     } else {
+      // Ensure pose detector service is loaded
+      if (!this.poseDetectorService) {
+        this.setError(TrackerErrorType.MODEL_LOAD_FAILED, "Pose detector service not loaded");
+        return;
+      }
+      
       // Subscribe to the pose$ stream for continuous updates with legacy detector
-      this.poseSubscription = poseDetectorService.pose$.subscribe(this.handlePoseResults);
+      this.poseSubscription = this.poseDetectorService.pose$.subscribe(this.handlePoseResults);
 
       // Start pose detection
-      const detectionStarted = poseDetectorService.start(
+      const detectionStarted = this.poseDetectorService.start(
         this.videoRef.current,
         this.canvasRef?.current || null
       );
@@ -261,8 +281,10 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
         this.animationFrameId = null;
       }
     } else {
-      // Stop pose detection
-      poseDetectorService.stop();
+      // Stop pose detection if service is loaded
+      if (this.poseDetectorService) {
+        this.poseDetectorService.stop();
+      }
 
       // Unsubscribe from pose events
       if (this.poseSubscription) {
@@ -294,7 +316,10 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
           this.animationFrameId = null;
         }
       } else {
-        poseDetectorService.stop();
+        // Stop pose detection if service is loaded
+        if (this.poseDetectorService) {
+          this.poseDetectorService.stop();
+        }
         
         // Unsubscribe from pose events
         if (this.poseSubscription) {
@@ -310,7 +335,7 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
     const result: ExerciseResult = {
       exerciseType: this._exerciseType,
       repCount: this._repCount,
-      duration: this._timer,
+      duration: this.getElapsedDuration(), // Use actual elapsed time
       formScore: this._formScore,
       date: new Date(),
       saved: false
@@ -435,14 +460,16 @@ export class PushupTrackerViewModel extends BaseTrackerViewModel {
         this.poseSubscription = null;
       }
 
-      // Stop detection if running
-      poseDetectorService.stop();
-      
-      // Stop camera stream
-      poseDetectorService.stopCamera();
-      
-      // Release consumer reference
-      poseDetectorService.releaseConsumer();
+      // Stop detection if running and service is loaded
+      if (this.poseDetectorService) {
+        this.poseDetectorService.stop();
+        
+        // Stop camera stream
+        this.poseDetectorService.stopCamera();
+        
+        // Release consumer reference
+        this.poseDetectorService.releaseConsumer();
+      }
     }
   }
 
@@ -576,6 +603,10 @@ export function usePushupTrackerViewModel(useNewPoseDetector = true) {
     await viewModel.flipCamera();
   }, [viewModel]);
   
+  const setTimerExpiredCallback = useCallback((callback: () => void) => {
+    viewModel.setTimerExpiredCallback(callback);
+  }, [viewModel]);
+  
   // Return the state and methods
   return {
     // State
@@ -598,7 +629,8 @@ export function usePushupTrackerViewModel(useNewPoseDetector = true) {
     finishSession,
     resetSession,
     saveResults,
-    flipCamera
+    flipCamera,
+    setTimerExpiredCallback
   };
 }
 

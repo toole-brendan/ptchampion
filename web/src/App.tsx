@@ -10,7 +10,6 @@ import { PoseProvider } from './lib/contexts/PoseContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import OfflineBanner from './components/OfflineBanner';
 import CameraPermissionDialog from './components/ui/CameraPermissionDialog';
-import poseDetectorService from '@/services/PoseDetectorService';
 import { ToastProvider } from './components/ui/toast-provider';
 import { ErrorReporter } from './components/ErrorReporter';
 import { Login, Register, RegisterDebug } from './pages/auth';
@@ -92,20 +91,7 @@ function App({ queryClient }: AppProps) {
     },
   });
 
-  // Initialize and log errors for pose detection service
-  useEffect(() => {
-    // Pre-initialize the pose detector service
-    poseDetectorService.initialize().catch(err => {
-      // Log to Sentry or console
-      logger.error('Failed to initialize pose detector:', err);
-      // If we had Sentry: Sentry.captureException(err);
-    });
-
-    // Cleanup on unmount
-    return () => {
-      poseDetectorService.destroy();
-    };
-  }, []);
+  // Removed eager pose detector initialization - will be initialized lazily by exercise components
 
   return (
     <QueryClientProvider client={qclient}>

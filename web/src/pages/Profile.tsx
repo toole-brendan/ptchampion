@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/ui/text-field";
-import { Loader2, UserCircle, LogOut, Settings, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, UserCircle, Settings, CheckCircle } from 'lucide-react';
 import { updateCurrentUser } from '../lib/apiClient';
 import { useAuth } from '../lib/authContext';
 import { UpdateUserRequest } from '../lib/types';
@@ -14,6 +13,11 @@ import { useOptimisticProfile } from '@/lib/hooks/useOptimisticProfile';
 import { MilitarySettingsHeader } from '@/components/ui/military-settings-header';
 import { SettingsSection } from '@/components/ui/settings-section';
 
+// Import the split components
+import { ProfileUserInfo } from '@/components/profile/ProfileUserInfo';
+import { ProfilePassword } from '@/components/profile/ProfilePassword';
+import { ProfileActions } from '@/components/profile/ProfileActions';
+
 // Check if dev auth bypass is enabled
 const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
 
@@ -21,35 +25,6 @@ const DEV_AUTH_BYPASS = import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYP
 interface ProfileFormData extends UpdateUserRequest {
   confirmPassword?: string;
 }
-
-// Status Alert Component
-interface StatusAlertProps {
-  message: string;
-  type: 'success' | 'error';
-  className?: string;
-}
-
-const StatusAlert: React.FC<StatusAlertProps> = ({ message, type, className }) => (
-  <div className={cn(
-    "flex items-center p-4 rounded-lg",
-    type === 'success' 
-      ? "bg-success/10 border border-success/20" 
-      : "bg-error/10 border border-error/20",
-    className
-  )}>
-    {type === 'success' ? (
-      <CheckCircle className="w-5 h-5 text-success mr-3 flex-shrink-0" />
-    ) : (
-      <AlertCircle className="w-5 h-5 text-error mr-3 flex-shrink-0" />
-    )}
-    <p className={cn(
-      "text-sm font-medium",
-      type === 'success' ? "text-success" : "text-error"
-    )}>
-      {message}
-    </p>
-  </div>
-);
 
 // Toast Notification Component
 interface ToastNotificationProps {
@@ -98,39 +73,12 @@ const Profile: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
 
   // Staggered animation for sections
-  const visibleSections = useStaggeredAnimation({
-    itemCount: 3, // Edit Profile, Password Management, Account Actions
-    baseDelay: 200,
-    staggerDelay: 100
-  });
+  const sectionsRef = useStaggeredAnimation<HTMLDivElement>(setSectionsVisible, 100);
 
-  // Message auto-dismiss timer
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => {
-        setMessage(null);
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [message]);
-
-  // Password message auto-dismiss timer
-  useEffect(() => {
-    if (passwordMessage) {
-      const timer = setTimeout(() => {
-        setPasswordMessage(null);
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [passwordMessage]);
-
-  // Initialize form with user data when it's available
   useEffect(() => {
     if (user) {
       setFormData({
-        username: user.username,
+        username: user.username || '',
         first_name: user.first_name || '',
         last_name: user.last_name || '',
         email: user.email || '',
@@ -140,38 +88,10 @@ const Profile: React.FC = () => {
     }
   }, [user]);
 
-  // Check if passwords match whenever password or confirmPassword changes
   useEffect(() => {
-    if (passwordData.password || passwordData.confirmPassword) {
-      setPasswordsMatch(passwordData.password === passwordData.confirmPassword);
-    } else {
-      setPasswordsMatch(true);
-    }
-  }, [passwordData.password, passwordData.confirmPassword]);
-
-  // Animate content in on mount
-  useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setHeaderVisible(true);
-    }, 100);
-
-    const sectionTimers = sectionsVisible.map((_, index) => 
-      setTimeout(() => {
-        setSectionsVisible(prev => {
-          const newState = [...prev];
-          newState[index] = true;
-          return newState;
-        });
-      }, 200 + (index * 100))
-    );
-
-    return () => {
-      clearTimeout(timer1);
-      sectionTimers.forEach(clearTimeout);
-    };
+    setHeaderVisible(true);
   }, []);
 
-  // Toast auto-dismiss
   useEffect(() => {
     if (showSuccessToast) {
       const timer = setTimeout(() => setShowSuccessToast(false), 3000);
@@ -186,16 +106,27 @@ const Profile: React.FC = () => {
     }
   }, [showPasswordSuccessToast]);
 
+  useEffect(() => {
+    if (passwordData.password && passwordData.confirmPassword) {
+      setPasswordsMatch(passwordData.password === passwordData.confirmPassword);
+    } else {
+      setPasswordsMatch(true);
+    }
+  }, [passwordData.password, passwordData.confirmPassword]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    setMessage(null);
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
-    setPasswordMessage(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -397,7 +328,7 @@ const Profile: React.FC = () => {
           <div className="flex min-h-[calc(100vh-200px)] items-center justify-center">
             <div className="text-center">
               <Loader2 className="mx-auto mb-4 size-10 animate-spin text-brass-gold"/>
-              <p className="font-heading text-lg uppercase tracking-wider text-deep-ops">Loading profile...</p>
+              <p className="text-tactical-gray font-semibold">LOADING PROFILE...</p>
             </div>
           </div>
         </div>
@@ -405,18 +336,22 @@ const Profile: React.FC = () => {
     );
   }
 
-  if (!user && !DEV_AUTH_BYPASS) {
+  if (!user) {
     return (
       <div className="min-h-screen bg-gradient-radial from-cream/90 to-cream">
         <div className="max-w-3xl mx-auto px-4">
-          <SettingsSection
-            title="PROFILE"
-            description="PLEASE LOG IN TO VIEW AND EDIT YOUR PROFILE"
+          <SettingsSection 
+            title="NOT AUTHENTICATED"
+            description="PLEASE LOG IN TO MANAGE YOUR PROFILE"
           >
-            <div className="text-center py-8">
-              <Button 
-                onClick={() => navigate('/login')} 
-                className="bg-brass-gold text-deep-ops hover:bg-brass-gold/90"
+            <div className="p-8 flex flex-col items-center">
+              <UserCircle className="mb-4 size-20 text-brass-gold" />
+              <p className="mb-6 text-center text-tactical-gray">
+                You need to be logged in to access your profile.
+              </p>
+              <Button
+                onClick={() => navigate('/login')}
+                className="bg-deep-ops text-brass-gold hover:bg-deep-ops/90 font-semibold uppercase tracking-wider"
               >
                 LOGIN
               </Button>
@@ -443,208 +378,35 @@ const Profile: React.FC = () => {
           />
         </div>
 
-        <div className="space-y-6 pb-8">
+        <div className="space-y-6 pb-8" ref={sectionsRef}>
           {/* Edit Profile Section */}
-          <div 
-            className={`transition-all duration-300 ${
-              sectionsVisible[0] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            <SettingsSection
-              title="EDIT PROFILE"
-              description="UPDATE YOUR PERSONAL INFORMATION"
-            >
-              <form onSubmit={handleSubmit} className="p-4 space-y-6">
-                {/* Status message */}
-                {message && (
-                  <StatusAlert 
-                    message={message.text} 
-                    type={message.type}
-                  />
-                )}
-                
-                {/* Form fields */}
-                <div className="space-y-4">
-                  <TextField
-                    label="FIRST NAME"
-                    name="first_name"
-                    value={formData.first_name || ''}
-                    onChange={handleChange}
-                    placeholder="Your first name"
-                    fullWidth
-                    disabled={isSubmitting}
-                  />
-                  
-                  <TextField
-                    label="LAST NAME"
-                    name="last_name"
-                    value={formData.last_name || ''}
-                    onChange={handleChange}
-                    placeholder="Your last name"
-                    fullWidth
-                    disabled={isSubmitting}
-                  />
-                  
-                  <TextField
-                    label="USERNAME"
-                    name="username"
-                    value={formData.username || ''}
-                    onChange={handleChange}
-                    placeholder="Your unique username"
-                    fullWidth
-                    disabled={isSubmitting}
-                    required
-                  />
-                  
-                  <TextField
-                    label="EMAIL"
-                    name="email"
-                    type="email"
-                    value={formData.email || ''}
-                    onChange={handleChange}
-                    placeholder="Your email address"
-                    fullWidth
-                    disabled={isSubmitting}
-                  />
-                  
-                  {/* Gender field */}
-                  <div className="space-y-1">
-                    <label className="block text-xs font-medium uppercase tracking-wider text-command-black">
-                      GENDER (FOR USMC PFT SCORING)
-                    </label>
-                    <select
-                      name="gender"
-                      value={formData.gender || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value }))}
-                      disabled={isSubmitting}
-                      className="w-full px-3 py-2 rounded-md border border-tactical-gray/30 focus:border-brass-gold bg-white text-command-black text-sm focus:outline-none focus:ring-2 focus:ring-brass-gold/20 disabled:opacity-50"
-                    >
-                      <option value="">Not specified</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                    </select>
-                  </div>
-                  
-                  {/* Date of Birth field */}
-                  <TextField
-                    label="DATE OF BIRTH (FOR AGE-BASED SCORING)"
-                    name="date_of_birth"
-                    type="date"
-                    value={formData.date_of_birth || ''}
-                    onChange={handleChange}
-                    placeholder=""
-                    fullWidth
-                    disabled={isSubmitting}
-                    max={new Date().toISOString().split('T')[0]}
-                  />
-                </div>
-                
-                {/* Save button */}
-                <Button
-                  type="submit"
-                  disabled={isSubmitting || !formDataHasChanges()}
-                  className={cn(
-                    "w-full bg-deep-ops text-brass-gold hover:bg-deep-ops/90",
-                    "font-semibold uppercase tracking-wider",
-                    (!isSubmitting && formDataHasChanges()) ? "opacity-100" : "opacity-60"
-                  )}
-                >
-                  {isSubmitting && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
-                  {isSubmitting ? 'SAVING...' : 'SAVE CHANGES'}
-                </Button>
-              </form>
-            </SettingsSection>
-          </div>
+          <ProfileUserInfo
+            formData={formData}
+            message={message}
+            isSubmitting={isSubmitting}
+            formDataHasChanges={formDataHasChanges()}
+            handleChange={handleChange}
+            handleSubmit={handleSubmit}
+            setFormData={setFormData}
+            visible={sectionsVisible[0]}
+          />
 
           {/* Password Management Section */}
-          <div 
-            className={`transition-all duration-300 ${
-              sectionsVisible[1] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            <SettingsSection
-              title="PASSWORD MANAGEMENT"
-              description="UPDATE YOUR PASSWORD REGULARLY FOR SECURITY"
-            >
-              <form onSubmit={handlePasswordSubmit} className="p-4 space-y-6">
-                {/* Password status message */}
-                {passwordMessage && (
-                  <StatusAlert 
-                    message={passwordMessage.text} 
-                    type={passwordMessage.type}
-                  />
-                )}
-                
-                {/* Password fields */}
-                <div className="space-y-4">
-                  <TextField
-                    label="NEW PASSWORD"
-                    name="password"
-                    type="password"
-                    value={passwordData.password}
-                    onChange={handlePasswordChange}
-                    placeholder="Enter new password"
-                    fullWidth
-                    disabled={isChangingPassword}
-                    error={!passwordsMatch && Boolean(passwordData.password)}
-                  />
-                  
-                  <TextField
-                    label="CONFIRM PASSWORD"
-                    name="confirmPassword"
-                    type="password"
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
-                    placeholder="Confirm new password"
-                    fullWidth
-                    disabled={isChangingPassword}
-                    error={!passwordsMatch && Boolean(passwordData.confirmPassword)}
-                    errorMessage={!passwordsMatch && Boolean(passwordData.password) ? "Passwords do not match" : undefined}
-                  />
-                </div>
-                
-                {/* Change Password button */}
-                <Button
-                  type="submit"
-                  disabled={isChangingPassword || !passwordData.password || !passwordsMatch}
-                  className={cn(
-                    "w-full bg-deep-ops text-brass-gold hover:bg-deep-ops/90",
-                    "font-semibold uppercase tracking-wider",
-                    (passwordData.password && passwordsMatch && !isChangingPassword) ? "opacity-100" : "opacity-60"
-                  )}
-                >
-                  {isChangingPassword && <Loader2 className="mr-2 w-4 h-4 animate-spin" />}
-                  {isChangingPassword ? 'UPDATING...' : 'CHANGE PASSWORD'}
-                </Button>
-              </form>
-            </SettingsSection>
-          </div>
+          <ProfilePassword
+            passwordData={passwordData}
+            passwordMessage={passwordMessage}
+            isChangingPassword={isChangingPassword}
+            passwordsMatch={passwordsMatch}
+            handlePasswordChange={handlePasswordChange}
+            handlePasswordSubmit={handlePasswordSubmit}
+            visible={sectionsVisible[1]}
+          />
 
           {/* Account Actions Section */}
-          <div 
-            className={`transition-all duration-300 ${
-              sectionsVisible[2] ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}
-          >
-            <SettingsSection
-              title="ACCOUNT ACTIONS"
-              description="MANAGE YOUR ACCOUNT SESSION"
-            >
-              <div className="p-4 space-y-4">
-                <Button
-                  onClick={() => {
-                    logout();
-                    navigate('/login');
-                  }}
-                  variant="outline"
-                  className="w-full border-error text-error hover:bg-error/10 font-semibold uppercase tracking-wider"
-                >
-                  <LogOut className="mr-2 w-4 h-4" />
-                  LOG OUT
-                </Button>
-              </div>
-            </SettingsSection>
-          </div>
+          <ProfileActions
+            onLogout={handleLogout}
+            visible={sectionsVisible[2]}
+          />
         </div>
       </div>
 
@@ -657,4 +419,4 @@ const Profile: React.FC = () => {
   );
 };
 
-export default Profile; 
+export default Profile;

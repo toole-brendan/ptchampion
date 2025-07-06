@@ -18,6 +18,7 @@ import { useApi } from '@/lib/apiClient';
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from '@/components/ui/button';
 import { logger } from '@/lib/logger';
+import { preloadPoseDetector } from '@/lib/utils/preloadPoseDetector';
 
 // Import new iOS-style components
 import { PTChampionHeader } from '@/components/ui/pt-champion-header';
@@ -182,6 +183,17 @@ const Dashboard: React.FC = () => {
       setUserName(displayName);
     }
   }, [user, setUserName]);
+  
+  // Preload pose detector during idle time for better performance
+  useEffect(() => {
+    // Only preload if user is logged in
+    if (user) {
+      preloadPoseDetector().catch(err => {
+        // Log but don't show error to user - preloading is optional
+        logger.debug('Failed to preload pose detector:', err);
+      });
+    }
+  }, [user]);
   
   if (isLoading) {
     return (

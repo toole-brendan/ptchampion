@@ -124,6 +124,12 @@ export abstract class BaseTrackerViewModel implements TrackerViewModel {
   protected _result: ExerciseResult | null = null;
   protected timerInterval: NodeJS.Timeout | null = null;
   protected _isInitialized: boolean = false;
+  
+  // Timer configuration
+  protected _useCountdown: boolean = false;
+  protected _countdownDuration: number = 120; // Default 2 minutes
+  protected _startTime: number = 0;
+  protected _timerExpiredCallback: (() => void) | null = null;
 
   constructor(protected _exerciseType: ExerciseType) {}
 
@@ -150,13 +156,14 @@ export abstract class BaseTrackerViewModel implements TrackerViewModel {
    */
   resetSession(): void {
     this._repCount = 0;
-    this._timer = 0;
+    this._timer = this._useCountdown ? this._countdownDuration : 0;
     this._formScore = 100;
     this._formFeedback = null;
     this._problemJoints = [];
     this._error = null;
     this._result = null;
     this._status = SessionStatus.READY;
+    this._startTime = 0;
     
     this.stopTimer();
   }
@@ -176,9 +183,30 @@ export abstract class BaseTrackerViewModel implements TrackerViewModel {
       this.stopTimer();
     }
 
-    this.timerInterval = setInterval(() => {
-      this._timer += 1;
-    }, 1000);
+    if (this._useCountdown) {
+      // For countdown timer, record start time if not already set
+      if (this._startTime === 0) {
+        this._startTime = Date.now();
+      }
+      
+      this.timerInterval = setInterval(() => {
+        if (this._timer > 0) {
+          this._timer -= 1;
+        } else {
+          // Timer reached zero, automatically finish session
+          this.stopTimer();
+          // Trigger the callback if set
+          if (this._timerExpiredCallback) {
+            this._timerExpiredCallback();
+          }
+        }
+      }, 1000);
+    } else {
+      // Count up timer (original behavior)
+      this.timerInterval = setInterval(() => {
+        this._timer += 1;
+      }, 1000);
+    }
   }
 
   /**
@@ -213,6 +241,31 @@ export abstract class BaseTrackerViewModel implements TrackerViewModel {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+  
+  /**
+   * Get the actual elapsed duration in seconds (for saving to backend)
+   */
+  protected getElapsedDuration(): number {
+    if (this._useCountdown) {
+      // For countdown timer, calculate actual elapsed time
+      if (this._startTime > 0) {
+        const elapsedMs = Date.now() - this._startTime;
+        return Math.floor(elapsedMs / 1000);
+      }
+      // If timer hasn't started yet, return 0
+      return 0;
+    } else {
+      // For count-up timer, return the timer value directly
+      return this._timer;
+    }
+  }
+  
+  /**
+   * Set a callback to be triggered when the countdown timer expires
+   */
+  setTimerExpiredCallback(callback: () => void): void {
+    this._timerExpiredCallback = callback;
   }
 }
 

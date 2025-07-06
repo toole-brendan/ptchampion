@@ -257,7 +257,7 @@ export default function WorkoutSession({ className }: WorkoutSessionProps) {
                       <p className="text-3xl font-bold">{repCount}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">APFT Score</p>
+                      <p className="text-sm text-muted-foreground">Score</p>
                       <p className="text-2xl font-semibold">{apftScore}</p>
                     </div>
                     <div>

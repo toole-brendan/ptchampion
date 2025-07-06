@@ -6,8 +6,7 @@
  * and handle camera permissions in a centralized way.
  */
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import poseDetectorService from '@/services/PoseDetectorService';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { PoseDetectorError } from '@/services/PoseDetectorError';
 import type { PoseDetectorOptions } from '@/services/PoseDetectorService';
 
@@ -34,12 +33,15 @@ export interface PoseProviderProps {
 }
 
 export const PoseProvider: React.FC<PoseProviderProps> = ({ children }) => {
+  // Lazy loading of poseDetectorService
+  const poseDetectorServiceRef = useRef<typeof import('@/services/PoseDetectorService').default | null>(null);
+  
   // State for tracking service status
-  const [isInitialized, setIsInitialized] = useState<boolean>(poseDetectorService.isInitialized());
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
-  const [isRunning, setIsRunning] = useState<boolean>(poseDetectorService.isRunning());
+  const [isRunning, setIsRunning] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
-  const [needsUserGesture, setNeedsUserGesture] = useState<boolean>(poseDetectorService.requiresUserGesture());
+  const [needsUserGesture, setNeedsUserGesture] = useState<boolean>(false);
   
   // Reset error helper
   const resetError = () => setError(null);
@@ -50,8 +52,15 @@ export const PoseProvider: React.FC<PoseProviderProps> = ({ children }) => {
     setError(null);
     
     try {
-      await poseDetectorService.initialize(options);
+      // Dynamically import the pose detector service
+      if (!poseDetectorServiceRef.current) {
+        const { default: poseDetectorService } = await import('@/services/PoseDetectorService');
+        poseDetectorServiceRef.current = poseDetectorService;
+      }
+      
+      await poseDetectorServiceRef.current.initialize(options);
       setIsInitialized(true);
+      setNeedsUserGesture(poseDetectorServiceRef.current.requiresUserGesture());
     } catch (err) {
       console.error('PoseContext: Error initializing pose detector', err);
       if (err instanceof Error) {
@@ -66,24 +75,34 @@ export const PoseProvider: React.FC<PoseProviderProps> = ({ children }) => {
   
   // Resume camera (for iOS)
   const resumeCamera = async () => {
-    const success = await poseDetectorService.resumeCamera();
+    if (!poseDetectorServiceRef.current) {
+      return false;
+    }
+    const success = await poseDetectorServiceRef.current.resumeCamera();
     setNeedsUserGesture(!success);
     return success;
   };
   
   // Subscribe to service state changes
   useEffect(() => {
+    // Only start polling if service is loaded
+    if (!poseDetectorServiceRef.current) {
+      return;
+    }
+    
     // Update context when service state changes
     const statusInterval = setInterval(() => {
-      setIsInitialized(poseDetectorService.isInitialized());
-      setIsRunning(poseDetectorService.isRunning());
-      setNeedsUserGesture(poseDetectorService.requiresUserGesture());
+      if (poseDetectorServiceRef.current) {
+        setIsInitialized(poseDetectorServiceRef.current.isInitialized());
+        setIsRunning(poseDetectorServiceRef.current.isRunning());
+        setNeedsUserGesture(poseDetectorServiceRef.current.requiresUserGesture());
+      }
     }, 500);
     
     return () => {
       clearInterval(statusInterval);
     };
-  }, []);
+  }, [poseDetectorServiceRef.current]);
   
   // Provide the context
   const contextValue: PoseContextType = {

@@ -62,7 +62,8 @@ const PullupTracker: React.FC = () => {
     finishSession,
     resetSession,
     saveResults,
-    flipCamera
+    flipCamera,
+    setTimerExpiredCallback
   } = usePullupTrackerViewModel(USE_BLAZEPOSE_DETECTOR);
 
   // Derived state
@@ -138,6 +139,16 @@ const PullupTracker: React.FC = () => {
     initTracker();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Set up timer expiration callback
+  useEffect(() => {
+    setTimerExpiredCallback(() => {
+      // Auto-finish session when timer expires
+      if (status === SessionStatus.ACTIVE) {
+        finishSession();
+      }
+    });
+  }, [setTimerExpiredCallback, status, finishSession]);
 
   // Update APFT score when rep count changes
   useEffect(() => {
@@ -314,7 +325,7 @@ const PullupTracker: React.FC = () => {
               </p>
             </div>
             <div>
-              <p className="text-sm font-medium text-muted-foreground">APFT Score</p>
+              <p className="text-sm font-medium text-muted-foreground">Score</p>
               <p className="font-bold text-4xl text-foreground">{pullupScore}</p>
             </div>
           </div>
@@ -344,40 +355,27 @@ const PullupTracker: React.FC = () => {
             </ul>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-wrap justify-center gap-4 border-t bg-background/50 px-6 py-4">
-            {/* Controls */}
-             {!isFinished ? (
-              <>
-                <Button size="lg" onClick={handleStartPause} disabled={isFinished || !permissionGranted || !!cameraError || isModelLoading || !!modelError}>
-                  {isModelLoading ? <Loader2 className="mr-2 size-5 animate-spin" /> : (isActive ? <Pause className="mr-2 size-5" /> : <Play className="mr-2 size-5" />)}
-                  {isModelLoading ? 'Loading...' : (isActive ? 'Pause' : 'Start')}
-                </Button>
-                <Button size="lg" variant="secondary" onClick={handleReset} disabled={isActive || isFinished || (!permissionGranted && !cameraError && !isModelLoading)}>
-                  <RotateCcw className="mr-2 size-5" /> Reset
-                </Button>
-                <Button size="lg" variant="destructive" onClick={handleFinish} disabled={isActive || isFinished || repCount === 0} >
-                   {isSubmitting ? <Loader2 className="mr-2 size-5 animate-spin" /> : null}
-                   Finish & Save
-                </Button>
-              </>
-            ) : (
-                 <div className="w-full text-center">
-                    {isSubmitting && <p className="flex items-center justify-center"><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</p>}
-                    {apiError && !isSubmitting && <p className="mt-2 text-sm text-destructive">Error Saving: {apiError}</p>}
-                    {success && !isSubmitting && (
-                      <p className="mt-2 text-sm text-green-600">
-                        Workout saved successfully!
-                        {loggedGrade !== null && ` Grade: ${loggedGrade}`}
-                      </p>
-                    )}
-                    {!isSubmitting && !apiError && !success && <p>Workout Complete! Press Reset to start again.</p>}
-                    <Button size="lg" variant="outline" onClick={handleReset} className="mt-4">
-                        Reset Exercise
-                    </Button>
-                 </div>
-            )}
-        </CardFooter>
       </Card>
+      
+      {/* Completion status messages */}
+      {isFinished && (
+        <Card className="mt-4">
+          <CardContent className="py-6 text-center">
+            {isSubmitting && <p className="flex items-center justify-center"><Loader2 className="mr-2 size-4 animate-spin" /> Saving...</p>}
+            {apiError && !isSubmitting && <p className="mt-2 text-sm text-destructive">Error Saving: {apiError}</p>}
+            {success && !isSubmitting && (
+              <p className="mt-2 text-sm text-green-600">
+                Workout saved successfully!
+                {loggedGrade !== null && ` Grade: ${loggedGrade}`}
+              </p>
+            )}
+            {!isSubmitting && !apiError && !success && <p>Workout Complete! Press Reset to start again.</p>}
+            <Button size="lg" variant="outline" onClick={handleReset} className="mt-4">
+              Reset Exercise
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       
       {/* Session controls overlay - now without the camera controls, which have been moved */}
       {!isFinished && (
