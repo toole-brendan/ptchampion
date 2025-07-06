@@ -80,7 +80,7 @@ const TopNavBar: React.FC<TopNavBarProps> = ({ username, onLogout }) => {
                   <div className="mr-2 shrink-0 size-5">
                     <item.icon className="size-5" />
                   </div>
-                  <span className="font-sans text-sm">{item.name}</span>
+                  <span className="text-sm font-medium uppercase tracking-wide">{item.name}</span>
                 </Link>
               );
             })}

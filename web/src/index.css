@@ -136,7 +136,7 @@ html {
   }
   
   .bottom-nav-label {
-    @apply mt-1 font-sans text-tiny uppercase tracking-wide;
+    @apply mt-1 font-medium text-tiny uppercase tracking-wide;
   }
   
   /* Top Navigation - New styles to replace bottom nav */
