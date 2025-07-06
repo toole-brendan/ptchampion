@@ -139,10 +139,29 @@ type LeaderboardStore interface {
 type WorkoutStore interface {
 	CreateWorkoutRecord(ctx context.Context, record *WorkoutRecord) (*WorkoutRecord, error)
 	GetUserWorkoutRecords(ctx context.Context, userID int32, limit int32, offset int32) (*PaginatedWorkoutRecords, error)
+	GetUserWorkoutRecordsWithFilters(ctx context.Context, userID int32, limit int32, offset int32, filters WorkoutFilters) (*PaginatedWorkoutRecords, error)
 	UpdateWorkoutVisibility(ctx context.Context, userID int32, workoutID int32, isPublic bool) error
 	GetWorkoutRecordByID(ctx context.Context, id int32) (*WorkoutRecord, error)
+	GetDashboardStats(ctx context.Context, userID int32) (*DashboardStats, error)
 	// UpdateWorkoutRecord(ctx context.Context, record *WorkoutRecord) (*WorkoutRecord, error) // Optional: if needed
 	// DeleteWorkoutRecord(ctx context.Context, id int32) error // Optional: if needed
+}
+
+// DashboardStats represents aggregated workout statistics for the dashboard
+type DashboardStats struct {
+	TotalWorkouts   int
+	TotalReps       int
+	AverageRunTime  *float64 // in seconds, nil if no runs
+	RecentWorkouts  []*WorkoutRecord
+	ExerciseCounts  map[string]int
+	LastWorkoutDate *time.Time
+}
+
+// WorkoutFilters represents filter options for querying workouts
+type WorkoutFilters struct {
+	ExerciseType string
+	StartDate    *time.Time
+	EndDate      *time.Time
 }
 
 // User represents a user in the system

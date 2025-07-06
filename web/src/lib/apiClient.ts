@@ -462,9 +462,35 @@ const transformWorkoutToExercise = (workout: BackendWorkoutResponse): ExerciseRe
   };
 };
 
-export const getUserExercises = async (page: number, pageSize: number): Promise<PaginatedExercisesResponse> => {
+export const getUserExercises = async (
+  page: number, 
+  pageSize: number,
+  filters?: {
+    exerciseType?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }
+): Promise<PaginatedExercisesResponse> => {
+  // Build query string with filters
+  const params = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString()
+  });
+  
+  if (filters?.exerciseType && filters.exerciseType !== 'all') {
+    params.append('exerciseType', filters.exerciseType);
+  }
+  
+  if (filters?.startDate) {
+    params.append('startDate', filters.startDate.toISOString());
+  }
+  
+  if (filters?.endDate) {
+    params.append('endDate', filters.endDate.toISOString());
+  }
+  
   // Use the new /workouts endpoint that replaced /exercises
-  const response = await apiRequest<BackendPaginatedWorkoutsResponse>(`/workouts?page=${page}&pageSize=${pageSize}`, 'GET', null, true);
+  const response = await apiRequest<BackendPaginatedWorkoutsResponse>(`/workouts?${params.toString()}`, 'GET', null, true);
   
   // Transform the backend response to match frontend format
   return {
@@ -477,6 +503,28 @@ export const getUserExercises = async (page: number, pageSize: number): Promise<
 
 export const getExerciseById = (id: string): Promise<ExerciseResponse> => {
   return apiRequest<ExerciseResponse>(`/exercises/${id}`, 'GET', null, true);
+};
+
+// --- Dashboard Endpoints ---
+
+export interface DashboardStats {
+  totalWorkouts: number;
+  totalReps: number;
+  averageRunTime: number | null;
+  recentWorkouts: Array<{
+    id: number;
+    exerciseName: string;
+    reps: number;
+    duration: number;
+    score: number;
+    createdAt: string;
+  }>;
+  exerciseCounts: Record<string, number>;
+  lastWorkoutDate: string | null;
+}
+
+export const getDashboardStats = async (): Promise<DashboardStats> => {
+  return apiRequest<DashboardStats>('/dashboard/stats', 'GET', null, true);
 };
 
 // --- Leaderboard Endpoints ---

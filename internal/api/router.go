@@ -116,6 +116,15 @@ func NewRouter(apiHandler *ApiHandler, cfg *config.Config, logger logging.Logger
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
 	e.Use(echoMiddleware.RequestID())
+	
+	// Add compression middleware for better performance
+	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{
+		Level: 5, // Balanced compression level
+		Skipper: func(c echo.Context) bool {
+			// Skip compression for small responses
+			return c.Response().Size < 1024 // Skip if less than 1KB
+		},
+	}))
 	// Add OpenTelemetry middleware
 	e.Use(middleware.OTELMiddleware())
 	// Add Security Headers middleware

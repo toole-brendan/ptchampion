@@ -24,11 +24,20 @@ type LogWorkoutData struct {
 	IsPublic        bool   // Whether workout should appear on leaderboard
 }
 
+// ListWorkoutsFilters defines filter options for listing workouts
+type ListWorkoutsFilters struct {
+	ExerciseType string
+	StartDate    *time.Time
+	EndDate      *time.Time
+}
+
 // Service defines the interface for workout-related business logic.
 type Service interface {
 	LogWorkout(ctx context.Context, userID int32, data *LogWorkoutData) (*store.WorkoutRecord, error)
 	ListUserWorkouts(ctx context.Context, userID int32, page, pageSize int) (*store.PaginatedWorkoutRecords, error)
+	ListUserWorkoutsWithFilters(ctx context.Context, userID int32, page, pageSize int, filters ListWorkoutsFilters) (*store.PaginatedWorkoutRecords, error)
 	UpdateWorkoutVisibility(ctx context.Context, userID int32, workoutID int32, isPublic bool) error
+	GetDashboardStats(ctx context.Context, userID int32) (*store.DashboardStats, error)
 }
 
 type service struct {
@@ -151,4 +160,48 @@ func (s *service) UpdateWorkoutVisibility(ctx context.Context, userID int32, wor
 
 	s.logger.Info(ctx, "Workout visibility updated successfully", "userID", userID, "workoutID", workoutID, "isPublic", isPublic)
 	return nil
+}
+
+// ListUserWorkoutsWithFilters retrieves paginated workout records for a user with filters.
+func (s *service) ListUserWorkoutsWithFilters(ctx context.Context, userID int32, page, pageSize int, filters ListWorkoutsFilters) (*store.PaginatedWorkoutRecords, error) {
+	s.logger.Debug(ctx, "WorkoutService: ListUserWorkoutsWithFilters called", "userID", userID, "page", page, "pageSize", pageSize, "filters", filters)
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 { // Max page size constraint
+		pageSize = 20 // Default page size
+	}
+	limit := int32(pageSize)
+	offset := int32((page - 1) * pageSize)
+
+	// Create store filters
+	storeFilters := store.WorkoutFilters{
+		ExerciseType: filters.ExerciseType,
+		StartDate:    filters.StartDate,
+		EndDate:      filters.EndDate,
+	}
+
+	paginatedRecords, err := s.workoutStore.GetUserWorkoutRecordsWithFilters(ctx, userID, limit, offset, storeFilters)
+	if err != nil {
+		s.logger.Error(ctx, "Failed to get user workout records with filters from store", "userID", userID, "error", err)
+		return nil, fmt.Errorf("failed to retrieve user workout records: %w", err)
+	}
+
+	s.logger.Info(ctx, "User workout records with filters retrieved", "userID", userID, "count", paginatedRecords.TotalCount)
+	return paginatedRecords, nil
+}
+
+// GetDashboardStats retrieves aggregated workout statistics for a user's dashboard.
+func (s *service) GetDashboardStats(ctx context.Context, userID int32) (*store.DashboardStats, error) {
+	s.logger.Debug(ctx, "WorkoutService: GetDashboardStats called", "userID", userID)
+
+	stats, err := s.workoutStore.GetDashboardStats(ctx, userID)
+	if err != nil {
+		s.logger.Error(ctx, "Failed to get dashboard stats from store", "userID", userID, "error", err)
+		return nil, fmt.Errorf("failed to retrieve dashboard stats: %w", err)
+	}
+
+	s.logger.Info(ctx, "Dashboard stats retrieved", "userID", userID, "totalWorkouts", stats.TotalWorkouts)
+	return stats, nil
 }

@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 const APP_VERSION = '1.0.0';
 
 const Settings: React.FC = () => {
-  const { settings, updateSetting } = useSettings();
+  const { settings, updateSetting, isUpdating } = useSettings();
   const { toast } = useToast();
   const navigate = useNavigate();
   const capabilities = useDeviceCapabilities();
@@ -74,7 +74,7 @@ const Settings: React.FC = () => {
             description: "Please enable notifications in your browser settings.",
             variant: "destructive",
           });
-          updateSetting('notifications', false);
+          await updateSetting('notifications', false);
         }
       } catch {
         toast({
@@ -82,10 +82,10 @@ const Settings: React.FC = () => {
           description: "Your browser may not support notifications.",
           variant: "destructive",
         });
-        updateSetting('notifications', false);
+        await updateSetting('notifications', false);
       }
     } else {
-      updateSetting('notifications', false);
+      await updateSetting('notifications', false);
     }
   };
 
@@ -171,7 +171,7 @@ const Settings: React.FC = () => {
                 description="Allow location tracking for runs and local leaderboards"
                 checked={settings.geolocation}
                 onCheckedChange={handleGeolocationToggle}
-                disabled={!capabilities.geolocation}
+                disabled={!capabilities.geolocation || isUpdating}
               />
               
               <SettingsDivider />
@@ -182,7 +182,7 @@ const Settings: React.FC = () => {
                 description="Receive reminders and updates about your workouts"
                 checked={settings.notifications}
                 onCheckedChange={handleNotificationsToggle}
-                disabled={!capabilities.pushNotifications}
+                disabled={!capabilities.pushNotifications || isUpdating}
               />
             </SettingsSection>
           </div>

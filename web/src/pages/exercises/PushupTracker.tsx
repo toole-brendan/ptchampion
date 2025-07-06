@@ -16,11 +16,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../lib/authContext';
 import { calculatePushupScore } from '../../grading/APFTScoring';
 import { useDeviceCapabilities } from '@/lib/hooks/useDeviceCapabilities';
+import { useOptimisticWorkout } from '@/lib/hooks/useOptimisticWorkout';
 import { logger } from '@/lib/logger';
 
 // Import our ViewModel hook
 import { usePushupTrackerViewModel } from '../../viewmodels/PushupTrackerViewModel';
 import { SessionStatus, TrackerErrorType } from '../../viewmodels/TrackerViewModel';
+import { WorkoutRequest } from '@/types/api';
 
 // Import new UI components
 import HUD from '@/components/workout/HUD';
@@ -86,6 +88,9 @@ const PushupTracker: React.FC = () => {
 
   const capabilities = useDeviceCapabilities();
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  
+  // Optimistic workout mutation
+  const workoutMutation = useOptimisticWorkout();
 
   // Handle back navigation
   const handleBackNavigation = () => {
@@ -188,41 +193,49 @@ const PushupTracker: React.FC = () => {
     // Navigate to workout complete page with initial "not saved" state
     navigate('/complete', { state: workoutSummary });
 
-    // Save workout session data in background
+    // Save workout session data with optimistic update
     if (repCount > 0 && user) {
       setIsSubmitting(true);
       setApiError(null);
       setSuccess(false);
       setLoggedGrade(null);
       
-      try {
-        const saved = await saveResults();
-        if (saved && result.grade !== undefined) {
+      // Create workout request for the API
+      const workoutRequest = {
+        exercise_type: 'pushup' as const,
+        repetitions: repCount,
+        grade: finalScore,
+        form_score: Math.round(formScore),
+        completed_at: new Date().toISOString(),
+        is_public: true,
+      };
+      
+      // Use optimistic mutation
+      workoutMutation.mutate(workoutRequest, {
+        onSuccess: (data) => {
           setSuccess(true);
-          // Use type assertion to handle the potential string or number grade
-          setLoggedGrade(typeof result.grade === 'number' ? result.grade : null);
+          setLoggedGrade(finalScore);
           
-          // Update the page with saved status
+          // Update the page with saved status and server response
           navigate('/complete', { 
             state: { 
               ...workoutSummary, 
-              grade: result.grade,
-              saved: saved,
-              id: result.id
+              saved: true,
+              id: data.id
             },
             replace: true
           });
-        } else {
-          throw new Error("Failed to save results");
+        },
+        onError: (err) => {
+          logger.error("Failed to log exercise:", err);
+          setApiError(err instanceof Error ? err.message : 'Failed to save workout session');
+          setSuccess(false);
+          setLoggedGrade(null);
+        },
+        onSettled: () => {
+          setIsSubmitting(false);
         }
-      } catch (err) {
-        logger.error("Failed to log exercise:", err);
-        setApiError(err instanceof Error ? err.message : 'Failed to save workout session');
-        setSuccess(false);
-        setLoggedGrade(null);
-      } finally {
-        setIsSubmitting(false);
-      }
+      });
     } else if (repCount === 0 && isFinished) {
       logger.debug("No reps counted, session not saved.");
       handleReset();

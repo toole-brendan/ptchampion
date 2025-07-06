@@ -826,6 +826,7 @@ func toStoreWorkoutRecord(dbRec interface{}) *store.WorkoutRecord {
 			DurationSeconds: nullInt32ToInt32Ptr(v.DurationSeconds),
 			FormScore:       nullInt32ToInt32Ptr(v.FormScore),
 			Grade:           v.Grade,
+			IsPublic:        v.IsPublic,
 			CompletedAt:     v.CompletedAt,
 			CreatedAt:       v.CreatedAt,
 		}
@@ -840,6 +841,7 @@ func toStoreWorkoutRecord(dbRec interface{}) *store.WorkoutRecord {
 			DurationSeconds: nullInt32ToInt32Ptr(v.DurationSeconds),
 			FormScore:       nullInt32ToInt32Ptr(v.FormScore),
 			Grade:           v.Grade,
+			IsPublic:     v.IsPublic,
 			CompletedAt:     v.CompletedAt,
 			CreatedAt:       v.CreatedAt,
 		}
@@ -857,6 +859,8 @@ func (s *Store) CreateWorkoutRecord(ctx context.Context, record *store.WorkoutRe
 		Repetitions:     int32PtrToNullInt32(record.Reps),
 		DurationSeconds: int32PtrToNullInt32(record.DurationSeconds),
 		Grade:           record.Grade,
+		FormScore:       int32PtrToNullInt32(record.FormScore),
+		IsPublic:        record.IsPublic,
 		CompletedAt:     record.CompletedAt,
 		// FormScore is not in CreateWorkoutParams for SQLc. It's in the db.Workout model returned by the query,
 		// and also in db.GetUserWorkoutsRow. If it needs to be set on creation, the SQL query CreateWorkout
@@ -952,6 +956,242 @@ func (s *Store) UpdateWorkoutVisibility(ctx context.Context, userID int32, worko
 		return fmt.Errorf("failed to update workout visibility in DB: %w", err)
 	}
 	return nil
+}
+
+// GetUserWorkoutRecordsWithFilters implements store.WorkoutStore with filtering support
+func (s *Store) GetUserWorkoutRecordsWithFilters(ctx context.Context, userID int32, limit int32, offset int32, filters store.WorkoutFilters) (*store.PaginatedWorkoutRecords, error) {
+	// Build dynamic query
+	query := `
+		SELECT 
+			w.id, 
+			w.user_id, 
+			w.exercise_id,
+			e.name as exercise_name,
+			w.repetitions,
+			w.duration_seconds,
+			w.form_score,
+			w.grade,
+			w.is_public,
+			w.created_at,
+			w.completed_at
+		FROM workouts w
+		JOIN exercises e ON w.exercise_id = e.id
+		WHERE w.user_id = $1`
+	
+	args := []interface{}{userID}
+	argCount := 1
+	
+	// Add exercise type filter
+	if filters.ExerciseType != "" {
+		argCount++
+		query += fmt.Sprintf(" AND LOWER(e.name) = LOWER($%d)", argCount)
+		args = append(args, filters.ExerciseType)
+	}
+	
+	// Add date range filters
+	if filters.StartDate != nil {
+		argCount++
+		query += fmt.Sprintf(" AND w.completed_at >= $%d", argCount)
+		args = append(args, *filters.StartDate)
+	}
+	
+	if filters.EndDate != nil {
+		argCount++
+		query += fmt.Sprintf(" AND w.completed_at <= $%d", argCount)
+		args = append(args, *filters.EndDate)
+	}
+	
+	// Add ordering
+	query += " ORDER BY w.completed_at DESC"
+	
+	// Get total count with filters
+	countQuery := `
+		SELECT COUNT(*)
+		FROM workouts w
+		JOIN exercises e ON w.exercise_id = e.id
+		WHERE w.user_id = $1`
+	
+	countArgs := []interface{}{userID}
+	countArgCount := 1
+	
+	// Add same filters to count query
+	if filters.ExerciseType != "" {
+		countArgCount++
+		countQuery += fmt.Sprintf(" AND LOWER(e.name) = LOWER($%d)", countArgCount)
+		countArgs = append(countArgs, filters.ExerciseType)
+	}
+	
+	if filters.StartDate != nil {
+		countArgCount++
+		countQuery += fmt.Sprintf(" AND w.completed_at >= $%d", countArgCount)
+		countArgs = append(countArgs, *filters.StartDate)
+	}
+	
+	if filters.EndDate != nil {
+		countArgCount++
+		countQuery += fmt.Sprintf(" AND w.completed_at <= $%d", countArgCount)
+		countArgs = append(countArgs, *filters.EndDate)
+	}
+	
+	var count int64
+	err := s.db.QueryRowContext(ctx, countQuery, countArgs...).Scan(&count)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get filtered workout count: %w", err)
+	}
+	
+	if count == 0 {
+		return &store.PaginatedWorkoutRecords{
+			Records:    []*store.WorkoutRecord{},
+			TotalCount: 0,
+		}, nil
+	}
+	
+	// Add pagination
+	argCount++
+	query += fmt.Sprintf(" LIMIT $%d", argCount)
+	args = append(args, limit)
+	
+	argCount++
+	query += fmt.Sprintf(" OFFSET $%d", argCount)
+	args = append(args, offset)
+	
+	// Execute query
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get filtered workout records: %w", err)
+	}
+	defer rows.Close()
+	
+	var records []*store.WorkoutRecord
+	for rows.Next() {
+		var w GetUserWorkoutsRow
+		err := rows.Scan(
+			&w.ID,
+			&w.UserID,
+			&w.ExerciseID,
+			&w.ExerciseName,
+			&w.Repetitions,
+			&w.DurationSeconds,
+			&w.FormScore,
+			&w.Grade,
+			&w.IsPublic,
+			&w.CreatedAt,
+			&w.CompletedAt,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan workout row: %w", err)
+		}
+		
+		records = append(records, toStoreWorkoutRecord(w))
+	}
+	
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating workout rows: %w", err)
+	}
+	
+	return &store.PaginatedWorkoutRecords{
+		Records:    records,
+		TotalCount: count,
+	}, nil
+}
+
+// GetDashboardStats implements store.WorkoutStore
+func (s *Store) GetDashboardStats(ctx context.Context, userID int32) (*store.DashboardStats, error) {
+	// First, get the total workout count
+	totalCount, err := s.Queries.GetUserWorkoutsCount(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workout count: %w", err)
+	}
+
+	// If no workouts, return empty stats
+	if totalCount == 0 {
+		return &store.DashboardStats{
+			TotalWorkouts:  0,
+			TotalReps:      0,
+			AverageRunTime: nil,
+			RecentWorkouts: []*store.WorkoutRecord{},
+			ExerciseCounts: make(map[string]int),
+			LastWorkoutDate: nil,
+		}, nil
+	}
+
+	// Get all workouts to calculate aggregated stats
+	// In a production system, this would be optimized with specific SQL queries
+	allWorkouts := make([]GetUserWorkoutsRow, 0)
+	limit := int32(100)
+	offset := int32(0)
+	
+	for offset < int32(totalCount) {
+		params := GetUserWorkoutsParams{
+			UserID: userID,
+			Limit:  limit,
+			Offset: offset,
+		}
+		workouts, err := s.Queries.GetUserWorkouts(ctx, params)
+		if err != nil {
+			return nil, fmt.Errorf("failed to get workouts: %w", err)
+		}
+		allWorkouts = append(allWorkouts, workouts...)
+		offset += limit
+	}
+
+	// Calculate stats
+	stats := &store.DashboardStats{
+		TotalWorkouts:  int(totalCount),
+		TotalReps:      0,
+		AverageRunTime: nil,
+		ExerciseCounts: make(map[string]int),
+		LastWorkoutDate: nil,
+	}
+
+	// Variables for run time calculation
+	var totalRunTime float64
+	var runCount int
+
+	// Process all workouts
+	for i, w := range allWorkouts {
+		// Count exercises by name
+		stats.ExerciseCounts[w.ExerciseName]++
+
+		// Add up total reps
+		if w.Repetitions.Valid {
+			stats.TotalReps += int(w.Repetitions.Int32)
+		}
+
+		// Calculate average run time
+		if strings.Contains(strings.ToLower(w.ExerciseName), "run") || 
+		   strings.ToLower(w.ExerciseName) == "running" ||
+		   strings.Contains(strings.ToLower(w.ExerciseName), "mile") {
+			if w.DurationSeconds.Valid {
+				totalRunTime += float64(w.DurationSeconds.Int32)
+				runCount++
+			}
+		}
+
+		// Track most recent workout date
+		if i == 0 { // First workout is the most recent due to ORDER BY completed_at DESC
+			stats.LastWorkoutDate = &w.CompletedAt
+		}
+	}
+
+	// Calculate average run time if there are runs
+	if runCount > 0 {
+		avgRunTime := totalRunTime / float64(runCount)
+		stats.AverageRunTime = &avgRunTime
+	}
+
+	// Get recent workouts (first 5)
+	recentCount := 5
+	if len(allWorkouts) < recentCount {
+		recentCount = len(allWorkouts)
+	}
+	
+	stats.RecentWorkouts = make([]*store.WorkoutRecord, recentCount)
+	for i := 0; i < recentCount; i++ {
+		stats.RecentWorkouts[i] = toStoreWorkoutRecord(allWorkouts[i])
+	}
+
+	return stats, nil
 }
 
 // Remove the mock structs as they should now be generated by sqlc

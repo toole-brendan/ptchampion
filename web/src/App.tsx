@@ -79,6 +79,15 @@ function App({ queryClient }: AppProps) {
       queries: {
         staleTime: 1000 * 60 * 5, // 5 minutes
         retry: 2,
+        // Request deduplication settings
+        refetchOnWindowFocus: false, // Prevent refetch on window focus
+        refetchOnReconnect: 'always', // Refetch on reconnect
+        // Deduplicate requests - queries with the same key will share results
+        // This prevents duplicate API calls when multiple components request the same data
+        structuralSharing: true, // Share data structurally between queries (default)
+      },
+      mutations: {
+        retry: 1, // Retry failed mutations once
       },
     },
   });

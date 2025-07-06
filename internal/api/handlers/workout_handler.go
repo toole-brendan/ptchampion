@@ -135,8 +135,33 @@ func (h *WorkoutHandler) ListUserWorkouts(c echo.Context) error {
 	pageSizeStr := c.QueryParam("pageSize")
 	page, _ := strconv.Atoi(pageStr)
 	pageSize, _ := strconv.Atoi(pageSizeStr)
+	
+	// Parse filter parameters
+	exerciseType := c.QueryParam("exerciseType")
+	startDateStr := c.QueryParam("startDate")
+	endDateStr := c.QueryParam("endDate")
+	
+	// Parse dates if provided
+	var startDate, endDate *time.Time
+	if startDateStr != "" {
+		if t, err := time.Parse(time.RFC3339, startDateStr); err == nil {
+			startDate = &t
+		}
+	}
+	if endDateStr != "" {
+		if t, err := time.Parse(time.RFC3339, endDateStr); err == nil {
+			endDate = &t
+		}
+	}
 
-	paginatedResults, err := h.service.ListUserWorkouts(ctx, userID, page, pageSize)
+	// Create filter options
+	filters := workouts.ListWorkoutsFilters{
+		ExerciseType: exerciseType,
+		StartDate:    startDate,
+		EndDate:      endDate,
+	}
+
+	paginatedResults, err := h.service.ListUserWorkoutsWithFilters(ctx, userID, page, pageSize, filters)
 	if err != nil {
 		h.logger.Error(ctx, "Service failed to list user workouts", "userID", userID, "error", err)
 		return NewAPIError(http.StatusInternalServerError, ErrCodeInternalServer, "Failed to retrieve workout records")

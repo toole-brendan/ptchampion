@@ -56,60 +56,27 @@ const Dashboard: React.FC = () => {
     navigate('/history');
   }, [navigate]);
   
-  // Get user exercise history for dashboard stats
+  // Get dashboard stats from the new aggregated endpoint
   const { 
-    data: exerciseHistory, 
-    isLoading: isHistoryLoading,
-    error: historyError
+    data: dashboardStats, 
+    isLoading: isStatsLoading,
+    error: statsError
   } = useQuery({
-    queryKey: ['exerciseHistory', user?.id, 1, 15], // First page, 15 items
-    queryFn: () => api.exercises.getUserExercises(1, 15),
+    queryKey: ['dashboardStats', user?.id],
+    queryFn: () => api.getDashboardStats(),
     enabled: !!user,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
-  // Fetch ALL run workouts to calculate accurate average
+  // Background fetch for additional data if needed
+  // This can be used to show partial data immediately while fetching details
   const { 
-    data: runHistory,
-    isLoading: isRunHistoryLoading
+    data: exerciseHistory, 
+    isLoading: isHistoryLoading
   } = useQuery({
-    queryKey: ['runHistory', user?.id],
-    queryFn: async () => {
-      // Fetch all pages to get complete run history
-      const allRuns: any[] = [];
-      let page = 1;
-      let hasMore = true;
-      
-      while (hasMore) {
-        const response = await api.exercises.getUserExercises(page, 50);
-        
-        // Debug logging
-        if (page === 1) {
-          logger.debug('First page items:', response.items.map(item => ({
-            name: item.exercise_name,
-            duration: item.time_in_seconds
-          })));
-        }
-        
-        const runs = response.items.filter(item => {
-          const name = item.exercise_name?.toLowerCase() || '';
-          // Check for various running exercise names (case-insensitive)
-          return name.includes('run') || name === 'running' || name.includes('mile');
-        });
-        allRuns.push(...runs);
-        
-        // Check if we have more pages
-        hasMore = page * response.page_size < response.total_count;
-        page++;
-        
-        // Safety limit to prevent infinite loops
-        if (page > 20) break;
-      }
-      
-      logger.debug('Total runs found:', allRuns.length);
-      return allRuns;
-    },
-    enabled: !!user,
+    queryKey: ['exerciseHistory', user?.id, 1, 5],
+    queryFn: () => api.exercises.getUserExercises(1, 5),
+    enabled: !!user && !dashboardStats, // Only fetch if stats aren't available
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
   
@@ -130,11 +97,40 @@ const Dashboard: React.FC = () => {
   ], [navigate]);
   
   // Base loading state only on auth and history
-  const isLoading = isAuthLoading || isHistoryLoading || isRunHistoryLoading;
-  const error = authError || historyError;
+  const isLoading = isAuthLoading || isStatsLoading;
+  const error = authError || statsError;
   
-  // Calculate dashboard metrics from history data
+  // Calculate dashboard metrics from stats data or fallback to exercise history
   const dashboardMetrics = React.useMemo(() => {
+    // Use aggregated stats if available
+    if (dashboardStats) {
+      const lastWorkout = dashboardStats.recentWorkouts?.[0];
+      return {
+        totalWorkouts: dashboardStats.totalWorkouts,
+        lastWorkoutDate: dashboardStats.lastWorkoutDate ? new Date(dashboardStats.lastWorkoutDate) : null,
+        lastWorkoutType: lastWorkout?.exerciseName || null,
+        lastWorkoutMetric: lastWorkout ? 
+          (() => {
+            const name = lastWorkout.exerciseName?.toLowerCase() || '';
+            return (name.includes('run') || name === 'running' || name.includes('mile')) ? 
+              `${Math.floor((lastWorkout.duration || 0) / 60)}:${String((lastWorkout.duration || 0) % 60).padStart(2, '0')}` : 
+              `${lastWorkout.reps || 0} reps`;
+          })()
+          : null,
+        totalReps: dashboardStats.totalReps,
+        averageRunTime: dashboardStats.averageRunTime || 0,
+        recentWorkouts: dashboardStats.recentWorkouts?.map(w => ({
+          id: w.id,
+          exercise_name: w.exerciseName,
+          reps: w.reps,
+          time_in_seconds: w.duration,
+          grade: w.score,
+          created_at: w.createdAt
+        })) || []
+      };
+    }
+    
+    // Fallback to exercise history if stats not available
     if (!exerciseHistory || !exerciseHistory.items) {
       return {
         totalWorkouts: 0,
@@ -149,33 +145,16 @@ const Dashboard: React.FC = () => {
     
     const items = exerciseHistory.items || [];
     const totalWorkouts = exerciseHistory.total_count || 0;
-    const lastWorkout = items[0]; // Most recent workout
+    const lastWorkout = items[0];
     
-    // Calculate totals from recent workouts (for display)
+    // Calculate totals from recent workouts
     let totalReps = 0;
-    
     items.forEach(workout => {
-      // Use exercise_name since exercise_type is empty in the API response
       const exerciseName = workout.exercise_name?.toLowerCase() || '';
-      // Check for various running exercise names (case-insensitive)
       if (!exerciseName.includes('run') && exerciseName !== 'running' && !exerciseName.includes('mile')) {
         totalReps += workout.reps || 0;
       }
     });
-    
-    // Calculate average run time from ALL runs (using runHistory)
-    let averageRunTime = 0;
-    if (runHistory && runHistory.length > 0) {
-      const totalRunTime = runHistory.reduce((sum, run) => {
-        return sum + (run.time_in_seconds || 0);
-      }, 0);
-      averageRunTime = totalRunTime / runHistory.length;
-      logger.debug('Average run time calculation:', {
-        runCount: runHistory.length,
-        totalTime: totalRunTime,
-        average: averageRunTime
-      });
-    }
     
     return {
       totalWorkouts,
@@ -184,17 +163,16 @@ const Dashboard: React.FC = () => {
       lastWorkoutMetric: lastWorkout ? 
         (() => {
           const name = lastWorkout.exercise_name?.toLowerCase() || '';
-          // Check for various running exercise names (case-insensitive)
           return (name.includes('run') || name === 'running' || name.includes('mile')) ? 
             `${Math.floor((lastWorkout.time_in_seconds || 0) / 60)}:${String((lastWorkout.time_in_seconds || 0) % 60).padStart(2, '0')}` : 
             `${lastWorkout.reps || 0} reps`;
         })()
         : null,
       totalReps,
-      averageRunTime,
+      averageRunTime: 0, // No run data in fallback
       recentWorkouts: items.slice(0, 5)
     };
-  }, [exerciseHistory, runHistory, user]);
+  }, [dashboardStats, exerciseHistory, user]);
   
   // Set username in context when it changes
   useEffect(() => {

@@ -110,8 +110,12 @@ const History: React.FC = () => {
     isFetching,
     refetch
   } = useQuery<PaginatedExercisesResponse, Error>({
-    queryKey: ['exerciseHistory', user?.id, page, pageSize],
-    queryFn: () => getUserExercises(page, pageSize),
+    queryKey: ['exerciseHistory', user?.id, page, pageSize, exerciseFilter, dateRange],
+    queryFn: () => getUserExercises(page, pageSize, {
+      exerciseType: exerciseFilter === 'All' ? undefined : exerciseFilter,
+      startDate: dateRange?.from,
+      endDate: dateRange?.to
+    }),
     enabled: !!user,
     placeholderData: keepPreviousData,
     staleTime: 1000 * 60,
@@ -128,32 +132,8 @@ const History: React.FC = () => {
     setPage(1);
   }, [exerciseFilter, dateRange]);
 
-  const dateFilteredHistory = useMemo(() => {
-    if (!dateRange?.from && !dateRange?.to) {
-      return exercises;
-    }
-    return exercises.filter((session: ExerciseResponse) => {
-      try {
-        const sessionDate = new Date(session.created_at);
-        const from = dateRange?.from;
-        const to = dateRange?.to;
-        const startOfDayFrom = from ? new Date(from.setHours(0, 0, 0, 0)) : null;
-        const endOfDayTo = to ? new Date(to.setHours(23, 59, 59, 999)) : null;
-
-        if (startOfDayFrom && endOfDayTo) {
-          return sessionDate >= startOfDayFrom && sessionDate <= endOfDayTo;
-        } else if (startOfDayFrom) {
-          return sessionDate >= startOfDayFrom;
-        } else if (endOfDayTo) {
-          return sessionDate <= endOfDayTo;
-        }
-        return true;
-      } catch (e) {
-        logger.error("Error parsing date:", session.created_at, e);
-        return false;
-      }
-    });
-  }, [exercises, dateRange]);
+  // No need for client-side date filtering anymore - it's done server-side
+  const dateFilteredHistory = exercises;
 
   // Calculate streak stats like in iOS WorkoutHistoryViewModel
   const streakStats = useMemo(() => {
@@ -279,12 +259,8 @@ const History: React.FC = () => {
     }
   }, [exerciseTypes, exerciseFilter]);
 
-  const filteredHistory = useMemo(() => {
-    if (exerciseFilter === 'All') {
-      return dateFilteredHistory;
-    }
-    return dateFilteredHistory.filter((session: ExerciseResponse) => session.exercise_type === exerciseFilter);
-  }, [dateFilteredHistory, exerciseFilter]);
+  // No need for client-side exercise filtering anymore - it's done server-side
+  const filteredHistory = dateFilteredHistory;
 
   const { chartData, metricName, yAxisLabel } = useMemo(() => {
     if (exerciseFilter === 'All') {

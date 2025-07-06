@@ -76,6 +76,9 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	// store implements both store.WorkoutStore and store.ExerciseStore
 	workoutService := workouts.NewService(store, store, logger)
 	workoutHandler := handlers.NewWorkoutHandler(workoutService, logger)
+	
+	// Instantiate Dashboard Handler (uses workout service)
+	dashboardHandler := handlers.NewDashboardHandler(workoutService, logger)
 
 	// Create API group
 	apiGroup := e.Group("/api/v1")
@@ -108,6 +111,9 @@ func RegisterRoutes(e *echo.Echo, cfg *config.Config, store *db.Store, tokenServ
 	// Workout Routes
 	workoutRoutesGroup := protectedGroup.Group("/workouts")
 	RegisterWorkoutRoutes(workoutRoutesGroup, store, logger, workoutHandler)
+	
+	// Dashboard Routes
+	protectedGroup.GET("/dashboard/stats", dashboardHandler.GetDashboardStats)
 
 	// Leaderboard Routes
 	leaderboardRoutesGroup := protectedGroup.Group("/leaderboards")

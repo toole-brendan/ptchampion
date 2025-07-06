@@ -10,6 +10,7 @@ import { UpdateUserRequest } from '../lib/types';
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 import useStaggeredAnimation from '@/hooks/useStaggeredAnimation';
+import { useOptimisticProfile } from '@/lib/hooks/useOptimisticProfile';
 import { MilitarySettingsHeader } from '@/components/ui/military-settings-header';
 import { SettingsSection } from '@/components/ui/settings-section';
 
@@ -73,6 +74,7 @@ const Profile: React.FC = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const profileMutation = useOptimisticProfile();
   
   const [formData, setFormData] = useState<ProfileFormData>({});
   const [passwordData, setPasswordData] = useState<{password: string, confirmPassword: string}>({
@@ -236,31 +238,32 @@ const Profile: React.FC = () => {
     setIsSubmitting(true);
     setMessage(null);
     
-    try {
-      const updated = await updateCurrentUser(changes);
-      setMessage({ text: 'Profile updated successfully', type: 'success' });
-      
-      queryClient.setQueryData(['currentUser'], updated);
-      
-      // Show toast
-      setToastMessage('Profile updated successfully');
-      setShowSuccessToast(true);
-      
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
-        variant: "default",
-      });
-    } catch (error) {
-      setMessage({ text: error instanceof Error ? error.message : 'Failed to update profile', type: 'error' });
-      toast({
-        title: "Update Failed",
-        description: error instanceof Error ? error.message : 'Failed to update profile',
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    profileMutation.mutate(changes, {
+      onSuccess: () => {
+        setMessage({ text: 'Profile updated successfully', type: 'success' });
+        
+        // Show toast
+        setToastMessage('Profile updated successfully');
+        setShowSuccessToast(true);
+        
+        toast({
+          title: "Profile Updated",
+          description: "Your profile has been successfully updated.",
+          variant: "default",
+        });
+      },
+      onError: (error) => {
+        setMessage({ text: error instanceof Error ? error.message : 'Failed to update profile', type: 'error' });
+        toast({
+          title: "Update Failed",
+          description: error instanceof Error ? error.message : 'Failed to update profile',
+          variant: "destructive",
+        });
+      },
+      onSettled: () => {
+        setIsSubmitting(false);
+      }
+    });
   };
   
   const handlePasswordSubmit = async (e: React.FormEvent) => {
